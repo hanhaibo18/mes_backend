@@ -1,0 +1,60 @@
+server:
+  port: ${SERVER_PORT:8080}
+spring:
+  application:
+    name: gateway-web
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos0
+      discovery:
+        enabled: ${DISCOVERY_ENABLED:true}
+        server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
+        group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
+    gateway:
+      routes:
+        - id: oauth2-route
+          uri: lb://authentication-server
+          filters:
+            - ValidateCodeGatewayFilter
+          predicates:
+            - Path=/oauth/**
+        - id: system-route
+          uri: lb://system-service
+          predicates:
+            - Path=/api/sys/**
+        - id: base-route
+          uri: lb://base-service
+          predicates:
+            - Path=/api/base/**
+        - id: produce-route
+          uri: lb://produce-service
+          predicates:
+            - Path=/api/produce/**
+secure:
+  ignore:
+    urls: #安全路径白名单
+      - /
+      - /error
+      - /favicon.ico
+      - /oauth/**
+captcha:
+  aes:
+    key: XwKsGlMcdPMEhR1B
+  font:
+    type: \u5b8b\u4f53
+  slip:
+    offset: 5
+  water:
+    mark: MES CLOUD
+    font: \u5b8b\u4f53
+
+logging:
+  level:
+    com.richfit.mes: debug
+  path: logs/
+  file:
+    max-size: 1GB
+
+debug: true
