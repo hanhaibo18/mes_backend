@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.KanbanMapper">
+
+    <select id="queryProcessTrack" resultType="com.richfit.mes.common.model.produce.ProcessTrack">
+        <!-- 图号 产品名称  年计划   年度完成  在制数量   本月计划   本月完成  月完成率
+        机加图号过滤-->
+        select t.*,
+        (select sum(proj_num) from mes_produce.produce_plan
+        where draw_no = t.draw_no
+        and start_time >= #{param.yearStart} and start_time &lt;= #{param.yearEnd}
+        ) year_plan,
+
+        (select sum(store_num) from mes_produce.plan_track_view
+        where id in ( select id from mes_produce.produce_plan
+        where draw_no = t.draw_no
+        and start_time >= #{param.yearStart} and start_time &lt;= #{param.yearEnd} )
+        ) year_comp,
+
+        (select sum(process_num) from mes_produce.plan_track_view
+        where id in ( select id from mes_produce.produce_plan
+        where draw_no = t.draw_no
+        and start_time >= #{param.yearStart} and start_time &lt;= #{param.yearEnd})
+        ) process_num,
+
+        (select sum(proj_num) from mes_produce.produce_plan
+        where draw_no = t.draw_no
+        and start_time >= #{param.monthStart} and start_time &lt;= #{param.monthEnd}
+        ) month_plan,
+
+        (select sum(number) from mes_produce.produce_track_head
+        where drawing_no = t.draw_no and status=2
+        and complete_time >= #{param.monthStart} and complete_time &lt;= #{param.monthEnd}
+        ) month_comp
+
+        from
+        (
+        select distinct draw_no,draw_no_name from mes_produce.produce_plan
+            where tenant_id=#{param.tenantId}
+        <!-- and branch_code = #{param.branchCode}  -->
+         and start_time >= #{param.yearStart} and start_time &lt;= #{param.yearEnd}
+         and draw_no_type = ${param.drawNoType}
+     ) t
+ </select>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.sys.dao.MenuMapper">
+
+    <select id="listMenusByRoleId"  parameterType="string" resultType="com.richfit.mes.common.model.sys.Menu">
+        SELECT
+        sys_menu.*
+        FROM
+        sys_menu
+        LEFT JOIN sys_role_menu ON sys_menu.id = sys_role_menu.menu_id
+        WHERE
+        sys_role_menu.role_id = #{roleId}
+        ORDER BY
+        sys_menu.menu_order DESC
+    </select>
+
+</mapper>

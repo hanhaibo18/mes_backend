@@ -1,0 +1,16 @@
+server:
+  port: 8012
+spring:
+  application:
+    name: produce
+  cloud:
+    nacos:
+      username: nacos_user01
+      password: nacos_user01@
+      config:
+        #默认关闭配置
+        enabled: ${REGISTER_ENABLED:false}
+        server-addr: ${REGISTER_HOST:11.11.62.3}:${REGISTER_PORT:8848}
+        file-extension: yml
+        namespace: ${REGISTER_NAMESPACE:mes_dev}
+        group: ${REGISTER_GROUP:DEVELOP_GROUP}

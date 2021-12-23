@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.richfit.mes.common.core.config.MybatisConfig,\
+com.richfit.mes.common.core.config.RedisTemplateConfig,\
+com.richfit.mes.common.core.config.SwaggerConfig

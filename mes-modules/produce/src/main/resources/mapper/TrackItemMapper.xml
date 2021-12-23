@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.TrackItemMapper">
+    <select id="selectTrackItem" resultType="com.richfit.mes.common.model.produce.TrackItem">
+        SELECT ti.*, tc.user_id user_id, tc.completed_hours completed_hours, tc.actual_hours actual_hours,
+        tc.report_hours report_hours, tc.device_id assign_device_id
+        FROM mes_produce.produce_track_item ti
+        left join mes_produce.produce_track_complete tc
+        on ti.id = tc.ti_id
+        ${ew.customSqlSegment}
+    </select>
+
+    <select id="selectTrackItemAssign" resultType="com.richfit.mes.common.model.produce.TrackItem">
+        SELECT ti.*, pa.user_id user_id, pa.device_id assign_device_id, pa.start_time
+        FROM mes_produce.produce_track_item ti
+        left join mes_produce.produce_assign pa
+        on ti.id = pa.ti_id
+        ${ew.customSqlSegment}
+    </select>
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.TrackCheckCountMapper">
+
+    <select id="count" resultType="com.richfit.mes.produce.entity.CountDto">
+        <!-- 设置别名 -->
+        select DATE_FORMAT(t.deal_time,#{dateType}) days,sum(t.qualify) a,sum(t.unqualify) b,sum(t.step_qty) c,sum(t.fix_qty) d,sum(t.discard_qty) e from produce_track_check t 
+        where <![CDATA[  UNIX_TIMESTAMP(t.deal_time) >= UNIX_TIMESTAMP(#{startTime}) 
+        and UNIX_TIMESTAMP(t.deal_time) <= UNIX_TIMESTAMP(#{endTime}) 
+        group by days 
+        order by days asc ]]>
+       
+    </select>
+    <select id="countReason" resultType="com.richfit.mes.produce.entity.CountDto">
+        <!-- 设置别名 -->
+        select reason days,count(reason) a from produce_track_check 
+        where <![CDATA[ UNIX_TIMESTAMP(deal_time) >= UNIX_TIMESTAMP(#{startTime}) 
+        and UNIX_TIMESTAMP(deal_time) <= UNIX_TIMESTAMP(#{endTime})  ]]>       
+        group by days 
+        order by days asc
+       
+    </select>
+    <select id="countComplete" resultType="com.richfit.mes.produce.entity.CountDto">
+        <!-- 设置别名 -->
+        select DATE_FORMAT(t.operation_complete_time,#{dateType}) days,count(t.complete_qty) a,sum(t.is_quality_complete) b from (select p.*,(select count(1) from produce_track_item u where u.is_quality_complete =1 and u.id=p.id and u.quality_complete_time=p.operation_complete_time) as  complete_curday from produce_track_item p order by p.operation_complete_time) t 
+        where t.is_exist_quality_check =1 and t.is_operation_complete=1 and  <![CDATA[ UNIX_TIMESTAMP(t.operation_complete_time) >= UNIX_TIMESTAMP(#{startTime})    
+        and UNIX_TIMESTAMP(t.operation_complete_time) <= UNIX_TIMESTAMP(#{endTime})  ]]>     
+        group by days 
+         
+
+       
+    </select>
+    
+    
+
+
+</mapper>

@@ -1,0 +1,23 @@
+server:
+  port: 5001
+
+spring:
+  application:
+    name: @artifactId@
+  cloud:
+    nacos:
+      username: ${REGISTER_USERNAME:nacos_user01}
+      password: ${REGISTER_PASSWORD:nacos_user01@}
+      discovery:
+        enabled: ${DISCOVERY_ENABLED:true}
+        server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
+        group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
+      config:
+        enabled: ${REGISTER_ENABLED:true}
+        server-addr: ${REGISTER_HOST:11.11.62.3}:${REGISTER_PORT:8848}
+        file-extension: yml
+        shared-configs:
+          - mes-common.${spring.cloud.nacos.config.file-extension}
+        namespace: ${REGISTER_NAMESPACE:mes_dev}
+        group: ${REGISTER_GROUP:DEVELOP_GROUP}

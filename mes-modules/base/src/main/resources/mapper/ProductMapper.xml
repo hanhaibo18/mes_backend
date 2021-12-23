@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.base.dao.ProductMapper">
+    <select id="selectProduct" resultType="com.richfit.mes.common.model.base.Product">
+        SELECT p.*, (pb.id is not null) have_bom, (r.id is not null) have_router, r.type router_type
+        FROM mes_base.base_product p
+        left join base_production_bom pb
+        on p.drawing_no = pb.drawing_no and p.tenant_id = pb.tenant_id and pb.is_current = '1'
+        and (select count(id) from mes_base.base_production_bom pb2 where pb2.main_drawing_no = pb.id) > 0
+        left join base_router r on p.drawing_no = r.router_no and p.tenant_id = r.tenant_id and r.status = 1
+        ${ew.customSqlSegment}
+    </select>
+</mapper>

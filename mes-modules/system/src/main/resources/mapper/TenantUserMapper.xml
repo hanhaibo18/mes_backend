@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.sys.dao.TenantUserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="baseResultMap" type="com.richfit.mes.common.model.sys.vo.TenantUserVo">
+        <id column="id" property="id"/>
+        <result column="user_type" property="userType"/>
+        <result column="user_account" property="userAccount"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="telephone" property="telephone"/>
+        <result column="mail" property="mail"/>
+        <result column="status" property="status"/>
+        <result column="empl_name" property="emplName"/>
+        <result column="org_id" property="orgId"/>
+        <result column="belong_org_id" property="belongOrgId"/>
+        <collection property="roleList" ofType="com.richfit.mes.common.model.sys.Role"
+                    select="com.richfit.mes.sys.dao.UserRoleMapper.queryRolesByUserId" column="id">
+        </collection>
+    </resultMap>
+
+    <select id="queryTenantUser" resultMap="baseResultMap">
+        select u.*
+        from sys_tenant_user u
+        WHERE 1=1 and tenant_id = #{param.tenantId}
+        <trim  suffixOverrides="," >
+            <if test="param.userAccount != null and param.userAccount != ''" >
+                and user_account like '%${param.userAccount}%'
+            </if>
+            <if test="param.emplName != null and param.emplName != ''" >
+                and empl_name like '%${param.emplName}%'
+            </if>
+            <if test="param.orgId != null and param.orgId != ''" >
+                and FIND_IN_SET(belong_org_id, #{param.orgId})
+            </if>
+        </trim>
+        order by modify_time desc
+    </select>
+
+</mapper>

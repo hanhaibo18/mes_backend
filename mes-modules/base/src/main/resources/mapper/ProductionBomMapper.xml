@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.base.dao.ProductionBomMapper">
+    <resultMap type="com.richfit.mes.common.model.base.ProductionBom" id="productionBomResultMap">
+        <id property="id" column="id"/>
+        <result property="drawingNo" column="drawing_no"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="branchCode" column="branch_code"/>
+        <result property="materialNo" column="material_no"/>
+        <result property="mainDrawingNo" column="main_drawing_no"/>
+        <result property="status" column="status"/>
+        <result property="productImage" column="product_image"/>
+        <result property="productSource" column="product_source"/>
+        <result property="trackType" column="track_type"/>
+        <result property="isCurrent" column="is_current"/>
+        <result property="isKeyPart" column="is_key_part"/>
+        <result property="isNeedPicking" column="is_need_picking"/>
+        <result property="isEdgeStore" column="is_edge_store"/>
+        <result property="isCheck" column="is_check"/>
+        <result property="grade" column="grade"/>
+        <result property="productFile" column="product_file"/>
+        <result property="versionNo" column="version_no"/>
+        <result property="number" column="number"/>
+        <result property="publishBy" column="publish_by"/>
+        <result property="publishTime" column="publish_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyBy" column="modify_by"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="remark" column="remark"/>
+        <result property="optId" column="opt_id"/>
+        <result property="optName" column="opt_name"/>
+        <!-- association：配置的一对一属性 -->
+        <association property="product" javaType="com.richfit.mes.common.model.base.Product">
+            <result property="materialDate" column="material_date"/>
+            <result property="materialType" column="material_type"/>
+            <result property="materialDesc" column="material_desc"/>
+            <result property="productName" column="product_name"/>
+            <result property="texture" column="texture"/>
+            <result property="weight" column="weight"/>
+            <result property="unit" column="unit"/>
+            <result property="convertScale" column="convert_scale"/>
+            <result property="convertUnit" column="convert_unit"/>
+            <result property="objectType" column="object_type"/>
+        </association>
+    </resultMap>
+    <select id="getProductionBomHistory" resultMap="productionBomResultMap">
+        select pb.*, product.* from base_production_bom pb
+        LEFT join base_product product on
+        pb.drawing_no = product.drawing_no and pb.material_no = product.material_no
+        ${ew.customSqlSegment}
+    </select>
+    <select id="getProductionBomByPage" resultMap="productionBomResultMap">
+        select * from mes_base.base_production_bom pb
+        LEFT join mes_base.base_product product on
+        pb.drawing_no = product.drawing_no and pb.material_no = product.material_no
+        ${ew.customSqlSegment}
+    </select>
+
+    <select id="getProductionBomList" resultType="com.richfit.mes.common.model.base.ProductionBom">
+        select pb.id, pb.branch_code, pb.grade, pb2.drawing_no main_drawing_no, pb.drawing_no,
+        pb.version_no, pb.material_no, product.product_name, product.object_type,
+        product.material_type product_type, product.weight, product.texture, pb.number, product.unit,
+        pb.track_type, pb.product_source, pb.is_key_part, pb.is_need_picking,
+        pb.is_edge_store, pb.is_check, pb.remark, pb.optId, pb.optName 
+        from mes_base.base_production_bom pb
+        LEFT join mes_base.base_product product on
+        pb.drawing_no = product.drawing_no and pb.material_no = product.material_no
+        and pb.tenant_id = product.tenant_id
+        Left join base_production_bom pb2 on
+        pb.main_drawing_no = pb2.id
+        ${ew.customSqlSegment}
+    </select>
+
+</mapper>

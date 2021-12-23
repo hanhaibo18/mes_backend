@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.LineStoreMapper">
+    <select id="selectGroup" resultType="com.richfit.mes.common.model.produce.LineStore">
+        SELECT drawing_no, material_no, material_type,
+        (
+            SELECT sum(number - user_num) FROM mes_produce.produce_line_store
+            where material_no = ls.material_no and material_type = 0 and status = 1
+        ) number
+        FROM mes_produce.produce_line_store ls
+        ${ew.customSqlSegment}
+    </select>
+    <select id="selectLineStoreByProduce" resultType="com.richfit.mes.common.model.produce.LineStore">
+        SELECT ls.*, ta.id assemblyId
+        FROM produce_line_store ls
+        left join mes_produce.produce_track_assembly ta on ls.workblank_no = ta.product_no and ls.track_type = '0'
+        ${ew.customSqlSegment}
+    </select>
+</mapper>

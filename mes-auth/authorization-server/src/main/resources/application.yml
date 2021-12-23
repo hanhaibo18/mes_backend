@@ -1,0 +1,32 @@
+server:
+  port: ${SERVER_PORT:8000}
+spring:
+  application:
+    name: authentication-server
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:${DATASOURCE_DBTYPE:mysql}://${DATASOURCE_HOST:11.11.62.3}:${DATASOURCE_PORT:3306}/${DB_SYSTEM:mes_oauth}?characterEncoding=UTF-8&useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=CTT
+    username: ${DATASOURCE_USERNAME:mes_oauth}
+    password: ${DATASOURCE_PASSWORD:Mes_oauth@mes}
+    
+  cloud:
+    nacos:
+      username: nacos_user01
+      password: nacos_user01@
+      discovery:
+        enabled: ${DISCOVERY_ENABLED:true}
+        server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
+        group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
+
+    loadbalancer:
+      retry:
+        enabled: true
+
+feign:
+  sentinel:
+    enabled: true
+  okhttp:
+    enabled: true
+

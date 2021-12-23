@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.sys.dao.TenantMapper">
+    <update id="saveAdditionalInfo" parameterType="string">
+        update sys_tenant set additional_info = #{addInfo} where id= #{tenantId}
+    </update>
+
+    <select id="getAdditionalInfo"  parameterType="string" resultType="java.lang.String">
+        SELECT additional_info from sys_tenant where id= #{tenantId}
+    </select>
+
+</mapper>
