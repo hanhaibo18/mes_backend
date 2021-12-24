@@ -1,11 +1,8 @@
 package com.richfit.mes.gateway.web.filter;
 
 import com.richfit.mes.gateway.web.constants.GatewayConstant;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http2.HttpConversionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.jcajce.provider.symmetric.AES;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -24,15 +21,12 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerStrategies;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import sun.security.util.SecurityConstants;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Function;
