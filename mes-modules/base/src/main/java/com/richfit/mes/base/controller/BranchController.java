@@ -108,8 +108,9 @@ public class BranchController extends BaseController {
         if(!StringUtils.isNullOrEmpty(branchCode)){
             queryWrapper.eq("main_branch_code", branchCode);
         } else {
-           // queryWrapper.isNull("main_branch_code");
+           queryWrapper.isNull("main_branch_code");
         }
+        
         if(!StringUtils.isNullOrEmpty(branchName)){
             queryWrapper.like("branch_name", "%" + branchName + "%");
         }
