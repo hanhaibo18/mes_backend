@@ -34,6 +34,11 @@ public class Menu extends BaseEntity<Menu> {
      * 类型
      */
     private Integer menuType;
+    
+    /**
+     * 菜单唯一编码
+     */
+    private String menuCode;
 
     /**
      * 打开方式
