@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -80,6 +81,24 @@ public class BranchController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "查询组织机构详细信息", notes = "根据机构编码和租户ID获得组织机构详细信息")
+    @GetMapping("/branch/one")
+    public CommonResult<Branch> selectBranchByCodeAndTenantId(String branchCode, String tenantId){
+        if(!StringUtils.isNullOrEmpty(branchCode)){
+            QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
+            queryWrapper.eq("branch_code", branchCode);
+
+            if(!StringUtils.isNullOrEmpty(tenantId)){
+                queryWrapper.ne("tenant_id", tenantId);
+            }
+            queryWrapper.orderByAsc("order_no");
+
+            Branch result = branchService.getOne(queryWrapper);
+            return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
+        }
+        return CommonResult.failed(BRANCH_CODE_NULL_MESSAGE);
+    }
+
     @ApiOperation(value = "查询组织机构详细信息", notes = "根据机构编码获得组织机构详细信息")
     @GetMapping("/branch")
     public CommonResult<Branch> selectBranchByCode(String branchCode, String id){
@@ -103,19 +122,36 @@ public class BranchController extends BaseController {
     @ApiOperation(value = "查询组织机构", notes = "根据机构编码获得组织机构")
     @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, dataType = "String", paramType = "path")
     @GetMapping("/select_branches_by_code")
-    public CommonResult<List<Branch>> selectBranchesByCode(String branchCode, String branchName){
+    public CommonResult<List<Branch>> selectBranchesByCode(String branchCode, String branchName, Boolean isFindTop){
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
-        if(!StringUtils.isNullOrEmpty(branchCode)){
-            queryWrapper.eq("main_branch_code", branchCode);
-        } else {
-           queryWrapper.isNull("main_branch_code");
-        }
-        
         if(!StringUtils.isNullOrEmpty(branchName)){
             queryWrapper.like("branch_name", "%" + branchName + "%");
         }
-        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
+        boolean isAdmin = false;
+        for (GrantedAuthority authority : authorities) {
+            //超级管理员 ROLE_12345678901234567890000000000000
+            if("ROLE_12345678901234567890123456789001".equals(authority.getAuthority())) {
+                isAdmin = true;
+                break;
+            }
+        }
+        if(!isAdmin){
+            // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            if(isFindTop != null && isFindTop){
+                String orgId = SecurityUtils.getCurrentUser().getOrgId();
+                String belongOrgId = SecurityUtils.getCurrentUser().getBelongOrgId();
+                queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+            } else {
+                queryWrapper.eq("main_branch_code", branchCode);
+            }
+        } else {
+            if(!StringUtils.isNullOrEmpty(branchCode)){
+                queryWrapper.eq("main_branch_code", branchCode);
+            } else {
+                queryWrapper.isNull("main_branch_code");
+            }
+        }
         queryWrapper.orderByAsc("order_no");
         List<Branch> result = branchService.list(queryWrapper);
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
@@ -128,7 +164,7 @@ public class BranchController extends BaseController {
         if(!StringUtils.isNullOrEmpty(branchCode)){
             queryWrapper.apply(branchCode != null,"FIND_IN_SET(branch_code, getBranchChildList('" +branchCode+ "'))");
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("order_no");
         List<Branch> result = branchService.list(queryWrapper);
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);

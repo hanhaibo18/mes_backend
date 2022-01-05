@@ -22,8 +22,11 @@
     <select id="queryTenantUser" resultMap="baseResultMap">
         select u.*
         from sys_tenant_user u
-        WHERE 1=1 and tenant_id = #{param.tenantId}
+        WHERE 1=1
         <trim  suffixOverrides="," >
+            <if test="!isAdmin" >
+                and tenant_id = #{param.tenantId}
+            </if>
             <if test="param.userAccount != null and param.userAccount != ''" >
                 and user_account like '%${param.userAccount}%'
             </if>

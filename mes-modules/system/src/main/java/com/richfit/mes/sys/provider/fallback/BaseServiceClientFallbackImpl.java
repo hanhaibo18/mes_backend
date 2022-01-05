@@ -21,4 +21,9 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         log.error("feign 查询机构信息失败:{}", branchCode);
         return CommonResult.success(null);
     }
+
+    @Override
+    public CommonResult<Branch> selectBranchByCodeAndTenantId(String branchCode, String tenantId) {
+        return CommonResult.success(null);
+    }
 }

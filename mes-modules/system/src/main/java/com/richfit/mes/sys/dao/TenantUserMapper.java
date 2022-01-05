@@ -20,5 +20,5 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface TenantUserMapper extends BaseMapper<TenantUser> {
 
-    IPage<TenantUserVo> queryTenantUser(Page page, @Param("param")TenantUserQueryParam tenantUserQueryParam);
+    IPage<TenantUserVo> queryTenantUser(Page page, @Param("param")TenantUserQueryParam tenantUserQueryParam, @Param("isAdmin") boolean isAdmin);
 }

@@ -4,22 +4,26 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.constant.CacheConstant;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.TenantUserMapper;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
 import com.richfit.mes.sys.provider.BaseServiceClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -91,15 +95,26 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     @Override
     public IPage<TenantUserVo> query(Page<TenantUser> page, TenantUserQueryParam tenantUserQueryParam) {
-        List<Branch> branchList = baseServiceClient.selectBranchChildByCode(tenantUserQueryParam.getOrgId()).getData();
-        StringBuilder strBuilder = new StringBuilder();
-        for (Branch b : branchList) {
-            strBuilder.append(b.getBranchCode()).append(",");
+        if(tenantUserQueryParam.getOrgId() != null) {
+            List<Branch> branchList = baseServiceClient.selectBranchChildByCode(tenantUserQueryParam.getOrgId()).getData();
+            StringBuilder strBuilder = new StringBuilder();
+            for (Branch b : branchList) {
+                strBuilder.append(b.getBranchCode()).append(",");
+            }
+            if (strBuilder.length() > 0) {
+                tenantUserQueryParam.setOrgId(strBuilder.substring(0, strBuilder.length() - 1));
+            }
         }
-        if (strBuilder.length() > 0) {
-            tenantUserQueryParam.setOrgId(strBuilder.substring(0, strBuilder.length() - 1));
+        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
+        boolean isAdmin = false;
+        for (GrantedAuthority authority : authorities) {
+            //超级管理员 ROLE_12345678901234567890000000000000
+            if("ROLE_12345678901234567890123456789001".equals(authority.getAuthority())) {
+                isAdmin = true;
+                break;
+            }
         }
-        return fillBranchName(tenantUserMapper.queryTenantUser(page, tenantUserQueryParam));
+        return fillBranchName(tenantUserMapper.queryTenantUser(page, tenantUserQueryParam, isAdmin));
     }
 
     /**
