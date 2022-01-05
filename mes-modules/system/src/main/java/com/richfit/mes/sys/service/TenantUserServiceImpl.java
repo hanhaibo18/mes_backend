@@ -109,7 +109,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         boolean isAdmin = false;
         for (GrantedAuthority authority : authorities) {
             //超级管理员 ROLE_12345678901234567890000000000000
-            if("ROLE_12345678901234567890123456789001".equals(authority.getAuthority())) {
+            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
                 isAdmin = true;
                 break;
             }
