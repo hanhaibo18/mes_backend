@@ -8,12 +8,15 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Role;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.RoleMapper;
 import com.richfit.mes.sys.entity.param.RoleQueryParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -66,7 +69,21 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         QueryWrapper<Role> queryWrapper = roleQueryParam.build();
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleName()), "role_name", roleQueryParam.getRoleName());
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleCode()), "role_code", roleQueryParam.getRoleCode());
-        queryWrapper.eq(StringUtils.isNotBlank(roleQueryParam.getTenantId()), "tenant_id", roleQueryParam.getTenantId());
+
+        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
+        boolean isAdmin = false;
+        for (GrantedAuthority authority : authorities) {
+            //超级管理员 ROLE_12345678901234567890000000000000
+            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+                isAdmin = true;
+                break;
+            }
+        }
+        if (!isAdmin) {
+            String tenantId =  SecurityUtils.getCurrentUser().getTenantId();
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+
         return this.page(page, queryWrapper);
     }
 }
