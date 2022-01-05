@@ -27,6 +27,19 @@ public class Role extends BaseEntity<Role> {
      */
     @NotBlank(message = "角色标识不能为空")
     private String roleCode;
+    
+    /**
+     * 角色code
+     */
+    @NotBlank(message = "所在组织机构")
+    private String orgId;
+    
+    /**
+     * 角色type
+     */
+    @NotBlank(message = "角色类型")
+    private String roleType;
+    
     /**
      * 角色描述
      */
