@@ -1,18 +1,21 @@
 package com.richfit.mes.sys.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.constant.CommonConstant;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.dto.TenantUserDto;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.entity.dto.TenantUpdateUserDto;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
+import com.richfit.mes.sys.service.TenantService;
 import com.richfit.mes.sys.service.TenantUserService;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +41,9 @@ public class TenantUserController extends BaseController {
     @Autowired
     TenantUserService tenantUserService;
 
+    @Autowired
+    TenantService tenantService;
+
     /**
      * 新增用户
      */
@@ -48,7 +54,12 @@ public class TenantUserController extends BaseController {
 
         //TODO 租户可创建用户数限制
         TenantUser tenantUser = tenantUserDto.toPo(TenantUser.class);
-        tenantUser.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
+        String orgId = tenantUser.getOrgId();
+        queryWrapper.eq("tenant_code", orgId);
+        Tenant tenant = tenantService.getOne(queryWrapper);
+
+        tenantUser.setTenantId(tenant.getId());
         log.debug("save tenantUser:[{}]",tenantUser);
         return CommonResult.success(tenantUserService.add(tenantUser));
     }
