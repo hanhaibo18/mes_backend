@@ -146,9 +146,25 @@ public class ItemController extends BaseController {
         if(!StringUtils.isNullOrEmpty(classId)){
             queryWrapper.eq("class_id", classId);
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("order_num");
         return CommonResult.success(itemParamService.page(new Page<ItemParam>(page, limit), queryWrapper), ITEM_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "查询字典参数", notes = "根据参数编码查询字典参数")
+    @GetMapping("/item/param/list")
+    public CommonResult<List<ItemParam>> selectItemParamByCode(String code){
+        QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
+        if(!StringUtils.isNullOrEmpty(code)){
+            queryWrapper.eq("code", code);
+        }
+        ItemClass iClass = itemClassService.getOne(queryWrapper);
+        QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+        wrapper.eq("class_id", iClass.getId());
+
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        wrapper.orderByAsc("order_num");
+        return CommonResult.success(itemParamService.list(wrapper), ITEM_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询字典参数数量", notes = "根据参数分类查询字典参数总数")
@@ -172,7 +188,7 @@ public class ItemController extends BaseController {
         if(!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code",  code);
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(itemClassService.list(queryWrapper), ITEM_SUCCESS_MESSAGE);
     }
 }
