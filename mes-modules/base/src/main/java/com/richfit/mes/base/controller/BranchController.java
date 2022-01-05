@@ -141,7 +141,7 @@ public class BranchController extends BaseController {
             if(isFindTop != null && isFindTop){
                 String orgId = SecurityUtils.getCurrentUser().getOrgId();
                 String belongOrgId = SecurityUtils.getCurrentUser().getBelongOrgId();
-                queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+                queryWrapper.eq("branch_code", belongOrgId);
             } else {
                 queryWrapper.eq("main_branch_code", branchCode);
             }
