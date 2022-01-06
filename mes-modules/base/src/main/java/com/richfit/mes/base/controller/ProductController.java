@@ -134,7 +134,7 @@ public class ProductController extends BaseController {
         if(!StringUtils.isNullOrEmpty(materialType)){
             queryWrapper.eq("p.material_type", materialType);
         }
-        queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        // queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
                 if(order.equals("desc")){
@@ -174,7 +174,7 @@ public class ProductController extends BaseController {
                 queryWrapper.eq("material_type", materialType);
             }
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");
 
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
@@ -195,7 +195,7 @@ public class ProductController extends BaseController {
         if(!StringUtils.isNullOrEmpty(drawingNo)){
             queryWrapper.eq("drawing_no", drawingNo);
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
     }
