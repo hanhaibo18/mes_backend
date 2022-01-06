@@ -151,9 +151,9 @@ public class ItemController extends BaseController {
         return CommonResult.success(itemParamService.page(new Page<ItemParam>(page, limit), queryWrapper), ITEM_SUCCESS_MESSAGE);
     }
 
-    @ApiOperation(value = "查询字典参数", notes = "根据参数编码查询字典参数")
+    @ApiOperation(value = "查询字典参数", notes = "根据参数类别和参数名称查询字典参数")
     @GetMapping("/item/param/list")
-    public CommonResult<List<ItemParam>> selectItemParamByCode(String code){
+    public CommonResult<List<ItemParam>> selectItemParamByCode(String code, String label){
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
         if(!StringUtils.isNullOrEmpty(code)){
             queryWrapper.eq("code", code);
@@ -161,6 +161,9 @@ public class ItemController extends BaseController {
         ItemClass iClass = itemClassService.getOne(queryWrapper);
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("class_id", iClass.getId());
+        if(!StringUtils.isNullOrEmpty(label)){
+            wrapper.like("label", "%" + label + "%");
+        }
 
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         wrapper.orderByAsc("order_num");
