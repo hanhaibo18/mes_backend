@@ -56,12 +56,16 @@ public class OperatiponController extends BaseController {
         @ApiImplicitParam(name = "optName", value = "工序字典名称", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType) {
+    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType, String branchCode) {
         try {
             
             QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
-            if (!StringUtils.isNullOrEmpty(routerId)) {
-                queryWrapper.eq("router_id", routerId);
+            if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                queryWrapper.eq("tenant_id", tenantId);
+            }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.like("branch_code", "%" + branchCode + "%");
             }
             if (!StringUtils.isNullOrEmpty(optCode)) {
                 queryWrapper.eq("opt_code", optCode);
