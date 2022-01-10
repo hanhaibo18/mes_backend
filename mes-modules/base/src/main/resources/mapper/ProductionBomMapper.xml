@@ -62,13 +62,13 @@
         pb.version_no, pb.material_no, product.product_name, product.object_type,
         product.material_type product_type, product.weight, product.texture, pb.number, product.unit,
         pb.track_type, pb.product_source, pb.is_key_part, pb.is_need_picking,
-        pb.is_edge_store, pb.is_check, pb.remark, pb.optId, pb.optName 
+        pb.is_edge_store, pb.is_check, pb.remark, pb.opt_id, pb.opt_name
         from mes_base.base_production_bom pb
         LEFT join mes_base.base_product product on
         pb.drawing_no = product.drawing_no and pb.material_no = product.material_no
         and pb.tenant_id = product.tenant_id
         Left join base_production_bom pb2 on
-        pb.main_drawing_no = pb2.id
+        pb.main_drawing_no = pb2.drawing_no
         ${ew.customSqlSegment}
     </select>
 

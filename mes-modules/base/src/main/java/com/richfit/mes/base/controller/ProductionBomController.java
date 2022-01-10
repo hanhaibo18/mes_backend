@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -185,8 +186,19 @@ public class ProductionBomController extends BaseController {
         } else {
             query.eq("pb.main_drawing_no", mainDrawingNo);
         }
-        query.eq("pb.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
+        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
+        boolean isAdmin = false;
+        for (GrantedAuthority authority : authorities) {
+            //超级管理员 ROLE_12345678901234567890000000000000
+            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+                isAdmin = true;
+                break;
+            }
+        }
+        if(!isAdmin) {
+            query.eq("pb.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
                 if("desc".equals(order)){
@@ -224,7 +236,18 @@ public class ProductionBomController extends BaseController {
         } else {
             query.eq("main_drawing_no", mainDrawingNo);
         }
-        query.eq("pb.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
+        boolean isAdmin = false;
+        for (GrantedAuthority authority : authorities) {
+            //超级管理员 ROLE_12345678901234567890000000000000
+            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+                isAdmin = true;
+                break;
+            }
+        }
+        if(!isAdmin) {
+            query.eq("pb.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
         query.orderByDesc("pb.modify_time");
 
         return CommonResult.success(productionBomService.getProductionBomHistory(new Page<ProductionBom>(page, limit), query), BOM_SUCCESS_MESSAGE);
@@ -327,11 +350,11 @@ public class ProductionBomController extends BaseController {
 
     @ApiOperation(value = "导出产品Bom", notes = "通过Excel文档导出产品Bom")
     @GetMapping("/export_excel")
-    public void exportExcel(String id, HttpServletResponse rsp) {
+    public void exportExcel(String drawingNo, HttpServletResponse rsp) {
         try {
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
-            if(!StringUtils.isNullOrEmpty(id)){
-                query.eq("pb.id", id).or().eq("pb.main_drawing_no", id);
+            if(!StringUtils.isNullOrEmpty(drawingNo)){
+                query.eq("pb.drawing_no", drawingNo).or().eq("pb.main_drawing_no", drawingNo);
             }
 
             List<ProductionBom> list = productionBomService.getProductionBomList(query);

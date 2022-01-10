@@ -6,12 +6,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.ProductService;
+import com.richfit.mes.base.service.ProductionBomService;
+import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -50,6 +53,12 @@ public class ProductController extends BaseController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductionBomService productionBomService;
+
+    @Autowired
+    private RouterService routerService;
 
     @ApiOperation(value = "新增物料", notes = "新增物料信息")
     @ApiImplicitParam(name = "product", value = "物料", required = true, dataType = "Branch", paramType = "path")
@@ -149,8 +158,35 @@ public class ProductController extends BaseController {
             queryWrapper.orderByDesc("p.modify_time");
         }
 
+        IPage<Product> result = productService.selectProduct(new Page<Product>(page, limit), queryWrapper);
+        List<Product> data = result.getRecords();
+        result.setRecords(findBomAndRouterByProduct(data));
+        return CommonResult.success(result, PRODUCT_SUCCESS_MESSAGE);
+    }
 
-        return CommonResult.success(productService.selectProduct(new Page<Product>(page, limit), queryWrapper), PRODUCT_SUCCESS_MESSAGE);
+    private List<Product> findBomAndRouterByProduct(List<Product> data){
+        List<Product> newData = new ArrayList<>();
+        for (Product product : data) {
+            Product newProduct = product;
+            // 查询物料是否有对应的BOM
+            QueryWrapper<ProductionBom> bomQuery = new QueryWrapper<>();
+            // pb.drawing_no = p.drawing_no  and pb.is_current = '1' and pb.grade = 'H' and main_drawing_no  is NULL
+            bomQuery.eq("drawing_no", product.getDrawingNo());
+            bomQuery.eq("is_current", "1");
+            bomQuery.eq("grade", "H");
+            bomQuery.isNull("main_drawing_no");
+            // 查询物料是否有对应的工艺
+            // p.drawing_no = r.router_no and p.tenant_id = r.tenant_id and r.status = 1
+            QueryWrapper<Router> routerQuery = new QueryWrapper<>();
+            routerQuery.eq("router_no", product.getDrawingNo());
+            routerQuery.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            routerQuery.eq("is_active", "1");
+
+            newProduct.setHaveBom(productionBomService.count(bomQuery));
+            newProduct.setHaveRouter(routerService.count(routerQuery));
+            newData.add(newProduct);
+        }
+        return newData;
     }
 
     @ApiOperation(value = "查询物料", notes = "根据输入内容查询物料")
