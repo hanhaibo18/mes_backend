@@ -78,8 +78,8 @@ public class SequenceController extends BaseController {
             if (!StringUtils.isNullOrEmpty(optName)) {
                 queryWrapper.eq("opt_name", optName);
             }
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-             queryWrapper.orderByAsc("opt_order");
+           // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+             queryWrapper.orderByAsc("technology_sequence");
             IPage<Sequence> routers = sequenceService.page(new Page<Sequence>(page, limit),queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
@@ -171,8 +171,8 @@ public class SequenceController extends BaseController {
     public CommonResult<List<Sequence>> getByRouterId(String routerId) {
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
         queryWrapper.eq("router_id", routerId);
-         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.orderByAsc("opt_order");
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.orderByAsc("technology_sequence");
         List<Sequence> result = sequenceService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
