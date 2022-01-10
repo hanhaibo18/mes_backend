@@ -74,11 +74,11 @@ public class RouterController extends BaseController {
                 queryWrapper.like("branch_code", "%" + branchCode + "%");
             }
             if (!StringUtils.isNullOrEmpty(status)) {
-                queryWrapper.in("status", status.split(","));
+                queryWrapper.in("status", status);
             } else {
-                queryWrapper.in("status", "0,1".split(","));
+                queryWrapper.in("is_active", "0,1".split(","));
             }
-            if (null != SecurityUtils.getCurrentUser()) {
+            if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
                 String tenantId = SecurityUtils.getCurrentUser().getTenantId();
                 queryWrapper.eq("tenant_id", tenantId);
             }
@@ -207,13 +207,13 @@ public class RouterController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
-            queryWrapper.in("status", status.split(","));
+          //  queryWrapper.in("status", status.split(","));
         } else {
-            queryWrapper.in("status", "0,1".split(","));
+         //   queryWrapper.in("status", "0,1".split(","));
         }
         if (null != SecurityUtils.getCurrentUser()) {
-            String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+           // String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+         //   queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         List<Router> result = routerService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
