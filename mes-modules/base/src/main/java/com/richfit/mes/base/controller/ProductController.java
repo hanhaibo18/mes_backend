@@ -174,6 +174,7 @@ public class ProductController extends BaseController {
             bomQuery.eq("drawing_no", product.getDrawingNo());
             bomQuery.eq("is_current", "1");
             bomQuery.eq("grade", "H");
+            bomQuery.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             bomQuery.isNull("main_drawing_no");
             // 查询物料是否有对应的工艺
             // p.drawing_no = r.router_no and p.tenant_id = r.tenant_id and r.status = 1

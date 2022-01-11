@@ -162,7 +162,7 @@ public class ProductionBomController extends BaseController {
 
     @ApiOperation(value = "分页查询产品Bom", notes = "根据图号、状态分页查询产品Bom")
     @GetMapping("/production_bom")
-    public CommonResult<IPage<ProductionBom>> getProductionBom(String id,String materialNo,String drawingNo, String status, String mainDrawingNo, String order , String orderCol, int page, int limit){
+    public CommonResult<IPage<ProductionBom>> getProductionBom(String id,String materialNo,String drawingNo, String status, String mainDrawingNo, String branchCode, String order , String orderCol, int page, int limit){
 
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
          if(!StringUtils.isNullOrEmpty(id)){
@@ -185,6 +185,9 @@ public class ProductionBomController extends BaseController {
             query.and(wrapper -> wrapper.isNull("pb.main_drawing_no").or().eq("pb.main_drawing_no", ""));
         } else {
             query.eq("pb.main_drawing_no", mainDrawingNo);
+        }
+        if(!StringUtils.isNullOrEmpty(branchCode)){
+            query.eq("pb.branch_code", branchCode);
         }
 
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
