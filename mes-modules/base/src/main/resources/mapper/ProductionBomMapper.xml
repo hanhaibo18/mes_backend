@@ -30,6 +30,10 @@
         <result property="remark" column="remark"/>
         <result property="optId" column="opt_id"/>
         <result property="optName" column="opt_name"/>
+        <result property="isNumFrom" column="is_num_from"/>
+        <result property="bomKey" column="bom_key"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="orderNo" column="order_no"/>
         <!-- association：配置的一对一属性 -->
         <association property="product" javaType="com.richfit.mes.common.model.base.Product">
             <result property="materialDate" column="material_date"/>
@@ -58,7 +62,7 @@
     </select>
 
     <select id="getProductionBomList" resultType="com.richfit.mes.common.model.base.ProductionBom">
-        select pb.id, pb.branch_code, pb.grade, pb2.drawing_no main_drawing_no, pb.drawing_no,
+        select pb.id, pb.branch_code, pb.grade, pb.main_drawing_no, pb.drawing_no, pb.is_num_from,
         pb.version_no, pb.material_no, product.product_name, product.object_type,
         product.material_type product_type, product.weight, product.texture, pb.number, product.unit,
         pb.track_type, pb.product_source, pb.is_key_part, pb.is_need_picking,
@@ -66,9 +70,6 @@
         from mes_base.base_production_bom pb
         LEFT join mes_base.base_product product on
         pb.drawing_no = product.drawing_no and pb.material_no = product.material_no
-        and pb.tenant_id = product.tenant_id
-        Left join base_production_bom pb2 on
-        pb.main_drawing_no = pb2.drawing_no
         ${ew.customSqlSegment}
     </select>
 

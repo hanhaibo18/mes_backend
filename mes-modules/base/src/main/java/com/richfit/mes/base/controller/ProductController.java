@@ -183,8 +183,15 @@ public class ProductController extends BaseController {
             routerQuery.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             routerQuery.eq("is_active", "1");
 
+            Router router = routerService.getOne(routerQuery);
+
             newProduct.setHaveBom(productionBomService.count(bomQuery));
-            newProduct.setHaveRouter(routerService.count(routerQuery));
+            if(router != null && !StringUtils.isNullOrEmpty(router.getId())){
+                newProduct.setHaveRouter(1);
+                if(!StringUtils.isNullOrEmpty(router.getType())){
+                    newProduct.setRouterType(Integer.parseInt(router.getType()));
+                }
+            }
             newData.add(newProduct);
         }
         return newData;
@@ -279,15 +286,15 @@ public class ProductController extends BaseController {
         try {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
             if(!StringUtils.isNullOrEmpty(drawingNo)){
-                queryWrapper.like("p.drawing_no", "%" + drawingNo + "%");
+                queryWrapper.like("drawing_no", "%" + drawingNo + "%");
             }
             if(!StringUtils.isNullOrEmpty(materialNo)){
-                queryWrapper.like("p.material_no", "%" + materialNo + "%");
+                queryWrapper.like("material_no", "%" + materialNo + "%");
             }
             if(!StringUtils.isNullOrEmpty(materialType)){
-                queryWrapper.eq("p.material_type", materialType);
+                queryWrapper.eq("material_type", materialType);
             }
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.orderByDesc("create_time");
             List<Product> list = productService.list(queryWrapper);
 

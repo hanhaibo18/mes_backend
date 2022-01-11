@@ -163,4 +163,12 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
      */
     public String optName;
 
+    public String isNumFrom;
+
+    public String bomKey;
+
+    public String sourceType;
+
+    public Integer orderNo;
+
 }

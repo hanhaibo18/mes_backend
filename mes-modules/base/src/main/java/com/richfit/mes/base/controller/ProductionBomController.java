@@ -162,7 +162,7 @@ public class ProductionBomController extends BaseController {
 
     @ApiOperation(value = "分页查询产品Bom", notes = "根据图号、状态分页查询产品Bom")
     @GetMapping("/production_bom")
-    public CommonResult<IPage<ProductionBom>> getProductionBom(String id,String materialNo,String drawingNo, String status, String mainDrawingNo, String branchCode, String order , String orderCol, int page, int limit){
+    public CommonResult<IPage<ProductionBom>> getProductionBom(String id,String materialNo,String drawingNo, String status, String mainDrawingNo, String branchCode, String order , String orderCol, String bomKey, int page, int limit){
 
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
          if(!StringUtils.isNullOrEmpty(id)){
@@ -189,6 +189,9 @@ public class ProductionBomController extends BaseController {
         if(!StringUtils.isNullOrEmpty(branchCode)){
             query.eq("pb.branch_code", branchCode);
         }
+        if(!StringUtils.isNullOrEmpty(bomKey)){
+            query.eq("pb.bom_key", bomKey);
+        }
 
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
         boolean isAdmin = false;
@@ -213,7 +216,11 @@ public class ProductionBomController extends BaseController {
                 query.orderByDesc("pb." + StrUtil.toUnderlineCase(orderCol));
             }
         } else {
-            query.orderByDesc("pb.modify_time");
+            if(!StringUtils.isNullOrEmpty(bomKey)){
+                query.orderByAsc("pb.order_no");
+            } else {
+                query.orderByDesc("pb.modify_time");
+            }
         }
 
 
@@ -224,7 +231,7 @@ public class ProductionBomController extends BaseController {
 
     @ApiOperation(value = "分页查询产品Bom历史版本", notes = "根据图号查询产品Bom历史版本")
     @GetMapping("/production_bom/history")
-    public CommonResult<IPage<ProductionBom>> getProductionBomHistory(String materialNo,String drawingNo, String mainDrawingNo, int page, int limit){
+    public CommonResult<IPage<ProductionBom>> getProductionBomHistory(String materialNo,String drawingNo, String mainDrawingNo,String branchCode, String bomKey, int page, int limit){
 
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
         if(!StringUtils.isNullOrEmpty(materialNo)){
@@ -238,6 +245,12 @@ public class ProductionBomController extends BaseController {
             query.and(wrapper -> wrapper.isNull("main_drawing_no").or().eq("main_drawing_no", ""));
         } else {
             query.eq("main_drawing_no", mainDrawingNo);
+        }
+        if(!StringUtils.isNullOrEmpty(branchCode)){
+            query.eq("pb.branch_code", branchCode);
+        }
+        if(!StringUtils.isNullOrEmpty(bomKey)){
+            query.eq("pb.bom_key", bomKey);
         }
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
         boolean isAdmin = false;
@@ -353,12 +366,13 @@ public class ProductionBomController extends BaseController {
 
     @ApiOperation(value = "导出产品Bom", notes = "通过Excel文档导出产品Bom")
     @GetMapping("/export_excel")
-    public void exportExcel(String drawingNo, HttpServletResponse rsp) {
+    public void exportExcel(String bomKey, HttpServletResponse rsp) {
         try {
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
-            if(!StringUtils.isNullOrEmpty(drawingNo)){
-                query.eq("pb.drawing_no", drawingNo).or().eq("pb.main_drawing_no", drawingNo);
+            if(!StringUtils.isNullOrEmpty(bomKey)){
+                query.eq("pb.bom_key", bomKey);
             }
+            query.orderByAsc("pb.order_no");
 
             List<ProductionBom> list = productionBomService.getProductionBomList(query);
 
@@ -396,9 +410,9 @@ public class ProductionBomController extends BaseController {
                 result.add(pb);
             }
 
-            String[] columnHeaders = {"车间", "等级", "上级产品图号", "零部件图号", "版本号", "SAP物料编码", "零部件名称", "类型", "物料类型", "重量(Kg)", "材质", "用量", "单位", "跟踪方式", "产品编号来源", "是否仓储领料", "是否关键件", "实物配送区分", "是否齐套检查" ,"备注"};
+            String[] columnHeaders = {"车间", "等级", "上级产品图号", "零部件图号", "版本号", "SAP物料编码", "零部件名称",  "物料类型", "重量(Kg)", "材质", "用量", "单位", "跟踪方式", "是否编号来源", "是否关键件", "是否仓储领料",  "实物配送区分", "是否齐套检查" ,"备注"};
 
-            String[] fieldNames = {"branchCode","grade","mainDrawingNo","drawingNo","versionNo","materialNo","productName","objectType", "productType","weight","texture","number","unit","trackType", "productSource","isKeyPart","isNeedPicking","isEdgeStore","isCheck","remark"};
+            String[] fieldNames = {"branchCode","grade","mainDrawingNo","drawingNo","versionNo","materialNo","productName","productType","weight","texture","number","unit","trackType", "isNumFrom","isKeyPart","isNeedPicking","isEdgeStore","isCheck","remark"};
 
             //export
             ExcelUtils.exportExcel(fileName, result , columnHeaders, fieldNames, rsp);
