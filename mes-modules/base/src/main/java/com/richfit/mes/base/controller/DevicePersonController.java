@@ -48,7 +48,7 @@ public class DevicePersonController extends BaseController {
             @ApiImplicitParam(name="userId",value="人员ID",required=true,paramType="query",dataType="string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<DevicePerson>> page(int page, int limit,String deviceId, String userId) {
+    public CommonResult<IPage<DevicePerson>> page(int page, int limit,String deviceId, String userId, String tenantId) {
         try {
              QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<DevicePerson>();
         if(!StringUtils.isNullOrEmpty(userId)){
@@ -57,6 +57,10 @@ public class DevicePersonController extends BaseController {
           if(!StringUtils.isNullOrEmpty(deviceId)){
             queryWrapper.eq("device_id", deviceId);
         }
+           if(!StringUtils.isNullOrEmpty(tenantId)){
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+          
           queryWrapper.orderByAsc("order_no");
             IPage<DevicePerson> devices = devicePersonService.selectPage(new Page<DevicePerson>(page, limit),queryWrapper);
             return CommonResult.success(devices);
