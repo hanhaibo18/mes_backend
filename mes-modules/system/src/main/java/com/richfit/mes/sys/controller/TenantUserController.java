@@ -54,12 +54,6 @@ public class TenantUserController extends BaseController {
 
         //TODO 租户可创建用户数限制
         TenantUser tenantUser = tenantUserDto.toPo(TenantUser.class);
-        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
-        String orgId = tenantUser.getOrgId();
-        queryWrapper.eq("tenant_code", orgId);
-        Tenant tenant = tenantService.getOne(queryWrapper);
-
-        tenantUser.setTenantId(tenant.getId());
         log.debug("save tenantUser:[{}]",tenantUser);
         return CommonResult.success(tenantUserService.add(tenantUser));
     }

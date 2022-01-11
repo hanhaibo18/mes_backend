@@ -45,12 +45,14 @@ public class BranchController extends BaseController {
         } else {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
             queryWrapper.eq("branch_code", branch.getBranchCode());
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            if(StringUtils.isNullOrEmpty(branch.getTenantId())){
+                branch.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            }
+            queryWrapper.eq("tenant_id", branch.getTenantId());
             Branch oldBranch = branchService.getOne(queryWrapper);
             if(oldBranch != null && !StringUtils.isNullOrEmpty(oldBranch.getId())){
                 return CommonResult.failed("组织结构编号已存在！");
             } else {
-                branch.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 branch.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 branch.setCreateTime(new Date());
                 boolean bool = branchService.save(branch);
