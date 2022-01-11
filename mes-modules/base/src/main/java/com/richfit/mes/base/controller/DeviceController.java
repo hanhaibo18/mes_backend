@@ -55,7 +55,7 @@ public class DeviceController extends BaseController {
             @ApiImplicitParam(name="name",value="名称",required=true,paramType="query",dataType="string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Device>> page(int page, int limit,String code, String name, String parentId, String type) {
+    public CommonResult<IPage<Device>> page(int page, int limit,String code, String name, String parentId, String type, String branchCode) {
         try {
              QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
         if(!StringUtils.isNullOrEmpty(parentId)){
@@ -70,8 +70,12 @@ public class DeviceController extends BaseController {
          if(!StringUtils.isNullOrEmpty(type)){
             queryWrapper.like("type", "%" + type + "%");
         }
-         if(null!=SecurityUtils.getCurrentUser()) {
-         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+         if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.like("branch_code", "%" + branchCode + "%");
+            }
+        if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                queryWrapper.eq("tenant_id", tenantId);
          }
          queryWrapper.orderByDesc(new String[] {"type","create_time"});
             IPage<Device> devices = deviceService.page(new Page<Device>(page, limit),queryWrapper);
@@ -130,7 +134,7 @@ public class DeviceController extends BaseController {
     @ApiOperation(value = "查询设备", notes = "根据编码获得设备")
     @ApiImplicitParam(name = "deviceCode", value = "编码", required = true, dataType = "String", paramType = "path")
     @GetMapping("/find")
-    public CommonResult<List<Device>> find(String id,String code, String name, String parentId, String type){
+    public CommonResult<List<Device>> find(String id,String code, String name, String parentId, String type, String branchCode){
         QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
         if(!StringUtils.isNullOrEmpty(id)){
             queryWrapper.eq("id", id);
@@ -148,9 +152,13 @@ public class DeviceController extends BaseController {
         if(!StringUtils.isNullOrEmpty(type)){
             queryWrapper.like("type", "%" + type + "%");
         }
-          if(null!=SecurityUtils.getCurrentUser()) {
-         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-          }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.like("branch_code", "%" + branchCode + "%");
+            }
+        if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                queryWrapper.eq("tenant_id", tenantId);
+         }
         List<Device> result = deviceService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
@@ -158,12 +166,16 @@ public class DeviceController extends BaseController {
     @ApiOperation(value = "查询全部设备", notes = "查询全部设备")
     @ApiImplicitParam(name = "deviceCode", value = "编码", required = true, dataType = "String", paramType = "path")
     @GetMapping("/findAll")
-    public CommonResult<List<Map<String, Object>>> findAllDevice(){
+    public CommonResult<List<Map<String, Object>>> findAllDevice(String branchCode){
         List<Map<String, Object>> result = new ArrayList<>();
         QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
-        if(null!=SecurityUtils.getCurrentUser()) {
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        }
+         if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.like("branch_code", "%" + branchCode + "%");
+            }
+        if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                queryWrapper.eq("tenant_id", tenantId);
+         }
         List<Device> list = deviceService.list(queryWrapper);
 
         List<Device> parentList = list.stream().filter(device -> StringUtils.isNullOrEmpty(device.getParentId())).collect(Collectors.toList());
