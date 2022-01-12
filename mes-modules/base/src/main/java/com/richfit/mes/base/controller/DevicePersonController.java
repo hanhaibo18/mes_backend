@@ -112,7 +112,7 @@ public class DevicePersonController extends BaseController {
     @ApiOperation(value = "查询设备人员记录", notes = "根据编码获得设备人员记录")
     @ApiImplicitParam(name = "deviceId", value = "设备ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/find")
-    public CommonResult<List<DevicePerson>> find(String deviceId, String userId, String branchCode,String isDefault) {
+    public CommonResult<List<DevicePerson>> find(String deviceId, String userId, String branchCode, String tenantId,String isDefault) {
         
              QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<DevicePerson>();
         if(!StringUtils.isNullOrEmpty(userId)){
@@ -123,6 +123,9 @@ public class DevicePersonController extends BaseController {
         }
           if(!StringUtils.isNullOrEmpty(branchCode)){
             queryWrapper.like("branch_code", "%" + branchCode + "%");
+        } 
+            if(!StringUtils.isNullOrEmpty(tenantId)){
+            queryWrapper.like("tenant_id", "%" + tenantId + "%");
         } 
                if (!StringUtils.isNullOrEmpty(isDefault)) {
                 queryWrapper.eq("is_default", Integer.parseInt(isDefault));
