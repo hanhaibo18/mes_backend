@@ -95,8 +95,7 @@ public class SequenceController extends BaseController {
             return CommonResult.failed("编码不能为空！");
         } else {
              if(null!=SecurityUtils.getCurrentUser()) {
-              String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-            sequence.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            
             sequence.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
            
             sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
@@ -122,8 +121,7 @@ public class SequenceController extends BaseController {
         } else {
             if(null!=SecurityUtils.getCurrentUser()) {
              
-            sequence.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        
+       
            
             sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
          
@@ -171,7 +169,6 @@ public class SequenceController extends BaseController {
     public CommonResult<List<Sequence>> getByRouterId(String routerId) {
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
         queryWrapper.eq("router_id", routerId);
-        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("technology_sequence");
         List<Sequence> result = sequenceService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -185,7 +182,7 @@ public class SequenceController extends BaseController {
            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")        
     }) 
     @GetMapping("/getByRouterNo")
-    public CommonResult<List<Sequence>> getByRouterNo(String routerNo, String branchCode, String optId) {
+    public CommonResult<List<Sequence>> getByRouterNo(String routerNo, String branchCode,String tenantId, String optId) {
 
        QueryWrapper<Router> query = new QueryWrapper<Router>();
 
@@ -195,7 +192,9 @@ public class SequenceController extends BaseController {
        if (!StringUtils.isNullOrEmpty(branchCode)) {
            query.like("branch_code", "%" + branchCode + "%");
        }
-        query.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+       if (!StringUtils.isNullOrEmpty(tenantId)) {
+           query.like("tenant_id", "%" + tenantId + "%");
+       }
            query.in("status", "1");
        List<Router> routers = routerService.list(query);
        if(routers.size() > 0){
@@ -231,7 +230,7 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "导入工序", notes = "根据Excel文档导入工序")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
-    public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+    public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file,String tenantId,String branchCode) {
         CommonResult result = null;
         java.lang.reflect.Field[] fields = Sequence.class.getDeclaredFields();
         //封装证件信息实体类
@@ -252,10 +251,10 @@ public class SequenceController extends BaseController {
             FileUtils.delete(excelFile);
             String msg="";
             for (int i = 0; i < list.size(); i++) {
-                 
+                  list.get(i).setTenantId(tenantId);
+                  list.get(i).setBranchCode(branchCode);
                  if (null != SecurityUtils.getCurrentUser()) {
-                    list.get(i).setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-
+                   
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 }
                  list.get(i).setStatus("1");
