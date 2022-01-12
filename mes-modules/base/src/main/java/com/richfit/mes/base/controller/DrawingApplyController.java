@@ -7,13 +7,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.DrawingApplyService;
-import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.DrawingApply;
-import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -65,7 +63,7 @@ public class DrawingApplyController extends BaseController {
             if(oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())){
                 return CommonResult.failed("已有该图号的申请！");
             } else {
-                drawingApply.setStatus(0);
+                drawingApply.setStatus("0");
                 drawingApply.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 drawingApply.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 boolean bool = drawingApplyService.save(drawingApply);
@@ -94,7 +92,7 @@ public class DrawingApplyController extends BaseController {
                     return CommonResult.failed("已有该图号的申请！");
                 }
             }
-            drawingApply.setStatus(0);
+            drawingApply.setStatus("0");
             drawingApply.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             drawingApply.setModifyTime(new Date());
             boolean bool = drawingApplyService.updateById(drawingApply);
@@ -192,7 +190,7 @@ public class DrawingApplyController extends BaseController {
 
             list = list.stream().filter(item -> item.getDrawingNo() != null).collect(Collectors.toList());
             list.forEach(item->{
-                item.setStatus(0);
+                item.setStatus("0");
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());

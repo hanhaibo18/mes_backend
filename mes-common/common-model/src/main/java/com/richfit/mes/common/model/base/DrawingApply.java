@@ -33,7 +33,7 @@ public class DrawingApply extends BaseEntity<DrawingApply> {
     /**
      * 状态 0待审核 1通过 2驳回
      */
-    private Integer status;
+    private String status;
 
     /**
      * 描述
@@ -80,5 +80,7 @@ public class DrawingApply extends BaseEntity<DrawingApply> {
      */
     protected Date reviewTime;
 
+    private String datagroup;
 
+    private String needQuery;
 }
