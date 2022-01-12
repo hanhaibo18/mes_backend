@@ -60,12 +60,12 @@ public class RouterController extends BaseController {
         @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String status) {
+    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode,String tenantId, String status) {
         try {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.eq("router_no", routerNo);
+            if (!StringUtils.isNullOrEmpty(routerNo)) {               
+                queryWrapper.like("router_no", "%" + routerNo + "%");                
             }
             if (!StringUtils.isNullOrEmpty(routerName)) {
                 queryWrapper.like("router_name", "%" + routerName + "%");
@@ -78,9 +78,9 @@ public class RouterController extends BaseController {
             } else {
                 queryWrapper.in("is_active", "0,1".split(","));
             }
-            if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                queryWrapper.eq("tenant_id", tenantId);
+            
+           if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
             }
             IPage<Router> routers = routerService.page(new Page<Router>(page, limit), queryWrapper);
             return CommonResult.success(routers);
@@ -100,7 +100,7 @@ public class RouterController extends BaseController {
         //如果不是历史版本，需要将历史版本先删除
 
         if (null != router && !router.getStatus().equals("2")) {
-            CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1");
+            CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1", router.getTenantId());
             if (result.getData().size() > 0) {
                 //将当前激活的工艺状态设置为历史状态
                 for (int i = 0; i < result.getData().size(); i++) {
@@ -156,17 +156,18 @@ public class RouterController extends BaseController {
             router.setModifyTime(new Date());
             //禁止或激活状态无法直接修改为历史状态;历史状态修改为禁止或启动状态，要把其他的工艺状态设置为历史
             if (router.getStatus().equals("2")) {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1");
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1", router.getTenantId());
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
             } else {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1");
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1", router.getTenantId());
                 if (result.getData().size() > 0) {
                     //将当前激活的工艺状态设置为历史状态
                     for (int i = 0; i < result.getData().size(); i++) {
                         Router oldRouter = result.getData().get(i);
                         oldRouter.setStatus("2");
+                        oldRouter.setIsActive("2");
                         routerService.updateById(oldRouter);
                     }
                 }
@@ -189,7 +190,7 @@ public class RouterController extends BaseController {
         @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/find")
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String status) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode,String tenantId, String status) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -207,13 +208,12 @@ public class RouterController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
-          //  queryWrapper.in("status", status.split(","));
-        } else {
-         //   queryWrapper.in("status", "0,1".split(","));
-        }
-        if (null != SecurityUtils.getCurrentUser()) {
-           // String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-         //   queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                queryWrapper.in("status", status);
+            } else {
+                queryWrapper.in("is_active", "0,1".split(","));
+            }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
         }
         List<Router> result = routerService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -244,7 +244,7 @@ public class RouterController extends BaseController {
         @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/getByRouterNo")
-    public CommonResult<Router> getByRouterNo(String routerNo, String branchCode) {
+    public CommonResult<Router> getByRouterNo(String routerNo, String branchCode,String tenantId) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
 
         if (!StringUtils.isNullOrEmpty(routerNo)) {
@@ -253,9 +253,10 @@ public class RouterController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.like("branch_code", "%" + branchCode + "%");
         }
-        queryWrapper.in("status", "1");
-        if (null != SecurityUtils.getCurrentUser()) {
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.in("is_active", "0,1".split(","));
+        
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
         }
         List<Router> routers = routerService.list(queryWrapper);
         if (routers.size() > 0) {
@@ -276,7 +277,7 @@ public class RouterController extends BaseController {
             Router r = this.getByRouterId(ids[i]).getData();
             //如果不是历史版本，需要将历史版本先删除
             if (null != r && !r.getStatus().equals("2")) {
-                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2").getData();
+                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2",r.getTenantId()).getData();
                 for (int j = 0; j < routers.size(); j++) {
                     routerService.removeById(routers.get(j).getId());
                 }
@@ -291,7 +292,7 @@ public class RouterController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "query")
     @PostMapping("/import_excel")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult importExcel(@RequestParam("file") MultipartFile file) {
+    public CommonResult importExcel(@RequestParam("file") MultipartFile file,String tenantId,String branchCode) {
         CommonResult result = null;
         //封装证件信息实体类
         java.lang.reflect.Field[] fields = Router.class.getDeclaredFields();
@@ -311,9 +312,10 @@ public class RouterController extends BaseController {
             List<Router> list = ExcelUtils.importExcel(excelFile, Router.class, fieldNames, 1, 0, 0, tempName.toString());
             FileUtils.delete(excelFile);
             for (int i = 0; i < list.size(); i++) {
-
+                list.get(i).setTenantId(tenantId);
+                list.get(i).setBranchCode(branchCode);
                 if (null != SecurityUtils.getCurrentUser()) {
-                    list.get(i).setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                  
 
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 }
