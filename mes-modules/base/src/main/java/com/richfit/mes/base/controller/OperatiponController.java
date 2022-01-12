@@ -56,13 +56,13 @@ public class OperatiponController extends BaseController {
         @ApiImplicitParam(name = "optName", value = "工序字典名称", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType, String branchCode) {
+    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType, String branchCode, String tenantId) {
         try {
             
             QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
-            if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                queryWrapper.eq("tenant_id", tenantId);
+            
+            if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.like("branch_code", "%" + branchCode + "%");
@@ -121,7 +121,7 @@ public class OperatiponController extends BaseController {
     @ApiOperation(value = "查询工序字典", notes = "根据编码获得工序字典")
     @ApiImplicitParam(name = "operatiponCode", value = "编码", required = true, dataType = "String", paramType = "path")
     @GetMapping("/find")
-    public CommonResult<List<Operatipon>> find(String id,String optCode, String optName,String routerId) {
+    public CommonResult<List<Operatipon>> find(String id,String optCode, String optName,String routerId,String branchCode, String tenantId) {
         QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
         if(!StringUtils.isNullOrEmpty(id)){
             queryWrapper.eq("id", id);
@@ -137,7 +137,13 @@ public class OperatiponController extends BaseController {
         }
             if(!StringUtils.isNullOrEmpty(routerId)){
             queryWrapper.like("router_id", "%" + routerId + "%");
-        }    
+        }  
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+            }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.like("branch_code", "%" + branchCode + "%");
+            }
          queryWrapper.orderByAsc("opt_order");
         List<Operatipon> result = operatiponService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -145,15 +151,18 @@ public class OperatiponController extends BaseController {
 
     @ApiOperation(value = "查询工序关联设备", notes = "根据工序ID获得查询工序关联设备")
     @GetMapping("/findDeviceRelation")
-    public CommonResult<List<OperationDevice>> findDeviceRelation(String optId) {
+    public CommonResult<List<OperationDevice>> findDeviceRelation(String optId,String branchCode, String tenantId) {
         QueryWrapper<OperationDevice> queryWrapper = new QueryWrapper<OperationDevice>();
         if(!StringUtils.isNullOrEmpty(optId)){
             queryWrapper.eq("operation_id", optId);
         }
 
-        if(null != SecurityUtils.getCurrentUser()) {
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+            }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.like("branch_code", "%" + branchCode + "%");
+            }
 
         List<OperationDevice> result = operationDeviceService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -161,7 +170,7 @@ public class OperatiponController extends BaseController {
 
     @ApiOperation(value = "保存工序关联设备", notes = "根据工序ID和设备ID保存关联关系")
     @PostMapping("/saveDeviceRelation")
-    public CommonResult<Boolean> saveDeviceRelation(@RequestParam String optId, @RequestBody String[] deviceIds) {
+    public CommonResult<Boolean> saveDeviceRelation(@RequestParam String optId, @RequestBody String[] deviceIds,String branchCode, String tenantId) {
         if(StringUtils.isNullOrEmpty(optId)){
             return CommonResult.failed("必须选择工序！");
         }
@@ -174,7 +183,8 @@ public class OperatiponController extends BaseController {
             OperationDevice operationDevice = new OperationDevice();
             operationDevice.setOperationId(optId);
             operationDevice.setDeviceId(deviceId);
-            operationDevice.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            operationDevice.setTenantId(tenantId);
+            operationDevice.setBranchCode(branchCode);
             operationDevice.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
             data.add(operationDevice);
         }
