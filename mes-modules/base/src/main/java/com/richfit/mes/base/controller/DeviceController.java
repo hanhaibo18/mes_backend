@@ -55,7 +55,7 @@ public class DeviceController extends BaseController {
             @ApiImplicitParam(name="name",value="名称",required=true,paramType="query",dataType="string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Device>> page(int page, int limit,String code, String name, String parentId, String type, String branchCode) {
+    public CommonResult<IPage<Device>> page(int page, int limit,String code, String name, String parentId, String type, String branchCode, String tenantId) {
         try {
              QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
         if(!StringUtils.isNullOrEmpty(parentId)){
@@ -72,11 +72,10 @@ public class DeviceController extends BaseController {
         }
          if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.like("branch_code", "%" + branchCode + "%");
-            }
-        if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                queryWrapper.eq("tenant_id", tenantId);
-         }
+        }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+        }
          queryWrapper.orderByDesc(new String[] {"type","create_time"});
             IPage<Device> devices = deviceService.page(new Page<Device>(page, limit),queryWrapper);
             return CommonResult.success(devices);
@@ -93,7 +92,6 @@ public class DeviceController extends BaseController {
             return CommonResult.failed("编码不能为空！");
         } else {
               if(null!=SecurityUtils.getCurrentUser()) {
-            device.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             device.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
            
             device.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
@@ -117,8 +115,7 @@ public class DeviceController extends BaseController {
         if(StringUtils.isNullOrEmpty(device.getName())){
             return CommonResult.failed("编码不能为空！");
         } else {
-              if(null!=SecurityUtils.getCurrentUser()) {
-            device.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+              if(null!=SecurityUtils.getCurrentUser()) {           
             device.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
               }
             device.setModifyTime(new Date());
@@ -134,7 +131,7 @@ public class DeviceController extends BaseController {
     @ApiOperation(value = "查询设备", notes = "根据编码获得设备")
     @ApiImplicitParam(name = "deviceCode", value = "编码", required = true, dataType = "String", paramType = "path")
     @GetMapping("/find")
-    public CommonResult<List<Device>> find(String id,String code, String name, String parentId, String type, String branchCode){
+    public CommonResult<List<Device>> find(String id,String code, String name, String parentId, String type, String branchCode, String tenantId){
         QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
         if(!StringUtils.isNullOrEmpty(id)){
             queryWrapper.eq("id", id);
@@ -155,10 +152,9 @@ public class DeviceController extends BaseController {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.like("branch_code", "%" + branchCode + "%");
             }
-        if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                queryWrapper.eq("tenant_id", tenantId);
-         }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+        }
         List<Device> result = deviceService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
@@ -166,16 +162,15 @@ public class DeviceController extends BaseController {
     @ApiOperation(value = "查询全部设备", notes = "查询全部设备")
     @ApiImplicitParam(name = "deviceCode", value = "编码", required = true, dataType = "String", paramType = "path")
     @GetMapping("/findAll")
-    public CommonResult<List<Map<String, Object>>> findAllDevice(String branchCode){
+    public CommonResult<List<Map<String, Object>>> findAllDevice(String branchCode,String tenantId){
         List<Map<String, Object>> result = new ArrayList<>();
         QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
          if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.like("branch_code", "%" + branchCode + "%");
             }
-        if (null != SecurityUtils.getCurrentUser()&&StringUtils.isNullOrEmpty(branchCode)) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                queryWrapper.eq("tenant_id", tenantId);
-         }
+       if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+        }
         List<Device> list = deviceService.list(queryWrapper);
 
         List<Device> parentList = list.stream().filter(device -> StringUtils.isNullOrEmpty(device.getParentId())).collect(Collectors.toList());
