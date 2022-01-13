@@ -18,5 +18,4 @@ import org.springframework.stereotype.Service;
 public class ProduceTrackHeadTemplateServiceImpl extends ServiceImpl<ProduceTrackHeadTemplateMapper, ProduceTrackHeadTemplate> implements ProduceTrackHeadTemplateService {
     @Autowired
     public ProduceTrackHeadTemplateMapper produceTrackHeadTemplateMapper;
-
 }

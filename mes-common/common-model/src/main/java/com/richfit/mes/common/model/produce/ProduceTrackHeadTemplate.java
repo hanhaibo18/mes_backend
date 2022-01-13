@@ -23,7 +23,6 @@ import lombok.experimental.Accessors;
 public class ProduceTrackHeadTemplate extends BaseEntity<ProduceTrackHeadTemplate> {
 
 
-
     @ApiModelProperty(value = "", required = false)
     @TableField("template_code")
     private String templateCode;

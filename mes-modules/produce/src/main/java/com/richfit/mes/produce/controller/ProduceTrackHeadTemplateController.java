@@ -34,7 +34,6 @@ public class ProduceTrackHeadTemplateController{
     @Autowired
     private ProduceTrackHeadTemplateService produceTrackHeadTemplateService;
 
-
     /**
      * 分页查询
      */
