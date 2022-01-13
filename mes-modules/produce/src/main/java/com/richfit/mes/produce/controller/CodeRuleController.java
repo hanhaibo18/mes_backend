@@ -52,7 +52,7 @@ public class CodeRuleController extends BaseController {
 
     @ApiOperation(value = "分页查询编码规则", notes = "根据编码、名称、分类分页查询编码规则")
     @GetMapping("/page")
-    public CommonResult<IPage<CodeRule>> pageCodeRule(String code, String name, int page, int limit) {
+    public CommonResult<IPage<CodeRule>> pageCodeRule(String code, String name, int page, int limit, String tenantId, String branchCode) {
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
@@ -60,8 +60,13 @@ public class CodeRuleController extends BaseController {
         if (!StringUtils.isNullOrEmpty(name)) {
             queryWrapper.eq("name", name);
         }
-
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
         return CommonResult.success(codeRuleService.page(new Page<CodeRule>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
@@ -72,7 +77,7 @@ public class CodeRuleController extends BaseController {
         @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/gerCode")
-    public CommonResult<CodeRule> gerCode(String code, String name, String[] inputs) {
+    public CommonResult<CodeRule> gerCode(String code, String name, String[] inputs, String tenantId, String branchCode) {
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
         if (!StringUtils.isNullOrEmpty(name)) {
             queryWrapper.eq("name", name);
@@ -81,7 +86,13 @@ public class CodeRuleController extends BaseController {
             queryWrapper.eq("code", code);
         }
         queryWrapper.eq("status", 1);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
         List<CodeRule> items = codeRuleService.list(queryWrapper);
         CodeRule item = null;
         if (items.size() > 0) {
@@ -94,7 +105,7 @@ public class CodeRuleController extends BaseController {
         int index = 0;
         try {
             String value = "";
-            List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null).getData();
+            List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null,tenantId,branchCode).getData();
             for (int i = 0; i < cris.size(); i++) {
                 String subvalue = "";
                 if (StringUtils.isNullOrEmpty(cris.get(i).getSuffixChar())) {
@@ -203,7 +214,7 @@ public class CodeRuleController extends BaseController {
         @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/updateCode")
-    public CommonResult<CodeRule> updateCode(String code, String name, String value, String input) {
+    public CommonResult<CodeRule> updateCode(String code, String name, String value, String input, String tenantId, String branchCode) {
 
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
         if (!StringUtils.isNullOrEmpty(name)) {
@@ -213,7 +224,13 @@ public class CodeRuleController extends BaseController {
             queryWrapper.eq("code", code);
         }
         queryWrapper.eq("status", 1);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
         // 获取编码项列表
         List<CodeRule> items = codeRuleService.list(queryWrapper);
         CodeRule item = null;
@@ -325,7 +342,7 @@ public class CodeRuleController extends BaseController {
     @ApiOperation(value = "新增编码规则", notes = "新增编码规则")
     @PostMapping("/save")
     public CommonResult<Boolean> saveCodeRule(@RequestBody CodeRule entity) throws GlobalException {
-        entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        
         entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         entity.setCreateTime(new Date());
         if (StringUtils.isNullOrEmpty(entity.getName())) {
@@ -364,7 +381,7 @@ public class CodeRuleController extends BaseController {
 
     @ApiOperation(value = "查询编码规则项列表", notes = "查询编码规则项列表")
     @GetMapping("/item/list")
-    public CommonResult<List<CodeRuleItem>> listCodeRuleItem(String codeRuleId, String code, String type) {
+    public CommonResult<List<CodeRuleItem>> listCodeRuleItem(String codeRuleId, String code, String type, String tenantId, String branchCode) {
         QueryWrapper<CodeRuleItem> queryWrapper = new QueryWrapper<CodeRuleItem>();
         if (!StringUtils.isNullOrEmpty(code)) {
 
@@ -378,19 +395,32 @@ public class CodeRuleController extends BaseController {
             queryWrapper.eq("type", type);
         }
         queryWrapper.orderByAsc("order_no");
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
         return CommonResult.success(codeRuleItemService.list(queryWrapper), SUCCESS_MESSAGE);
     }
     
     @ApiOperation(value = "查询编码流水号值列表", notes = "查询编码流水号值列表")
     @GetMapping("/value/list")
-    public CommonResult<List<CodeRuleValue>> listCodeRuleValue(String id, String input, String value) {
+    public CommonResult<List<CodeRuleValue>> listCodeRuleValue(String id, String input, String value, String tenantId, String branchCode) {
         QueryWrapper<CodeRuleValue> queryWrapper = new QueryWrapper<CodeRuleValue>();
         if (!StringUtils.isNullOrEmpty(input)) {
             queryWrapper.eq("input_value", input);
         }
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("item_id", id);
+        }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
         }
         List<CodeRuleValue> list = codeRuleValueService.list(queryWrapper);
                 if(list.size() ==0 ||StringUtils.isNullOrEmpty(input) ) {
@@ -407,7 +437,7 @@ public class CodeRuleController extends BaseController {
     @ApiOperation(value = "新增编码规则项", notes = "新增编码规则项")
     @PostMapping("/item/save")
     public CommonResult<Boolean> saveCodeRuleItem(@RequestBody CodeRuleItem entity) throws GlobalException {
-        entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        
         entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         entity.setCreateTime(new Date());
 
@@ -444,7 +474,7 @@ public class CodeRuleController extends BaseController {
     @ApiOperation(value = "新增编码规则项流水号", notes = "新增编码规则项流水号")
     @PostMapping("/value/save")
     public CommonResult<Boolean> saveCodeRuleValue(@RequestBody CodeRuleValue entity) throws GlobalException {
-        entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        
         entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         entity.setCreateTime(new Date());
 
