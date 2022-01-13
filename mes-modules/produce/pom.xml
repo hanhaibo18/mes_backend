@@ -40,11 +40,6 @@
             <groupId>com.richfit.mes</groupId>
             <artifactId>common-security</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.richfit.mes</groupId>
-            <artifactId>mes-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
