@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.service.PdmDrawService;
 import com.richfit.mes.base.service.PdmOptionService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.DrawingApply;
+import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmOption;
 import com.richfit.mes.common.model.base.PdmProcess;
 import io.swagger.annotations.Api;
@@ -33,14 +35,17 @@ public class PdmOptionController {
     @Autowired
     private PdmOptionService pdmOptionService;
 
+    @Autowired
+    private PdmDrawService pdmDrawService;
+
     @PostMapping(value = "/query/list")
     @ApiOperation(value = "工序查询", notes = "工序查询")
-    @ApiImplicitParam(name = "pdmProcess", value = "工序VO", required = true, dataType = "PdmProcess", paramType = "body")
+    @ApiImplicitParam(name = "PdmOption", value = "工序VO", required = true, dataType = "PdmOption", paramType = "body")
     public CommonResult<List<PdmOption>> getList(PdmOption pdmOption){
         QueryWrapper<PdmOption> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmOption.getOpNo())
-                ,"op_no"
-                ,pdmOption.getOpNo());
+        queryWrapper.like(!StringUtils.isNullOrEmpty(pdmOption.getOpNo()),"op_no","%" + pdmOption.getOpNo() + "%")
+                .like(!StringUtils.isNullOrEmpty(pdmOption.getName()),"name","%" + pdmOption.getName() + "%")
+                .eq(!StringUtils.isNullOrEmpty(pdmOption.getProcessId()),"process_id",pdmOption.getProcessId());
         queryWrapper.orderByAsc("op_no");
         List<PdmOption> list = pdmOptionService.list(queryWrapper);
         return CommonResult.success(list);
@@ -48,15 +53,26 @@ public class PdmOptionController {
 
     @PostMapping("/query/pageList")
     @ApiOperation(value = "工序分页查询", notes = "工序分页查询")
-    @ApiImplicitParam(name = "pdmProcess", value = "工序VO", required = true, dataType = "PdmProcess", paramType = "body")
+    @ApiImplicitParam(name = "PdmOption", value = "工序VO", required = true, dataType = "PdmOption", paramType = "body")
     public CommonResult<IPage<PdmOption>> getPageList(int page, int limit,PdmOption pdmOption){
-        QueryWrapper<PdmOption> queryWrapper = new QueryWrapper<PdmOption>();
-        queryWrapper.like(!StringUtils.isNullOrEmpty(pdmOption.getOpNo())
-                ,"op_no"
-                ,"%" + pdmOption.getOpNo() + "%");
-        queryWrapper.orderByAsc("op_no");
-        return CommonResult.success(pdmOptionService.page(new Page<PdmOption>(page, limit), queryWrapper));
+        QueryWrapper<PdmOption> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like(!StringUtils.isNullOrEmpty(pdmOption.getOpNo()),"op_no","%" + pdmOption.getOpNo() + "%")
+                .like(!StringUtils.isNullOrEmpty(pdmOption.getName()),"name","%" + pdmOption.getName() + "%")
+                .eq(!StringUtils.isNullOrEmpty(pdmOption.getProcessId()),"process_id",pdmOption.getProcessId())
+                .orderByAsc("op_no + 1");
+        return CommonResult.success(pdmOptionService.page(new Page<>(page, limit), queryWrapper));
     }
+
+    @PostMapping("/queryOptionDraw/optionDrawPageList")
+    @ApiOperation(value = "工序图纸分页查询", notes = "工序分页查询")
+    @ApiImplicitParam(name = "pdmDraw", value = "图纸VO", required = true, dataType = "pdmDraw", paramType = "body")
+    public CommonResult<IPage<PdmDraw>> optionDrawPageList(int page, int limit, PdmOption pdmOption){
+        QueryWrapper<PdmDraw> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmOption.getId()),"op_id",pdmOption.getId());
+        queryWrapper.orderByDesc("syc_time");
+        return CommonResult.success(pdmDrawService.page(new Page<>(page, limit), queryWrapper));
+    }
+
 
 
 }
