@@ -8,7 +8,8 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-
+import com.richfit.mes.common.model.sys.ItemClass;
+import com.richfit.mes.common.model.sys.ItemParam;
 import java.util.List;
 
 /**
@@ -23,5 +24,8 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
         return CommonResult.success(null);
     }
 
-
+     @Override
+    public CommonResult<List<ItemParam>> selectItemClass(String name,String code)  {
+        return CommonResult.success(null);
+    }
 }
