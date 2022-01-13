@@ -96,7 +96,7 @@ public class ProductionBomController extends BaseController {
     }
 
 
-    @ApiOperation(value = "发布/停用物料", notes = "发布/停用物料")
+    @ApiOperation(value = "发布/停用产品BOM", notes = "发布/停用产品BOM")
     @PostMapping("/production_bom/publish")
     public CommonResult<ProductionBom> pushProduct(@RequestBody ProductionBom productionBom){
         UpdateWrapper<ProductionBom> update = new UpdateWrapper<ProductionBom>().eq("id",productionBom.getId()).or().eq("main_drawing_no",productionBom.getId());
@@ -144,12 +144,12 @@ public class ProductionBomController extends BaseController {
     @ApiOperation(value = "删除产品Bom", notes = "根据产品图号删除产品Bom")
     @ApiImplicitParam(name = "id", value = "物料ID", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/production_bom")
-    public CommonResult<ProductionBom> deleteProductionBomById(@RequestBody List<String> drawingNoes){
-        if(drawingNoes == null || drawingNoes.size() == 0){
+    public CommonResult<ProductionBom> deleteProductionBomById(@RequestBody List<String> bomKeys){
+        if(bomKeys == null || bomKeys.size() == 0){
             return CommonResult.failed(BOM_DRAWING_NULL_MESSAGE);
         } else {
             QueryWrapper<ProductionBom> query = new QueryWrapper<ProductionBom>();
-            query.and(wrapper -> wrapper.in("drawing_no",drawingNoes).or().in("main_drawing_no",drawingNoes));
+            query.and(wrapper -> wrapper.in("bom_key",bomKeys));
             query.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             boolean bool = productionBomService.remove(query);
             if(bool){
@@ -165,12 +165,9 @@ public class ProductionBomController extends BaseController {
     public CommonResult<IPage<ProductionBom>> getProductionBom(String id,String materialNo,String drawingNo, String status, String mainDrawingNo, String branchCode, String order , String orderCol, String bomKey, int page, int limit){
 
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
-         if(!StringUtils.isNullOrEmpty(id)){
+        if(!StringUtils.isNullOrEmpty(id)){
             query.like("pb.id", "%" + id + "%");
         }
-         else {
-             query.eq("pb.is_current", "1");
-         }
         if(!StringUtils.isNullOrEmpty(drawingNo)){
             query.like("pb.drawing_no", "%" + drawingNo + "%");
         }
@@ -276,8 +273,8 @@ public class ProductionBomController extends BaseController {
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         CommonResult result = null;
         //封装证件信息实体类
-        String[] fieldNames = {"branchCode","grade","mainDrawingNo","drawingNo", "versionNo","materialNo","productName","objectType","weight","texture","number","unit", "trackType",
- "productSource","isNeedPicking","isKeyPart","isEdgeStore","isCheck","remark"};
+        String[] fieldNames = {"isImport", "orderNo", "branchCode","grade","mainDrawingNo","drawingNo", "materialNo","productName","sourceType","weight","texture","number","unit", "optName", "trackType",
+ "isNumFrom","isNeedPicking","isKeyPart","isEdgeStore","isCheck","remark"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -286,17 +283,20 @@ public class ProductionBomController extends BaseController {
             excelFile = new File(System.getProperty("java.io.tmpdir"),tempName.toString());
             file.transferTo(excelFile);
             //将导入的excel数据生成产品BOM实体类list
-            List<ProductionBom> list =  ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 1,0,0,tempName.toString());
+            List<ProductionBom> list =  ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 4,0,0,tempName.toString());
             FileUtils.delete(excelFile);
 
-            list = list.stream().filter(item -> item.getDrawingNo() != null).collect(Collectors.toList());
-            List<String> drawingNoes = list.stream().map(l -> l.getDrawingNo()).collect(Collectors.toList());
+            list = list.stream().filter(item -> !StringUtils.isNullOrEmpty(item.getDrawingNo()) &&
+                    !StringUtils.isNullOrEmpty(item.getMaterialNo())).collect(Collectors.toList());
 
+            /*
+            List<String> drawingNoes = list.stream().map(l -> l.getDrawingNo()).collect(Collectors.toList());
             UpdateWrapper<ProductionBom> updateWrapper = new UpdateWrapper<>();
             updateWrapper.set("is_current", 0);
             updateWrapper.in("drawing_no", drawingNoes);
             updateWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             productionBomService.update(updateWrapper);
+            */
 
             /*String drawingNo = list.get(0).getDrawingNo();
 
@@ -310,15 +310,18 @@ public class ProductionBomController extends BaseController {
 
             int finalVersionNo = versionNo;*/
 
+            String bomKey = UUID.randomUUID().toString();
+
             list.forEach(item->{
                 item.setStatus("0");
-                item.setIsCurrent("1");
+                item.setIsCurrent("0");
                 //item.setVersionNo(finalVersionNo);
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
+                item.setBomKey(bomKey);
 
-                Product product = productService.getOne(new QueryWrapper<Product>().eq("drawing_no", item.getDrawingNo()).eq("material_no", item.getMaterialNo()).eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
+                Product product = productService.getOne(new QueryWrapper<Product>().eq("material_no", item.getMaterialNo()));
                 if(product == null){ //判断导入的信息在物料表中是否存在，不存在则保存入物料表
                     product = new Product();
                     product.setBranchCode(item.getBranchCode());
@@ -353,7 +356,7 @@ public class ProductionBomController extends BaseController {
                 }
             });
 
-            boolean bool = productionBomService.saveByList(list);
+            boolean bool = productionBomService.saveBatch(list);
             if(bool){
                 return CommonResult.success(null, BOM_IMPORT_EXCEL_SUCCESS_MESSAGE);
             } else {
