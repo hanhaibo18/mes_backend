@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.entity;
 
-import com.richfit.mes.common.core.base.BasePageDto;
 import lombok.Data;
 
 /**
@@ -17,6 +16,8 @@ public class CountDto   {
     private int b;
 
     private int c;
+
+
 
     private int d;
 

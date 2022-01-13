@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.ProduceTrackHeadTemplateMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate">
+        <id column="id" property="id" />
+        <result column="template_code" property="templateCode" />
+        <result column="template_name" property="templateName" />
+        <result column="file_path" property="filePath" />
+        <result column="branch_code" property="branchCode" />
+        <result column="sheet1" property="sheet1" />
+        <result column="sheet2" property="sheet2" />
+        <result column="sheet3" property="sheet3" />
+        <result column="sheet4" property="sheet4" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="modify_by" property="modifyBy" />
+        <result column="modify_time" property="modifyTime" />
+        <result column="remark" property="remark" />
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        create_by,
+        create_time,
+        modify_by,
+        modify_time,
+        id, template_code, template_name, file_path, branch_code, sheet1, sheet2, sheet3, sheet4, remark
+    </sql>
+
+</mapper>
