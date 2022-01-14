@@ -4,7 +4,7 @@
 
     <select id="listMenusByRoleId"  parameterType="string" resultType="com.richfit.mes.common.model.sys.Menu">
         SELECT
-        sys_menu.*
+        sys_menu.*, sys_role_menu.permission as checked_button
         FROM
         sys_menu
         LEFT JOIN sys_role_menu ON sys_menu.id = sys_role_menu.menu_id

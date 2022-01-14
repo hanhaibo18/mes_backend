@@ -3,12 +3,15 @@ package com.richfit.mes.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.R;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Menu;
+import com.richfit.mes.common.model.sys.RoleMenu;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.MenuService;
+import com.richfit.mes.sys.service.RoleMenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -16,9 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +38,9 @@ public class MenuController extends BaseController {
 
     @Autowired
     private MenuService menuService;
+
+    @Autowired
+    private RoleMenuService roleMenuService;
 
     //TODO 权限控制  条件约束验证   userToken补充
     /**
@@ -89,12 +93,41 @@ public class MenuController extends BaseController {
     @ApiOperation(value = "根据父菜单Id获取子菜单", notes = "根据父菜单Id获取子菜单")
     @ApiImplicitParam(name = "id", value = "菜单id", required = true, dataType = "String", paramType = "path")
     @GetMapping("/queryMenuByPId/{id}")
-    public CommonResult queryMenuByPId(@PathVariable String id) throws GlobalException{
+    public CommonResult queryMenuByPId(@PathVariable String id, @RequestParam String roleId) throws GlobalException{
 
         List<Menu> menus =  menuService.list( new QueryWrapper<Menu>()
                 .eq("parent_id",id)
                 .orderByAsc("menu_order")
         );
+
+        List<Menu> result = new ArrayList<>();
+
+        if (!StringUtils.isNullOrEmpty(roleId) && menus != null && menus.size() > 0) {
+            List<String> menuIds = menus.stream().map(Menu::getId).collect(Collectors.toList());
+            QueryWrapper<RoleMenu> wrapper = new QueryWrapper<>();
+            wrapper.eq("role_id", roleId);
+            wrapper.in("menu_id", menuIds);
+            List<RoleMenu> roles = roleMenuService.list(wrapper);
+            for (Menu menu : menus) {
+                menu.setCheckedButton(new HashMap<>());
+                for (RoleMenu rm: roles) {
+                    if (rm.getMenuId().equals(menu.getId())) {
+                        Map<String, Boolean> map = new HashMap<>();
+                        if (!StringUtils.isNullOrEmpty(rm.getPermission())) {
+                            String[] btns = rm.getPermission().split(",");
+                            for (String str: btns) {
+                                map.put(str, true);
+                            }
+                        }
+
+                        menu.setChecked(true);
+                        menu.setCheckedButton(map);
+                    }
+                }
+                result.add(menu);
+            }
+        }
+
         return CommonResult.success(menus);
     }
 

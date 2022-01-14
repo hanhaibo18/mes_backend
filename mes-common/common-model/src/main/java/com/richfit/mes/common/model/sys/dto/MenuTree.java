@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.sys.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.model.sys.Menu;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @author sun
@@ -73,7 +75,8 @@ public class MenuTree extends TreeNode implements Serializable {
     @ApiModelProperty(value = "是否显示")
     private boolean checked;
 
-
+    @ApiModelProperty(value = "按钮权限")
+    private Object checkedButton;
 
     public MenuTree() {
     }
@@ -103,5 +106,6 @@ public class MenuTree extends TreeNode implements Serializable {
         this.menuShow = menu.getMenuShow();
         this.menuUrl = menu.getMenuUrl();
         this.permission = menu.getPermission();
+        this.checkedButton = menu.getCheckedButton();
     }
 }

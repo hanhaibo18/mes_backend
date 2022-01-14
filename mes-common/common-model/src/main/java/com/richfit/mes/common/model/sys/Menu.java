@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -64,6 +65,13 @@ public class Menu extends BaseEntity<Menu> {
      * 菜单权限标识
      */
     private String permission;
+
+    /**
+     * 按钮权限 分配权限用
+     */
+    @TableField(exist = false)
+    private Object checkedButton;
+
     /**
      * 是否选中  分配菜单用
      */

@@ -21,4 +21,8 @@ public class RoleMenu extends BaseEntity<RoleMenu> {
      * 菜单ID
      */
     private String menuId;
+    /**
+     * 按钮权限
+     */
+    private String permission;
 }

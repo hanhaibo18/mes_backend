@@ -171,4 +171,6 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
 
     public Integer orderNo;
 
+    @TableField(exist = false)
+    private String isImport;
 }
