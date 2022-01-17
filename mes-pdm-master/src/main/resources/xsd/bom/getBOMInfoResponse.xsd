@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:element name="getBOMInfo">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="BOM" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="Result" minOccurs="0"/>
+                <xs:element ref="Message" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Result" type="xs:string"/>
+    <xs:element name="Message" type="xs:string"/>
+    <xs:element name="BOM">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ID"/>
+                <xs:element ref="BlankType" minOccurs="0"/>
+                <xs:element ref="ItemKey" minOccurs="0"/>
+                <xs:element ref="ItemStatus" minOccurs="0"/>
+                <xs:element ref="ItemUser" minOccurs="0"/>
+                <xs:element ref="MateriaName" minOccurs="0"/>
+                <xs:element ref="MateriaNo" minOccurs="0"/>
+                <xs:element ref="Name" minOccurs="0"/>
+                <xs:element ref="ObjectType" minOccurs="0"/>
+                <xs:element ref="ProductName" minOccurs="0"/>
+                <xs:element ref="Quantity" minOccurs="0"/>
+                <xs:element ref="ReleaseTime" minOccurs="0"/>
+                <xs:element ref="Remark" minOccurs="0"/>
+                <xs:element ref="Rev" minOccurs="0"/>
+                <xs:element ref="User" minOccurs="0"/>
+                <xs:element ref="Weight" minOccurs="0"/>
+                <xs:element ref="BOM" minOccurs="0" maxOccurs="unbounded"/>
+             </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ID" type="xs:string"/>
+    <xs:element name="BlankType" type="xs:string"/>
+    <xs:element name="ItemKey" type="xs:string"/>
+    <xs:element name="ItemStatus" type="xs:string"/>
+    <xs:element name="ItemUser" type="xs:string"/>
+    <xs:element name="MateriaName" type="xs:string"/>
+    <xs:element name="MateriaNo" type="xs:string"/>
+    <xs:element name="Name" type="xs:string"/>
+    <xs:element name="ObjectType" type="xs:string"/>
+    <xs:element name="ProductName" type="xs:string"/>
+    <xs:element name="Quantity" type="xs:string"/>
+    <xs:element name="ReleaseTime" type="xs:string"/>
+    <xs:element name="Remark" type="xs:string"/>
+    <xs:element name="Rev" type="xs:string"/>
+    <xs:element name="User" type="xs:string"/>
+    <xs:element name="Weight" type="xs:string"/>
+</xs:schema>

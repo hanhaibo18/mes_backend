@@ -1,0 +1,50 @@
+2022-01-11 16:42:10,302 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo 1,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:10,304 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:1
+2022-01-11 16:42:10,665 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL 1 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>1</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-11 16:42:17,803 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-0113010001,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:17,804 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-0113010001
+2022-01-11 16:42:17,984 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL DZ710327-0113010001 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>DZ710327-0113010001</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-11 16:42:18,118 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-0113010002,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:18,118 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-0113010002
+2022-01-11 16:42:18,281 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL DZ710327-0113010002 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>DZ710327-0113010002</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-11 16:42:18,412 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130101,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:18,412 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130101
+2022-01-11 16:42:18,871 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130102,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:18,871 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130102
+2022-01-11 16:42:19,235 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130103,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:19,235 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130103
+2022-01-11 16:42:19,593 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130104,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:19,593 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130104
+2022-01-11 16:42:24,219 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:508 - GetBOMInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getBOMInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getBOMInfo>
+2022-01-11 16:42:24,346 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:24,346 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:AH00001TEST
+2022-01-11 16:42:24,476 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL AH00001TEST 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>AH00001TEST</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中没有该对象</Message></Item></Items></getDatasetURL>
+2022-01-11 16:42:24,616 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:508 - GetBOMInfo AH1301010104,return:<?xml version="1.0" encoding="UTF-8"?>
+<getBOMInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getBOMInfo>
+2022-01-11 16:42:24,745 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo AH1301010104,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-11 16:42:24,746 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:AH1301010104
+2022-01-11 16:42:25,204 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL AH1301010104 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>AH1301010104</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中没有该对象</Message></Item></Items></getDatasetURL>

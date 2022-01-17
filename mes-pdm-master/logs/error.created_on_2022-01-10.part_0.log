@@ -1,0 +1,811 @@
+2022-01-10 10:00:09,722 [task-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo 1,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:00:09,723 [task-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:1
+2022-01-10 10:00:10,054 [task-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL 1 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>1</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 10:02:00,795 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo 1,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:02:00,796 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:1
+2022-01-10 10:02:01,002 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL 1 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>1</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 10:04:04,414 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-0113010001,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:04:04,414 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-0113010001
+2022-01-10 10:04:04,615 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL DZ710327-0113010001 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>DZ710327-0113010001</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 10:04:04,760 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-0113010002,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:04:04,760 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-0113010002
+2022-01-10 10:04:04,935 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL DZ710327-0113010002 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>DZ710327-0113010002</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 10:04:05,064 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130101,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:04:05,065 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130101
+2022-01-10 10:04:05,523 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130102,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:04:05,523 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130102
+2022-01-10 10:04:05,877 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130103,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:04:05,877 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130103
+2022-01-10 10:04:06,262 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130104,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 10:04:06,262 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130104
+2022-01-10 16:15:57,965 [restartedMain] ERROR [org.springframework.boot.SpringApplication] SpringApplication.java:826 - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'pdmMapServiceImpl': Unsatisfied dependency expressed through field 'pdmReqListRepository'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:116)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:397)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1429)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:594)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:879)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:878)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:747)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:397)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1226)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1215)
+	at com.bsjx.mes.pdm.PdmApplication.main(PdmApplication.java:15)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1803)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:595)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1287)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1207)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:636)
+	... 23 common frames omitted
+Caused by: java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:103)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:106)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:211)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:79)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lookupQuery(RepositoryFactorySupport.java:574)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$mapMethodsToQuery$1(RepositoryFactorySupport.java:567)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Collections$UnmodifiableCollection$1.forEachRemaining(Collections.java:1054)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.mapMethodsToQuery(RepositoryFactorySupport.java:569)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$new$0(RepositoryFactorySupport.java:559)
+	at java.base/java.util.Optional.map(Optional.java:265)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.<init>(RepositoryFactorySupport.java:559)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:332)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.lambda$afterPropertiesSet$5(RepositoryFactoryBeanSupport.java:297)
+	at org.springframework.data.util.Lazy.getNullable(Lazy.java:212)
+	at org.springframework.data.util.Lazy.get(Lazy.java:94)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:300)
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:121)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1799)
+	... 33 common frames omitted
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property audit found for type DrawingApply!
+	at org.springframework.data.mapping.PropertyPath.<init>(PropertyPath.java:94)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:382)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:358)
+	at org.springframework.data.mapping.PropertyPath.lambda$from$0(PropertyPath.java:311)
+	at java.base/java.util.concurrent.ConcurrentMap.computeIfAbsent(ConcurrentMap.java:330)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:293)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:276)
+	at org.springframework.data.repository.query.parser.Part.<init>(Part.java:82)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.lambda$new$0(PartTree.java:250)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.<init>(PartTree.java:251)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.lambda$new$0(PartTree.java:380)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.<init>(PartTree.java:381)
+	at org.springframework.data.repository.query.parser.PartTree.<init>(PartTree.java:96)
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:96)
+	... 59 common frames omitted
+2022-01-10 16:17:39,261 [restartedMain] ERROR [org.springframework.boot.SpringApplication] SpringApplication.java:826 - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'processServiceImpl': Unsatisfied dependency expressed through field 'drawingApplyRepository'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:116)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:397)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1429)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:594)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:879)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:878)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:747)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:397)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1226)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1215)
+	at com.bsjx.mes.pdm.PdmApplication.main(PdmApplication.java:15)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1803)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:595)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1287)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1207)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:636)
+	... 23 common frames omitted
+Caused by: java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:103)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:106)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:211)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:79)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lookupQuery(RepositoryFactorySupport.java:574)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$mapMethodsToQuery$1(RepositoryFactorySupport.java:567)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Collections$UnmodifiableCollection$1.forEachRemaining(Collections.java:1054)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.mapMethodsToQuery(RepositoryFactorySupport.java:569)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$new$0(RepositoryFactorySupport.java:559)
+	at java.base/java.util.Optional.map(Optional.java:265)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.<init>(RepositoryFactorySupport.java:559)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:332)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.lambda$afterPropertiesSet$5(RepositoryFactoryBeanSupport.java:297)
+	at org.springframework.data.util.Lazy.getNullable(Lazy.java:212)
+	at org.springframework.data.util.Lazy.get(Lazy.java:94)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:300)
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:121)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1799)
+	... 33 common frames omitted
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property audit found for type DrawingApply!
+	at org.springframework.data.mapping.PropertyPath.<init>(PropertyPath.java:94)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:382)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:358)
+	at org.springframework.data.mapping.PropertyPath.lambda$from$0(PropertyPath.java:311)
+	at java.base/java.util.concurrent.ConcurrentMap.computeIfAbsent(ConcurrentMap.java:330)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:293)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:276)
+	at org.springframework.data.repository.query.parser.Part.<init>(Part.java:82)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.lambda$new$0(PartTree.java:250)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.<init>(PartTree.java:251)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.lambda$new$0(PartTree.java:380)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.<init>(PartTree.java:381)
+	at org.springframework.data.repository.query.parser.PartTree.<init>(PartTree.java:96)
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:96)
+	... 59 common frames omitted
+2022-01-10 16:19:31,691 [restartedMain] ERROR [org.springframework.boot.SpringApplication] SpringApplication.java:826 - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'processServiceImpl': Unsatisfied dependency expressed through field 'drawingApplyRepository'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:116)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:397)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1429)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:594)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:879)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:878)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:747)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:397)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1226)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1215)
+	at com.bsjx.mes.pdm.PdmApplication.main(PdmApplication.java:15)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1803)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:595)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1287)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1207)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:636)
+	... 23 common frames omitted
+Caused by: java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:103)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:106)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:211)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:79)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lookupQuery(RepositoryFactorySupport.java:574)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$mapMethodsToQuery$1(RepositoryFactorySupport.java:567)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Collections$UnmodifiableCollection$1.forEachRemaining(Collections.java:1054)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.mapMethodsToQuery(RepositoryFactorySupport.java:569)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$new$0(RepositoryFactorySupport.java:559)
+	at java.base/java.util.Optional.map(Optional.java:265)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.<init>(RepositoryFactorySupport.java:559)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:332)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.lambda$afterPropertiesSet$5(RepositoryFactoryBeanSupport.java:297)
+	at org.springframework.data.util.Lazy.getNullable(Lazy.java:212)
+	at org.springframework.data.util.Lazy.get(Lazy.java:94)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:300)
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:121)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1799)
+	... 33 common frames omitted
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property audit found for type DrawingApply!
+	at org.springframework.data.mapping.PropertyPath.<init>(PropertyPath.java:94)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:382)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:358)
+	at org.springframework.data.mapping.PropertyPath.lambda$from$0(PropertyPath.java:311)
+	at java.base/java.util.concurrent.ConcurrentMap.computeIfAbsent(ConcurrentMap.java:330)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:293)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:276)
+	at org.springframework.data.repository.query.parser.Part.<init>(Part.java:82)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.lambda$new$0(PartTree.java:250)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.<init>(PartTree.java:251)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.lambda$new$0(PartTree.java:380)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.<init>(PartTree.java:381)
+	at org.springframework.data.repository.query.parser.PartTree.<init>(PartTree.java:96)
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:96)
+	... 59 common frames omitted
+2022-01-10 16:24:46,733 [restartedMain] ERROR [org.springframework.boot.SpringApplication] SpringApplication.java:826 - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'processServiceImpl': Unsatisfied dependency expressed through field 'drawingApplyRepository'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:116)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:397)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1429)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:594)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:879)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:878)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:747)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:397)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1226)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1215)
+	at com.bsjx.mes.pdm.PdmApplication.main(PdmApplication.java:15)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1803)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:595)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1287)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1207)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:636)
+	... 23 common frames omitted
+Caused by: java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:103)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:106)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:211)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:79)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lookupQuery(RepositoryFactorySupport.java:574)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$mapMethodsToQuery$1(RepositoryFactorySupport.java:567)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Collections$UnmodifiableCollection$1.forEachRemaining(Collections.java:1054)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.mapMethodsToQuery(RepositoryFactorySupport.java:569)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$new$0(RepositoryFactorySupport.java:559)
+	at java.base/java.util.Optional.map(Optional.java:265)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.<init>(RepositoryFactorySupport.java:559)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:332)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.lambda$afterPropertiesSet$5(RepositoryFactoryBeanSupport.java:297)
+	at org.springframework.data.util.Lazy.getNullable(Lazy.java:212)
+	at org.springframework.data.util.Lazy.get(Lazy.java:94)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:300)
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:121)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1799)
+	... 33 common frames omitted
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property drawNo found for type DrawingApply!
+	at org.springframework.data.mapping.PropertyPath.<init>(PropertyPath.java:94)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:382)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:358)
+	at org.springframework.data.mapping.PropertyPath.lambda$from$0(PropertyPath.java:311)
+	at java.base/java.util.concurrent.ConcurrentMap.computeIfAbsent(ConcurrentMap.java:330)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:293)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:276)
+	at org.springframework.data.repository.query.parser.Part.<init>(Part.java:82)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.lambda$new$0(PartTree.java:250)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.<init>(PartTree.java:251)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.lambda$new$0(PartTree.java:380)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.<init>(PartTree.java:381)
+	at org.springframework.data.repository.query.parser.PartTree.<init>(PartTree.java:96)
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:96)
+	... 59 common frames omitted
+2022-01-10 16:25:10,664 [restartedMain] ERROR [org.springframework.boot.SpringApplication] SpringApplication.java:826 - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'processServiceImpl': Unsatisfied dependency expressed through field 'drawingApplyRepository'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:116)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:397)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1429)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:594)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:879)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:878)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:747)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:397)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1226)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1215)
+	at com.bsjx.mes.pdm.PdmApplication.main(PdmApplication.java:15)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1803)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:595)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1287)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1207)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:636)
+	... 23 common frames omitted
+Caused by: java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByAudit(java.lang.String,org.springframework.data.domain.Pageable)! No property audit found for type DrawingApply!
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:103)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:106)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:211)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:79)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lookupQuery(RepositoryFactorySupport.java:574)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$mapMethodsToQuery$1(RepositoryFactorySupport.java:567)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Collections$UnmodifiableCollection$1.forEachRemaining(Collections.java:1054)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.mapMethodsToQuery(RepositoryFactorySupport.java:569)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$new$0(RepositoryFactorySupport.java:559)
+	at java.base/java.util.Optional.map(Optional.java:265)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.<init>(RepositoryFactorySupport.java:559)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:332)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.lambda$afterPropertiesSet$5(RepositoryFactoryBeanSupport.java:297)
+	at org.springframework.data.util.Lazy.getNullable(Lazy.java:212)
+	at org.springframework.data.util.Lazy.get(Lazy.java:94)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:300)
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:121)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1799)
+	... 33 common frames omitted
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property audit found for type DrawingApply!
+	at org.springframework.data.mapping.PropertyPath.<init>(PropertyPath.java:94)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:382)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:358)
+	at org.springframework.data.mapping.PropertyPath.lambda$from$0(PropertyPath.java:311)
+	at java.base/java.util.concurrent.ConcurrentMap.computeIfAbsent(ConcurrentMap.java:330)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:293)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:276)
+	at org.springframework.data.repository.query.parser.Part.<init>(Part.java:82)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.lambda$new$0(PartTree.java:250)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.<init>(PartTree.java:251)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.lambda$new$0(PartTree.java:380)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.<init>(PartTree.java:381)
+	at org.springframework.data.repository.query.parser.PartTree.<init>(PartTree.java:96)
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:96)
+	... 59 common frames omitted
+2022-01-10 16:27:29,811 [restartedMain] ERROR [org.springframework.boot.SpringApplication] SpringApplication.java:826 - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'processServiceImpl': Unsatisfied dependency expressed through field 'drawingApplyRepository'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:116)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:397)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1429)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:594)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:879)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:878)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:747)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:397)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1226)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1215)
+	at com.bsjx.mes.pdm.PdmApplication.main(PdmApplication.java:15)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1803)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:595)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1287)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1207)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:636)
+	... 23 common frames omitted
+Caused by: java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:103)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:106)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:211)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:79)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lookupQuery(RepositoryFactorySupport.java:574)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$mapMethodsToQuery$1(RepositoryFactorySupport.java:567)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Collections$UnmodifiableCollection$1.forEachRemaining(Collections.java:1054)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.mapMethodsToQuery(RepositoryFactorySupport.java:569)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$new$0(RepositoryFactorySupport.java:559)
+	at java.base/java.util.Optional.map(Optional.java:265)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.<init>(RepositoryFactorySupport.java:559)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:332)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.lambda$afterPropertiesSet$5(RepositoryFactoryBeanSupport.java:297)
+	at org.springframework.data.util.Lazy.getNullable(Lazy.java:212)
+	at org.springframework.data.util.Lazy.get(Lazy.java:94)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:300)
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:121)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1799)
+	... 33 common frames omitted
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property drawNo found for type DrawingApply!
+	at org.springframework.data.mapping.PropertyPath.<init>(PropertyPath.java:94)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:382)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:358)
+	at org.springframework.data.mapping.PropertyPath.lambda$from$0(PropertyPath.java:311)
+	at java.base/java.util.concurrent.ConcurrentMap.computeIfAbsent(ConcurrentMap.java:330)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:293)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:276)
+	at org.springframework.data.repository.query.parser.Part.<init>(Part.java:82)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.lambda$new$0(PartTree.java:250)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.<init>(PartTree.java:251)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.lambda$new$0(PartTree.java:380)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.<init>(PartTree.java:381)
+	at org.springframework.data.repository.query.parser.PartTree.<init>(PartTree.java:96)
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:96)
+	... 59 common frames omitted
+2022-01-10 16:30:43,380 [restartedMain] ERROR [org.springframework.boot.SpringApplication] SpringApplication.java:826 - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'processServiceImpl': Unsatisfied dependency expressed through field 'drawingApplyRepository'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:116)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:397)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1429)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:594)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:879)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:878)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:747)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:397)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1226)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1215)
+	at com.bsjx.mes.pdm.PdmApplication.main(PdmApplication.java:15)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'drawingApplyRepository': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1803)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:595)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:517)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:321)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1287)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1207)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:636)
+	... 23 common frames omitted
+Caused by: java.lang.IllegalArgumentException: Failed to create query for method public abstract org.springframework.data.domain.Page com.bsjx.mes.pdm.repository.DrawingApplyRepository.findByDrawNoAndAudit(java.lang.String,java.lang.String,org.springframework.data.domain.Pageable)! No property drawNo found for type DrawingApply!
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:103)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:106)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:211)
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:79)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lookupQuery(RepositoryFactorySupport.java:574)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$mapMethodsToQuery$1(RepositoryFactorySupport.java:567)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Collections$UnmodifiableCollection$1.forEachRemaining(Collections.java:1054)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.mapMethodsToQuery(RepositoryFactorySupport.java:569)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.lambda$new$0(RepositoryFactorySupport.java:559)
+	at java.base/java.util.Optional.map(Optional.java:265)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.<init>(RepositoryFactorySupport.java:559)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:332)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.lambda$afterPropertiesSet$5(RepositoryFactoryBeanSupport.java:297)
+	at org.springframework.data.util.Lazy.getNullable(Lazy.java:212)
+	at org.springframework.data.util.Lazy.get(Lazy.java:94)
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:300)
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:121)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1799)
+	... 33 common frames omitted
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property drawNo found for type DrawingApply!
+	at org.springframework.data.mapping.PropertyPath.<init>(PropertyPath.java:94)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:382)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:358)
+	at org.springframework.data.mapping.PropertyPath.lambda$from$0(PropertyPath.java:311)
+	at java.base/java.util.concurrent.ConcurrentMap.computeIfAbsent(ConcurrentMap.java:330)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:293)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:276)
+	at org.springframework.data.repository.query.parser.Part.<init>(Part.java:82)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.lambda$new$0(PartTree.java:250)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.<init>(PartTree.java:251)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.lambda$new$0(PartTree.java:380)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:177)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:913)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:578)
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.<init>(PartTree.java:381)
+	at org.springframework.data.repository.query.parser.PartTree.<init>(PartTree.java:96)
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.<init>(PartTreeJpaQuery.java:96)
+	... 59 common frames omitted
+2022-01-10 16:33:00,043 [scheduling-1] ERROR [org.hibernate.engine.jdbc.spi.SqlExceptionHelper] SqlExceptionHelper.java:142 - Unknown column 'drawingapp0_.need_query' in 'field list'
+2022-01-10 16:35:00,900 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo 1,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:35:00,900 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:1
+2022-01-10 16:35:01,106 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL 1 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>1</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 16:35:01,255 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:508 - GetBOMInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getBOMInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getBOMInfo>
+2022-01-10 16:35:01,382 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:35:01,382 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:AH00001TEST
+2022-01-10 16:35:01,536 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL AH00001TEST 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>AH00001TEST</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中没有该对象</Message></Item></Items></getDatasetURL>
+2022-01-10 16:39:31,141 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo 1,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:39:31,141 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:1
+2022-01-10 16:39:31,343 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL 1 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>1</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 16:39:31,760 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:508 - GetBOMInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getBOMInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getBOMInfo>
+2022-01-10 16:39:31,871 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:39:31,871 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:AH00001TEST
+2022-01-10 16:39:32,009 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL AH00001TEST 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>AH00001TEST</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中没有该对象</Message></Item></Items></getDatasetURL>
+2022-01-10 16:42:00,838 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo 1,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:00,839 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:1
+2022-01-10 16:42:01,052 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL 1 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>1</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 16:42:04,204 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-0113010001,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:04,204 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-0113010001
+2022-01-10 16:42:04,389 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL DZ710327-0113010001 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>DZ710327-0113010001</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 16:42:04,522 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-0113010002,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:04,522 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-0113010002
+2022-01-10 16:42:04,683 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL DZ710327-0113010002 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>DZ710327-0113010002</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中该对象无相关文档</Message></Item></Items></getDatasetURL>
+2022-01-10 16:42:04,816 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130101,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:04,816 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130101
+2022-01-10 16:42:05,590 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130102,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:05,590 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130102
+2022-01-10 16:42:05,946 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130103,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:05,946 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130103
+2022-01-10 16:42:06,639 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo DZ710327-01130104,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:06,640 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:DZ710327-01130104
+2022-01-10 16:42:10,755 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:508 - GetBOMInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getBOMInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getBOMInfo>
+2022-01-10 16:42:10,882 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:296 - GetProcessInfo AH00001TEST,return:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>
+2022-01-10 16:42:10,882 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:301 - Exception:<?xml version="1.0" encoding="UTF-8"?>
+<getProcessInfo><Result>1</Result><Message>PLM系统中没有该对象</Message></getProcessInfo>,getProcessInfo:drawNo:AH00001TEST
+2022-01-10 16:42:11,015 [scheduling-1] ERROR [com.bsjx.mes.pdm.service.ProcessServiceImpl] ProcessServiceImpl.java:418 - GetDocumentURL AH00001TEST 01, return:<?xml version="1.0" encoding="UTF-8"?>
+<getDatasetURL><Items><Item><ItemID>AH00001TEST</ItemID><RevID>01</RevID><Result>1</Result><Message>PLM系统中没有该对象</Message></Item></Items></getDatasetURL>

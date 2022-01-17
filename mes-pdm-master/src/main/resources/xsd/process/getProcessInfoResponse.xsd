@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="ProcessInfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="MEProcesses" minOccurs="0"/>
+        <xs:element ref="Message" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Message" type="xs:string"/>
+  <xs:element name="MEProcesses">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="MEProcess"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MEProcess">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ID"/>
+        <xs:element ref="Rev"/>
+        <xs:element ref="Name"/>
+        <xs:element ref="User" minOccurs="0"/>
+        <xs:element ref="ItemStatus" minOccurs="0"/>
+        <xs:element ref="ReleaseTime"/>
+        <xs:element ref="ProcessType" minOccurs="0"/>
+        <xs:element ref="BlankType" minOccurs="0"/>
+        <xs:element ref="SubstituteMat" minOccurs="0"/>
+        <xs:element ref="TYItemID" minOccurs="0"/>
+        <xs:element ref="MEOPs"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="User" type="xs:integer"/>
+  <xs:element name="ItemStatus" type="xs:string"/>
+  <xs:element name="ReleaseTime" type="xs:string"/>
+  <xs:element name="ProcessType" type="xs:string"/>
+  <xs:element name="BlankType" type="xs:string"/>
+  <xs:element name="SubstituteMat" type="xs:string"/>
+  <xs:element name="TYItemID" type="xs:string"/>
+  <xs:element name="MEOPs">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="MEOP"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MEOP">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ID"/>
+        <xs:element ref="Rev"/>
+        <xs:element ref="OpNo"/>
+        <xs:element ref="Type"/>
+        <xs:element ref="Drawing" minOccurs="0"/>
+        <xs:element ref="Name" minOccurs="0"/>
+        <xs:element ref="Content" minOccurs="0"/>
+        <xs:element ref="GZS" minOccurs="0"/>
+        <xs:element ref="Remark" minOccurs="0"/>
+        <xs:element ref="MESteps"/>
+        <xs:element ref="Items"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OpNo" type="xs:string"/>
+  <xs:element name="Drawing" type="xs:string"/>
+  <xs:element name="Content" type="xs:string"/>
+  <xs:element name="GZS" type="xs:string"/>
+  <xs:element name="MESteps">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="MEStep"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MEStep">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="StepNo"/>
+        <xs:element ref="Name"/>
+        <xs:element ref="Remark" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StepNo" type="xs:string"/>
+  <xs:element name="Items">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="Item"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Item">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Type"/>
+        <xs:element ref="ID" minOccurs="0"/>
+        <xs:element ref="Name" minOccurs="0"/>
+        <xs:element ref="Rev" minOccurs="0"/>
+        <xs:element ref="Quantity" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Quantity" type="xs:string"/>
+  <xs:element name="ID" type="xs:string"/>
+  <xs:element name="Rev" type="xs:string"/>
+  <xs:element name="Name" type="xs:string"/>
+  <xs:element name="Type" type="xs:string"/>
+  <xs:element name="Remark" type="xs:string"/>
+</xs:schema>

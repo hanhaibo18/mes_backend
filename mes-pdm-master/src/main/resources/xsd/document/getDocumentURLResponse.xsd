@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="getDatasetURL">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Items"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Items">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Item"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Item">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ItemID"/>
+        <xs:element ref="RevID"/>
+        <xs:element ref="Result" minOccurs="0"/>
+        <xs:element ref="Message" minOccurs="0"/>
+        <xs:element ref="Files" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ItemID" type="xs:string"/>
+  <xs:element name="RevID" type="xs:string"/>
+  <xs:element name="Result" type="xs:string"/>
+  <xs:element name="Message" type="xs:string"/>
+  <xs:element name="Files" >
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="File"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="File">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FileType"/>
+        <xs:element ref="FileName"/>
+        <xs:element ref="FileURL"/>
+        <xs:element ref="FileRelID"/>
+        <xs:element ref="FileRelRev"/>
+        <xs:element ref="IsOP" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FileType" type="xs:string"/>
+  <xs:element name="FileName" type="xs:string"/>
+  <xs:element name="FileURL" type="xs:string"/>
+  <xs:element name="FileRelID" type="xs:string"/>
+  <xs:element name="FileRelRev" type="xs:string"/>
+  <xs:element name="IsOP" type="xs:string"/>
+</xs:schema>
