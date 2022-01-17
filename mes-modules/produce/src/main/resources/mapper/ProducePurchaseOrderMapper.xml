@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.ProducePurchaseOrderMapper">
+  <resultMap id="BaseResultMap" type="com.richfit.mes.common.model.produce.ProducePurchaseOrder">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="order_no" jdbcType="VARCHAR" property="orderNo" />
+    <result column="material_no" jdbcType="VARCHAR" property="materialNo" />
+    <result column="material_remark" jdbcType="VARCHAR" property="materialRemark" />
+    <result column="drawing_no" jdbcType="VARCHAR" property="drawingNo" />
+    <result column="number" jdbcType="INTEGER" property="number" />
+    <result column="purchase_date" jdbcType="TIMESTAMP" property="purchaseDate" />
+    <result column="delivery_date" jdbcType="TIMESTAMP" property="deliveryDate" />
+    <result column="change_on" jdbcType="TIMESTAMP" property="changeOn" />
+    <result column="change_by" jdbcType="VARCHAR" property="changeBy" />
+    <result column="werks" jdbcType="VARCHAR" property="werks" />
+    <result column="project_no" jdbcType="VARCHAR" property="projectNo" />
+    <result column="material_code" jdbcType="VARCHAR" property="materialCode" />
+    <result column="order_type" jdbcType="VARCHAR" property="orderType" />
+    <result column="unit" jdbcType="VARCHAR" property="unit" />
+    <result column="lgort" jdbcType="VARCHAR" property="lgort" />
+    <result column="lifnr" jdbcType="VARCHAR" property="lifnr" />
+    <result column="is_submit" jdbcType="VARCHAR" property="isSubmit" />
+    <result column="is_material" jdbcType="VARCHAR" property="isMaterial" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="tenant_id" jdbcType="VARCHAR" property="tenantId" />
+    <result column="branch_code" jdbcType="VARCHAR" property="branchCode" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, order_no, material_no, material_remark, drawing_no, `number`, purchase_date,
+    delivery_date, change_on, change_by, werks, project_no, material_code, order_type,
+    unit, lgort, lifnr, is_submit, is_material, description, create_by, create_time, modify_by,
+    modify_time, remark, tenant_id, branch_code
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from produce_purchase_order
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from produce_purchase_order
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.richfit.mes.common.model.produce.ProducePurchaseOrder" useGeneratedKeys="true">
+    insert into produce_purchase_order (order_no, material_no, material_remark,
+      drawing_no, `number`, purchase_date,
+      delivery_date, change_on, change_by,
+      werks, project_no, material_code,
+      order_type, unit, lgort,
+      lifnr, is_submit, is_material,
+      description, create_by, create_time,
+      modify_by, modify_time, remark,
+      tenant_id, branch_code)
+    values (#{orderNo,jdbcType=VARCHAR}, #{materialNo,jdbcType=VARCHAR}, #{materialRemark,jdbcType=VARCHAR},
+      #{drawingNo,jdbcType=VARCHAR}, #{number,jdbcType=INTEGER}, #{purchaseDate,jdbcType=TIMESTAMP},
+      #{deliveryDate,jdbcType=TIMESTAMP}, #{changeOn,jdbcType=TIMESTAMP}, #{changeBy,jdbcType=VARCHAR},
+      #{werks,jdbcType=VARCHAR}, #{projectNo,jdbcType=VARCHAR}, #{materialCode,jdbcType=VARCHAR},
+      #{orderType,jdbcType=VARCHAR}, #{unit,jdbcType=VARCHAR}, #{lgort,jdbcType=VARCHAR},
+      #{lifnr,jdbcType=VARCHAR}, #{isSubmit,jdbcType=VARCHAR}, #{isMaterial,jdbcType=VARCHAR},
+      #{description,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+      #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{remark,jdbcType=VARCHAR},
+      #{tenantId,jdbcType=VARCHAR}, #{branchCode,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.richfit.mes.common.model.produce.ProducePurchaseOrder" useGeneratedKeys="true">
+    insert into produce_purchase_order
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderNo != null">
+        order_no,
+      </if>
+      <if test="materialNo != null">
+        material_no,
+      </if>
+      <if test="materialRemark != null">
+        material_remark,
+      </if>
+      <if test="drawingNo != null">
+        drawing_no,
+      </if>
+      <if test="number != null">
+        `number`,
+      </if>
+      <if test="purchaseDate != null">
+        purchase_date,
+      </if>
+      <if test="deliveryDate != null">
+        delivery_date,
+      </if>
+      <if test="changeOn != null">
+        change_on,
+      </if>
+      <if test="changeBy != null">
+        change_by,
+      </if>
+      <if test="werks != null">
+        werks,
+      </if>
+      <if test="projectNo != null">
+        project_no,
+      </if>
+      <if test="materialCode != null">
+        material_code,
+      </if>
+      <if test="orderType != null">
+        order_type,
+      </if>
+      <if test="unit != null">
+        unit,
+      </if>
+      <if test="lgort != null">
+        lgort,
+      </if>
+      <if test="lifnr != null">
+        lifnr,
+      </if>
+      <if test="isSubmit != null">
+        is_submit,
+      </if>
+      <if test="isMaterial != null">
+        is_material,
+      </if>
+      <if test="description != null">
+        description,
+      </if>
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifyBy != null">
+        modify_by,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="tenantId != null">
+        tenant_id,
+      </if>
+      <if test="branchCode != null">
+        branch_code,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderNo != null">
+        #{orderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="materialNo != null">
+        #{materialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="materialRemark != null">
+        #{materialRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="drawingNo != null">
+        #{drawingNo,jdbcType=VARCHAR},
+      </if>
+      <if test="number != null">
+        #{number,jdbcType=INTEGER},
+      </if>
+      <if test="purchaseDate != null">
+        #{purchaseDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deliveryDate != null">
+        #{deliveryDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="changeOn != null">
+        #{changeOn,jdbcType=TIMESTAMP},
+      </if>
+      <if test="changeBy != null">
+        #{changeBy,jdbcType=VARCHAR},
+      </if>
+      <if test="werks != null">
+        #{werks,jdbcType=VARCHAR},
+      </if>
+      <if test="projectNo != null">
+        #{projectNo,jdbcType=VARCHAR},
+      </if>
+      <if test="materialCode != null">
+        #{materialCode,jdbcType=VARCHAR},
+      </if>
+      <if test="orderType != null">
+        #{orderType,jdbcType=VARCHAR},
+      </if>
+      <if test="unit != null">
+        #{unit,jdbcType=VARCHAR},
+      </if>
+      <if test="lgort != null">
+        #{lgort,jdbcType=VARCHAR},
+      </if>
+      <if test="lifnr != null">
+        #{lifnr,jdbcType=VARCHAR},
+      </if>
+      <if test="isSubmit != null">
+        #{isSubmit,jdbcType=VARCHAR},
+      </if>
+      <if test="isMaterial != null">
+        #{isMaterial,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="tenantId != null">
+        #{tenantId,jdbcType=VARCHAR},
+      </if>
+      <if test="branchCode != null">
+        #{branchCode,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.richfit.mes.common.model.produce.ProducePurchaseOrder">
+    update produce_purchase_order
+    <set>
+      <if test="orderNo != null">
+        order_no = #{orderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="materialNo != null">
+        material_no = #{materialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="materialRemark != null">
+        material_remark = #{materialRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="drawingNo != null">
+        drawing_no = #{drawingNo,jdbcType=VARCHAR},
+      </if>
+      <if test="number != null">
+        `number` = #{number,jdbcType=INTEGER},
+      </if>
+      <if test="purchaseDate != null">
+        purchase_date = #{purchaseDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deliveryDate != null">
+        delivery_date = #{deliveryDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="changeOn != null">
+        change_on = #{changeOn,jdbcType=TIMESTAMP},
+      </if>
+      <if test="changeBy != null">
+        change_by = #{changeBy,jdbcType=VARCHAR},
+      </if>
+      <if test="werks != null">
+        werks = #{werks,jdbcType=VARCHAR},
+      </if>
+      <if test="projectNo != null">
+        project_no = #{projectNo,jdbcType=VARCHAR},
+      </if>
+      <if test="materialCode != null">
+        material_code = #{materialCode,jdbcType=VARCHAR},
+      </if>
+      <if test="orderType != null">
+        order_type = #{orderType,jdbcType=VARCHAR},
+      </if>
+      <if test="unit != null">
+        unit = #{unit,jdbcType=VARCHAR},
+      </if>
+      <if test="lgort != null">
+        lgort = #{lgort,jdbcType=VARCHAR},
+      </if>
+      <if test="lifnr != null">
+        lifnr = #{lifnr,jdbcType=VARCHAR},
+      </if>
+      <if test="isSubmit != null">
+        is_submit = #{isSubmit,jdbcType=VARCHAR},
+      </if>
+      <if test="isMaterial != null">
+        is_material = #{isMaterial,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="tenantId != null">
+        tenant_id = #{tenantId,jdbcType=VARCHAR},
+      </if>
+      <if test="branchCode != null">
+        branch_code = #{branchCode,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.richfit.mes.common.model.produce.ProducePurchaseOrder">
+    update produce_purchase_order
+    set order_no = #{orderNo,jdbcType=VARCHAR},
+      material_no = #{materialNo,jdbcType=VARCHAR},
+      material_remark = #{materialRemark,jdbcType=VARCHAR},
+      drawing_no = #{drawingNo,jdbcType=VARCHAR},
+      `number` = #{number,jdbcType=INTEGER},
+      purchase_date = #{purchaseDate,jdbcType=TIMESTAMP},
+      delivery_date = #{deliveryDate,jdbcType=TIMESTAMP},
+      change_on = #{changeOn,jdbcType=TIMESTAMP},
+      change_by = #{changeBy,jdbcType=VARCHAR},
+      werks = #{werks,jdbcType=VARCHAR},
+      project_no = #{projectNo,jdbcType=VARCHAR},
+      material_code = #{materialCode,jdbcType=VARCHAR},
+      order_type = #{orderType,jdbcType=VARCHAR},
+      unit = #{unit,jdbcType=VARCHAR},
+      lgort = #{lgort,jdbcType=VARCHAR},
+      lifnr = #{lifnr,jdbcType=VARCHAR},
+      is_submit = #{isSubmit,jdbcType=VARCHAR},
+      is_material = #{isMaterial,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      remark = #{remark,jdbcType=VARCHAR},
+      tenant_id = #{tenantId,jdbcType=VARCHAR},
+      branch_code = #{branchCode,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>
