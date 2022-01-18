@@ -115,6 +115,39 @@ public class OperationTypeSpecController extends BaseController {
             }
         }
     }
+    
+    
+    @ApiOperation(value = "批量保存工艺类型与质量资料", notes = "批量保存工艺类型与质量资料")
+    @ApiImplicitParam(name = "operatiponTypeSpec", value = "工艺类型与质量资料", required = true, dataType = "OperationTypeSpec", paramType = "path")
+    @PostMapping("/batch/save")
+    public CommonResult<List<OperationTypeSpec>> addOperationTypeSpec(@RequestBody List<OperationTypeSpec> operatiponTypeSpecs,String optType,String branchCode,String tenantId) {
+        
+        QueryWrapper<OperationTypeSpec> queryWrapper = new QueryWrapper<OperationTypeSpec>();
+        queryWrapper.like("tenant_id", "%" + tenantId + "%");
+        queryWrapper.like("branch_code", "%" + branchCode + "%");
+        queryWrapper.eq("opt_type", Integer.parseInt(optType));
+        List<OperationTypeSpec> oldOperatiponTypeSpecs = operatiponTypeSpecService.list(queryWrapper);
+        for(int ii=0;ii<operatiponTypeSpecs.size();ii++) {
+        
+            boolean isExist = false;
+               for(int i=0;i<oldOperatiponTypeSpecs.size();i++) {
+               if(oldOperatiponTypeSpecs.get(i).getId().equals(operatiponTypeSpecs.get(ii).getId())) {
+                   isExist =true;
+               }
+            }
+            if(!isExist) {
+                if (!StringUtils.isNullOrEmpty(operatiponTypeSpecs.get(ii).getId())) { 
+                    operatiponTypeSpecService.removeById(operatiponTypeSpecs.get(ii).getId());
+                }
+                else {
+                     operatiponTypeSpecService.save(operatiponTypeSpecs.get(ii));
+                }
+            }
+        }
+         return CommonResult.success(operatiponTypeSpecService.list(queryWrapper));
+        
+        
+    }
 
     @ApiOperation(value = "查询工序字典", notes = "根据编码获得工序字典")
     @ApiImplicitParam(name = "operatiponCode", value = "编码", required = true, dataType = "String", paramType = "path")
