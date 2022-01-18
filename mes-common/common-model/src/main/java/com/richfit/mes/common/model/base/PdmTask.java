@@ -3,6 +3,7 @@ package com.richfit.mes.common.model.base;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ import java.util.Date;
  * @date 2022-01-04 10:46
  */
 @Data
+@TableName("base_i_pdm_task")
 public class PdmTask{
 
     private static final long serialVersionUID = 1L;
@@ -20,7 +22,7 @@ public class PdmTask{
     @TableId(value = "task_id",type = IdType.ASSIGN_UUID)
     private String taskId;
     //图号
-    //private String drawNo;
+    private String drawNo;
     //pdm 图号
     private String pdmDrawNo;
     //是否获取工艺，0/1
@@ -38,7 +40,8 @@ public class PdmTask{
     //完成时间
     private Date changeOn;
 
-    private String datagroup;
+    @TableField(value = "datagroup")
+    private String dataGroup;
     //发起人
     private String recordBy;
 }
