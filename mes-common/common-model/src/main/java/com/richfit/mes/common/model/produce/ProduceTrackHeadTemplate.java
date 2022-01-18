@@ -1,8 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
@@ -61,5 +59,9 @@ public class ProduceTrackHeadTemplate extends BaseEntity<ProduceTrackHeadTemplat
     @ApiModelProperty(value = "", required = false)
     @TableField("sheet4")
     private String sheet4;
+
+    @ApiModelProperty(value = "", required = false)
+    @TableField("file_id")
+    private String fileId;
 
 }
