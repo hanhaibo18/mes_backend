@@ -1,7 +1,6 @@
 package com.richfit.mes.produce.service;
 
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
-import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
