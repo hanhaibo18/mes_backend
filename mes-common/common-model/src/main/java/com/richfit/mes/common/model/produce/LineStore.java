@@ -148,4 +148,41 @@ public class LineStore extends BaseEntity<LineStore> {
      */
     private String stockType;
 
+    public LineStore() {}
+
+    public LineStore(LineStore lineStore) {
+        this.tenantId = lineStore.tenantId;
+        this.trackNo = lineStore.trackNo;
+        this.materialNo = lineStore.materialNo;
+        this.drawingNo = lineStore.drawingNo;
+        this.status = lineStore.status;
+        this.number = lineStore.number;
+        this.certificateNo = lineStore.certificateNo;
+        this.materialSource = lineStore.materialSource;
+        this.batchNo = lineStore.batchNo;
+        this.workNo = lineStore.workNo;
+        this.workblankNo = lineStore.workblankNo;
+        this.materialType = lineStore.materialType;
+        this.trackType = lineStore.trackType;
+        this.userNum = lineStore.userNum;
+        this.assemblyId = lineStore.assemblyId;
+        this.inTime = lineStore.inTime;
+        this.outTime = lineStore.outTime;
+        this.testBarNumber = lineStore.testBarNumber;
+        this.testBarType = lineStore.testBarType;
+        this.productionOrder = lineStore.productionOrder;
+        this.purchaseOrder = lineStore.purchaseOrder;
+        this.materialDesc = lineStore.materialDesc;
+        this.materialName = lineStore.materialName;
+        this.productName = lineStore.productName;
+        this.texture = lineStore.texture;
+        this.weight = lineStore.weight;
+        this.contractNo = lineStore.contractNo;
+        this.replaceMaterial = lineStore.replaceMaterial;
+        this.beforehandAssigned = lineStore.beforehandAssigned;
+        this.prevTrackNum = lineStore.prevTrackNum;
+        this.isSendErp = lineStore.isSendErp;
+        this.isFeedErp = lineStore.isFeedErp;
+        this.stockType = lineStore.stockType;
+    }
 }

@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -80,24 +82,7 @@ public class LineStoreController {
 
                 for(int i = startNo; i<= endNo; i++){
 
-                    LineStore entity = new LineStore();
-                    entity.setStatus("1");
-                    entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    entity.setCreateTime(new Date());
-                    entity.setTrackNo(lineStore.getTrackNo());
-                    entity.setTrackType(lineStore.getTrackType());
-                    entity.setMaterialType(lineStore.getMaterialType());
-                    entity.setNumber(lineStore.getNumber());
-                    entity.setUserNum(0);
-                    entity.setWorkNo(lineStore.getWorkNo());
-                    entity.setDrawingNo(lineStore.getDrawingNo());
-                    entity.setMaterialNo(lineStore.getMaterialNo());
-                    entity.setMaterialSource(lineStore.getMaterialSource());
-                    entity.setCertificateNo(lineStore.getCertificateNo());
-                    entity.setRemark(lineStore.getRemark());
-
-                    entity.setInTime(lineStore.getInTime());
+                    LineStore entity = new LineStore(lineStore);
 
                     String workblankNo = oldWorkblankNo + "_" + i;
                     if(!StringUtils.isNullOrEmpty(suffixNo)) {
@@ -342,7 +327,7 @@ public class LineStoreController {
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         CommonResult result = null;
         //封装证件信息实体类
-        String[] fieldNames = {"workblankNo","materialNo","materialType","drawingNo","trackType","number","certificateNo","workNo","materialSource", "batchNo"};
+        String[] fieldNames = {"workblankNo","materialNo", "materialName", "productName", "materialDesc", "materialType","drawingNo", "texture", "weight","trackType","number","certificateNo","workNo","materialSource", "batchNo", "testBarType", "testBarNumber", "productionOrder", "purchaseOrder", "contractNo", "replaceMaterial", "beforehandAssigned", "prevTrackNum"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -401,6 +386,51 @@ public class LineStoreController {
             }
         }catch (Exception e) {
             return CommonResult.failed("操作失败：" + e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "导出库存信息", notes = "通过Excel文档导出库存信息")
+    @GetMapping("/export_excel")
+    public void exportExcel(String materialNo, String materialType, String drawingNo, String certificateNo, String workblankNo, String status, HttpServletResponse rsp) {
+        try {
+            QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+            if(!StringUtils.isNullOrEmpty(materialNo)){
+                queryWrapper.eq("material_no", materialNo);
+            }
+            if(!StringUtils.isNullOrEmpty(materialType)){
+                queryWrapper.eq("material_type", materialType);
+            }
+            if(!StringUtils.isNullOrEmpty(status)){
+                queryWrapper.eq("status", status);
+            }
+            if(!StringUtils.isNullOrEmpty(drawingNo)){
+                queryWrapper.like("drawing_no", "%" + drawingNo+ "%");
+            }
+            if(!StringUtils.isNullOrEmpty(certificateNo)){
+                queryWrapper.like("certificate_no", "%" + certificateNo + "%");
+            }
+            if(!StringUtils.isNullOrEmpty(workblankNo)){
+                queryWrapper.like("workblank_no", "%" + workblankNo + "%");
+            }
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.orderByDesc("create_time");
+            List<LineStore> list = lineStoreService.list(queryWrapper);
+
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName =   "物料信息_" + format.format(new Date()) + ".xlsx";
+
+
+
+            String[] columnHeaders = {"编号", "物料号", "物料名称","产品名称", "物料描述" ,"物料类型", "图号", "材质", "重量", "跟踪类型", "数量", "合格证编号", "工作号", "物料来源", "炉号", "试棒类型", "试棒数量", "生成订单编号", "采购订单编号", "合同编号", "代用材料","预先派工", "上工序跟单号"};
+
+            String[] fieldNames = {"workblankNo","materialNo", "materialName", "productName", "materialDesc", "materialType","drawingNo", "texture", "weight","trackType","number","certificateNo","workNo","materialSource", "batchNo", "testBarType", "testBarNumber", "productionOrder", "purchaseOrder", "contractNo", "replaceMaterial", "beforehandAssigned", "prevTrackNum"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, list , columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
 
