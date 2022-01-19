@@ -1,6 +1,7 @@
 package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.richfit.mes.base.service.PdmLogService;
 import com.richfit.mes.base.service.PdmProcessService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.PdmProcess;
@@ -28,6 +29,9 @@ public class PdmProcessController {
     @Autowired
     private PdmProcessService pdmProcessService;
 
+    @Autowired
+    private PdmLogService  PdmLogService;
+
     @PostMapping(value = "/query/list")
     @ApiOperation(value = "工艺查询", notes = "工艺查询")
     @ApiImplicitParam(name = "pdmProcess", value = "工艺VO", required = true, dataType = "PdmProcess", paramType = "body")
@@ -42,6 +46,7 @@ public class PdmProcessController {
     public CommonResult<IPage<PdmProcess>> getPageList(int page, int limit,PdmProcess pdmProcess){
         return CommonResult.success(pdmProcessService.queryPageList(page, limit,pdmProcess));
     }
+
 
 
 }

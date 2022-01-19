@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.base.dao.PdmLogMapper">
+    <resultMap type="com.richfit.mes.common.model.base.PdmLog" id="pdmLogResultMap">
+        <result property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="queryTime" column="query_time"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="par" column="par"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="BaseColumnList">
+        id,type,query_time,status,remark,par
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="BaseQuerySql">
+        <where>
+            1 = 1
+                <if test="type !=null and type !=''">
+                    AND type = #{type}
+                </if>
+                <if test="par !=null and par !=''">
+                    AND par LIKE CONCAT(CONCAT('%',#{par}),'%')
+                </if>
+                <if test="queryTimeStart != null and queryTimeStart != null">
+                    and query_time &gt;= #{queryTimeStart}
+                </if>
+                <if test="queryTimeEnd != null and queryTimeEnd != null">
+                    and query_time &lt;= #{queryTimeEnd}
+                </if>
+        </where>
+    </sql>
+
+    <select id="queryPageList"  resultMap="pdmLogResultMap">
+        select
+        <include refid="BaseColumnList"/>
+        from base_i_pdm_log
+        <include refid="BaseQuerySql"/>
+        order by query_time DESC
+    </select>
+
+</mapper>
