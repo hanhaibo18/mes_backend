@@ -198,6 +198,31 @@ public class ProductController extends BaseController {
     }
 
     @ApiOperation(value = "查询物料", notes = "根据输入内容查询物料")
+    @GetMapping("/product/searchList")
+    public CommonResult<List<Product>> selectByMaterialNoOrDrawingNo(String inputKey,  String materialType, Boolean isEqualType){
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        if(!StringUtils.isNullOrEmpty(inputKey)){
+            inputKey = "%" + inputKey.replaceAll("-", "") + "%";
+            queryWrapper.apply("(material_no like {0} or replace(drawing_no,'-','') like {0})", inputKey);
+        }
+        if(!StringUtils.isNullOrEmpty(materialType)){
+            if(isEqualType != null){
+                if(isEqualType){
+                    queryWrapper.eq("material_type", materialType);
+                } else {
+                    queryWrapper.ne("material_type", materialType);
+                }
+            } else {
+                queryWrapper.eq("material_type", materialType);
+            }
+        }
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.orderByDesc("create_time");
+
+        return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "查询物料", notes = "根据输入内容查询物料")
     @GetMapping("/product/list")
     public CommonResult<List<Product>> selectProductList(String inputKey, String drawingNo, String materialType, Boolean isEqualType){
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();

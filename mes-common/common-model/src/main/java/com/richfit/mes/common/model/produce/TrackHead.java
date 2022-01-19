@@ -176,5 +176,10 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private Integer endNo;
     private String suffixNo;
 
+    private String materialName;
+    private String productName;
+    private String replaceMaterial;
+    private Float weight;
+    private String texture;
 
 }

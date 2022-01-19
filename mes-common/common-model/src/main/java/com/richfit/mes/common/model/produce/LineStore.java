@@ -93,4 +93,59 @@ public class LineStore extends BaseEntity<LineStore> {
      * 出库时间
      */
     private Date outTime;
+
+    /**
+     * 试棒数量
+     */
+    private Integer testBarNumber;
+
+    /**
+     * 试棒类型
+     */
+    private String testBarType;
+    /**
+     * 生产订单编号
+     */
+    private String productionOrder;
+    /**
+     * 采购订单编号
+     */
+    private String purchaseOrder;
+    /**
+     * 物料描述
+     */
+    private String materialDesc;
+    private String materialName;
+    private String productName;
+    private String texture;
+    private Float weight;
+    /**
+     * 合同编号
+     */
+    private String contractNo;
+    /**
+     * 代用材料
+     */
+    private String replaceMaterial;
+    /**
+     * 预先派工
+     */
+    private String beforehandAssigned;
+    /**
+     * 上工序跟单编号
+     */
+    private String prevTrackNum;
+    /**
+     * 是否上传ERP
+     */
+    private String isSendErp;
+    /**
+     * 是否投料ERP
+     */
+    private String isFeedErp;
+    /**
+     * 料单类型  0 常规  1 自动
+     */
+    private String stockType;
+
 }
