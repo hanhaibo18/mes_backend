@@ -20,6 +20,9 @@
             <if test="param.materialCode != null and param.materialCode != ''" >
                 and o.material_code like '%${param.materialCode}%'
             </if>
+            <if test="param.branchCode != null and param.branchCode != ''" >
+                and o.branch_code like '%${param.branchCode}%'
+            </if>
             <if test="param.startTime != null and param.startTime != ''" >
                 and o.order_date >= #{param.startTime}
             </if>
@@ -30,7 +33,7 @@
                 and o.status = '${param.status}'
             </if>
             <if test="param.tenantId != null and param.tenantId != ''" >
-                and o.tenant_id = '${param.tenantId}'
+                and o.tenant_id like '${param.tenantId}'
             </if>
             <if test="param.notEnd != null and param.notEnd != ''" >
                 and o.status != '2'

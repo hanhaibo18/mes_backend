@@ -25,7 +25,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
      @Override
-    public CommonResult<List<ItemParam>> selectItemClass(String name,String code)  {
+    public CommonResult<List<ItemParam>> selectItemClass(String name,String code,String header)  {
         return CommonResult.success(null);
     }
 }

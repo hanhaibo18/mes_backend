@@ -1,9 +1,13 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
+import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.dao.ProducePurchaseOrderMapper;
 import com.richfit.mes.produce.entity.PurchaseOrderSynchronizationDto;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.dom4j.Document;
@@ -15,9 +19,12 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,14 +33,20 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * @ClassName: ProducePurchaseOrderServiceImpl.java
+ * @ClassName: ProducePurchaseOrderSyncServiceImpl.java
  * @Author: Hou XinYu
- * @Description: TODO
- * @CreateTime: 2022年01月10日 14:25:00
+ * @Description: 采购订单同步
+ * @CreateTime: 2022年01月19日 15:53:00
  */
 @Service
 @Slf4j
-public class ProducePurchaseOrderServiceImpl extends ServiceImpl<ProducePurchaseOrderMapper,ProducePurchaseOrder> implements ProducePurchaseOrderService{
+public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrderMapper, ProducePurchaseOrder> implements PurchaseOrderSyncService {
+
+    @Resource
+    PurchaseOrderSyncService producePurchaseOrderSyncService;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
 
     @Value("${synchronization.purchase-order-synchronization}")
     private String url;
@@ -74,6 +87,53 @@ public class ProducePurchaseOrderServiceImpl extends ServiceImpl<ProducePurchase
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
         //获取工厂ID
         return xmlAnalysis(tmpStr, purchaseOrderSynchronizationDto.getCode());
+    }
+
+    /**
+     * 功能描述: 定时同步采购订单
+     * @Author: xinYu.hou
+     * @Date: 2022/1/19 15:57
+     * @return: CommonResult<Boolean>
+     **/
+    @Override
+//    @Scheduled(cron = "0 30 23 * * ? ")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> saveTimingProducePurchaseSynchronization() {
+        //拿到今天的同步数据
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        PurchaseOrderSynchronizationDto synchronizationDto = new PurchaseOrderSynchronizationDto();
+        Date date = new Date();
+        synchronizationDto.setStartTime(format.format(date));
+        synchronizationDto.setEndTime(format.format(date));
+        //获取工厂列表
+        Boolean saveData = false;
+        try {
+            CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
+            for (ItemParam itemParam : listCommonResult.getData()){
+                synchronizationDto.setCode(itemParam.getCode());
+                List<ProducePurchaseOrder> producePurchaseOrders = producePurchaseOrderSyncService.queryPurchaseSynchronization(synchronizationDto);
+                for (ProducePurchaseOrder producePurchaseOrder : producePurchaseOrders){
+                    saveData = producePurchaseOrderSyncService.save(producePurchaseOrder);
+                }
+            }
+        }catch (Exception e) {
+            saveData = false;
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+        return CommonResult.success(saveData);
+    }
+
+    /**
+     * 功能描述: 保存同步信息
+     * @Author: xinYu.hou
+     * @Date: 2022/1/13 14:27
+     * @param producePurchase
+     * @return: CommonResult<Boolean>
+     **/
+    @Override
+    public CommonResult<Boolean> saveProducePurchaseSynchronization(List<ProducePurchaseOrder> producePurchase) {
+        return null;
     }
 
     /**
@@ -213,4 +273,5 @@ public class ProducePurchaseOrderServiceImpl extends ServiceImpl<ProducePurchase
 //        }
         return st > 0 ? str.substring(st, len) : str;
     }
+
 }

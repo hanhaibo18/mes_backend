@@ -14,6 +14,8 @@ public class OrderDto  extends BasePageDto<OrderDto> {
 
     private String tenantId;
 
+    private String branchCode;
+
     private String status;
 
     private String materialCode;

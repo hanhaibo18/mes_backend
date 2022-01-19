@@ -79,6 +79,7 @@ secure:
       - /api/sys/user
       - /api/sys/log/save
       - /api/sys/log/logs
+      - /api/sys/item/item/param/list
 
 logging:
   level:

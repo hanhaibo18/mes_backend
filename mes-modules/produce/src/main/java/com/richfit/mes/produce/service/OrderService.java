@@ -22,12 +22,5 @@ public interface OrderService extends IService<Order> {
     void setOrderStatusClose(String id);
     Order findByOrderCode(String orderCode,String tenantId);
 
-    /**
-     * 功能描述: 订单同步查询
-     * @Author: xinYu.hou
-     * @Date: 2022/1/17 11:10
-     * @param orderSynchronizationDto
-     * @return: List<Order>
-     **/
-    List<Order> queryOrderSynchronization(OrdersSynchronizationDto orderSynchronizationDto);
+
 }
