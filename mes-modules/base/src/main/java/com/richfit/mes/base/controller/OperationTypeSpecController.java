@@ -68,8 +68,8 @@ public class OperationTypeSpecController extends BaseController {
             if (!StringUtils.isNullOrEmpty(optTypeCode)) {
                 queryWrapper.eq("opt_type_code", optTypeCode);
             }
-            if (!StringUtils.isNullOrEmpty(optTypeCode)) {
-                queryWrapper.like("opt_type_name", "%" + optTypeCode + "%");
+            if (!StringUtils.isNullOrEmpty(optTypeName)) {
+                queryWrapper.like("opt_type_name", "%" + optTypeName + "%");
             }
              if (!StringUtils.isNullOrEmpty(optType)) {
                queryWrapper.eq("opt_type", Integer.parseInt(optType));
@@ -120,12 +120,12 @@ public class OperationTypeSpecController extends BaseController {
     @ApiOperation(value = "批量保存工艺类型与质量资料", notes = "批量保存工艺类型与质量资料")
     @ApiImplicitParam(name = "operatiponTypeSpec", value = "工艺类型与质量资料", required = true, dataType = "OperationTypeSpec", paramType = "path")
     @PostMapping("/batch/save")
-    public CommonResult<List<OperationTypeSpec>> addOperationTypeSpec(@RequestBody List<OperationTypeSpec> operatiponTypeSpecs,String optType,String branchCode,String tenantId) {
+    public CommonResult<List<OperationTypeSpec>> addOperationTypeSpec(@RequestBody List<OperationTypeSpec> operatiponTypeSpecs,String optTypeCode,String branchCode,String tenantId) {
         
         QueryWrapper<OperationTypeSpec> queryWrapper = new QueryWrapper<OperationTypeSpec>();
         queryWrapper.like("tenant_id", "%" + tenantId + "%");
         queryWrapper.like("branch_code", "%" + branchCode + "%");
-        queryWrapper.eq("opt_type", Integer.parseInt(optType));
+        queryWrapper.eq("opt_type_code", optTypeCode);
         List<OperationTypeSpec> oldOperatiponTypeSpecs = operatiponTypeSpecService.list(queryWrapper);
         for(int ii=0;ii<operatiponTypeSpecs.size();ii++) {
         
