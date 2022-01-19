@@ -12,9 +12,13 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.HumpToLineUtils;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
+import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.OrderDto;
+import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
+import com.richfit.mes.produce.entity.PurchaseOrderSynchronizationDto;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.OrderService;
 import io.swagger.annotations.Api;
@@ -23,8 +27,14 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: GaoLiang
@@ -43,6 +53,11 @@ public class OrderController extends BaseController {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Resource
+    private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
+
+
     /**
      * 分页查询plan
      */
@@ -89,7 +104,7 @@ public class OrderController extends BaseController {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         order.setTenantId(user.getTenantId());
         order.setBranchCode(user.getOrgId());
-        order.setInchargeOrg(user.getBelongOrgId());
+        order.setInChargeOrg(user.getBelongOrgId());
 
         Action action = new Action();
         action.setActionType("0");
@@ -149,5 +164,75 @@ public class OrderController extends BaseController {
         actionService.saveAction(action);
 
         return CommonResult.success(orderService.removeById(id));
+    }
+
+    @ApiOperation(value = "查询采购同步订单信息", notes = "根据查询条件返回订单信息")
+    @GetMapping("/query/synchronization_page")
+    public CommonResult<List<Order>> queryByPurchaseOrderSynchronization(BasePageDto<String> queryDto) {
+        OrdersSynchronizationDto ordersSynchronization = new OrdersSynchronizationDto();
+        try {
+            ordersSynchronization = objectMapper.readValue(queryDto.getParam(), OrdersSynchronizationDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        ordersSynchronization.setCode("X092");
+        if (ordersSynchronization.getDate() == null || ordersSynchronization.getCode() == null) {
+            return CommonResult.success(null);
+        }
+        return CommonResult.success(orderService.queryOrderSynchronization(ordersSynchronization));
+    }
+
+    /**
+     * 功能描述: 保存同步信息
+     * @Author: xinYu.hou
+     * @Date: 2022年1月18日14:19:44
+     * @param orderList
+     * @return: CommonResult<Boolean>
+     **/
+    @ApiOperation(value = "保存采购订单", notes = "保存采购订单")
+    @Transactional(rollbackFor = Exception.class)
+    @PostMapping("/synchronization_save")
+    public CommonResult<Boolean> saveOrderSynchronization(@RequestBody List<Order> orderList){
+        for (Order order : orderList) {
+            orderService.save(order);
+        }
+        return CommonResult.success(true,"操作成功!");
+    }
+
+    /**
+     * 功能描述: 定时保存同步信息
+     * @Author: xinYu.hou
+     * @Date: 2022/1/13 14:27
+     * @return: CommonResult<Boolean>
+     **/
+    //    @Scheduled(cron = "0 30 23 * * ? ") @Scheduled(cron = "*/10 * * * * ?")
+    @ApiOperation(value = "保存采购订单", notes = "定时保存采购订单")
+    @PostMapping("/timing_save")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> saveTimingOrderSynchronization(){
+        //拿到今天的同步数据
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        OrdersSynchronizationDto ordersSynchronization = new OrdersSynchronizationDto();
+        Date date = new Date();
+        ordersSynchronization.setDate(format.format(date));
+        //获取工厂列表
+        Boolean saveData = false;
+        try {
+            CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("", "");
+            for (ItemParam itemParam : listCommonResult.getData()){
+                log.info(itemParam.getCode());
+                log.info(itemParam.getLabel());
+                ordersSynchronization.setCode(itemParam.getCode());
+                List<Order> orderList = orderService.queryOrderSynchronization(ordersSynchronization);
+                for (Order order : orderList){
+                    saveData = orderService.save(order);
+                }
+            }
+        }catch (Exception e) {
+            saveData = false;
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+        return CommonResult.success(saveData);
     }
 }

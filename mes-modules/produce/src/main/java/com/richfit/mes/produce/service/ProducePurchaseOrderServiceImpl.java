@@ -86,7 +86,6 @@ public class ProducePurchaseOrderServiceImpl extends ServiceImpl<ProducePurchase
      **/
     private List<ProducePurchaseOrder> xmlAnalysis(String xml,String factoryId){
         Document doc = null;
-        Integer size = 0;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         List<ProducePurchaseOrder> list = new ArrayList<>();
         try {
@@ -125,9 +124,7 @@ public class ProducePurchaseOrderServiceImpl extends ServiceImpl<ProducePurchase
                                         Element itemNext = item.next();
                                         if(itemNext.elementTextTrim("EBELN").equals(itemTEKKONNext.elementTextTrim("EBELN"))
                                                 && itemNext.elementTextTrim("WERKS").equals(factoryId)){
-                                            size++;
                                             ProducePurchaseOrder purchase = new ProducePurchaseOrder();
-                                            purchase.setId(size);
                                             purchase.setOrderNo(orderNo);
                                             purchase.setOrderType(orderType);
                                             purchase.setPurchaseDate(purchaseDate);
@@ -144,6 +141,8 @@ public class ProducePurchaseOrderServiceImpl extends ServiceImpl<ProducePurchase
                                                 continue;
                                             }
                                             purchase.setWerks(itemNext.elementTextTrim("WERKS"));
+                                            //TODO: 从xml获取的参数还需再去查询在存储
+                                            purchase.setBranchCode(itemNext.elementTextTrim("WERKS"));
                                             purchase.setMaterialCode(itemNext.elementTextTrim("MATKL"));
                                             String menge = itemNext.elementTextTrim("MENGE");
                                             if (menge != null && menge != ""){
@@ -184,7 +183,6 @@ public class ProducePurchaseOrderServiceImpl extends ServiceImpl<ProducePurchase
                     }
                 }
             }
-            log.info(size.toString());
         } catch (DocumentException e) {
             e.printStackTrace();
         } catch (ParseException e) {

@@ -21,9 +21,9 @@ public class OrdersSynchronizationDto {
     /**
      * 控制者
      */
-    private String master;
+    private String inChargeOrg;
     /**
      * 订单编号
      */
-    private String orderNumber;
+    private String orderSn;
 }

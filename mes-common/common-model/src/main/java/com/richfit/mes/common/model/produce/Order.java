@@ -21,10 +21,12 @@ public class Order extends BaseEntity<Order> {
     private int orderType;
     private String priority;
     private String branchCode;
-    private String inchargeOrg;
+    private String inChargeOrg;
     private int status;
     private String tenantId;
     private String materialDesc;
+    private Date startTime;
+    private Date endTime;
 
     @TableField(exist = false)
     private String branchName;

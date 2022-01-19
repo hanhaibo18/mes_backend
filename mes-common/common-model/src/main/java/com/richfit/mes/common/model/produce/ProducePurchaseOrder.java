@@ -2,9 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -17,7 +15,9 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @TableName("produce_purchase_order")
 public class ProducePurchaseOrder{
-    private Integer id;
+
+    @TableId(type = IdType.ASSIGN_UUID)
+    private String id;
 
     private String orderNo;
 

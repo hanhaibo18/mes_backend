@@ -56,13 +56,18 @@ public class RouterCheckController extends BaseController {
         @ApiImplicitParam(name = "drawingNo", value = "图号", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<RouterCheck>> page(int page, int limit, String sequenceId, String name, String drawingNo, String id) {
+    public CommonResult<IPage<RouterCheck>> page(int page, int limit, String sequenceId, String name, String drawingNo, String id,String type) {
         try {
             QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
             if (!StringUtils.isNullOrEmpty(sequenceId)) {
                 queryWrapper.eq("sequence_id", sequenceId);
             }else{
                 queryWrapper.eq("sequence_id","-1");
+            }
+            if (!StringUtils.isNullOrEmpty(type)) {
+                queryWrapper.eq("type", type);
+            }else {
+                queryWrapper.notIn("type", "质量资料,技术要求,注意事项".split(","));
             }
             if (!StringUtils.isNullOrEmpty(name)) {
                 queryWrapper.like("name", "%" + name + "%");
@@ -99,12 +104,16 @@ public class RouterCheckController extends BaseController {
         @ApiImplicitParam(name = "drawingNo", value = "图号", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/find")
-    public CommonResult<List<RouterCheck>> find(String drawingNo, String optId) {
+    public CommonResult<List<RouterCheck>> find(String drawingNo, String optId,String type) {
         try {
             QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
             queryWrapper.apply("sequence_id in (select opt_id from base_sequence where id = '"+optId+"') and router_id in (select id from base_router where router_no = '"+drawingNo+"' and status ='1')");
            
-         
+            if (!StringUtils.isNullOrEmpty(type)) {
+                queryWrapper.eq("type", type);
+            }else {
+                queryWrapper.notIn("type", "质量资料,技术要求,注意事项".split(","));
+            }
             queryWrapper.orderByAsc("check_order");
             List<RouterCheck> routerChecks = routerCheckService.list( queryWrapper);
             return CommonResult.success(routerChecks);
