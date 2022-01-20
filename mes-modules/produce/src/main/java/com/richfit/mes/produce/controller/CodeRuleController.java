@@ -22,9 +22,11 @@ import java.text.SimpleDateFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import com.richfit.mes.common.model.sys.ItemClass;
+import com.richfit.mes.common.model.sys.ItemParam;
 import java.util.Date;
 import java.util.List;
+import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * <p>
@@ -49,6 +51,18 @@ public class CodeRuleController extends BaseController {
     public static String ID_NULL_MESSAGE = "ID不能为空!";
     public static String CLASS_NAME_NULL_MESSAGE = "名称不能为空!";
     public static String SUCCESS_MESSAGE = "操作成功！";
+    
+    @Autowired
+    private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
+   
+    
+    
+    @GetMapping("/sync")
+    @Scheduled(cron = "0/5 * * * * *")
+    public void sync() {
+        CommonResult<List<ItemParam>> lists  =systemServiceClient.selectItemClass("","erpCode");
+        List<ItemParam> list = lists.getData();
+    }
 
     @ApiOperation(value = "分页查询编码规则", notes = "根据编码、名称、分类分页查询编码规则")
     @GetMapping("/page")
@@ -385,7 +399,7 @@ public class CodeRuleController extends BaseController {
         QueryWrapper<CodeRuleItem> queryWrapper = new QueryWrapper<CodeRuleItem>();
         if (!StringUtils.isNullOrEmpty(code)) {
 
-            List<CodeRule> list = codeRuleService.list(new QueryWrapper<CodeRule>().eq("code", code));
+            List<CodeRule> list = codeRuleService.list(new QueryWrapper<CodeRule>().eq("code", code).eq("branch_code", branchCode).eq("tenant_id", tenantId));
             queryWrapper.eq("code_rule_id", list.get(0).getId());
         }
         if (!StringUtils.isNullOrEmpty(codeRuleId)) {
