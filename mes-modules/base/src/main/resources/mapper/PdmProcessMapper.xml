@@ -40,6 +40,7 @@
                 </if>
             </if>
             and process_type not in ('下料工艺','铆工工艺','油漆工艺')
+            and dataGroup = #{pageVO.dataGroup}
         </where>
     </sql>
 

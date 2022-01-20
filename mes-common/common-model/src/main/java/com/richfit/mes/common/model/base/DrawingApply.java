@@ -80,7 +80,8 @@ public class DrawingApply extends BaseEntity<DrawingApply> {
      */
     protected Date reviewTime;
 
-    private String datagroup;
+    @TableField(value = "datagroup")
+    private String dataGroup;
 
     private String needQuery;
 }

@@ -39,7 +39,7 @@ public class PdmObjectController {
     public CommonResult<IPage<PdmObject>> getPageList(int page, int limit, PdmObject pdmObject){
         QueryWrapper<PdmObject> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmObject.getOpId()),"op_id",pdmObject.getOpId());
-        queryWrapper.orderByDesc("rev");
+        queryWrapper.orderByDesc("rev").eq("dataGroup",pdmObject.getDataGroup());
         return CommonResult.success(pdmObjectService.page(new Page<>(page, limit), queryWrapper));
     }
 

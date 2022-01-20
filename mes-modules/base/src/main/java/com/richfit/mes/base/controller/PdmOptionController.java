@@ -59,7 +59,8 @@ public class PdmOptionController {
         queryWrapper.like(!StringUtils.isNullOrEmpty(pdmOption.getOpNo()),"op_no","%" + pdmOption.getOpNo() + "%")
                 .like(!StringUtils.isNullOrEmpty(pdmOption.getName()),"name","%" + pdmOption.getName() + "%")
                 .eq(!StringUtils.isNullOrEmpty(pdmOption.getProcessId()),"process_id",pdmOption.getProcessId())
-                .orderByAsc("op_no + 1");
+                .orderByAsc("op_no + 1")
+                .eq("dataGroup",pdmOption.getDataGroup());
         return CommonResult.success(pdmOptionService.page(new Page<>(page, limit), queryWrapper));
     }
 
@@ -69,7 +70,8 @@ public class PdmOptionController {
     public CommonResult<IPage<PdmDraw>> optionDrawPageList(int page, int limit, PdmOption pdmOption){
         QueryWrapper<PdmDraw> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmOption.getId()),"op_id",pdmOption.getId());
-        queryWrapper.orderByDesc("syc_time");
+        queryWrapper.orderByDesc("syc_time")
+                .eq("dataGroup",pdmOption.getDataGroup());
         return CommonResult.success(pdmDrawService.page(new Page<>(page, limit), queryWrapper));
     }
 

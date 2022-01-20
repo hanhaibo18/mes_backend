@@ -39,7 +39,8 @@ public class PdmDrawController {
     public CommonResult<List<PdmDraw>> getList(PdmDraw pdmDraw){
         QueryWrapper<PdmDraw> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmDraw.getItemId()),"item_id",pdmDraw.getItemId());
-        queryWrapper.orderByDesc("syc_time");
+        queryWrapper.orderByDesc("syc_time")
+                .eq("dataGroup",pdmDraw.getDataGroup());
         List<PdmDraw> list = pdmDrawService.list(queryWrapper);
         return CommonResult.success(list);
     }
@@ -50,7 +51,8 @@ public class PdmDrawController {
     public CommonResult<IPage<PdmDraw>> getPageList(int page, int limit,PdmDraw pdmDraw){
         QueryWrapper<PdmDraw> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmDraw.getItemId()),"item_id",pdmDraw.getItemId());
-        queryWrapper.orderByDesc("syc_time");
+        queryWrapper.orderByDesc("syc_time")
+                .eq("dataGroup",pdmDraw.getDataGroup());
         return CommonResult.success(pdmDrawService.page(new Page<>(page, limit), queryWrapper));
     }
 

@@ -141,7 +141,7 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "分页查询图纸申请", notes = "根据图号、状态分页查询图纸申请")
     @GetMapping("/manage")
-    public CommonResult<IPage<DrawingApply>> selectDrawingApply(String drawingNo, Integer status, String order, String orderCol,  int page, int limit){
+    public CommonResult<IPage<DrawingApply>> selectDrawingApply(String drawingNo, Integer status, String order, String orderCol,  int page, int limit,String dataGroup){
         QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
         if(!StringUtils.isNullOrEmpty(drawingNo)){
             queryWrapper.like("drawing_no", "%" + drawingNo + "%");
@@ -151,6 +151,7 @@ public class DrawingApplyController extends BaseController {
         }
 
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("datagroup", dataGroup);
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
                 if("desc".equals(order)){
