@@ -56,13 +56,7 @@ public class CodeRuleController extends BaseController {
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
    
     
-    
-    @GetMapping("/sync")
-    @Scheduled(cron = "0/5 * * * * *")
-    public void sync() {
-        CommonResult<List<ItemParam>> lists  =systemServiceClient.selectItemClass("","erpCode");
-        List<ItemParam> list = lists.getData();
-    }
+     
 
     @ApiOperation(value = "分页查询编码规则", notes = "根据编码、名称、分类分页查询编码规则")
     @GetMapping("/page")
