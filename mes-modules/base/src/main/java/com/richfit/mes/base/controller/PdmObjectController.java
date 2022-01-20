@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,7 +33,7 @@ public class PdmObjectController {
     @Autowired
     private PdmObjectService pdmObjectService;
 
-    @PostMapping("/query/pageList")
+    @GetMapping("/query/pageList")
     @ApiOperation(value = "工装分页查询", notes = "工装分页查询")
     @ApiImplicitParam(name = "pdmObject", value = "工装VO", required = true, dataType = "pdmObject", paramType = "body")
     public CommonResult<IPage<PdmObject>> getPageList(int page, int limit, PdmObject pdmObject){

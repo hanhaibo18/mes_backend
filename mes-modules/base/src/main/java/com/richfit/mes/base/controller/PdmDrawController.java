@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,7 +44,7 @@ public class PdmDrawController {
         return CommonResult.success(list);
     }
 
-    @PostMapping("/query/pageList")
+    @GetMapping("/query/pageList")
     @ApiOperation(value = "工艺图纸分页查询", notes = "工艺图纸分页查询")
     @ApiImplicitParam(name = "pdmDraw", value = "工序VO", required = true, dataType = "pdmDraw", paramType = "body")
     public CommonResult<IPage<PdmDraw>> getPageList(int page, int limit,PdmDraw pdmDraw){

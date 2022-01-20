@@ -16,7 +16,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,7 +38,7 @@ public class PdmOptionController {
     @Autowired
     private PdmDrawService pdmDrawService;
 
-    @PostMapping(value = "/query/list")
+    @GetMapping(value = "/query/list")
     @ApiOperation(value = "工序查询", notes = "工序查询")
     @ApiImplicitParam(name = "PdmOption", value = "工序VO", required = true, dataType = "PdmOption", paramType = "body")
     public CommonResult<List<PdmOption>> getList(PdmOption pdmOption){
@@ -51,7 +51,7 @@ public class PdmOptionController {
         return CommonResult.success(list);
     }
 
-    @PostMapping("/query/pageList")
+    @GetMapping("/query/pageList")
     @ApiOperation(value = "工序分页查询", notes = "工序分页查询")
     @ApiImplicitParam(name = "PdmOption", value = "工序VO", required = true, dataType = "PdmOption", paramType = "body")
     public CommonResult<IPage<PdmOption>> getPageList(int page, int limit,PdmOption pdmOption){
@@ -63,7 +63,7 @@ public class PdmOptionController {
         return CommonResult.success(pdmOptionService.page(new Page<>(page, limit), queryWrapper));
     }
 
-    @PostMapping("/queryOptionDraw/optionDrawPageList")
+    @GetMapping("/queryOptionDraw/optionDrawPageList")
     @ApiOperation(value = "工序图纸分页查询", notes = "工序分页查询")
     @ApiImplicitParam(name = "pdmDraw", value = "图纸VO", required = true, dataType = "pdmDraw", paramType = "body")
     public CommonResult<IPage<PdmDraw>> optionDrawPageList(int page, int limit, PdmOption pdmOption){
