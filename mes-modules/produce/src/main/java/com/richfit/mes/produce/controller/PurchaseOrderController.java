@@ -63,10 +63,10 @@ public class PurchaseOrderController {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date createDate = dateFormat.parse(purchaseOrderDto.getStartTime());
             Date endDate = dateFormat.parse(purchaseOrderDto.getEndTime());
-            wrapper.between("delivery_date",createDate,endDate);
+            wrapper.between("purchase_date",createDate,endDate);
         }
         if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getOrderNo())){
-            wrapper.eq("order_no",purchaseOrderDto.getOrderNo());
+            wrapper.like("order_no","%" + purchaseOrderDto.getOrderNo() + "%");
         }
         if (!StringUtils.isNullOrEmpty(purchaseOrderDto.getBranchCode())) {
             wrapper.like("branch_code", "%" + purchaseOrderDto.getBranchCode() + "%");

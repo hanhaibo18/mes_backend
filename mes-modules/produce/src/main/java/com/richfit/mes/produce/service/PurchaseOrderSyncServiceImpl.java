@@ -3,12 +3,14 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.dao.ProducePurchaseOrderMapper;
 import com.richfit.mes.produce.entity.PurchaseOrderSynchronizationDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -48,6 +50,9 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 
     @Resource
     private SystemServiceClient systemServiceClient;
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
 
     @Value("${synchronization.purchase-order-synchronization}")
     private String url;
@@ -184,7 +189,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         List<ProducePurchaseOrder> list = new ArrayList<>();
         CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
         Map<String, ItemParam> maps = listCommonResult.getData().stream().collect(Collectors.toMap(ItemParam::getCode, Function.identity(), (key1, key2) -> key2));
-
+        log.info(maps.toString());
         try {
             doc = DocumentHelper.parseText(xml);
             Element rootElt = doc.getRootElement();
@@ -228,7 +233,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                                             purchase.setLifnr(lifnr);
                                             Boolean isLOEKZ = itemNext.elementTextTrim("LOEKZ") != null && itemNext.elementTextTrim("LOEKZ").trim().equals("L");
                                             Boolean isRETPO = itemNext.elementTextTrim("RETPO") != null && !itemNext.elementTextTrim("RETPO").trim().equals("");
-                                            if (isLOEKZ || isRETPO) {
+                                                if (isLOEKZ || isRETPO) {
                                                 continue;
                                             }
                                             char zero = 48;
@@ -241,8 +246,6 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //                                            purchase.setWerks(itemNext.elementTextTrim("WERKS"));c
                                             String branchCode = maps.get(itemNext.elementTextTrim("WERKS")).getLabel();
                                             purchase.setBranchCode(branchCode);
-                                            //TODO: 从xml获取的参数还需再去查询在存储
-                                            purchase.setBranchCode(itemNext.elementTextTrim("WERKS"));
                                             purchase.setMaterialCode(itemNext.elementTextTrim("MATKL"));
                                             String menge = itemNext.elementTextTrim("MENGE");
                                             if (menge != null && !"".equals(menge)) {
@@ -256,13 +259,13 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //                                                purchase.Desc = dt.Rows[0]["Desc"].ToString();
 //                                            }
                                             purchase.setLgort(itemNext.elementTextTrim("LGORT"));
-                                            //TODO 后续完善
-//                                            SaintSoft.ProdMaterial.Model.C_Production production = bll.GetModel(purchase.Material_No);
-//                                            if (production != null)
-//                                            {
-//                                                purchase.Material_Remark = production.Prod_Desc;
-//                                                purchase.Drawing_No = production.Drawing_No;
-//                                            }
+                                            CommonResult<List<Product>> productList = baseServiceClient.selectProduct(purchase.getMaterialNo(), "", "");
+                                            if (null != productList.getData()){
+                                                for (Product product : productList.getData()) {
+                                                    purchase.setMaterialRemark(product.getMaterialDesc());
+                                                    purchase.setDrawingNo(product.getDrawingNo());
+                                                }
+                                            }
                                             boolean isHave = false;
                                             for (ProducePurchaseOrder purchaseSynchronization : list) {
                                                 if (purchaseSynchronization.getOrderNo().equals(purchase.getOrderNo())
@@ -283,11 +286,10 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                     }
                 }
             }
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
+        } catch (DocumentException | ParseException e) {
             e.printStackTrace();
         }
+        log.info(list.toString());
         log.info("serviceImplEnd");
         return list;
     }
