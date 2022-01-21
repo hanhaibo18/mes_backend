@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.dao.OrderMapper;
@@ -21,6 +22,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -93,10 +95,14 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     public CommonResult<Boolean> saveOrderSync(List<Order> orderList) {
         //TODO:没有物料编号 不同步  status状态=0
         for (Order order : orderList) {
+            if (order.getMaterialCode() == null){
+                continue;
+            }
             QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
             if (order.getOrderSn() != null) {
                 queryWrapper.eq("order_sn",order.getOrderSn());
             }
+            order.setStatus(0);
             orderSyncService.remove(queryWrapper);
             orderSyncService.save(order);
         }
@@ -111,6 +117,8 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
      **/
     @Override
 //    @Scheduled(cron = "0 30 23 * * ? ")
+    //"*/10 * * * * ? "
+//    @Scheduled(cron = "${time.order}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingOrderSync() {
         //拿到今天的同步数据
@@ -123,11 +131,22 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         try {
             CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
             for (ItemParam itemParam : listCommonResult.getData()){
-                log.info(itemParam.getCode());
-                log.info(itemParam.getLabel());
                 ordersSynchronization.setCode(itemParam.getCode());
                 List<Order> orderList = orderSyncService.queryOrderSynchronization(ordersSynchronization);
                 for (Order order : orderList){
+                    order.setBranchCode(itemParam.getLabel());
+                    order.setTenantId(itemParam.getTenantId());
+                    order.setCreateBy("system");
+                    order.setModifyBy("system");
+                    order.setCreateTime(date);
+                    order.setModifyTime(date);
+                    order.setStatus(0);
+                    if (order.getMaterialCode() == null) {
+                        continue;
+                    }
+                    QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("order_sn", order.getOrderSn());
+                    orderSyncService.remove(queryWrapper);
                     saveData = orderSyncService.save(order);
                 }
             }

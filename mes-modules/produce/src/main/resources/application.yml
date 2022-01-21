@@ -44,3 +44,6 @@ security:
 synchronization:
   orders-synchronization: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
   purchase-order-synchronization: http://emaip.erp.cnpc:80/ZBZZ/HTXT/GetPurchaseInfoByTime/service/PS/GetPurchaseInfoService
+time:
+  order: "0 30 23 * * ? "
+  ourchase_order: "0 30 23 * * ? "

@@ -14,10 +14,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 @TableName("produce_purchase_order")
-public class ProducePurchaseOrder{
-
-    @TableId(type = IdType.ASSIGN_UUID)
-    private String id;
+public class ProducePurchaseOrder extends BaseEntity<ProducePurchaseOrder>{
 
     private String orderNo;
 
@@ -36,8 +33,6 @@ public class ProducePurchaseOrder{
     private Date changeOn;
 
     private String changeBy;
-
-    private String werks;
 
     private String projectNo;
 
@@ -60,35 +55,6 @@ public class ProducePurchaseOrder{
     private String tenantId;
 
     private String branchCode;
-
-    /**
-     * 创建者
-     */
-    @TableField(fill = FieldFill.INSERT)
-    protected String createBy;
-
-    /**
-     * 创建日期
-     */
-    @TableField(fill = FieldFill.INSERT)
-    protected Date createTime;
-
-    /**
-     * 更新者
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected String modifyBy;
-
-    /**
-     * 更新日期
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected Date modifyTime;
-
-    /**
-     * 备注字段
-     */
-    protected String remark;
 
     private static final long serialVersionUID = 1L;
 }

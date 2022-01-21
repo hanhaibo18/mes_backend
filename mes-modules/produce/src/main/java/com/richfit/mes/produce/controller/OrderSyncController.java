@@ -1,25 +1,17 @@
 package com.richfit.mes.produce.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
-import com.richfit.mes.produce.provider.SystemServiceClient;
-import com.richfit.mes.produce.service.OrderService;
 import com.richfit.mes.produce.service.OrderSyncService;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**

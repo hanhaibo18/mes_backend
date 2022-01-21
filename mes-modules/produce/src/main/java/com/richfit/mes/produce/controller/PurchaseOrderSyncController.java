@@ -76,7 +76,7 @@ public class PurchaseOrderSyncController {
      **/
     @ApiOperation(value = "保存采购订单", notes = "保存采购订单")
     @Transactional(rollbackFor = Exception.class)
-    @PostMapping("/save")
+    @PostMapping("/synchronization_save")
     public CommonResult<Boolean> saveProducePurchaseSynchronization(@RequestBody List<ProducePurchaseOrder> producePurchase){
         return producePurchaseOrderSyncService.saveProducePurchaseSynchronization(producePurchase);
     }
