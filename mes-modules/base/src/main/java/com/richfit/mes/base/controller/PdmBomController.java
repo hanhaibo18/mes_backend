@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.io.resource.ClassPathResource;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -68,7 +69,8 @@ public class PdmBomController {
     @ApiOperation(value = "导出产品BOM", notes = "根据模板导出产品BOM")
     public void exportBom(String drawingNo, String ver, String dataGroup,  HttpServletResponse rsp) {
         try {
-            HSSFWorkbook wb = new HSSFWorkbook(new FileInputStream(bomUrl));
+            ClassPathResource resource = new ClassPathResource(bomUrl);
+            HSSFWorkbook wb = new HSSFWorkbook(resource.getStream());
             HSSFSheet sheet = wb.getSheet("泵业制造BOM");
             QueryWrapper<PdmBom> query = new QueryWrapper<>();
             String pId = drawingNo + "@" + ver;

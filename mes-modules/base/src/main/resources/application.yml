@@ -37,4 +37,4 @@ security:
       loadBalanced: true
       token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
 excelTemp:
-  pdmBomUrl: D:\GITWork\mes-cloud\mes-backend\mes-modules\base\src\main\resources\excel\产品BOM导出模板.xls
+  pdmBomUrl: excel/产品BOM导出模板.xls
