@@ -66,7 +66,7 @@ public class AttachmentController extends BaseController {
         return CommonResult.success(attachment);
     }
     
-    @PostMapping("save")
+    @GetMapping("save")
     @ApiOperation(value = "上传文件", notes = "上传文件")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "module", value = "业务模块", dataType = "String")
