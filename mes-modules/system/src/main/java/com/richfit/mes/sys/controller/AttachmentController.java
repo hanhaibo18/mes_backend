@@ -74,6 +74,7 @@ public class AttachmentController extends BaseController {
     public CommonResult<Attachment> save(Attachment attachment) {
         
             try {
+                attachment.setId(java.util.UUID.randomUUID().toString().replaceAll("-", ""));
                 attachmentService.add(attachment);
             } catch (Exception e) {
                 log.error("upload attachment error: {}", e.getMessage(), e);
