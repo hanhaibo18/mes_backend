@@ -8,7 +8,7 @@ spring:
       username: nacos
       password: nacos0
       discovery:
-        enabled: ${DISCOVERY_ENABLED:false}
+        enabled: ${DISCOVERY_ENABLED:true}
         server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
         group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
         namespace: ${DISCOVERY_NAMESPACE:mes_dev}
@@ -36,3 +36,5 @@ security:
     resource:
       loadBalanced: true
       token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
+excelTemp:
+  pdmBomUrl: D:\GITWork\mes-cloud\mes-backend\mes-modules\base\src\main\resources\excel\产品BOM导出模板.xls
