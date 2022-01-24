@@ -1,14 +1,17 @@
 package com.richfit.mes.base.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.richfit.mes.base.service.PdmProcessService;
+import com.richfit.mes.base.service.*;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.PdmProcess;
+import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.base.Router;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +31,20 @@ public class PdmProcessController {
 
     @Autowired
     private PdmProcessService pdmProcessService;
+    @Autowired
+    private PdmBomService pdmBomService;      
+    @Autowired
+    private PdmObjectService pdmObjectService;
+    @Autowired
+    private PdmOptionService pdmOptionService;
+    @Autowired
+    private PdmDrawService pdmDrawService;
+    @Autowired
+    public RouterService routerService;
+    @Autowired
+    public SequenceService sequenceService;
+    @Autowired
+    public OperatiponService OperationService;
 
     @PostMapping(value = "/query/list")
     @ApiOperation(value = "工艺查询", notes = "工艺查询")
