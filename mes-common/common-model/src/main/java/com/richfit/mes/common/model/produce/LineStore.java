@@ -148,6 +148,11 @@ public class LineStore extends BaseEntity<LineStore> {
      */
     private String stockType;
 
+    /**
+     * 图号 产品编号
+     */
+    private String prodNo;
+
     public LineStore() {}
 
     public LineStore(LineStore lineStore) {
@@ -184,5 +189,6 @@ public class LineStore extends BaseEntity<LineStore> {
         this.isSendErp = lineStore.isSendErp;
         this.isFeedErp = lineStore.isFeedErp;
         this.stockType = lineStore.stockType;
+        this.prodNo = lineStore.prodNo;
     }
 }

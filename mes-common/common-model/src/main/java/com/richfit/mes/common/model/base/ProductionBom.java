@@ -117,7 +117,7 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
     /**
      * 版本号
      */
-    private Integer versionNo;
+    private String versionNo;
 
     /**
      * 产品类型
@@ -173,4 +173,6 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
 
     @TableField(exist = false)
     private String isImport;
+
+    public String prodDesc;
 }
