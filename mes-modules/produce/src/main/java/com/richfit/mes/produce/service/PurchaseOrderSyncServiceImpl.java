@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
-import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
@@ -23,7 +22,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -252,7 +250,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                                                 purchase.setNumber((int) Float.parseFloat(menge));
                                             }
                                             purchase.setUnit(itemNext.elementTextTrim("MEINS"));
-                                            //TODO 后续完善
+                                            //TODO 查询数量单位 暂时没有这张表 后续完善
 //                                            DataTable dt = bll.GetDescByUnit(purchase.Unit).Tables[0];
 //                                            if(dt.Rows.Count > 0)
 //                                            {

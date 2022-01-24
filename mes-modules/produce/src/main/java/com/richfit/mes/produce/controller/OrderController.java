@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
@@ -26,7 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: GaoLiang
@@ -154,5 +158,50 @@ public class OrderController extends BaseController {
         actionService.saveAction(action);
 
         return CommonResult.success(orderService.removeById(id));
+    }
+
+    @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")
+    @GetMapping("/export_excel")
+    public void exportExcel(BasePageDto<String> queryDto, HttpServletResponse rsp) {
+        OrderDto orderDto = null;
+        try {
+            orderDto = objectMapper.readValue(queryDto.getParam(), OrderDto.class);
+            QueryWrapper<Order> wrapper = new QueryWrapper<>();
+            boolean isEmpty = null != orderDto;
+            if (isEmpty && StringUtils.hasText(orderDto.getOrderSn())) {
+                wrapper.like("order_sn",orderDto.getOrderSn());
+            }
+            if (isEmpty && StringUtils.hasText(orderDto.getMaterialCode())){
+                wrapper.like("material_code", orderDto.getMaterialCode());
+            }
+            if (isEmpty && StringUtils.hasText(orderDto.getStartTime())){
+                wrapper.ge("order_date", orderDto.getStartTime());
+            }
+            if (isEmpty && StringUtils.hasText(orderDto.getEndTime())) {
+                wrapper.le("order_date", orderDto.getEndTime());
+            }
+            if (isEmpty && StringUtils.hasText(orderDto.getStatus())) {
+                wrapper.eq("status", orderDto.getStatus());
+            }
+            if (isEmpty && StringUtils.hasText(orderDto.getBranchCode())) {
+                wrapper.like("branch_code", "%" + orderDto.getBranchCode() + "%");
+            }
+            if (isEmpty && StringUtils.hasText(orderDto.getTenantId())) {
+                wrapper.like("tenant_id", "%" + orderDto.getTenantId() + "%");
+            }
+            List<Order> list = orderService.list(wrapper);
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName =   "采购订单_" + format.format(new Date()) + ".xlsx";
+
+            String[] columnHeaders = {"订单号", "物料号","物料描述", "工厂编号",  "控制者", "数量", "计划开始时间", "计划结束时间","销售订单","工号","合同","交货日期", "最后更新时间","最后更新人","订单日期"};
+
+            String[] fieldNames = {"orderSn","materialNo","materialCode","branchCode","inChargeOrg","orderNum","startTime","endTime","","","","","modifyTime","modifyBy","orderDate"};
+            //export
+            ExcelUtils.exportExcel(fileName, list , columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }

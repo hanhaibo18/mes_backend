@@ -30,10 +30,6 @@ public class ProducePurchaseOrder extends BaseEntity<ProducePurchaseOrder>{
 
     private Date deliveryDate;
 
-    private Date changeOn;
-
-    private String changeBy;
-
     private String projectNo;
 
     private String materialCode;
