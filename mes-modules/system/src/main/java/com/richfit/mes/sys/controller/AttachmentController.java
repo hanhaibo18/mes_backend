@@ -78,7 +78,7 @@ public class AttachmentController extends BaseController {
             } catch (Exception e) {
                 log.error("upload attachment error: {}", e.getMessage(), e);
             }
-        }
+        
         return CommonResult.success(attachment);
     }
 
