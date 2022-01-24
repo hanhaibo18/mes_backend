@@ -65,6 +65,22 @@ public class AttachmentController extends BaseController {
         }
         return CommonResult.success(attachment);
     }
+    
+    @PostMapping("save")
+    @ApiOperation(value = "上传文件", notes = "上传文件")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "module", value = "业务模块", dataType = "String")
+    })
+    public CommonResult<Attachment> save(Attachment attachment) {
+        
+            try {
+                attachmentService.save(attachment);
+            } catch (Exception e) {
+                log.error("upload attachment error: {}", e.getMessage(), e);
+            }
+        }
+        return CommonResult.success(attachment);
+    }
 
     @GetMapping("download")
     @ApiOperation(value = "下载附件", notes = "根据ID下载附件")
