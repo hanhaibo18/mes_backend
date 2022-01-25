@@ -37,4 +37,4 @@ security:
       loadBalanced: true
       token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
 excelTemp:
-  pdmBomUrl: excel/产品BOM导出模板2.xls
+  pdmBomUrl: excel/template.xls
