@@ -24,6 +24,11 @@ public class TrackHeadTemplate extends BaseEntity<TrackHeadTemplate> {
      * 模板描述
      */
     private String templateDesc;
+    
+      /**
+     * 类型 0=跟单 1=合格证
+     */
+    private String type;
 
     /**
      * 组织机构编号
