@@ -187,7 +187,6 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         List<ProducePurchaseOrder> list = new ArrayList<>();
         CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
         Map<String, ItemParam> maps = listCommonResult.getData().stream().collect(Collectors.toMap(ItemParam::getCode, Function.identity(), (key1, key2) -> key2));
-        log.info(maps.toString());
         try {
             doc = DocumentHelper.parseText(xml);
             Element rootElt = doc.getRootElement();
@@ -268,7 +267,6 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                                             for (ProducePurchaseOrder purchaseSynchronization : list) {
                                                 if (purchaseSynchronization.getOrderNo().equals(purchase.getOrderNo())
                                                         && purchaseSynchronization.getMaterialNo().equals(purchase.getMaterialNo())) {
-                                                    log.error(purchase.getOrderNo() + "," + purchase.getMaterialNo());
                                                     isHave = true;
                                                     break;
                                                 }

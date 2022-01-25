@@ -1,17 +1,25 @@
 package com.richfit.mes.produce.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BasePageDto;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.produce.entity.OrderDto;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
 import com.richfit.mes.produce.service.OrderSyncService;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -61,4 +69,29 @@ public class OrderSyncController {
         return orderSyncService.saveOrderSync(orderList);
     }
 
+    @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")
+    @GetMapping("/export_excel")
+    public void exportExcel(BasePageDto<String> queryDto, HttpServletResponse rsp) {
+        OrdersSynchronizationDto ordersSynchronization = new OrdersSynchronizationDto();
+        try {
+            ordersSynchronization = objectMapper.readValue(queryDto.getParam(), OrdersSynchronizationDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        List<Order> orderList = orderSyncService.queryOrderSynchronization(ordersSynchronization);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+        String fileName =   "订单同步_" + format.format(new Date()) + ".xlsx";
+
+        String[] columnHeaders = {"订单号","物料号","物料描述","工厂编码","控制者","数量","计划开始时间","计划结束时间","KDAUF","BSTKD"};
+        String[] fieldNames ={"orderSn","materialCode","materialDesc","branchCode","inChargeOrg","orderNum","startTime","endTime","",""};
+        //export
+        try {
+            ExcelUtils.exportExcel(fileName, orderList , columnHeaders, fieldNames, rsp);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

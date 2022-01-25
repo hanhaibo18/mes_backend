@@ -8,7 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BasePageDto;
+import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
+import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
 import com.richfit.mes.produce.entity.PurchaseOrderDto;
 import com.richfit.mes.produce.entity.PurchaseOrderSynchronizationDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -21,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -81,4 +86,45 @@ public class PurchaseOrderSyncController {
         return producePurchaseOrderSyncService.saveProducePurchaseSynchronization(producePurchase);
     }
 
+    @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")
+    @GetMapping("/export_excel")
+    public void exportExcel(BasePageDto<String> queryDto, HttpServletResponse rsp) {
+        PurchaseOrderSynchronizationDto purchaseOrderSynchronizationDto = new PurchaseOrderSynchronizationDto();
+        try {
+            purchaseOrderSynchronizationDto = objectMapper.readValue(queryDto.getParam(), PurchaseOrderSynchronizationDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        List<ProducePurchaseOrder> purchaseOrderList = producePurchaseOrderSyncService.queryPurchaseSynchronization(purchaseOrderSynchronizationDto);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+        String fileName =   "采购同步订单_" + format.format(new Date()) + ".xlsx";
+
+        String[] columnHeaders = {"订单号","订单采购类型","物料号","物料描述","图号","数量","Unit","单位","采购时间","工厂编码","项目编号","八位码","供应商"};
+        String[] fieldNames ={"orderNo","orderType","materialNo","materialRemark","drawingNo","number","","","branchCode","materialCode","lifnr"};
+        //export
+        try {
+            ExcelUtils.exportExcel(fileName, purchaseOrderList , columnHeaders, fieldNames, rsp);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
