@@ -25,4 +25,6 @@ public interface ProductionBomService extends IService<ProductionBom> {
 
     List<ProductionBom> getProductionBomList(@Param(Constants.WRAPPER) Wrapper<ProductionBom> query);
 
+    boolean updateStatus(ProductionBom bom);
+
 }

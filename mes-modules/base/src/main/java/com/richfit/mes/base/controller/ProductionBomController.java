@@ -11,6 +11,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.PdmBom;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.base.service.ProductionBomService;
@@ -19,7 +20,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -99,14 +106,7 @@ public class ProductionBomController extends BaseController {
     @ApiOperation(value = "发布/停用产品BOM", notes = "发布/停用产品BOM")
     @PostMapping("/production_bom/publish")
     public CommonResult<ProductionBom> pushProduct(@RequestBody ProductionBom productionBom){
-        UpdateWrapper<ProductionBom> update = new UpdateWrapper<ProductionBom>().eq("id",productionBom.getId()).or().eq("main_drawing_no",productionBom.getId());
-        update.set("status", productionBom.getStatus());
-        if(productionBom.getStatus().equals("1")){
-            update.set("publish_by", SecurityUtils.getCurrentUser().getUsername());
-            update.set("publish_time", new Date());
-        }
-
-        boolean bool = productionBomService.update(update);
+        boolean bool = productionBomService.updateStatus(productionBom);
         if(bool){
             return CommonResult.success(productionBom, BOM_SUCCESS_MESSAGE);
         } else {
@@ -166,28 +166,28 @@ public class ProductionBomController extends BaseController {
 
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
         if(!StringUtils.isNullOrEmpty(id)){
-            query.like("pb.id", "%" + id + "%");
+            query.eq("id", id);
         }
         if(!StringUtils.isNullOrEmpty(drawingNo)){
-            query.like("pb.drawing_no", "%" + drawingNo + "%");
+            query.like("drawing_no", "%" + drawingNo + "%");
         }
         if(!StringUtils.isNullOrEmpty(materialNo)){
-            query.like("pb.material_no", "%" + materialNo + "%");
+            query.like("material_no", "%" + materialNo + "%");
         }
         if(!StringUtils.isNullOrEmpty(status)){
-            query.eq("pb.status", status);
+            query.eq("status", status);
         }
 
         if(StringUtils.isNullOrEmpty(mainDrawingNo)){
-            query.and(wrapper -> wrapper.isNull("pb.main_drawing_no").or().eq("pb.main_drawing_no", ""));
+            query.and(wrapper -> wrapper.isNull("main_drawing_no").or().eq("main_drawing_no", ""));
         } else {
-            query.eq("pb.main_drawing_no", mainDrawingNo);
+            query.eq("main_drawing_no", mainDrawingNo);
         }
         if(!StringUtils.isNullOrEmpty(branchCode)){
-            query.eq("pb.branch_code", branchCode);
+            query.eq("branch_code", branchCode);
         }
         if(!StringUtils.isNullOrEmpty(bomKey)){
-            query.eq("pb.bom_key", bomKey);
+            query.eq("bom_key", bomKey);
         }
 
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
@@ -200,29 +200,27 @@ public class ProductionBomController extends BaseController {
             }
         }
         if(!isAdmin) {
-            query.eq("pb.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            query.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
                 if("desc".equals(order)){
-                    query.orderByDesc("pb." + StrUtil.toUnderlineCase(orderCol));
+                    query.orderByDesc(StrUtil.toUnderlineCase(orderCol));
                 } else if ("asc".equals(order)){
-                    query.orderByAsc("pb." + StrUtil.toUnderlineCase(orderCol));
+                    query.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
-                query.orderByDesc("pb." + StrUtil.toUnderlineCase(orderCol));
+                query.orderByDesc(StrUtil.toUnderlineCase(orderCol));
             }
         } else {
             if(!StringUtils.isNullOrEmpty(bomKey)){
-                query.orderByAsc("pb.order_no");
+                query.orderByAsc("order_no");
             } else {
-                query.orderByDesc("pb.modify_time");
+                query.orderByDesc("modify_time");
             }
         }
 
-
-        IPage<ProductionBom> boms = productionBomService.getProductionBomByPage(new Page<ProductionBom>(page, limit), query);
-        return CommonResult.success(boms, BOM_SUCCESS_MESSAGE);
+        return CommonResult.success(productionBomService.page(new Page<ProductionBom>(page, limit), query), BOM_SUCCESS_MESSAGE);
 
     }
 
@@ -273,7 +271,7 @@ public class ProductionBomController extends BaseController {
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         CommonResult result = null;
         //封装证件信息实体类
-        String[] fieldNames = {"isImport", "orderNo", "branchCode","grade","mainDrawingNo","drawingNo", "materialNo","productName","sourceType","weight","texture","number","unit", "optName", "trackType",
+        String[] fieldNames = {"isImport", "orderNo", "branchCode","grade","mainDrawingNo","drawingNo", "materialNo","prodDesc","sourceType","weight","texture","number","unit", "optName", "trackType",
  "isNumFrom","isNeedPicking","isKeyPart","isEdgeStore","isCheck","remark"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
@@ -309,6 +307,8 @@ public class ProductionBomController extends BaseController {
             }
 
             int finalVersionNo = versionNo;*/
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+            String versionNo = format.format(new Date());
 
             String bomKey = UUID.randomUUID().toString();
 
@@ -320,8 +320,39 @@ public class ProductionBomController extends BaseController {
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
                 item.setBomKey(bomKey);
+                item.setVersionNo(versionNo);
+                if("单件".equals(item.getTrackType())) {
+                    item.setTrackType("0");
+                } else if("批次".equals(item.getTrackType())) {
+                    item.setTrackType("1");
+                }
+                if("否".equals(item.getIsNumFrom())) {
+                    item.setIsNumFrom("0");
+                } else if("是".equals(item.getIsNumFrom())) {
+                    item.setIsNumFrom("1");
+                }
+                if("否".equals(item.getIsCheck())) {
+                    item.setIsCheck("0");
+                } else if("是".equals(item.getIsCheck())) {
+                    item.setIsCheck("1");
+                }
+                if("否".equals(item.getIsCurrent())) {
+                    item.setIsCurrent("0");
+                } else if("是".equals(item.getIsCurrent())) {
+                    item.setIsCurrent("1");
+                }
+                if("否".equals(item.getIsEdgeStore())) {
+                    item.setIsEdgeStore("0");
+                } else if("是".equals(item.getIsEdgeStore())) {
+                    item.setIsEdgeStore("1");
+                }
+                if("否".equals(item.getIsNeedPicking())) {
+                    item.setIsNeedPicking("0");
+                } else if("是".equals(item.getIsNeedPicking())) {
+                    item.setIsNeedPicking("1");
+                }
 
-                Product product = productService.getOne(new QueryWrapper<Product>().eq("material_no", item.getMaterialNo()));
+                /*Product product = productService.getOne(new QueryWrapper<Product>().eq("material_no", item.getMaterialNo()));
                 if(product == null){ //判断导入的信息在物料表中是否存在，不存在则保存入物料表
                     product = new Product();
                     product.setBranchCode(item.getBranchCode());
@@ -353,7 +384,7 @@ public class ProductionBomController extends BaseController {
                     product.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                     product.setCreateTime(new Date());
                     productService.save(product);
-                }
+                }*/
             });
 
             boolean bool = productionBomService.saveBatch(list);
@@ -367,7 +398,10 @@ public class ProductionBomController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "导出产品Bom", notes = "通过Excel文档导出产品Bom")
+    @Value("${excelTemp.pdmBomUrl}")
+    private String bomUrl;
+
+    /*@ApiOperation(value = "导出产品Bom", notes = "通过Excel文档导出产品Bom")
     @GetMapping("/export_excel")
     public void exportExcel(String bomKey, HttpServletResponse rsp) {
         try {
@@ -419,6 +453,107 @@ public class ProductionBomController extends BaseController {
 
             //export
             ExcelUtils.exportExcel(fileName, result , columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }*/
+
+    @ApiOperation(value = "导出产品Bom", notes = "通过Excel文档导出产品Bom")
+    @GetMapping("/export_excel")
+    public void exportExcel(String bomKey, HttpServletResponse rsp) {
+        try {
+            ClassPathResource resource = new ClassPathResource(bomUrl);
+            HSSFWorkbook wb = new HSSFWorkbook(resource.getInputStream());
+            HSSFSheet sheet = wb.getSheet("泵业制造BOM");
+
+            QueryWrapper<ProductionBom> query = new QueryWrapper<>();
+            if(!StringUtils.isNullOrEmpty(bomKey)){
+                query.eq("pb.bom_key", bomKey);
+            }
+            query.orderByAsc("pb.order_no");
+
+            List<ProductionBom> list = productionBomService.getProductionBomList(query);
+
+            List<ProductionBom> topProduction = list.stream().filter(item -> item.getGrade().toUpperCase().equals("H")).collect(Collectors.toList());
+
+            String drawingNo = topProduction.get(0).getDrawingNo();
+
+            HSSFRow drawTitle = sheet.getRow(1);
+            drawTitle.getCell(7).setCellValue(drawingNo);
+            List<ProductionBom> result = new ArrayList<>();
+            for(int i = 0; i<list.size(); i++){
+                ProductionBom pb = list.get(i);
+                if(pb.getObjectType() != null){
+                    if(pb.getObjectType().equals("0")){
+                        pb.setObjectType("自制件");
+                    } else if(pb.getObjectType().equals("1")){
+                        pb.setObjectType("外购件");
+                    } else if(pb.getObjectType().equals("2")){
+                        pb.setObjectType("外协件");
+                    }
+                }
+
+                if(pb.getProductType() != null){
+                    if(pb.getProductType().equals("0")){
+                        pb.setProductType("铸件");
+                    } else if(pb.getProductType().equals("1")){
+                        pb.setProductType("锻件");
+                    } else if(pb.getProductType().equals("2")){
+                        pb.setProductType("精铸件");
+                    } else if(pb.getProductType().equals("3")){
+                        pb.setProductType("成品/半成品");
+                    }
+                }
+
+                result.add(pb);
+            }
+
+            int index = 4;
+
+            for (ProductionBom bom : result) {
+                HSSFRow row = sheet.getRow(index);
+                int orderNo = bom.getOrderNo() != null ? bom.getOrderNo() : 0;
+                row.getCell(1).setCellValue(orderNo);
+                row.getCell(2).setCellValue(bom.getBranchCode());
+                if(bom.getDrawingNo().equals(drawingNo)) {
+                    row.getCell(3).setCellValue("H");
+                    drawTitle.getCell(9).setCellValue(bom.getMaterialNo());
+                    HSSFRow nameTitle = sheet.getRow(2);
+                    nameTitle.getCell(7).setCellValue(bom.getProdDesc());
+                } else {
+                    row.getCell(3).setCellValue("L");
+                    row.getCell(4).setCellValue(drawingNo);
+                }
+                row.getCell(5).setCellValue(bom.getDrawingNo());
+                row.getCell(6).setCellValue(bom.getMaterialNo());
+                row.getCell(7).setCellValue(bom.getProdDesc());
+                row.getCell(8).setCellValue(bom.getSourceType());
+                Float weight = bom.getWeight() != null ? bom.getWeight() : 0;
+                row.getCell(9).setCellValue(weight);
+                row.getCell(10).setCellValue(bom.getTexture());
+                int number = bom.getNumber() != null ? bom.getNumber() : 0;
+                row.getCell(11).setCellValue(number);
+                row.getCell(12).setCellValue(bom.getUnit());
+                row.getCell(13).setCellValue(bom.getOptName());
+
+                row.getCell(14).setCellValue("0".equals(bom.getTrackType()) ? "单件" : "批次");
+                row.getCell(15).setCellValue("0".equals(bom.getIsNumFrom()) ? "否" : "是");
+                row.getCell(16).setCellValue("0".equals(bom.getIsEdgeStore()) ? "否" : "是");
+                row.getCell(17).setCellValue("0".equals(bom.getIsKeyPart()) ? "否" : "是");
+                row.getCell(18).setCellValue("0".equals(bom.getIsNeedPicking()) ? "否" : "是");
+                row.getCell(19).setCellValue("0".equals(bom.getIsCheck()) ? "否" : "是");
+                row.getCell(20).setCellValue(bom.getRemark());
+                index++;
+            }
+
+            rsp.setCharacterEncoding("UTF-8");
+            rsp.setContentType("application/octet-stream");
+            //默认Excel名称
+            rsp.setHeader("Content-disposition",
+                    String.format("attachment;filename=%s", URLEncoder.encode("产品BOM.xls", "UTF-8")));
+            rsp.flushBuffer();
+            wb.write(rsp.getOutputStream());
+
         } catch (Exception e) {
             log.error(e.getMessage());
         }

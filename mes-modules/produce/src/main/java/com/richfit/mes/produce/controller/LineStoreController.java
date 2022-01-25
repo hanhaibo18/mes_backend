@@ -84,7 +84,7 @@ public class LineStoreController {
 
                     LineStore entity = new LineStore(lineStore);
 
-                    String workblankNo = oldWorkblankNo + "_" + i;
+                    String workblankNo = oldWorkblankNo + "" + i;
                     if(!StringUtils.isNullOrEmpty(suffixNo)) {
                         workblankNo += "_" + suffixNo;
                     }
@@ -98,6 +98,7 @@ public class LineStoreController {
                         break;
                     }
                     entity.setWorkblankNo(workblankNo);
+                    entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());
                     list.add(entity);
                 }
                 if(isHave){
@@ -160,7 +161,7 @@ public class LineStoreController {
 
     @ApiOperation(value = "分页查询入库信息", notes = "根据图号、合格证号、物料编号分页查询入库信息")
     @GetMapping("/line_store")
-    public CommonResult<IPage<LineStore>> selectLineStore(String id, String materialNo, String materialType, String drawingNo, String certificateNo, String workblankNo, String status, String order , String orderCol, int page, int limit){
+    public CommonResult<IPage<LineStore>> selectLineStore(String id, String materialNo, String materialType, String drawingNo, String certificateNo, String workblankNo, String status, String trackType, String order , String orderCol, int page, int limit){
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if(!StringUtils.isNullOrEmpty(materialNo)){
             queryWrapper.eq("material_no", materialNo);
@@ -173,6 +174,9 @@ public class LineStoreController {
         }
         if(!StringUtils.isNullOrEmpty(status)){
             queryWrapper.eq("status", status);
+        }
+        if(!StringUtils.isNullOrEmpty(trackType)){
+            queryWrapper.eq("track_type", trackType);
         }
         if(!StringUtils.isNullOrEmpty(drawingNo)){
             queryWrapper.like("drawing_no", "%" + drawingNo+ "%");

@@ -59,19 +59,16 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
     /**
      * 材质
      */
-    @TableField(exist = false)
     private String texture;
 
     /**
      * 重量
      */
-    @TableField(exist = false)
     private Float weight;
 
     /**
      * 单位
      */
-    @TableField(exist = false)
     private String unit;
 
     /**
