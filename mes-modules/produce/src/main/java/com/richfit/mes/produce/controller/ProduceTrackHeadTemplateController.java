@@ -39,7 +39,7 @@ public class ProduceTrackHeadTemplateController {
      */
     @ApiOperation(value = "分页查询接口", notes = "分页查询接口")
     @GetMapping("/page")
-    public CommonResult<IPage<ProduceTrackHeadTemplate>> page(String templateCode, String templateName, int page, int limit, String branchCode) {
+    public CommonResult<IPage<ProduceTrackHeadTemplate>> page(String templateCode, String templateName,String type, int page, int limit, String branchCode) {
         try {
             QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
             if (!StringUtils.isNullOrEmpty(templateCode)) {
@@ -47,6 +47,10 @@ public class ProduceTrackHeadTemplateController {
             }
             if (!StringUtils.isNullOrEmpty(templateName)) {
                 queryWrapper.like("template_name", "%" + templateName + "%");
+            }
+
+            if (!StringUtils.isNullOrEmpty(type)) {
+                queryWrapper.like("type", "%" + type + "%");
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.like("branch_code", "%" + branchCode + "%");
