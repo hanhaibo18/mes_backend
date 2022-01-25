@@ -29,6 +29,11 @@ public class ProduceTrackHeadTemplate extends BaseEntity<ProduceTrackHeadTemplat
     @ApiModelProperty(value = "", required = false)
     @TableField("template_name")
     private String templateName;
+    
+    
+    @ApiModelProperty(value = "", required = false)
+    @TableField("type")
+    private String type;
 
 
     @ApiModelProperty(value = "", required = false)
