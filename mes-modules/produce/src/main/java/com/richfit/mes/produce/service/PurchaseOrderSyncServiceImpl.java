@@ -89,6 +89,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         String resultStr = restTemplate.postForObject(url, formEntity, String.class);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
+        log.info("获取数据转换结束");
         //获取工厂ID
         return xmlAnalysis(tmpStr, purchaseOrderSynchronizationDto.getCode());
     }
@@ -104,6 +105,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //    @Scheduled(cron = "${time.ourchase_order}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingProducePurchaseSynchronization() {
+
         //拿到今天的同步数据
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         PurchaseOrderSynchronizationDto synchronizationDto = new PurchaseOrderSynchronizationDto();
@@ -182,6 +184,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
      * @return: List<ProducePurchaseSynchronization>
      **/
     private List<ProducePurchaseOrder> xmlAnalysis(String xml, String factoryId) {
+        log.info("开始处理数据");
         Document doc = null;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         List<ProducePurchaseOrder> list = new ArrayList<>();
@@ -190,7 +193,6 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         try {
             doc = DocumentHelper.parseText(xml);
             Element rootElt = doc.getRootElement();
-            log.info(rootElt.getName());
             Iterator<Element> body = rootElt.elementIterator("Body");
             while (body.hasNext()) {
                 Element bodyNext = body.next();
@@ -285,8 +287,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         } catch (DocumentException | ParseException e) {
             e.printStackTrace();
         }
-        log.info(list.toString());
-        log.info("serviceImplEnd");
+        log.info("数据处理结束");
         return list;
     }
 
@@ -312,5 +313,6 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //        }
         return st > 0 ? str.substring(st, len) : str;
     }
+
 
 }
