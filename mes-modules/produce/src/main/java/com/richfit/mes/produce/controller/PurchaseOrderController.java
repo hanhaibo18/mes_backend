@@ -69,12 +69,15 @@ public class PurchaseOrderController {
         if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getOrderNo())){
             wrapper.like("order_no","%" + purchaseOrderDto.getOrderNo() + "%");
         }
-//        if (!StringUtils.isNullOrEmpty(purchaseOrderDto.getBranchCode())) {
-//            wrapper.like("branch_code", "%" + purchaseOrderDto.getBranchCode() + "%");
-//        }
-//        if (!StringUtils.isNullOrEmpty(purchaseOrderDto.getTenantId())) {
-//            wrapper.like("tenant_id", "%" + purchaseOrderDto.getTenantId() + "%");
-//        }
+        if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getBranchCode())) {
+            wrapper.like("branch_code", "%" + purchaseOrderDto.getBranchCode() + "%");
+        }
+        if (!StringUtils.isNullOrEmpty(purchaseOrderDto.getTenantId())) {
+            wrapper.like("tenant_id", "%" + purchaseOrderDto.getTenantId() + "%");
+        }
+        if(isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getMaterialNo())){
+            wrapper.like("material_no","%" + purchaseOrderDto.getMaterialNo() + "%");
+        }
         IPage<ProducePurchaseOrder> productPage = producePurchaseOrderService.page(
                 new Page<>(queryDto.getPage(), queryDto.getLimit()),wrapper);
         return CommonResult.success(productPage);
@@ -98,6 +101,9 @@ public class PurchaseOrderController {
             }
             if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getOrderNo())){
                 wrapper.like("order_no","%" + purchaseOrderDto.getOrderNo() + "%");
+            }
+            if(isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getMaterialNo())){
+                wrapper.like("material_no","%" + purchaseOrderDto.getMaterialNo() + "%");
             }
             if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getBranchCode())) {
                 wrapper.like("branch_code", "%" + purchaseOrderDto.getBranchCode() + "%");

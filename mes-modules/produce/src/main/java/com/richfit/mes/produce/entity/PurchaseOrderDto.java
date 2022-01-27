@@ -15,6 +15,7 @@ public class PurchaseOrderDto {
     private String startTime;
     private String endTime;
     private String orderNo;
+    private String materialNo;
     private String branchCode;
     private String tenantId;
 }

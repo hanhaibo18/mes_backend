@@ -105,7 +105,6 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //    @Scheduled(cron = "${time.ourchase_order}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingProducePurchaseSynchronization() {
-
         //拿到今天的同步数据
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         PurchaseOrderSynchronizationDto synchronizationDto = new PurchaseOrderSynchronizationDto();
