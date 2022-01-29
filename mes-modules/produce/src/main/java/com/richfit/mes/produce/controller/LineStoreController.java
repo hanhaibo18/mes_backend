@@ -11,11 +11,16 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.LineStore;
+import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.LineStoreService;
+import com.richfit.mes.produce.service.OrderService;
+import com.richfit.mes.produce.service.PurchaseOrderService;
 import com.richfit.mes.produce.service.TrackHeadService;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -56,9 +61,15 @@ public class LineStoreController {
     @Autowired
     private BaseServiceClient baseServiceClient;
 
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private PurchaseOrderService purchaseOrderService;
+
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
     @PostMapping("/line_store")
-    public CommonResult<LineStore> addLineStore(@RequestBody LineStore lineStore, @RequestParam(required = false) Integer startNo,@RequestParam(required = false) Integer endNo,@RequestParam(required = false) String suffixNo){
+    public CommonResult<LineStore> addLineStore(@RequestBody LineStore lineStore, @RequestParam(required = false) Integer startNo, @RequestParam(required = false) Integer endNo, @RequestParam(required = false) String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur){
         if(StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())){
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if(StringUtils.isNullOrEmpty(lineStore.getMaterialNo())){
@@ -81,9 +92,13 @@ public class LineStoreController {
                 boolean isHave = false;
 
                 for(int i = startNo; i<= endNo; i++){
-
                     LineStore entity = new LineStore(lineStore);
-
+                    if(isAutoMatchProd){
+                        entity.setProductionOrder(matchProd(entity.getMaterialNo(), entity.getNumber()));
+                    }
+                    if(isAutoMatchPur){
+                        entity.setPurchaseOrder(matchPur(entity.getMaterialNo(), entity.getNumber()));
+                    }
                     String workblankNo = oldWorkblankNo + "" + i;
                     if(!StringUtils.isNullOrEmpty(suffixNo)) {
                         workblankNo += "_" + suffixNo;
@@ -108,6 +123,12 @@ public class LineStoreController {
 
                 bool = lineStoreService.saveBatch(list);
             } else {
+                if(isAutoMatchProd){
+                    lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
+                }
+                if(isAutoMatchPur){
+                    lineStore.setPurchaseOrder(matchPur(lineStore.getMaterialNo(), lineStore.getNumber()));
+                }
                 QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("workblank_no", lineStore.getWorkblankNo());
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -124,6 +145,54 @@ public class LineStoreController {
                 return CommonResult.failed(FAILED_MESSAGE);
             }
         }
+    }
+
+    private String matchProd(String materialNo, Integer number){
+        String orderNo = "";
+        QueryWrapper<Order> wrapper = new QueryWrapper<>();
+        wrapper.eq("material_code", materialNo);
+        wrapper.orderByAsc("delivery_date");
+        List<Order> orderList = orderService.list(wrapper);
+        for (Order order : orderList) {
+            QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
+            lWrapper.select("sum(number) as number ");
+            lWrapper.eq("production_order", order.getOrderSn());
+            LineStore lineStore = lineStoreService.getOne(lWrapper);
+            int useQty = 0;
+            if (lineStore != null) {
+                useQty = lineStore.getNumber();
+            }
+            if(order.getOrderNum() - useQty >= number) {
+                orderNo = order.getOrderSn();
+                break;
+            }
+        }
+
+        return orderNo;
+    }
+
+    private String matchPur(String materialNo, Integer number){
+        String orderNo = "";
+        QueryWrapper<ProducePurchaseOrder> wrapper = new QueryWrapper<>();
+        wrapper.eq("material_no", materialNo);
+        wrapper.orderByAsc("delivery_date");
+        List<ProducePurchaseOrder> orderList = purchaseOrderService.list(wrapper);
+        for (ProducePurchaseOrder order : orderList) {
+            QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
+            lWrapper.select("sum(number) as number ");
+            lWrapper.eq("purchase_order", order.getOrderNo());
+            LineStore lineStore = lineStoreService.getOne(lWrapper);
+            int useQty = 0;
+            if (lineStore != null) {
+                useQty = lineStore.getNumber();
+            }
+            if(order.getNumber() - useQty >= number) {
+                orderNo = order.getOrderNo();
+                break;
+            }
+        }
+
+        return orderNo;
     }
 
     @ApiOperation(value = "修改入库信息", notes = "修改入库信息")
