@@ -4,10 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.ProductMapper;
 import com.richfit.mes.base.entity.MaterialSyncDto;
+import com.richfit.mes.base.entity.MaterialTypeDto;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
-import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -114,9 +113,10 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                                 }else {
                                     product.setProductName(data[1]);
                                 }
-                                if (data[data.length-1].matches("[a-zA-Z]+")){
-                                    //TODO: 确认一下有没有什么字典表 去获取一下code
-                                    product.setObjectType(data[data.length-1]);
+                                if (data[data.length-1].matches("[a-zA-Z]+")|| "/".equals(data[data.length-1])){
+                                    MaterialTypeDto type = materialType().get(data[data.length - 1]);
+                                    product.setMaterialType(type.getNewCode());
+                                    product.setMaterialTypeName(type.getDesc());
                                 }
                                 product.setMaterialDesc(name);
                                 product.setDrawingNo(drawingNo);
@@ -152,6 +152,15 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
             st++;
         }
         return st > 0 ? str.substring(st, len) : str;
+    }
+
+    public static Map<String, MaterialTypeDto> materialType(){
+        Map<String, MaterialTypeDto> map = new HashMap<>(4);
+        map.put("Z",new MaterialTypeDto("Z","0","铸件"));
+        map.put("D",new MaterialTypeDto("D","1","锻件"));
+        map.put("JZ",new MaterialTypeDto("JZ","2","精铸件"));
+        map.put("/",new MaterialTypeDto("/","3","成品/半成品"));
+        return map;
     }
 
     /**

@@ -93,4 +93,6 @@ public class Product extends BaseEntity<Product> {
     @TableField(exist = false)
     private Integer routerType;
 
+    @TableField(exist = false)
+    private String materialTypeName;
 }
