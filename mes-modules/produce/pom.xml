@@ -40,6 +40,10 @@
             <groupId>com.richfit.mes</groupId>
             <artifactId>common-security</artifactId>
         </dependency>
+         <dependency>
+            <groupId>com.richfit.mes</groupId>
+            <artifactId>common-oss</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
