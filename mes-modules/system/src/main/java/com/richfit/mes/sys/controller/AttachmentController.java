@@ -151,6 +151,13 @@ public class AttachmentController extends BaseController {
     }
 
 
+    @GetMapping("/getinput/{id}")
+    public InputStream getAttachmentInputStream(@PathVariable String id) {
+        Attachment attachment = attachmentService.get(id);
+        return attachmentService.download(attachment);
+    }
+
+
     @DeleteMapping("/{id}")
     @ApiOperation(value = "删除附件", notes = "根据ID删除附件")
     @ApiImplicitParam(name = "id", value = "附件ID", required = true, dataType = "String",paramType = "path")
