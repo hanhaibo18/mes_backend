@@ -152,9 +152,9 @@ public class AttachmentController extends BaseController {
 
 
     @GetMapping("/getinput/{id}")
-    public InputStream getAttachmentInputStream(@PathVariable String id) {
+    public CommonResult<byte[]> getAttachmentInputStream(@PathVariable String id) {
         Attachment attachment = attachmentService.get(id);
-        return attachmentService.download(attachment);
+        attachmentService.downloadbyte(attachment);
     }
 
 
