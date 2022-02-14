@@ -62,6 +62,7 @@ public interface AttachmentService {
      */
     InputStream download(Attachment attachment);
 
+    byte[] downloadbyte(Attachment attachment);
     /**
      * 获取带token的url
      *
