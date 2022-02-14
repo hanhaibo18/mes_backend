@@ -88,6 +88,12 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
     }
 
     @Override
+    public byte[] downloadbyte(Attachment attachment) {
+        return fastDfsService.downloadFile(attachment.getGroupName(), attachment.getFastFileId());
+    }
+
+
+    @Override
     public String getTokenUrl(Attachment attachment) {
         try {
             return fastDfsService.getTokenUrl(attachment.getFastFileId());
