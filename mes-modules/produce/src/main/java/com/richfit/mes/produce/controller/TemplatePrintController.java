@@ -60,9 +60,7 @@ public class TemplatePrintController extends BaseController {
 
     @Autowired
     private ProduceTrackHeadTemplateService produceTrackHeadTemplateService;
-
-    @Autowired
-    private FastDfsService fastDfsService;
+  
 
     @Autowired
     private SystemServiceClient systemServiceClient;
