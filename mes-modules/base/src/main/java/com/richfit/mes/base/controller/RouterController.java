@@ -74,7 +74,7 @@ public class RouterController extends BaseController {
                 queryWrapper.like("branch_code", "%" + branchCode + "%");
             }
             if (!StringUtils.isNullOrEmpty(status)) {
-                queryWrapper.in("status", status);
+                queryWrapper.in("status", status.split(","));
             } else {
                 queryWrapper.in("is_active", "0,1".split(","));
             }
