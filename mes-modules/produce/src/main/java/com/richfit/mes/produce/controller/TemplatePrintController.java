@@ -31,7 +31,7 @@ import org.springframework.jdbc.core.CallableStatementCreator;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.richfit.mes.oss.service.FastDfsService;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
