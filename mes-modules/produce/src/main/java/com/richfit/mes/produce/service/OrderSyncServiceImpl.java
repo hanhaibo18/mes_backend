@@ -134,7 +134,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                 ordersSynchronization.setCode(itemParam.getCode());
                 List<Order> orderList = orderSyncService.queryOrderSynchronization(ordersSynchronization);
                 for (Order order : orderList){
-                    order.setBranchCode(itemParam.getLabel());
+                    //order.setBranchCode(itemParam.getLabel());
                     order.setTenantId(itemParam.getTenantId());
                     order.setCreateBy("system");
                     order.setModifyBy("system");
