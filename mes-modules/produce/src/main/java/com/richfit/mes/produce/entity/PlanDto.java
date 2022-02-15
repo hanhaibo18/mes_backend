@@ -47,6 +47,7 @@ public class PlanDto extends BasePageDto<PlanDto> {
     private int alarmStatus;
 
     private String tenantId;
+    private String branchCode;
 
     /**
      * 排序列
