@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author: GaoLiang
@@ -87,18 +84,22 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         if(planDto.isShowList()) {
             List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
             for (Plan plan : planList.getRecords()) {
-                List<Sequence> sequence = baseServiceClient.getByRouterNo(plan.getDrawNo(), null).getData();
-                plan.setTotalProgress(null == sequence ? 0 : plan.getProjNum() * sequence.size());
-                plan.setLackNum(plan.getProjNum() - plan.getProcessingNum() - plan.getStoreNum());
+                try {
+                    List<Sequence> sequence = baseServiceClient.getByRouterNo(plan.getDrawNo(), null, null, null).getData();
+                    plan.setTotalProgress(null == sequence ? 0 : plan.getProjNum() * sequence.size());
+                    plan.setLackNum(plan.getProjNum() - plan.getProcessingNum() - plan.getStoreNum());
 
-                CommonResult<Router> router = baseServiceClient
-                        .getRouterByNo(plan.getDrawNo(), null);
+                    CommonResult<Router> router = baseServiceClient
+                            .getRouterByNo(plan.getDrawNo(), null);
 
-                plan.setProcessStatus(router.getData() != null ? Integer.valueOf(router.getData().getStatus()) : 0);
+                    plan.setProcessStatus(router.getData() != null ? Integer.valueOf(router.getData().getStatus()) : 0);
 
-                compPlanAlarmStatus(plan, sequence);
+                    compPlanAlarmStatus(plan, sequence);
 
-                findBranchName(plan, branchList);
+                    findBranchName(plan, branchList);
+                }catch(Exception e) {
+
+                }
             }
         }
 
@@ -159,7 +160,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public Map computePlanNeedHour(Plan plan){
 
         Map map = new HashMap();
-        List<Sequence> sequence = baseServiceClient.getByRouterNo(plan.getDrawNo(), null).getData();
+        List<Sequence> sequence = new ArrayList<>();
+        sequence = baseServiceClient.getByRouterNo(plan.getDrawNo(), null,null,null).getData();
 
         //2.1 查询已报工工序列表
         List<PlanTrackItemViewDto> trackItems = this.queryPlanTrackItem(plan.getId());
