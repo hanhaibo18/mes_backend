@@ -18,7 +18,9 @@ public interface BaseServiceClient {
 
     @GetMapping(value = "/api/base/sequence/getByRouterNo")
     public CommonResult<List<Sequence>> getByRouterNo(@RequestParam("routerNo") String routerNo,
-                                                      @RequestParam("branchCode") String branchCode
+                                                      @RequestParam("branchCode") String branchCode,
+                                                      @RequestParam("tenantId") String tenantId,
+                                                      @RequestParam("optId") String optId
     );
 
     @GetMapping(value = "/api/base/branch/select_branch_children_by_code")
