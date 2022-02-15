@@ -34,6 +34,9 @@
             <if test="param.tenantId != null and param.tenantId != ''" >
                 and p.tenant_id = #{param.tenantId}
             </if>
+            <if test="param.branchCode != null and param.branchCode != ''" >
+                and p.branch_code = #{branchCode}
+            </if>
             <if test="param.fiterClose == true" >
                 and p.status != 2
             </if>
@@ -51,7 +54,7 @@
         from produce_plan p
         left join plan_track_view pt
         on p.id = pt.id
-        WHERE p.proj_Code=#{code} and p.tenant_id = #{tenantId}
+        WHERE p.proj_Code=#{code} and p.branch_code = #{branch_code}
     </select>
 
     <select id="queryPlanTrackItem" resultType="com.richfit.mes.produce.entity.PlanTrackItemViewDto">
