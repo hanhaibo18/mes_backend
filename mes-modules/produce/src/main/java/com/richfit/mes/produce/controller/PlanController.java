@@ -72,7 +72,7 @@ public class PlanController extends BaseController {
             planDto.setOrder("desc");
         }
 
-        planDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
         IPage<Plan> planList = planService.queryPage(new Page<Plan>(queryDto.getPage(), queryDto.getLimit()),planDto);
 
         return CommonResult.success(planList);
@@ -88,7 +88,7 @@ public class PlanController extends BaseController {
     @PostMapping("/save")
     public CommonResult<Object> savePlan(@RequestBody Plan plan) throws GlobalException{
         TenantUserDetails user = SecurityUtils.getCurrentUser();
-        plan.setTenantId(user.getTenantId());
+        //plan.setTenantId(user.getTenantId());
 
         return planService.addPlan(plan);
     }
