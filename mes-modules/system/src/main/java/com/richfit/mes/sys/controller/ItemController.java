@@ -137,14 +137,22 @@ public class ItemController extends BaseController {
     @GetMapping("/item/param")
     public CommonResult<IPage<ItemParam>> selectItemParam(String code, String label, String classId, int page, int limit){
         QueryWrapper<ItemParam> queryWrapper = new QueryWrapper<ItemParam>();
-        if(!StringUtils.isNullOrEmpty(code)){
-            queryWrapper.inSql("class_id", "select id from sys_item_class where code ='"+code+"'");
-        }
-        if(!StringUtils.isNullOrEmpty(label)){
-            queryWrapper.inSql("class_id", "select id from sys_item_class where code ='"+label+"'");
-        }
+
         if(!StringUtils.isNullOrEmpty(classId)){
             queryWrapper.eq("class_id", classId);
+            if(!StringUtils.isNullOrEmpty(code)&&!StringUtils.isNullOrEmpty(classId)){
+                queryWrapper.like("code", "%" + code + "%");
+            }
+            if(!StringUtils.isNullOrEmpty(label)){
+                queryWrapper.like("label", "%" + label + "%");
+            }
+        } else {
+            if(!StringUtils.isNullOrEmpty(code)&&!StringUtils.isNullOrEmpty(classId)){
+                queryWrapper.inSql("class_id", "select id from sys_item_class where code ='"+code+"'");
+            }
+            if(!StringUtils.isNullOrEmpty(label)){
+                queryWrapper.inSql("class_id", "select id from sys_item_class where code ='"+label+"'");
+            }
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("order_num");
