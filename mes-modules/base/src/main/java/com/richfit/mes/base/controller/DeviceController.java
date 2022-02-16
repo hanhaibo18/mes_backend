@@ -257,7 +257,7 @@ public class DeviceController extends BaseController {
     @ApiOperation(value = "导入设备", notes = "根据Excel文档导入设备")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
-    public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+    public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file,String branchCode,String tenantId) {
         CommonResult result = null;
         //封装证件信息实体类
         java.lang.reflect.Field[] fields = Device.class.getDeclaredFields();
@@ -278,14 +278,28 @@ public class DeviceController extends BaseController {
             List<Device> list =  ExcelUtils.importExcel(excelFile, Device.class, fieldNames, 1,0,0,tempName.toString());
             FileUtils.delete(excelFile);
              for (int i = 0; i < list.size(); i++) {
-                 
+
                  if (null != SecurityUtils.getCurrentUser()) {
-                    list.get(i).setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 }
+                 list.get(i).setTenantId(tenantId);
+                 list.get(i).setBranchCode(branchCode);
                  List<Device> devices = deviceService.list(new QueryWrapper<Device>().eq("name", list.get(i).getParentId()).eq("type", "1").eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
                 if(devices.size()>0) {
                      list.get(i).setParentId(devices.get(0).getId());
+                }
+                if(StringUtils.isNullOrEmpty(list.get(i).getType())) {
+                     list.get(i).setType("0");
+                } else if("设备".equals(list.get(i).getType()))
+                {
+                    list.get(i).setType("0");
+                }
+                else if("设备组".equals(list.get(i).getType())) {
+                    list.get(i).setType("1");
+                }
+                else {
+                      list.get(i).setType("0");
                 }
                 if("是".equals( list.get(i).getRunStatus())) {
                      list.get(i).setRunStatus("1");
