@@ -138,7 +138,8 @@ public class ItemController extends BaseController {
     public CommonResult<IPage<ItemParam>> selectItemParam(String code, String label, String classId, int page, int limit){
         QueryWrapper<ItemParam> queryWrapper = new QueryWrapper<ItemParam>();
         if(!StringUtils.isNullOrEmpty(code)){
-            queryWrapper.like("code", "%" + code + "%");
+            // queryWrapper.like("code", "%" + code + "%");
+            queryWrapper.eq("code", code);
         }
         if(!StringUtils.isNullOrEmpty(label)){
             queryWrapper.like("label", "%" + label + "%");
