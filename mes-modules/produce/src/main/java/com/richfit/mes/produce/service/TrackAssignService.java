@@ -17,5 +17,5 @@ public interface TrackAssignService extends IService<Assign> {
     IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page,@Param("name") String name, QueryWrapper<TrackItem> qw);
       IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page,@Param("name") String name, QueryWrapper<TrackItem> qw);
   
-    IPage<Assign> queryPage(Page page, String siteId,String trackNo,String routerNo, String startTime, String endTime, String state,String userId);
+    IPage<Assign> queryPage(Page page, String siteId,String trackNo,String routerNo, String startTime, String endTime, String state,String userId,String branchCode);
 }
