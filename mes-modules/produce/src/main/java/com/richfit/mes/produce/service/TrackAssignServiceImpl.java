@@ -38,10 +38,10 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         return trackAssignMapper.getPageAssignsByStatusAndRouter(page,name, qw);
     }
     
-    public IPage<Assign> queryPage(Page page, String siteId,String trackNo,String routerNo, String startTime, String endTime, String state,String userId)
+    public IPage<Assign> queryPage(Page page, String siteId,String trackNo,String routerNo, String startTime, String endTime, String state,String userId,String branchCode)
     {
           
-            return trackAssignMapper.queryPage(page,siteId,trackNo,routerNo,startTime,endTime,state,userId);
+            return trackAssignMapper.queryPage(page,siteId,trackNo,routerNo,startTime,endTime,state,userId,branchCode);
     }
     
     
