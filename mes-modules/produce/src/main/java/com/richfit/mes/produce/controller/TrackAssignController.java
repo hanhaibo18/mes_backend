@@ -317,7 +317,7 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "派工查询", notes = "派工查询")
     @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/getPageAssignsByStatus")
-    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo,String routerNo, String startTime, String endTime, String optType) {
+    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo,String routerNo, String startTime, String endTime, String optType,String branchCode) {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
 
@@ -330,6 +330,10 @@ public class TrackAssignController extends BaseController {
         }
         else {
             queryWrapper.apply("opt_type <> 4");           
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+
         }
         queryWrapper.orderByDesc(new String[] {"modify_time"});
         if (!StringUtils.isNullOrEmpty(trackNo)) {
