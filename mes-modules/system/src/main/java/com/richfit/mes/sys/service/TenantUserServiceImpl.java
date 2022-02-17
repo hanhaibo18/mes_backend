@@ -65,6 +65,10 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Override
     public TenantUserVo get(String id) {
         TenantUser tenantUser = this.getById(id);
+        if(null == tenantUser) {
+            tenantUser = this.getOne(new QueryWrapper<TenantUser>()
+                    .eq("user_account", id));
+        }
         if (Objects.isNull(tenantUser)) {
             throw new GlobalException("user not found with id:" + id, ResultCode.ITEM_NOT_FOUND);
         }
