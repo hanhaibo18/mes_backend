@@ -68,7 +68,7 @@ public class TrackCompleteController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String branchCode) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -88,6 +88,10 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
 
             }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+
             //外协报工判断过滤，外协报工类型是4
 
             if ("4".equals(optType)) {
@@ -713,8 +717,7 @@ public class TrackCompleteController extends BaseController {
                                 assign.setState(0);
                                 assign.setAssignBy("system");
                                 if (null != SecurityUtils.getCurrentUser()) {
-                                    String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                                    assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
                                     assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                                 }
                                 assign.setModifyTime(new Date());
