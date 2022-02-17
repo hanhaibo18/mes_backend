@@ -64,7 +64,7 @@ public class TrackAssignController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime) {
+    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode) {
         try {
             QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -90,9 +90,8 @@ public class TrackAssignController extends BaseController {
                 queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
 
             }
-            if (null != SecurityUtils.getCurrentUser()) {
-                TenantUserDetails user = SecurityUtils.getCurrentUser();
-                 queryWrapper.eq("user_id", user.getUserId());
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
 
             }
             queryWrapper.orderByDesc(new String[] {"priority","modify_time"});
@@ -119,10 +118,10 @@ public class TrackAssignController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit,String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit,String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId,String branchCode) {
         try {
 
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), siteId,trackNo,routerNo, startTime, endTime, state,userId);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), siteId,trackNo,routerNo, startTime, endTime, state,userId,branchCode);
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -158,8 +157,7 @@ public class TrackAssignController extends BaseController {
             }
             
              if (null != SecurityUtils.getCurrentUser()) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
                 assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
 
             }
@@ -206,8 +204,7 @@ public class TrackAssignController extends BaseController {
                     trackItemService.updateById(trackItem);
                 }
                 if (null != SecurityUtils.getCurrentUser()) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
                 assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
 
             }
@@ -267,8 +264,7 @@ public class TrackAssignController extends BaseController {
             }
             // 设置派工时间，人员，工序可派工数
             if (null != SecurityUtils.getCurrentUser()) {
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
                 assign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
 
             }
