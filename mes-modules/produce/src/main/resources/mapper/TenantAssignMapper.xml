@@ -32,7 +32,10 @@
              <if test="userId != null and userId != ''" >
                 and (u.user_id = #{userId} || u.user_id is null || u.user_id = '')
                 
-            </if>    
+            </if>
+            <if test="branchCode != null and branchCode != ''" >
+                and u.branch_code = #{branchCode}
+            </if>
         </trim>
         order by u.priority desc,u.modify_time desc 
     </select>
