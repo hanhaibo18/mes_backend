@@ -62,7 +62,7 @@ public class SequenceController extends BaseController {
         @ApiImplicitParam(name = "optName", value = "工序名称", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Sequence>> page(int page, int limit, String routerId,String routerNo, String optCode, String optName) {
+    public CommonResult<IPage<Sequence>> page(int page, int limit, String routerId,String routerNo, String optCode, String optName,String branchCode) {
         try {
           
             QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
@@ -70,7 +70,12 @@ public class SequenceController extends BaseController {
                 queryWrapper.eq("router_id", routerId);
             } 
              if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"'");
+               if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"' and branch_code='"+branchCode+"'");
+               }
+               else {
+                queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"'");   
+               }
             }
             if (!StringUtils.isNullOrEmpty(optCode)) {
                 queryWrapper.eq("opt_code", optCode);
