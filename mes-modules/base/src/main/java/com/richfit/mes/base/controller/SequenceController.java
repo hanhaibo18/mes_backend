@@ -79,7 +79,7 @@ public class SequenceController extends BaseController {
                 queryWrapper.eq("opt_name", optName);
             }
            // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-             queryWrapper.orderByAsc("technology_sequence");
+             queryWrapper.orderByAsc("opt_order");
             IPage<Sequence> routers = sequenceService.page(new Page<Sequence>(page, limit),queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
