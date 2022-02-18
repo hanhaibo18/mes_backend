@@ -1,0 +1,16 @@
+package com.richfit.mes.sys.entity.dto;
+
+import lombok.Data;
+
+/**
+ * @ClassName: queryDto.java
+ * @Author: Hou XinYu
+ * @Description: 公共查询类
+ * @CreateTime: 2022年01月27日 13:43:00
+ */
+@Data
+public class QueryDto<T> {
+    private T data;
+    private Long page = 1L;
+    private Long size = 10L;
+}
