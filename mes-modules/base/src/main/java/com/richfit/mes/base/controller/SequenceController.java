@@ -77,6 +77,9 @@ public class SequenceController extends BaseController {
                 queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"'");   
                }
             }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
             if (!StringUtils.isNullOrEmpty(optCode)) {
                 queryWrapper.eq("opt_code", optCode);
             }
