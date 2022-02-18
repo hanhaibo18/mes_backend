@@ -70,9 +70,15 @@ public class TrackCheckController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo) {
+    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo,String branchCode,String tenantId) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.eq("tenant_id", tenantId);
+            }
             if (!StringUtils.isNullOrEmpty(isCurrent)) {
                 queryWrapper.eq("is_current", Integer.parseInt(isCurrent));
             }
@@ -145,10 +151,15 @@ public class TrackCheckController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/pageCheck")
-    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo) {
+    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo,String branchCode,String tenantId) {
         try {
             QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
-
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.eq("tenant_id", tenantId);
+            }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no ='" + trackNo + "')");
 
@@ -584,9 +595,10 @@ public class TrackCheckController extends BaseController {
                                 assign.setPriority(0);
                                 assign.setState(0);
                                 assign.setAssignBy("system");
+                                assign.setBranchCode(trackHead.getBranchCode());
+                                assign.setTenantId(trackHead.getTenantId());
                                 if (null != SecurityUtils.getCurrentUser()) {
-                                    String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                                    assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                                    
                                     assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                                 }
                                 assign.setModifyTime(new Date());
