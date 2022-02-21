@@ -43,7 +43,7 @@ public class SequenceController extends BaseController {
     private SequenceService sequenceService;
     @Autowired
     public RouterService routerService;
-     @Autowired
+    @Autowired
     private OperatiponService operatiponService;
     /**
      * ***
@@ -55,27 +55,27 @@ public class SequenceController extends BaseController {
      */
     @ApiOperation(value = "工艺", notes = "工艺")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "routerId", value = "工艺ID", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "optCode", value = "工序编码", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "optName", value = "工序名称", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "routerId", value = "工艺ID", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "optCode", value = "工序编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "optName", value = "工序名称", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
     public CommonResult<IPage<Sequence>> page(int page, int limit, String routerId,String routerNo, String optCode, String optName,String branchCode) {
         try {
-          
+
             QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
             if (!StringUtils.isNullOrEmpty(routerId)) {
                 queryWrapper.eq("router_id", routerId);
-            } 
-             if (!StringUtils.isNullOrEmpty(routerNo)) {
-               if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"' and branch_code='"+branchCode+"'");
-               }
-               else {
-                queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"'");   
-               }
+            }
+            if (!StringUtils.isNullOrEmpty(routerNo)) {
+                if (!StringUtils.isNullOrEmpty(branchCode)) {
+                    queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"' and branch_code='"+branchCode+"'");
+                }
+                else {
+                    queryWrapper.inSql("router_id","select id from base_router where router_no ='"+routerNo+"'");
+                }
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
@@ -86,10 +86,31 @@ public class SequenceController extends BaseController {
             if (!StringUtils.isNullOrEmpty(optName)) {
                 queryWrapper.eq("opt_name", optName);
             }
-           // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-             queryWrapper.orderByAsc("opt_order");
-            IPage<Sequence> routers = sequenceService.page(new Page<Sequence>(page, limit),queryWrapper);
-            return CommonResult.success(routers);
+            // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.orderByAsc("opt_order");
+            
+            IPage<Sequence> sequences = sequenceService.page(new Page<Sequence>(page, limit),queryWrapper);
+            for(int i=0;i<sequences.getRecords().size();i++) {
+                if(StringUtils.isNullOrEmpty(sequences.getRecords().get(i).getOptCode())) {
+
+                    QueryWrapper<Operatipon> qw = new QueryWrapper<Operatipon>();
+
+
+                    if (!StringUtils.isNullOrEmpty(branchCode)) {
+                        qw.like("branch_code", "%" + branchCode + "%");
+                    }
+                    if (!StringUtils.isNullOrEmpty(sequences.getRecords().get(i).getOptId())) {
+                        qw.eq("opt_id", sequences.getRecords().get(i).getOptId());
+                    }
+
+
+                    List<Operatipon> opts= operatiponService.list(qw);
+                    if(opts.size()>0) {
+                        sequences.getRecords().get(i).setOptCode(opts.get(0).getOptCode());
+                    }
+                }
+            }
+            return CommonResult.success(sequences);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
@@ -102,15 +123,15 @@ public class SequenceController extends BaseController {
         if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
             return CommonResult.failed("编码不能为空！");
         } else {
-             if(null!=SecurityUtils.getCurrentUser()) {
-            
-            sequence.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-           
-            sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-         
-              }
-               sequence.setCreateTime(new Date());
-                  sequence.setModifyTime(new Date());
+            if(null!=SecurityUtils.getCurrentUser()) {
+
+                sequence.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+
+                sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+
+            }
+            sequence.setCreateTime(new Date());
+            sequence.setModifyTime(new Date());
             boolean bool = sequenceService.save(sequence);
             if (bool) {
                 return CommonResult.success(sequence, "操作成功！");
@@ -128,14 +149,14 @@ public class SequenceController extends BaseController {
             return CommonResult.failed("机构编码不能为空！");
         } else {
             if(null!=SecurityUtils.getCurrentUser()) {
-             
-       
-           
-            sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-         
-              }
-             
-                  sequence.setModifyTime(new Date());
+
+
+
+                sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+
+            }
+
+            sequence.setModifyTime(new Date());
             boolean bool = sequenceService.updateById(sequence);
             if (bool) {
                 return CommonResult.success(sequence, "操作成功！");
@@ -152,21 +173,21 @@ public class SequenceController extends BaseController {
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
         if(!StringUtils.isNullOrEmpty(id)){
             queryWrapper.eq("id", id);
-        }  
+        }
         if (!StringUtils.isNullOrEmpty(optCode)) {
             queryWrapper.like("opt_code", "%" + optCode + "%");
         }
         if(!StringUtils.isNullOrEmpty(optName)){
             queryWrapper.like("opt_name", "%" + optName + "%");
         }
-                if(!StringUtils.isNullOrEmpty(optName)){
+        if(!StringUtils.isNullOrEmpty(optName)){
             queryWrapper.like("opt_name", "%" + optName + "%");
         }
-            if(!StringUtils.isNullOrEmpty(routerId)){
+        if(!StringUtils.isNullOrEmpty(routerId)){
             queryWrapper.like("router_id", "%" + routerId + "%");
-        }    
-            
-         queryWrapper.orderByAsc("opt_order");
+        }
+
+        queryWrapper.orderByAsc("opt_order");
         List<Sequence> result = sequenceService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
@@ -182,59 +203,59 @@ public class SequenceController extends BaseController {
         return CommonResult.success(result, "操作成功！");
     }
 
-  
-    
-       @ApiOperation(value = "查询工序", notes = "根据工艺ID获得工序")
-    @ApiImplicitParams({           
-            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),       
-           @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")        
-    }) 
+
+
+    @ApiOperation(value = "查询工序", notes = "根据工艺ID获得工序")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")
+    })
     @GetMapping("/getByRouterNo")
     public CommonResult<List<Sequence>> getByRouterNo(String routerNo, String branchCode,String tenantId, String optId) {
 
-       QueryWrapper<Router> query = new QueryWrapper<Router>();
+        QueryWrapper<Router> query = new QueryWrapper<Router>();
 
-       if (!StringUtils.isNullOrEmpty(routerNo)) {
-           query.eq("router_no", routerNo);
-       }
-       if (!StringUtils.isNullOrEmpty(branchCode)) {
-           query.like("branch_code", "%" + branchCode + "%");
-       }
-       if (!StringUtils.isNullOrEmpty(tenantId)) {
-           query.like("tenant_id", "%" + tenantId + "%");
-       }
-           query.in("status", "1");
-       List<Router> routers = routerService.list(query);
-       if(routers.size() > 0){
-           Router router = routers.get(0);
-           QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
-           queryWrapper.eq("router_id", router.getId());
-           if (!StringUtils.isNullOrEmpty(optId)) {
-           queryWrapper.eq("opt_id", optId);
-           }
-           queryWrapper.orderByAsc("opt_order");
-           List<Sequence> result = sequenceService.list(queryWrapper);
-           return CommonResult.success(result, "操作成功！");
-       }
+        if (!StringUtils.isNullOrEmpty(routerNo)) {
+            query.eq("router_no", routerNo);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            query.like("branch_code", "%" + branchCode + "%");
+        }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            query.like("tenant_id", "%" + tenantId + "%");
+        }
+        query.in("status", "1");
+        List<Router> routers = routerService.list(query);
+        if(routers.size() > 0){
+            Router router = routers.get(0);
+            QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
+            queryWrapper.eq("router_id", router.getId());
+            if (!StringUtils.isNullOrEmpty(optId)) {
+                queryWrapper.eq("opt_id", optId);
+            }
+            queryWrapper.orderByAsc("opt_order");
+            List<Sequence> result = sequenceService.list(queryWrapper);
+            return CommonResult.success(result, "操作成功！");
+        }
 
 
-           return CommonResult.success(null, "操作成功！");
+        return CommonResult.success(null, "操作成功！");
     }
 
     @ApiOperation(value = "删除工序", notes = "根据id删除工序")
     @ApiImplicitParam(name = "id", value = "ids", required = true, dataType = "String", paramType = "path")
     @PostMapping("/delete")
     public CommonResult<Sequence> deleteById(@RequestBody String[] ids){
-            
-            boolean bool = sequenceService.removeByIds(java.util.Arrays.asList(ids));
-            if(bool){
-                return CommonResult.success(null, "删除成功！");
-            } else {
-                return CommonResult.failed("操作失败，请重试！");
-            }
-       
+
+        boolean bool = sequenceService.removeByIds(java.util.Arrays.asList(ids));
+        if(bool){
+            return CommonResult.success(null, "删除成功！");
+        } else {
+            return CommonResult.failed("操作失败，请重试！");
+        }
+
     }
-    
+
     @ApiOperation(value = "导入工序", notes = "根据Excel文档导入工序")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
@@ -259,57 +280,57 @@ public class SequenceController extends BaseController {
             FileUtils.delete(excelFile);
             String msg="";
             for (int i = 0; i < list.size(); i++) {
-                  list.get(i).setTenantId(tenantId);
-                  list.get(i).setBranchCode(branchCode);
-                 if (null != SecurityUtils.getCurrentUser()) {
-                   
+                list.get(i).setTenantId(tenantId);
+                list.get(i).setBranchCode(branchCode);
+                if (null != SecurityUtils.getCurrentUser()) {
+
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 }
-                 list.get(i).setStatus("1");
+                list.get(i).setStatus("1");
                 List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(i).getRouterId()).eq("status", "1").eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
                 if(routers.size()>0) {
-                     list.get(i).setRouterId(routers.get(0).getId());
+                    list.get(i).setRouterId(routers.get(0).getId());
                 }
                 else{
                     msg +="第"+(i+1)+"行:"+"找不到图号,";
-                     list.get(i).setStatus("0");
+                    list.get(i).setStatus("0");
                 }
                 List<Operatipon> opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type",list.get(i).getOptType()));
                 if(opts.size()>0) {
-                     list.get(i).setOptId(opts.get(0).getId());
-                     list.get(i).setOptCode(opts.get(0).getOptCode());
+                    list.get(i).setOptId(opts.get(0).getId());
+                    list.get(i).setOptCode(opts.get(0).getOptCode());
                 }
                 else{
-                     msg +="第"+(i+1)+"行:"+"字典中无此工序名,";
+                    msg +="第"+(i+1)+"行:"+"字典中无此工序名,";
                     list.get(i).setStatus("0");
                 }
                 if("是".equals( list.get(i).getIsQualityCheck())) {
-                     list.get(i).setIsQualityCheck("1");
+                    list.get(i).setIsQualityCheck("1");
                 }
                 if("否".equals( list.get(i).getIsQualityCheck())) {
-                      list.get(i).setIsQualityCheck("0");
+                    list.get(i).setIsQualityCheck("0");
                 }
                 if("是".equals( list.get(i).getIsScheduleCheck())) {
-                     list.get(i).setIsScheduleCheck("1");
+                    list.get(i).setIsScheduleCheck("1");
                 }
                 if("否".equals( list.get(i).getIsScheduleCheck())) {
-                      list.get(i).setIsScheduleCheck("0");
+                    list.get(i).setIsScheduleCheck("0");
                 }
-                 if("是".equals( list.get(i).getIsParallel())) {
-                     list.get(i).setIsParallel("1");
+                if("是".equals( list.get(i).getIsParallel())) {
+                    list.get(i).setIsParallel("1");
                 }
                 if("否".equals( list.get(i).getIsParallel())) {
-                      list.get(i).setIsParallel("0");
+                    list.get(i).setIsParallel("0");
                 }
-                
+
             }
             if("".equals(msg)){
-            boolean bool = sequenceService.saveBatch(list);
-            if(bool){
-                return CommonResult.success("");
-            } else {
-                return CommonResult.failed(msg);
-            }
+                boolean bool = sequenceService.saveBatch(list);
+                if(bool){
+                    return CommonResult.success("");
+                } else {
+                    return CommonResult.failed(msg);
+                }
             }
             else{
                 return CommonResult.failed(msg);
