@@ -100,7 +100,7 @@ public class SequenceController extends BaseController {
                         qw.like("branch_code", "%" + branchCode + "%");
                     }
                     if (!StringUtils.isNullOrEmpty(sequences.getRecords().get(i).getOptId())) {
-                        qw.eq("opt_id", sequences.getRecords().get(i).getOptId());
+                        qw.eq("id", sequences.getRecords().get(i).getOptId());
                     }
 
 
