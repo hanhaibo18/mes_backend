@@ -71,7 +71,7 @@ public class TrackHeadController extends BaseController {
             trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             trackHead.setCreateTime(new Date());
 
-            if(trackHead.getTrackType().equals("0")){ //单件
+            /*if(trackHead.getTrackType().equals("0")){ //单件
                 QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
                 queryWrapper.eq("workblank_no", trackHead.getProductNo());
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -119,7 +119,7 @@ public class TrackHeadController extends BaseController {
                     lineStore.setCreateTime(new Date());
                     list.add(lineStore);
                 }
-            }
+            }*/
             bool = trackHeadService.saveTrackHead(trackHead, list, trackHead.getTrackItems());
             if(bool){
                 Action action = new Action();

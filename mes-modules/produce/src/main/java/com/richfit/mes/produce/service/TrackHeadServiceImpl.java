@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackHeadRelation;
@@ -50,10 +51,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public boolean saveTrackHead(TrackHead trackHead, List<LineStore> lineStores, List<TrackItem> trackItems){
         int result = trackHeadMapper.insert(trackHead);
-        planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+        if(!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
+            planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+        }
         if(result > 0){
 
-            String[] products = trackHead.getUserProductNo().split(",");
+            String[] products = trackHead.getProductNo().split(",");
             int num = trackHead.getNumber();
             for(int i=0; i<products.length; i++){
                 if(num == 0){
@@ -86,7 +89,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 lineStoreMapper.updateById(lineStore1);
             }
             //新增一条半成品/成品信息
-            for (LineStore lineStore: lineStores) {
+            /*for (LineStore lineStore: lineStores) {
                 lineStoreMapper.insert(lineStore);
                 TrackHeadRelation relation = new TrackHeadRelation();
                 relation.setThId(trackHead.getId());
@@ -94,7 +97,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 relation.setType("1");
                 relation.setNumber(1);
                 trackHeadRelationMapper.insert(relation);
-            }
+            }*/
             if(trackItems != null && trackItems.size() > 0){
                 int count = 0;
                 for (TrackItem item : trackItems) {

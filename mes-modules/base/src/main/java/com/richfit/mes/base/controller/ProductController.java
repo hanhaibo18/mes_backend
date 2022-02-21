@@ -249,6 +249,33 @@ public class ProductController extends BaseController {
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "查询物料", notes = "根据输入内容查询物料")
+    @GetMapping("/product/findList")
+    public CommonResult<List<Product>> selectProductList2(String materialNo, String drawingNo, String materialType, Boolean isEqualType){
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        if(!StringUtils.isNullOrEmpty(materialNo)){
+            queryWrapper.like("material_no", "%" + materialNo + "%");
+        }
+        if(!StringUtils.isNullOrEmpty(drawingNo)){
+            queryWrapper.like("drawing_no", "%" +drawingNo + "%");
+        }
+        if(!StringUtils.isNullOrEmpty(materialType)){
+            if(isEqualType != null){
+                if(isEqualType){
+                    queryWrapper.eq("material_type", materialType);
+                } else {
+                    queryWrapper.ne("material_type", materialType);
+                }
+            } else {
+                queryWrapper.eq("material_type", materialType);
+            }
+        }
+        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.orderByDesc("create_time");
+
+        return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
+    }
+
     @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料")
     @GetMapping("/product/listByNo")
     public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType){
