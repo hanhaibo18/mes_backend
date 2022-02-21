@@ -147,11 +147,11 @@ public class ItemController extends BaseController {
                 queryWrapper.like("label", "%" + label + "%");
             }
         } else {
-            if(!StringUtils.isNullOrEmpty(code)&&!StringUtils.isNullOrEmpty(classId)){
+            if(!StringUtils.isNullOrEmpty(code)){
                 queryWrapper.inSql("class_id", "select id from sys_item_class where code ='"+code+"'");
             }
             if(!StringUtils.isNullOrEmpty(label)){
-                queryWrapper.inSql("class_id", "select id from sys_item_class where code ='"+label+"'");
+                queryWrapper.inSql("class_id", "select id from sys_item_class where label ='"+label+"'");
             }
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
