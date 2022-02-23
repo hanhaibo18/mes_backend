@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -60,7 +61,7 @@ public class RouterController extends BaseController {
         @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode,String tenantId, String status) {
+    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode,String tenantId, String status,String order , String orderCol) {
         try {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
@@ -81,6 +82,19 @@ public class RouterController extends BaseController {
             
            if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.like("tenant_id", "%" + tenantId + "%");
+            }
+            if(!StringUtils.isNullOrEmpty(orderCol)){
+                if(!StringUtils.isNullOrEmpty(order)){
+                    if(order.equals("desc")){
+                        queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    } else if (order.equals("asc")){
+                        queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                    }
+                } else {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc("modify_time");
             }
             IPage<Router> routers = routerService.page(new Page<Router>(page, limit), queryWrapper);
             return CommonResult.success(routers);
