@@ -68,7 +68,7 @@ public class TrackHeadController extends BaseController {
             trackHead.setStatus("0");
             trackHead.setApprovalStatus("0");
             trackHead.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            //trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             trackHead.setCreateTime(new Date());
 
             /*if(trackHead.getTrackType().equals("0")){ //单件
@@ -204,7 +204,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "分页查询跟单", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单")
     @GetMapping("/track_head")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(String startDate, String endDate, String id,String trackNo, String workPlanNo, String productNo, String materialNo, String status, String approvalStatus, String order , String orderCol, int page, int limit){
+    public CommonResult<IPage<TrackHead>> selectTrackHead(String startDate, String endDate, String id,String trackNo, String workPlanNo, String productNo, String materialNo, String status, String approvalStatus, String order , String orderCol, String branchCode, String tenantId, int page, int limit){
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if(!StringUtils.isNullOrEmpty(startDate)){
             queryWrapper.ge("create_time", startDate);
@@ -233,7 +233,14 @@ public class TrackHeadController extends BaseController {
         if(!StringUtils.isNullOrEmpty(approvalStatus)){
             queryWrapper.eq("approval_status", approvalStatus);
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if(!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if(!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        } else {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
                 if(order.equals("desc")){

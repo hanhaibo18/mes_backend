@@ -182,4 +182,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private Float weight;
     private String texture;
 
+    private String templateCode;
+
 }

@@ -65,28 +65,30 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 int userNum = 0; //本次使用数量
                 //修改库存状态
                 LineStore lineStore1 = lineStoreMapper.selectOne(new QueryWrapper<LineStore>().eq("drawing_no", trackHead.getDrawingNo()).eq("workblank_no", products[i]).eq("tenant_id", trackHead.getTenantId()));
-                if(lineStore1.getNumber() - lineStore1.getUserNum() <= num){
-                    userNum = lineStore1.getNumber() - lineStore1.getUserNum();
-                    num -= lineStore1.getNumber() - lineStore1.getUserNum();
-                    lineStore1.setUserNum(lineStore1.getNumber());
-                } else {
-                    userNum = num;
-                    lineStore1.setUserNum(lineStore1.getUserNum() + num);
-                    num = 0;
+                if(lineStore1 != null) {
+                    if(lineStore1.getNumber() - lineStore1.getUserNum() <= num){
+                        userNum = lineStore1.getNumber() - lineStore1.getUserNum();
+                        num -= lineStore1.getNumber() - lineStore1.getUserNum();
+                        lineStore1.setUserNum(lineStore1.getNumber());
+                    } else {
+                        userNum = num;
+                        lineStore1.setUserNum(lineStore1.getUserNum() + num);
+                        num = 0;
+                    }
+                    if(lineStore1.getMaterialType().equals("0")){
+                        lineStore1.setOutTime(new Date());
+                    }
+                    if(lineStore1.getUserNum().equals(lineStore1.getNumber())){
+                        lineStore1.setStatus("3");
+                    }
+                    TrackHeadRelation relation = new TrackHeadRelation();
+                    relation.setThId(trackHead.getId());
+                    relation.setLsId(lineStore1.getId());
+                    relation.setType("0");
+                    relation.setNumber(userNum);
+                    trackHeadRelationMapper.insert(relation);
+                    lineStoreMapper.updateById(lineStore1);
                 }
-                if(lineStore1.getMaterialType().equals("0")){
-                    lineStore1.setOutTime(new Date());
-                }
-                if(lineStore1.getUserNum().equals(lineStore1.getNumber())){
-                    lineStore1.setStatus("3");
-                }
-                TrackHeadRelation relation = new TrackHeadRelation();
-                relation.setThId(trackHead.getId());
-                relation.setLsId(lineStore1.getId());
-                relation.setType("0");
-                relation.setNumber(userNum);
-                trackHeadRelationMapper.insert(relation);
-                lineStoreMapper.updateById(lineStore1);
             }
             //新增一条半成品/成品信息
             /*for (LineStore lineStore: lineStores) {
