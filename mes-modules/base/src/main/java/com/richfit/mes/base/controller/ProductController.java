@@ -183,10 +183,10 @@ public class ProductController extends BaseController {
             routerQuery.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             routerQuery.eq("is_active", "1");
 
-            Router router = routerService.getOne(routerQuery);
-
+            List<Router> routerList = routerService.list(routerQuery);
             newProduct.setHaveBom(productionBomService.count(bomQuery));
-            if(router != null && !StringUtils.isNullOrEmpty(router.getId())){
+            if(routerList.size() > 0){
+                Router router = routerList.get(0);
                 newProduct.setHaveRouter(1);
                 if(!StringUtils.isNullOrEmpty(router.getType())){
                     newProduct.setRouterType(Integer.parseInt(router.getType()));
