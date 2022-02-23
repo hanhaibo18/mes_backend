@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -55,7 +56,7 @@ public class DeviceController extends BaseController {
             @ApiImplicitParam(name="name",value="名称",required=true,paramType="query",dataType="string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Device>> page(int page, int limit,String code, String name, String parentId, String type, String branchCode, String tenantId) {
+    public CommonResult<IPage<Device>> page(int page, int limit,String code, String name, String parentId, String type, String branchCode, String tenantId,String order , String orderCol) {
         try {
              QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
         if(!StringUtils.isNullOrEmpty(parentId)){
@@ -76,7 +77,19 @@ public class DeviceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.like("tenant_id", "%" + tenantId + "%");
         }
-         queryWrapper.orderByDesc(new String[] {"type","create_time"});
+            if(!StringUtils.isNullOrEmpty(orderCol)){
+                if(!StringUtils.isNullOrEmpty(order)){
+                    if(order.equals("desc")){
+                        queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    } else if (order.equals("asc")){
+                        queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                    }
+                } else {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc("modify_time");
+            }
             IPage<Device> devices = deviceService.page(new Page<Device>(page, limit),queryWrapper);
             return CommonResult.success(devices);
         } catch (Exception e) {
