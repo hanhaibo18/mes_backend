@@ -4,10 +4,8 @@
 
     <select id="queryPlan" resultType="com.richfit.mes.common.model.produce.Plan">
 
-        select p.*, pt.order_code,pt.track_num as track_num,pt.process_num as processing_num,pt.store_num,pt.total_option as total_progress,pt.complete_option as option_progress
-        from produce_plan p
-            left join plan_track_view pt
-                on p.id = pt.id
+        select p.*, (select `produce_order`.`order_sn` from `produce_order` where (`produce_order`.`id` = `p`.`order_no`)) AS `order_code`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS `track_num`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where ((`produce_track_head`.`status` = '1') and (`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS `process_num`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where ((`produce_track_head`.`status` = '2') and (`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS `store_num`,(select count(1) from `produce_track_item` where `produce_track_item`.`track_head_id` in (select `produce_track_head`.`id` from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`)))) AS `total_option`,(select ifnull(sum(`produce_track_item`.`complete_qty`),0) from `produce_track_item` where ((`produce_track_item`.`is_final_complete` = 1) and `produce_track_item`.`track_head_id` in (select `produce_track_head`.`id` from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))))) AS `complete_option`,(select sum(cast(`produce_track_head`.`status` as signed)) from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`) and (`produce_track_head`.`branch_code` = `p`.`branch_code`))) AS `real_status` from produce_plan p
+
         WHERE 1=1
         <trim  suffixOverrides="," >
             <if test="param.projCode != null and param.projCode != ''" >
