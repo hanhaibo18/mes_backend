@@ -88,28 +88,10 @@ public class SequenceController extends BaseController {
             }
             // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.orderByAsc("opt_order");
-            
+
             IPage<Sequence> sequences = sequenceService.page(new Page<Sequence>(page, limit),queryWrapper);
-            for(int i=0;i<sequences.getRecords().size();i++) {
-                if(StringUtils.isNullOrEmpty(sequences.getRecords().get(i).getOptCode())) {
+            sequences.setRecords(setOptCodeAndName(sequences.getRecords()));
 
-                    QueryWrapper<Operatipon> qw = new QueryWrapper<Operatipon>();
-
-
-                    if (!StringUtils.isNullOrEmpty(branchCode)) {
-                        qw.like("branch_code", "%" + branchCode + "%");
-                    }
-                    if (!StringUtils.isNullOrEmpty(sequences.getRecords().get(i).getOptId())) {
-                        qw.eq("id", sequences.getRecords().get(i).getOptId());
-                    }
-
-
-                    List<Operatipon> opts= operatiponService.list(qw);
-                    if(opts.size()>0) {
-                        sequences.getRecords().get(i).setOptCode(opts.get(0).getOptCode());
-                    }
-                }
-            }
             return CommonResult.success(sequences);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -189,6 +171,8 @@ public class SequenceController extends BaseController {
 
         queryWrapper.orderByAsc("opt_order");
         List<Sequence> result = sequenceService.list(queryWrapper);
+        result = setOptCodeAndName(result);
+
         return CommonResult.success(result, "操作成功！");
     }
 
@@ -200,6 +184,7 @@ public class SequenceController extends BaseController {
         queryWrapper.eq("router_id", routerId);
         queryWrapper.orderByAsc("technology_sequence");
         List<Sequence> result = sequenceService.list(queryWrapper);
+        result = setOptCodeAndName(result);
         return CommonResult.success(result, "操作成功！");
     }
 
@@ -235,11 +220,38 @@ public class SequenceController extends BaseController {
             }
             queryWrapper.orderByAsc("opt_order");
             List<Sequence> result = sequenceService.list(queryWrapper);
+            result = setOptCodeAndName(result);
             return CommonResult.success(result, "操作成功！");
         }
 
 
         return CommonResult.success(null, "操作成功！");
+    }
+
+
+    public List<Sequence> setOptCodeAndName(List<Sequence> result) {
+
+        for(int i=0;i<result.size();i++) {
+            if(StringUtils.isNullOrEmpty(result.get(i).getOptCode())) {
+                QueryWrapper<Operatipon> qw = new QueryWrapper<Operatipon>();
+                qw.like("branch_code", "%" + result.get(i).getBranchCode() + "%");
+                if (!StringUtils.isNullOrEmpty(result.get(i).getOptId())) {
+                    qw.eq("id", result.get(i).getOptId());
+                }
+
+
+                List<Operatipon> opts= operatiponService.list(qw);
+                if(opts.size()>0) {
+                    result.get(i).setOptCode(opts.get(0).getOptCode());
+                    if (StringUtils.isNullOrEmpty(result.get(i).getOptName())) {
+                        result.get(i).setOptName(opts.get(0).getOptName());
+                    }
+                }
+            }
+
+
+        }
+        return  result;
     }
 
     @ApiOperation(value = "删除工序", notes = "根据id删除工序")

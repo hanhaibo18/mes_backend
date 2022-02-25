@@ -148,6 +148,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private Double upperLimits;
     private String coolingDownMethod;
     private String notice;
+    private String branchCode;
+    private String tenantId;
 
     @TableField(exist = false)
     private String assignDeviceId;
