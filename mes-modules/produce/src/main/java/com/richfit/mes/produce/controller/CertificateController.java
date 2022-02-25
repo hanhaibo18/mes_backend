@@ -49,6 +49,12 @@ public class CertificateController {
     @Autowired
     private TrackItemService trackItemService;
 
+    @Autowired
+    private StockRecordService stockRecordService;
+
+    @Autowired
+    private LineStoreService lineStoreService;
+
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
     public CommonResult<Certificate> addCertificate(@RequestBody Certificate certificate){
@@ -76,6 +82,44 @@ public class CertificateController {
                         trackHead.setId(track.getThId());
                         trackHead.setCertificateNo(certificate.getCertificateNo());
                         trackHeadService.updateById(trackHead);
+
+                        TrackHead th = trackHeadService.getById(track.getThId());
+                        QueryWrapper<LineStore> wrapper = new QueryWrapper<>();
+                        wrapper.eq("workblank_no", th.getProductNo());
+                        LineStore lineStore = lineStoreService.getOne(wrapper);
+                        if(lineStore != null) {
+                            StockRecord record = new StockRecord();
+                            record.setCertificateNo(lineStore.getCertificateNo());
+                            record.setAssemblyId(lineStore.getAssemblyId());
+                            record.setBatchNo(lineStore.getBatchNo());
+                            record.setContractNo(lineStore.getContractNo());
+                            record.setBeforehandAssigned(lineStore.getBeforehandAssigned());
+                            record.setDrawingNo(lineStore.getDrawingNo());
+                            record.setIsFeedErp(lineStore.getIsFeedErp());
+                            record.setIsSendErp(lineStore.getIsSendErp());
+                            record.setMaterialNo(lineStore.getMaterialNo());
+                            record.setMaterialName(lineStore.getMaterialName());
+                            record.setMaterialSource(lineStore.getMaterialSource());
+                            record.setMaterialType(lineStore.getMaterialType());
+                            record.setReplaceMaterial(lineStore.getReplaceMaterial());
+                            record.setProdNo(lineStore.getProdNo());
+                            record.setPrevTrackNum(lineStore.getPrevTrackNum());
+                            record.setProductionOrder(lineStore.getProductionOrder());
+                            record.setPurchaseOrder(lineStore.getPurchaseOrder());
+                            record.setTenantId(lineStore.getTenantId());
+                            record.setTestBarNumber(lineStore.getTestBarNumber());
+                            record.setTestBarType(lineStore.getTestBarType());
+                            record.setTrackNo(lineStore.getTrackNo());
+                            record.setTexture(lineStore.getTexture());
+                            record.setWeight(lineStore.getWeight());
+                            record.setWorkblankNo(lineStore.getWorkblankNo());
+                            record.setWorkNo(lineStore.getWorkNo());
+                            record.setRemark(lineStore.getRemark());
+                            record.setNumber(lineStore.getNumber());
+                            record.setUserNum(lineStore.getUserNum());
+
+                            stockRecordService.save(record);
+                        }
                     }
                     track.setCertificateType(certificate.getType());
                     track.setCertificateId(certificate.getId());

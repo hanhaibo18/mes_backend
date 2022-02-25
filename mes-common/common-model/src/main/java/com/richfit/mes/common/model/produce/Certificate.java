@@ -36,6 +36,8 @@ public class Certificate extends BaseEntity<Certificate> {
      */
     private String nextOptWork;
 
+    private String nextOpt;
+
     /**
      * 检测员
      */
