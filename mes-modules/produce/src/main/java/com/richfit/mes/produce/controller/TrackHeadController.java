@@ -239,7 +239,7 @@ public class TrackHeadController extends BaseController {
         if(!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         } else {
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            //queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
