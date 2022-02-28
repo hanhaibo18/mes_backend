@@ -73,6 +73,7 @@ public interface NoteMapper extends BaseMapper<Note> {
      * @return: IPage<Map<String,Object>>
      **/
     @Select("SELECT\n" +
+            "note.title,\n"+
             "note.id,\n" +
             "note.title,\n" +
             "note_user.check_look,\n" +

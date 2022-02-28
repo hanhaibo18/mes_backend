@@ -8,7 +8,6 @@ import java.util.Date;
 /**
  * @ClassName: DustbinVo.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年02月17日 10:07:00
  */
 @Data
@@ -16,6 +15,7 @@ import java.util.Date;
 public class DustbinVo {
     private String id;
     private String title;
+    private Date createTime;
     private Date checkLook;
     private String emplName;
     private String createBy;

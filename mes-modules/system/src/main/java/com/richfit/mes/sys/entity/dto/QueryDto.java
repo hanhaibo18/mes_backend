@@ -1,6 +1,6 @@
 package com.richfit.mes.sys.entity.dto;
 
-import lombok.Data;
+import lombok.*;
 
 /**
  * @ClassName: queryDto.java
@@ -8,7 +8,10 @@ import lombok.Data;
  * @Description: 公共查询类
  * @CreateTime: 2022年01月27日 13:43:00
  */
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class QueryDto<T> {
     private T data;
     private Long page = 1L;
