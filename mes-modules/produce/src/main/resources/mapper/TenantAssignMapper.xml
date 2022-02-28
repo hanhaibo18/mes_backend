@@ -18,10 +18,10 @@
                and u.site_id = #{siteId} 
             </if>      
             <if test="startTime != null and startTime != ''" >
-                and UNIX_TIMESTAMP(u.modify_time) >= UNIX_TIMESTAMP(#{startTime}) 
+                and UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP(#{startTime})
             </if>
                         <if test="endTime != null and endTime != ''" >
-                and UNIX_TIMESTAMP(u.modify_time) >= UNIX_TIMESTAMP(#{endTime}) 
+                and UNIX_TIMESTAMP(u.assign_time) &lt;= UNIX_TIMESTAMP(#{endTime})
             </if>            
             <if test='state ==  "0,1"' >
                 and u.state in (0,1)
