@@ -8,8 +8,8 @@
         WHERE 1=1 
         <trim  suffixOverrides="," >
             <if test="trackNo != null and trackNo != ''" >
-                and u.track_no = #{trackNo} 
-                
+                and u.ti_id in (select t1.id from produce_track_item t1,produce_track_head t2 where t1.track_head_id=t2.id and t2.track_no =#{trackNo})
+
             </if>     
             <if test="routerNo != null and routerNo != ''" >
                and u.track_id in (SELECT h.id FROM produce_track_head h WHERE h.drawing_no = #{routerNo}) 
