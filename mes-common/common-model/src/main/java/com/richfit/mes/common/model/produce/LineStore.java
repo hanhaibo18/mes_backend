@@ -153,6 +153,8 @@ public class LineStore extends BaseEntity<LineStore> {
      */
     private String prodNo;
 
+    private String branchCode;
+
     public LineStore() {}
 
     public LineStore(LineStore lineStore) {
@@ -190,5 +192,6 @@ public class LineStore extends BaseEntity<LineStore> {
         this.isFeedErp = lineStore.isFeedErp;
         this.stockType = lineStore.stockType;
         this.prodNo = lineStore.prodNo;
+        this.branchCode = lineStore.branchCode;
     }
 }

@@ -68,7 +68,7 @@ public class LineStoreController {
 
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
     @PostMapping("/line_store")
-    public CommonResult<LineStore> addLineStore(@RequestBody LineStore lineStore, @RequestParam(required = false) Integer startNo, @RequestParam(required = false) Integer endNo, @RequestParam(required = false) String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur){
+    public CommonResult<LineStore> addLineStore(@RequestBody LineStore lineStore, @RequestParam(required = false) Integer startNo, @RequestParam(required = false) Integer endNo, @RequestParam(required = false) String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur, String tenantId, String branchCode){
         if(StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())){
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if(StringUtils.isNullOrEmpty(lineStore.getMaterialNo())){
@@ -79,7 +79,8 @@ public class LineStoreController {
             lineStore.setUserNum(0);
             lineStore.setStatus("1");
             lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            lineStore.setTenantId(tenantId);
+            lineStore.setBranchCode(branchCode);
             lineStore.setCreateTime(new Date());
             lineStore.setInTime(new Date());
 
@@ -130,7 +131,7 @@ public class LineStoreController {
                 }
                 QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("workblank_no", lineStore.getWorkblankNo());
-                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                queryWrapper.eq("tenant_id", tenantId);
                 List<LineStore> result = lineStoreService.list(queryWrapper);
                 if (result != null && result.size() > 0){
                     String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
@@ -229,7 +230,7 @@ public class LineStoreController {
 
     @ApiOperation(value = "分页查询入库信息", notes = "根据图号、合格证号、物料编号分页查询入库信息")
     @GetMapping("/line_store")
-    public CommonResult<IPage<LineStore>> selectLineStore(String id, String materialNo, String materialType, String drawingNo, String certificateNo, String workblankNo, String status, String trackType, String order , String orderCol, int page, int limit){
+    public CommonResult<IPage<LineStore>> selectLineStore(String id, String materialNo, String materialType, String drawingNo, String certificateNo, String workblankNo, String status, String trackType, String order , String orderCol, int page, int limit, String branchCode, String tenantId){
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if(!StringUtils.isNullOrEmpty(materialNo)){
             queryWrapper.eq("material_no", materialNo);
@@ -255,7 +256,8 @@ public class LineStoreController {
         if(!StringUtils.isNullOrEmpty(workblankNo)){
             queryWrapper.like("workblank_no", "%" + workblankNo + "%");
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.eq("branch_code", branchCode);
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
                 if(order.equals("desc")){
@@ -274,7 +276,7 @@ public class LineStoreController {
 
     @ApiOperation(value = "查询入库总览", notes = "根据物料号查询入库总览")
     @GetMapping("/line_store/group")
-    public CommonResult<IPage<LineStore>> selectLineStoreGroup(String materialType, String drawingNo, String materialNo, int page, int limit){
+    public CommonResult<IPage<LineStore>> selectLineStoreGroup(String materialType, String drawingNo, String materialNo, int page, int limit, String branchCode, String tenantId){
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if(!StringUtils.isNullOrEmpty(materialType)){
             queryWrapper.eq("material_type", materialType);
@@ -285,7 +287,9 @@ public class LineStoreController {
         if(!StringUtils.isNullOrEmpty(materialNo)){
             queryWrapper.like("material_no", "%" + materialNo+ "%");
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.eq("branch_code", branchCode);
+
         queryWrapper.orderByAsc("drawing_no");
         queryWrapper.groupBy("drawing_no","material_no", "material_type");
         return CommonResult.success(lineStoreService.selectGroup(new Page<LineStore>(page, limit), queryWrapper), SUCCESS_MESSAGE);
@@ -293,7 +297,7 @@ public class LineStoreController {
 
     @ApiOperation(value = "查询入库信息", notes = "根据图号、合格证号、物料编号查询入库信息")
     @GetMapping("/line_store/list")
-    public CommonResult<List<LineStore>> selectLineStoreList(String id, String materialType, String materialNo, String drawingNo, String certificateNo, String workblankNo, String trackType, Integer userNum, String status){
+    public CommonResult<List<LineStore>> selectLineStoreList(String id, String materialType, String materialNo, String drawingNo, String certificateNo, String workblankNo, String trackType, Integer userNum, String status, String branchCode, String tenantId){
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if(!StringUtils.isNullOrEmpty(materialType)){
             queryWrapper.eq("material_type", materialType);
@@ -322,17 +326,19 @@ public class LineStoreController {
         if(userNum != null && userNum > 0){
             queryWrapper.ge("number - user_num", userNum);
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.orderByDesc("create_time");
         return CommonResult.success(lineStoreService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "物料完工", notes = "物料完工")
     @GetMapping("/line_store/finish")
-    public CommonResult<Boolean> finishProduct(String trackNo){
+    public CommonResult<Boolean> finishProduct(String trackNo, String tenantId, String branchCode){
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         queryWrapper.eq("track_no", trackNo);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.eq("branch_code", branchCode);
         TrackHead trackHead = trackHeadService.getOne(queryWrapper);
         boolean bool = lineStoreService.changeStatus(trackHead);
         if(bool){
@@ -343,11 +349,12 @@ public class LineStoreController {
 
     @ApiOperation(value = "修改状态", notes = "修改产品状态")
     @GetMapping("/line_store/change_status")
-    public CommonResult<Boolean> changeStatus(String workblankNo, String status){
+    public CommonResult<Boolean> changeStatus(String workblankNo, String status, String tenantId, String branchCode){
         UpdateWrapper<LineStore> updateWrapper = new UpdateWrapper<>();
         updateWrapper.set("status", status);
         updateWrapper.eq("workblank_no", workblankNo);
-        updateWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        updateWrapper.eq("tenant_id", tenantId);
+        updateWrapper.eq("branch_code", branchCode);
         boolean bool = lineStoreService.update(updateWrapper);
         if(bool){
             return CommonResult.success(bool, SUCCESS_MESSAGE);
@@ -357,16 +364,17 @@ public class LineStoreController {
 
     @ApiOperation(value = "查询产品使用的毛坯信息", notes = "根据图号查询产品使用的毛坯信息")
     @GetMapping("/line_store/workblank")
-    public CommonResult<LineStore> selectWorkblankByTrackNo(String trackNo){
+    public CommonResult<LineStore> selectWorkblankByTrackNo(String trackNo, String tenantId, String branchCode){
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         queryWrapper.eq("track_no", trackNo);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.eq("branch_code", branchCode);
         TrackHead trackHead = trackHeadService.getOne(queryWrapper);
         LineStore lineStore = new LineStore();
         if(trackHead != null && !StringUtils.isNullOrEmpty(trackHead.getUserProductNo())){
             QueryWrapper<LineStore> wrapper = new QueryWrapper<LineStore>();
             wrapper.eq("workblank_no", trackHead.getUserProductNo());
-            wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            wrapper.eq("tenant_id", tenantId);
             lineStore = lineStoreService.getOne(wrapper);
         }
         return CommonResult.success(lineStore, SUCCESS_MESSAGE);
@@ -374,7 +382,7 @@ public class LineStoreController {
 
     @ApiOperation(value = "分页查询产品装配信息", notes = "根据跟踪类型，产品编号分页查询产品装配信息")
     @GetMapping("/line_store/product")
-    public CommonResult<IPage<LineStore>> selectLineStoreByProduct(String trackType,String materialType, String workblankNo,String status, int page, int limit){
+    public CommonResult<IPage<LineStore>> selectLineStoreByProduct(String trackType,String materialType, String workblankNo,String status, int page, int limit, String tenantId, String branchCode){
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if(!StringUtils.isNullOrEmpty(trackType)){
             queryWrapper.eq("ls.track_type", trackType);
@@ -388,7 +396,8 @@ public class LineStoreController {
         if(!StringUtils.isNullOrEmpty(status)){
             queryWrapper.eq("ls.status", status );
         }
-        queryWrapper.eq("ls.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("ls.tenant_id", tenantId);
+        queryWrapper.eq("ls.branch_code", branchCode);
         return CommonResult.success(lineStoreService.selectLineStoreByProduce(new Page<LineStore>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
@@ -433,6 +442,7 @@ public class LineStoreController {
                 item.setUserNum(0);
                 item.setStatus("1");
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                item.setBranchCode(SecurityUtils.getCurrentUser().getBelongOrgId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
                 item.setInTime(new Date());
@@ -463,7 +473,7 @@ public class LineStoreController {
 
     @ApiOperation(value = "导出库存信息", notes = "通过Excel文档导出库存信息")
     @GetMapping("/export_excel")
-    public void exportExcel(String materialNo, String materialType, String drawingNo, String certificateNo, String workblankNo, String status, HttpServletResponse rsp) {
+    public void exportExcel(String materialNo, String materialType, String drawingNo, String certificateNo, String workblankNo, String status, String tenantId, String branchCode, HttpServletResponse rsp) {
         try {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
             if(!StringUtils.isNullOrEmpty(materialNo)){
@@ -484,7 +494,8 @@ public class LineStoreController {
             if(!StringUtils.isNullOrEmpty(workblankNo)){
                 queryWrapper.like("workblank_no", "%" + workblankNo + "%");
             }
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.eq("tenant_id", tenantId);
+            queryWrapper.eq("branch_code", branchCode);
             queryWrapper.orderByDesc("create_time");
             List<LineStore> list = lineStoreService.list(queryWrapper);
 
