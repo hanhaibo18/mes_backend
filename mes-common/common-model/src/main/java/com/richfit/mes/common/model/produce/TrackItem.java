@@ -169,4 +169,13 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private Date startTime;
 
+    @TableField(exist = false)
+    private String drawingNo;
+    @TableField(exist = false)
+    private String trackType;
+    @TableField(exist = false)
+    private String qty;
+    @TableField(exist = false)
+    private String trackNo;
+
 }
