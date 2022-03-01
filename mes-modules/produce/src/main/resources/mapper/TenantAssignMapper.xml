@@ -4,7 +4,7 @@
 
     <select id="queryPage" resultType="com.richfit.mes.common.model.produce.Assign">
         <!-- 设置别名 -->
-        select u.* from produce_assign u 
+        select u.* from v_produce_assign u 
         WHERE 1=1 
         <trim  suffixOverrides="," >
             <if test="trackNo != null and trackNo != ''" >
