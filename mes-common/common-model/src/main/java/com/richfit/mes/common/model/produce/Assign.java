@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
@@ -95,5 +96,16 @@ public class Assign extends BaseEntity<Assign> {
      * 计划结束时间
      */
     protected Date endTime;
+
+    @TableField(exist = false)
+    private String drawingNo;
+    @TableField(exist = false)
+    private String trackType;
+    @TableField(exist = false)
+    private String trackQty;
+    @TableField(exist = false)
+    private String trackNo2;
+    @TableField(exist = false)
+    private String productNo;
     
 }
