@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
@@ -101,5 +102,16 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 探伤结果
      */
     protected String detectionResult;
+
+    @TableField(exist = false)
+    private String drawingNo;
+    @TableField(exist = false)
+    private String trackType;
+    @TableField(exist = false)
+    private String trackQty;
+    @TableField(exist = false)
+    private String trackNo2;
+    @TableField(exist = false)
+    private String productNo;
     
 }
