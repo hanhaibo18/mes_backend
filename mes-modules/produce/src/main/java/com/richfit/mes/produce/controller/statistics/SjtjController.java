@@ -26,6 +26,7 @@ public class SjtjController extends BaseController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
     @Autowired
     private SjtjServiceImpl sjtjService;
 

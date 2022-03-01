@@ -8,5 +8,4 @@ import java.util.List;
 @Service
 public interface SjtjService {
     List query1(String branchCode);
-
 }
