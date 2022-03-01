@@ -107,5 +107,16 @@ public class Assign extends BaseEntity<Assign> {
     private String trackNo2;
     @TableField(exist = false)
     private String productNo;
-    
+    @TableField(exist = false)
+    private String optName;
+    @TableField(exist = false)
+    private String optType;
+    @TableField(exist = false)
+    private String optSequence;
+    @TableField(exist = false)
+    private String technologySequence;
+    @TableField(exist = false)
+    private String optParallelType;
+    @TableField(exist = false)
+    private String sequenceOrderBy;
 }
