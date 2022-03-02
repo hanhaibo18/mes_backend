@@ -7,9 +7,9 @@
         sys_menu.*, sys_role_menu.permission as checked_button
         FROM
         sys_menu
-        LEFT JOIN sys_role_menu ON (sys_menu.id = sys_role_menu.menu_id or sys_menu.menu_code = sys_role_menu.menu_id)
+        LEFT JOIN sys_role_menu ON (sys_menu.id = sys_role_menu.menu_id or sys_menu.code = sys_role_menu.menu_id) 
         WHERE
-        (sys_role_menu.role_id = #{roleId}
+        sys_role_menu.role_id = #{roleId}
         ORDER BY
         sys_menu.menu_order DESC
     </select>
