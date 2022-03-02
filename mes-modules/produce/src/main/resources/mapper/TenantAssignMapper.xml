@@ -4,7 +4,7 @@
 
     <select id="queryPage" resultType="com.richfit.mes.common.model.produce.Assign">
         <!-- 设置别名 -->
-        select u.* from v_produce_assign u 
+        select u.* from v_produce_assign u
         WHERE 1=1 
         <trim  suffixOverrides="," >
             <if test="trackNo != null and trackNo != ''" >
@@ -30,7 +30,7 @@
                 and u.state in (2)
             </if>
              <if test="userId != null and userId != ''" >
-                and (u.user_id = #{userId} || u.user_id is null || u.user_id = '')
+                and (u.user_id = #{userId} || u.user_id  = #{userCode})
                 
             </if>
             <if test="branchCode != null and branchCode != ''" >
