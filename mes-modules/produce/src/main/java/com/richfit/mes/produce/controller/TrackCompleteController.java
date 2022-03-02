@@ -68,11 +68,14 @@ public class TrackCompleteController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String branchCode) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String userId, String userName,String branchCode) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
                 queryWrapper.eq("ti_id", tiId);
+            }
+            if (!StringUtils.isNullOrEmpty(userId)) {
+                queryWrapper.apply("(user_id='"+userId+"' or user_name='"+userName+"')");
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 queryWrapper.eq("track_no", trackNo);
@@ -95,19 +98,19 @@ public class TrackCompleteController extends BaseController {
             //外协报工判断过滤，外协报工类型是4
 
             if ("4".equals(optType)) {
-                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type = 4)");
+                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type = 3)");
             } else {
-                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type <> 4)");
+                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type <> 3)");
             }
             // todo 如果是管理员或租户管理员，那么不过滤完工用户ID
             if (null != SecurityUtils.getCurrentUser()) {
-                TenantUserDetails user = SecurityUtils.getCurrentUser();
+                //TenantUserDetails user = SecurityUtils.getCurrentUser();
 
-                queryWrapper.apply("(complete_by ='" + user.getUserId() + "' || complete_by is null || complete_by ='' || user_id ='" + user.getUserId() + "' || user_id is null || user_id ='' )");
+                //queryWrapper.apply("(complete_by ='" + user.getUserId() + "' || complete_by is null || complete_by ='' || user_id ='" + user.getUserId() + "' || user_id is null || user_id ='' )");
             }
 
             queryWrapper.orderByDesc("modify_time");
-            IPage<TrackComplete> completes = trackCompleteService.page(new Page<TrackComplete>(page, limit), queryWrapper);
+            IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
             return CommonResult.success(completes);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
