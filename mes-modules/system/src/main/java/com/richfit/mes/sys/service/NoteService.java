@@ -62,19 +62,19 @@ public interface NoteService extends IService<Note> {
      * 功能描述: 删除收到的信息
      * @Author: xinYu.hou
      * @Date: 2022/2/16 15:29
-     * @param idList
+     * @param id
      * @return: CommonResult<Boolean>
      **/
-    CommonResult<Boolean> deleteRecipients(List<String> idList);
+    CommonResult<Boolean> deleteRecipients(String id);
 
     /**
      * 功能描述: 删除发送邮件
      * @Author: xinYu.hou
      * @Date: 2022/2/16 15:30
-     * @param idList
+     * @param id
      * @return: CommonResult<Boolean>
      **/
-    CommonResult<Boolean> deleteSender(List<String> idList);
+    CommonResult<Boolean> deleteSender(String id);
 
     /**
      * 功能描述: 查询垃圾箱列表

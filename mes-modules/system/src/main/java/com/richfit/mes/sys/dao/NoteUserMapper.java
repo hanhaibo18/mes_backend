@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.richfit.mes.common.model.sys.NoteUser;
 import com.richfit.mes.common.model.sys.vo.NoteUserVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,7 +18,7 @@ import org.apache.ibatis.annotations.Select;
  **/
 
 @Mapper
-public interface NoteUserMapper extends BaseMapper<NoteUserMapper> {
+public interface NoteUserMapper extends BaseMapper<NoteUser> {
 
     /**
      * 功能描述: 根据收件人查询邮件

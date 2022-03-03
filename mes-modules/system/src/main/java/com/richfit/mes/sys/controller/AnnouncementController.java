@@ -47,8 +47,8 @@ public class AnnouncementController {
 
     @ApiOperation(value = "保存通知信息", notes = "保存通知公告")
     @PostMapping("/save")
-    public Boolean announcementSave(@RequestBody Announcement announcement) {
-        return announcementService.save(announcement);
+    public CommonResult<Boolean> announcementSave(@RequestBody Announcement announcement) {
+        return CommonResult.success(announcementService.save(announcement));
     }
 
     @PostMapping("/query/page")
@@ -60,6 +60,7 @@ public class AnnouncementController {
         if (!empty && !StringUtils.isEmpty(announcement.getTitle())){
             queryWrapper.like("title","%"+announcement.getTitle() + "%");
         }
+        queryWrapper.eq("branch_code",announcement.getBranchCode());
         queryWrapper.orderByDesc("if_top DESC,top_number DESC,create_time");
         Page<Announcement> page = announcementService.page(new Page<>(query.getPage(), query.getSize()), queryWrapper);
         List<Tenant> list = tenantService.list();
@@ -76,7 +77,7 @@ public class AnnouncementController {
     @ApiOperation(value = "修改信息", notes = "修改信息")
     @PutMapping("/update")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> updateById(Announcement baseAnnouncement){
+    public CommonResult<Boolean> updateById(@RequestBody Announcement baseAnnouncement){
         return CommonResult.success(announcementService.updateById(baseAnnouncement));
     }
 
@@ -93,4 +94,8 @@ public class AnnouncementController {
         return CommonResult.success(announcementService.getOne(queryWrapper));
     }
 
+    @GetMapping("/size")
+    private Integer querySize(){
+        return announcementService.count();
+    }
 }

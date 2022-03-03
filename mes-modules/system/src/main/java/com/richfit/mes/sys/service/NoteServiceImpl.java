@@ -18,6 +18,7 @@ import com.richfit.mes.sys.enmus.RecipientsEnum;
 import com.richfit.mes.sys.entity.dto.DropDto;
 import com.richfit.mes.sys.entity.dto.NoteDto;
 import com.richfit.mes.sys.entity.dto.QueryDto;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -32,6 +33,7 @@ import java.util.List;
  * @Description: TODO
  * @CreateTime: 2022年02月14日 15:00:00
  */
+@Service
 public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements NoteService {
 
     @Resource
@@ -113,16 +115,14 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> deleteRecipients(List<String> idList) {
-        idList.forEach(id -> noteMapper.deleteSender(id));
-        return CommonResult.success(true);
+    public CommonResult<Boolean> deleteRecipients(String id) {
+        return CommonResult.success(noteMapper.deleteSender(id));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> deleteSender(List<String> idList) {
-        idList.forEach(id -> noteUserMapper.deleteRecipients(id));
-        return CommonResult.success(true);
+    public CommonResult<Boolean> deleteSender(String id) {
+        return CommonResult.success(noteUserMapper.deleteRecipients(id));
     }
 
     @Override
