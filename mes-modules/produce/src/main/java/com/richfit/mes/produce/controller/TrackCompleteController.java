@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -68,7 +69,7 @@ public class TrackCompleteController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String userId, String userName,String branchCode) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String userId, String userName,String branchCode,String order , String orderCol) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -88,7 +89,7 @@ public class TrackCompleteController extends BaseController {
 
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
+                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + endTime + "')");
 
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -109,7 +110,19 @@ public class TrackCompleteController extends BaseController {
                 //queryWrapper.apply("(complete_by ='" + user.getUserId() + "' || complete_by is null || complete_by ='' || user_id ='" + user.getUserId() + "' || user_id is null || user_id ='' )");
             }
 
-            queryWrapper.orderByDesc("modify_time");
+            if(!StringUtils.isNullOrEmpty(orderCol)){
+                if(!StringUtils.isNullOrEmpty(order)){
+                    if(order.equals("desc")){
+                        queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    } else if (order.equals("asc")){
+                        queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                    }
+                } else {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc("modify_time");
+            }
             IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
             return CommonResult.success(completes);
         } catch (Exception e) {
