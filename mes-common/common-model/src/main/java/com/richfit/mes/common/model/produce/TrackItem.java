@@ -177,9 +177,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String qty;
     @TableField(exist = false)
     private String trackNo;
-    @TableField(exist = false)
-    private Double prepareEndHours;
-    @TableField(exist = false)
-    private Double singlePieceHours;
+  
 
 }
