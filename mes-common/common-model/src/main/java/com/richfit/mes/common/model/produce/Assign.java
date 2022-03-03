@@ -110,13 +110,13 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     private String optName;
     @TableField(exist = false)
-    private String optType;
+    private Integer optType;
     @TableField(exist = false)
-    private String optSequence;
+    private Integer optSequence;
     @TableField(exist = false)
-    private String technologySequence;
+    private Integer technologySequence;
     @TableField(exist = false)
-    private String optParallelType;
+    private Integer optParallelType;
     @TableField(exist = false)
-    private String sequenceOrderBy;
+    private Integer sequenceOrderBy;
 }
