@@ -174,9 +174,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String trackType;
     @TableField(exist = false)
-    private String qty;
+    private Integer qty;
     @TableField(exist = false)
     private String trackNo;
-  
+
 
 }
