@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -64,7 +65,7 @@ public class TrackAssignController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode) {
+    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode,String order , String orderCol) {
         try {
             QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -94,7 +95,20 @@ public class TrackAssignController extends BaseController {
                 queryWrapper.eq("branch_code", branchCode);
 
             }
-            queryWrapper.orderByDesc(new String[] {"priority","modify_time"});
+            if(!StringUtils.isNullOrEmpty(orderCol)){
+                if(!StringUtils.isNullOrEmpty(order)){
+                    if(order.equals("desc")){
+                        queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    } else if (order.equals("asc")){
+                        queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                    }
+                } else {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc(new String[] {"priority","modify_time"});
+            }
+
             
             IPage<Assign> assigns = trackAssignService.page(new Page<Assign>(page, limit), queryWrapper);
             return CommonResult.success(assigns);
@@ -178,7 +192,6 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "批量新增派工", notes = "批量新增派工")
     @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
     @PostMapping("/batchAdd")
-    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) {
         boolean bool = true;
         for (Assign assign : assigns) {
@@ -318,7 +331,7 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "派工查询", notes = "派工查询")
     @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/getPageAssignsByStatus")
-    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo,String routerNo, String startTime, String endTime, String optType,String branchCode) {
+    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo,String routerNo, String startTime, String endTime, String optType,String branchCode,String order , String orderCol) {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
 
@@ -336,7 +349,19 @@ public class TrackAssignController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
 
         }
-        queryWrapper.orderByDesc(new String[] {"modify_time"});
+        if(!StringUtils.isNullOrEmpty(orderCol)){
+            if(!StringUtils.isNullOrEmpty(order)){
+                if(order.equals("desc")){
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                } else if (order.equals("asc")){
+                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+            }
+        } else {
+            queryWrapper.orderByDesc(new String[] {"priority","modify_time"});
+        }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper), "操作成功！");
         }
