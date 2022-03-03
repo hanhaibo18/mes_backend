@@ -98,15 +98,15 @@ public class TrackAssignController extends BaseController {
             if(!StringUtils.isNullOrEmpty(orderCol)){
                 if(!StringUtils.isNullOrEmpty(order)){
                     if(order.equals("desc")){
-                        queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                        queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
                     } else if (order.equals("asc")){
-                        queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                        queryWrapper.orderByAsc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
                     }
                 } else {
-                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
                 }
             } else {
-                queryWrapper.orderByDesc(new String[] {"priority","modify_time"});
+                queryWrapper.orderByDesc(new String[] {"modify_time","sequence_order_by"});
             }
 
             
@@ -352,15 +352,15 @@ public class TrackAssignController extends BaseController {
         if(!StringUtils.isNullOrEmpty(orderCol)){
             if(!StringUtils.isNullOrEmpty(order)){
                 if(order.equals("desc")){
-                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
                 } else if (order.equals("asc")){
-                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                    queryWrapper.orderByAsc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
                 }
             } else {
-                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
             }
         } else {
-            queryWrapper.orderByDesc(new String[] {"priority","modify_time"});
+            queryWrapper.orderByDesc(new String[] {"modify_time","sequence_order_by"});
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper), "操作成功！");
