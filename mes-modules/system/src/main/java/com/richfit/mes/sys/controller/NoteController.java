@@ -2,10 +2,11 @@ package com.richfit.mes.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.sys.Note;
+import com.richfit.mes.common.model.sys.NoteUser;
 import com.richfit.mes.common.model.sys.dto.NoteDto;
 import com.richfit.mes.sys.enmus.SenderEnum;
 import com.richfit.mes.sys.service.NoteService;
+import com.richfit.mes.sys.service.NoteUserService;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,10 @@ public class NoteController {
 
     @Resource
     private NoteService noteService;
+
+    @Resource
+    private NoteUserService noteUserService;
+
     /**
      * 功能描述: 删除收到的信息
      * @Author: xinYu.hou
@@ -70,10 +75,10 @@ public class NoteController {
      **/
     @GetMapping("/query/message_number/{userId}")
     public CommonResult<Integer> queryMessageNumber(@PathVariable String userId){
-        QueryWrapper<Note> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account",userId);
         queryWrapper.eq("state", SenderEnum.NOT_READ.getStateId());
-        int count = noteService.count(queryWrapper);
+        int count = noteUserService.count(queryWrapper);
         return CommonResult.success(count);
     }
 }
