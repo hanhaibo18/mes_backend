@@ -2,11 +2,13 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.produce.AssignPerson;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author 马峰
@@ -15,6 +17,8 @@ import java.util.Date;
 @Data
 public class Assign extends BaseEntity<Assign> {
 
+
+    private String id;
     /**
      * 租户ID
      */
@@ -119,4 +123,8 @@ public class Assign extends BaseEntity<Assign> {
     private Integer optParallelType;
     @TableField(exist = false)
     private Integer sequenceOrderBy;
+
+    @TableField(exist = false)
+    private List<AssignPerson> assignPersons;
+
 }
