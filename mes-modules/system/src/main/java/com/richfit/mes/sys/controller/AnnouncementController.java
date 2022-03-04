@@ -60,7 +60,7 @@ public class AnnouncementController {
         if (!empty && !StringUtils.isEmpty(announcement.getTitle())){
             queryWrapper.like("title","%"+announcement.getTitle() + "%");
         }
-        queryWrapper.eq("branch_code",announcement.getBranchCode());
+        queryWrapper.eq("tenant_id",announcement.getTenantId());
         queryWrapper.orderByDesc("if_top DESC,top_number DESC,create_time");
         Page<Announcement> page = announcementService.page(new Page<>(query.getPage(), query.getSize()), queryWrapper);
         List<Tenant> list = tenantService.list();
