@@ -7,11 +7,9 @@ import com.richfit.mes.common.model.sys.Note;
 import com.richfit.mes.common.model.sys.vo.DustbinVo;
 import com.richfit.mes.common.model.sys.vo.NoteUserVo;
 import com.richfit.mes.common.model.sys.vo.NoteVo;
-import com.richfit.mes.sys.entity.dto.NoteDto;
+import com.richfit.mes.common.model.sys.dto.NoteDto;
 import com.richfit.mes.sys.entity.dto.QueryDto;
 import com.richfit.mes.sys.entity.dto.DropDto;
-
-import java.util.List;
 
 /**
  * @ClassName: NoteService.java
