@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.SjtjMapper">
+
+    <select id="query1" resultType="com.richfit.mes.produce.entity.SjtjDto">
+
+        SELECT b.template_code templateCode,sum(b.number) number,sum(a.qty) qty,sum(c.completed_qty)
+        completedQty,sum(d.qualify + d.unqualify) qualify FROM
+        produce_assign a
+        LEFT JOIN produce_track_head b ON a.tenant_id = b.tenant_id
+        LEFT JOIN produce_track_complete c ON c.tenant_id = b.tenant_id
+        LEFT JOIN produce_track_check d ON d.tenant_id = b.tenant_id
+
+        <where>
+            <if test="branchCode != null and branchCode != ''">
+                and b.branch_code LIKE  concat('%',#{branchCode},'%')
+            </if>
+            <if test="createTime != null and createTime != ''">
+                and b.create_time >= #{createTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and b.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        GROUP BY
+        b.template_code
+    </select>
+
+</mapper>
