@@ -6,19 +6,19 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.produce.service.TrackAssignService;
+import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.model.produce.TrackComplete;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackItemService;
@@ -47,6 +47,9 @@ public class TrackAssignController extends BaseController {
     private TrackHeadService trackHeadService;
     @Autowired
     private TrackCompleteService trackCompleteService;
+    @Autowired
+    private TrackAssignPersonMapper trackAssignPersonMapper;
+
     
     
 
@@ -111,6 +114,9 @@ public class TrackAssignController extends BaseController {
 
             
             IPage<Assign> assigns = trackAssignService.page(new Page<Assign>(page, limit), queryWrapper);
+            for (int i=0;i<assigns.getRecords().size();i++) {
+                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id",assigns.getRecords().get(i).getId())));
+            }
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -136,6 +142,9 @@ public class TrackAssignController extends BaseController {
         try {
 
             IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), siteId,trackNo,routerNo, startTime, endTime, state,userId,branchCode);
+            for (int i=0;i<assigns.getRecords().size();i++) {
+                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id",assigns.getRecords().get(i).getId())));
+            }
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -147,56 +156,10 @@ public class TrackAssignController extends BaseController {
     @PostMapping("/add")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign> addAssign(@RequestBody Assign assign) {
+        try {
 
-        if (StringUtils.isNullOrEmpty(assign.getTiId())) {
-            return CommonResult.failed("关联工序ID不能为空！");
-        } else {
-            TrackItem trackItem = trackItemService.getById(assign.getTiId());
-            if (null != trackItem) {
-                if (trackItem.getAssignableQty() < assign.getQty()) {
-                    return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
-                }
-
-                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
-                    //将跟单状态改为在制
-                    trackHead.setStatus("1");
-                    trackHeadService.updateById(trackHead);
-                }
-                //可派工数减去已派工数，当前工序为1，在制状态为0
-                trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
-                trackItem.setIsCurrent(1);
-                trackItem.setIsDoing(0);
-                trackItemService.updateById(trackItem);
-            }
-            
-             if (null != SecurityUtils.getCurrentUser()) {
-
-                assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-
-            }
-            assign.setModifyTime(new Date());
-            assign.setCreateTime(new Date());
-            assign.setAvailQty(assign.getQty());
-            boolean bool = trackAssignService.save(assign);
-
-
-            if (bool) {
-                return CommonResult.success(assign, "操作成功！");
-            } else {
-                return CommonResult.failed("操作失败，请重试！");
-            }
-        }
-    }
-
-    @ApiOperation(value = "批量新增派工", notes = "批量新增派工")
-    @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
-    @PostMapping("/batchAdd")
-    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) {
-        boolean bool = true;
-        for (Assign assign : assigns) {
             if (StringUtils.isNullOrEmpty(assign.getTiId())) {
-                return CommonResult.failed("关联工序ID编码不能为空！");
+                return CommonResult.failed("关联工序ID不能为空！");
             } else {
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 if (null != trackItem) {
@@ -216,25 +179,86 @@ public class TrackAssignController extends BaseController {
                     trackItem.setIsDoing(0);
                     trackItemService.updateById(trackItem);
                 }
+
                 if (null != SecurityUtils.getCurrentUser()) {
 
-                assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-
-            }
+                    assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                assign.setAssignTime(new Date());
                 assign.setModifyTime(new Date());
                 assign.setCreateTime(new Date());
-                 assign.setAvailQty(assign.getQty());
-                if (!trackAssignService.save(assign)) {
-                    bool = false;
+                assign.setAvailQty(assign.getQty());
+
+                boolean bool = trackAssignService.save(assign);
+                for (AssignPerson person : assign.getAssignPersons()) {
+                    person.setModifyTime(new Date());
+                    person.setAssignId(assign.getId());
+                    trackAssignPersonMapper.insert(person);
                 }
 
 
             }
+            return CommonResult.success(assign, "操作成功！");
         }
-        if (bool) {
+        catch (Exception e) {
+            return CommonResult.failed("操作失败，请重试！"+e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "批量新增派工", notes = "批量新增派工")
+    @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
+    @PostMapping("/batchAdd")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) {
+        try {
+
+            for (Assign assign : assigns) {
+                if (StringUtils.isNullOrEmpty(assign.getTiId())) {
+                    return CommonResult.failed("关联工序ID编码不能为空！");
+                } else {
+                    TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                    if (null != trackItem) {
+                        if (trackItem.getAssignableQty() < assign.getQty()) {
+                            return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
+                        }
+
+                        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                        if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
+                            //将跟单状态改为在制
+                            trackHead.setStatus("1");
+                            trackHeadService.updateById(trackHead);
+                        }
+                        //可派工数减去已派工数，当前工序为1，在制状态为0
+                        trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
+                        trackItem.setIsCurrent(1);
+                        trackItem.setIsDoing(0);
+                        trackItemService.updateById(trackItem);
+                    }
+                    assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    if (null != SecurityUtils.getCurrentUser()) {
+                        assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                        assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                    }
+
+                    assign.setAssignTime(new Date());
+                    assign.setModifyTime(new Date());
+                    assign.setCreateTime(new Date());
+                    assign.setAvailQty(assign.getQty());
+                    trackAssignService.save(assign);
+                    for (AssignPerson person : assign.getAssignPersons()) {
+                        person.setModifyTime(new Date());
+                        person.setAssignId(assign.getId());
+                        trackAssignPersonMapper.insert(person);
+                    }
+
+                }
+            }
+
             return CommonResult.success(assigns, "操作成功！");
-        } else {
-            return CommonResult.failed("操作失败，请重试！");
+        } catch (Exception e){
+            return CommonResult.failed("操作失败，请重试！"+e.getMessage());
         }
 
     }
@@ -246,59 +270,64 @@ public class TrackAssignController extends BaseController {
     public CommonResult<Assign> updateAssign(@RequestBody Assign assign) {
 
 
+        try {
+            if (StringUtils.isNullOrEmpty(assign.getTiId())) {
+                return CommonResult.failed("关联工序ID编码不能为空！");
+            } else {
+                TrackItem trackItem = trackItemService.getById(assign.getTiId());
 
-        if (StringUtils.isNullOrEmpty(assign.getTiId())) {
-            return CommonResult.failed("关联工序ID编码不能为空！");
-        } else {
-            TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
+                }
+                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
+                }
+                // 判断后置工序是否已派工，否则无法修改
+                List<Assign> cs = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
+                for (int j = 0; j < cs.size(); j++) {
+                    TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
+                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                        return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
 
-            if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
-                return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
-            }
-            if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
-            }
-            // 判断后置工序是否已派工，否则无法修改
-            List<Assign> cs = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
-            for (int j = 0; j < cs.size(); j++) {
-                TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
-                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                    return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
+                    }
 
                 }
-
-            }
-            // 判断修改的派工数量是否在合理范围
-            Assign oldassign = trackAssignService.getById(assign.getId());
-            if (null != trackItem) {
-                if (trackItem.getAssignableQty() < (assign.getQty() - oldassign.getQty())) {
-                    return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
+                // 判断修改的派工数量是否在合理范围
+                Assign oldassign = trackAssignService.getById(assign.getId());
+                if (null != trackItem) {
+                    if (trackItem.getAssignableQty() < (assign.getQty() - oldassign.getQty())) {
+                        return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
+                    }
                 }
-            }
-            // 设置派工时间，人员，工序可派工数
-            if (null != SecurityUtils.getCurrentUser()) {
+                // 设置派工时间，人员，工序可派工数
+                if (null != SecurityUtils.getCurrentUser()) {
 
-                assign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                    assign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                assign.setAssignTime(new Date());
+                assign.setModifyTime(new Date());
+                assign.setAvailQty(assign.getQty());
+                boolean bool = trackAssignService.updateById(assign);
+                for (AssignPerson person : assign.getAssignPersons()) {
+                    person.setModifyTime(new Date());
+                    person.setAssignId(assign.getId());
+                    trackAssignPersonMapper.insert(person);
+                }
+                trackItem.setAssignableQty(trackItem.getAssignableQty() - (assign.getQty() - oldassign.getQty()));
+                if (assign.getState() == 1) {
+                    trackItem.setIsDoing(1);
+                    trackItem.setStartDoingTime(new Date());
+                    trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
+                } else {
+                    trackItem.setIsDoing(0);
+                }
+                trackItemService.updateById(trackItem);
             }
-            assign.setAssignTime(new Date());
-            assign.setModifyTime(new Date());
-             assign.setAvailQty(assign.getQty());
-            boolean bool = trackAssignService.updateById(assign);
-            trackItem.setAssignableQty(trackItem.getAssignableQty() - (assign.getQty() - oldassign.getQty()));
-            if (assign.getState() == 1) {
-                trackItem.setIsDoing(1);
-                trackItem.setStartDoingTime(new Date());
-                trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
-            } else {
-                trackItem.setIsDoing(0);
-            }
-            trackItemService.updateById(trackItem);
-            if (bool) {
-                return CommonResult.success(assign, "操作成功！");
-            } else {
-                return CommonResult.failed("操作失败，请重试！");
-            }
+            return CommonResult.success(assign, "操作成功！");
+        }
+        catch (Exception e) {
+            return CommonResult.failed("操作失败，请重试！"+e.getMessage());
         }
     }
 
