@@ -11,7 +11,7 @@ spring:
         enabled: ${DISCOVERY_ENABLED:false}
         server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
         group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
-        namespace: ${DISCOVERY_NAMESPACE:mes_test}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
 
     loadbalancer:
       retry:
