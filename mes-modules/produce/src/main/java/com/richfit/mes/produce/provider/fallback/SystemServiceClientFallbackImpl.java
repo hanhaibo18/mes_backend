@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.richfit.mes.common.model.sys.ItemClass;
 import com.richfit.mes.common.model.sys.ItemParam;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.InputStream;
 import java.util.List;
@@ -41,4 +42,17 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     public CommonResult<byte[]> getAttachmentInputStream(@PathVariable String id)  {
         return null;
     }
+
+
+    @Override
+    public CommonResult<Boolean> savenote(String sendUser,
+                                          String sendTitle,
+                                          String sendContent,
+                                          String reseiverUsers,
+                                          String branchCode,
+                                          String tenantId)  {
+        return null;
+    }
+
+
 }
