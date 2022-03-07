@@ -68,7 +68,7 @@ public class TrackAssignController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode,String order , String orderCol) {
+    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode,String order , String orderCol,String assignBy) {
         try {
             QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -82,6 +82,9 @@ public class TrackAssignController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 queryWrapper.eq("track_no", trackNo);
+            }
+            if (!StringUtils.isNullOrEmpty(assignBy)) {
+                queryWrapper.eq("assign_by", assignBy);
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
                 queryWrapper.apply("track_id in (select id from produce_track_head where drawing_no='"+routerNo+"')");
@@ -138,10 +141,10 @@ public class TrackAssignController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit,String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId,String branchCode) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit,String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId,String branchCode,String assignBy) {
         try {
 
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), siteId,trackNo,routerNo, startTime, endTime, state,userId,branchCode);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy,trackNo,routerNo, startTime, endTime, state,userId,branchCode);
             for (int i=0;i<assigns.getRecords().size();i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id",assigns.getRecords().get(i).getId())));
             }
