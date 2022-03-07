@@ -2,7 +2,9 @@ package com.richfit.mes.common.model.sys;
 
 
 import com.richfit.mes.common.core.base.BaseEntity;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import javax.xml.soap.Text;
@@ -13,6 +15,8 @@ import javax.xml.soap.Text;
  */
 @Data
 @Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Note extends BaseEntity<Note> {
     /**
      * 状态

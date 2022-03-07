@@ -24,15 +24,6 @@ import java.util.Map;
 public interface NoteMapper extends BaseMapper<Note> {
 
     /**
-     * 功能描述: 保存并获取ID
-     * @Author: xinYu.hou
-     * @Date: 2022/2/14 15:50
-     * @param note
-     * @return: String
-     **/
-    String insertGetId(Note note);
-
-    /**
      * 功能描述: 查询发送邮件
      * @Author: xinYu.hou
      * @Date: 2022/2/16 10:44

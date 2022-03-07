@@ -1,5 +1,6 @@
 package com.richfit.mes.sys.service;
 
+import com.alibaba.nacos.common.utils.UuidUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,6 +25,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -51,12 +53,13 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Transactional(rollbackFor = Exception.class)
     public boolean saveNote(NoteDto noteDto) {
         Note note = new Note();
+        note.setId(UuidUtils.generateUuid().replace("-",""));
         note.setTitle(noteDto.getTitle())
                 .setContent(noteDto.getContent())
                 .setTenantId(noteDto.getTenantId())
                 .setBranchCode(noteDto.getBranchCode())
                 .setState(0);
-        String id = noteMapper.insertGetId(note);
+        noteService.save(note);
         List<String> userIdList = Arrays.asList(noteDto.getUsers().split(","));
         List<NoteUser> userList = new ArrayList<>();
         userIdList.forEach(userid -> {
@@ -65,7 +68,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
                     .setState(0)
                     .setTenantId(noteDto.getTenantId())
                     .setBranchCode(noteDto.getBranchCode())
-                    .setNoteId(id);
+                    .setNoteId(note.getId());
             userList.add(noteUser);
         });
         return noteUserService.saveBatch(userList);
