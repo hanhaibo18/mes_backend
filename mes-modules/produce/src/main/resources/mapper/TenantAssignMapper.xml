@@ -15,7 +15,7 @@
                and u.track_id in (SELECT h.id FROM produce_track_head h WHERE h.drawing_no = #{routerNo}) 
             </if>    
              <if test="siteId != null and siteId != ''" >
-               and u.site_id = #{siteId} 
+               and u.assign_by = #{siteId}
             </if>      
             <if test="startTime != null and startTime != ''" >
                 and UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP(#{startTime})

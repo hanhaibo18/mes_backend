@@ -1,17 +1,13 @@
 package com.richfit.mes.sys.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.sys.NoteUser;
 import com.richfit.mes.common.model.sys.dto.NoteDto;
-import com.richfit.mes.sys.enmus.SenderEnum;
 import com.richfit.mes.sys.service.NoteService;
-import com.richfit.mes.sys.service.NoteUserService;
 import io.swagger.annotations.Api;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
-import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @ClassName: NoteController.java
@@ -26,10 +22,6 @@ public class NoteController {
 
     @Resource
     private NoteService noteService;
-
-    @Resource
-    private NoteUserService noteUserService;
-
     /**
      * 功能描述: 删除收到的信息
      * @Author: xinYu.hou
@@ -55,30 +47,28 @@ public class NoteController {
     }
 
     /**
-     * 功能描述: 创建消息通知
-     * @Author: xinYu.hou
-     * @Date: 2022/3/4 14:42
-     * @param note
-     * @return: CommonResult<Boolean>
+     * 功能描述: 发送个人短信
+     * @Author:
+     * @Date:
+     * @param
+     * @return:
      **/
-    @PostMapping("/save")
-    public CommonResult<Boolean> saveNote(@Valid @RequestBody NoteDto note){
-        return CommonResult.success(noteService.saveNote(note));
+    @PostMapping ("/save")
+    public CommonResult<Boolean> save(@RequestParam("sendUser") String sendUser,
+                                      @RequestParam("sendTitle") String  sendTitle,
+                                      @RequestParam("sendContent") String  sendContent,
+                                      @RequestParam("reseiverUsers") String  reseiverUsers,
+                                      @RequestParam("branchCode") String  branchCode,
+                                      @RequestParam("tenantId") String  tenantId){
+        NoteDto noteDto = new NoteDto();
+        noteDto.setContent(sendContent);
+        noteDto.setTitle(sendTitle);
+        noteDto.setTenantId(tenantId);
+        noteDto.setBranchCode(branchCode);
+        noteDto.setUsers(reseiverUsers);
+
+        return CommonResult.success(noteService.saveNote(noteDto));
     }
 
-    /**
-     * 功能描述: 根据用户Id获取未读数量
-     * @Author: xinYu.hou
-     * @Date: 2022/3/4 14:49
-     * @param userId
-     * @return: CommonResult<Integer>
-     **/
-    @GetMapping("/query/message_number/{userId}")
-    public CommonResult<Integer> queryMessageNumber(@PathVariable String userId){
-        QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_account",userId);
-        queryWrapper.eq("state", SenderEnum.NOT_READ.getStateId());
-        int count = noteUserService.count(queryWrapper);
-        return CommonResult.success(count);
-    }
+
 }
