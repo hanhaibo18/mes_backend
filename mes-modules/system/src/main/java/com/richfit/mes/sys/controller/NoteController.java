@@ -1,7 +1,7 @@
 package com.richfit.mes.sys.controller;
 
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.sys.entity.dto.NoteDto;
+import com.richfit.mes.common.model.sys.dto.NoteDto;
 import com.richfit.mes.sys.service.NoteService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
