@@ -49,8 +49,8 @@ public class TrackAssignController extends BaseController {
     private TrackCompleteService trackCompleteService;
     @Autowired
     private TrackAssignPersonMapper trackAssignPersonMapper;
-
-    
+    @Autowired
+    private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
     
 
     /**
@@ -120,6 +120,7 @@ public class TrackAssignController extends BaseController {
             for (int i=0;i<assigns.getRecords().size();i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id",assigns.getRecords().get(i).getId())));
             }
+
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -228,6 +229,7 @@ public class TrackAssignController extends BaseController {
                         }
 
                         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                        assign.setTrackNo(trackHead.getTrackNo());
                         if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
                             //将跟单状态改为在制
                             trackHead.setStatus("1");
@@ -258,7 +260,15 @@ public class TrackAssignController extends BaseController {
 
                 }
             }
+            for (Assign assign : assigns) {
+                systemServiceClient.savenote(assign.getAssignBy(),
+                        "您有新的派工跟单需要报工！",
+                        assign.getTrackNo(),
+                        assign.getUserId().substring(0,assign.getUserId().length()-1),
+                        assign.getBranchCode(),
+                        assign.getTenantId());
 
+            }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e){
             return CommonResult.failed("操作失败，请重试！"+e.getMessage());
