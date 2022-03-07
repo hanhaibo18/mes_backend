@@ -1,19 +1,26 @@
 package com.richfit.mes.produce.dao;
 
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.richfit.mes.produce.entity.SjtjDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Mapper
-public interface SjtjMapper extends BaseMapper<SjtjDto> {
+public interface SjtjMapper {
+
+    List<Map> query1(@Param("createTime") String createTime,@Param("endTime") String endTime, @Param("branchCode")String branchCode);
 
 
-    List<SjtjDto> query1(@Param("branchCode") String branchCode, @Param("createTime") String createTime, @Param("endTime") String endTime);
+    List<Map> query2(@Param("createTime") String createTime,@Param("endTime") String endTime,String branchCode);
+
+
+    List<Map> query3(@Param("createTime") String createTime,@Param("endTime") String endTime,@Param("branchCode")String branchCode);
+
+
+    List<Map> query4(@Param("createTime") String createTime,@Param("endTime") String endTime,@Param("branchCode")String branchCode);
+
 
 }

@@ -2,28 +2,81 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.produce.dao.SjtjMapper">
 
-    <select id="query1" resultType="com.richfit.mes.produce.entity.SjtjDto">
-
-        SELECT b.template_code templateCode,sum(b.number) number,sum(a.qty) qty,sum(c.completed_qty)
-        completedQty,sum(d.qualify + d.unqualify) qualify FROM
-        produce_assign a
-        LEFT JOIN produce_track_head b ON a.tenant_id = b.tenant_id
-        LEFT JOIN produce_track_complete c ON c.tenant_id = b.tenant_id
-        LEFT JOIN produce_track_check d ON d.tenant_id = b.tenant_id
-
+    <select id="query1" resultType="java.util.Map" parameterType="java.lang.String">
+        select a.template_code templateCode,sum(a.number) number
+        from produce_track_head a
         <where>
             <if test="branchCode != null and branchCode != ''">
-                and b.branch_code LIKE  concat('%',#{branchCode},'%')
+                and a.branch_code like "%"#{branchCode}"%"
             </if>
             <if test="createTime != null and createTime != ''">
-                and b.create_time >= #{createTime}
+                and a.create_time >= #{createTime}
             </if>
             <if test="endTime != null and endTime != ''">
-                and b.create_time &lt;= #{endTime}
+                and a.create_time &lt;= #{endTime}
             </if>
         </where>
         GROUP BY
-        b.template_code
+        a.template_code
     </select>
 
+    <select id="query2" resultType="java.util.Map" parameterType="java.lang.String">
+        SELECT  c.template_code templateCode,sum(a.qty) qty
+        FROM produce_assign a
+        Left Join  produce_track_item b on b.id=a.ti_id
+        Left Join  produce_track_head c on c.id=b.track_head_id
+        <where>
+            <if test="branchCode != null and branchCode != ''">
+                and c.branch_code like "%"#{branchCode}"%"
+            </if>
+            <if test="createTime != null and createTime != ''">
+                and a.assign_time >= #{createTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and a.assign_time &lt;= #{endTime}
+            </if>
+        </where>
+        GROUP BY
+        c.template_code
+    </select>
+
+    <select id="query3" resultType="java.util.Map" parameterType="java.lang.String">
+        select  c.template_code templateCode, sum(a.completed_qty) completed_qty FROM
+        produce_track_complete a
+        LEFT JOIN produce_track_item b ON b.id=a.ti_id
+        LEFT JOIN produce_track_head c ON c.id=b.track_head_id
+        <where>
+            <if test="branchCode != null and branchCode != ''">
+                and c.branch_code like "%"#{branchCode}"%"
+            </if>
+            <if test="createTime != null and createTime != ''">
+                and c.create_time >= #{createTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and c.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        GROUP BY
+        c.template_code
+    </select>
+
+    <select id="query4" resultType="java.util.Map" parameterType="java.lang.String">
+        SELECT c.template_code templateCode,Sum(a.qualify+a.unqualify ) qualify FROM
+        produce_track_check a
+        LEFT JOIN produce_track_item b ON b.id=a.ti_id
+        LEFT JOIN produce_track_head c ON c.id=b.track_head_id
+        <where>
+            <if test="branchCode != null and branchCode != ''">
+                and c.branch_code like "%"#{branchCode}"%"
+            </if>
+            <if test="createTime != null and createTime != ''">
+                and a.deal_time >= #{createTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and a.deal_time &lt;= #{endTime}
+            </if>
+        </where>
+        GROUP BY
+        c.template_code
+    </select>
 </mapper>
