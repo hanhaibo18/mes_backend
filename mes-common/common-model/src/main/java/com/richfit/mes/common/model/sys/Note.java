@@ -14,6 +14,8 @@ import javax.xml.soap.Text;
 @Data
 @Accessors(chain = true)
 public class Note extends BaseEntity<Note> {
+    
+    private String id;
     /**
      * 状态
      */
