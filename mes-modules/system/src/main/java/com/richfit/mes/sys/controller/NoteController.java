@@ -81,4 +81,23 @@ public class NoteController {
         int count = noteUserService.count(queryWrapper);
         return CommonResult.success(count);
     }
+    
+     /**
+     * 功能描述: 发送个人短信
+     * @Author:
+     * @Date:
+     * @param
+     * @return:
+     **/
+    @PostMapping ("/send")
+    public CommonResult<Boolean> save(String sendUser,String sendTitle,String sendContent,String reseiverUsers,String branchCode,String tenantId){
+        NoteDto noteDto = new NoteDto();
+        noteDto.setContent(sendContent);
+        noteDto.setTitle(sendTitle);
+        noteDto.setTenantId(tenantId);
+        noteDto.setBranchCode(branchCode);
+        noteDto.setUsers(reseiverUsers);
+        return CommonResult.success(noteService.saveNote(noteDto));
+    }
+    
 }
