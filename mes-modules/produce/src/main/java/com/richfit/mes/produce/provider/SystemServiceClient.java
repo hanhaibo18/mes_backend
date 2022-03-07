@@ -8,6 +8,7 @@ import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.SystemServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,6 +37,16 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/attachment/getinput/{id}")
     public CommonResult<byte[]> getAttachmentInputStream(@PathVariable String id);
+
+
+    @PostMapping(value = "/api/sys/note/save")
+    public CommonResult<Boolean> savenote(@RequestParam("sendUser") String sendUser,
+                                          @RequestParam("sendTitle") String  sendTitle,
+                                          @RequestParam("sendContent") String  sendContent,
+                                          @RequestParam("reseiverUsers") String  reseiverUsers,
+                                          @RequestParam("branchCode") String  branchCode,
+                                          @RequestParam("tenantId") String  tenantId);
+
 
 
 }
