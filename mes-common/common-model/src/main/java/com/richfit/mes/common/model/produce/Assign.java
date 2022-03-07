@@ -123,6 +123,10 @@ public class Assign extends BaseEntity<Assign> {
     private Integer optParallelType;
     @TableField(exist = false)
     private Integer sequenceOrderBy;
+    @TableField(exist = false)
+    private Double prepareEndHours;
+    @TableField(exist = false)
+    private Double singlePieceHours;
 
     @TableField(exist = false)
     private List<AssignPerson> assignPersons;
