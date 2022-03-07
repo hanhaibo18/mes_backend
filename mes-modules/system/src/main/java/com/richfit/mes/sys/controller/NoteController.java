@@ -6,7 +6,6 @@ import com.richfit.mes.sys.service.NoteService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.richfit.mes.sys.entity.dto.NoteDto;
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -67,7 +66,7 @@ public class NoteController {
         noteDto.setTenantId(tenantId);
         noteDto.setBranchCode(branchCode);
         noteDto.setUsers(reseiverUsers);
-      
+
         return CommonResult.success(noteService.saveNote(noteDto));
     }
 
