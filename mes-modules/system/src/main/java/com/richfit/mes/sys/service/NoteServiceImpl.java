@@ -57,7 +57,6 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
                 .setTenantId(noteDto.getTenantId())
                 .setBranchCode(noteDto.getBranchCode())
                 .setState(0);
-        note.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         String id = noteMapper.insertGetId(note);
         List<String> userIdList = Arrays.asList(noteDto.getUsers().split(","));
         List<NoteUser> userList = new ArrayList<>();
