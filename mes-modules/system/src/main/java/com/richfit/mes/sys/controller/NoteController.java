@@ -53,7 +53,7 @@ public class NoteController {
      * @param
      * @return:
      **/
-    @PostMapping ("/send")
+    @PostMapping ("/save")
     public CommonResult<Boolean> save(@RequestParam("sendUser") String sendUser,
                                       @RequestParam("sendTitle") String  sendTitle,
                                       @RequestParam("sendContent") String  sendContent,
