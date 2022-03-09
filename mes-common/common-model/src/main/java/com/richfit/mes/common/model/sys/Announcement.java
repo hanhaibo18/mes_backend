@@ -71,7 +71,7 @@ public class Announcement extends BaseEntity<Announcement> implements Serializab
      */
     private String filePath;
 
-    private String tenantId;
+        private String tenantId;
 
     /**
      * 所属机构

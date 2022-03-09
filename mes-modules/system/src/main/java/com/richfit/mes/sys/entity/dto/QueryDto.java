@@ -13,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QueryDto<T> {
-    private T data;
+    private T param;
     private Long page = 1L;
     private Long size = 10L;
 }

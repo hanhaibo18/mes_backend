@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.sys.NoteUser;
 import com.richfit.mes.common.model.sys.vo.DustbinVo;
 import com.richfit.mes.common.model.sys.vo.NoteUserVo;
 import com.richfit.mes.common.model.sys.vo.NoteVo;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.dao.NoteMapper;
 import com.richfit.mes.sys.dao.NoteUserMapper;
 import com.richfit.mes.sys.enmus.SenderEnum;
@@ -48,6 +49,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
 
     @Resource
     private NoteUserMapper noteUserMapper;
+
+    @Resource
+    private TenantUserService tenantUserService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -90,12 +94,15 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<IPage<NoteUserVo>> queryRecipients(QueryDto<String> queryDto) {
         QueryWrapper<NoteUserVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_account",queryDto.getData());
-        queryWrapper.notIn("state",SenderEnum.DELETE.getStateId());
+        queryWrapper.eq("note_user.user_account",queryDto.getParam());
+        queryWrapper.notIn("note_user.state",SenderEnum.DELETE.getStateId());
         IPage<NoteUserVo> noteUserList = noteUserMapper.queryRecipients(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
         if (noteUserList.getCurrent() != 0){
+            TenantUserVo tenantUserVo = tenantUserService.get(noteUserList.getRecords().get(0).getCreateBy());
             noteUserList.getRecords().forEach(note -> {
-               note.setStateName(SenderEnum.getMessage(note.getState()));
+               note.setStateName(SenderEnum.getMessage(note.getState()))
+                       .setUserAccount(tenantUserVo.getUserAccount())
+                       .setEmplName(tenantUserVo.getEmplName());
             });
         }
         return CommonResult.success(noteUserList);
@@ -104,7 +111,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<IPage<NoteVo>> querySender(QueryDto<String> queryDto) {
         QueryWrapper<NoteVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("creatBy",queryDto.getData());
+        queryWrapper.eq("creatBy",queryDto.getParam());
         queryWrapper.notIn("state",RecipientsEnum.DELETE.getStateId());
         IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(),queryDto.getSize()),queryWrapper);
         if (noteList.getCurrent() != 0){
@@ -130,7 +137,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<IPage<DustbinVo>> queryDustbinVoList(QueryDto<String> queryDto) {
         QueryWrapper<DustbinVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note.create_by",queryDto.getData())
+        queryWrapper.eq("note.create_by",queryDto.getParam())
                 .and(wrapper -> wrapper.eq("note.state",SenderEnum.DELETE.getStateId()).or().eq("note_user.state",RecipientsEnum.DELETE.getStateId()));
         return CommonResult.success(noteMapper.queryDustbin(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper));
     }

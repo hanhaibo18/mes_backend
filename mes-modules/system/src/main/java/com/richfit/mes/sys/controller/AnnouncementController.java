@@ -47,14 +47,14 @@ public class AnnouncementController {
 
     @ApiOperation(value = "保存通知信息", notes = "保存通知公告")
     @PostMapping("/save")
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> announcementSave(@RequestBody Announcement announcement) {
         return CommonResult.success(announcementService.save(announcement));
     }
 
     @PostMapping("/query/page")
-    @Transactional(rollbackFor = Exception.class)
     public CommonResult<IPage<Announcement>> queryPageAnnouncement(@RequestBody QueryDto<Announcement> query) throws IOException {
-        Announcement announcement = query.getData();
+        Announcement announcement = query.getParam();
         boolean empty = StringUtils.isEmpty(announcement);
         QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
         if (!empty && !StringUtils.isEmpty(announcement.getTitle())){

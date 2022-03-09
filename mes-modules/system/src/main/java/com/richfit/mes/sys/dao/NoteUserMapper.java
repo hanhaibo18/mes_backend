@@ -31,6 +31,7 @@ public interface NoteUserMapper extends BaseMapper<NoteUser> {
     @Select("SELECT\n" +
             "note_user.id,\n" +
             "note_user.note_id,\n" +
+            "note.create_by,\n" +
             "note_user.state,\n" +
             "note_user.check_look,\n" +
             "note.title,\n" +

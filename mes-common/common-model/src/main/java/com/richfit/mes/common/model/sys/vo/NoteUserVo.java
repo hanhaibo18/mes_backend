@@ -20,6 +20,7 @@ public class NoteUserVo {
     private Date checkLook;
     private String title;
     private Date createTime;
+    private String createBy;
     private String userAccount;
     private String emplName;
     private String stateName;

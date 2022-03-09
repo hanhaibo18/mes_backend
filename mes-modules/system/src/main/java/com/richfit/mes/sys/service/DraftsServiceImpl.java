@@ -35,7 +35,7 @@ public class DraftsServiceImpl extends ServiceImpl<DraftsMapper, Drafts> impleme
     @Override
     public CommonResult<Drafts> queryDraftsById(QueryDto<String> queryDto) {
         QueryWrapper<Drafts> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id",queryDto.getData());
+        queryWrapper.eq("id",queryDto.getParam());
         return CommonResult.success(draftsService.getOne(queryWrapper));
     }
 
