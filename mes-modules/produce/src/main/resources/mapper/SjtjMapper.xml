@@ -50,10 +50,10 @@
                 and c.branch_code like "%"#{branchCode}"%"
             </if>
             <if test="createTime != null and createTime != ''">
-                and c.create_time >= #{createTime}
+                and c.complete_time >= #{createTime}
             </if>
             <if test="endTime != null and endTime != ''">
-                and c.create_time &lt;= #{endTime}
+                and c.complete_time &lt;= #{endTime}
             </if>
         </where>
         GROUP BY
