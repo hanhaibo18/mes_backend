@@ -69,7 +69,7 @@ public class TrackCompleteController extends BaseController {
         @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String userId, String userName,String branchCode,String order , String orderCol) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String userId, String userName,String branchCode,String workNo,String routerNo,String order , String orderCol) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -78,8 +78,17 @@ public class TrackCompleteController extends BaseController {
             if (!StringUtils.isNullOrEmpty(userId)) {
                 queryWrapper.apply("(user_id='"+userId+"' or user_name='"+userName+"')");
             }
+
+            if (!StringUtils.isNullOrEmpty(workNo)) {
+                queryWrapper.eq("work_no", workNo);
+            }
+            if (!StringUtils.isNullOrEmpty(routerNo)) {
+
+                queryWrapper.like("drawing_no", "%" + routerNo + "%");
+            }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
-                queryWrapper.eq("track_no", trackNo);
+
+                queryWrapper.like("track_no2", "%" + trackNo + "%");
             }
             if (!StringUtils.isNullOrEmpty(siteId)) {
                 queryWrapper.apply("assign_id in (select id from produce_assign where site_id='" + siteId + "')");
@@ -173,6 +182,29 @@ public class TrackCompleteController extends BaseController {
             } else {
                 return CommonResult.failed("操作失败，请重试！");
             }
+        }
+    }
+
+
+    @ApiOperation(value = "更改报工工时", notes = "更改报工工时")
+    @ApiImplicitParam(name = "complete", value = "派工", required = true, dataType = "Complete", paramType = "path")
+    @PostMapping("/updatehours")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<TrackComplete> updatehours(@RequestBody TrackComplete complete) {
+        try {
+            TrackComplete tc = trackCompleteService.getById(complete.getId());
+            tc.setReportHours(complete.getReportHours());
+            trackCompleteService.updateById(tc);
+
+            Assign assign = trackAssignService.getById(complete.getAssignId());
+            TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            trackItem.setPrepareEndHours(complete.getPrepareEndHours());
+            trackItem.setSinglePieceHours(complete.getSinglePieceHours());
+            trackItemService.updateById(trackItem);
+            return CommonResult.success(complete, "操作成功！");
+        }
+        catch (Exception e) {
+            return CommonResult.failed("操作失败！"+e.getMessage());
         }
     }
 

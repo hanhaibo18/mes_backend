@@ -102,7 +102,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 探伤结果
      */
     protected String detectionResult;
-
+    @TableField(exist = false)
+    private String workNo;
     @TableField(exist = false)
     private String drawingNo;
     @TableField(exist = false)
@@ -114,6 +115,9 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private String productNo;
 
+
+    @TableField(exist = false)
+    private String optCode;
     @TableField(exist = false)
     private String optName;
     @TableField(exist = false)
@@ -126,8 +130,10 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     private Integer optParallelType;
     @TableField(exist = false)
     private Integer sequenceOrderBy;
-
-
+    @TableField(exist = false)
+    private Double prepareEndHours;
+    @TableField(exist = false)
+    private Double singlePieceHours;
 
 
 

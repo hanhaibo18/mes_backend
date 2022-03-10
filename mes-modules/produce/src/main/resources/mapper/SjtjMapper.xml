@@ -7,7 +7,7 @@
         from produce_track_head a
         <where>
             <if test="branchCode != null and branchCode != ''">
-                and a.branch_code like "%"#{branchCode}"%"
+                and a.branch_code = #{branchCode}
             </if>
             <if test="createTime != null and createTime != ''">
                 and a.create_time >= #{createTime}
@@ -27,7 +27,7 @@
         Left Join  produce_track_head c on c.id=b.track_head_id
         <where>
             <if test="branchCode != null and branchCode != ''">
-                and c.branch_code like "%"#{branchCode}"%"
+                and a.branch_code  = #{branchCode}
             </if>
             <if test="createTime != null and createTime != ''">
                 and a.assign_time >= #{createTime}
@@ -47,13 +47,13 @@
         LEFT JOIN produce_track_head c ON c.id=b.track_head_id
         <where>
             <if test="branchCode != null and branchCode != ''">
-                and c.branch_code like "%"#{branchCode}"%"
+                and a.branch_code   = #{branchCode}
             </if>
             <if test="createTime != null and createTime != ''">
-                and c.create_time >= #{createTime}
+                and a.complete_time >= #{createTime}
             </if>
             <if test="endTime != null and endTime != ''">
-                and c.create_time &lt;= #{endTime}
+                and a.complete_time &lt;= #{endTime}
             </if>
         </where>
         GROUP BY
@@ -67,7 +67,7 @@
         LEFT JOIN produce_track_head c ON c.id=b.track_head_id
         <where>
             <if test="branchCode != null and branchCode != ''">
-                and c.branch_code like "%"#{branchCode}"%"
+                and a.branch_code  = #{branchCode}
             </if>
             <if test="createTime != null and createTime != ''">
                 and a.deal_time >= #{createTime}
