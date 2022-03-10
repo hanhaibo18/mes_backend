@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Drafts;
 import com.richfit.mes.sys.dao.DraftsMapper;
 import com.richfit.mes.sys.entity.dto.QueryDto;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
@@ -17,25 +18,28 @@ import javax.annotation.Resource;
  * @Description: TODO
  * @CreateTime: 2022年02月17日 16:21:00
  */
+@Service
 public class DraftsServiceImpl extends ServiceImpl<DraftsMapper, Drafts> implements DraftsService{
 
     @Resource
     private DraftsService draftsService;
 
     @Override
-    public CommonResult<IPage<Drafts>> queryDraftsList(QueryDto<Drafts> queryDto) {
-        return CommonResult.success(draftsService.page(new Page<>(queryDto.getPage(), queryDto.getSize())));
+    public CommonResult<IPage<Drafts>> queryDraftsList(QueryDto<String> queryDto) {
+        QueryWrapper <Drafts> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("create_by",queryDto.getParam());
+        return CommonResult.success(draftsService.page(new Page<>(queryDto.getPage(), queryDto.getSize()),queryWrapper));
     }
 
     @Override
-    public CommonResult<Boolean> deleteDraftsById(String id) {
-        return CommonResult.success(draftsService.removeById(id));
+    public Boolean deleteDraftsById(String id) {
+        return draftsService.removeById(id);
     }
 
     @Override
-    public CommonResult<Drafts> queryDraftsById(QueryDto<String> queryDto) {
+    public CommonResult<Drafts> queryDraftsById(String queryDto) {
         QueryWrapper<Drafts> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id",queryDto.getParam());
+        queryWrapper.eq("id",queryDto);
         return CommonResult.success(draftsService.getOne(queryWrapper));
     }
 
@@ -45,4 +49,11 @@ public class DraftsServiceImpl extends ServiceImpl<DraftsMapper, Drafts> impleme
         queryWrapper.eq("id",drafts.getId());
         return CommonResult.success(draftsService.update(drafts,queryWrapper));
     }
+
+    @Override
+    public CommonResult<Boolean> saveDrafts(Drafts drafts) {
+        return CommonResult.success(this.save(drafts));
+    }
+
+
 }

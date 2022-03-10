@@ -40,9 +40,13 @@ public class NoteController {
      * @param id
      * @return: CommonResult<Boolean>
      **/
-    @PutMapping("/delete/recipients/{id}")
-    public CommonResult<Boolean> deleteRecipients(@PathVariable String id){
-        return noteService.deleteRecipients(id);
+    @PutMapping("/delete/recipients")
+    public CommonResult<Boolean> deleteRecipients(@RequestBody List<NoteUserVo> list){
+        Boolean recipients = false;
+        for (NoteUserVo noteUserVo : list) {
+            recipients = noteService.deleteRecipients(noteUserVo.getId());
+        }
+        return CommonResult.success(recipients);
     }
 
     /**
@@ -125,14 +129,18 @@ public class NoteController {
      * 功能描述: 已读
      * @Author: xinYu.hou
      * @Date: 2022/3/8 16:53
-     * @param id
+     * @param idList
      * @return: CommonResult<Boolean>
      **/
-    @PutMapping("/read/{id}")
-    public CommonResult<Boolean> read(@PathVariable String id){
-        NoteUser noteUser = new NoteUser();
-        noteUser.setId(id);
-        noteUser.setState(1);
-        return CommonResult.success(noteUserService.updateById(noteUser));
+    @PutMapping("/read")
+    public CommonResult<Boolean> read(@RequestBody List<NoteUserVo> idList){
+        boolean update = false;
+        for (NoteUserVo noteUserVo : idList) {
+            NoteUser noteUser = new NoteUser();
+            noteUser.setId(noteUserVo.getId());
+            noteUser.setState(1);
+            update = noteUserService.updateById(noteUser);
+        }
+        return CommonResult.success(update);
     }
 }

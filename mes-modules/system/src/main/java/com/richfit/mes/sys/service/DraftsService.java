@@ -20,7 +20,7 @@ public interface DraftsService extends IService<Drafts> {
      * @param queryDto
      * @return: CommonResult<IPage<Drafts>>
      **/
-    CommonResult<IPage<Drafts>> queryDraftsList(QueryDto<Drafts> queryDto);
+    CommonResult<IPage<Drafts>> queryDraftsList(QueryDto<String> queryDto);
     /**
      * 功能描述: 根据ID物理删除
      * @Author: xinYu.hou
@@ -28,7 +28,7 @@ public interface DraftsService extends IService<Drafts> {
      * @param id
      * @return: CommonResult<Boolean>
      **/
-    CommonResult<Boolean> deleteDraftsById(String id);
+    Boolean deleteDraftsById(String id);
     /**
      * 功能描述: 查询草稿箱详情
      * @Author: xinYu.hou
@@ -36,7 +36,7 @@ public interface DraftsService extends IService<Drafts> {
      * @param queryDto
      * @return: CommonResult<Drafts>
      **/
-    CommonResult<Drafts> queryDraftsById(QueryDto<String> queryDto);
+    CommonResult<Drafts> queryDraftsById(String queryDto);
     /**
      * 功能描述: 修改草稿箱
      * @Author: xinYu.hou
@@ -45,4 +45,13 @@ public interface DraftsService extends IService<Drafts> {
      * @return: CommonResult<Boolean>
      **/
     CommonResult<Boolean> updateDrafts(Drafts drafts);
+
+    /**
+     * 功能描述: 创建草稿箱
+     * @Author: xinYu.hou
+     * @Date: 2022/3/9 16:37
+     * @param drafts
+     * @return: Boolean
+     **/
+    CommonResult<Boolean> saveDrafts(Drafts drafts);
 }

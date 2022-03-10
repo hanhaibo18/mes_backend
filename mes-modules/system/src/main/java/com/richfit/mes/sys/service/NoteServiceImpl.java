@@ -124,8 +124,8 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> deleteRecipients(String id) {
-        return CommonResult.success(noteMapper.deleteSender(id));
+    public Boolean deleteRecipients(String id) {
+        return noteMapper.deleteSender(id);
     }
 
     @Override
