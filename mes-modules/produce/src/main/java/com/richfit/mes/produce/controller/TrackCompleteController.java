@@ -718,7 +718,7 @@ public class TrackCompleteController extends BaseController {
                         lineStoreService.changeStatus(trackHead);
 
                         //设置计划状态
-                        planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+                        //planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
                         /*QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
                          queryWrapper.eq("track_no", trackHead.getTrackNo());
                          List<LineStore> lineStore =  lineStoreService.list(queryWrapper);
