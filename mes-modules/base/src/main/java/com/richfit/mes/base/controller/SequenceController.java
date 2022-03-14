@@ -147,6 +147,15 @@ public class SequenceController extends BaseController {
             }
         }
     }
+    
+    
+    @ApiOperation(value = "修改工序", notes = "修改工序")
+    @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "path")
+    @PostMapping("/batch")
+    public CommonResult<List<Sequence>> batchupdateSequence(@RequestBody List<Sequence> sequences) {
+        boolean bool = sequenceService.updateBatchById(sequences);
+        return sequences;
+    }
 
     @ApiOperation(value = "查询工序", notes = "根据编码获得工序")
     @ApiImplicitParam(name = "sequenceCode", value = "编码", required = true, dataType = "String", paramType = "path")
