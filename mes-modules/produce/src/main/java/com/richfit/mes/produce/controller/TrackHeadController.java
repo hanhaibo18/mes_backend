@@ -273,7 +273,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "当前工序查询", notes = "根据跟单编号、图号、产品编号分页查询当前工序")
     @GetMapping("/track_head/current")
-    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo, int page, int limit){
+    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo, String branchCode, String tenantId, int page, int limit){
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
 
         if(!StringUtils.isNullOrEmpty(startDate)){
@@ -310,7 +310,8 @@ public class TrackHeadController extends BaseController {
                 }
             }
         }
-        queryWrapper.eq("th.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("th.tenant_id", tenantId);
+        queryWrapper.eq("th.branch_code", branchCode);
         return CommonResult.success(trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 

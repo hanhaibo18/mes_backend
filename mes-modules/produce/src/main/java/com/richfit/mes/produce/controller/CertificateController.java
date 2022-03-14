@@ -64,7 +64,6 @@ public class CertificateController {
             return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
         } else {
             certificate.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            certificate.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             certificate.setCreateTime(new Date());
 
             boolean bool = certificateService.save(certificate);
@@ -245,7 +244,7 @@ public class CertificateController {
 
     @ApiOperation(value = "分页查询合格证信息", notes = "根据图号、合格证号、产品编号分页合格证信息")
     @GetMapping("/certificate")
-    public CommonResult<IPage<Certificate>> selectCertificate(String startDate, String endDate, String id,  String drawingNo, String certificateNo, String productNo, String order , String orderCol, int page, int limit){
+    public CommonResult<IPage<Certificate>> selectCertificate(String startDate, String endDate, String id,  String drawingNo, String certificateNo, String productNo, String order , String orderCol,String branchCode, String tenantId, int page, int limit){
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<Certificate>();
 
         if(!StringUtils.isNullOrEmpty(startDate)){
@@ -282,7 +281,8 @@ public class CertificateController {
             queryWrapper.orderByDesc("pc.modify_time");
         }
         queryWrapper.apply("pc.id = track.certificate_id");
-        queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("pc.tenant_id", tenantId);
+        queryWrapper.eq("pc.branch_code", branchCode);
         return CommonResult.success(certificateService.selectCertificate(new Page<Certificate>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
