@@ -26,6 +26,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import java.io.File;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -139,7 +140,7 @@ public class SequenceController extends BaseController {
             }
 
             sequence.setModifyTime(new Date());
-            boolean bool = sequenceService.updateById(sequence);
+            boolean bool = sequenceService.update(sequence,new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code",sequence.getBranchCode()) );
             if (bool) {
                 return CommonResult.success(sequence, "操作成功！");
             } else {
@@ -152,8 +153,13 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "修改工序", notes = "修改工序")
     @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "path")
     @PostMapping("/batch")
+      @Transactional(rollbackFor = Exception.class)
     public CommonResult<List<Sequence>> batchupdateSequence(@RequestBody List<Sequence> sequences) {
-        boolean bool = sequenceService.updateBatchById(sequences);
+        
+        for (Sequence sequence : sequences) {
+            
+            sequenceService.update(sequence,new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code",sequence.getBranchCode()) );
+        }
         return CommonResult.success(sequences, "操作成功！");
    
     }
