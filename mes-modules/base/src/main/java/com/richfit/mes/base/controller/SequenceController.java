@@ -182,7 +182,7 @@ public class SequenceController extends BaseController {
     public CommonResult<List<Sequence>> getByRouterId(String routerId) {
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
         queryWrapper.eq("router_id", routerId);
-        queryWrapper.orderByAsc("technology_sequence");
+        queryWrapper.orderByAsc("opt_order");
         List<Sequence> result = sequenceService.list(queryWrapper);
         result = setOptCodeAndName(result);
         return CommonResult.success(result, "操作成功！");
