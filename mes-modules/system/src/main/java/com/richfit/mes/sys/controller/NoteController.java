@@ -2,7 +2,9 @@ package com.richfit.mes.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.sys.Note;
 import com.richfit.mes.common.model.sys.NoteUser;
 import com.richfit.mes.common.model.sys.dto.NoteDto;
 import com.richfit.mes.common.model.sys.vo.NoteUserVo;
@@ -33,11 +35,14 @@ public class NoteController {
 
     @Resource
     private NoteUserService noteUserService;
+
+    @Resource
+    private ObjectMapper objectMapper;
     /**
      * 功能描述: 删除收到的信息
      * @Author: xinYu.hou
      * @Date: 2022/2/16 15:29
-     * @param id
+     * @param list
      * @return: CommonResult<Boolean>
      **/
     @PutMapping("/delete/recipients")
@@ -53,12 +58,16 @@ public class NoteController {
      * 功能描述: 删除发送邮件
      * @Author: xinYu.hou
      * @Date: 2022/2/16 15:30
-     * @param id
+     * @param idList
      * @return: CommonResult<Boolean>
      **/
-    @PutMapping("/delete/sender/{id}")
-    public CommonResult<Boolean> deleteSender(@PathVariable String id){
-        return noteService.deleteSender(id);
+    @PutMapping("/delete/sender")
+    public CommonResult<Boolean> deleteSender(@RequestBody List<String> idList){
+        Boolean sender = false;
+        for(String id : idList){
+            sender = noteService.deleteSender(id);
+        }
+        return CommonResult.success(sender);
     }
 
     /**
@@ -92,8 +101,8 @@ public class NoteController {
      * @param queryDto
      * @return: CommonResult<IPage<NoteVo>>
      **/
-    @PostMapping("/query/recipients_page")
-    public CommonResult<IPage<NoteUserVo>> queryRecipients(@RequestBody QueryDto<String> queryDto){
+    @GetMapping("/query/recipients_page")
+    public CommonResult<IPage<NoteUserVo>> queryRecipients(QueryDto<String> queryDto){
         return noteService.queryRecipients(queryDto);
     }
 
@@ -104,8 +113,8 @@ public class NoteController {
      * @param queryDto
      * @return: CommonResult<IPage<NoteVo>>
      **/
-    @PostMapping("/query/sender_page")
-    public CommonResult<IPage<NoteVo>> querySender(@RequestBody QueryDto<String> queryDto){
+    @GetMapping("/query/sender_page")
+    public CommonResult<IPage<NoteVo>> querySender(QueryDto<String> queryDto){
         return noteService.querySender(queryDto);
     }
 
@@ -142,5 +151,30 @@ public class NoteController {
             update = noteUserService.updateById(noteUser);
         }
         return CommonResult.success(update);
+    }
+
+    /**
+     * 功能描述: 页面创建信息
+     * @Author: xinYu.hou
+     * @Date: 2022/3/11 17:27
+     * @param noteDto
+     * @return: CommonResult<Boolean>
+     **/
+    @PostMapping ("/save_page")
+    public CommonResult<Boolean> save(@RequestBody NoteDto noteDto){
+        return CommonResult.success(noteService.saveNote(noteDto));
+    }
+
+    /**
+     * 功能描述: 查询个详情
+     * @Author: xinYu.hou
+     * @Date: 2022/3/14 10:14
+     * @param id
+     * @param userId
+     * @return: CommonResult<Note>
+     **/
+    @GetMapping("/query_one/{id}/{userId}")
+    public CommonResult<Note> queryById(@PathVariable String id,@PathVariable String userId){
+        return noteService.queryById(id, userId);
     }
 }

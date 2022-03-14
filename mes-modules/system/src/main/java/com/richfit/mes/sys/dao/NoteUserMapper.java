@@ -51,6 +51,6 @@ public interface NoteUserMapper extends BaseMapper<NoteUser> {
      * @param id
      * @return: boolean
      **/
-    @Select("UPDATE sys_note_user note SET note.state = 3 WHERE note.id = #{id}}")
+    @Select("UPDATE sys_note_user note SET note.state = 3 WHERE note.id = #{id}")
     boolean deleteRecipients(@Param("id") String id);
 }

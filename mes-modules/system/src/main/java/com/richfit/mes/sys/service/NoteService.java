@@ -72,7 +72,7 @@ public interface NoteService extends IService<Note> {
      * @param id
      * @return: CommonResult<Boolean>
      **/
-    CommonResult<Boolean> deleteSender(String id);
+    Boolean deleteSender(String id);
 
     /**
      * 功能描述: 查询垃圾箱列表

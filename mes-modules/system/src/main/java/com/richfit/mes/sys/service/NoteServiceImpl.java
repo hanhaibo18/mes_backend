@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -81,14 +78,16 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<Note> queryById(String id,String userId) {
         QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note_id",id);
+        queryWrapper.eq("id",id);
         queryWrapper.eq("user_account",userId);
         NoteUser noteUser = noteUserService.getOne(queryWrapper);
+        assert noteUser != null;
         if (noteUser.getState() == 0){
             noteUser.setState(1);
+            noteUser.setCheckLook(new Date());
             noteUserService.updateById(noteUser);
         }
-        return CommonResult.success(noteService.getById(id));
+        return CommonResult.success(noteService.getById(noteUser.getNoteId()));
     }
 
     @Override
@@ -125,13 +124,13 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteRecipients(String id) {
-        return noteMapper.deleteSender(id);
+        return noteUserMapper.deleteRecipients(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> deleteSender(String id) {
-        return CommonResult.success(noteUserMapper.deleteRecipients(id));
+    public Boolean deleteSender(String id) {
+        return noteMapper.deleteSender(id);
     }
 
     @Override
