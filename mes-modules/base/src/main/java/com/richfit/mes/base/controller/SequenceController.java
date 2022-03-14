@@ -154,7 +154,8 @@ public class SequenceController extends BaseController {
     @PostMapping("/batch")
     public CommonResult<List<Sequence>> batchupdateSequence(@RequestBody List<Sequence> sequences) {
         boolean bool = sequenceService.updateBatchById(sequences);
-        return sequences;
+        return CommonResult.success(sequences, "操作成功！");
+   
     }
 
     @ApiOperation(value = "查询工序", notes = "根据编码获得工序")
