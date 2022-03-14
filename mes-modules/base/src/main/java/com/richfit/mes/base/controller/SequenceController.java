@@ -26,6 +26,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import java.io.File;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -139,13 +140,28 @@ public class SequenceController extends BaseController {
             }
 
             sequence.setModifyTime(new Date());
-            boolean bool = sequenceService.updateById(sequence);
+            boolean bool = sequenceService.update(sequence,new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code",sequence.getBranchCode()) );
             if (bool) {
                 return CommonResult.success(sequence, "操作成功！");
             } else {
                 return CommonResult.failed("操作失败，请重试！");
             }
         }
+    }
+    
+    
+    @ApiOperation(value = "修改工序", notes = "修改工序")
+    @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "path")
+    @PostMapping("/batch")
+      @Transactional(rollbackFor = Exception.class)
+    public CommonResult<List<Sequence>> batchupdateSequence(@RequestBody List<Sequence> sequences) {
+        
+        for (Sequence sequence : sequences) {
+            
+            sequenceService.update(sequence,new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code",sequence.getBranchCode()) );
+        }
+        return CommonResult.success(sequences, "操作成功！");
+   
     }
 
     @ApiOperation(value = "查询工序", notes = "根据编码获得工序")
