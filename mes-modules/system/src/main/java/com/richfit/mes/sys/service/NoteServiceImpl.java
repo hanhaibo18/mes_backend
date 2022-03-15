@@ -87,7 +87,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
             noteUser.setCheckLook(new Date());
             noteUserService.updateById(noteUser);
         }
-        return CommonResult.success(noteService.getById(noteUser.getNoteId()));
+        Note note = noteService.getById(noteUser.getNoteId());
+        note.setUserAccount(noteUser.getUserAccount());
+        return CommonResult.success(note);
     }
 
     @Override
