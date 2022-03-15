@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.sys;
 
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,6 +37,9 @@ public class Note extends BaseEntity<Note> {
     private String tenantId;
 
     private String branchCode;
+
+    @TableField(exist = false)
+    private String userAccount;
 
     private static final long serialVersionUID = 1L;
 }
