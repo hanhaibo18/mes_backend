@@ -9,15 +9,9 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.Product;
-import com.richfit.mes.common.model.produce.Action;
-import com.richfit.mes.common.model.produce.LineStore;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.service.ActionService;
-import com.richfit.mes.produce.service.LineStoreService;
-import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +35,9 @@ public class TrackHeadController extends BaseController {
 
     @Autowired
     private TrackHeadService trackHeadService;
+
+    @Autowired
+    private TrackCertificateService trackCertificateService;
 
     @Autowired
     private TrackItemService trackItemService;
@@ -273,8 +270,18 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "当前工序查询", notes = "根据跟单编号、图号、产品编号分页查询当前工序")
     @GetMapping("/track_head/current")
-    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo, String branchCode, String tenantId, int page, int limit){
+    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo, String certificateId, String branchCode, String tenantId, Boolean isEdit, int page, int limit){
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+
+        if (isEdit) {
+            QueryWrapper<TrackCertificate> query = new QueryWrapper<TrackCertificate>();
+            query.eq("certificate_id", certificateId);
+            List<TrackCertificate> trackCertificates = trackCertificateService.list(query);
+            List<String> thIds = trackCertificates.stream().map(TrackCertificate :: getThId).collect(Collectors.toList());
+            queryWrapper.in("id", thIds);
+            return CommonResult.success(trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
+        }
+
 
         if(!StringUtils.isNullOrEmpty(startDate)){
             queryWrapper.ge("th.create_time", startDate);
@@ -295,21 +302,22 @@ public class TrackHeadController extends BaseController {
         if(!StringUtils.isNullOrEmpty(productNo)){
             queryWrapper.eq("th.product_no", productNo);
         }
-        if(!StringUtils.isNullOrEmpty(certificateType)){
+
+        /*if(!StringUtils.isNullOrEmpty(certificateType)){
             if(certificateType.equals("0")){ //工序合格证
-                if(!StringUtils.isNullOrEmpty(certificateNo)){ //修改时查询
+                if(isEdit){ //修改时查询
                     queryWrapper.and(wrapper -> wrapper.isNull("ti.certificate_no").or().eq("ti.certificate_no", "").or().eq("ti.certificate_no", certificateNo));
                 } else {
                     queryWrapper.and(wrapper -> wrapper.isNull("ti.certificate_no").or().eq("ti.certificate_no", ""));
                 }
             } else if(certificateType.equals("1")){ //完工合格证
-                if(!StringUtils.isNullOrEmpty(certificateNo)){ //修改时查询
+                if(isEdit){ //修改时查询
                     queryWrapper.and(wrapper -> wrapper.isNull("th.certificate_no").or().eq("th.certificate_no", "").or().eq("th.certificate_no", certificateNo));
                 } else {
                     queryWrapper.and(wrapper -> wrapper.isNull("th.certificate_no").or().eq("th.certificate_no", ""));
                 }
             }
-        }
+        }*/
         queryWrapper.eq("th.tenant_id", tenantId);
         queryWrapper.eq("th.branch_code", branchCode);
         return CommonResult.success(trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
