@@ -79,7 +79,7 @@ public class TemplatePrintController extends BaseController {
         List<ProduceTrackHeadTemplate> trackHeadTemplates = produceTrackHeadTemplateService.list(queryWrapper);
         ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
         String sql1 = p.getSheet1();
-        String sql2 = p.getSheet1();
+        String sql2 = p.getSheet2();
         String sql3 = p.getSheet1();
         String sql4 = p.getSheet1();
         String templateFileId = p.getFileId();
