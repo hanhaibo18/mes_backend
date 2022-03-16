@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Announcement;
@@ -14,6 +16,7 @@ import com.richfit.mes.sys.service.AnnouncementService;
 import com.richfit.mes.sys.service.TenantService;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -42,8 +45,8 @@ public class AnnouncementController {
     private AnnouncementService announcementService;
     @Resource
     private TenantService tenantService;
-    @Resource
-    private FastDfsService fastDfsService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @ApiOperation(value = "保存通知信息", notes = "保存通知公告")
     @PostMapping("/save")
@@ -52,9 +55,18 @@ public class AnnouncementController {
         return CommonResult.success(announcementService.save(announcement));
     }
 
-    @PostMapping("/query/page")
-    public CommonResult<IPage<Announcement>> queryPageAnnouncement(@RequestBody QueryDto<Announcement> query) throws IOException {
-        Announcement announcement = query.getParam();
+    @GetMapping("/query/page")
+    public CommonResult<IPage<Announcement>> queryPageAnnouncement(QueryDto<String> query) throws IOException {
+        Announcement announcement = null;
+        try {
+            announcement = objectMapper.readValue(query.getParam(), Announcement.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        if(null==announcement){
+            announcement = new Announcement();
+        }
         boolean empty = StringUtils.isEmpty(announcement);
         QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
         if (!empty && !StringUtils.isEmpty(announcement.getTitle())){

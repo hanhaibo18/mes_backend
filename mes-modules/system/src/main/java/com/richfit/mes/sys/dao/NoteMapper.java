@@ -52,7 +52,7 @@ public interface NoteMapper extends BaseMapper<Note> {
      * @param id
      * @return: boolean
      **/
-    @Select("UPDATE sys_note note SET note.state = 2 WHERE note.id = #{id}}")
+    @Select("UPDATE sys_note note SET note.state = 2 WHERE note.id = #{id}")
     boolean deleteSender(@Param("id") String id);
 
     /**

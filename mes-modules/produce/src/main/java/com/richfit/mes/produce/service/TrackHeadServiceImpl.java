@@ -110,9 +110,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         count += trackItemMapper.insert(item);
                     }
                 }
-                if(count == trackItems.size()){
-                    return true;
-                }
+                return true;
             } else {
                 return true;
             }
