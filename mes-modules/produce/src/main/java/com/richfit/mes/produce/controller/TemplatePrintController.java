@@ -122,7 +122,39 @@ public class TemplatePrintController extends BaseController {
                     });
         } else if(null!=sql1) {
             list =jdbcTemplate.queryForList(String.format(sql1,id));
-        }else if(null!=sql2) {
+        } 
+        else {
+
+        }
+        if(null!=sql2&&sql1.contains("call")) {
+             list = (List) jdbcTemplate.execute(
+                    new CallableStatementCreator() {
+                        public CallableStatement createCallableStatement(Connection con) throws SQLException {
+                            // String storedProc = "{call sp_list_table(?,?)}";// 调用的sql
+                            String storedProc = String.format(sql2,id);// 调用的sql
+                            CallableStatement cs = con.prepareCall(storedProc);
+                            cs.setString(1, id);// 设置输入参数的值
+                            return cs;
+                        }
+                    }, new CallableStatementCallback() {
+                        public Object doInCallableStatement(CallableStatement cs) throws SQLException, DataAccessException {
+                            List resultsMap = new ArrayList();
+                            cs.execute();
+                            ResultSet rs = (ResultSet) cs.getObject(2);// 获取游标一行的值
+                            ResultSetMetaData md = rs.getMetaData();
+                            int columnCount = md.getColumnCount();
+                            while (rs.next()) {// 转换每行的返回值到Map中
+                                Map rowData = new HashMap();
+                                for (int i = 1; i <= columnCount; i++) {
+                                    rowData.put(md.getColumnName(i), rs.getObject(i));
+                                }
+                                resultsMap.add(rowData);
+                            }
+                            rs.close();
+                            return resultsMap;
+                        }
+                    });
+        } else if(null!=sql2) {
             list2 =jdbcTemplate.queryForList(String.format(sql2,id));
         }
         else {
