@@ -91,6 +91,7 @@ public class TemplatePrintController extends BaseController {
 
         List<List<Map<String, Object>>> sheets = new ArrayList();
         List<Map<String, Object>> list = new ArrayList();
+        List<Map<String, Object>> list2 = new ArrayList();
         if(null!=sql1&&sql1.contains("call")) {
              list = (List) jdbcTemplate.execute(
                     new CallableStatementCreator() {
@@ -121,11 +122,14 @@ public class TemplatePrintController extends BaseController {
                     });
         } else if(null!=sql1) {
             list =jdbcTemplate.queryForList(String.format(sql1,id));
+        }else if(null!=sql2) {
+            list2 =jdbcTemplate.queryForList(String.format(sql2,id));
         }
         else {
 
         }
         sheets.add(list);
+        sheets.add(list2);
         try {
            // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
            //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
