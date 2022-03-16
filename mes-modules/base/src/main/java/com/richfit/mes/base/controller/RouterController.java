@@ -72,7 +72,7 @@ public class RouterController extends BaseController {
                 queryWrapper.like("router_name", "%" + routerName + "%");
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
             if (!StringUtils.isNullOrEmpty(status)) {
                 queryWrapper.in("status", status.split(","));
@@ -81,7 +81,7 @@ public class RouterController extends BaseController {
             }
             
            if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
             }
             if(!StringUtils.isNullOrEmpty(orderCol)){
                 if(!StringUtils.isNullOrEmpty(order)){
@@ -227,7 +227,7 @@ public class RouterController extends BaseController {
                 queryWrapper.in("is_active", "0,1".split(","));
             }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
         }
         List<Router> result = routerService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -265,12 +265,12 @@ public class RouterController extends BaseController {
             queryWrapper.eq("router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.like("branch_code", "%" + branchCode + "%");
+            queryWrapper.eq("branch_code", branchCode);
         }
         queryWrapper.in("is_active", "0,1".split(","));
         
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
         }
         List<Router> routers = routerService.list(queryWrapper);
         if (routers.size() > 0) {

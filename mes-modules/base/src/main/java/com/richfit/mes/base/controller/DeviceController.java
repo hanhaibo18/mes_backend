@@ -72,10 +72,10 @@ public class DeviceController extends BaseController {
             queryWrapper.like("type", "%" + type + "%");
         }
          if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
         }
             if(!StringUtils.isNullOrEmpty(orderCol)){
                 if(!StringUtils.isNullOrEmpty(order)){
@@ -163,10 +163,10 @@ public class DeviceController extends BaseController {
             queryWrapper.like("type", "%" + type + "%");
         }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
         }
         List<Device> result = deviceService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -179,10 +179,10 @@ public class DeviceController extends BaseController {
         List<Map<String, Object>> result = new ArrayList<>();
         QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
          if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
        if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
         }
         List<Device> list = deviceService.list(queryWrapper);
 

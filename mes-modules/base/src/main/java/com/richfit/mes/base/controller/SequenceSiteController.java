@@ -130,7 +130,7 @@ public class SequenceSiteController extends BaseController {
             }
              
               if(!StringUtils.isNullOrEmpty(branchCode)){
-            queryWrapper.like("branch_code", "%" + branchCode + "%");
+            queryWrapper.eq("branch_code", branchCode);
         } 
              queryWrapper.orderByAsc("order_no");
         List<SequenceSite> result = sequenceSiteService.list(queryWrapper);

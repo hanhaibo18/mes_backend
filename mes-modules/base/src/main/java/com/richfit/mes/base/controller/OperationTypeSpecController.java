@@ -60,10 +60,10 @@ public class OperationTypeSpecController extends BaseController {
             QueryWrapper<OperationTypeSpec> queryWrapper = new QueryWrapper<OperationTypeSpec>();
             
             if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
             if (!StringUtils.isNullOrEmpty(optTypeCode)) {
                 queryWrapper.eq("opt_type_code", optTypeCode);
@@ -123,8 +123,8 @@ public class OperationTypeSpecController extends BaseController {
     public CommonResult<List<OperationTypeSpec>> addOperationTypeSpec(@RequestBody List<OperationTypeSpec> operatiponTypeSpecs,String optTypeCode,String branchCode,String tenantId) {
         
         QueryWrapper<OperationTypeSpec> queryWrapper = new QueryWrapper<OperationTypeSpec>();
-        queryWrapper.like("tenant_id", "%" + tenantId + "%");
-        queryWrapper.like("branch_code", "%" + branchCode + "%");
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("opt_type_code", optTypeCode);
         List<OperationTypeSpec> oldOperatiponTypeSpecs = operatiponTypeSpecService.list(queryWrapper);
         for(int ii=0;ii<operatiponTypeSpecs.size();ii++) {
@@ -168,10 +168,10 @@ public class OperationTypeSpecController extends BaseController {
         }
            
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
         List<OperationTypeSpec> result = operatiponTypeSpecService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");

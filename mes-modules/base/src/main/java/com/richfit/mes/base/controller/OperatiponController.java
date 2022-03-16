@@ -62,10 +62,10 @@ public class OperatiponController extends BaseController {
             QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
             
             if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
             if (!StringUtils.isNullOrEmpty(optCode)) {
                 queryWrapper.eq("opt_code", optCode);
@@ -129,20 +129,18 @@ public class OperatiponController extends BaseController {
         if (!StringUtils.isNullOrEmpty(optCode)) {
             queryWrapper.like("opt_code", "%" + optCode + "%");
         }
-        if(!StringUtils.isNullOrEmpty(optName)){
-            queryWrapper.like("opt_name", "%" + optName + "%");
-        }
+        
                 if(!StringUtils.isNullOrEmpty(optName)){
             queryWrapper.like("opt_name", "%" + optName + "%");
         }
             if(!StringUtils.isNullOrEmpty(routerId)){
-            queryWrapper.like("router_id", "%" + routerId + "%");
+            queryWrapper.eq("router_id", routerId);
         }  
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
          queryWrapper.orderByAsc("opt_order");
         List<Operatipon> result = operatiponService.list(queryWrapper);
@@ -158,10 +156,10 @@ public class OperatiponController extends BaseController {
         }
 
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.like("tenant_id", "%" + tenantId + "%");
+                queryWrapper.eq("tenant_id", tenantId);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.like("branch_code", "%" + branchCode + "%");
+                queryWrapper.eq("branch_code", branchCode);
             }
 
         List<OperationDevice> result = operationDeviceService.list(queryWrapper);

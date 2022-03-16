@@ -26,6 +26,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import java.io.File;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -139,7 +140,7 @@ public class SequenceController extends BaseController {
             }
 
             sequence.setModifyTime(new Date());
-            boolean bool = sequenceService.updateById(sequence);
+            boolean bool = sequenceService.update(sequence,new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code",sequence.getBranchCode()) );
             if (bool) {
                 return CommonResult.success(sequence, "操作成功！");
             } else {
@@ -152,9 +153,15 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "修改工序", notes = "修改工序")
     @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "path")
     @PostMapping("/batch")
+      @Transactional(rollbackFor = Exception.class)
     public CommonResult<List<Sequence>> batchupdateSequence(@RequestBody List<Sequence> sequences) {
-        boolean bool = sequenceService.updateBatchById(sequences);
-        return sequences;
+        
+        for (Sequence sequence : sequences) {
+            
+            sequenceService.update(sequence,new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code",sequence.getBranchCode()) );
+        }
+        return CommonResult.success(sequences, "操作成功！");
+   
     }
 
     @ApiOperation(value = "查询工序", notes = "根据编码获得工序")
@@ -175,7 +182,7 @@ public class SequenceController extends BaseController {
             queryWrapper.like("opt_name", "%" + optName + "%");
         }
         if(!StringUtils.isNullOrEmpty(routerId)){
-            queryWrapper.like("router_id", "%" + routerId + "%");
+            queryWrapper.eq("router_id", routerId);
         }
 
         queryWrapper.orderByAsc("opt_order");
@@ -188,9 +195,13 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "查询工序", notes = "根据工艺ID获得工序")
     @ApiImplicitParam(name = "routerId", value = "工艺ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/getByRouterId")
-    public CommonResult<List<Sequence>> getByRouterId(String routerId) {
+    public CommonResult<List<Sequence>> getByRouterId(String routerId,String branchCode) {
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
         queryWrapper.eq("router_id", routerId);
+        
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
         queryWrapper.orderByAsc("opt_order");
         List<Sequence> result = sequenceService.list(queryWrapper);
         result = setOptCodeAndName(result);
@@ -213,10 +224,10 @@ public class SequenceController extends BaseController {
             query.eq("router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
-            query.like("branch_code", "%" + branchCode + "%");
+            query.eq("branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-            query.like("tenant_id", "%" + tenantId + "%");
+            query.eq("tenant_id", tenantId);
         }
         query.in("status", "1");
         List<Router> routers = routerService.list(query);
