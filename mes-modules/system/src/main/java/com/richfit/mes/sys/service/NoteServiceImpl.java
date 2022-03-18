@@ -61,7 +61,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
                 .setBranchCode(noteDto.getBranchCode())
                 .setState(0);
         noteService.save(note);
-        List<String> userIdList = Arrays.asList(noteDto.getUsers().split(","));
+        List<String> userIdList = Arrays.asList(noteDto.getUserAccount().split(","));
         List<NoteUser> userList = new ArrayList<>();
         userIdList.forEach(userid -> {
             NoteUser noteUser = new NoteUser();
@@ -78,7 +78,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<Note> queryById(String id,String userId) {
         QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id",id);
+        queryWrapper.eq("note_id",id);
         queryWrapper.eq("user_account",userId);
         NoteUser noteUser = noteUserService.getOne(queryWrapper);
         assert noteUser != null;
@@ -89,6 +89,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         }
         Note note = noteService.getById(noteUser.getNoteId());
         note.setUserAccount(noteUser.getUserAccount());
+        List<String> list = new ArrayList<>();
+        list.add(note.getUserAccount());
+        note.setUserAccountList(list);
         return CommonResult.success(note);
     }
 
@@ -112,8 +115,8 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<IPage<NoteVo>> querySender(QueryDto<String> queryDto) {
         QueryWrapper<NoteVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("creatBy",queryDto.getParam());
-        queryWrapper.notIn("state",RecipientsEnum.DELETE.getStateId());
+        queryWrapper.eq("note.create_By",queryDto.getParam());
+        queryWrapper.notIn("note.state",RecipientsEnum.DELETE.getStateId());
         IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(),queryDto.getSize()),queryWrapper);
         if (noteList.getCurrent() != 0){
             noteList.getRecords().forEach(note -> {

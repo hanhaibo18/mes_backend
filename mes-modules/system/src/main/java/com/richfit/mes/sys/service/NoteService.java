@@ -91,4 +91,5 @@ public interface NoteService extends IService<Note> {
      * @return: CommonResult<Boolean>
      **/
     CommonResult<Boolean> deleteMessage(DropDto dropDto);
+
 }

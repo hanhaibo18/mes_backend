@@ -8,7 +8,7 @@ spring:
       username: nacos
       password: nacos0
       discovery:
-        enabled: ${DISCOVERY_ENABLED:false}
+        enabled: ${DISCOVERY_ENABLED:true}
         server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
         group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
         namespace: ${DISCOVERY_NAMESPACE:mes_dev}

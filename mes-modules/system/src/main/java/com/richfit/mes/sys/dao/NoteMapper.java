@@ -32,17 +32,18 @@ public interface NoteMapper extends BaseMapper<Note> {
      * @return: IPage<NoteVo>
      **/
     @Select("SELECT\n" +
-            "note.id,\n" +
-            "note_user.user_account,\n" +
-            "sys.empl_name,\n" +
-            "note.title,\n" +
-            "note.create_time,\n" +
-            "note_user.state,\n" +
-            "note_user.check_look\n" +
+            "\t note.id,\n" +
+            "\t note_user.id note_user_id,\n" +
+            "\t note_user.user_account,\n" +
+            "\t sys.empl_name,\n" +
+            "\t note.title,\n" +
+            "\t note.create_time,\n" +
+            "\t note_user.state,\n" +
+            "\t note_user.check_look\n" +
             "FROM\n" +
-            "sys_note note\n" +
-            "LEFT JOIN sys_tenant_user sys ON note.create_by = sys.user_account\n" +
-            "LEFT JOIN sys_note_user note_user ON note_user.id = note.id ${ew.customSqlSegment}")
+            "\t sys_note note\n" +
+            "\t LEFT JOIN sys_tenant_user sys ON note.create_by = sys.user_account\n" +
+            "\t LEFT JOIN sys_note_user note_user ON note_user.note_id = note.id ${ew.customSqlSegment}")
     IPage<NoteVo> querySender(IPage<NoteVo> page,@Param(Constants.WRAPPER)QueryWrapper<NoteVo> queryWrapper);
 
     /**

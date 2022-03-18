@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import javax.xml.soap.Text;
+import java.util.List;
 
 /**
  * sys_note
@@ -40,6 +41,8 @@ public class Note extends BaseEntity<Note> {
 
     @TableField(exist = false)
     private String userAccount;
+    @TableField(exist = false)
+    private List<String> userAccountList;
 
     private static final long serialVersionUID = 1L;
 }

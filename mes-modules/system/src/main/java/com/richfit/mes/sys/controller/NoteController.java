@@ -14,10 +14,10 @@ import com.richfit.mes.sys.entity.dto.QueryDto;
 import com.richfit.mes.sys.service.NoteService;
 import com.richfit.mes.sys.service.NoteUserService;
 import io.swagger.annotations.Api;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: NoteController.java
@@ -89,7 +89,7 @@ public class NoteController {
         noteDto.setTitle(sendTitle);
         noteDto.setTenantId(tenantId);
         noteDto.setBranchCode(branchCode);
-        noteDto.setUsers(reseiverUsers);
+        noteDto.setUserAccount(reseiverUsers);
 
         return CommonResult.success(noteService.saveNote(noteDto));
     }
@@ -176,5 +176,14 @@ public class NoteController {
     @GetMapping("/query_one/{id}/{userId}")
     public CommonResult<Note> queryById(@PathVariable String id,@PathVariable String userId){
         return noteService.queryById(id, userId);
+    }
+
+    @GetMapping("/query_one/note/{id}")
+    public CommonResult<Note> queryNote(@PathVariable String id){
+        QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("note_id",id);
+        List<NoteUser> noteUserList = noteUserService.list(queryWrapper);
+        List<String> tableNames = noteUserList.stream().map(NoteUser::getUserAccount).collect(Collectors.toList());
+        return CommonResult.success(noteService.getById(id).setUserAccountList(tableNames));
     }
 }

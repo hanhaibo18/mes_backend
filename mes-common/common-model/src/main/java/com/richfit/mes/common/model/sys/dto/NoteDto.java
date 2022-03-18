@@ -22,7 +22,7 @@ public class NoteDto {
     @NotNull
     private String content;
     @Nonnull
-    private String users;
+    private String userAccount;
     @NotNull
     private String tenantId;
     @NotNull
