@@ -54,6 +54,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveNote(NoteDto noteDto) {
+        if (StringUtils.isBlank(noteDto.getUserAccount())){
+            return false;
+        }
         Note note = new Note();
         note.setId(UuidUtils.generateUuid().replace("-",""));
         note.setTitle(noteDto.getTitle())
@@ -62,6 +65,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
                 .setBranchCode(noteDto.getBranchCode())
                 .setState(0);
         noteService.save(note);
+
         List<String> userIdList = Arrays.asList(noteDto.getUserAccount().split(","));
         List<NoteUser> userList = new ArrayList<>();
         userIdList.forEach(userid -> {
@@ -102,7 +106,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         queryWrapper.eq("note_user.user_account",queryDto.getParam());
         queryWrapper.notIn("note_user.state",SenderEnum.DELETE.getStateId());
         IPage<NoteUserVo> noteUserList = noteUserMapper.queryRecipients(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
-        if (noteUserList.getCurrent() != 0){
+        if (noteUserList.getTotal() != 0){
             TenantUserVo tenantUserVo = tenantUserService.get(noteUserList.getRecords().get(0).getCreateBy());
             noteUserList.getRecords().forEach(note -> {
                note.setStateName(SenderEnum.getMessage(note.getState()))
@@ -117,10 +121,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     public CommonResult<IPage<NoteVo>> querySender(QueryDto<String> queryDto) {
         QueryWrapper<NoteVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("note.create_By",queryDto.getParam());
-//        queryWrapper.notIn("note.state",RecipientsEnum.DELETE.getStateId());
         queryWrapper.notIn("note_user.is_delete",1);
         IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(),queryDto.getSize()),queryWrapper);
-        if (noteList.getCurrent() != 0){
+        if (noteList.getTotal() != 0){
             noteList.getRecords().forEach(note -> {
                 if (null==note.getCheckLook()) {
                     note.setStateName(RecipientsEnum.getMessage(note.getStart()));

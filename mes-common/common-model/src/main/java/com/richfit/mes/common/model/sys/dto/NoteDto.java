@@ -21,6 +21,7 @@ public class NoteDto {
     private String title;
     @NotNull
     private String content;
+    @NotNull
     @Nonnull
     private String userAccount;
     @NotNull

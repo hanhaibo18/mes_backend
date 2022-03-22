@@ -164,7 +164,11 @@ public class NoteController {
      **/
     @PostMapping ("/save_page")
     public CommonResult<Boolean> save(@RequestBody NoteDto noteDto){
-        return CommonResult.success(noteService.saveNote(noteDto));
+        boolean saveNote = noteService.saveNote(noteDto);
+        if (saveNote) {
+            CommonResult.success(true);
+        }
+        return CommonResult.success(false,"请选择收件人");
     }
 
     /**
