@@ -14,6 +14,7 @@ import com.richfit.mes.sys.entity.dto.QueryDto;
 import com.richfit.mes.sys.service.NoteService;
 import com.richfit.mes.sys.service.NoteUserService;
 import io.swagger.annotations.Api;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
@@ -62,10 +63,11 @@ public class NoteController {
      * @return: CommonResult<Boolean>
      **/
     @PutMapping("/delete/sender")
-    public CommonResult<Boolean> deleteSender(@RequestBody List<String> idList){
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> deleteSender(@RequestBody List<NoteVo> idList){
         Boolean sender = false;
-        for(String id : idList){
-            sender = noteService.deleteSender(id);
+        for(NoteVo noteVo : idList){
+            sender = noteService.deleteSender(noteVo);
         }
         return CommonResult.success(sender);
     }

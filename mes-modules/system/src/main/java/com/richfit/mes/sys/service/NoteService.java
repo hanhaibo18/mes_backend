@@ -69,10 +69,10 @@ public interface NoteService extends IService<Note> {
      * 功能描述: 删除发送邮件
      * @Author: xinYu.hou
      * @Date: 2022/2/16 15:30
-     * @param id
+     * @param noteVo
      * @return: CommonResult<Boolean>
      **/
-    Boolean deleteSender(String id);
+    Boolean deleteSender(NoteVo noteVo);
 
     /**
      * 功能描述: 查询垃圾箱列表

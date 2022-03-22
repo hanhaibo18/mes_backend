@@ -10,6 +10,7 @@ import com.richfit.mes.common.model.sys.vo.NoteUserVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 
 /**
@@ -45,12 +46,21 @@ public interface NoteUserMapper extends BaseMapper<NoteUser> {
     IPage<NoteUserVo> queryRecipients(IPage<NoteUserVo> page, @Param(Constants.WRAPPER) QueryWrapper<NoteUserVo> queryWrapper);
 
     /**
+     * 功能描述: 更改状态记录
+     * @Author: xinYu.hou
+     * @Date: 2022/3/22 10:34
+     * @param queryWrapper
+     * @return: Boolean
+     **/
+    @Update("UPDATE sys_note_user note SET note.is_delete = 1 ${ew.customSqlSegment}")
+    Boolean deleteSenderById(@Param(Constants.WRAPPER)QueryWrapper<NoteUserVo> queryWrapper);
+    /**
      * 功能描述: 逻辑删除
      * @Author: xinYu.hou
      * @Date: 2022/2/16 16:07
      * @param id
      * @return: boolean
      **/
-    @Select("UPDATE sys_note_user note SET note.state = 3 WHERE note.id = #{id}")
+    @Update("UPDATE sys_note_user note SET note.state = 3 WHERE note.id = #{id}")
     boolean deleteRecipients(@Param("id") String id);
 }

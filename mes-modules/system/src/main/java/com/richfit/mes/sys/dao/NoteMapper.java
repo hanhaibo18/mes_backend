@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.sys.vo.NoteVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 import java.util.Map;
@@ -53,8 +54,8 @@ public interface NoteMapper extends BaseMapper<Note> {
      * @param id
      * @return: boolean
      **/
-    @Select("UPDATE sys_note note SET note.state = 2 WHERE note.id = #{id}")
-    boolean deleteSender(@Param("id") String id);
+    @Update("UPDATE sys_note note SET note.state = 3 WHERE note.id = #{id}")
+    Boolean deleteSender(@Param("id") String id);
 
     /**
      * 功能描述: 分页查询垃圾箱

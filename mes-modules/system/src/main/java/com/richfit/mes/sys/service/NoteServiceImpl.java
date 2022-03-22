@@ -3,6 +3,7 @@ package com.richfit.mes.sys.service;
 import com.alibaba.nacos.common.utils.UuidUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -116,11 +117,14 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     public CommonResult<IPage<NoteVo>> querySender(QueryDto<String> queryDto) {
         QueryWrapper<NoteVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("note.create_By",queryDto.getParam());
-        queryWrapper.notIn("note.state",RecipientsEnum.DELETE.getStateId());
+//        queryWrapper.notIn("note.state",RecipientsEnum.DELETE.getStateId());
+        queryWrapper.notIn("note_user.is_delete",1);
         IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(),queryDto.getSize()),queryWrapper);
         if (noteList.getCurrent() != 0){
             noteList.getRecords().forEach(note -> {
-                note.setStateName(RecipientsEnum.getMessage(note.getStart()));
+                if (null==note.getCheckLook()) {
+                    note.setStateName(RecipientsEnum.getMessage(note.getStart()));
+                }
             });
         }
         return CommonResult.success(noteList);
@@ -134,8 +138,11 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteSender(String id) {
-        return noteMapper.deleteSender(id);
+    public Boolean deleteSender(NoteVo noteVo) {
+        QueryWrapper<NoteUserVo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("note.id",noteVo.getNoteUserId());
+        noteUserMapper.deleteSenderById(queryWrapper);
+        return noteMapper.deleteSender(noteVo.getId());
     }
 
     @Override
