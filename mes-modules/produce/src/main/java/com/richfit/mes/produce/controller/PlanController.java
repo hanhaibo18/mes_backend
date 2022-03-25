@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.IErrorCode;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -89,7 +91,48 @@ public class PlanController extends BaseController {
     public CommonResult<Object> savePlan(@RequestBody Plan plan) throws GlobalException{
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         //plan.setTenantId(user.getTenantId());
+        if (StringUtils.isEmpty(plan.getOrderNo())){
+            IErrorCode iErrorCode = new IErrorCode() {
+                @Override
+                public long getCode() {
+                    return ResultCode.FAILED.getCode();
+                }
 
+                @Override
+                public String getMessage() {
+                    return "请选择订单";
+                }
+            };
+            return CommonResult.failed(iErrorCode);
+        }
+        if (StringUtils.isEmpty(plan.getDrawNo())){
+            IErrorCode iErrorCode = new IErrorCode() {
+                @Override
+                public long getCode() {
+                    return ResultCode.FAILED.getCode();
+                }
+
+                @Override
+                public String getMessage() {
+                    return "此订单没有图号";
+                }
+            };
+            return CommonResult.failed(iErrorCode);
+        }
+        if (StringUtils.isEmpty(plan.getProjCode())||(StringUtils.isEmpty(plan.getWorkNo()))) {
+            IErrorCode iErrorCode = new IErrorCode() {
+                @Override
+                public long getCode() {
+                    return ResultCode.FAILED.getCode();
+                }
+
+                @Override
+                public String getMessage() {
+                    return "计划编号或工作号不能为空";
+                }
+            };
+            return CommonResult.failed(iErrorCode);
+        }
         return planService.addPlan(plan);
     }
 

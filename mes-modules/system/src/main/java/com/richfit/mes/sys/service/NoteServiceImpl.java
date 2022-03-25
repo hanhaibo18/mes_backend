@@ -105,6 +105,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         QueryWrapper<NoteUserVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("note_user.user_account",queryDto.getParam());
         queryWrapper.notIn("note_user.state",SenderEnum.DELETE.getStateId());
+        queryWrapper.orderByDesc("note_user.create_time");
         IPage<NoteUserVo> noteUserList = noteUserMapper.queryRecipients(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
         if (noteUserList.getTotal() != 0){
             TenantUserVo tenantUserVo = tenantUserService.get(noteUserList.getRecords().get(0).getCreateBy());
@@ -122,6 +123,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         QueryWrapper<NoteVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("note.create_By",queryDto.getParam());
         queryWrapper.notIn("note_user.is_delete",1);
+        queryWrapper.orderByDesc("note.create_time");
         IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(),queryDto.getSize()),queryWrapper);
         if (noteList.getTotal() != 0){
             noteList.getRecords().forEach(note -> {
