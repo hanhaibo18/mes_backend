@@ -108,9 +108,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         queryWrapper.orderByDesc("note_user.create_time");
         IPage<NoteUserVo> noteUserList = noteUserMapper.queryRecipients(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
         if (noteUserList.getTotal() != 0){
-            TenantUserVo tenantUserVo = tenantUserService.get(noteUserList.getRecords().get(0).getCreateBy());
             noteUserList.getRecords().forEach(note -> {
-               note.setStateName(SenderEnum.getMessage(note.getState()))
+                TenantUserVo tenantUserVo = tenantUserService.get(note.getCreateBy());
+                note.setStateName(SenderEnum.getMessage(note.getState()))
                        .setUserAccount(tenantUserVo.getUserAccount())
                        .setEmplName(tenantUserVo.getEmplName());
             });
