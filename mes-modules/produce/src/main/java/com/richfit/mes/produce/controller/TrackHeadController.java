@@ -62,7 +62,10 @@ public class TrackHeadController extends BaseController {
 
             boolean bool = false;
             List<LineStore> list = new ArrayList<>();
+            if(!"4".equals(trackHead.getStatus()))
+            {
             trackHead.setStatus("0");
+            }
             trackHead.setApprovalStatus("0");
             trackHead.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
             //trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
