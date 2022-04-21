@@ -59,6 +59,8 @@ public interface PlanService extends IService<Plan> {
      * @param startTime 开始时间
      * @param endTime 结束时间
      * @param drawingNo 图号
+     * @param tenantId
+     * @param branchCode
      * @return: List<Map<String,String>>
      **/
     List<Map<String,String>> getPlanList(Date startTime,Date endTime,String drawingNo,String tenantId,String branchCode);
