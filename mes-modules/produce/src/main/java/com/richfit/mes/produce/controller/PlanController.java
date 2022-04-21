@@ -16,6 +16,7 @@ import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.PlanDto;
+import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanService;
 import io.swagger.annotations.Api;
@@ -27,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -91,48 +94,7 @@ public class PlanController extends BaseController {
     public CommonResult<Object> savePlan(@RequestBody Plan plan) throws GlobalException{
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         //plan.setTenantId(user.getTenantId());
-        if (StringUtils.isEmpty(plan.getOrderNo())){
-            IErrorCode iErrorCode = new IErrorCode() {
-                @Override
-                public long getCode() {
-                    return ResultCode.FAILED.getCode();
-                }
 
-                @Override
-                public String getMessage() {
-                    return "请选择订单";
-                }
-            };
-            return CommonResult.failed(iErrorCode);
-        }
-        if (StringUtils.isEmpty(plan.getDrawNo())){
-            IErrorCode iErrorCode = new IErrorCode() {
-                @Override
-                public long getCode() {
-                    return ResultCode.FAILED.getCode();
-                }
-
-                @Override
-                public String getMessage() {
-                    return "此订单没有图号";
-                }
-            };
-            return CommonResult.failed(iErrorCode);
-        }
-        if (StringUtils.isEmpty(plan.getProjCode())||(StringUtils.isEmpty(plan.getWorkNo()))) {
-            IErrorCode iErrorCode = new IErrorCode() {
-                @Override
-                public long getCode() {
-                    return ResultCode.FAILED.getCode();
-                }
-
-                @Override
-                public String getMessage() {
-                    return "计划编号或工作号不能为空";
-                }
-            };
-            return CommonResult.failed(iErrorCode);
-        }
         return planService.addPlan(plan);
     }
 
@@ -205,8 +167,15 @@ public class PlanController extends BaseController {
 
     }
 
-
+    /**
+     * 功能描述: 根据时间区间 和 图号批量获取计划
+     * @Author: xinYu.hou
+     * @Date: 2022/4/20 15:27
+     * @param planQueryDto 查询对象
+     * @return: List<Map<String,String>>
+     **/
+    @PostMapping("/queryPlan")
+    public List<Map<String, String>> getPlanList(@RequestBody PlanQueryDto planQueryDto){
+        return planService.getPlanList(planQueryDto.getStartTime(),planQueryDto.getEndTime(),planQueryDto.getDrawingNo(),planQueryDto.getTenantId(),planQueryDto.getBranchCode());
+    }
 }
-
-
-

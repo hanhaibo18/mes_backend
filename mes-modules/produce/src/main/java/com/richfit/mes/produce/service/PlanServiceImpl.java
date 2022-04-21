@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -13,17 +14,21 @@ import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.Plan;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author: GaoLiang
@@ -192,7 +197,50 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return map;
     }
 
+    /**
+     * 功能描述: 根据时间区间 和 图号批量获取计划
+     * @Author: xinYu.hou
+     * @Date: 2022/4/20 10:59
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param drawingNo 图号
+     * @return: List<Map<String,String>>
+     **/
+    @Override
+    public List<Map<String, String>> getPlanList(Date startTime, Date endTime, String drawingNo,String tenantId,String branchCode) {
+        QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("draw_no",drawingNo);
+        queryWrapper.ge("create_time",startTime);
+        //处理结束时间
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(endTime);
+        calendar.add(Calendar.DAY_OF_MONTH,1);
+        queryWrapper.le("create_time",calendar.getTime());
+        if(!StringUtil.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if(!StringUtil.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        List<Plan> planList = this.list(queryWrapper);
+        return disposePlan(planList);
+    }
 
+    public List<Map<String,String>> disposePlan(List<Plan> planList){
+        List<Map<String,String>> planListMap = new ArrayList<>();
+        for (Plan plan : planList) {
+            Map<String,String> planMap = new HashMap<>();
+            Integer integer = trackHeadService.queryTrackHeadList(plan.getId());
+            if (plan.getProjNum()<=integer){
+                continue;
+            }
+            planMap.put("id",plan.getId());
+            int num = plan.getProjNum() - integer;
+            planMap.put("name",plan.getId()+",可跟单数量:"+num);
+            planListMap.add(planMap);
+        }
+        return planListMap;
+    }
 
     /*
     status 0:无关联跟单  1：有关联跟单，跟单中数量之和<计划数量  2：跟单中数量之和 = 计划数量

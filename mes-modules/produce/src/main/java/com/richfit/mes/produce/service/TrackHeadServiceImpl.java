@@ -15,6 +15,7 @@ import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -170,5 +171,25 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query){
         return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
+    }
+
+    /**
+     * 功能描述: 对当前跟单增加计划
+     * @Author: xinYu.hou
+     * @Date: 2022/4/19 18:07
+     * @param documentaryId 跟单Id
+     * @param workPlanId 计划Id
+     * @return: boolean
+     **/
+    @Override
+    public boolean updateTrackHeadPlan(String documentaryId, String workPlanId) {
+        TrackHead trackHead = this.getById(documentaryId);
+        trackHead.setWorkPlanId(workPlanId);
+        return this.updateById(trackHead);
+    }
+
+    @Override
+    public Integer queryTrackHeadList(String workPlanId) {
+        return trackHeadMapper.selectTrackHeadNumber(workPlanId);
     }
 }
