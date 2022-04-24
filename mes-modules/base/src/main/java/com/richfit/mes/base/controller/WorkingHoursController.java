@@ -22,7 +22,7 @@ public class WorkingHoursController extends BaseController {
     private WorkingHoursService workingHoursService;
 
     @GetMapping("/page")
-    public CommonResult<List<WorkingHours>> pageWorkingHours(int page, int limit, String branchCode, String productionOrder, String startTime, String endTime) {
+    public CommonResult<List<WorkingHours>> pageWorkingHours() {
         return CommonResult.success(workingHoursService.selectOrderTime());
     }
 }

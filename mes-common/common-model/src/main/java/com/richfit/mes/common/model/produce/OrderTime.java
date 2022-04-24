@@ -16,10 +16,6 @@ public class OrderTime {
      */
     private String drawNo;
 
-    /**
-     * 生产订单编号
-     */
-    private String productionOrder;
 
     /**
      * 产品名称

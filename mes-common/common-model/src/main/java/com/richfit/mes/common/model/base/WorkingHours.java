@@ -10,6 +10,7 @@ public class WorkingHours {
      * 图号
      */
     private String drawNo;
+
     /**
      * 版本号
      */
