@@ -11,7 +11,7 @@ spring:
         enabled: ${DISCOVERY_ENABLED:true}
         server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
         group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
-        namespace: ${DISCOVERY_NAMESPACE:mes_test}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.zaxxer.hikari.HikariDataSource
@@ -40,7 +40,6 @@ security:
     resource:
       loadBalanced: true
       token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
-
 synchronization:
   orders-synchronization: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
   purchase-order-synchronization: http://emaip.erp.cnpc:80/ZBZZ/HTXT/GetPurchaseInfoByTime/service/PS/GetPurchaseInfoService
@@ -58,3 +57,8 @@ fdfs:
 time:
   order: "0 30 23 * * ? "
   ourchase_order: "0 30 23 * * ? "
+
+feign.client.config:
+  default:
+    connect-timeout: 5000
+    read-timeout: 30000
