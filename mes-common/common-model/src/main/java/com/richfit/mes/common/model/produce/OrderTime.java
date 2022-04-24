@@ -16,29 +16,34 @@ public class OrderTime {
      */
     private String drawNo;
 
-
     /**
      * 产品名称
      */
     private String productNo;
+
     /**
      * 准结工时
      */
+
     private String prepareEndHours;
     /**
-     * 定额工时
+     * 额定工时
      */
+
     private String singlePieceHours;
+
     /**
      * 总工时
      */
     private String totalProductiveHours;
 
+
+
+
     private Date startTime;
 
     private Date endTime;
 
-    private String branchCode;
 
 
 }

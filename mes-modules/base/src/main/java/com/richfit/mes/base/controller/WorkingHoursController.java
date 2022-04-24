@@ -1,5 +1,8 @@
 package com.richfit.mes.base.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.WorkingHoursService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -22,7 +25,12 @@ public class WorkingHoursController extends BaseController {
     private WorkingHoursService workingHoursService;
 
     @GetMapping("/page")
-    public CommonResult<List<WorkingHours>> pageWorkingHours() {
-        return CommonResult.success(workingHoursService.selectOrderTime());
+    public CommonResult<List> pageWorkingHours(String branchCode) {
+        QueryWrapper<List> wrapper = new QueryWrapper<List>();
+        if (!StringUtils.isNullOrEmpty(branchCode)){
+            wrapper.eq("router.branch_code",branchCode);
+        }
+        wrapper.groupBy("router.draw_no","opt_name");
+        return CommonResult.success(workingHoursService.selectOrderTime(wrapper));
     }
 }

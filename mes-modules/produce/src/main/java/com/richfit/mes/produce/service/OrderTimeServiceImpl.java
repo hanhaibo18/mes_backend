@@ -23,8 +23,8 @@ public class OrderTimeServiceImpl extends ServiceImpl<OrderTimeMapper, OrderTime
     private OrderTimeMapper orderTimeMapper;
 
     @Override
-    public  List<OrderTime> select(Page<OrderTime> orderTimePage, QueryWrapper<List<OrderTime>> wrapper){
-        return orderTimeMapper.query(orderTimePage,wrapper);
+    public  List<OrderTime> select(Page page, QueryWrapper<List> wrapper){
+        return orderTimeMapper.query(page,wrapper);
     }
 
 }

@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface OrderTimeService extends IService<OrderTime> {
 
-    List<OrderTime> select(Page<OrderTime> orderTimePage, QueryWrapper<List<OrderTime>> wrapper );
+    List<OrderTime> select(Page page, QueryWrapper<List> wrapper );
 
 
 }

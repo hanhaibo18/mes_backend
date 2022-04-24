@@ -32,29 +32,30 @@ public class OrderTimeController extends BaseController {
 
 
     @GetMapping("/page")
-    public CommonResult<List<OrderTime>> pageAbnormal(int page, int limit, String branchCode, String productionOrder, String startTime, String endTime) {
-        QueryWrapper<List<OrderTime>> wrapper = new QueryWrapper<List<OrderTime>>();
+    public CommonResult<List> pageAbnormal(int page, int limit, String branchCode, String orderSn, String startTime, String endTime) {
+        QueryWrapper<List> wrapper = new QueryWrapper<List>();
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             wrapper.eq("head.branch_code", branchCode);
         }
-        if (!StringUtils.isNullOrEmpty(productionOrder)) {
-            wrapper.eq("production_order", productionOrder);
+        if (!StringUtils.isNullOrEmpty(orderSn)) {
+            wrapper.eq("ordere.order_sn", orderSn);
         }
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             wrapper.between("ordere.start_time", startTime, endTime);
         }
-
-        CommonResult<List<WorkingHours>> listCommonResult = baseServiceClient.pageWorkingHours();
-        List<OrderTime> select = orderTimeService.select(new Page<OrderTime>(page, limit), wrapper);
+        List<OrderTime> select = orderTimeService.select(new Page(page, limit), wrapper);
+        List<WorkingHours> workingHours = baseServiceClient.pageWorkingHours().getData();
+        //遍历集合将准结工时，额定工时，总工时插入到OrderTime中
         for (OrderTime orderTime : select) {
-            for (WorkingHours workingHour : listCommonResult.getData()) {
-                if (orderTime.getDrawNo().equals(workingHour.getDrawNo())) {
+            for (WorkingHours workingHour : workingHours) {
+                if (workingHour.getDrawNo()!=null && orderTime.getDrawNo().equals(workingHour.getDrawNo())) {
                     orderTime.setPrepareEndHours(workingHour.getPrepareEndHours());
                     orderTime.setSinglePieceHours(workingHour.getSinglePieceHours());
+                    orderTime.setTotalProductiveHours(workingHour.getTotalProductiveHours());
                 }
             }
         }
-        return CommonResult.success(orderTimeService.select(new Page<OrderTime>(page,limit), wrapper));
+        return CommonResult.success(select);
     }
 
 
