@@ -2,9 +2,13 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
+import feign.Param;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -13,7 +17,7 @@ import java.util.List;
  * @Author: GaoLiang
  * @Date: 2020/7/31 16:28
  */
-@FeignClient(name = "base-service", decode404 = true, fallback = BaseServiceClientFallbackImpl.class)
+@FeignClient(name = "base-service-gwb", decode404 = true, fallback = BaseServiceClientFallbackImpl.class)
 public interface BaseServiceClient {
 
     @GetMapping(value = "/api/base/sequence/getByRouterNo")
@@ -40,14 +44,17 @@ public interface BaseServiceClient {
 
     @GetMapping(value = "/api/base/router/getByRouterNo")
     public CommonResult<Router> getRouterByNo(@RequestParam("routerNo") String routerNo,
-                                                      @RequestParam("branchCode") String branchCode
+                                              @RequestParam("branchCode") String branchCode
     );
-    
-    
-     @GetMapping(value = "/api/base/sequencesite/find")
-    public CommonResult<List<SequenceSite>> getSequenceDevice(@RequestParam("sequenceId") String  sequenceId, @RequestParam("siteId") String  siteId, @RequestParam("siteCode") String  siteCode, @RequestParam("branchCode") String  branchCode, @RequestParam("isDefault") String  isDefault);
-     
-       @GetMapping(value = "/api/base/deviceperson/find")
-    public CommonResult<List<DevicePerson>> getDevicePerson(@RequestParam("deviceId") String deviceId,@RequestParam("userId")  String userId,@RequestParam("branchCode")  String branchCode,@RequestParam("isDefault") String isDefault);
+
+
+    @GetMapping(value = "/api/base/sequencesite/find")
+    public CommonResult<List<SequenceSite>> getSequenceDevice(@RequestParam("sequenceId") String sequenceId, @RequestParam("siteId") String siteId, @RequestParam("siteCode") String siteCode, @RequestParam("branchCode") String branchCode, @RequestParam("isDefault") String isDefault);
+
+    @GetMapping(value = "/api/base/deviceperson/find")
+    public CommonResult<List<DevicePerson>> getDevicePerson(@RequestParam("deviceId") String deviceId, @RequestParam("userId") String userId, @RequestParam("branchCode") String branchCode, @RequestParam("isDefault") String isDefault);
+
+    @GetMapping(value = "/api/base/workinghours/page")
+    public CommonResult<List<WorkingHours>> pageWorkingHours();
 
 }

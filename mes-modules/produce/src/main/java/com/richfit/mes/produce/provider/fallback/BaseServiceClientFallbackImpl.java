@@ -2,8 +2,10 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -48,18 +50,23 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     public CommonResult<Router> getRouterByNo(String routerNo, String branchCode) {
         return CommonResult.success(null);
     }
-    
-    
+
+
     @Override
     public CommonResult<List<SequenceSite>> getSequenceDevice(String sequenceId, String siteId, String siteCode, String branchCode, String isDefault)
     {
-           return CommonResult.success(null); 
+           return CommonResult.success(null);
     }
-     
+
     @Override
     public CommonResult<List<DevicePerson>> getDevicePerson(String deviceId, String userId, String branchCode,String isDefault)
     {
          return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<List<WorkingHours>> pageWorkingHours() {
+        return CommonResult.success(null);
     }
 
 }
