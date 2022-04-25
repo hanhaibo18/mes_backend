@@ -2,11 +2,9 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.security.constant.SecurityConstants;
+import com.richfit.mes.common.model.produce.hourSum.WorkingHours;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -65,7 +63,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<WorkingHours>> pageWorkingHours() {
+    public CommonResult<List<Product>> StatisticalOrderhours() {
         return CommonResult.success(null);
     }
 

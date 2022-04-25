@@ -5,8 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.base.WorkingHours;
-import com.richfit.mes.common.model.produce.OrderTime;
+import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.produce.hourSum.WorkingHours;
+import com.richfit.mes.common.model.produce.hourSum.OrderTime;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.OrderTimeService;
 import io.swagger.annotations.Api;
@@ -30,32 +31,23 @@ public class OrderTimeController extends BaseController {
     @Resource
     private BaseServiceClient baseServiceClient;
 
-
-    @GetMapping("/page")
-    public CommonResult<List> pageAbnormal(int page, int limit, String branchCode, String orderSn, String startTime, String endTime) {
+    //根据订单号查询工时
+    @GetMapping("/queryHour")
+    public CommonResult<List> queryHour(int page, int limit, String branchCode, String orderNo, String startTime, String endTime) {
         QueryWrapper<List> wrapper = new QueryWrapper<List>();
         if (!StringUtils.isNullOrEmpty(branchCode)) {
-            wrapper.eq("head.branch_code", branchCode);
+            wrapper.eq("ordere.branch_code", branchCode);
         }
-        if (!StringUtils.isNullOrEmpty(orderSn)) {
-            wrapper.eq("ordere.order_sn", orderSn);
+        if (!StringUtils.isNullOrEmpty(orderNo)) {
+            wrapper.eq("plan.order_no", orderNo);
         }
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
-            wrapper.between("ordere.start_time", startTime, endTime);
+            wrapper.between("ordere.order_date", startTime, endTime);
         }
-        List<OrderTime> select = orderTimeService.select(new Page(page, limit), wrapper);
-        List<WorkingHours> workingHours = baseServiceClient.pageWorkingHours().getData();
-        //遍历集合将准结工时，额定工时，总工时插入到OrderTime中
-        for (OrderTime orderTime : select) {
-            for (WorkingHours workingHour : workingHours) {
-                if (workingHour.getDrawNo()!=null && orderTime.getDrawNo().equals(workingHour.getDrawNo())) {
-                    orderTime.setPrepareEndHours(workingHour.getPrepareEndHours());
-                    orderTime.setSinglePieceHours(workingHour.getSinglePieceHours());
-                    orderTime.setTotalProductiveHours(workingHour.getTotalProductiveHours());
-                }
-            }
-        }
-        return CommonResult.success(select);
+        wrapper.isNotNull("plan.order_no");
+//        wrapper.eq("item.is_schedule_complete", '1');
+        List<OrderTime> list = orderTimeService.select(new Page(page, limit), wrapper);
+        return CommonResult.success(list);
     }
 
 

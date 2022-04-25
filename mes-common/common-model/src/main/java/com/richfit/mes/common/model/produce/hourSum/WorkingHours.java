@@ -1,11 +1,11 @@
-package com.richfit.mes.common.model.base;
+package com.richfit.mes.common.model.produce.hourSum;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 @Data
 public class WorkingHours {
 
+    public String productName;
     /**
      * 图号
      */
@@ -19,18 +19,20 @@ public class WorkingHours {
      * 准结工时
      */
 
-    private String prepareEndHours;
+    private Double prepareEndHours;
     /**
      * 定额工时
      */
 
-    private String singlePieceHours;
+    private Double singlePieceHours;
 
     /**
      * 总工时
      */
-    private String totalProductiveHours;
-
-
+    private Double totalProductiveHours;
+    /**
+     * 物料编码
+     */
+    private String materialNo;
 
 }
