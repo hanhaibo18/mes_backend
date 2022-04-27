@@ -14,5 +14,4 @@ public interface OrderTimeService extends IService<OrderTime> {
 
     List<OrderTime> select(Page page, QueryWrapper<List> wrapper );
 
-
 }

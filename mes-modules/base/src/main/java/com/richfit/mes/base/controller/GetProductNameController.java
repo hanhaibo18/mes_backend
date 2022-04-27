@@ -2,7 +2,7 @@ package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.base.service.WorkingHoursService;
+import com.richfit.mes.base.service.GetProductNameService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import io.swagger.annotations.Api;
@@ -15,19 +15,19 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @Slf4j
-@Api("工时统计")
+@Api("查询产品名称")
 @RestController
-@RequestMapping("/api/base/workinghours")
-public class WorkingHoursController extends BaseController {
+@RequestMapping("/api/base/getProductName")
+public class GetProductNameController extends BaseController {
     @Autowired
-    private WorkingHoursService workingHoursService;
+    private GetProductNameService workingHoursService;
 
-    @GetMapping("/hourslist")
-    public CommonResult<List> StatisticalOrderhours(String branchCode) {
+    @GetMapping("/query_product_name")
+    public CommonResult<List> queryProductName(String branchCode) {
         QueryWrapper<List> wrapper = new QueryWrapper<List>();
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             wrapper.eq("branch_code", branchCode);
         }
-        return CommonResult.success(workingHoursService.selectOrderTime(wrapper));
+        return CommonResult.success(workingHoursService.queryProductName(wrapper));
     }
 }

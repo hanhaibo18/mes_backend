@@ -2,7 +2,6 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.hourSum.WorkingHours;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +50,7 @@ public interface BaseServiceClient {
     @GetMapping(value = "/api/base/deviceperson/find")
     public CommonResult<List<DevicePerson>> getDevicePerson(@RequestParam("deviceId") String deviceId, @RequestParam("userId") String userId, @RequestParam("branchCode") String branchCode, @RequestParam("isDefault") String isDefault);
 
-    @GetMapping(value = "/api/base/workinghours/hourslist")
-    public CommonResult<List<Product>> StatisticalOrderhours();
+    @GetMapping(value = "/api/base/workingHours/hoursList")
+    public CommonResult<List<Product>> queryProductName();
 
 }

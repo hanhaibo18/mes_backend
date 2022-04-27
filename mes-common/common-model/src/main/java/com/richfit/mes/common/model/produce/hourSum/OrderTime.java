@@ -6,20 +6,22 @@ import lombok.Data;
 @Data
 public class OrderTime {
 
-    public String materialNo;
-
     /**
      * 订单号
      */
     private String orderNo;
     /**
+     * 工作号
+     */
+    private String workNo;
+    /**
      * 图号
      */
     private String drawNo;
     /**
-     * 下单时间
+     * 物料编码
      */
-    private String orderDate;
+    public String materialNo;
 
     /**
      * 产品名称
@@ -29,18 +31,20 @@ public class OrderTime {
     /**
      * 准结工时
      */
-
     private Double endHours;
+
     /**
      * 额定工时
      */
-
     private Double pieceHours;
 
     /**
      * 总工时
      */
-    private Double sumhours;
+    private Double sumHours;
+
+
+
 
 
 
