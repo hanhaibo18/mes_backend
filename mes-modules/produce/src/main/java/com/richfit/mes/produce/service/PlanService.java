@@ -8,6 +8,7 @@ import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -48,4 +49,19 @@ public interface PlanService extends IService<Plan> {
 
     CommonResult<Object> addPlan(Plan plan);
     Map computePlanNeedHour(Plan plan);
+
+
+
+    /**
+     * 功能描述: 根据时间区间 和 图号批量获取计划
+     * @Author: xinYu.hou
+     * @Date: 2022/4/20 10:59
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param drawingNo 图号
+     * @param tenantId
+     * @param branchCode
+     * @return: List<Map<String,String>>
+     **/
+    List<Map<String,String>> getPlanList(Date startTime,Date endTime,String drawingNo,String tenantId,String branchCode);
 }

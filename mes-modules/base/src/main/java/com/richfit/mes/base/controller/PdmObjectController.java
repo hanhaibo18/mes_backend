@@ -13,10 +13,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,7 +40,11 @@ public class PdmObjectController {
         return CommonResult.success(pdmObjectService.page(new Page<>(page, limit), queryWrapper));
     }
 
-
+    @ApiOperation(value = "根据图号查询工装列表", notes = "根据图号查询工装列表")
+    @GetMapping("/query/pdmList/{drawing}/{dataGroup}")
+    public List<PdmObject> queryIndustrialAssembly(@PathVariable String drawing, @PathVariable String dataGroup){
+        return pdmObjectService.queryIndustrialAssembly(drawing, dataGroup);
+    }
 
 
 }

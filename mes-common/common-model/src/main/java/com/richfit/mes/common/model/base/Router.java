@@ -17,7 +17,7 @@ public class Router extends BaseEntity<Router> {
      * 租户ID
      */
     private String tenantId;
-    
+
       /**
      * 机构编码
      */
@@ -59,8 +59,8 @@ public class Router extends BaseEntity<Router> {
      * 状态 0=未激活 1=激活
      */
     private String status;
-    
-    
+
+
      /**
      * 2==历史
      */
@@ -70,7 +70,7 @@ public class Router extends BaseEntity<Router> {
      * 创建人
      */
     private String createBy;
-    
+
         /**
      * 创建时间
      */
@@ -80,7 +80,7 @@ public class Router extends BaseEntity<Router> {
      * 修改人
      */
     private String modifyBy;
-    
+
         /**
      * 修改时间
      */
@@ -90,6 +90,10 @@ public class Router extends BaseEntity<Router> {
      */
     private String flow;
 
+    /**
+     *图号
+     */
+   private String drawNo;
 
 
 }

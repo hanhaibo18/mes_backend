@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.util.List;
 
@@ -24,4 +25,22 @@ public interface TrackHeadService extends IService<TrackHead> {
 
     IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query);
 
+    /**
+     * 功能描述: 对当前跟单增加计划
+     * @Author: xinYu.hou
+     * @Date: 2022/4/19 18:07
+     * @param documentaryId 跟单Id
+     * @param workPlanId 计划Id
+     * @return: boolean
+     **/
+    boolean updateTrackHeadPlan(String documentaryId,String workPlanId);
+
+    /**
+     * 功能描述: 根据计划Id 查询跟单
+     * @Author: xinYu.hou
+     * @Date: 2022/4/20 11:42
+     * @param workPlanId 计划Id
+     * @return: 数量
+     **/
+    Integer queryTrackHeadList(String workPlanId);
 }

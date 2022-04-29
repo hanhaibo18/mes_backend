@@ -147,7 +147,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * 工序版本号
      */
     private String routerVer;
-		
+
 	/**
      * 跟单完工时间
      */
@@ -184,4 +184,10 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     private String templateCode;
 
+    /**
+     * 描述: 计划Id
+     * @Author: xinYu.hou
+     * @Date: 2022/4/19 10:25
+     **/
+    private String workPlanId;
 }

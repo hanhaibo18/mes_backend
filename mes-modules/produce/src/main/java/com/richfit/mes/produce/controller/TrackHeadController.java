@@ -326,4 +326,9 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
+    @GetMapping("/plan/{documentaryId}/{workPlanId}")
+    @ApiOperation(value = "修改跟单与计划管理", notes = "根据跟单ID和计划ID进行计划关联")
+    public CommonResult<Boolean> updateTrackHeadPlan(@PathVariable String documentaryId, @PathVariable String workPlanId){
+        return CommonResult.success(trackHeadService.updateTrackHeadPlan(documentaryId,workPlanId));
+    }
 }
