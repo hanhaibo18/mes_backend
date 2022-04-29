@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * @Description 组织结构Controller
  */
 @Slf4j
-@Api("物料管理")
+@Api(value = "物料管理接口", tags = {"物料管理接口"})
 @RestController
 @RequestMapping("/api/base/product")
 public class ProductController extends BaseController {
@@ -59,6 +59,7 @@ public class ProductController extends BaseController {
 
     @Autowired
     private RouterService routerService;
+
 
     @ApiOperation(value = "新增物料", notes = "新增物料信息")
     @ApiImplicitParam(name = "product", value = "物料", required = true, dataType = "Branch", paramType = "path")
@@ -130,9 +131,9 @@ public class ProductController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "分页查询物料", notes = "根据图号、物料编码分页查询物料")
+    @ApiOperation(value = "分页查询物料", notes = "根据图号、物料编码等参数分页查询物料")
     @GetMapping("/product")
-    public CommonResult<IPage<Product>> selectProduct(String drawingNo, String materialNo, String materialType, String order , String orderCol, int page, int limit){
+    public CommonResult<IPage<Product>> selectProduct(String drawingNo, String materialNo, String materialType, String order , String orderCol, int page, int limit, String productName){
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if(!StringUtils.isNullOrEmpty(drawingNo)){
             queryWrapper.like("p.drawing_no", "%" + drawingNo + "%");
@@ -142,6 +143,9 @@ public class ProductController extends BaseController {
         }
         if(!StringUtils.isNullOrEmpty(materialType)){
             queryWrapper.eq("p.material_type", materialType);
+        }
+        if(!StringUtils.isNullOrEmpty(productName)){
+            queryWrapper.like("p.product_name", "%" + productName + "%");
         }
         // queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         if(!StringUtils.isNullOrEmpty(orderCol)){
