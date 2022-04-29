@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller.statistics;
 
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.produce.service.SjtjServiceImpl;
 import io.swagger.annotations.Api;
@@ -31,9 +32,9 @@ public class SjtjController extends BaseController {
 
     @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
     @GetMapping("/query")
-    public List query1(String createTime, String endTime, String branchCode) throws IOException {
+    public CommonResult<List> query1(String createTime, String endTime, String branchCode) throws IOException {
         List list = sjtjService.query1(createTime,endTime, branchCode);
-        return list;
+        return CommonResult.success(list);
     }
 
 
