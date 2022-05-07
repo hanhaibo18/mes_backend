@@ -297,32 +297,24 @@ public class DeviceController extends BaseController {
                 if (devices.size() > 0) {
                     list.get(i).setParentId(devices.get(0).getId());
                 }
-                if (StringUtils.isNullOrEmpty(list.get(i).getType())) {
-                    list.get(i).setType("0");
-                } else if ("设备".equals(list.get(i).getType())) {
+                if ("设备".equals(list.get(i).getType())) {
                     list.get(i).setType("0");
                 } else if ("设备组".equals(list.get(i).getType())) {
                     list.get(i).setType("1");
-                } else {
-                    list.get(i).setType("0");
                 }
                 if ("是".equals(list.get(i).getRunStatus())) {
                     list.get(i).setRunStatus("1");
-                }
-                if ("否".equals(list.get(i).getRunStatus())) {
+                } else if ("否".equals(list.get(i).getRunStatus())) {
                     list.get(i).setRunStatus("0");
                 }
                 if ("是".equals(list.get(i).getStatus())) {
                     list.get(i).setStatus("1");
-                }
-                if ("否".equals(list.get(i).getStatus())) {
+                } else if ("否".equals(list.get(i).getStatus())) {
                     list.get(i).setStatus("0");
                 }
 
             }
 //            list = list.stream().filter(item -> item.getMaterialNo() != null).collect(Collectors.toList());
-
-
             boolean bool = deviceService.saveBatch(list);
             if (bool) {
                 return CommonResult.success(null);
@@ -333,7 +325,6 @@ public class DeviceController extends BaseController {
             return CommonResult.failed();
         }
     }
-
 
     @ApiOperation(value = "导出设备", notes = "通过Excel文档导出设备信息")
     @GetMapping("/export_excel")
@@ -366,13 +357,12 @@ public class DeviceController extends BaseController {
                 } else if ("1".equals(device.getRunStatus()) && device.getRunStatus() != null) {
                     device.setRunStatus("是");
                 }
-
             }
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 
             String fileName = "设备列表_" + format.format(new Date()) + ".xlsx";
 
-            String[] columnHeaders = {"编码", "名称", "型号", "类型", "制造商", "入库时间", "出库时间", "是否启用", "运行状态", "修改时间", "修改人"};
+            String[] columnHeaders = {"设备编码", "设备名称", "型号", "类型(设备或设备组)", "制造商", "入库时间", "出库时间", "是否启用(是或否)", "运行状态(是或否)", "修改时间", "修改人"};
 
             String[] fieldNames = {"code", "name", "model", "type", "maker", "inTime", "outTime", "status", "runStatus", "modifyTime", "modifyBy"};
 
@@ -382,6 +372,4 @@ public class DeviceController extends BaseController {
             log.error(e.getMessage());
         }
     }
-
-
 }
