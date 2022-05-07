@@ -337,14 +337,19 @@ public class DeviceController extends BaseController {
 
     @ApiOperation(value = "导出设备", notes = "通过Excel文档导出设备信息")
     @GetMapping("/export_excel")
-    public void exportExcel(String parentId, HttpServletResponse rsp) {
+    public void exportExcel(String parentId, String branchCode, HttpServletResponse rsp) {
         try {
             QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
-            List<Device> list = deviceService.list(queryWrapper);
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
             //根据设备导出所有当前设备下的所有信息
             if (!StringUtils.isNullOrEmpty(parentId)) {
-                queryWrapper.like("parent_id", "%" + parentId + "%");
+                queryWrapper.eq("parent_id", parentId);
             }
+            queryWrapper.orderByDesc("modify_time");
+            List<Device> list = deviceService.list(queryWrapper);
+
             for (Device device : list) {
                 if ("0".equals(device.getType()) && device.getType() != null) {
                     device.setType("设备");
@@ -352,18 +357,17 @@ public class DeviceController extends BaseController {
                     device.setType("设备组");
                 }
                 if ("0".equals(device.getStatus()) && device.getStatus() != null) {
-                    device.setStatus("禁用");
+                    device.setStatus("否");
                 } else if ("1".equals(device.getStatus()) && device.getStatus() != null) {
-                    device.setStatus("正常");
+                    device.setStatus("是");
                 }
                 if ("0".equals(device.getRunStatus()) && device.getRunStatus() != null) {
-                    device.setRunStatus("禁用");
+                    device.setRunStatus("否");
                 } else if ("1".equals(device.getRunStatus()) && device.getRunStatus() != null) {
-                    device.setRunStatus("正常");
+                    device.setRunStatus("是");
                 }
 
             }
-
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 
             String fileName = "设备列表_" + format.format(new Date()) + ".xlsx";
