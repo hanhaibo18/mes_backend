@@ -13,7 +13,7 @@ import java.util.List;
  * @Author: GaoLiang
  * @Date: 2020/7/31 16:28
  */
-@FeignClient(name = "base-service-gwb", decode404 = true, fallback = BaseServiceClientFallbackImpl.class)
+@FeignClient(name = "base-service", decode404 = true, fallback = BaseServiceClientFallbackImpl.class)
 public interface BaseServiceClient {
 
     @GetMapping(value = "/api/base/sequence/getByRouterNo")
