@@ -372,4 +372,5 @@ public class DeviceController extends BaseController {
             log.error(e.getMessage());
         }
     }
+    
 }
