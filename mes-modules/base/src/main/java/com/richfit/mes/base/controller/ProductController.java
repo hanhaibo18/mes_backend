@@ -64,22 +64,22 @@ public class ProductController extends BaseController {
     @ApiOperation(value = "新增物料", notes = "新增物料信息")
     @ApiImplicitParam(name = "product", value = "物料", required = true, dataType = "Branch", paramType = "path")
     @PostMapping("/product")
-    public CommonResult<Product> addProduct(@RequestBody Product product){
-        if(StringUtils.isNullOrEmpty(product.getMaterialNo())){
+    public CommonResult<Product> addProduct(@RequestBody Product product) {
+        if (StringUtils.isNullOrEmpty(product.getMaterialNo())) {
             return CommonResult.failed(PRODUCT_MATERIAL_NO_NULL_MESSAGE);
         } else {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
             queryWrapper.eq("material_no", product.getMaterialNo());
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             Product oldProduct = productService.getOne(queryWrapper);
-            if(oldProduct != null && !StringUtils.isNullOrEmpty(oldProduct.getId())){
+            if (oldProduct != null && !StringUtils.isNullOrEmpty(oldProduct.getId())) {
                 return CommonResult.failed("物料编码已存在！");
             } else {
                 product.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 product.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 boolean bool = productService.save(product);
-                if(bool){
-                    return CommonResult.success(product,PRODUCT_SUCCESS_MESSAGE);
+                if (bool) {
+                    return CommonResult.success(product, PRODUCT_SUCCESS_MESSAGE);
                 } else {
                     return CommonResult.failed(PRODUCT_FAILED_MESSAGE);
                 }
@@ -91,24 +91,24 @@ public class ProductController extends BaseController {
     @ApiOperation(value = "修改物料", notes = "修改物料信息")
     @ApiImplicitParam(name = "product", value = "物料", required = true, dataType = "Branch", paramType = "path")
     @PutMapping("/product")
-    public CommonResult<Product> updateProduct(@RequestBody Product product, String oldMaterialNo){
-        if(StringUtils.isNullOrEmpty(product.getMaterialNo())){
+    public CommonResult<Product> updateProduct(@RequestBody Product product, String oldMaterialNo) {
+        if (StringUtils.isNullOrEmpty(product.getMaterialNo())) {
             return CommonResult.failed(PRODUCT_MATERIAL_NO_NULL_MESSAGE);
         } else {
-            if(!product.getMaterialNo().equals(oldMaterialNo)){
+            if (!product.getMaterialNo().equals(oldMaterialNo)) {
                 QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
                 queryWrapper.eq("material_no", product.getMaterialNo());
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 Product oldProduct = productService.getOne(queryWrapper);
-                if(oldProduct != null && !StringUtils.isNullOrEmpty(oldProduct.getId())){
+                if (oldProduct != null && !StringUtils.isNullOrEmpty(oldProduct.getId())) {
                     return CommonResult.failed("物料编码已存在！");
                 }
             }
             product.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             product.setModifyTime(new Date());
             boolean bool = productService.updateById(product);
-            if(bool){
-                return CommonResult.success(product,PRODUCT_SUCCESS_MESSAGE);
+            if (bool) {
+                return CommonResult.success(product, PRODUCT_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(PRODUCT_FAILED_MESSAGE);
             }
@@ -118,12 +118,12 @@ public class ProductController extends BaseController {
     @ApiOperation(value = "删除物料", notes = "根据物料ID删除物料")
     @ApiImplicitParam(name = "id", value = "物料ID", required = true, dataType = "List<String>", paramType = "path")
     @DeleteMapping("/product")
-    public CommonResult<Product> deleteProductById(@RequestBody List<String> ids){
-        if(ids == null || ids.size() == 0){
+    public CommonResult<Product> deleteProductById(@RequestBody List<String> ids) {
+        if (ids == null || ids.size() == 0) {
             return CommonResult.failed(PRODUCT_ID_NULL_MESSAGE);
         } else {
             boolean bool = productService.removeByIds(ids);
-            if(bool){
+            if (bool) {
                 return CommonResult.success(null, PRODUCT_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(PRODUCT_FAILED_MESSAGE);
@@ -133,26 +133,26 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "分页查询物料", notes = "根据图号、物料编码等参数分页查询物料")
     @GetMapping("/product")
-    public CommonResult<IPage<Product>> selectProduct(String drawingNo, String materialNo, String materialType, String order , String orderCol, int page, int limit, String productName){
+    public CommonResult<IPage<Product>> selectProduct(String drawingNo, String materialNo, String materialType, String order, String orderCol, int page, int limit, String productName) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
-        if(!StringUtils.isNullOrEmpty(drawingNo)){
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("p.drawing_no", "%" + drawingNo + "%");
         }
-        if(!StringUtils.isNullOrEmpty(materialNo)){
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("p.material_no", "%" + materialNo + "%");
         }
-        if(!StringUtils.isNullOrEmpty(materialType)){
+        if (!StringUtils.isNullOrEmpty(materialType)) {
             queryWrapper.eq("p.material_type", materialType);
         }
-        if(!StringUtils.isNullOrEmpty(productName)){
+        if (!StringUtils.isNullOrEmpty(productName)) {
             queryWrapper.like("p.product_name", "%" + productName + "%");
         }
         // queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        if(!StringUtils.isNullOrEmpty(orderCol)){
-            if(!StringUtils.isNullOrEmpty(order)){
-                if(order.equals("desc")){
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if (order.equals("desc")) {
                     queryWrapper.orderByDesc("p." + StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")){
+                } else if (order.equals("asc")) {
                     queryWrapper.orderByAsc("p." + StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
@@ -168,7 +168,7 @@ public class ProductController extends BaseController {
         return CommonResult.success(result, PRODUCT_SUCCESS_MESSAGE);
     }
 
-    private List<Product> findBomAndRouterByProduct(List<Product> data){
+    private List<Product> findBomAndRouterByProduct(List<Product> data) {
         List<Product> newData = new ArrayList<>();
         for (Product product : data) {
             Product newProduct = product;
@@ -189,10 +189,10 @@ public class ProductController extends BaseController {
 
             List<Router> routerList = routerService.list(routerQuery);
             newProduct.setHaveBom(productionBomService.count(bomQuery));
-            if(routerList.size() > 0){
+            if (routerList.size() > 0) {
                 Router router = routerList.get(0);
                 newProduct.setHaveRouter(1);
-                if(!StringUtils.isNullOrEmpty(router.getType())){
+                if (!StringUtils.isNullOrEmpty(router.getType())) {
                     newProduct.setRouterType(Integer.parseInt(router.getType()));
                 }
             }
@@ -203,15 +203,15 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "查询物料", notes = "根据输入内容查询物料")
     @GetMapping("/product/searchList")
-    public CommonResult<List<Product>> selectByMaterialNoOrDrawingNo(String inputKey,  String materialType, Boolean isEqualType){
+    public CommonResult<List<Product>> selectByMaterialNoOrDrawingNo(String inputKey, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
-        if(!StringUtils.isNullOrEmpty(inputKey)){
+        if (!StringUtils.isNullOrEmpty(inputKey)) {
             inputKey = "%" + inputKey.replaceAll("-", "") + "%";
             queryWrapper.apply("(material_no like {0} or replace(drawing_no,'-','') like {0})", inputKey);
         }
-        if(!StringUtils.isNullOrEmpty(materialType)){
-            if(isEqualType != null){
-                if(isEqualType){
+        if (!StringUtils.isNullOrEmpty(materialType)) {
+            if (isEqualType != null) {
+                if (isEqualType) {
                     queryWrapper.eq("material_type", materialType);
                 } else {
                     queryWrapper.ne("material_type", materialType);
@@ -228,17 +228,17 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "查询物料", notes = "根据输入内容查询物料")
     @GetMapping("/product/list")
-    public CommonResult<List<Product>> selectProductList(String inputKey, String drawingNo, String materialType, Boolean isEqualType){
+    public CommonResult<List<Product>> selectProductList(String inputKey, String drawingNo, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
-        if(!StringUtils.isNullOrEmpty(inputKey)){
+        if (!StringUtils.isNullOrEmpty(inputKey)) {
             queryWrapper.and(wrapper -> wrapper.like("material_no", "%" + inputKey + "%").or().like("product_name", "%" + inputKey + "%"));
         }
-        if(!StringUtils.isNullOrEmpty(drawingNo)){
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.eq("drawing_no", drawingNo);
         }
-        if(!StringUtils.isNullOrEmpty(materialType)){
-            if(isEqualType != null){
-                if(isEqualType){
+        if (!StringUtils.isNullOrEmpty(materialType)) {
+            if (isEqualType != null) {
+                if (isEqualType) {
                     queryWrapper.eq("material_type", materialType);
                 } else {
                     queryWrapper.ne("material_type", materialType);
@@ -255,17 +255,17 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "查询物料", notes = "根据输入内容查询物料")
     @GetMapping("/product/findList")
-    public CommonResult<List<Product>> selectProductList2(String materialNo, String drawingNo, String materialType, Boolean isEqualType){
+    public CommonResult<List<Product>> selectProductList2(String materialNo, String drawingNo, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
-        if(!StringUtils.isNullOrEmpty(materialNo)){
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("material_no", "%" + materialNo + "%");
         }
-        if(!StringUtils.isNullOrEmpty(drawingNo)){
-            queryWrapper.like("drawing_no", "%" +drawingNo + "%");
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
         }
-        if(!StringUtils.isNullOrEmpty(materialType)){
-            if(isEqualType != null){
-                if(isEqualType){
+        if (!StringUtils.isNullOrEmpty(materialType)) {
+            if (isEqualType != null) {
+                if (isEqualType) {
                     queryWrapper.eq("material_type", materialType);
                 } else {
                     queryWrapper.ne("material_type", materialType);
@@ -282,17 +282,17 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料")
     @GetMapping("/product/listByNo")
-    public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType){
+    public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
-        if(!StringUtils.isNullOrEmpty(materialNo)){
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.eq("material_no", materialNo);
         }
-        if(!StringUtils.isNullOrEmpty(materialType) && materialType.equals("0")){
+        if (!StringUtils.isNullOrEmpty(materialType) && materialType.equals("0")) {
             queryWrapper.ne("material_type", "3");
-        } else if (!StringUtils.isNullOrEmpty(materialType) && materialType.equals("1")){
+        } else if (!StringUtils.isNullOrEmpty(materialType) && materialType.equals("1")) {
             queryWrapper.eq("material_type", "3");
         }
-        if(!StringUtils.isNullOrEmpty(drawingNo)){
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.eq("drawing_no", drawingNo);
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -306,32 +306,32 @@ public class ProductController extends BaseController {
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         CommonResult result = null;
         //封装证件信息实体类
-        String[] fieldNames = {"materialNo","materialDate","materialType","materialDesc","drawingNo","productName","weight","unit","convertScale","convertUnit"};
+        String[] fieldNames = {"materialNo", "materialDate", "materialType", "materialDesc", "drawingNo", "productName", "weight", "unit", "convertScale", "convertUnit"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
         tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
         try {
-            excelFile = new File(System.getProperty("java.io.tmpdir"),tempName.toString());
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
             //将导入的excel数据生成证件实体类list
-            List<Product> list =  ExcelUtils.importExcel(excelFile, Product.class, fieldNames, 1,0,0,tempName.toString());
+            List<Product> list = ExcelUtils.importExcel(excelFile, Product.class, fieldNames, 1, 0, 0, tempName.toString());
             FileUtils.delete(excelFile);
 
             list = list.stream().filter(item -> item.getMaterialNo() != null).collect(Collectors.toList());
-            list.forEach(item->{
+            list.forEach(item -> {
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
             });
 
             boolean bool = productService.saveBatch(list);
-            if(bool){
+            if (bool) {
                 return CommonResult.success(null, PRODUCT_IMPORT_EXCEL_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(PRODUCT_FAILED_MESSAGE);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             return CommonResult.failed(PRODUCT_EXCEPTION_MESSAGE + e.getMessage());
         }
     }
@@ -341,32 +341,53 @@ public class ProductController extends BaseController {
     public void exportExcel(String drawingNo, String materialNo, String materialType, HttpServletResponse rsp) {
         try {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
-            if(!StringUtils.isNullOrEmpty(drawingNo)){
+            if (!StringUtils.isNullOrEmpty(drawingNo)) {
                 queryWrapper.like("drawing_no", "%" + drawingNo + "%");
             }
-            if(!StringUtils.isNullOrEmpty(materialNo)){
+            if (!StringUtils.isNullOrEmpty(materialNo)) {
                 queryWrapper.like("material_no", "%" + materialNo + "%");
             }
-            if(!StringUtils.isNullOrEmpty(materialType)){
+            if (!StringUtils.isNullOrEmpty(materialType)) {
                 queryWrapper.eq("material_type", materialType);
             }
             // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.orderByDesc("create_time");
             List<Product> list = productService.list(queryWrapper);
 
+            for (Product product : list) {
+                if ("0".equals(product.getObjectType()) && product.getObjectType() != null) {
+                    product.setObjectType("自制");
+
+                } else if ("1".equals(product.getObjectType()) && product.getObjectType() != null) {
+                    product.setObjectType("外购");
+                } else if ("2".equals(product.getObjectType()) && product.getObjectType() != null) {
+                    product.setObjectType("外协");
+                }
+
+                if ("0".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
+                    product.setMaterialType("铸件");
+                } else if ("1".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
+                    product.setMaterialType("锻件");
+                } else if ("2".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
+                    product.setMaterialType("精铸件");
+                } else if ("3".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
+                    product.setMaterialType("成品/半成品");
+                }
+
+            }
+
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 
-            String fileName =   "物料信息_" + format.format(new Date()) + ".xlsx";
+            String fileName = "物料信息_" + format.format(new Date()) + ".xlsx";
 
 
+            String[] columnHeaders = {"SAP物料编号", "图号", "产品名称", "物料日期", "类型", "制造类型", "物料描述", "材质", "单重", "单位"};
 
-            String[] columnHeaders = {"SAP物料编号", "图号", "产品名称", "物料日期", "类型", "制造类型", "物料描述", "材质", "单重","单位"};
-
-            String[] fieldNames = {"materialNo","drawingNo","productName","materialDate","materialType","objectType","materialDesc","texture", "weight","unit"};
+            String[] fieldNames = {"materialNo", "drawingNo", "productName", "materialDate", "materialType", "objectType", "materialDesc", "texture", "weight", "unit"};
 
             //export
-            ExcelUtils.exportExcel(fileName, list , columnHeaders, fieldNames, rsp);
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
