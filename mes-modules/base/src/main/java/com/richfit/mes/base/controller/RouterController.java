@@ -4,27 +4,28 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.base.Router;
-import com.richfit.mes.base.service.RouterService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
-import java.util.Date;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import java.io.File;
-import java.util.UUID;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author 马峰
@@ -53,20 +54,20 @@ public class RouterController extends BaseController {
      */
     @ApiOperation(value = "工艺", notes = "工艺")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "routerNo", value = "图号", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "routerName", value = "名称", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "routerName", value = "名称", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode,String tenantId, String status,String order , String orderCol) {
+    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol) {
         try {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            if (!StringUtils.isNullOrEmpty(routerNo)) {               
-                queryWrapper.like("router_no", "%" + routerNo + "%");                
+            if (!StringUtils.isNullOrEmpty(routerNo)) {
+                queryWrapper.like("router_no", "%" + routerNo + "%");
             }
             if (!StringUtils.isNullOrEmpty(routerName)) {
                 queryWrapper.like("router_name", "%" + routerName + "%");
@@ -79,15 +80,15 @@ public class RouterController extends BaseController {
             } else {
                 queryWrapper.in("is_active", "0,1".split(","));
             }
-            
-           if (!StringUtils.isNullOrEmpty(tenantId)) {
+
+            if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
             }
-            if(!StringUtils.isNullOrEmpty(orderCol)){
-                if(!StringUtils.isNullOrEmpty(order)){
-                    if(order.equals("desc")){
+            if (!StringUtils.isNullOrEmpty(orderCol)) {
+                if (!StringUtils.isNullOrEmpty(order)) {
+                    if (order.equals("desc")) {
                         queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                    } else if (order.equals("asc")){
+                    } else if (order.equals("asc")) {
                         queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                     }
                 } else {
@@ -96,7 +97,7 @@ public class RouterController extends BaseController {
             } else {
                 queryWrapper.orderByDesc("modify_time");
             }
-            IPage<Router> routers = routerService.page(new Page<Router>(page, limit), queryWrapper);
+            IPage<Router> routers = routerService.selectPageAndChind(new Page<Router>(page, limit), queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -197,14 +198,14 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "查询工艺", notes = "根据编码获得工艺")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", value = "编码", required = true, dataType = "String", paramType = "query"),
-        @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
-        @ApiImplicitParam(name = "routerName", value = "名称", required = true, dataType = "String", paramType = "query"),
-        @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
-        @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "id", value = "编码", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "routerName", value = "名称", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/find")
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode,String tenantId, String status) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -222,12 +223,12 @@ public class RouterController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
-                queryWrapper.in("status", status);
-            } else {
-                queryWrapper.in("is_active", "0,1".split(","));
-            }
+            queryWrapper.in("status", status);
+        } else {
+            queryWrapper.in("is_active", "0,1".split(","));
+        }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.eq("tenant_id", tenantId);
+            queryWrapper.eq("tenant_id", tenantId);
         }
         List<Router> result = routerService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -235,7 +236,7 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "查询工艺", notes = "根据ID获得工艺")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", value = "ID", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "id", value = "ID", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/getById")
     public CommonResult<Router> getByRouterId(String id) {
@@ -254,11 +255,11 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "查询工艺", notes = "根据ID获得工艺")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
-        @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/getByRouterNo")
-    public CommonResult<Router> getByRouterNo(String routerNo, String branchCode,String tenantId) {
+    public CommonResult<Router> getByRouterNo(String routerNo, String branchCode, String tenantId) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
 
         if (!StringUtils.isNullOrEmpty(routerNo)) {
@@ -268,9 +269,9 @@ public class RouterController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         queryWrapper.in("is_active", "0,1".split(","));
-        
+
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.eq("tenant_id", tenantId);
+            queryWrapper.eq("tenant_id", tenantId);
         }
         List<Router> routers = routerService.list(queryWrapper);
         if (routers.size() > 0) {
@@ -291,7 +292,7 @@ public class RouterController extends BaseController {
             Router r = this.getByRouterId(ids[i]).getData();
             //如果不是历史版本，需要将历史版本先删除
             if (null != r && !r.getStatus().equals("2")) {
-                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2",r.getTenantId()).getData();
+                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2", r.getTenantId()).getData();
                 for (int j = 0; j < routers.size(); j++) {
                     routerService.removeById(routers.get(j).getId());
                 }
@@ -306,7 +307,7 @@ public class RouterController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "query")
     @PostMapping("/import_excel")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult importExcel(@RequestParam("file") MultipartFile file,String tenantId,String branchCode) {
+    public CommonResult importExcel(@RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
         CommonResult result = null;
         //封装证件信息实体类
         java.lang.reflect.Field[] fields = Router.class.getDeclaredFields();
@@ -329,7 +330,7 @@ public class RouterController extends BaseController {
                 list.get(i).setTenantId(tenantId);
                 list.get(i).setBranchCode(branchCode);
                 if (null != SecurityUtils.getCurrentUser()) {
-                  
+
 
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 }

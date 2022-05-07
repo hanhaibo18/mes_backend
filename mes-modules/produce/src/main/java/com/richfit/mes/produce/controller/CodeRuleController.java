@@ -13,22 +13,20 @@ import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
 import com.richfit.mes.common.model.produce.CodeRuleValue;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.service.CodeRuleService;
 import com.richfit.mes.produce.service.CodeRuleItemService;
+import com.richfit.mes.produce.service.CodeRuleService;
 import com.richfit.mes.produce.service.CodeRuleValueService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import java.text.SimpleDateFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.richfit.mes.common.model.sys.ItemClass;
-import com.richfit.mes.common.model.sys.ItemParam;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * <p>
@@ -58,17 +56,15 @@ public class CodeRuleController extends BaseController {
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
 
 
-
-
     @ApiOperation(value = "分页查询编码规则", notes = "根据编码、名称、分类分页查询编码规则")
     @GetMapping("/page")
     public CommonResult<IPage<CodeRule>> pageCodeRule(String code, String name, int page, int limit, String tenantId, String branchCode) {
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
         if (!StringUtils.isNullOrEmpty(code)) {
-            queryWrapper.eq("code", code);
+            queryWrapper.like("code", "%" + code + "%");
         }
         if (!StringUtils.isNullOrEmpty(name)) {
-            queryWrapper.eq("name", name);
+            queryWrapper.like("name", "%" + name + "%");
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
@@ -82,9 +78,9 @@ public class CodeRuleController extends BaseController {
 
     @ApiOperation(value = "获取默认值", notes = "根据编码、名称、输入项获取默认值")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "name", value = "编码名称", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "name", value = "编码名称", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/gerCode")
     public CommonResult<CodeRule> gerCode(String code, String name, String[] inputs, String tenantId, String branchCode) {
@@ -115,7 +111,7 @@ public class CodeRuleController extends BaseController {
         int index = 0;
         try {
             String value = "";
-            List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null,tenantId,branchCode).getData();
+            List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null, tenantId, branchCode).getData();
             for (int i = 0; i < cris.size(); i++) {
                 String subvalue = "";
                 if (StringUtils.isNullOrEmpty(cris.get(i).getSuffixChar())) {
@@ -218,10 +214,10 @@ public class CodeRuleController extends BaseController {
     }
 
     @ApiOperation(value = "更新编码值，流水号自增", notes = "更新编码值，流水号自增")
-     @ApiImplicitParams({
-        @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "value", value = "值，如整个产品号", required = true, paramType = "query", dataType = "string"),
-        @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "value", value = "值，如整个产品号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/updateCode")
     public CommonResult<CodeRule> updateCode(String code, String name, String value, String input, String tenantId, String branchCode) {
@@ -246,102 +242,97 @@ public class CodeRuleController extends BaseController {
         CodeRule item = null;
         if (items.size() > 0) {
             item = items.get(0);
-                // 输入依赖项
-                CodeRuleItem inputTtem = null;
-                // 日期项
-                CodeRuleItem dateRuleItem = null;
-                //是否流水号按输入依赖项自增
-                boolean enableInputTtem =false;
-                 //是否流水号按日项自增
-                boolean enableDateRuleItem =false;
+            // 输入依赖项
+            CodeRuleItem inputTtem = null;
+            // 日期项
+            CodeRuleItem dateRuleItem = null;
+            //是否流水号按输入依赖项自增
+            boolean enableInputTtem = false;
+            //是否流水号按日项自增
+            boolean enableDateRuleItem = false;
 
-                // 获取编码项
-                List<CodeRuleItem> list2 = codeRuleItemService.list(new QueryWrapper<CodeRuleItem>().eq("code_rule_id", item.getId()));
-                for (int i = 0; i < list2.size(); i++) {
-                     if ("3".equals(list2.get(i).getType())){
-                         inputTtem = list2.get(i);
-                     }
-                     if ("1".equals(list2.get(i).getType())){
-                         dateRuleItem = list2.get(i);
-                     }
-                     //如果当前编码项是流水号，且重置依赖是空，则当前编码项的流水号自增
-                    if ("2".equals(list2.get(i).getType()) && StringUtils.isNullOrEmpty(list2.get(i).getSnResetDependency())) {
-                        if (!StringUtils.isNullOrEmpty(list2.get(i).getSnCurrentValue())) {
-                             //如果当前值不是空，当前编码项的流水号自增
-                            list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
-                        } else {
-                            //如果当前值是空，则读取重置值，写入
-                            list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault())));
+            // 获取编码项
+            List<CodeRuleItem> list2 = codeRuleItemService.list(new QueryWrapper<CodeRuleItem>().eq("code_rule_id", item.getId()));
+            for (int i = 0; i < list2.size(); i++) {
+                if ("3".equals(list2.get(i).getType())) {
+                    inputTtem = list2.get(i);
+                }
+                if ("1".equals(list2.get(i).getType())) {
+                    dateRuleItem = list2.get(i);
+                }
+                //如果当前编码项是流水号，且重置依赖是空，则当前编码项的流水号自增
+                if ("2".equals(list2.get(i).getType()) && StringUtils.isNullOrEmpty(list2.get(i).getSnResetDependency())) {
+                    if (!StringUtils.isNullOrEmpty(list2.get(i).getSnCurrentValue())) {
+                        //如果当前值不是空，当前编码项的流水号自增
+                        list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
+                    } else {
+                        //如果当前值是空，则读取重置值，写入
+                        list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault())));
 
-                        }
-                        codeRuleItemService.updateById(list2.get(i));
                     }
-                    else {
-                        if("input".equals(list2.get(i).getSnResetDependency())) {
-                            enableInputTtem= true;
-                        }
-                        if("year".equals(list2.get(i).getSnResetDependency())||"month".equals(list2.get(i).getSnResetDependency())||"date".equals(list2.get(i).getSnResetDependency())) {
-                            enableDateRuleItem= true;
-                        }
+                    codeRuleItemService.updateById(list2.get(i));
+                } else {
+                    if ("input".equals(list2.get(i).getSnResetDependency())) {
+                        enableInputTtem = true;
                     }
-                 }
+                    if ("year".equals(list2.get(i).getSnResetDependency()) || "month".equals(list2.get(i).getSnResetDependency()) || "date".equals(list2.get(i).getSnResetDependency())) {
+                        enableDateRuleItem = true;
+                    }
+                }
+            }
 
 
-                //如果当前编码项是流水号，且重置依赖不为空
-                if(null!=inputTtem && enableInputTtem) {
+            //如果当前编码项是流水号，且重置依赖不为空
+            if (null != inputTtem && enableInputTtem) {
                 // 获取编码项依赖流水号列表
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value",input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "')) "));
-                if(list.size() ==0) {
+                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "')) "));
+                if (list.size() == 0) {
                     //如果是空，则新产生一个编码项依赖流水号自增，如图号
-                    CodeRuleValue codeRuleValue =new CodeRuleValue();
+                    CodeRuleValue codeRuleValue = new CodeRuleValue();
                     codeRuleValue.setItemId(inputTtem.getId());
                     codeRuleValue.setInputValue(input);
                     codeRuleValue.setSnValue(inputTtem.getSnDefault());
                     codeRuleValueService.save(codeRuleValue);
-                }
-                else {
-                     //如果不是空，则编码项依赖流水号自增，如图号
-                  for (int i = 0; i < list.size(); i++) {
-                    if(input.equals(list.get(i).getSnValue())) {
-                        return CommonResult.failed("该编号已存在！");
+                } else {
+                    //如果不是空，则编码项依赖流水号自增，如图号
+                    for (int i = 0; i < list.size(); i++) {
+                        if (input.equals(list.get(i).getSnValue())) {
+                            return CommonResult.failed("该编号已存在！");
+                        } else {
+                            // 流水号自增
+                            list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(inputTtem.getSnStep())));
+                            codeRuleValueService.updateById(list.get(i));
+                        }
                     }
-                    else {
-                    // 流水号自增
-                    list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) +Integer.parseInt( inputTtem.getSnStep())));
-                       codeRuleValueService.updateById(list.get(i));
-                    }
-                  }
                 }
-                }
-                 // 如果流水号重置的依赖条件为日期，且日期输入项不为空
-                 if(null!=dateRuleItem && enableDateRuleItem) {
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value",input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "')) "));
-                if(list.size() ==0) {
-                    CodeRuleValue codeRuleValue =new CodeRuleValue();
+            }
+            // 如果流水号重置的依赖条件为日期，且日期输入项不为空
+            if (null != dateRuleItem && enableDateRuleItem) {
+                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "')) "));
+                if (list.size() == 0) {
+                    CodeRuleValue codeRuleValue = new CodeRuleValue();
                     codeRuleValue.setItemId(dateRuleItem.getId());
                     codeRuleValue.setInputValue(input);
                     codeRuleValue.setSnValue(dateRuleItem.getSnDefault());
                     codeRuleValueService.save(codeRuleValue);
-                }
-                else {
-                  for (int i = 0; i < list.size(); i++) {
-                    if(input.equals(list.get(i).getSnValue())) {
-                       // return CommonResult.failed("该编号已存在！");
+                } else {
+                    for (int i = 0; i < list.size(); i++) {
+                        if (input.equals(list.get(i).getSnValue())) {
+                            // return CommonResult.failed("该编号已存在！");
+                        } else {
+                            // 流水号自增
+                            list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(dateRuleItem.getSnStep())));
+                            codeRuleValueService.updateById(list.get(i));
+                        }
                     }
-                    else {
-                    // 流水号自增
-                    list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) +Integer.parseInt( dateRuleItem.getSnStep())));
-                       codeRuleValueService.updateById(list.get(i));
-                    }
-                  }
                 }
-                }
+            }
 
 
-                item.setCurValue(value);
-                codeRuleService.updateById(item);
+            item.setCurValue(value);
+            codeRuleService.updateById(item);
 
-                return CommonResult.success(item);
+            return CommonResult.success(item);
 
         } else {
             return CommonResult.failed("找不到该编码规则");
@@ -396,9 +387,9 @@ public class CodeRuleController extends BaseController {
         if (!StringUtils.isNullOrEmpty(code)) {
 
             List<CodeRule> list = codeRuleService.list(new QueryWrapper<CodeRule>().eq("code", code).eq("branch_code", branchCode).eq("tenant_id", tenantId));
-            if(!list.isEmpty()){
+            if (!list.isEmpty()) {
                 queryWrapper.eq("code_rule_id", list.get(0).getId());
-            }else {
+            } else {
                 IErrorCode iErrorCode = new IErrorCode() {
                     @Override
                     public long getCode() {
@@ -449,13 +440,13 @@ public class CodeRuleController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         List<CodeRuleValue> list = codeRuleValueService.list(queryWrapper);
-                if(list.size() ==0 ||StringUtils.isNullOrEmpty(input) ) {
-                    CodeRuleValue codeRuleValue =new CodeRuleValue();
-                    codeRuleValue.setItemId(id);
-                    codeRuleValue.setInputValue(input);
-                    codeRuleValue.setSnValue(value);
-                    list.add(codeRuleValue);
-                }
+        if (list.size() == 0 || StringUtils.isNullOrEmpty(input)) {
+            CodeRuleValue codeRuleValue = new CodeRuleValue();
+            codeRuleValue.setItemId(id);
+            codeRuleValue.setInputValue(input);
+            codeRuleValue.setSnValue(value);
+            list.add(codeRuleValue);
+        }
 
         return CommonResult.success(list, SUCCESS_MESSAGE);
     }
@@ -492,9 +483,6 @@ public class CodeRuleController extends BaseController {
 
         return CommonResult.success(codeRuleItemService.removeById(id));
     }
-
-
-
 
 
     @ApiOperation(value = "新增编码规则项流水号", notes = "新增编码规则项流水号")
