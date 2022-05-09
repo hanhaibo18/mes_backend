@@ -330,8 +330,6 @@ public class RouterController extends BaseController {
                 list.get(i).setTenantId(tenantId);
                 list.get(i).setBranchCode(branchCode);
                 if (null != SecurityUtils.getCurrentUser()) {
-
-
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 }
             }
@@ -343,7 +341,7 @@ public class RouterController extends BaseController {
                 return CommonResult.failed("失败");
             }
         } catch (Exception e) {
-            return CommonResult.failed("失败" + e.getMessage());
+            return CommonResult.failed("失败:" + e.getMessage());
         }
     }
 }

@@ -1,8 +1,11 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.produce.entity.QueryDto;
+import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 
 import java.util.List;
 
@@ -24,4 +27,6 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return: List<TrackItem>
      **/
     List<TrackItem> queryTrackItemByTrackNo(String trackNo);
+
+    IPage<TrackItem> queryFlawDetectionList(QueryDto<QueryFlawDetectionDto> queryDto);
 }

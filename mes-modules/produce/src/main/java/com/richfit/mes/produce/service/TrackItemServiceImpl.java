@@ -1,12 +1,19 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.entity.QueryDto;
+import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -34,6 +41,31 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackNo);
         return this.list(queryWrapper);
+    }
+
+    @Override
+    public IPage<TrackItem> queryFlawDetectionList(QueryDto<QueryFlawDetectionDto> queryDto) {
+        QueryFlawDetectionDto queryFlawDetectionDto = queryDto.getParam();
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        if (null != queryFlawDetectionDto.getEndTime() && null != queryFlawDetectionDto.getStartTime()) {
+            queryWrapper.ge("create_time", queryFlawDetectionDto.getStartTime());
+            //处理结束时间
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(queryFlawDetectionDto.getEndTime());
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.le("create_time", calendar.getTime());
+        }
+        //TODO:复检=再次检查不合格产品
+        if (queryFlawDetectionDto.getIsRecheck()) {
+            queryWrapper.eq("", "不合格状态码");
+        }
+        if (!StringUtils.isNullOrEmpty(queryFlawDetectionDto.getProductNo())) {
+            queryWrapper.eq("Product_no", queryFlawDetectionDto.getProductNo());
+        }
+        queryWrapper.eq("branch_code", queryDto.getBranchCode());
+        queryWrapper.eq("tenant_id", queryDto.getTenantId());
+        queryWrapper.orderByDesc("create_time");
+        return this.page(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
     }
 
 }

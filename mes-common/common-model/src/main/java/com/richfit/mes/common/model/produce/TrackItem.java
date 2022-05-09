@@ -3,7 +3,8 @@ package com.richfit.mes.common.model.produce;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-import java.util.*;
+
+import java.util.Date;
 
 /**
  * @author 王瑞
@@ -95,14 +96,25 @@ public class TrackItem extends BaseEntity<TrackItem> {
      * 是否质检完成
      */
     private Integer isQualityComplete;
+    /**
+     * 质检时间
+     */
     private Date qualityCompleteTime;
+    /**
+     * 质检数量?
+     */
     private Integer qualityQty;
+    /**
+     * 不合格数量?
+     */
     private Integer qualityUnqty;
     /**
      * 质检结果
      */
     private Integer qualityResult;
+    //不合格步骤?
     private String failProcess;
+    //检验人
     private String qualityCheckBy;
     /**
      * 是否调度确认
