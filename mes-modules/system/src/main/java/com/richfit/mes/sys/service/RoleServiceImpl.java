@@ -13,10 +13,8 @@ import com.richfit.mes.sys.dao.RoleMapper;
 import com.richfit.mes.sys.entity.param.RoleQueryParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -29,7 +27,7 @@ import java.util.Set;
 @Service
 public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements RoleService {
     @Autowired
-    private  UserRoleService userRoleService;
+    private UserRoleService userRoleService;
 
     @Override
     public boolean add(Role role) {
@@ -70,19 +68,23 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleName()), "role_name", roleQueryParam.getRoleName());
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleCode()), "role_code", roleQueryParam.getRoleCode());
 
-        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
-        boolean isAdmin = false;
-        for (GrantedAuthority authority : authorities) {
-            //超级管理员 ROLE_12345678901234567890000000000000
-            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
-                isAdmin = true;
-                break;
-            }
-        }
-        if (!isAdmin) {
-            String tenantId =  SecurityUtils.getCurrentUser().getTenantId();
-            queryWrapper.eq("tenant_id", tenantId);
-        }
+
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+//        在上层拦截系统管理员不能查询角色列表，这块逻辑无用了  2022-5-09 gl  modify
+//        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
+//        boolean isAdmin = false;
+//        for (GrantedAuthority authority : authorities) {
+//            //超级管理员 ROLE_12345678901234567890000000000000
+//            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+//                isAdmin = true;
+//                break;
+//            }
+//        }
+//        if (!isAdmin) {
+//            String tenantId =  SecurityUtils.getCurrentUser().getTenantId();
+//            queryWrapper.eq("tenant_id", tenantId);
+//        }
 
         return this.page(page, queryWrapper);
     }
