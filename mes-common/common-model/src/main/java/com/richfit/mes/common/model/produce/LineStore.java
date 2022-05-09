@@ -5,7 +5,6 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author 王瑞
@@ -155,7 +154,46 @@ public class LineStore extends BaseEntity<LineStore> {
 
     private String branchCode;
 
-    public LineStore() {}
+    /**
+     * 合格证文件ID
+     */
+    private String certificateId;
+
+    /**
+     * 合格证备注
+     */
+    private String certificateRemark;
+
+    /**
+     * 钢材质证书ID
+     */
+    private String steelQualityId;
+
+    /**
+     * 钢材质证书备注
+     */
+    private String steelQualityRemark;
+
+    /**
+     * 理化报告ID
+     */
+    private String physicochemicalIndexesId;
+    /**
+     * 理化报告备注
+     */
+    private String physicochemicalIndexesRemark;
+    /**
+     * 钢锭化学成分表ID
+     */
+    private String ingotId;
+    /**
+     * 钢锭化学成分表备注
+     */
+    private String ingotRemark;
+
+
+    public LineStore() {
+    }
 
     public LineStore(LineStore lineStore) {
         this.tenantId = lineStore.tenantId;
