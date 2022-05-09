@@ -1,10 +1,11 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import java.util.Date;
+
+import java.util.List;
 
 /**
  * @author 马峰
@@ -18,15 +19,15 @@ public class Router extends BaseEntity<Router> {
      */
     private String tenantId;
 
-      /**
+    /**
      * 机构编码
      */
     private String branchCode;
-     /**
+    /**
      * 物料号，必填
      */
     private String materialNo;
-        /**
+    /**
      * 物料号，必填
      */
     private String materialVersion;
@@ -61,39 +62,23 @@ public class Router extends BaseEntity<Router> {
     private String status;
 
 
-     /**
+    /**
      * 2==历史
      */
     private String isActive;
 
+    
     /**
-     * 创建人
-     */
-    private String createBy;
-
-        /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 修改人
-     */
-    private String modifyBy;
-
-        /**
-     * 修改时间
-     */
-    private Date modifyTime;
-        /**
      * G6流程节点
      */
     private String flow;
 
     /**
-     *图号
+     * 图号
      */
-   private String drawNo;
+    private String drawNo;
 
-
+    @ApiModelProperty(value = "该工艺历史版本")
+    @TableField(exist = false)
+    private List<Router> children;
 }
