@@ -9,22 +9,23 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
-import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.entity.CountDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author mafeng
@@ -46,7 +47,7 @@ public class TrackCheckController extends BaseController {
     public TrackCheckDetailService trackCheckDetailService;
     @Autowired
     public TrackAssignService trackAssignService;
-      @Autowired
+    @Autowired
     private TrackCheckCountMapper trackCheckCountMapper;
     @Autowired
     private LineStoreService lineStoreService;
@@ -65,12 +66,12 @@ public class TrackCheckController extends BaseController {
      */
     @ApiOperation(value = "分页查询待质检工序", notes = "分页查询待质检工序")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo,String branchCode,String tenantId) {
+    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, boolean isRecheck) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -78,6 +79,10 @@ public class TrackCheckController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
+            }
+            //TODO:复检=再次检查不合格产品
+            if (isRecheck) {
+                queryWrapper.eq("", "不合格状态码");
             }
             if (!StringUtils.isNullOrEmpty(isCurrent)) {
                 queryWrapper.eq("is_current", Integer.parseInt(isCurrent));
@@ -90,7 +95,7 @@ public class TrackCheckController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(isExistScheduleCheck)) {
                 queryWrapper.eq("is_exist_schedule_check", Integer.parseInt(isExistScheduleCheck));
-               
+
             }
             if (!StringUtils.isNullOrEmpty(isQualityComplete)) {
                 queryWrapper.eq("is_quality_complete", Integer.parseInt(isQualityComplete));
@@ -115,7 +120,6 @@ public class TrackCheckController extends BaseController {
             }
 
 
-
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
 
@@ -124,10 +128,9 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
 
             }
-             if("1".equals(isExistScheduleCheck))
-                {
-                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
-                }
+            if ("1".equals(isExistScheduleCheck)) {
+                queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
+            }
             queryWrapper.orderByDesc("modify_time");
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             return CommonResult.success(assigns);
@@ -146,12 +149,12 @@ public class TrackCheckController extends BaseController {
      */
     @ApiOperation(value = "分页查询质检结果", notes = "分页查询质检结果")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/pageCheck")
-    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo,String branchCode,String tenantId) {
+    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId) {
         try {
             QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -167,7 +170,6 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(productNo)) {
                 queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where product_no ='" + productNo + "')");
             }
-
 
 
             if (!StringUtils.isNullOrEmpty(startTime)) {
@@ -196,9 +198,9 @@ public class TrackCheckController extends BaseController {
      */
     @ApiOperation(value = "分页查询质检明细", notes = "分页查询质检明细")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/pageCheckDetail")
     public CommonResult<IPage<TrackCheckDetail>> pageCheckDetail(int page, int limit, String tiId) {
@@ -232,7 +234,7 @@ public class TrackCheckController extends BaseController {
                 item.setQualityCheckBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setQualityCompleteTime(new Date());
                 item.setQualityQty(checkitem.getQualify());
-                item.setQualityUnqty(item.getBatchQty()-checkitem.getQualify());
+                item.setQualityUnqty(item.getBatchQty() - checkitem.getQualify());
                 //如果不需要调度审核，则将工序设置为完成，并激活下个工序
                 if (item.getIsExistScheduleCheck() == 0 && item.getIsQualityComplete() == 1) {
                     item.setIsFinalComplete("1");
@@ -240,16 +242,16 @@ public class TrackCheckController extends BaseController {
                     this.activeTrackItem(item);
                 }
                 trackItemService.updateById(item);
-                 if (!StringUtils.isNullOrEmpty(checkitem.getId())) {
-                   
-                   checkitem.setModifyTime(new Date());
-                   trackCheckService.updateById(checkitem);
-                 }else {
-                   checkitem.setCreateTime(new Date());
-                   checkitem.setModifyTime(new Date());
-                   trackCheckService.save(checkitem);
+                if (!StringUtils.isNullOrEmpty(checkitem.getId())) {
+
+                    checkitem.setModifyTime(new Date());
+                    trackCheckService.updateById(checkitem);
+                } else {
+                    checkitem.setCreateTime(new Date());
+                    checkitem.setModifyTime(new Date());
+                    trackCheckService.save(checkitem);
                 }
-                
+
             }
 
         }
@@ -269,15 +271,15 @@ public class TrackCheckController extends BaseController {
 
         for (TrackCheckDetail trackCheckDetail : trackCheckDetails) {
             if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
-                
-               List<TrackCheckDetail>  list=  trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
-               if(list.size() >0) {
-                 
-                      trackCheckDetailService.updateById(trackCheckDetail);
-               }else {
-                      trackCheckDetailService.save(trackCheckDetail);
-               }
-                    
+
+                List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
+                if (list.size() > 0) {
+
+                    trackCheckDetailService.updateById(trackCheckDetail);
+                } else {
+                    trackCheckDetailService.save(trackCheckDetail);
+                }
+
             } else {
                 trackCheckDetailService.updateById(trackCheckDetail);
             }
@@ -289,12 +291,12 @@ public class TrackCheckController extends BaseController {
 
     @ApiOperation(value = "批量调度审核", notes = "批量调度审核")
     @ApiImplicitParams({
-    @ApiImplicitParam(name = "isPrepare", value = "是否给予准结工时", required = true, paramType = "query", dataType = "string"),
-    @ApiImplicitParam(name = "trackItems", value = "跟单工序项", required = true, dataType = "TrackItem[]", paramType = "query")
+            @ApiImplicitParam(name = "isPrepare", value = "是否给予准结工时", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "trackItems", value = "跟单工序项", required = true, dataType = "TrackItem[]", paramType = "query")
     })
     @PostMapping("/batchAddSchedule")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<TrackItem[]> batchAddSchedule(@RequestBody TrackItem[] trackItems,String isPrepare) {
+    public CommonResult<TrackItem[]> batchAddSchedule(@RequestBody TrackItem[] trackItems, String isPrepare) {
         boolean bool = true;
         for (TrackItem item : trackItems) {
             if (StringUtils.isNullOrEmpty(item.getId())) {
@@ -304,10 +306,10 @@ public class TrackCheckController extends BaseController {
                 if (item.getIsScheduleComplete() == 1) {
                     item.setIsFinalComplete("1");
                     item.setCompleteQty(item.getBatchQty());
-                    
-                    if(null!=SecurityUtils.getCurrentUser()) {          
-                       item.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-                    }                    
+
+                    if (null != SecurityUtils.getCurrentUser()) {
+                        item.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                    }
                     item.setScheduleCompleteTime(new Date());
                     this.activeTrackItem(item);
                 }
@@ -335,16 +337,16 @@ public class TrackCheckController extends BaseController {
                 return CommonResult.failed("关联工序ID编码不能为空！");
             }
             TrackItem item = trackItemService.getById(trackCheck.getTiId());
-            if(null==item){
-                    trackCheckService.removeById(trackCheck.getId());
-                      return CommonResult.failed("跟单工序已丢失，该审核信息将自动删除！");
+            if (null == item) {
+                trackCheckService.removeById(trackCheck.getId());
+                return CommonResult.failed("跟单工序已丢失，该审核信息将自动删除！");
             }
             //调度完成，则无法回滚
             if (item.getIsExistScheduleCheck() == 1 && item.getIsScheduleComplete() == 1) {
                 return CommonResult.failed("工序【" + item.getOptName() + "】调度审核已完成，无法回滚质检审核！");
             }
             if (item.getIsExistScheduleCheck() == 0) {
-               
+
                 //判断后置工序是否已派工，如意派工，则无法回滚
                 List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", item.getTrackHeadId()).orderByAsc("opt_sequence"));
                 for (int i = 0; i < items.size(); i++) {
@@ -355,7 +357,7 @@ public class TrackCheckController extends BaseController {
                         if (result.size() > 0) {
                             return CommonResult.failed("无法回滚，请先取消工序【" + items.get(i).getOptName() + "】的派工！");
                         } else {
-                             //回滚激活当前工序，工序在制状态设置为0
+                            //回滚激活当前工序，工序在制状态设置为0
                             for (int j = 0; j < items.size(); j++) {
                                 if (items.get(i).getOptSequence() == items.get(j).getOptSequence()) {
                                     items.get(j).setIsCurrent(0);
@@ -373,13 +375,13 @@ public class TrackCheckController extends BaseController {
             item.setCompleteQty(0);
             item.setIsFinalComplete("0");
             item.setIsQualityComplete(0);
-            
-             
-                item.setQualityResult(-1);
-                item.setQualityCheckBy(null);
-                item.setQualityCompleteTime(null);
-                item.setQualityQty(0);
-                item.setQualityUnqty(0);
+
+
+            item.setQualityResult(-1);
+            item.setQualityCheckBy(null);
+            item.setQualityCompleteTime(null);
+            item.setQualityQty(0);
+            item.setQualityUnqty(0);
             trackItemService.updateById(item);
 
             trackCheckDetailService.remove(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheck.getTiId()));
@@ -416,10 +418,10 @@ public class TrackCheckController extends BaseController {
             if (StringUtils.isNullOrEmpty(item.getId())) {
                 return CommonResult.failed("关联工序ID编码不能为空！");
             }
-           
+
             //判断下个工序是否已派工，如果以派工，则提醒，无法回滚。否则将下个工序重置
-              List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", item.getTrackHeadId()).orderByAsc("opt_sequence"));
-              for (int i = 0; i < items.size(); i++) {
+            List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", item.getTrackHeadId()).orderByAsc("opt_sequence"));
+            for (int i = 0; i < items.size(); i++) {
                 if (items.get(i).getOptSequence() > item.getOptSequence()) {
                     QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
                     queryWrapper.eq("ti_id", items.get(i).getId());
@@ -453,72 +455,71 @@ public class TrackCheckController extends BaseController {
 
     }
 
-    
-     @ApiOperation(value = "质量统计", notes = "质量统计")
+
+    @ApiOperation(value = "质量统计", notes = "质量统计")
     @GetMapping("/count")
     public CommonResult<List<CountDto>> count(String dateType, String startTime, String endTime) {
 
-        if(dateType.equals("0")) {
+        if (dateType.equals("0")) {
             dateType = "%Y%m%d";
         }
-         if(dateType.equals("1")) {
-             dateType = "%Y%u";
+        if (dateType.equals("1")) {
+            dateType = "%Y%u";
         }
-          if(dateType.equals("2")) {
-             dateType = "%Y%m";
+        if (dateType.equals("2")) {
+            dateType = "%Y%m";
         }
-        List<CountDto> result = trackCheckService.count(dateType,startTime,endTime);
+        List<CountDto> result = trackCheckService.count(dateType, startTime, endTime);
         return CommonResult.success(result, "操作成功！");
     }
-     
-     @ApiOperation(value = "统计不合格类型", notes = "统计不合格类型")
+
+    @ApiOperation(value = "统计不合格类型", notes = "统计不合格类型")
     @GetMapping("/countReason")
     public CommonResult<List<CountDto>> countReason(String dateType, String startTime, String endTime) {
 
-        if(dateType.equals("0")) {
+        if (dateType.equals("0")) {
             dateType = "%Y%m%d";
         }
-         if(dateType.equals("1")) {
-             dateType = "%Y%u";
+        if (dateType.equals("1")) {
+            dateType = "%Y%u";
         }
-          if(dateType.equals("2")) {
-             dateType = "%Y%m";
+        if (dateType.equals("2")) {
+            dateType = "%Y%m";
         }
-        List<CountDto> result = trackCheckCountMapper.countReason(startTime,endTime);
+        List<CountDto> result = trackCheckCountMapper.countReason(startTime, endTime);
         return CommonResult.success(result, "操作成功！");
     }
-     
-     
-     @ApiOperation(value = "统计完工", notes = "统计完工")
+
+
+    @ApiOperation(value = "统计完工", notes = "统计完工")
     @GetMapping("/countComplete")
     public CommonResult<List<CountDto>> countComplete(String dateType, String startTime, String endTime) {
 
-        if(dateType.equals("0")) {
+        if (dateType.equals("0")) {
             dateType = "%Y%m%d";
         }
-         if(dateType.equals("1")) {
-             dateType = "%Y%u";
+        if (dateType.equals("1")) {
+            dateType = "%Y%u";
         }
-          if(dateType.equals("2")) {
-             dateType = "%Y%m";
+        if (dateType.equals("2")) {
+            dateType = "%Y%m";
         }
-        List<CountDto> result = trackCheckCountMapper.countComplete(dateType,startTime,endTime);
+        List<CountDto> result = trackCheckCountMapper.countComplete(dateType, startTime, endTime);
         return CommonResult.success(result, "操作成功！");
     }
 
-    
-    
+
     @ApiOperation(value = "激活工序", notes = "激活工序")
     @GetMapping("/active_trackitem")
     public CommonResult<List<TrackItem>> activeTrackItem(TrackItem curItem) {
         List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", curItem.getTrackHeadId()).orderByAsc("opt_sequence"));
-               List<TrackItem> activeItems = new ArrayList();
+        List<TrackItem> activeItems = new ArrayList();
 
-        //可否跳转下个工序     
+        //可否跳转下个工序
         Boolean curOrderEnable = true;
         //下道激活工序
         int nextOrder = -1;
-      
+
 
         if (((curItem.getIsExistQualityCheck() == 1 && curItem.getIsQualityComplete() == 1) || curItem.getIsExistQualityCheck() == 0) && ((curItem.getIsExistScheduleCheck() == 1 && curItem.getIsScheduleComplete() == 1) || curItem.getIsExistScheduleCheck() == 0)) {
         } else {
@@ -569,15 +570,15 @@ public class TrackCheckController extends BaseController {
                         activeItems.add(items.get(i));
                         trackItemService.updateById(items.get(i));
                         // todo 如果自动派工，那么执行派工操作
-                        if (null!=items.get(i-1) &&null!=items.get(i-1).getIsAutoSchedule()&&items.get(i-1).getIsAutoSchedule() == 1) {
+                        if (null != items.get(i - 1) && null != items.get(i - 1).getIsAutoSchedule() && items.get(i - 1).getIsAutoSchedule() == 1) {
                             String deviceId = "";
                             String userId = "ba7dd26f0a669f9e09343f9b579b0321";
                             List<SequenceSite> sequenceSites = baseServiceClient.getSequenceDevice(items.get(i).getOptId(), null, "device", null, "1").getData();
                             if (sequenceSites.size() == 1) {
                                 deviceId = sequenceSites.get(0).getSiteId();
                                 if (!StringUtils.isNullOrEmpty(deviceId)) {
-                                   List<DevicePerson> devicePersons = baseServiceClient.getDevicePerson(deviceId, null, null, "1").getData();
-                                   if (devicePersons.size() == 1) {
+                                    List<DevicePerson> devicePersons = baseServiceClient.getDevicePerson(deviceId, null, null, "1").getData();
+                                    if (devicePersons.size() == 1) {
                                         userId = devicePersons.get(0).getUserId();
                                     }
                                 }
@@ -598,7 +599,7 @@ public class TrackCheckController extends BaseController {
                                 assign.setBranchCode(trackHead.getBranchCode());
                                 assign.setTenantId(trackHead.getTenantId());
                                 if (null != SecurityUtils.getCurrentUser()) {
-                                    
+
                                     assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                                 }
                                 assign.setModifyTime(new Date());
@@ -617,12 +618,6 @@ public class TrackCheckController extends BaseController {
                 }
             }
         }
-
-
-        //  t
-        //
-
         return CommonResult.success(activeItems, "");
-
     }
 }

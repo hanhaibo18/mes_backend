@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
-import org.apache.poi.ss.formula.functions.T;
+import com.richfit.mes.produce.entity.*;
 
 import java.util.List;
 
@@ -27,20 +27,78 @@ public interface TrackHeadService extends IService<TrackHead> {
 
     /**
      * 功能描述: 对当前跟单增加计划
+     *
+     * @param documentaryId 跟单Id
+     * @param workPlanId    计划Id
      * @Author: xinYu.hou
      * @Date: 2022/4/19 18:07
-     * @param documentaryId 跟单Id
-     * @param workPlanId 计划Id
      * @return: boolean
      **/
-    boolean updateTrackHeadPlan(String documentaryId,String workPlanId);
+    boolean updateTrackHeadPlan(String documentaryId, String workPlanId);
 
     /**
      * 功能描述: 根据计划Id 查询跟单
+     *
+     * @param workPlanId 计划Id
      * @Author: xinYu.hou
      * @Date: 2022/4/20 11:42
-     * @param workPlanId 计划Id
      * @return: 数量
      **/
     Integer queryTrackHeadList(String workPlanId);
+
+    /**
+     * 功能描述: 来料入库合格证查询
+     *
+     * @param page          页
+     * @param size          数量
+     * @param certificateNo 合格证编号
+     * @param drawingNo     图号
+     * @param branchCode    分组
+     * @param tenantId      租户
+     * @Author: xinYu.hou
+     * @Date: 2022/4/25 15:23
+     * @return: IPage<IncomingMaterialVO>
+     **/
+    IPage<IncomingMaterialVO> queryMaterialList(Integer page, Integer size, String certificateNo, String drawingNo, String branchCode, String tenantId);
+
+    /**
+     * 功能描述: 跟单台账分页查询
+     *
+     * @param standingBookDto 查询对象
+     * @Author: xinYu.hou
+     * @Date: 2022/4/27 22:49
+     * @return: IPage<TrackHead>
+     **/
+    IPage<TrackHead> queryTrackHeadPage(QueryDto<StandingBookDto> standingBookDto);
+
+    /**
+     * 功能描述: 分页查询工作清单
+     *
+     * @param queryWork
+     * @Author: xinYu.hou
+     * @Date: 2022/5/8 6:23
+     * @return: IPage<WorkDetailedListVo>
+     **/
+    IPage<WorkDetailedListVo> queryWorkDetailedList(QueryDto<QueryWork> queryWork);
+
+    /**
+     * 功能描述: 更改优先级
+     *
+     * @param trackNo
+     * @param priority
+     * @Author: xinYu.hou
+     * @Date: 2022/5/8 6:43
+     * @return: Boolean
+     **/
+    Boolean updateWorkDetailed(String trackNo, String priority);
+
+    /**
+     * 功能描述: 跟踪调度 跟单列表查询
+     *
+     * @param afterDto
+     * @Author: xinYu.hou
+     * @Date: 2022/5/8 8:13
+     * @return: IPage<TailAfterVo>
+     **/
+    IPage<TailAfterVo> queryTailAfterList(QueryDto<QueryTailAfterDto> afterDto);
 }
