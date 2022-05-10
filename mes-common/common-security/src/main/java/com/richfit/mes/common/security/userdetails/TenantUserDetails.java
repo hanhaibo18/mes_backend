@@ -3,7 +3,9 @@ package com.richfit.mes.common.security.userdetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author sun
@@ -37,6 +39,7 @@ public class TenantUserDetails extends User {
         this.orgId = orgId;
         this.belongOrgId = belongOrgId;
     }
+
     public String getUserId() {
         return userId;
     }
@@ -51,6 +54,20 @@ public class TenantUserDetails extends User {
 
     public String getBelongOrgId() {
         return belongOrgId;
+    }
+
+    public boolean isSysAdmin() {
+        List<GrantedAuthority> authorities = new ArrayList<>(this.getAuthorities());
+        boolean isAdmin = false;
+        for (GrantedAuthority authority : authorities) {
+            //超级管理员 ROLE_12345678901234567890000000000000
+            if ("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+                isAdmin = true;
+                break;
+            }
+        }
+
+        return isAdmin;
     }
 
 }
