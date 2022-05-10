@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -163,6 +164,14 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String branchCode;
     private String tenantId;
 
+    @ApiModelProperty(value = "探伤结果", required = true)
+    private Integer flawDetection;
+    @ApiModelProperty(value = "探伤报告号", required = true)
+    private String reportNo;
+    @ApiModelProperty(value = "探伤备注", required = true)
+    private String flawDetectionRemark;
+    @ApiModelProperty(value = "探伤报告文件Id", required = true)
+    private String flawDetectionPaper;
     @TableField(exist = false)
     private String assignDeviceId;
 

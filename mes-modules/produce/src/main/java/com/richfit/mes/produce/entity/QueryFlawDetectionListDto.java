@@ -12,13 +12,13 @@ import java.util.Date;
  * @CreateTime: 2022年05月10日 04:50:00
  */
 @Data
-public class QueryFlawDetectionDto {
+public class QueryFlawDetectionListDto {
     @ApiModelProperty(value = "开始时间", required = true)
     private Date startTime;
     @ApiModelProperty(value = "结束时间", required = true)
     private Date endTime;
     @ApiModelProperty(value = "产品编号", required = true)
     private String productNo;
-    @ApiModelProperty(value = "是否复检", required = true)
-    private Boolean isRecheck;
+    @ApiModelProperty(value = "跟单号", required = true)
+    private String trackNo;
 }
