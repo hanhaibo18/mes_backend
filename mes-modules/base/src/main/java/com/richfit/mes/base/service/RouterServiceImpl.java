@@ -19,6 +19,7 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
     @Autowired
     private RouterMapper routerMapper;
 
+    @Override
     public IPage<Router> selectPage(Page page, QueryWrapper<Router> qw) {
         return routerMapper.selectPage(page, qw);
     }
@@ -27,7 +28,7 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
         查询列表后，直接查询每条工艺的历史工艺，一起返回
      */
     @Override
-    public IPage<Router> selectPageAndChind(Page page, QueryWrapper<Router> qw) {
+    public IPage<Router> selectPageAndChild(Page page, QueryWrapper<Router> qw) {
         IPage<Router> routers = this.page(page, qw);
 
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
@@ -36,7 +37,10 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
             queryWrapper.eq("router_no", u.getRouterNo());
             queryWrapper.eq("branch_code", u.getBranchCode());
             queryWrapper.eq("tenant_id", u.getTenantId());
-            queryWrapper.eq("status", 2);    //历史版本
+            //历史版本
+            queryWrapper.eq("is_active", 2);
+            //过滤当前工艺自己，不出现在历史版本中
+            queryWrapper.ne("id", u.getId());
             u.setChildren(this.list(queryWrapper));
         }
 

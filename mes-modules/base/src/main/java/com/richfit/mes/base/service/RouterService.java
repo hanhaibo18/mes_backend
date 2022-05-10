@@ -14,5 +14,5 @@ public interface RouterService extends IService<Router> {
 
     public IPage<Router> selectPage(Page page, QueryWrapper<Router> qw);
 
-    public IPage<Router> selectPageAndChind(Page page, QueryWrapper<Router> qw);
+    public IPage<Router> selectPageAndChild(Page page, QueryWrapper<Router> qw);
 }

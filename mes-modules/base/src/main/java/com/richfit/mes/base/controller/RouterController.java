@@ -97,7 +97,7 @@ public class RouterController extends BaseController {
             } else {
                 queryWrapper.orderByDesc("modify_time");
             }
-            IPage<Router> routers = routerService.selectPageAndChind(new Page<Router>(page, limit), queryWrapper);
+            IPage<Router> routers = routerService.selectPageAndChild(new Page<Router>(page, limit), queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
