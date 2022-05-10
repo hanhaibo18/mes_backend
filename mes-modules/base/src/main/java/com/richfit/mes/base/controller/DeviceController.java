@@ -8,6 +8,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.DeviceService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Device;
@@ -263,6 +264,15 @@ public class DeviceController extends BaseController {
     }
 
 
+    @ApiOperation(value = "根据id删除设备信息", notes = "根据id删除设备信息")
+    @DeleteMapping("/delete/{id}")
+    public CommonResult<Boolean> deleteById(@PathVariable String id) throws GlobalException {
+        QueryWrapper<Device> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", id).or().eq("parent_id ", id);
+        deviceService.delete(id, wrapper);
+        return CommonResult.success(null, "删除成功！");
+    }
+
     @ApiOperation(value = "导入设备", notes = "根据Excel文档导入设备")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
@@ -297,19 +307,19 @@ public class DeviceController extends BaseController {
                 if (devices.size() > 0) {
                     list.get(i).setParentId(devices.get(0).getId());
                 }
-                if ("设备".equals(list.get(i).getType())) {
+                if ("设备".equals(list.get(i).getType()) && list.get(i).getType() != null) {
                     list.get(i).setType("0");
-                } else if ("设备组".equals(list.get(i).getType())) {
+                } else if ("设备组".equals(list.get(i).getType()) && list.get(i).getType() != null) {
                     list.get(i).setType("1");
                 }
-                if ("是".equals(list.get(i).getRunStatus())) {
+                if ("是".equals(list.get(i).getRunStatus()) && list.get(i).getRunStatus() != null) {
                     list.get(i).setRunStatus("1");
-                } else if ("否".equals(list.get(i).getRunStatus())) {
+                } else if ("否".equals(list.get(i).getRunStatus()) && list.get(i).getRunStatus() != null) {
                     list.get(i).setRunStatus("0");
                 }
-                if ("是".equals(list.get(i).getStatus())) {
+                if ("是".equals(list.get(i).getStatus()) && list.get(i).getStatus() != null) {
                     list.get(i).setStatus("1");
-                } else if ("否".equals(list.get(i).getStatus())) {
+                } else if ("否".equals(list.get(i).getStatus()) && list.get(i).getStatus() != null) {
                     list.get(i).setStatus("0");
                 }
 
@@ -372,5 +382,5 @@ public class DeviceController extends BaseController {
             log.error(e.getMessage());
         }
     }
-    
+
 }
