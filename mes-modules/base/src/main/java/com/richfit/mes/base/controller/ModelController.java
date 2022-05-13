@@ -36,7 +36,7 @@ public class ModelController {
     @GetMapping("/download")
     @ApiOperation(value = "文件下载", notes = "以流的方式下载")
     public void download(@ApiIgnore HttpServletResponse response,
-                         @ApiParam(value = "文件全路径", required = true) @RequestParam String name) throws Exception {
+                         @ApiParam(value = "模板名称", required = true) @RequestParam String name) throws Exception {
         // 下载本地
         // 以流的形式下载文件。
         // 读到流中
