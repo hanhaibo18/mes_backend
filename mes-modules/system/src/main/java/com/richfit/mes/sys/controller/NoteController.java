@@ -177,7 +177,7 @@ public class NoteController {
     public CommonResult<Boolean> save(@RequestBody NoteDto noteDto) {
         boolean saveNote = noteService.saveNote(noteDto);
         if (saveNote) {
-            CommonResult.success(true);
+            return CommonResult.success(true);
         }
         return CommonResult.failed(new IErrorCode() {
             @Override
