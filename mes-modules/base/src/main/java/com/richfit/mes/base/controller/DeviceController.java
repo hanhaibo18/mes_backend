@@ -269,6 +269,7 @@ public class DeviceController extends BaseController {
     public CommonResult<Boolean> deleteById(@PathVariable String id) throws GlobalException {
         QueryWrapper<Device> wrapper = new QueryWrapper<>();
         wrapper.eq("id", id).or().eq("parent_id ", id);
+
         deviceService.delete(id, wrapper);
         return CommonResult.success(null, "删除成功！");
     }
@@ -296,35 +297,37 @@ public class DeviceController extends BaseController {
             List<Device> list = ExcelUtils.importExcel(excelFile, Device.class, fieldNames, 1, 0, 0, tempName.toString());
             FileUtils.delete(excelFile);
             for (int i = 0; i < list.size(); i++) {
-
                 if (null != SecurityUtils.getCurrentUser()) {
-
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 }
                 list.get(i).setTenantId(tenantId);
                 list.get(i).setBranchCode(branchCode);
                 List<Device> devices = deviceService.list(new QueryWrapper<Device>().eq("name", list.get(i).getParentId()).eq("type", "1").eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
+
                 if (devices.size() > 0) {
-                    list.get(i).setParentId(devices.get(0).getId());
+                    list.get(i).setParentId(list.get(0).getId());
                 }
-                if ("设备".equals(list.get(i).getType()) && list.get(i).getType() != null) {
+
+                if ("设备".equals(list.get(i).getType())) {
                     list.get(i).setType("0");
-                } else if ("设备组".equals(list.get(i).getType()) && list.get(i).getType() != null) {
+                } else if ("设备组".equals(list.get(i).getType())) {
                     list.get(i).setType("1");
                 }
-                if ("是".equals(list.get(i).getRunStatus()) && list.get(i).getRunStatus() != null) {
+                if ("是".equals(list.get(i).getRunStatus())) {
                     list.get(i).setRunStatus("1");
-                } else if ("否".equals(list.get(i).getRunStatus()) && list.get(i).getRunStatus() != null) {
+                } else if ("否".equals(list.get(i).getRunStatus())) {
                     list.get(i).setRunStatus("0");
                 }
-                if ("是".equals(list.get(i).getStatus()) && list.get(i).getStatus() != null) {
+                if ("是".equals(list.get(i).getStatus())) {
                     list.get(i).setStatus("1");
-                } else if ("否".equals(list.get(i).getStatus()) && list.get(i).getStatus() != null) {
+                } else if ("否".equals(list.get(i).getStatus())) {
                     list.get(i).setStatus("0");
                 }
 
             }
+
 //            list = list.stream().filter(item -> item.getMaterialNo() != null).collect(Collectors.toList());
+
             boolean bool = deviceService.saveBatch(list);
             if (bool) {
                 return CommonResult.success(null);

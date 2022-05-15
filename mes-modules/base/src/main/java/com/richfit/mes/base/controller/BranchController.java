@@ -2,11 +2,10 @@ package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.service.BranchService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.base.service.BranchService;
-import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -16,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 王瑞
@@ -39,24 +40,24 @@ public class BranchController extends BaseController {
     @ApiOperation(value = "新增组织机构", notes = "新增组织机构")
     @ApiImplicitParam(name = "branch", value = "组织机构", required = true, dataType = "Branch", paramType = "path")
     @PostMapping("/branch")
-    public CommonResult<Branch> addBranch(@RequestBody Branch branch){
-        if(StringUtils.isNullOrEmpty(branch.getBranchCode())){
+    public CommonResult<Branch> addBranch(@RequestBody Branch branch) {
+        if (StringUtils.isNullOrEmpty(branch.getBranchCode())) {
             return CommonResult.failed(BRANCH_CODE_NULL_MESSAGE);
         } else {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
             queryWrapper.eq("branch_code", branch.getBranchCode());
-            if(StringUtils.isNullOrEmpty(branch.getTenantId())){
+            if (StringUtils.isNullOrEmpty(branch.getTenantId())) {
                 branch.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             }
             queryWrapper.eq("tenant_id", branch.getTenantId());
             Branch oldBranch = branchService.getOne(queryWrapper);
-            if(oldBranch != null && !StringUtils.isNullOrEmpty(oldBranch.getId())){
+            if (oldBranch != null && !StringUtils.isNullOrEmpty(oldBranch.getBranchCode())) {
                 return CommonResult.failed("组织结构编号已存在！");
             } else {
                 branch.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 branch.setCreateTime(new Date());
                 boolean bool = branchService.save(branch);
-                if(bool){
+                if (bool) {
                     return CommonResult.success(branch, BRANCH_SUCCESS_MESSAGE);
                 } else {
                     return CommonResult.failed(BRANCH_FAILED_MESSAGE);
@@ -68,14 +69,14 @@ public class BranchController extends BaseController {
     @ApiOperation(value = "修改组织机构", notes = "修改组织机构")
     @ApiImplicitParam(name = "branch", value = "组织机构", required = true, dataType = "Branch", paramType = "path")
     @PutMapping("/branch")
-    public CommonResult<Branch> updateBranch( @RequestBody Branch branch){
-        if(StringUtils.isNullOrEmpty(branch.getBranchCode())){
+    public CommonResult<Branch> updateBranch(@RequestBody Branch branch) {
+        if (StringUtils.isNullOrEmpty(branch.getBranchCode())) {
             return CommonResult.failed(BRANCH_CODE_NULL_MESSAGE);
         } else {
             branch.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             branch.setModifyTime(new Date());
             boolean bool = branchService.updateById(branch);
-            if(bool){
+            if (bool) {
                 return CommonResult.success(branch, BRANCH_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(BRANCH_FAILED_MESSAGE);
@@ -85,12 +86,12 @@ public class BranchController extends BaseController {
 
     @ApiOperation(value = "查询组织机构详细信息", notes = "根据机构编码和租户ID获得组织机构详细信息")
     @GetMapping("/branch/one")
-    public CommonResult<Branch> selectBranchByCodeAndTenantId(String branchCode, String tenantId){
-        if(!StringUtils.isNullOrEmpty(branchCode)){
+    public CommonResult<Branch> selectBranchByCodeAndTenantId(String branchCode, String tenantId) {
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
             queryWrapper.eq("branch_code", branchCode);
 
-            if(!StringUtils.isNullOrEmpty(tenantId)){
+            if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.ne("tenant_id", tenantId);
             }
             queryWrapper.orderByAsc("order_no");
@@ -103,12 +104,12 @@ public class BranchController extends BaseController {
 
     @ApiOperation(value = "查询组织机构详细信息", notes = "根据机构编码获得组织机构详细信息")
     @GetMapping("/branch")
-    public CommonResult<Branch> selectBranchByCode(String branchCode, String id){
-        if(!StringUtils.isNullOrEmpty(branchCode)){
+    public CommonResult<Branch> selectBranchByCode(String branchCode, String id) {
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
             queryWrapper.eq("branch_code", branchCode);
 
-            if(!StringUtils.isNullOrEmpty(id)){
+            if (!StringUtils.isNullOrEmpty(id)) {
                 queryWrapper.ne("id", id);
             }
 
@@ -124,23 +125,23 @@ public class BranchController extends BaseController {
     @ApiOperation(value = "查询组织机构", notes = "根据机构编码获得组织机构")
     @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, dataType = "String", paramType = "path")
     @GetMapping("/select_branches_by_code")
-    public CommonResult<List<Branch>> selectBranchesByCode(String branchCode, String branchName, Boolean isFindTop){
+    public CommonResult<List<Branch>> selectBranchesByCode(String branchCode, String branchName, Boolean isFindTop) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
-        if(!StringUtils.isNullOrEmpty(branchName)){
+        if (!StringUtils.isNullOrEmpty(branchName)) {
             queryWrapper.like("branch_name", "%" + branchName + "%");
         }
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
         boolean isAdmin = false;
         for (GrantedAuthority authority : authorities) {
             //超级管理员 ROLE_12345678901234567890000000000000
-            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+            if ("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
                 isAdmin = true;
                 break;
             }
         }
-        if(!isAdmin){
+        if (!isAdmin) {
             // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            if(isFindTop != null && isFindTop){
+            if (isFindTop != null && isFindTop) {
                 String orgId = SecurityUtils.getCurrentUser().getOrgId();
                 String belongOrgId = SecurityUtils.getCurrentUser().getBelongOrgId();
                 queryWrapper.eq("branch_code", belongOrgId);
@@ -148,7 +149,7 @@ public class BranchController extends BaseController {
                 queryWrapper.eq("main_branch_code", branchCode);
             }
         } else {
-            if(!StringUtils.isNullOrEmpty(branchCode)){
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("main_branch_code", branchCode);
             } else {
                 queryWrapper.isNull("main_branch_code");
@@ -161,10 +162,10 @@ public class BranchController extends BaseController {
 
     @ApiOperation(value = "查询组织机构", notes = "根据机构编码获得组织机构")
     @GetMapping("/select_branch_children_by_code")
-    public CommonResult<List<Branch>> selectBranchChildByCode(String branchCode){
+    public CommonResult<List<Branch>> selectBranchChildByCode(String branchCode) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
-        if(!StringUtils.isNullOrEmpty(branchCode)){
-            queryWrapper.apply(branchCode != null,"FIND_IN_SET(branch_code, getBranchChildList('" +branchCode+ "'))");
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.apply(branchCode != null, "FIND_IN_SET(branch_code, getBranchChildList('" + branchCode + "'))");
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("order_no");
@@ -175,12 +176,12 @@ public class BranchController extends BaseController {
     @ApiOperation(value = "删除组织机构", notes = "根据机构id删除组织机构")
     @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/branch/{id}")
-    public CommonResult<Branch> deleteBranchById(@PathVariable String id){
-        if(StringUtils.isNullOrEmpty(id)){
+    public CommonResult<Branch> deleteBranchById(@PathVariable String id) {
+        if (StringUtils.isNullOrEmpty(id)) {
             return CommonResult.failed(BRANCH_ID_NULL_MESSAGE);
         } else {
             boolean bool = branchService.removeById(id);
-            if(bool){
+            if (bool) {
                 return CommonResult.success(null, BRANCH_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(BRANCH_FAILED_MESSAGE);
