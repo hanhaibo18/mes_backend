@@ -62,7 +62,7 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol) {
+    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol, boolean isPDM) {
         try {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
@@ -80,7 +80,9 @@ public class RouterController extends BaseController {
             } else {
                 queryWrapper.in("is_active", "0,1".split(","));
             }
-
+            if (isPDM) {
+                queryWrapper.isNull("draw_no");
+            }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
             }
