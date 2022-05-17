@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.util.ResourceUtils;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,13 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
+
 import java.net.URLEncoder;
 
 /**
@@ -41,8 +37,8 @@ public class ModelController {
         // 以流的形式下载文件。
         // 读到流中
         try {
-            File file = ResourceUtils.getFile("classpath:excel/" + name);
-            InputStream inputStream = new FileInputStream(file);// 文件的存放路径
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + name);
+            InputStream inputStream = classPathResource.getInputStream();
             response.reset();
             response.setContentType("application/octet-stream");
             response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(name, "UTF-8"));
