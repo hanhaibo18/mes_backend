@@ -54,9 +54,8 @@ public class AttachmentController extends BaseController {
                 attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 attachment.setAttachType(FileUtils.getFilenameExtension(file.getOriginalFilename()));
                 attachment.setAttachSize(String.valueOf(file.getSize()));
-                if(StringUtils.isNotEmpty(attachment.getAttachName()))
-                {
-                attachment.setAttachName(file.getOriginalFilename());
+                if (StringUtils.isNotEmpty(attachment.getAttachName())) {
+                    attachment.setAttachName(file.getOriginalFilename());
                 }
                 attachment = attachmentService.upload(attachment, file.getBytes());
             } catch (Exception e) {
@@ -65,21 +64,21 @@ public class AttachmentController extends BaseController {
         }
         return CommonResult.success(attachment);
     }
-    
+
     @GetMapping("save")
     @ApiOperation(value = "上传文件", notes = "上传文件")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "module", value = "业务模块", dataType = "String")
     })
     public CommonResult<Attachment> save(Attachment attachment) {
-        
-            try {
-                attachment.setId(java.util.UUID.randomUUID().toString().replaceAll("-", ""));
-                attachmentService.add(attachment);
-            } catch (Exception e) {
-                log.error("upload attachment error: {}", e.getMessage(), e);
-            }
-        
+
+        try {
+            attachment.setId(java.util.UUID.randomUUID().toString().replaceAll("-", ""));
+            attachmentService.add(attachment);
+        } catch (Exception e) {
+            log.error("upload attachment error: {}", e.getMessage(), e);
+        }
+
         return CommonResult.success(attachment);
     }
 
@@ -160,31 +159,31 @@ public class AttachmentController extends BaseController {
 
     @DeleteMapping("/{id}")
     @ApiOperation(value = "删除附件", notes = "根据ID删除附件")
-    @ApiImplicitParam(name = "id", value = "附件ID", required = true, dataType = "String",paramType = "path")
+    @ApiImplicitParam(name = "id", value = "附件ID", required = true, dataType = "String", paramType = "path")
     public CommonResult<Boolean> delete(@PathVariable String id) {
         Attachment attachment = attachmentService.get(id);
         boolean success = false;
-        if (attachment != null){
+        if (attachment != null) {
             success = attachmentService.delete(attachment);
         }
         return CommonResult.success(success);
     }
-    
+
     @GetMapping("/query")
     @ApiOperation(value = "查询", notes = "查询")
-    public CommonResult<IPage<Attachment>> query(int page,int limit,String id,String attachName,String classify,String module,String relationId,String relationName) {
-        
-         QueryWrapper<Attachment> queryWrapper = new QueryWrapper<Attachment>();
+    public CommonResult<IPage<Attachment>> query(int page, int limit, String id, String attachName, String classify, String module, String relationId, String relationName) {
+
+        QueryWrapper<Attachment> queryWrapper = new QueryWrapper<Attachment>();
         if (StringUtils.isNotEmpty(attachName)) {
             queryWrapper.eq("attach_name", attachName);
         }
         // 根据关联ID过滤
-         if (StringUtils.isNotEmpty(relationId)) {
+        if (StringUtils.isNotEmpty(relationId)) {
             queryWrapper.eq("relation_id", relationId);
         }
-           // 根据关联ID过滤
-         if (StringUtils.isNotEmpty(relationName)) {
-            queryWrapper.like("relation_name",  "%" + relationName + "%");
+        // 根据关联ID过滤
+        if (StringUtils.isNotEmpty(relationName)) {
+            queryWrapper.like("relation_name", "%" + relationName + "%");
         }
         // 根据分类过滤
         if (StringUtils.isNotEmpty(classify)) {
@@ -198,14 +197,14 @@ public class AttachmentController extends BaseController {
             queryWrapper.eq("id", id);
         }
 
-        IPage<Attachment> docs = attachmentService.selectPage(new Page<Attachment>(page, limit),queryWrapper);
-            return CommonResult.success(docs);
-       
+        IPage<Attachment> docs = attachmentService.selectPage(new Page<Attachment>(page, limit), queryWrapper);
+        return CommonResult.success(docs);
+
     }
-    
+
     @PostMapping("update")
     @ApiOperation(value = "更新", notes = "更新")
-    public int update(@RequestBody Attachment attachment,@RequestParam("id") String id,@RequestParam("attachName") String attachName,@RequestParam("classify") String classify, @RequestParam("status") String status,@RequestParam("previewUrl") String previewUrl,@RequestParam("relationName") String relationName,@RequestParam("relationType") String relationType) {
+    public int update(@RequestBody Attachment attachment, @RequestParam("id") String id, @RequestParam("attachName") String attachName, @RequestParam("classify") String classify, @RequestParam("status") String status, @RequestParam("previewUrl") String previewUrl, @RequestParam("relationName") String relationName, @RequestParam("relationType") String relationType) {
         Attachment oldAttachment = attachmentService.get(id);
         oldAttachment.setAttachName(attachName);
         oldAttachment.setClassify(classify);
@@ -213,8 +212,8 @@ public class AttachmentController extends BaseController {
         oldAttachment.setPreviewUrl(previewUrl);
         oldAttachment.setRelationName(relationName);
         oldAttachment.setRelationType(relationType);
-       return attachmentService.update(oldAttachment);
-      
+        return attachmentService.update(oldAttachment);
+
     }
-    
+
 }

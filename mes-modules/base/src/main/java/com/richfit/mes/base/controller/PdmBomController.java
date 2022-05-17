@@ -6,6 +6,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.PdmBom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -13,17 +14,15 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.ResourceUtils;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -148,27 +147,23 @@ public class PdmBomController {
 //    }
 
     @GetMapping("download")
-    public void downloadArticle(HttpServletResponse response, HttpServletRequest request) {
-        FileInputStream inputStream = null;
-        OutputStream out = null;
+    @ApiOperation(value = "文件下载")
+    public void downloadArticle(HttpServletResponse response, @ApiParam(value = "模板名称", required = true) @RequestParam String fileName) {
+
         try {
+            File file = ResourceUtils.getFile("classpath:excel/" + fileName);
+            InputStream inputStream = new FileInputStream(file);
             response.reset();
-            String formFileName = "产品BOM导出模板2.xls" + request;
-            response.setContentType("application/ms-excel;charset=utf-8");
-            response.setHeader("Content-disposition", String.format("attachment; filename=%s", formFileName));
-            response.setContentType("multipart/form-data");
-            response.setCharacterEncoding("UTF-8");
-            File file = new File("mes-modules/base/src/main/resources/excel/产品BOM导出模板2.xls");
-            inputStream = new FileInputStream(file);
-            out = response.getOutputStream();
-            int length = 0;
-            byte[] buffer = new byte[1024];
-            while ((length = inputStream.read(buffer)) != -1) {
-                out.write(buffer, 0, length);
+            response.setContentType("application/octet-stream");
+            response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, "UTF-8"));
+            ServletOutputStream outputStream = response.getOutputStream();
+            byte[] b = new byte[1024];
+            int len;
+            // 从输入流中读取一定数量的字节，并将其存储在缓冲区字节数组中，读到末尾返回-1
+            while ((len = inputStream.read(b)) > 0) {
+                outputStream.write(b, 0, len);
             }
             inputStream.close();
-            out.flush();
-            out.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

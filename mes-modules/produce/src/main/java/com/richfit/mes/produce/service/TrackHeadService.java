@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -101,4 +102,25 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @return: IPage<TailAfterVo>
      **/
     IPage<TailAfterVo> queryTailAfterList(QueryDto<QueryTailAfterDto> afterDto);
+
+    /**
+     * 功能描述: 跟单拆分列表查询
+     *
+     * @param queryDto
+     * @Author: xinYu.hou
+     * @Date: 2022/5/13 8:04
+     * @return: IPage<TrackHead>
+     **/
+    IPage<TrackHead> querySplitPage(QueryDto<QuerySplitDto> queryDto);
+
+    /**
+     * 功能描述: 跟单拆分
+     *
+     * @param saveTrackHeadDto
+     * @Author: xinYu.hou
+     * @Date: 2022/5/16 6:34
+     * @return: Boolean
+     **/
+    CommonResult<Boolean> saveTrackHeader(SaveTrackHeadDto saveTrackHeadDto);
+
 }
