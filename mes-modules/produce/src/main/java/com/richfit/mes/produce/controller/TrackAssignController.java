@@ -4,30 +4,28 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.richfit.mes.common.core.base.BaseController;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.produce.service.TrackAssignService;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.produce.service.TrackAssignService;
+import com.richfit.mes.produce.service.TrackCompleteService;
+import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.security.userdetails.TenantUserDetails;
-import com.richfit.mes.produce.service.TrackCompleteService;
-import com.richfit.mes.produce.service.TrackItemService;
-import com.richfit.mes.produce.service.TrackHeadService;
-import io.swagger.annotations.ApiImplicitParams;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import com.richfit.mes.common.security.util.SecurityUtils;
-import org.bouncycastle.util.Arrays;
 
 /**
  * @author 马峰
@@ -51,7 +49,7 @@ public class TrackAssignController extends BaseController {
     private TrackAssignPersonMapper trackAssignPersonMapper;
     @Autowired
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
-    
+
 
     /**
      * ***
@@ -63,12 +61,12 @@ public class TrackAssignController extends BaseController {
      */
     @ApiOperation(value = "派工分页查询", notes = "派工分页查询")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode,String order , String orderCol,String assignBy) {
+    public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode, String order, String orderCol, String assignBy) {
         try {
             QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -78,7 +76,7 @@ public class TrackAssignController extends BaseController {
                 queryWrapper.in("state", state.split(","));
             }
             if (!StringUtils.isNullOrEmpty(trackId)) {
-                queryWrapper.eq("track_id",trackId);
+                queryWrapper.eq("track_id", trackId);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 queryWrapper.eq("track_no", trackNo);
@@ -87,7 +85,7 @@ public class TrackAssignController extends BaseController {
                 queryWrapper.eq("assign_by", assignBy);
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.apply("track_id in (select id from produce_track_head where drawing_no='"+routerNo+"')");
+                queryWrapper.apply("track_id in (select id from produce_track_head where drawing_no='" + routerNo + "')");
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null)");
@@ -101,24 +99,24 @@ public class TrackAssignController extends BaseController {
                 queryWrapper.eq("branch_code", branchCode);
 
             }
-            if(!StringUtils.isNullOrEmpty(orderCol)){
-                if(!StringUtils.isNullOrEmpty(order)){
-                    if(order.equals("desc")){
-                        queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
-                    } else if (order.equals("asc")){
-                        queryWrapper.orderByAsc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
+            if (!StringUtils.isNullOrEmpty(orderCol)) {
+                if (!StringUtils.isNullOrEmpty(order)) {
+                    if (order.equals("desc")) {
+                        queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
+                    } else if (order.equals("asc")) {
+                        queryWrapper.orderByAsc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
                     }
                 } else {
-                    queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
+                    queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
                 }
             } else {
-                queryWrapper.orderByDesc(new String[] {"modify_time","sequence_order_by"});
+                queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
             }
 
-            
+
             IPage<Assign> assigns = trackAssignService.page(new Page<Assign>(page, limit), queryWrapper);
-            for (int i=0;i<assigns.getRecords().size();i++) {
-                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id",assigns.getRecords().get(i).getId())));
+            for (int i = 0; i < assigns.getRecords().size(); i++) {
+                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }
 
             return CommonResult.success(assigns);
@@ -137,17 +135,17 @@ public class TrackAssignController extends BaseController {
      */
     @ApiOperation(value = "派工自定义分页查询", notes = "派工自定义分页查询")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit,String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId,String branchCode,String assignBy) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
         try {
 
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy,trackNo,routerNo, startTime, endTime, state,userId,branchCode);
-            for (int i=0;i<assigns.getRecords().size();i++) {
-                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id",assigns.getRecords().get(i).getId())));
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode);
+            for (int i = 0; i < assigns.getRecords().size(); i++) {
+                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {
@@ -205,9 +203,8 @@ public class TrackAssignController extends BaseController {
 
             }
             return CommonResult.success(assign, "操作成功！");
-        }
-        catch (Exception e) {
-            return CommonResult.failed("操作失败，请重试！"+e.getMessage());
+        } catch (Exception e) {
+            return CommonResult.failed("操作失败，请重试！" + e.getMessage());
         }
     }
 
@@ -264,14 +261,14 @@ public class TrackAssignController extends BaseController {
                 systemServiceClient.savenote(assign.getAssignBy(),
                         "您有新的派工跟单需要报工！",
                         assign.getTrackNo(),
-                        assign.getUserId().substring(0,assign.getUserId().length()-1),
+                        assign.getUserId().substring(0, assign.getUserId().length() - 1),
                         assign.getBranchCode(),
                         assign.getTenantId());
 
             }
             return CommonResult.success(assigns, "操作成功！");
-        } catch (Exception e){
-            return CommonResult.failed("操作失败，请重试！"+e.getMessage());
+        } catch (Exception e) {
+            return CommonResult.failed("操作失败，请重试！" + e.getMessage());
         }
 
     }
@@ -338,9 +335,8 @@ public class TrackAssignController extends BaseController {
                 trackItemService.updateById(trackItem);
             }
             return CommonResult.success(assign, "操作成功！");
-        }
-        catch (Exception e) {
-            return CommonResult.failed("操作失败，请重试！"+e.getMessage());
+        } catch (Exception e) {
+            return CommonResult.failed("操作失败，请重试！" + e.getMessage());
         }
     }
 
@@ -373,7 +369,7 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "派工查询", notes = "派工查询")
     @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/getPageAssignsByStatus")
-    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo,String routerNo, String startTime, String endTime, String optType,String branchCode,String order , String orderCol) {
+    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
 
@@ -383,33 +379,31 @@ public class TrackAssignController extends BaseController {
         }
         if ("4".equals(optType)) {
             queryWrapper.apply("opt_type = 3 and is_final_complete <> '1'");
-        }
-        else {
+        } else {
             queryWrapper.apply("opt_type <> 3");
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
 
         }
-        if(!StringUtils.isNullOrEmpty(orderCol)){
-            if(!StringUtils.isNullOrEmpty(order)){
-                if(order.equals("desc")){
-                    queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
-                } else if (order.equals("asc")){
-                    queryWrapper.orderByAsc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if (order.equals("desc")) {
+                    queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
+                } else if (order.equals("asc")) {
+                    queryWrapper.orderByAsc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
                 }
             } else {
-                queryWrapper.orderByDesc(new String[] {StrUtil.toUnderlineCase(orderCol),"sequence_order_by"});
+                queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
             }
         } else {
-            queryWrapper.orderByDesc(new String[] {"modify_time","sequence_order_by"});
+            queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper), "操作成功！");
-        }
-        else if(!StringUtils.isNullOrEmpty(routerNo)) {
-             return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper), "操作成功！");
-       } else {
+        } else if (!StringUtils.isNullOrEmpty(routerNo)) {
+            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper), "操作成功！");
+        } else {
             return CommonResult.success(trackAssignService.getPageAssignsByStatus(new Page<TrackItem>(page, limit), queryWrapper), "操作成功！");
         }
     }
@@ -424,54 +418,46 @@ public class TrackAssignController extends BaseController {
             Assign assign = trackAssignService.getById(ids[i]);
 
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
-            if(null==trackItem)
-            {
+            if (null == trackItem) {
                 trackAssignService.removeById(ids[i]);
-            }
-            else {
-            if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
-                return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
-            }
-            if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
-            }
-            List<Assign> ca = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
-            for (int j = 0; j < ca.size(); j++) {
-                TrackItem cstrackItem = trackItemService.getById(ca.get(j).getTiId());
-                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                    return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
-
+            } else {
+                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
                 }
-
-            }
-            
-            
-            QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
-            queryWrapper.eq("ti_id", assign.getTiId());
-             List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
-            if (cs.size() > 0) {
-                return CommonResult.failed("无法回滚，已有报工提交，需要先取消工序【" + trackItem.getOptName() + "】的报工！");
-            }
-            //将前置工序状态改为待派工
-            List<TrackItem> items =  trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id",  trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
-            for (int j = 0; j < items.size(); j++) {
-                TrackItem cstrackItem = items.get(j);
-                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                    cstrackItem.setIsCurrent(0);
-                    cstrackItem.setIsDoing(0);
-                    trackItemService.updateById(cstrackItem);
+                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
                 }
+                List<Assign> ca = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
+                for (int j = 0; j < ca.size(); j++) {
+                    TrackItem cstrackItem = trackItemService.getById(ca.get(j).getTiId());
+                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                        return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
 
-            }
-            trackItem.setIsCurrent(1);
-            trackItem.setIsDoing(0);
-            trackItem.setAssignableQty(trackItem.getAssignableQty() + assign.getQty());
-            trackItemService.updateById(trackItem);
-            trackAssignService.removeById(ids[i]);
-
+                    }
+                }
+                QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+                queryWrapper.eq("ti_id", assign.getTiId());
+                List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
+                if (cs.size() > 0) {
+                    return CommonResult.failed("无法回滚，已有报工提交，需要先取消工序【" + trackItem.getOptName() + "】的报工！");
+                }
+                //将前置工序状态改为待派工
+                List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
+                for (int j = 0; j < items.size(); j++) {
+                    TrackItem cstrackItem = items.get(j);
+                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                        cstrackItem.setIsCurrent(0);
+                        cstrackItem.setIsDoing(0);
+                        trackItemService.updateById(cstrackItem);
+                    }
+                }
+                trackItem.setIsCurrent(1);
+                trackItem.setIsDoing(0);
+                trackItem.setAssignableQty(trackItem.getAssignableQty() + assign.getQty());
+                trackItemService.updateById(trackItem);
+                trackAssignService.removeById(ids[i]);
             }
         }
         return CommonResult.success(null, "删除成功！");
-
     }
 }
