@@ -354,16 +354,15 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "导出工艺信息", notes = "通过Excel文档导出工艺信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "routerName", value = "名称", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "routerName", value = "名称", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isPDM", value = "查询是否有图纸", required = true, paramType = "query", dataType = "boolean")
+            @ApiImplicitParam(name = "status", value = "状态", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isPDM", value = "查询是否有图纸", required = true, paramType = "query", dataType = "boolean"),
+            @ApiImplicitParam(name = "tenantId", value = "租户ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/export_excel")
-    public void exportExcel(String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol, boolean isPDM, HttpServletResponse rsp) {
+    public void exportExcel(String routerNo, String routerName, String branchCode, String tenantId, String status, boolean isPDM, HttpServletResponse rsp) {
 
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(routerNo)) {
@@ -386,19 +385,7 @@ public class RouterController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
-        if (!StringUtils.isNullOrEmpty(orderCol)) {
-            if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
-                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")) {
-                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
-                }
-            } else {
-                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-            }
-        } else {
-            queryWrapper.orderByDesc("modify_time");
-        }
+        queryWrapper.orderByDesc("modify_time");
         List<Router> list = routerService.list(queryWrapper);
 
         for (Router router : list) {

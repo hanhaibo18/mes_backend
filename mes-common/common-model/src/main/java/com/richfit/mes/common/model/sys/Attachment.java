@@ -56,30 +56,29 @@ public class Attachment extends BaseEntity<Attachment> {
      * 预览地址
      */
     private String previewUrl;
-    
-      /**
+
+    /**
      * 关联实体ID
      */
     private String relationId;
-    
-         /**
+
+    /**
      * 关联实体ID
      */
     private String relationName;
-    
-           /**
+
+    /**
      * 关联实体ID
      */
     private String relationType;
-    
-   
-    
-      /**
+
+
+    /**
      * 分类
      */
     private String classify;
-    
-     /**
+
+    /**
      * 状态
      */
     private String status;

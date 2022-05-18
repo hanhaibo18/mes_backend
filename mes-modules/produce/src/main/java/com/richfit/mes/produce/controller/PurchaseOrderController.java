@@ -64,7 +64,7 @@ public class PurchaseOrderController {
         boolean isEmpty = null != purchaseOrderDto;
         //处理传入时间类型
         if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getEndTime()) && !StringUtils.isNullOrEmpty(purchaseOrderDto.getStartTime())) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             Date createDate = dateFormat.parse(purchaseOrderDto.getStartTime());
             Date endDate = dateFormat.parse(purchaseOrderDto.getEndTime());
             wrapper.between("purchase_date", createDate, endDate);
