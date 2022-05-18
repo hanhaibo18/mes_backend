@@ -86,7 +86,6 @@ public class PurchaseOrderController {
         return CommonResult.success(productPage);
     }
 
-
     @ApiOperation(value = "导出采购订单信息", notes = "通过Excel文档导出采购订单信息")
     @GetMapping("/export_excel")
     public void exportExcel(BasePageDto<String> queryDto, HttpServletResponse rsp) {
@@ -97,7 +96,7 @@ public class PurchaseOrderController {
             boolean isEmpty = null != purchaseOrderDto;
             //处理传入时间类型
             if (isEmpty && purchaseOrderDto.getEndTime() != null && purchaseOrderDto.getStartTime() != null) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 Date createDate = dateFormat.parse(purchaseOrderDto.getStartTime());
                 Date endDate = dateFormat.parse(purchaseOrderDto.getEndTime());
                 wrapper.between("purchase_date", createDate, endDate);
