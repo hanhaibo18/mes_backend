@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.enmus.MessageEnum;
 import com.richfit.mes.base.service.DeviceService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -386,4 +387,55 @@ public class DeviceController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "导出设备", notes = "通过Excel文档导出设备信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "parentId", value = "设备组ID", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "type", value = "类型", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "name", value = "名称", required = true, paramType = "query", dataType = "string")})
+    @GetMapping("/export_excel_list")
+    public void exportExcelList(String code, String name, String parentId, String type, String branchCode, String tenantId, HttpServletResponse rsp) {
+        try {
+            QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
+            if (!StringUtils.isNullOrEmpty(parentId)) {
+                queryWrapper.eq("parent_id", parentId);
+            }
+            if (!StringUtils.isNullOrEmpty(code)) {
+                queryWrapper.eq("code", code);
+            }
+            if (!StringUtils.isNullOrEmpty(name)) {
+                queryWrapper.like("name", "%" + name + "%");
+            }
+            if (!StringUtils.isNullOrEmpty(type)) {
+                queryWrapper.like("type", "%" + type + "%");
+            }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.eq("tenant_id", tenantId);
+            }
+            queryWrapper.orderByDesc("modify_time");
+
+            List<Device> list = deviceService.list(queryWrapper);
+
+            for (Device device : list) {
+                device.setStatus(MessageEnum.getMessage(Integer.parseInt(device.getStatus())));
+                device.setRunStatus(MessageEnum.getMessage(Integer.parseInt(device.getRunStatus())));
+            }
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName = "设备列表_" + format.format(new Date()) + ".xlsx";
+
+            String[] columnHeaders = {"设备编码", "设备名称", "型号", "类型(设备或设备组)", "制造商", "入库时间", "出库时间", "是否启用(是或否)", "运行状态(是或否)", "修改时间", "修改人"};
+
+            String[] fieldNames = {"code", "name", "model", "type", "maker", "inTime", "outTime", "status", "runStatus", "modifyTime", "modifyBy"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
 }

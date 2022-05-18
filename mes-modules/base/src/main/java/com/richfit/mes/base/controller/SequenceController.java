@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.enmus.MessageEnum;
+import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.service.OperatiponService;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.base.service.SequenceService;
@@ -396,6 +398,15 @@ public class SequenceController extends BaseController {
         queryWrapper.orderByAsc("opt_order");
 
         List<Sequence> sequences = sequenceService.list(queryWrapper);
+
+        //处理返回数据
+        for (Sequence sequence : sequences) {
+            sequence.setIsScheduleCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsScheduleCheck())));
+            sequence.setIsQualityCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsQualityCheck())));
+            sequence.setIsParallel(MessageEnum.getMessage(Integer.parseInt(sequence.getIsParallel())));
+            sequence.setIsAutoAssign(MessageEnum.getMessage(Integer.parseInt(sequence.getIsAutoAssign())));
+            sequence.setOptType(OptTypeEnum.getMessage(Integer.parseInt(sequence.getOptType())));
+        }
 
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 

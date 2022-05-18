@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.enmus.OptTypeEnum;
+import com.richfit.mes.base.enmus.RouterStatusEnum;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -22,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -344,6 +349,75 @@ public class RouterController extends BaseController {
             }
         } catch (Exception e) {
             return CommonResult.failed("失败:" + e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "导出工艺信息", notes = "通过Excel文档导出工艺信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "routerName", value = "名称", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isPDM", value = "查询是否有图纸", required = true, paramType = "query", dataType = "boolean")
+    })
+    @GetMapping("/export_excel")
+    public void exportExcel(String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol, boolean isPDM, HttpServletResponse rsp) {
+
+        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+        if (!StringUtils.isNullOrEmpty(routerNo)) {
+            queryWrapper.like("router_no", "%" + routerNo + "%");
+        }
+        if (!StringUtils.isNullOrEmpty(routerName)) {
+            queryWrapper.like("router_name", "%" + routerName + "%");
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if (!StringUtils.isNullOrEmpty(status)) {
+            queryWrapper.in("status", status.split(","));
+        } else {
+            queryWrapper.in("is_active", "0,1".split(","));
+        }
+        if (isPDM) {
+            queryWrapper.isNull("draw_no");
+        }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if (order.equals("desc")) {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                } else if (order.equals("asc")) {
+                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+            }
+        } else {
+            queryWrapper.orderByDesc("modify_time");
+        }
+        List<Router> list = routerService.list(queryWrapper);
+
+        for (Router router : list) {
+            router.setType(OptTypeEnum.getMessage(Integer.parseInt(router.getType())));
+            router.setStatus(RouterStatusEnum.getMessage(Integer.parseInt(router.getStatus())));
+        }
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+        String fileName = "工艺数据" + format.format(new Date()) + ".xlsx";
+
+        String[] columnHeaders = {"id", "图号", "工艺名称", "版本号", "状态", "类型", "物料号"};
+        String[] fieldNames = {"id", "routerNo", "routerName", "version", "status", "type", "materialNo"};
+        //export
+        try {
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 }
