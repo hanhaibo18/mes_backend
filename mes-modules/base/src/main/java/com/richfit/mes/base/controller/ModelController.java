@@ -54,4 +54,30 @@ public class ModelController {
             e.printStackTrace();
         }
     }
+
+    @GetMapping("/test")
+    @ApiOperation(value = "测试", notes = "测试")
+    public void test(@ApiIgnore HttpServletResponse response,
+                     @ApiParam(value = "模板名称", required = true) @RequestParam String name) throws Exception {
+        // 下载本地
+        // 以流的形式下载文件。
+        // 读到流中
+        try {
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + name);
+            InputStream inputStream = classPathResource.getInputStream();
+            response.reset();
+            response.setContentType("application/octet-stream");
+            response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(name, "UTF-8"));
+            ServletOutputStream outputStream = response.getOutputStream();
+            byte[] b = new byte[1024];
+            int len;
+            // 从输入流中读取一定数量的字节，并将其存储在缓冲区字节数组中，读到末尾返回-1
+            while ((len = inputStream.read(b)) > 0) {
+                outputStream.write(b, 0, len);
+            }
+            inputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
