@@ -58,11 +58,15 @@ public class AttachmentController extends BaseController {
                     attachment.setAttachName(file.getOriginalFilename());
                 }
                 attachment = attachmentService.upload(attachment, file.getBytes());
+                return CommonResult.success(attachment);
             } catch (Exception e) {
                 log.error("upload attachment error: {}", e.getMessage(), e);
+                e.printStackTrace();
+                return CommonResult.failed(e.getMessage());
             }
+        } else {
+            return CommonResult.failed("请上传文件");
         }
-        return CommonResult.success(attachment);
     }
 
     @GetMapping("save")
