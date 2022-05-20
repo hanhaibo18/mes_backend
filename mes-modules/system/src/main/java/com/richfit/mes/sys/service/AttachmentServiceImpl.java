@@ -29,14 +29,13 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
 
     @Autowired
     private FastDfsService fastDfsService;
-    
+
     @Autowired
     private AttachmentMapper attachmentMapper;
 
     @Override
-    public IPage<Attachment> selectPage(Page page, QueryWrapper<Attachment> qw)
-    {
-        return  attachmentMapper.selectPage(page, qw);
+    public IPage<Attachment> selectPage(Page page, QueryWrapper<Attachment> qw) {
+        return attachmentMapper.selectPage(page, qw);
     }
 
     @Override
@@ -51,19 +50,16 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Attachment upload(Attachment attachment, byte[] bytes) {
-        try {
-            attachment.setAttachSize(String.valueOf(bytes.length));
-            String fastFileId = fastDfsService.uploadFile(new ByteArrayInputStream(bytes), bytes.length, attachment.getAttachType());
+        attachment.setAttachSize(String.valueOf(bytes.length));
+        String fastFileId = fastDfsService.uploadFile(new ByteArrayInputStream(bytes), bytes.length, attachment.getAttachType());
+        System.out.println(fastFileId);
+        if (fastFileId != null) {
             String groupName = fastFileId.substring(0, fastFileId.indexOf("/"));
             attachment.setFastFileId(fastFileId);
             attachment.setGroupName(groupName);
-            this.save(attachment);
-            return attachment;
-        } catch (Exception e) {
-            log.error("Upload File Error:" + attachment.getAttachName() + e.getMessage());
-            return null;
         }
-
+        attachmentMapper.insert(attachment);
+        return attachment;
     }
 
     @Override
@@ -101,11 +97,11 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int update(Attachment attachment) {
-       return attachmentMapper.updateById(attachment);
+        return attachmentMapper.updateById(attachment);
     }
 
 }

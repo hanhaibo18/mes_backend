@@ -58,11 +58,15 @@ public class AttachmentController extends BaseController {
                     attachment.setAttachName(file.getOriginalFilename());
                 }
                 attachment = attachmentService.upload(attachment, file.getBytes());
+                return CommonResult.success(attachment);
             } catch (Exception e) {
                 log.error("upload attachment error: {}", e.getMessage(), e);
+                e.printStackTrace();
+                return CommonResult.failed(e.getMessage());
             }
+        } else {
+            return CommonResult.failed("请上传文件");
         }
-        return CommonResult.success(attachment);
     }
 
     @GetMapping("save")
@@ -204,7 +208,7 @@ public class AttachmentController extends BaseController {
 
     @PostMapping("update")
     @ApiOperation(value = "更新", notes = "更新")
-    public int update(@RequestBody Attachment attachment, @RequestParam("id") String id, @RequestParam("attachName") String attachName, @RequestParam("classify") String classify, @RequestParam("status") String status, @RequestParam("previewUrl") String previewUrl, @RequestParam("relationName") String relationName, @RequestParam("relationType") String relationType) {
+    public int update(@RequestParam("id") String id, @RequestParam("attachName") String attachName, @RequestParam("classify") String classify, @RequestParam("status") String status, @RequestParam("previewUrl") String previewUrl, @RequestParam("relationName") String relationName, @RequestParam("relationType") String relationType) {
         Attachment oldAttachment = attachmentService.get(id);
         oldAttachment.setAttachName(attachName);
         oldAttachment.setClassify(classify);
