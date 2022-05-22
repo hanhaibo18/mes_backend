@@ -367,7 +367,15 @@ public class TrackAssignController extends BaseController {
     }
 
     @ApiOperation(value = "派工查询", notes = "派工查询")
-    @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = "排序类型", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query")
+    })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) {
 
