@@ -5,39 +5,39 @@
     <select id="queryPage" resultType="com.richfit.mes.common.model.produce.Assign">
         <!-- 设置别名 -->
         select u.* from v_produce_assign u
-        WHERE 1=1 
-        <trim  suffixOverrides="," >
-            <if test="trackNo != null and trackNo != ''" >
-                and u.track_no2 =#{trackNo})
+        WHERE 1=1
+        <trim suffixOverrides=",">
+            <if test="trackNo != null and trackNo != ''">
+                and u.track_no2 like CONCAT(CONCAT('%',#{trackNo}),'%')
 
-            </if>     
-            <if test="routerNo != null and routerNo != ''" >
-               and u.drawing_no  = #{routerNo}
-            </if>    
-             <if test="siteId != null and siteId != ''" >
-               and u.assign_by = #{siteId}
-            </if>      
-            <if test="startTime != null and startTime != ''" >
+            </if>
+            <if test="routerNo != null and routerNo != ''">
+                and u.drawing_no like CONCAT(CONCAT('%',#{routerNo}),'%')
+            </if>
+            <if test="siteId != null and siteId != ''">
+                and u.assign_by = #{siteId}
+            </if>
+            <if test="startTime != null and startTime != ''">
                 and UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP(#{startTime})
             </if>
-                        <if test="endTime != null and endTime != ''" >
+            <if test="endTime != null and endTime != ''">
                 and UNIX_TIMESTAMP(u.assign_time) &lt;= UNIX_TIMESTAMP(#{endTime})
-            </if>            
-            <if test='state ==  "0,1"' >
+            </if>
+            <if test='state ==  "0,1"'>
                 and u.state in (0,1)
             </if>
-            <if test='state ==  "2"' >
+            <if test='state ==  "2"'>
                 and u.state in (2)
             </if>
-             <if test="userId != null and userId != ''" >
-                and (u.user_id = #{userId} || u.user_id  = #{userCode})
-                
+            <if test="userId != null and userId != ''">
+                and (u.user_id = #{userId} || u.user_id = #{userCode})
+
             </if>
-            <if test="branchCode != null and branchCode != ''" >
+            <if test="branchCode != null and branchCode != ''">
                 and u.branch_code = #{branchCode}
             </if>
         </trim>
-        order by u.priority desc,u.modify_time desc 
+        order by u.priority desc,u.modify_time desc
     </select>
 
 </mapper>

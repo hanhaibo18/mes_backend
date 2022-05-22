@@ -137,7 +137,12 @@ public class TrackAssignController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "state", value = "状态", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "userId", value = "操作人ID", paramType = "query", dataType = "String"),
     })
     @GetMapping("/querypage")
     public CommonResult<IPage<Assign>> querypage(int page, int limit, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
