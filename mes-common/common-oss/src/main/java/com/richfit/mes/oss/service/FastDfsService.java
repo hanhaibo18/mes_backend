@@ -47,7 +47,7 @@ public class FastDfsService {
      * 支持断点续传的文件服务接口
      */
     @Autowired
-    private  AppendFileStorageClient appendFileStorageClient;
+    private AppendFileStorageClient appendFileStorageClient;
 
     /**
      * 目录服务(Tracker)客户端接口
@@ -63,7 +63,7 @@ public class FastDfsService {
      * @param extName     扩展名
      * @return 完整路径
      */
-    public String uploadFile(InputStream inputStream, long size, String extName) {
+    public String uploadFile(InputStream inputStream, long size, String extName) throws Exception {
         return uploadFile(inputStream, size, extName, null);
     }
 
@@ -76,16 +76,11 @@ public class FastDfsService {
      * @param metaDataSet 元数据集
      * @return 完整路径
      */
-    public String uploadFile(InputStream inputStream, long size, String extName, Set<MetaData> metaDataSet) {
-        try {
-            log.info("Attachment size: {}，extName: {}", size, extName);
-            StorePath storePath = fastFileStorageClient.uploadFile(inputStream, size, extName, metaDataSet);
-            log.info("Upload success, group: {}, path: {}", storePath.getGroup(), storePath.getPath());
-            return storePath.getFullPath();
-        } catch (Exception e) {
-            log.error("Upload failed", e);
-        }
-        return null;
+    public String uploadFile(InputStream inputStream, long size, String extName, Set<MetaData> metaDataSet) throws Exception {
+        log.info("Attachment size: {}，extName: {}", size, extName);
+        StorePath storePath = fastFileStorageClient.uploadFile(inputStream, size, extName, metaDataSet);
+        log.info("Upload success, group: {}, path: {}", storePath.getGroup(), storePath.getPath());
+        return storePath.getFullPath();
     }
 
     /**
@@ -161,7 +156,7 @@ public class FastDfsService {
      * @return 文件存放的路径
      */
     public String downloadFile(String groupName, String path, String filePath) {
-        if (path.startsWith(groupName + "/")){
+        if (path.startsWith(groupName + "/")) {
             path = path.split(groupName + "/")[1];
         }
         try {
@@ -198,7 +193,7 @@ public class FastDfsService {
      * @param path      路径名，如：M00/00/04/wKgAUFpO84CAA4HvAAAABs4Fkco168.txt
      */
     public void deleteFile(String groupName, String path) {
-        if (path.startsWith(groupName + "/")){
+        if (path.startsWith(groupName + "/")) {
             path = path.split(groupName + "/")[1];
         }
         fastFileStorageClient.deleteFile(groupName, path);
@@ -217,9 +212,9 @@ public class FastDfsService {
      * @author tangyi
      * @date 2018/1/5 12:01
      */
-    public String modify(String groupName, String oldPath, InputStream inputStream, long size, String extName) {
+    public String modify(String groupName, String oldPath, InputStream inputStream, long size, String extName) throws Exception {
         String path = uploadFile(inputStream, size, extName);
-        if (StringUtils.isBlank(path)){
+        if (StringUtils.isBlank(path)) {
             return null;
         }
         deleteFile(groupName, oldPath);
@@ -235,7 +230,7 @@ public class FastDfsService {
      */
     public String getGroup() {
         StorageNode storageNode = trackerClient.getStoreStorage();
-        if (storageNode != null){
+        if (storageNode != null) {
             return storageNode.getGroupName();
         }
         return null;
@@ -252,12 +247,13 @@ public class FastDfsService {
         List<String> groups = new ArrayList<String>();
         List<GroupState> groupStates = trackerClient.listGroups();
         if (CollectionUtils.isNotEmpty(groupStates)) {
-            for (GroupState state : groupStates){
+            for (GroupState state : groupStates) {
                 groups.add(state.getGroupName());
             }
         }
         return groups;
     }
+
     /**
      * 获取带有token的访问地址
      *

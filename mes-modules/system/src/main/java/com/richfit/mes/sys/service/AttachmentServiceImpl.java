@@ -49,9 +49,10 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Attachment upload(Attachment attachment, byte[] bytes) {
+    public Attachment upload(Attachment attachment, byte[] bytes) throws Exception {
         attachment.setAttachSize(String.valueOf(bytes.length));
         String fastFileId = fastDfsService.uploadFile(new ByteArrayInputStream(bytes), bytes.length, attachment.getAttachType());
+        System.out.println("fastFileId--------------------------------------");
         System.out.println(fastFileId);
         if (fastFileId != null) {
             String groupName = fastFileId.substring(0, fastFileId.indexOf("/"));

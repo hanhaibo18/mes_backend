@@ -36,7 +36,7 @@ public interface AttachmentService {
      * @param bytes      bytes
      * @return Attachment
      */
-    Attachment upload(Attachment attachment, byte[] bytes);
+    Attachment upload(Attachment attachment, byte[] bytes) throws Exception;
 
     /**
      * 保存附件信息
