@@ -137,7 +137,12 @@ public class TrackAssignController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "state", value = "状态", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "userId", value = "操作人ID", paramType = "query", dataType = "String"),
     })
     @GetMapping("/querypage")
     public CommonResult<IPage<Assign>> querypage(int page, int limit, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
@@ -367,7 +372,15 @@ public class TrackAssignController extends BaseController {
     }
 
     @ApiOperation(value = "派工查询", notes = "派工查询")
-    @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = "排序类型", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query")
+    })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) {
 

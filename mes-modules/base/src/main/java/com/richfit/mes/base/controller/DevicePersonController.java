@@ -53,9 +53,9 @@ public class DevicePersonController extends BaseController {
              QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<DevicePerson>();
         if(!StringUtils.isNullOrEmpty(userId)){
             queryWrapper.eq("user_id", userId);
-        }        
+        }
           if(!StringUtils.isNullOrEmpty(deviceId)){
-            
+
               queryWrapper.apply("(device_id = '"+deviceId+"' or device_id = '"+code+"') ");
         }
            if(!StringUtils.isNullOrEmpty(tenantId)){
@@ -71,7 +71,7 @@ public class DevicePersonController extends BaseController {
             return CommonResult.failed(e.getMessage());
         }
     }
-    
+
     @ApiOperation(value = "新增设备人员记录", notes = "新增设备人员记录")
     @ApiImplicitParam(name = "device", value = "设备人员记录", required = true, dataType = "DevicePerson", paramType = "path")
     @PostMapping("/add")
@@ -86,8 +86,9 @@ public class DevicePersonController extends BaseController {
             devicePerson.setCreateTime(new Date());
             devicePerson.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             devicePerson.setModifyTime(new Date());
+            devicePerson.setBranchCode(devicePerson.getBranchCode());
             boolean bool = devicePersonService.save(devicePerson);
-            
+
         }
         }
         return CommonResult.success(devicePersons, "操作成功！");
@@ -100,7 +101,7 @@ public class DevicePersonController extends BaseController {
         if(StringUtils.isNullOrEmpty(devicePerson.getDeviceId())){
             return CommonResult.failed("编码不能为空！");
         } else {
-          
+
             devicePerson.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             devicePerson.setModifyTime(new Date());
             boolean bool = devicePersonService.updateById(devicePerson);
@@ -116,24 +117,24 @@ public class DevicePersonController extends BaseController {
     @ApiImplicitParam(name = "deviceId", value = "设备ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/find")
     public CommonResult<List<DevicePerson>> find(String deviceId, String userId, String branchCode, String tenantId,String isDefault) {
-        
+
              QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<DevicePerson>();
         if(!StringUtils.isNullOrEmpty(userId)){
             queryWrapper.eq("user_id", userId);
-        }        
+        }
           if(!StringUtils.isNullOrEmpty(deviceId)){
             queryWrapper.eq("device_id", deviceId);
         }
           if(!StringUtils.isNullOrEmpty(branchCode)){
             queryWrapper.eq("branch_code", branchCode);
-        } 
+        }
             if(!StringUtils.isNullOrEmpty(tenantId)){
             queryWrapper.eq("tenant_id", tenantId);
-        } 
+        }
                if (!StringUtils.isNullOrEmpty(isDefault)) {
                 queryWrapper.eq("is_default", Integer.parseInt(isDefault));
             }
-         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());  
+         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
           queryWrapper.orderByAsc("order_no");
         List<DevicePerson> result = devicePersonService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -143,15 +144,15 @@ public class DevicePersonController extends BaseController {
     @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "path")
     @PostMapping("/delete")
     public CommonResult<DevicePerson> delete(@RequestBody String[] ids){
-            
+
             boolean bool = devicePersonService.removeByIds(java.util.Arrays.asList(ids));
             if(bool){
                 return CommonResult.success(null, "删除成功！");
             } else {
                 return CommonResult.failed("操作失败，请重试！");
             }
-       
+
     }
 
-    
+
 }
