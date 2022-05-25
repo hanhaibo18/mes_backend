@@ -65,7 +65,7 @@ public class OperationTypeSpecController extends BaseController {
                 queryWrapper.eq("opt_type_code", optTypeCode);
             }
             if (!StringUtils.isNullOrEmpty(optTypeName)) {
-                queryWrapper.like("opt_type_name", "%" + optTypeName + "%");
+                queryWrapper.like("opt_type_name", optTypeName);
             }
             if (!StringUtils.isNullOrEmpty(optType)) {
                 queryWrapper.eq("opt_type", Integer.parseInt(optType));
@@ -133,13 +133,13 @@ public class OperationTypeSpecController extends BaseController {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(optTypeCode)) {
-            queryWrapper.like("opt_type_code", "%" + optTypeCode + "%");
+            queryWrapper.like("opt_type_code", optTypeCode);
         }
         if (!StringUtils.isNullOrEmpty(optTypeName)) {
-            queryWrapper.like("opt_type_name", "%" + optTypeName + "%");
+            queryWrapper.like("opt_type_name", optTypeName);
         }
         if (!StringUtils.isNullOrEmpty(optType)) {
-            queryWrapper.like("opt_type", "%" + optType + "%");
+            queryWrapper.like("opt_type", optType);
         }
 
         if (!StringUtils.isNullOrEmpty(tenantId)) {

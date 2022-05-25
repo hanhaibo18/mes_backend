@@ -72,10 +72,10 @@ public class RouterController extends BaseController {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.like("router_no", "%" + routerNo + "%");
+                queryWrapper.like("router_no", routerNo);
             }
             if (!StringUtils.isNullOrEmpty(routerName)) {
-                queryWrapper.like("router_name", "%" + routerName + "%");
+                queryWrapper.like("router_name", routerName);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
@@ -221,7 +221,7 @@ public class RouterController extends BaseController {
             queryWrapper.eq("router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(routerName)) {
-            queryWrapper.like("router_name", "%" + routerName + "%");
+            queryWrapper.like("router_name", routerName);
         }
         if (!StringUtils.isNullOrEmpty(version)) {
             queryWrapper.eq("version", version);
@@ -366,10 +366,10 @@ public class RouterController extends BaseController {
 
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.like("router_no", "%" + routerNo + "%");
+            queryWrapper.like("router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(routerName)) {
-            queryWrapper.like("router_name", "%" + routerName + "%");
+            queryWrapper.like("router_name", routerName);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);

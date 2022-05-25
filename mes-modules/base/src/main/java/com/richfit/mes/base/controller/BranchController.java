@@ -128,7 +128,7 @@ public class BranchController extends BaseController {
     public CommonResult<List<Branch>> selectBranchesByCode(String branchCode, String branchName, Boolean isFindTop) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
         if (!StringUtils.isNullOrEmpty(branchName)) {
-            queryWrapper.like("branch_name", "%" + branchName + "%");
+            queryWrapper.like("branch_name", branchName);
         }
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
         boolean isAdmin = false;

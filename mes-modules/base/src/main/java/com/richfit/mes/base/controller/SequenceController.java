@@ -178,13 +178,13 @@ public class SequenceController extends BaseController {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(optCode)) {
-            queryWrapper.like("opt_code", "%" + optCode + "%");
+            queryWrapper.like("opt_code", optCode);
         }
         if (!StringUtils.isNullOrEmpty(optName)) {
-            queryWrapper.like("opt_name", "%" + optName + "%");
+            queryWrapper.like("opt_name", optName);
         }
         if (!StringUtils.isNullOrEmpty(optName)) {
-            queryWrapper.like("opt_name", "%" + optName + "%");
+            queryWrapper.like("opt_name", optName);
         }
         if (!StringUtils.isNullOrEmpty(routerId)) {
             queryWrapper.eq("router_id", routerId);
@@ -258,7 +258,7 @@ public class SequenceController extends BaseController {
         for (int i = 0; i < result.size(); i++) {
             if (StringUtils.isNullOrEmpty(result.get(i).getOptCode())) {
                 QueryWrapper<Operatipon> qw = new QueryWrapper<Operatipon>();
-                qw.like("branch_code", "%" + result.get(i).getBranchCode() + "%");
+                qw.like("branch_code", result.get(i).getBranchCode());
                 if (!StringUtils.isNullOrEmpty(result.get(i).getOptId())) {
                     qw.eq("id", result.get(i).getOptId());
                 }

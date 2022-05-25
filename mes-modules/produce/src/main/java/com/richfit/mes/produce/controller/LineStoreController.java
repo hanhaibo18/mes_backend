@@ -248,13 +248,13 @@ public class LineStoreController {
             queryWrapper.eq("track_type", trackType);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
-            queryWrapper.like("certificate_no", "%" + certificateNo + "%");
+            queryWrapper.like("certificate_no", certificateNo);
         }
         if (!StringUtils.isNullOrEmpty(workblankNo)) {
-            queryWrapper.like("workblank_no", "%" + workblankNo + "%");
+            queryWrapper.like("workblank_no", workblankNo);
         }
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.eq("branch_code", branchCode);
@@ -282,10 +282,10 @@ public class LineStoreController {
             queryWrapper.eq("material_type", materialType);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
-            queryWrapper.like("material_no", "%" + materialNo + "%");
+            queryWrapper.like("material_no", materialNo);
         }
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.eq("branch_code", branchCode);
@@ -306,16 +306,16 @@ public class LineStoreController {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
-            queryWrapper.like("material_no", "%" + materialNo + "%");
+            queryWrapper.like("material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
-            queryWrapper.like("certificate_no", "%" + certificateNo + "%");
+            queryWrapper.like("certificate_no", certificateNo);
         }
         if (!StringUtils.isNullOrEmpty(workblankNo)) {
-            queryWrapper.like("workblank_no", "%" + workblankNo + "%");
+            queryWrapper.like("workblank_no", workblankNo);
         }
         if (!StringUtils.isNullOrEmpty(trackType)) {
             queryWrapper.eq("track_type", trackType);

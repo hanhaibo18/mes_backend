@@ -136,16 +136,16 @@ public class ProductController extends BaseController {
     public CommonResult<IPage<Product>> selectProduct(String drawingNo, String materialNo, String materialType, String order, String orderCol, int page, int limit, String productName) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("p.drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("p.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
-            queryWrapper.like("p.material_no", "%" + materialNo + "%");
+            queryWrapper.like("p.material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             queryWrapper.eq("p.material_type", materialType);
         }
         if (!StringUtils.isNullOrEmpty(productName)) {
-            queryWrapper.like("p.product_name", "%" + productName + "%");
+            queryWrapper.like("p.product_name", productName);
         }
         // queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         if (!StringUtils.isNullOrEmpty(orderCol)) {
@@ -231,7 +231,7 @@ public class ProductController extends BaseController {
     public CommonResult<List<Product>> selectProductList(String inputKey, String drawingNo, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(inputKey)) {
-            queryWrapper.and(wrapper -> wrapper.like("material_no", "%" + inputKey + "%").or().like("product_name", "%" + inputKey + "%"));
+            queryWrapper.and(wrapper -> wrapper.like("material_no", inputKey).or().like("product_name", inputKey));
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.eq("drawing_no", drawingNo);
@@ -258,7 +258,7 @@ public class ProductController extends BaseController {
     public CommonResult<List<Product>> selectProductListPage(int page, int limit, String inputKey, String drawingNo, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(inputKey)) {
-            queryWrapper.and(wrapper -> wrapper.like("material_no", "%" + inputKey + "%").or().like("product_name", "%" + inputKey + "%"));
+            queryWrapper.and(wrapper -> wrapper.like("material_no", inputKey).or().like("product_name", inputKey));
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.eq("drawing_no", drawingNo);
@@ -284,10 +284,10 @@ public class ProductController extends BaseController {
     public CommonResult<List<Product>> selectProductList2(String materialNo, String drawingNo, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(materialNo)) {
-            queryWrapper.like("material_no", "%" + materialNo + "%");
+            queryWrapper.like("material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             if (isEqualType != null) {
@@ -368,10 +368,10 @@ public class ProductController extends BaseController {
         try {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+                queryWrapper.like("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(materialNo)) {
-                queryWrapper.like("material_no", "%" + materialNo + "%");
+                queryWrapper.like("material_no", materialNo);
             }
             if (!StringUtils.isNullOrEmpty(materialType)) {
                 queryWrapper.eq("material_type", materialType);

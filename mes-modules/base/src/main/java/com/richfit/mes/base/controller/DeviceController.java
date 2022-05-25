@@ -64,10 +64,10 @@ public class DeviceController extends BaseController {
                 queryWrapper.eq("code", code);
             }
             if (!StringUtils.isNullOrEmpty(name)) {
-                queryWrapper.like("name", "%" + name + "%");
+                queryWrapper.like("name", name);
             }
             if (!StringUtils.isNullOrEmpty(type)) {
-                queryWrapper.like("type", "%" + type + "%");
+                queryWrapper.like("type", type);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
@@ -155,10 +155,10 @@ public class DeviceController extends BaseController {
             queryWrapper.eq("code", code);
         }
         if (!StringUtils.isNullOrEmpty(name)) {
-            queryWrapper.like("name", "%" + name + "%");
+            queryWrapper.like("name", name);
         }
         if (!StringUtils.isNullOrEmpty(type)) {
-            queryWrapper.like("type", "%" + type + "%");
+            queryWrapper.like("type", type);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -404,10 +404,10 @@ public class DeviceController extends BaseController {
                 queryWrapper.eq("code", code);
             }
             if (!StringUtils.isNullOrEmpty(name)) {
-                queryWrapper.like("name", "%" + name + "%");
+                queryWrapper.like("name", name);
             }
             if (!StringUtils.isNullOrEmpty(type)) {
-                queryWrapper.like("type", "%" + type + "%");
+                queryWrapper.like("type", type);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
