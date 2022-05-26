@@ -70,16 +70,16 @@ public class PurchaseOrderController {
             wrapper.between("purchase_date", createDate, endDate);
         }
         if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getOrderNo())) {
-            wrapper.like("order_no", "%" + purchaseOrderDto.getOrderNo() + "%");
+            wrapper.like("order_no", purchaseOrderDto.getOrderNo());
         }
         if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getBranchCode())) {
-            wrapper.like("branch_code", "%" + purchaseOrderDto.getBranchCode() + "%");
+            wrapper.like("branch_code", purchaseOrderDto.getBranchCode());
         }
         if (!StringUtils.isNullOrEmpty(purchaseOrderDto.getTenantId())) {
-            wrapper.like("tenant_id", "%" + purchaseOrderDto.getTenantId() + "%");
+            wrapper.like("tenant_id", purchaseOrderDto.getTenantId());
         }
         if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getMaterialNo())) {
-            wrapper.like("material_no", "%" + purchaseOrderDto.getMaterialNo() + "%");
+            wrapper.like("material_no", purchaseOrderDto.getMaterialNo());
         }
         IPage<ProducePurchaseOrder> productPage = producePurchaseOrderService.page(
                 new Page<>(queryDto.getPage(), queryDto.getLimit()), wrapper);
@@ -102,16 +102,16 @@ public class PurchaseOrderController {
                 wrapper.between("purchase_date", createDate, endDate);
             }
             if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getOrderNo())) {
-                wrapper.like("order_no", "%" + purchaseOrderDto.getOrderNo() + "%");
+                wrapper.like("order_no", purchaseOrderDto.getOrderNo());
             }
             if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getMaterialNo())) {
-                wrapper.like("material_no", "%" + purchaseOrderDto.getMaterialNo() + "%");
+                wrapper.like("material_no", purchaseOrderDto.getMaterialNo());
             }
             if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getBranchCode())) {
-                wrapper.like("branch_code", "%" + purchaseOrderDto.getBranchCode() + "%");
+                wrapper.like("branch_code", purchaseOrderDto.getBranchCode());
             }
             if (isEmpty && !StringUtils.isNullOrEmpty(purchaseOrderDto.getTenantId())) {
-                wrapper.like("tenant_id", "%" + purchaseOrderDto.getTenantId() + "%");
+                wrapper.like("tenant_id", purchaseOrderDto.getTenantId());
             }
             List<ProducePurchaseOrder> list = producePurchaseOrderService.list(wrapper);
 

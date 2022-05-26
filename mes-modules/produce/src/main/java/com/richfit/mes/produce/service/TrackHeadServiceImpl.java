@@ -337,13 +337,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("status", querySplitDto.getStatus());
         }
         if (!StringUtils.isNullOrEmpty(querySplitDto.getTrackNo())) {
-            queryWrapper.like("track_no", "%" + querySplitDto.getTrackNo() + "%");
+            queryWrapper.like("track_no", querySplitDto.getTrackNo());
         }
         if (!StringUtils.isNullOrEmpty(querySplitDto.getDrawingNo())) {
-            queryWrapper.like("drawing_no", "%" + querySplitDto.getDrawingNo() + "%");
+            queryWrapper.like("drawing_no", querySplitDto.getDrawingNo());
         }
         if (!StringUtils.isNullOrEmpty(querySplitDto.getProductNo())) {
-            queryWrapper.like("product_no", "%" + querySplitDto.getProductNo() + "%");
+            queryWrapper.like("product_no", querySplitDto.getProductNo());
         }
         if (!StringUtils.isNullOrEmpty(querySplitDto.getTemplateCode())) {
             queryWrapper.eq("template_code", querySplitDto.getTemplateCode());
@@ -359,7 +359,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         return this.page(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
     }
- 
+
     @Override
     public CommonResult<Boolean> saveTrackHeader(SaveTrackHeadDto saveTrackHeadDto) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();

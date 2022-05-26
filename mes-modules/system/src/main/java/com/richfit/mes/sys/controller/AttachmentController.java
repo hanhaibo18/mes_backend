@@ -187,7 +187,7 @@ public class AttachmentController extends BaseController {
         }
         // 根据关联ID过滤
         if (StringUtils.isNotEmpty(relationName)) {
-            queryWrapper.like("relation_name", "%" + relationName + "%");
+            queryWrapper.like("relation_name", relationName);
         }
         // 根据分类过滤
         if (StringUtils.isNotEmpty(classify)) {

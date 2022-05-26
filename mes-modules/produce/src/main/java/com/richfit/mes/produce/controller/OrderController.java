@@ -57,7 +57,7 @@ public class OrderController extends BaseController {
      */
     @ApiOperation(value = "查询订单信息", notes = "根据查询条件返回订单信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="queryDto",value="订单属性", paramType="BasePageDto")
+            @ApiImplicitParam(name = "queryDto", value = "订单属性", paramType = "BasePageDto")
     })
     @GetMapping("/query/page")
     public CommonResult queryByCondition(BasePageDto<String> queryDto) throws GlobalException {
@@ -69,20 +69,20 @@ public class OrderController extends BaseController {
             e.printStackTrace();
         }
 
-        if(null==orderDto){
+        if (null == orderDto) {
             orderDto = new OrderDto();
         }
 
 //        orderDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        if(StringUtils.hasText(orderDto.getOrderCol())){
+        if (StringUtils.hasText(orderDto.getOrderCol())) {
             orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
-        }else{
+        } else {
             orderDto.setOrderCol("status");
             orderDto.setOrder("desc");
         }
 
 
-        IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()),orderDto);
+        IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
 
         return CommonResult.success(orderList);
 
@@ -94,7 +94,7 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "新增计划信息", notes = "新增计划信息")
     @ApiImplicitParam(name = "order", value = "订单", required = true, dataType = "Order", paramType = "body")
     @PostMapping("/save")
-    public CommonResult<Boolean> savePlan(@RequestBody Order order) throws GlobalException{
+    public CommonResult<Boolean> savePlan(@RequestBody Order order) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         //order.setTenantId(user.getTenantId());
         //order.setBranchCode(user.getOrgId());
@@ -111,7 +111,6 @@ public class OrderController extends BaseController {
 
     /**
      * 根据ID获取订单
-     *
      */
     @ApiOperation(value = "获取订单信息", notes = "根据id获取订单信息")
     @ApiImplicitParam(name = "id", value = "订单Id", required = true, dataType = "String", paramType = "path")
@@ -128,7 +127,7 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "修改计划信息", notes = "修改计划信息")
     @ApiImplicitParam(name = "order", value = "订单", required = true, dataType = "Order", paramType = "body")
     @PutMapping("/update")
-    public CommonResult<Boolean> updateOrder(@RequestBody Order order) throws GlobalException{
+    public CommonResult<Boolean> updateOrder(@RequestBody Order order) throws GlobalException {
 
         Action action = new Action();
         action.setActionType("1");
@@ -145,10 +144,10 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "删除计划信息", notes = "根据计划id删除计划记录")
     @ApiImplicitParam(name = "id", value = "订单id", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/delete/{id}")
-    public CommonResult<Boolean> delById(@PathVariable String id) throws GlobalException{
+    public CommonResult<Boolean> delById(@PathVariable String id) throws GlobalException {
         //计划状态为‘0’ 未开始时，才能删除
         Order order = orderService.getById(id);
-        if(0!=order.getStatus()){
+        if (0 != order.getStatus()) {
             return CommonResult.failed("订单已匹配计划，请先删除计划，否则不能删除!");
         }
         Action action = new Action();
@@ -169,12 +168,12 @@ public class OrderController extends BaseController {
             QueryWrapper<Order> wrapper = new QueryWrapper<>();
             boolean isEmpty = null != orderDto;
             if (isEmpty && StringUtils.hasText(orderDto.getOrderSn())) {
-                wrapper.like("order_sn",orderDto.getOrderSn());
+                wrapper.like("order_sn", orderDto.getOrderSn());
             }
-            if (isEmpty && StringUtils.hasText(orderDto.getMaterialCode())){
+            if (isEmpty && StringUtils.hasText(orderDto.getMaterialCode())) {
                 wrapper.like("material_code", orderDto.getMaterialCode());
             }
-            if (isEmpty && StringUtils.hasText(orderDto.getStartTime())){
+            if (isEmpty && StringUtils.hasText(orderDto.getStartTime())) {
                 wrapper.ge("order_date", orderDto.getStartTime());
             }
             if (isEmpty && StringUtils.hasText(orderDto.getEndTime())) {
@@ -184,22 +183,22 @@ public class OrderController extends BaseController {
                 wrapper.eq("status", orderDto.getStatus());
             }
             if (isEmpty && StringUtils.hasText(orderDto.getBranchCode())) {
-                wrapper.like("branch_code", "%" + orderDto.getBranchCode() + "%");
+                wrapper.like("branch_code", orderDto.getBranchCode());
             }
             if (isEmpty && StringUtils.hasText(orderDto.getTenantId())) {
-                wrapper.like("tenant_id", "%" + orderDto.getTenantId() + "%");
+                wrapper.like("tenant_id", orderDto.getTenantId());
             }
             List<Order> list = orderService.list(wrapper);
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 
-            String fileName =   "采购订单_" + format.format(new Date()) + ".xlsx";
+            String fileName = "采购订单_" + format.format(new Date()) + ".xlsx";
 
-            String[] columnHeaders = {"订单号", "物料号","物料描述", "工厂编号",  "控制者", "数量", "计划开始时间", "计划结束时间","销售订单","工号","合同","交货日期", "最后更新时间","最后更新人","订单日期"};
+            String[] columnHeaders = {"订单号", "物料号", "物料描述", "工厂编号", "控制者", "数量", "计划开始时间", "计划结束时间", "销售订单", "工号", "合同", "交货日期", "最后更新时间", "最后更新人", "订单日期"};
 
-            String[] fieldNames = {"orderSn","materialNo","materialCode","branchCode","inChargeOrg","orderNum","startTime","endTime","","","","","modifyTime","modifyBy","orderDate"};
+            String[] fieldNames = {"orderSn", "materialNo", "materialCode", "branchCode", "inChargeOrg", "orderNum", "startTime", "endTime", "", "", "", "", "modifyTime", "modifyBy", "orderDate"};
             //export
-            ExcelUtils.exportExcel(fileName, list , columnHeaders, fieldNames, rsp);
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

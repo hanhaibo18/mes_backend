@@ -10,14 +10,14 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Abnormal;
 import com.richfit.mes.common.model.produce.AbnormalConfig;
 import com.richfit.mes.common.security.util.SecurityUtils;
-
+import com.richfit.mes.produce.dao.AbnormalConfigMapper;
+import com.richfit.mes.produce.dao.AbnormalMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.richfit.mes.produce.dao.AbnormalConfigMapper;
-import com.richfit.mes.produce.dao.AbnormalMapper;
+
 import java.util.Date;
 
 /**
@@ -37,15 +37,15 @@ public class AbnormalController extends BaseController {
     @Autowired
     private AbnormalMapper abnormalMapper;
     @Autowired
-    private AbnormalConfigMapper abnormalConfigMapper;   
-       
+    private AbnormalConfigMapper abnormalConfigMapper;
+
     public static String ID_NULL_MESSAGE = "ID不能为空!";
     public static String CLASS_NAME_NULL_MESSAGE = "名称不能为空!";
     public static String SUCCESS_MESSAGE = "操作成功！";
 
-     @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
+    @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
     @GetMapping("/page")
-    public CommonResult<IPage<Abnormal>> pageAbnormal(String siteId, String orgId,String type,String name,String startTime,String endTime,String status,String isAndon,  int page, int limit) {
+    public CommonResult<IPage<Abnormal>> pageAbnormal(String siteId, String orgId, String type, String name, String startTime, String endTime, String status, String isAndon, int page, int limit) {
         QueryWrapper<Abnormal> queryWrapper = new QueryWrapper<Abnormal>();
         if (!StringUtils.isNullOrEmpty(siteId)) {
             queryWrapper.eq("site_id", siteId);
@@ -56,28 +56,28 @@ public class AbnormalController extends BaseController {
         if (!StringUtils.isNullOrEmpty(type)) {
             queryWrapper.eq("type", Integer.parseInt(type));
         }
-         if (!StringUtils.isNullOrEmpty(status)) {
+        if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("status", Integer.parseInt(status));
         }
-          if (!StringUtils.isNullOrEmpty(isAndon)) {
+        if (!StringUtils.isNullOrEmpty(isAndon)) {
             queryWrapper.eq("is_andon", Integer.parseInt(isAndon));
         }
         if (!StringUtils.isNullOrEmpty(name)) {
-            queryWrapper.like("name", "%" + name + "%");
+            queryWrapper.like("name", name);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-           queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
         }
- 
+
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.orderByDesc(new String[] {"status","modify_time"});
+        queryWrapper.orderByDesc(new String[]{"status", "modify_time"});
         return CommonResult.success(abnormalMapper.selectPage(new Page<Abnormal>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
-    
-       @ApiOperation(value = "新增异常报告", notes = "新增异常报告")
+
+    @ApiOperation(value = "新增异常报告", notes = "新增异常报告")
     @PostMapping("/save")
     public CommonResult<Boolean> saveAbnormal(@RequestBody Abnormal entity) throws GlobalException {
         entity.setSubmitBy(SecurityUtils.getCurrentUser().getUsername());
@@ -97,11 +97,10 @@ public class AbnormalController extends BaseController {
         }
         Abnormal oldEntity = abnormalMapper.selectById(entity);
         // 如果状态为0，则写入关闭人，关闭时间
-        if(oldEntity.getStatus() ==1 &&entity.getStatus()==0)
-        {
+        if (oldEntity.getStatus() == 1 && entity.getStatus() == 0) {
             entity.setCloseBy(SecurityUtils.getCurrentUser().getUsername());
             entity.setCloseTime(new Date());
-                 
+
         }
         entity.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
         entity.setModifyTime(new Date());
@@ -120,9 +119,9 @@ public class AbnormalController extends BaseController {
         abnormalMapper.deleteById(entity);
         return CommonResult.success(true);
     }
-    
-    
-       @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
+
+
+    @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
     @GetMapping("/config/page")
     public CommonResult<IPage<AbnormalConfig>> pageAbnormalConfig(String siteId, String orgId, int page, int limit) {
         QueryWrapper<AbnormalConfig> queryWrapper = new QueryWrapper<AbnormalConfig>();
@@ -132,13 +131,13 @@ public class AbnormalController extends BaseController {
         if (!StringUtils.isNullOrEmpty(orgId)) {
             queryWrapper.eq("org_id", orgId);
         }
- 
+
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.orderByDesc(new String[] {"status","modify_time"});
+        queryWrapper.orderByDesc(new String[]{"status", "modify_time"});
         return CommonResult.success(abnormalConfigMapper.selectPage(new Page<AbnormalConfig>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
-    
-       @ApiOperation(value = "新增异常报告", notes = "新增异常报告")
+
+    @ApiOperation(value = "新增异常报告", notes = "新增异常报告")
     @PostMapping("/config/save")
     public CommonResult<Boolean> saveAbnormalConfig(@RequestBody AbnormalConfig entity) throws GlobalException {
         entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -172,5 +171,5 @@ public class AbnormalController extends BaseController {
         abnormalConfigMapper.deleteById(entity);
         return CommonResult.success(true);
     }
-     
+
 }

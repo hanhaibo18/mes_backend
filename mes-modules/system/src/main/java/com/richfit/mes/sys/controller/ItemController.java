@@ -7,10 +7,8 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.sys.ItemClass;
 import com.richfit.mes.common.model.sys.ItemParam;
-import com.richfit.mes.common.model.sys.Menu;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.ItemClassService;
 import com.richfit.mes.sys.service.ItemParamService;
@@ -56,7 +54,7 @@ public class ItemController extends BaseController {
         entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         entity.setCreateTime(new Date());
-        if(StringUtils.isNullOrEmpty(entity.getName())){
+        if (StringUtils.isNullOrEmpty(entity.getName())) {
             return CommonResult.failed(ITEM_CLASS_NAME_NULL_MESSAGE);
         }
         return CommonResult.success(itemClassService.save(entity));
@@ -65,10 +63,10 @@ public class ItemController extends BaseController {
     @ApiOperation(value = "修改字典分类", notes = "修改字典分类")
     @PutMapping("/item/class")
     public CommonResult<Boolean> updateItemClass(@RequestBody ItemClass entity) throws GlobalException {
-        if(StringUtils.isNullOrEmpty(entity.getId())){
+        if (StringUtils.isNullOrEmpty(entity.getId())) {
             return CommonResult.failed(ITEM_ID_NULL_MESSAGE);
         }
-        if(StringUtils.isNullOrEmpty(entity.getName())){
+        if (StringUtils.isNullOrEmpty(entity.getName())) {
             return CommonResult.failed(ITEM_CLASS_NAME_NULL_MESSAGE);
         }
         entity.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
@@ -80,13 +78,13 @@ public class ItemController extends BaseController {
     @ApiOperation(value = "删除字典分类", notes = "删除字典分类")
     @DeleteMapping("/item/class/{id}")
     public CommonResult<Boolean> deleteItemClass(@PathVariable String id) throws GlobalException {
-        if(StringUtils.isNullOrEmpty(id)){
+        if (StringUtils.isNullOrEmpty(id)) {
             return CommonResult.failed(ITEM_ID_NULL_MESSAGE);
         }
-        List<ItemParam> params =  itemParamService.list(
-                new QueryWrapper<ItemParam>().eq("class_id",id)
+        List<ItemParam> params = itemParamService.list(
+                new QueryWrapper<ItemParam>().eq("class_id", id)
         );
-        if(params.size() > 0){
+        if (params.size() > 0) {
             return CommonResult.failed(HAVE_PARAMS_MESSAGE);
         }
         return CommonResult.success(itemClassService.removeById(id));
@@ -98,10 +96,10 @@ public class ItemController extends BaseController {
         entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         entity.setCreateTime(new Date());
-        if(StringUtils.isNullOrEmpty(entity.getCode())){
+        if (StringUtils.isNullOrEmpty(entity.getCode())) {
             return CommonResult.failed(ITEM_PARAM_CODE_NULL_MESSAGE);
         }
-        if(StringUtils.isNullOrEmpty(entity.getLabel())){
+        if (StringUtils.isNullOrEmpty(entity.getLabel())) {
             return CommonResult.failed(ITEM_PARAM_LABEL_NULL_MESSAGE);
         }
         return CommonResult.success(itemParamService.save(entity));
@@ -110,13 +108,13 @@ public class ItemController extends BaseController {
     @ApiOperation(value = "修改字典参数", notes = "修改字典参数")
     @PutMapping("/item/param")
     public CommonResult<Boolean> updateItemParam(@RequestBody ItemParam entity) throws GlobalException {
-        if(StringUtils.isNullOrEmpty(entity.getId())){
+        if (StringUtils.isNullOrEmpty(entity.getId())) {
             return CommonResult.failed(ITEM_ID_NULL_MESSAGE);
         }
-        if(StringUtils.isNullOrEmpty(entity.getCode())){
+        if (StringUtils.isNullOrEmpty(entity.getCode())) {
             return CommonResult.failed(ITEM_PARAM_CODE_NULL_MESSAGE);
         }
-        if(StringUtils.isNullOrEmpty(entity.getLabel())){
+        if (StringUtils.isNullOrEmpty(entity.getLabel())) {
             return CommonResult.failed(ITEM_PARAM_LABEL_NULL_MESSAGE);
         }
         entity.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
@@ -127,7 +125,7 @@ public class ItemController extends BaseController {
     @ApiOperation(value = "删除字典参数", notes = "根据参数ID删除字典参数")
     @DeleteMapping("/item/param")
     public CommonResult<Boolean> deleteItemClass(@RequestBody List<String> ids) throws GlobalException {
-        if(ids == null || ids.size() == 0){
+        if (ids == null || ids.size() == 0) {
             return CommonResult.failed(ITEM_ID_NULL_MESSAGE);
         }
         return CommonResult.success(itemParamService.removeByIds(ids));
@@ -135,23 +133,23 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "分页查询字典参数", notes = "根据参数编码、参数名称、分类分页查询字典参数")
     @GetMapping("/item/param")
-    public CommonResult<IPage<ItemParam>> selectItemParam(String code, String label, String classId, int page, int limit){
+    public CommonResult<IPage<ItemParam>> selectItemParam(String code, String label, String classId, int page, int limit) {
         QueryWrapper<ItemParam> queryWrapper = new QueryWrapper<ItemParam>();
 
-        if(!StringUtils.isNullOrEmpty(classId)){
+        if (!StringUtils.isNullOrEmpty(classId)) {
             queryWrapper.eq("class_id", classId);
-            if(!StringUtils.isNullOrEmpty(code)&&!StringUtils.isNullOrEmpty(classId)){
-                queryWrapper.like("code", "%" + code + "%");
+            if (!StringUtils.isNullOrEmpty(code) && !StringUtils.isNullOrEmpty(classId)) {
+                queryWrapper.like("code", code);
             }
-            if(!StringUtils.isNullOrEmpty(label)){
-                queryWrapper.like("label", "%" + label + "%");
+            if (!StringUtils.isNullOrEmpty(label)) {
+                queryWrapper.like("label", label);
             }
         } else {
-            if(!StringUtils.isNullOrEmpty(code)){
-                queryWrapper.inSql("class_id", "select id from sys_item_class where code ='"+code+"'");
+            if (!StringUtils.isNullOrEmpty(code)) {
+                queryWrapper.inSql("class_id", "select id from sys_item_class where code ='" + code + "'");
             }
-            if(!StringUtils.isNullOrEmpty(label)){
-                queryWrapper.inSql("class_id", "select id from sys_item_class where label ='"+label+"'");
+            if (!StringUtils.isNullOrEmpty(label)) {
+                queryWrapper.inSql("class_id", "select id from sys_item_class where label ='" + label + "'");
             }
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -161,16 +159,16 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "查询字典参数", notes = "根据参数类别和参数名称查询字典参数")
     @GetMapping("/item/param/list")
-    public CommonResult<List<ItemParam>> selectItemParamByCode(String code, String label){
+    public CommonResult<List<ItemParam>> selectItemParamByCode(String code, String label) {
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
-        if(!StringUtils.isNullOrEmpty(code)){
+        if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
         }
         ItemClass iClass = itemClassService.getOne(queryWrapper);
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("class_id", iClass.getId());
-        if(!StringUtils.isNullOrEmpty(label)){
-            wrapper.like("label", "%" + label + "%");
+        if (!StringUtils.isNullOrEmpty(label)) {
+            wrapper.like("label", label);
         }
 
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -180,9 +178,9 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "查询字典参数数量", notes = "根据参数分类查询字典参数总数")
     @GetMapping("/item/param/count")
-    public CommonResult<Integer> selectItemParamCount(String classId){
+    public CommonResult<Integer> selectItemParamCount(String classId) {
         QueryWrapper<ItemParam> queryWrapper = new QueryWrapper<ItemParam>();
-        if(!StringUtils.isNullOrEmpty(classId)){
+        if (!StringUtils.isNullOrEmpty(classId)) {
             queryWrapper.eq("class_id", classId);
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -191,13 +189,13 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "查询字典分类", notes = "查询字典分类")
     @GetMapping("/item/class")
-    public CommonResult<List<ItemClass>> selectItemClass(String name, String code){
+    public CommonResult<List<ItemClass>> selectItemClass(String name, String code) {
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
-        if(!StringUtils.isNullOrEmpty(name)){
-            queryWrapper.like("name", "%" + name + "%");
+        if (!StringUtils.isNullOrEmpty(name)) {
+            queryWrapper.like("name", name);
         }
-        if(!StringUtils.isNullOrEmpty(code)) {
-            queryWrapper.eq("code",  code);
+        if (!StringUtils.isNullOrEmpty(code)) {
+            queryWrapper.eq("code", code);
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(itemClassService.list(queryWrapper), ITEM_SUCCESS_MESSAGE);

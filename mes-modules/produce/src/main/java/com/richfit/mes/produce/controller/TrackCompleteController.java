@@ -4,30 +4,30 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.TrackComplete;
-import com.richfit.mes.produce.service.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
-import java.util.Date;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
-import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import java.util.ArrayList;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 马峰
@@ -64,19 +64,19 @@ public class TrackCompleteController extends BaseController {
      */
     @ApiOperation(value = "派工分页查询", notes = "派工分页查询")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-        @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType,String userId, String userName,String branchCode,String workNo,String routerNo,String order , String orderCol) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
                 queryWrapper.eq("ti_id", tiId);
             }
             if (!StringUtils.isNullOrEmpty(userId)) {
-                queryWrapper.apply("(user_id='"+userId+"' or user_name='"+userName+"')");
+                queryWrapper.apply("(user_id='" + userId + "' or user_name='" + userName + "')");
             }
 
             if (!StringUtils.isNullOrEmpty(workNo)) {
@@ -84,11 +84,11 @@ public class TrackCompleteController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
 
-                queryWrapper.like("drawing_no", "%" + routerNo + "%");
+                queryWrapper.like("drawing_no", routerNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
 
-                queryWrapper.like("track_no2", "%" + trackNo + "%");
+                queryWrapper.like("track_no2", trackNo);
             }
             if (!StringUtils.isNullOrEmpty(siteId)) {
                 queryWrapper.apply("assign_id in (select id from produce_assign where site_id='" + siteId + "')");
@@ -119,11 +119,11 @@ public class TrackCompleteController extends BaseController {
                 //queryWrapper.apply("(complete_by ='" + user.getUserId() + "' || complete_by is null || complete_by ='' || user_id ='" + user.getUserId() + "' || user_id is null || user_id ='' )");
             }
 
-            if(!StringUtils.isNullOrEmpty(orderCol)){
-                if(!StringUtils.isNullOrEmpty(order)){
-                    if(order.equals("desc")){
+            if (!StringUtils.isNullOrEmpty(orderCol)) {
+                if (!StringUtils.isNullOrEmpty(order)) {
+                    if (order.equals("desc")) {
                         queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                    } else if (order.equals("asc")){
+                    } else if (order.equals("asc")) {
                         queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                     }
                 } else {
@@ -202,16 +202,15 @@ public class TrackCompleteController extends BaseController {
             trackItem.setSinglePieceHours(complete.getSinglePieceHours());
             trackItemService.updateById(trackItem);
             return CommonResult.success(complete, "操作成功！");
-        }
-        catch (Exception e) {
-            return CommonResult.failed("操作失败！"+e.getMessage());
+        } catch (Exception e) {
+            return CommonResult.failed("操作失败！" + e.getMessage());
         }
     }
 
     @ApiOperation(value = "新增派工", notes = "新增派工")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "qcpersonId", value = "质检人员", required = true, dataType = "String", paramType = "query"),
-        @ApiImplicitParam(name = "complete", value = "派工", required = true, dataType = "Object", paramType = "query")
+            @ApiImplicitParam(name = "qcpersonId", value = "质检人员", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "complete", value = "派工", required = true, dataType = "Object", paramType = "query")
     })
     @PostMapping("/batchAdd")
     @Transactional(rollbackFor = Exception.class)
@@ -367,7 +366,6 @@ public class TrackCompleteController extends BaseController {
             TrackComplete trackComplete = trackCompleteService.getById(ids[i]);
 
 
-
             TrackItem trackItem = trackItemService.getById(trackComplete.getTiId());
             if (null == trackItem) {
                 trackCompleteService.removeById(ids[i]);
@@ -389,7 +387,6 @@ public class TrackCompleteController extends BaseController {
                         return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已报工，需要先取消后序工序");
                     }
                 }
-
 
 
                 //将后置工序IS_CURRENT设置为否，状态为1
@@ -415,8 +412,6 @@ public class TrackCompleteController extends BaseController {
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                     trackHead.setStatus("1");
                     trackHeadService.updateById(trackHead);
-
-
 
 
                     trackCompleteService.removeById(ids[i]);
@@ -665,7 +660,7 @@ public class TrackCompleteController extends BaseController {
         List<TrackItem> items = c.selectTrackHead(null, curItem.getTrackHeadId(), null).getData();
         List<TrackItem> activeItems = new ArrayList();
 
-        //跟单工序跳转，获取当前激活工序，并激活下个工序          
+        //跟单工序跳转，获取当前激活工序，并激活下个工序
         Boolean curOrderEnable = true;
         //下道激活工序
         int nextOrder = -1;
@@ -738,15 +733,15 @@ public class TrackCompleteController extends BaseController {
                         activeItems.add(items.get(i));
                         trackItemService.updateById(items.get(i));
                         // todo 如果自动派工，那么执行派工操作
-                        if (null!=items.get(i-1) &&null!=items.get(i-1).getIsAutoSchedule()&&items.get(i-1).getIsAutoSchedule() == 1) {
+                        if (null != items.get(i - 1) && null != items.get(i - 1).getIsAutoSchedule() && items.get(i - 1).getIsAutoSchedule() == 1) {
                             String deviceId = "";
                             String userId = "ba7dd26f0a669f9e09343f9b579b0321";
                             List<SequenceSite> sequenceSites = baseServiceClient.getSequenceDevice(items.get(i).getOptId(), null, "device", null, "1").getData();
                             if (sequenceSites.size() == 1) {
                                 deviceId = sequenceSites.get(0).getSiteId();
                                 if (!StringUtils.isNullOrEmpty(deviceId)) {
-                                   List<DevicePerson> devicePersons = baseServiceClient.getDevicePerson(deviceId, null, null, "1").getData();
-                                   if (devicePersons.size() == 1) {
+                                    List<DevicePerson> devicePersons = baseServiceClient.getDevicePerson(deviceId, null, null, "1").getData();
+                                    if (devicePersons.size() == 1) {
                                         userId = devicePersons.get(0).getUserId();
                                     }
                                 }

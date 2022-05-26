@@ -52,23 +52,23 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "新增图纸申请", notes = "新增图纸申请")
     @PostMapping("/manage")
-    public CommonResult<DrawingApply> addDrawingApply(@RequestBody DrawingApply drawingApply){
-        if(StringUtils.isNullOrEmpty(drawingApply.getDrawingNo())){
+    public CommonResult<DrawingApply> addDrawingApply(@RequestBody DrawingApply drawingApply) {
+        if (StringUtils.isNullOrEmpty(drawingApply.getDrawingNo())) {
             return CommonResult.failed(DRAWING_APPLY_NO_NULL_MESSAGE);
         } else {
             QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
             queryWrapper.eq("drawing_no", drawingApply.getDrawingNo());
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
-            if(oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())){
+            if (oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())) {
                 return CommonResult.failed("已有该图号的申请！");
             } else {
                 drawingApply.setStatus("0");
                 drawingApply.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 drawingApply.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 boolean bool = drawingApplyService.save(drawingApply);
-                if(bool){
-                    return CommonResult.success(drawingApply,DRAWING_APPLY_SUCCESS_MESSAGE);
+                if (bool) {
+                    return CommonResult.success(drawingApply, DRAWING_APPLY_SUCCESS_MESSAGE);
                 } else {
                     return CommonResult.failed(DRAWING_APPLY_FAILED_MESSAGE);
                 }
@@ -79,16 +79,16 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "修改图纸申请", notes = "修改图纸申请")
     @PutMapping("/manage")
-    public CommonResult<DrawingApply> updateDrawingApply(@RequestBody DrawingApply drawingApply, String oldDrawingNo){
-        if(StringUtils.isNullOrEmpty(drawingApply.getDrawingNo())){
+    public CommonResult<DrawingApply> updateDrawingApply(@RequestBody DrawingApply drawingApply, String oldDrawingNo) {
+        if (StringUtils.isNullOrEmpty(drawingApply.getDrawingNo())) {
             return CommonResult.failed(DRAWING_APPLY_NO_NULL_MESSAGE);
         } else {
-            if(!drawingApply.getDrawingNo().equals(oldDrawingNo)){
+            if (!drawingApply.getDrawingNo().equals(oldDrawingNo)) {
                 QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
                 queryWrapper.eq("drawing_no", drawingApply.getDrawingNo());
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                DrawingApply oldApply= drawingApplyService.getOne(queryWrapper);
-                if(oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())){
+                DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
+                if (oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())) {
                     return CommonResult.failed("已有该图号的申请！");
                 }
             }
@@ -96,7 +96,7 @@ public class DrawingApplyController extends BaseController {
             drawingApply.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             drawingApply.setModifyTime(new Date());
             boolean bool = drawingApplyService.updateById(drawingApply);
-            if(bool){
+            if (bool) {
                 return CommonResult.success(drawingApply, DRAWING_APPLY_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(DRAWING_APPLY_FAILED_MESSAGE);
@@ -106,8 +106,8 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "审批图纸申请", notes = "修改图纸申请")
     @GetMapping("/examine")
-    public CommonResult<Boolean> examineDrawingApply(String id, Integer status, String reason){
-        if(StringUtils.isNullOrEmpty(id)){
+    public CommonResult<Boolean> examineDrawingApply(String id, Integer status, String reason) {
+        if (StringUtils.isNullOrEmpty(id)) {
             return CommonResult.failed(DRAWING_APPLY_ID_NULL_MESSAGE);
         } else {
 
@@ -126,12 +126,12 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "删除物料", notes = "根据物料ID删除图纸申请")
     @DeleteMapping("/manage")
-    public CommonResult<DrawingApply> deleteDrawingApplyById(@RequestBody List<String> ids){
-        if(ids == null || ids.size() == 0){
+    public CommonResult<DrawingApply> deleteDrawingApplyById(@RequestBody List<String> ids) {
+        if (ids == null || ids.size() == 0) {
             return CommonResult.failed(DRAWING_APPLY_ID_NULL_MESSAGE);
         } else {
             boolean bool = drawingApplyService.removeByIds(ids);
-            if(bool){
+            if (bool) {
                 return CommonResult.success(null, DRAWING_APPLY_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(DRAWING_APPLY_FAILED_MESSAGE);
@@ -141,22 +141,22 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "分页查询图纸申请", notes = "根据图号、状态分页查询图纸申请")
     @GetMapping("/manage")
-    public CommonResult<IPage<DrawingApply>> selectDrawingApply(String drawingNo, Integer status, String order, String orderCol,  int page, int limit,String dataGroup){
+    public CommonResult<IPage<DrawingApply>> selectDrawingApply(String drawingNo, Integer status, String order, String orderCol, int page, int limit, String dataGroup) {
         QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
-        if(!StringUtils.isNullOrEmpty(drawingNo)){
-            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.like("drawing_no", drawingNo);
         }
-        if(null != status){
+        if (null != status) {
             queryWrapper.eq("status", status);
         }
 
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("datagroup", dataGroup);
-        if(!StringUtils.isNullOrEmpty(orderCol)){
-            if(!StringUtils.isNullOrEmpty(order)){
-                if("desc".equals(order)){
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if ("desc".equals(order)) {
                     queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                } else if ("asc".equals(order)){
+                } else if ("asc".equals(order)) {
                     queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
@@ -183,14 +183,14 @@ public class DrawingApplyController extends BaseController {
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
         tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
         try {
-            excelFile = new File(System.getProperty("java.io.tmpdir"),tempName.toString());
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
             //将导入的excel数据生成证件实体类list
-            List<DrawingApply> list =  ExcelUtils.importExcel(excelFile, DrawingApply.class, fieldNames, 1,0,0,tempName.toString());
+            List<DrawingApply> list = ExcelUtils.importExcel(excelFile, DrawingApply.class, fieldNames, 1, 0, 0, tempName.toString());
             FileUtils.delete(excelFile);
 
             list = list.stream().filter(item -> item.getDrawingNo() != null).collect(Collectors.toList());
-            list.forEach(item->{
+            list.forEach(item -> {
                 item.setStatus("0");
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -198,12 +198,12 @@ public class DrawingApplyController extends BaseController {
             });
 
             boolean bool = drawingApplyService.saveBatch(list);
-            if(bool){
+            if (bool) {
                 return CommonResult.success(null, DRAWING_APPLY_IMPORT_EXCEL_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(DRAWING_APPLY_FAILED_MESSAGE);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             return CommonResult.failed(DRAWING_APPLY_EXCEPTION_MESSAGE + e.getMessage());
         }
     }
@@ -213,10 +213,10 @@ public class DrawingApplyController extends BaseController {
     public void exportExcel(String drawingNo, Integer status, HttpServletResponse rsp) {
         try {
             QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
-            if(!StringUtils.isNullOrEmpty(drawingNo)){
-                queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+            if (!StringUtils.isNullOrEmpty(drawingNo)) {
+                queryWrapper.like("drawing_no", drawingNo);
             }
-            if(null != status){
+            if (null != status) {
                 queryWrapper.eq("status", status);
             }
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -226,16 +226,15 @@ public class DrawingApplyController extends BaseController {
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 
-            String fileName =   "图纸申请信息_" + format.format(new Date()) + ".xlsx";
-
+            String fileName = "图纸申请信息_" + format.format(new Date()) + ".xlsx";
 
 
             String[] columnHeaders = {"图号", "PDM图号", "描述", "状态", "工艺数量", "图纸数量", "BOM数量", "工艺", "备注"};
 
-            String[] fieldNames = {"drawingNo","pdmDrawingNo", "drawingDesc", "status", "routerNum","drawingNum","bomNum","router","remark"};
+            String[] fieldNames = {"drawingNo", "pdmDrawingNo", "drawingDesc", "status", "routerNum", "drawingNum", "bomNum", "router", "remark"};
 
             //export
-            ExcelUtils.exportExcel(fileName, list , columnHeaders, fieldNames, rsp);
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

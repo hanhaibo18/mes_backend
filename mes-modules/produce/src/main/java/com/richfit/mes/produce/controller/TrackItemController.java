@@ -123,7 +123,7 @@ public class TrackItemController extends BaseController {
             queryWrapper.eq("track_head_id", trackId);
         }
         if (!StringUtils.isNullOrEmpty(optVer)) {
-            queryWrapper.like("opt_ver", "%" + optVer + "%");
+            queryWrapper.like("opt_ver", optVer);
         }
         queryWrapper.orderByAsc("opt_sequence");
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);

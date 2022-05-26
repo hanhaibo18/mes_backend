@@ -1,45 +1,33 @@
 package com.richfit.mes.produce.controller;
 
-import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.ResultSetMetaData;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
-import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ProduceTrackHeadTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.CallableStatementCreator;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URLEncoder;
-
-import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.core.utils.FileUtils;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -60,7 +48,7 @@ public class TemplatePrintController extends BaseController {
 
     @Autowired
     private ProduceTrackHeadTemplateService produceTrackHeadTemplateService;
-  
+
 
     @Autowired
     private SystemServiceClient systemServiceClient;
@@ -71,10 +59,10 @@ public class TemplatePrintController extends BaseController {
 
         QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
         if (!StringUtils.isNullOrEmpty(templateCode)) {
-            queryWrapper.like("template_code", "%" + templateCode + "%");
+            queryWrapper.like("template_code", templateCode);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.like("branch_code", "%" + branchCode + "%");
+            queryWrapper.like("branch_code", branchCode);
         }
         List<ProduceTrackHeadTemplate> trackHeadTemplates = produceTrackHeadTemplateService.list(queryWrapper);
         ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
@@ -83,21 +71,17 @@ public class TemplatePrintController extends BaseController {
         String sql3 = p.getSheet1();
         String sql4 = p.getSheet1();
         String templateFileId = p.getFileId();
-        Attachment attach = systemServiceClient.attachment(templateFileId).getData();
+//        Attachment attach = systemServiceClient.attachment(templateFileId).getData();
         //InputStream inputStream = fastDfsService.downloadFile(attach.getGroupName(),attach.getFastFileId());
-
-
-
-
         List<List<Map<String, Object>>> sheets = new ArrayList();
         List<Map<String, Object>> list = new ArrayList();
         List<Map<String, Object>> list2 = new ArrayList();
-        if(null!=sql1&&sql1.contains("call")) {
-             list = (List) jdbcTemplate.execute(
+        if (null != sql1 && sql1.contains("call")) {
+            list = (List) jdbcTemplate.execute(
                     new CallableStatementCreator() {
                         public CallableStatement createCallableStatement(Connection con) throws SQLException {
                             // String storedProc = "{call sp_list_table(?,?)}";// 调用的sql
-                            String storedProc = String.format(sql1,id);// 调用的sql
+                            String storedProc = String.format(sql1, id);// 调用的sql
                             CallableStatement cs = con.prepareCall(storedProc);
                             cs.setString(1, id);// 设置输入参数的值
                             return cs;
@@ -120,18 +104,17 @@ public class TemplatePrintController extends BaseController {
                             return resultsMap;
                         }
                     });
-        } else if(null!=sql1) {
-            list =jdbcTemplate.queryForList(String.format(sql1,id));
-        } 
-        else {
+        } else if (null != sql1) {
+            list = jdbcTemplate.queryForList(String.format(sql1, id));
+        } else {
 
         }
-        if(null!=sql2&&sql1.contains("call")) {
-             list = (List) jdbcTemplate.execute(
+        if (null != sql2 && sql1.contains("call")) {
+            list = (List) jdbcTemplate.execute(
                     new CallableStatementCreator() {
                         public CallableStatement createCallableStatement(Connection con) throws SQLException {
                             // String storedProc = "{call sp_list_table(?,?)}";// 调用的sql
-                            String storedProc = String.format(sql2,id);// 调用的sql
+                            String storedProc = String.format(sql2, id);// 调用的sql
                             CallableStatement cs = con.prepareCall(storedProc);
                             cs.setString(1, id);// 设置输入参数的值
                             return cs;
@@ -154,24 +137,21 @@ public class TemplatePrintController extends BaseController {
                             return resultsMap;
                         }
                     });
-        } else if(null!=sql2) {
-            list2 =jdbcTemplate.queryForList(String.format(sql2,id));
-        }
-        else {
+        } else if (null != sql2) {
+            list2 = jdbcTemplate.queryForList(String.format(sql2, id));
+        } else {
 
         }
         sheets.add(list);
         sheets.add(list2);
         try {
-           // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
-           //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
+            // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
+            //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
             CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
-            InputStream  inputStream = new java.io.ByteArrayInputStream(result.getData());
-            ExcelUtils.exportExcelOnSheetsData("跟单",inputStream, sheets , rsp);
-        }catch (Exception e) {
+            InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
+            ExcelUtils.exportExcelOnSheetsData("跟单", inputStream, sheets, rsp);
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-
-
     }
 }
