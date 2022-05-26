@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 @TableName("produce_purchase_order")
-public class ProducePurchaseOrder extends BaseEntity<ProducePurchaseOrder>{
+public class ProducePurchaseOrder extends BaseEntity<ProducePurchaseOrder> {
 
     private String orderNo;
 
@@ -51,6 +51,8 @@ public class ProducePurchaseOrder extends BaseEntity<ProducePurchaseOrder>{
     private String tenantId;
 
     private String branchCode;
+
+    private String priority;
 
     private static final long serialVersionUID = 1L;
 }
