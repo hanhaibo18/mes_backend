@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * @author 王瑞
  * @Description 物料
- *
+ * <p>
  * 20220429 gl 增加API注解，方便前端阅读接口文件
  */
 
@@ -20,13 +20,13 @@ public class Product extends BaseEntity<Product> {
     /**
      * 租户ID
      */
-    @ApiModelProperty(value = "所属租户")
+    @ApiModelProperty(value = "所属租户", required = true)
     private String tenantId;
 
     /**
      * 物料编码
      */
-    @ApiModelProperty(value = "物料编码")
+    @ApiModelProperty(value = "物料编码", required = true)
     private String materialNo;
 
     /**
