@@ -137,9 +137,10 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 
     /**
      * 功能描述: 删除重复数据 以便重新保存
+     *
+     * @param producePurchaseOrder
      * @Author: xinYu.hou
      * @Date: 2022/1/20 14:02
-     * @param producePurchaseOrder
      * @return: boolean
      **/
     private boolean removeProducePurchaseOrder(ProducePurchaseOrder producePurchaseOrder) {
@@ -148,7 +149,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         }
         QueryWrapper<ProducePurchaseOrder> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("order_no", producePurchaseOrder.getOrderNo());
-        queryWrapper.eq("material_no",producePurchaseOrder.getMaterialNo());
+        queryWrapper.eq("material_no", producePurchaseOrder.getMaterialNo());
         producePurchaseOrderSyncService.remove(queryWrapper);
         return false;
     }
@@ -168,8 +169,10 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
             if (removeProducePurchaseOrder(order)) {
                 continue;
             }
+            order.setPriority("1");
             producePurchaseOrderSyncService.save(order);
         }
+
         return CommonResult.success(true, "新增成功");
     }
 
@@ -231,7 +234,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                                             purchase.setLifnr(lifnr);
                                             Boolean isLOEKZ = itemNext.elementTextTrim("LOEKZ") != null && itemNext.elementTextTrim("LOEKZ").trim().equals("L");
                                             Boolean isRETPO = itemNext.elementTextTrim("RETPO") != null && !itemNext.elementTextTrim("RETPO").trim().equals("");
-                                                if (isLOEKZ || isRETPO) {
+                                            if (isLOEKZ || isRETPO) {
                                                 continue;
                                             }
                                             char zero = 48;
@@ -258,7 +261,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //                                            }
                                             purchase.setLgort(itemNext.elementTextTrim("LGORT"));
                                             CommonResult<List<Product>> productList = baseServiceClient.selectProduct(purchase.getMaterialNo(), "", "");
-                                            if (null != productList.getData()){
+                                            if (null != productList.getData()) {
                                                 for (Product product : productList.getData()) {
                                                     purchase.setMaterialRemark(product.getMaterialDesc());
                                                     purchase.setDrawingNo(product.getDrawingNo());
