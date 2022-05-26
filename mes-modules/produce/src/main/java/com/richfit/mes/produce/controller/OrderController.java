@@ -98,6 +98,8 @@ public class OrderController extends BaseController {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         //order.setTenantId(user.getTenantId());
         //order.setBranchCode(user.getOrgId());
+        order.setStartTime(order.getOrderDate());
+        order.setEndTime(order.getDeliveryDate());
         order.setInChargeOrg(user.getBelongOrgId());
 
         Action action = new Action();
@@ -128,13 +130,14 @@ public class OrderController extends BaseController {
     @ApiImplicitParam(name = "order", value = "订单", required = true, dataType = "Order", paramType = "body")
     @PutMapping("/update")
     public CommonResult<Boolean> updateOrder(@RequestBody Order order) throws GlobalException {
+        order.setStartTime(order.getOrderDate());
+        order.setEndTime(order.getDeliveryDate());
 
         Action action = new Action();
         action.setActionType("1");
         action.setActionItem("0");
         action.setRemark("订单号：" + order.getOrderSn());
         actionService.saveAction(action);
-
         return CommonResult.success(orderService.updateById(order));
     }
 
