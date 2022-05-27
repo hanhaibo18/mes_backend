@@ -43,7 +43,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderSyncService{
+public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderSyncService {
 
     @Resource
     private OrderSyncService orderSyncService;
@@ -61,9 +61,9 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                 "   <soapenv:Body>" +
                 "      <urn:ZC80_PPIF009>" +
                 "         <!--You may enter the following 3 items in any order-->" +
-                "         <urn:ZDATUM>"+orderSynchronizationDto.getDate()+"</urn:ZDATUM>" +
+                "         <urn:ZDATUM>" + orderSynchronizationDto.getDate() + "</urn:ZDATUM>" +
                 "         <urn:ZWERKS>" +
-                "            <urn:WERKS>"+orderSynchronizationDto.getCode()+"</urn:WERKS>" +
+                "            <urn:WERKS>" + orderSynchronizationDto.getCode() + "</urn:WERKS>" +
                 "         </urn:ZWERKS>" +
                 "      </urn:ZC80_PPIF009>" +
                 "   </soapenv:Body>" +
@@ -85,9 +85,10 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
 
     /**
      * 功能描述: 保存同步信息
+     *
+     * @param orderList
      * @Author: xinYu.hou
      * @Date: 2022年1月18日14:19:44
-     * @param orderList
      * @return: CommonResult<Boolean>
      **/
     @Override
@@ -95,22 +96,26 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     public CommonResult<Boolean> saveOrderSync(List<Order> orderList) {
         //TODO:没有物料编号 不同步  status状态=0
         for (Order order : orderList) {
-            if (order.getMaterialCode() == null){
+            if (order.getMaterialCode() == null) {
                 continue;
             }
             QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
             if (order.getOrderSn() != null) {
-                queryWrapper.eq("order_sn",order.getOrderSn());
+                queryWrapper.eq("order_sn", order.getOrderSn());
             }
+            order.setOrderDate(order.getStartTime());
+            order.setOrderDate(order.getEndTime());
+            order.setPriority("1");
             order.setStatus(0);
             orderSyncService.remove(queryWrapper);
             orderSyncService.save(order);
         }
-        return CommonResult.success(true,"操作成功!");
+        return CommonResult.success(true, "操作成功!");
     }
 
     /**
      * 功能描述: 定时保存同步信息
+     *
      * @Author: xinYu.hou
      * @Date: 2022年1月18日14:19:44
      * @return: CommonResult<Boolean>
@@ -130,16 +135,19 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         Boolean saveData = false;
         try {
             CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
-            for (ItemParam itemParam : listCommonResult.getData()){
+            for (ItemParam itemParam : listCommonResult.getData()) {
                 ordersSynchronization.setCode(itemParam.getCode());
                 List<Order> orderList = orderSyncService.queryOrderSynchronization(ordersSynchronization);
-                for (Order order : orderList){
+                for (Order order : orderList) {
                     //order.setBranchCode(itemParam.getLabel());
                     order.setTenantId(itemParam.getTenantId());
                     order.setCreateBy("system");
                     order.setModifyBy("system");
                     order.setCreateTime(date);
                     order.setModifyTime(date);
+                    order.setOrderDate(order.getStartTime());
+                    order.setOrderDate(order.getEndTime());
+                    order.setPriority("1");
                     order.setStatus(0);
                     if (order.getMaterialCode() == null) {
                         continue;
@@ -150,7 +158,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                     saveData = orderSyncService.save(order);
                 }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             saveData = false;
             log.error(e.getMessage());
             e.printStackTrace();
@@ -159,7 +167,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     }
 
 
-    private List<Order> xmlAnalysis(String xml,OrdersSynchronizationDto orderSynchronizationDto ){
+    private List<Order> xmlAnalysis(String xml, OrdersSynchronizationDto orderSynchronizationDto) {
         Document doc = null;
         int size = 0;
         List<Order> list = new ArrayList<>();
@@ -171,19 +179,19 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             log.info(rootElt.getName());
             Iterator<Element> body = rootElt.elementIterator("Body");
             while (body.hasNext()) {
-                Element bodyNext =  body.next();
+                Element bodyNext = body.next();
                 Iterator<Element> response = bodyNext.elementIterator("ZC80_PPIF009.Response");
                 while (response.hasNext()) {
                     Element responseNext = response.next();
                     Iterator<Element> tAUFK = responseNext.elementIterator("T_AUFK");
-                    while (tAUFK.hasNext()){
+                    while (tAUFK.hasNext()) {
                         Element tAUFKNext = tAUFK.next();
                         Iterator<Element> item = tAUFKNext.elementIterator("item");
                         while (item.hasNext()) {
                             Element itemNext = item.next();
                             Order order = new Order();
-                            order.setOrderSn(trimStringWith(itemNext.elementTextTrim("AUFNR"),zero));
-                            order.setMaterialCode(trimStringWith(itemNext.elementTextTrim("MATNR"),zero));
+                            order.setOrderSn(trimStringWith(itemNext.elementTextTrim("AUFNR"), zero));
+                            order.setMaterialCode(trimStringWith(itemNext.elementTextTrim("MATNR"), zero));
                             order.setMaterialDesc(itemNext.elementTextTrim("MAKTX"));
                             //TODO: 从xml获取的参数还需再去查询在存储
                             order.setBranchCode(itemNext.elementTextTrim("WERKS"));
@@ -193,21 +201,21 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                             order.setInChargeOrg(itemNext.elementTextTrim("DISPO"));
                             boolean orderJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getOrderSn());
                             boolean inChargeOrgJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getInChargeOrg());
-                            if ( !orderJudge || !inChargeOrgJudge) {
+                            if (!orderJudge || !inChargeOrgJudge) {
                                 boolean orderSnData = !orderJudge && orderSynchronizationDto.getOrderSn().equals(order.getOrderSn());
                                 boolean inChargeOrgData = !inChargeOrgJudge && orderSynchronizationDto.getInChargeOrg().equals(order.getInChargeOrg());
-                                if (orderSnData && inChargeOrgData){
+                                if (orderSnData && inChargeOrgData) {
                                     list.add(order);
                                     continue;
                                 }
-                                if (orderSnData && inChargeOrgJudge){
+                                if (orderSnData && inChargeOrgJudge) {
                                     list.add(order);
                                     continue;
                                 }
-                                if (inChargeOrgData && orderJudge){
+                                if (inChargeOrgData && orderJudge) {
                                     list.add(order);
                                 }
-                            }else {
+                            } else {
                                 list.add(order);
                             }
                         }
@@ -225,10 +233,11 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
 
     /**
      * 功能描述:字符串截取
-     * @Author: xinYu.hou
-     * @Date: 2022/1/13 9:31
+     *
      * @param str
      * @param beTrim
+     * @Author: xinYu.hou
+     * @Date: 2022/1/13 9:31
      * @return: String
      **/
     private String trimStringWith(String str, char beTrim) {
