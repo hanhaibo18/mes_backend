@@ -136,8 +136,12 @@ public class RouterController extends BaseController {
             return CommonResult.failed("工艺不能为空！");
         } else {
             if (null != SecurityUtils.getCurrentUser()) {
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                router.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 router.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+
                 router.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+
             }
             router.setCreateTime(new Date());
             router.setModifyTime(new Date());
