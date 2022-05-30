@@ -1,18 +1,21 @@
 package com.richfit.mes.common.model.base;
 
 import com.richfit.mes.common.core.base.BaseEntity;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
- * @author 王瑞
- * @Description 物料
+ * @author 侯欣雨
+ * @Description 项目BOM
  */
-
 @Data
-@ApiModel(value = "产品BOM")
-public class ProductionBom extends BaseEntity<ProductionBom> {
+@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProjectBom extends BaseEntity<ProjectBom> {
 
     /**
      * 租户ID
@@ -25,6 +28,12 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
      */
     @ApiModelProperty(value = "机构编码", required = true, dataType = "String")
     private String branchCode;
+
+    @ApiModelProperty(value = "项目名称", required = true, dataType = "String")
+    private String projectName;
+
+    @ApiModelProperty(value = "工作号", required = true, dataType = "String")
+    private String workPlanNo;
 
     /**
      * 上级产品图号

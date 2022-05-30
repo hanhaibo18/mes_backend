@@ -17,6 +17,7 @@ import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -72,7 +73,6 @@ public class ProductionBomController extends BaseController {
 
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
             query.eq("drawing_no", productionBom.getDrawingNo());
-            query.eq("version_no", productionBom.getVersionNo());
             List<ProductionBom> result = productionBomService.list(query);
             if (result != null && result.size() > 0) {
                 return CommonResult.failed("相同版本的零部件图号已存在！");
@@ -94,7 +94,6 @@ public class ProductionBomController extends BaseController {
             productionBom.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             productionBom.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
             productionBom.setCreateTime(new Date());
-            productionBom.setIsCurrent("1");
             boolean bool = productionBomService.save(productionBom);
             if (bool) {
                 return CommonResult.success(productionBom, BOM_SUCCESS_MESSAGE);
@@ -105,7 +104,8 @@ public class ProductionBomController extends BaseController {
     }
 
 
-    @ApiOperation(value = "发布/停用产品BOM", notes = "发布/停用产品BOM")
+    @ApiOperation(value = "发布", notes = "发布")
+    @Deprecated
     @PostMapping("/production_bom/publish")
     public CommonResult<ProductionBom> pushProduct(@RequestBody ProductionBom productionBom) {
         boolean bool = productionBomService.updateStatus(productionBom);
@@ -117,6 +117,7 @@ public class ProductionBomController extends BaseController {
     }
 
     @ApiOperation(value = "修改产品Bom", notes = "修改产品Bom")
+    @Deprecated
     @ApiImplicitParam(name = "productionBom", value = "产品Bom", required = true, dataType = "Branch", paramType = "path")
     @PutMapping("/production_bom")
     public CommonResult<ProductionBom> updateProduct(@RequestBody ProductionBom productionBom) {
@@ -131,6 +132,7 @@ public class ProductionBomController extends BaseController {
     }
 
     @ApiOperation(value = "批量修改产品Bom", notes = "批量修改产品Bom")
+    @Deprecated
     @ApiImplicitParam(name = "productionBoms", value = "产品Bom数组", required = true, dataType = "Branch", paramType = "path")
     @PutMapping("/production_boms")
     public CommonResult<String> updateProducts(@RequestBody ProductionBom[] productionBoms) {
@@ -144,6 +146,7 @@ public class ProductionBomController extends BaseController {
     }
 
     @ApiOperation(value = "删除产品Bom", notes = "根据产品图号删除产品Bom")
+    @Deprecated
     @ApiImplicitParam(name = "id", value = "物料ID", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/production_bom")
     public CommonResult<ProductionBom> deleteProductionBomById(@RequestBody List<String> bomKeys) {
@@ -164,34 +167,15 @@ public class ProductionBomController extends BaseController {
 
     @ApiOperation(value = "分页查询产品Bom", notes = "根据图号、状态分页查询产品Bom")
     @GetMapping("/production_bom")
-    public CommonResult<IPage<ProductionBom>> getProductionBom(String id, String materialNo, String drawingNo, String status, String mainDrawingNo, String branchCode, String order, String orderCol, String bomKey, int page, int limit) {
+    public CommonResult<IPage<ProductionBom>> getProductionBom(String drawingNo, String branchCode, String order, String orderCol, String bomKey, int page, int limit) {
 
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
-        if (!StringUtils.isNullOrEmpty(id)) {
-            query.eq("id", id);
-        }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             query.like("drawing_no", drawingNo);
-        }
-        if (!StringUtils.isNullOrEmpty(materialNo)) {
-            query.like("material_no", materialNo);
-        }
-        if (!StringUtils.isNullOrEmpty(status)) {
-            query.eq("status", status);
-        }
-
-        if (StringUtils.isNullOrEmpty(mainDrawingNo)) {
-            query.and(wrapper -> wrapper.isNull("main_drawing_no").or().eq("main_drawing_no", ""));
-        } else {
-            query.eq("main_drawing_no", mainDrawingNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             query.eq("branch_code", branchCode);
         }
-        if (!StringUtils.isNullOrEmpty(bomKey)) {
-            query.eq("bom_key", bomKey);
-        }
-
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
         boolean isAdmin = false;
         for (GrantedAuthority authority : authorities) {
@@ -315,33 +299,20 @@ public class ProductionBomController extends BaseController {
             String bomKey = UUID.randomUUID().toString();
 
             list.forEach(item -> {
-                item.setStatus("0");
-                item.setIsCurrent("0");
                 //item.setVersionNo(finalVersionNo);
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
                 item.setBomKey(bomKey);
-                item.setVersionNo(versionNo);
                 if ("单件".equals(item.getTrackType())) {
                     item.setTrackType("0");
                 } else if ("批次".equals(item.getTrackType())) {
                     item.setTrackType("1");
                 }
-                if ("否".equals(item.getIsNumFrom())) {
-                    item.setIsNumFrom("0");
-                } else if ("是".equals(item.getIsNumFrom())) {
-                    item.setIsNumFrom("1");
-                }
                 if ("否".equals(item.getIsCheck())) {
                     item.setIsCheck("0");
                 } else if ("是".equals(item.getIsCheck())) {
                     item.setIsCheck("1");
-                }
-                if ("否".equals(item.getIsCurrent())) {
-                    item.setIsCurrent("0");
-                } else if ("是".equals(item.getIsCurrent())) {
-                    item.setIsCurrent("1");
                 }
                 if ("否".equals(item.getIsEdgeStore())) {
                     item.setIsEdgeStore("0");
@@ -483,33 +454,6 @@ public class ProductionBomController extends BaseController {
             HSSFRow drawTitle = sheet.getRow(1);
             drawTitle.getCell(7).setCellValue(drawingNo);
             List<ProductionBom> result = new ArrayList<>();
-            for (int i = 0; i < list.size(); i++) {
-                ProductionBom pb = list.get(i);
-                if (pb.getObjectType() != null) {
-                    if (pb.getObjectType().equals("0")) {
-                        pb.setObjectType("自制件");
-                    } else if (pb.getObjectType().equals("1")) {
-                        pb.setObjectType("外购件");
-                    } else if (pb.getObjectType().equals("2")) {
-                        pb.setObjectType("外协件");
-                    }
-                }
-
-                if (pb.getProductType() != null) {
-                    if (pb.getProductType().equals("0")) {
-                        pb.setProductType("铸件");
-                    } else if (pb.getProductType().equals("1")) {
-                        pb.setProductType("锻件");
-                    } else if (pb.getProductType().equals("2")) {
-                        pb.setProductType("精铸件");
-                    } else if (pb.getProductType().equals("3")) {
-                        pb.setProductType("成品/半成品");
-                    }
-                }
-
-                result.add(pb);
-            }
-
             int index = 4;
 
             for (ProductionBom bom : result) {
@@ -536,10 +480,8 @@ public class ProductionBomController extends BaseController {
                 int number = bom.getNumber() != null ? bom.getNumber() : 0;
                 row.getCell(11).setCellValue(number);
                 row.getCell(12).setCellValue(bom.getUnit());
-                row.getCell(13).setCellValue(bom.getOptName());
 
                 row.getCell(14).setCellValue("0".equals(bom.getTrackType()) ? "单件" : "批次");
-                row.getCell(15).setCellValue("0".equals(bom.getIsNumFrom()) ? "否" : "是");
                 row.getCell(16).setCellValue("0".equals(bom.getIsEdgeStore()) ? "否" : "是");
                 row.getCell(17).setCellValue("0".equals(bom.getIsKeyPart()) ? "否" : "是");
                 row.getCell(18).setCellValue("0".equals(bom.getIsNeedPicking()) ? "否" : "是");
@@ -561,4 +503,53 @@ public class ProductionBomController extends BaseController {
         }
     }
 
+    @GetMapping("/queryPart")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "drawingNo", value = "图号", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
+    })
+    @ApiOperation(value = "查询零件接口")
+    public CommonResult<List<ProductionBom>> getProductionBomByDrawingNoList(String drawingNo, String tenantId, String branchCode) {
+        return CommonResult.success(productionBomService.getProductionBomByDrawingNoList(drawingNo, tenantId, branchCode));
+    }
+
+    @GetMapping("/issueBom")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "发布BOM的ID", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "workPlanNo", value = "工作号", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "projectName", value = "项目名称", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
+    })
+    @ApiOperation(value = "发布BOM")
+    public CommonResult<Boolean> issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode) {
+        return CommonResult.success(productionBomService.issueBom(id, workPlanNo, projectName, tenantId, branchCode));
+    }
+
+
+    @DeleteMapping("/deleteBom")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "drawingNo", value = "图号", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
+    })
+    @ApiOperation(value = "发布BOM")
+    public CommonResult<Boolean> deleteBom(String drawingNo, String tenantId, String branchCode) {
+        return CommonResult.success(productionBomService.deleteBom(drawingNo, tenantId, branchCode));
+    }
+
+
+    @PutMapping("/updateBom")
+    @ApiOperation(value = "修改Bom")
+    public CommonResult<Boolean> updateBom(@RequestBody ProductionBom productionBom) {
+        return CommonResult.success(productionBomService.updateBom(productionBom));
+    }
+
+    @PutMapping("/updateBomList")
+    @ApiOperation(value = "修改零件bom")
+    public CommonResult<Boolean> updateBomList(@RequestBody ProductionBom productionBom) {
+        //TODO:未处理新增数据
+        return CommonResult.success(productionBomService.updateBom(productionBom));
+    }
 }
