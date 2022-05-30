@@ -190,7 +190,8 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         List<ProducePurchaseOrder> list = new ArrayList<>();
         System.out.println("------------------------------------1");
-        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "");
+        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
+//        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "");
         System.out.println("------------------------------------2");
         Map<String, ItemParam> maps = listCommonResult.getData().stream().collect(Collectors.toMap(ItemParam::getCode, Function.identity(), (key1, key2) -> key2));
         try {
