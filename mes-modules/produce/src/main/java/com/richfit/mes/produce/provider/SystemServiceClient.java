@@ -29,8 +29,11 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/find_one")
     public CommonResult<TenantUserVo> getUserById(@RequestParam("id") String id);
 
-    @GetMapping(value = "/api/sys/item/item/param/list" )
-    public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code,@RequestParam("name") String name,@RequestHeader(value = SecurityConstants.FROM)String header);
+    @GetMapping(value = "/api/sys/item/item/param/list")
+    public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name, @RequestHeader(value = SecurityConstants.FROM) String header);
+
+    @GetMapping(value = "/api/sys/item/item/param/list")
+    public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name);
 
     @GetMapping(value = "/api/sys/attachment/get/{id}")
     public CommonResult<Attachment> attachment(@PathVariable String id);
@@ -41,12 +44,11 @@ public interface SystemServiceClient {
 
     @PostMapping(value = "/api/sys/note/save")
     public CommonResult<Boolean> savenote(@RequestParam("sendUser") String sendUser,
-                                          @RequestParam("sendTitle") String  sendTitle,
-                                          @RequestParam("sendContent") String  sendContent,
-                                          @RequestParam("reseiverUsers") String  reseiverUsers,
-                                          @RequestParam("branchCode") String  branchCode,
-                                          @RequestParam("tenantId") String  tenantId);
-
+                                          @RequestParam("sendTitle") String sendTitle,
+                                          @RequestParam("sendContent") String sendContent,
+                                          @RequestParam("reseiverUsers") String reseiverUsers,
+                                          @RequestParam("branchCode") String branchCode,
+                                          @RequestParam("tenantId") String tenantId);
 
 
 }
