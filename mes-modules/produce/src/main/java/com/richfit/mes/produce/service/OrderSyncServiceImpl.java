@@ -7,6 +7,8 @@ import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -95,6 +97,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveOrderSync(List<Order> orderList) {
         //TODO:没有物料编号 不同步  status状态=0
+        TenantUserDetails user = SecurityUtils.getCurrentUser();
         for (Order order : orderList) {
             if (order.getMaterialCode() == null) {
                 continue;
@@ -104,9 +107,10 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                 queryWrapper.eq("order_sn", order.getOrderSn());
             }
             order.setOrderDate(order.getStartTime());
-            order.setOrderDate(order.getEndTime());
+            order.setDeliveryDate(order.getEndTime());
             order.setPriority("1");
             order.setStatus(0);
+            order.setInChargeOrg(user.getBelongOrgId());
             orderSyncService.remove(queryWrapper);
             orderSyncService.save(order);
         }
@@ -135,6 +139,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         Boolean saveData = false;
         try {
             CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
             for (ItemParam itemParam : listCommonResult.getData()) {
                 ordersSynchronization.setCode(itemParam.getCode());
                 List<Order> orderList = orderSyncService.queryOrderSynchronization(ordersSynchronization);
@@ -146,9 +151,10 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                     order.setCreateTime(date);
                     order.setModifyTime(date);
                     order.setOrderDate(order.getStartTime());
-                    order.setOrderDate(order.getEndTime());
+                    order.setDeliveryDate(order.getEndTime());
                     order.setPriority("1");
                     order.setStatus(0);
+                    order.setInChargeOrg(user.getBelongOrgId());
                     if (order.getMaterialCode() == null) {
                         continue;
                     }
