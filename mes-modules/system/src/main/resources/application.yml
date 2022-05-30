@@ -75,7 +75,7 @@ fdfs:
 
 feign.client.config:
   default:
-    connect-timeout: 5000
+    connect-timeout: 30000
     read-timeout: 30000
 
 secure:
