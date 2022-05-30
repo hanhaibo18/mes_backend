@@ -73,6 +73,11 @@ fdfs:
   http:
     secret_key: FastDFS12345678900
 
+feign.client.config:
+  default:
+    connect-timeout: 5000
+    read-timeout: 30000
+
 secure:
   ignore:
     urls:
