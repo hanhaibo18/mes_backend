@@ -72,4 +72,20 @@ public interface ProductionBomService extends IService<ProductionBom> {
      * @return: boolean
      **/
     boolean updateBom(ProductionBom productionBom);
+
+    /**
+     * 功能描述: 分页查询列表
+     *
+     * @param drawingNo  图号
+     * @param tenantId   租户
+     * @param branchCode 公司
+     * @param order      排序方式
+     * @param orderCol   排序字段
+     * @param page       页码
+     * @param limit      数量
+     * @Author: xinYu.hou
+     * @Date: 2022/5/31 0:38
+     * @return: IPage<ProductionBom>
+     **/
+    IPage<ProductionBom> getProductionBomPage(String drawingNo, String tenantId, String branchCode, String order, String orderCol, int page, int limit);
 }
