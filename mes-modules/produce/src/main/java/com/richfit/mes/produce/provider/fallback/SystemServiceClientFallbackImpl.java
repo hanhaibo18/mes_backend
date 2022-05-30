@@ -24,22 +24,27 @@ import java.util.List;
 public class SystemServiceClientFallbackImpl implements SystemServiceClient {
 
     @Override
-    public CommonResult<TenantUserVo> getUserById(String id)  {
-        return CommonResult.success(null);
-    }
-
-     @Override
-    public CommonResult<List<ItemParam>> selectItemClass(String name,String code,String header)  {
+    public CommonResult<TenantUserVo> getUserById(String id) {
         return CommonResult.success(null);
     }
 
     @Override
-    public CommonResult<Attachment> attachment(@PathVariable String id)  {
+    public CommonResult<List<ItemParam>> selectItemClass(String name, String code, String header) {
         return CommonResult.success(null);
     }
 
     @Override
-    public CommonResult<byte[]> getAttachmentInputStream(@PathVariable String id)  {
+    public CommonResult<List<ItemParam>> selectItemClass(String code, String name) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<Attachment> attachment(@PathVariable String id) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<byte[]> getAttachmentInputStream(@PathVariable String id) {
         return null;
     }
 
@@ -50,7 +55,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
                                           String sendContent,
                                           String reseiverUsers,
                                           String branchCode,
-                                          String tenantId)  {
+                                          String tenantId) {
         return null;
     }
 
