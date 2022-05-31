@@ -1,5 +1,6 @@
 package com.richfit.mes.base.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -8,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProductionBomMapper;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
@@ -137,6 +139,45 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     @Transactional(rollbackFor = Exception.class)
     public boolean updateBom(ProductionBom productionBom) {
         return this.updateById(productionBom);
+    }
+
+    @Override
+    public IPage<ProductionBom> getProductionBomPage(String drawingNo, String tenantId, String branchCode, String order, String orderCol, int page, int limit) {
+        QueryWrapper<ProductionBom> query = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            query.like("drawing_no", drawingNo);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            query.eq("branch_code", branchCode);
+        }
+        query.eq("grade", "H");
+//        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
+//        boolean isAdmin = false;
+//        for (GrantedAuthority authority : authorities) {
+//            //超级管理员 ROLE_12345678901234567890000000000000
+//            if ("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+//                isAdmin = true;
+//                break;
+//            }
+//        }
+//        if (!isAdmin) {
+//            query.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+//        }
+        query.eq("tenant_id", tenantId);
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if ("desc".equals(order)) {
+                    query.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                } else if ("asc".equals(order)) {
+                    query.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                query.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+            }
+        } else {
+            query.orderByDesc("modify_time");
+        }
+        return this.page(new Page<>(page, limit), query);
     }
 
     private ProjectBom projectBomEntity(ProductionBom productionBom) {
