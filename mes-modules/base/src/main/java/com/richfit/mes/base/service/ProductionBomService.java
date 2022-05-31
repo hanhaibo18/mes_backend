@@ -27,4 +27,65 @@ public interface ProductionBomService extends IService<ProductionBom> {
 
     boolean updateStatus(ProductionBom bom);
 
+    /**
+     * 功能描述: 查询零件列表
+     *
+     * @param drawingNo  图号
+     * @param tenantId   租户
+     * @param branchCode 公司
+     * @Author: xinYu.hou
+     * @return: List<ProductionBom>
+     **/
+    List<ProductionBom> getProductionBomByDrawingNoList(String drawingNo, String tenantId, String branchCode);
+
+    /**
+     * 功能描述: 发布BOM
+     *
+     * @param id          BOM_ID
+     * @param workPlanNo  工作号
+     * @param projectName 项目名称
+     * @param tenantId    租户
+     * @param branchCode  公司
+     * @Author: xinYu.hou
+     * @return: boolean
+     **/
+    boolean issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode);
+
+
+    /**
+     * 功能描述: 删除BOM
+     *
+     * @param drawingNo  图号
+     * @param tenantId   租户
+     * @param branchCode 公司
+     * @Author: xinYu.hou
+     * @return: boolean
+     **/
+    boolean deleteBom(String drawingNo, String tenantId, String branchCode);
+
+    /**
+     * 功能描述: 修改BOM
+     *
+     * @param productionBom 产品BOM对象
+     * @Author: xinYu.hou
+     * @Date: 2022/5/30 3:33
+     * @return: boolean
+     **/
+    boolean updateBom(ProductionBom productionBom);
+
+    /**
+     * 功能描述: 分页查询列表
+     *
+     * @param drawingNo  图号
+     * @param tenantId   租户
+     * @param branchCode 公司
+     * @param order      排序方式
+     * @param orderCol   排序字段
+     * @param page       页码
+     * @param limit      数量
+     * @Author: xinYu.hou
+     * @Date: 2022/5/31 0:38
+     * @return: IPage<ProductionBom>
+     **/
+    IPage<ProductionBom> getProductionBomPage(String drawingNo, String tenantId, String branchCode, String order, String orderCol, int page, int limit);
 }

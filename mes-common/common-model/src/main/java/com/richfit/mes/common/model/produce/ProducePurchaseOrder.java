@@ -52,7 +52,5 @@ public class ProducePurchaseOrder extends BaseEntity<ProducePurchaseOrder> {
 
     private String branchCode;
 
-    private String priority;
-
     private static final long serialVersionUID = 1L;
 }

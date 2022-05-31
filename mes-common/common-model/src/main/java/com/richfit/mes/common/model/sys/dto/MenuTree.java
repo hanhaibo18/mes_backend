@@ -78,6 +78,9 @@ public class MenuTree extends TreeNode implements Serializable {
     @ApiModelProperty(value = "按钮权限")
     private Object checkedButton;
 
+    @ApiModelProperty(value = "显示状态")
+    private String remark;
+
     public MenuTree() {
     }
 
@@ -107,5 +110,6 @@ public class MenuTree extends TreeNode implements Serializable {
         this.menuUrl = menu.getMenuUrl();
         this.permission = menu.getPermission();
         this.checkedButton = menu.getCheckedButton();
+        this.remark = menu.getRemark();
     }
 }
