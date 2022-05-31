@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.controller;
+package com.richfit.mes.produce.controller.store;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -11,9 +11,8 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.LineStore;
-import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.LineStoreService;
@@ -47,7 +46,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/produce/line_store")
 public class LineStoreController {
 
-    public static String WORKBLANK_NULL_MESSAGE = "编号不能为空!";
+    private final static String WORKBLANK_NULL_MESSAGE = "编号不能为空!";
+    private final static String CODE_EXITS = "编号已存在！";
+    private final static String MATERIAL_CODE_NULL_MSG = "物料编号不能为空！";
+    private final static String DRAWING_NO_NULL_MSG = "图号不能为空！";
+
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败！";
 
@@ -56,7 +59,6 @@ public class LineStoreController {
 
     @Autowired
     private TrackHeadService trackHeadService;
-
 
     @Autowired
     private BaseServiceClient baseServiceClient;
@@ -69,131 +71,32 @@ public class LineStoreController {
 
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
     @PostMapping("/line_store")
-    public CommonResult<LineStore> addLineStore(@RequestBody LineStore lineStore, @RequestParam(required = false) Integer startNo, @RequestParam(required = false) Integer endNo, @RequestParam(required = false) String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur, String tenantId, String branchCode) {
+    public CommonResult<LineStore> addLineStore(@RequestBody LineStore lineStore,
+                                                @RequestParam(required = false) Integer startNo,
+                                                @RequestParam(required = false) Integer endNo,
+                                                @RequestParam(required = false) String suffixNo,
+                                                Boolean isAutoMatchProd, Boolean isAutoMatchPur, String tenantId,
+                                                String branchCode) {
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(lineStore.getMaterialNo())) {
-            return CommonResult.failed("物料编号不能为空！");
+            return CommonResult.failed(MATERIAL_CODE_NULL_MSG);
         } else if (StringUtils.isNullOrEmpty(lineStore.getDrawingNo())) {
-            return CommonResult.failed("图号不能为空！");
+            return CommonResult.failed(DRAWING_NO_NULL_MSG);
+
+            //校验编号是否已存在，如存在，返回报错信息
+        } else if (!lineStoreService.checkCodeExist(lineStore, startNo, endNo, suffixNo)) {
+            String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
+            return CommonResult.failed(message + CODE_EXITS);
         } else {
-            lineStore.setUserNum(0);
-            lineStore.setStatus("1");
-            lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            lineStore.setTenantId(tenantId);
-            lineStore.setBranchCode(branchCode);
-            lineStore.setCreateTime(new Date());
-            lineStore.setInTime(new Date());
-
-            boolean bool = false;
-            if (startNo != null && startNo > 0) {
-                List<LineStore> list = new ArrayList<>();
-                String oldWorkblankNo = lineStore.getWorkblankNo();
-
-                boolean isHave = false;
-
-                for (int i = startNo; i <= endNo; i++) {
-                    LineStore entity = new LineStore(lineStore);
-                    if (isAutoMatchProd) {
-                        entity.setProductionOrder(matchProd(entity.getMaterialNo(), entity.getNumber()));
-                    }
-                    if (isAutoMatchPur) {
-                        entity.setPurchaseOrder(matchPur(entity.getMaterialNo(), entity.getNumber()));
-                    }
-                    String workblankNo = oldWorkblankNo + "" + i;
-                    if (!StringUtils.isNullOrEmpty(suffixNo)) {
-                        workblankNo += "_" + suffixNo;
-                    }
-
-                    QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.eq("workblank_no", workblankNo);
-                    queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                    List<LineStore> result = lineStoreService.list(queryWrapper);
-                    if (result != null && result.size() > 0) {
-                        isHave = true;
-                        break;
-                    }
-                    entity.setWorkblankNo(workblankNo);
-                    entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());
-                    list.add(entity);
-                }
-                if (isHave) {
-                    String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
-                    return CommonResult.failed(message + "编号已存在！");
-                }
-
-                bool = lineStoreService.saveBatch(list);
-            } else {
-                if (isAutoMatchProd) {
-                    lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
-                }
-                if (isAutoMatchPur) {
-                    lineStore.setPurchaseOrder(matchPur(lineStore.getMaterialNo(), lineStore.getNumber()));
-                }
-                QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("workblank_no", lineStore.getWorkblankNo());
-                queryWrapper.eq("tenant_id", tenantId);
-                List<LineStore> result = lineStoreService.list(queryWrapper);
-                if (result != null && result.size() > 0) {
-                    String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
-                    return CommonResult.failed(message + "编号已存在！");
-                }
-                bool = lineStoreService.save(lineStore);
-            }
+            boolean bool = lineStoreService.addStore(lineStore, startNo, endNo, suffixNo, isAutoMatchProd, isAutoMatchPur, branchCode);
             if (bool) {
                 return CommonResult.success(lineStore, SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(FAILED_MESSAGE);
             }
         }
-    }
 
-    private String matchProd(String materialNo, Integer number) {
-        String orderNo = "";
-        QueryWrapper<Order> wrapper = new QueryWrapper<>();
-        wrapper.eq("material_code", materialNo);
-        wrapper.orderByAsc("delivery_date");
-        List<Order> orderList = orderService.list(wrapper);
-        for (Order order : orderList) {
-            QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
-            lWrapper.select("sum(number) as number ");
-            lWrapper.eq("production_order", order.getOrderSn());
-            LineStore lineStore = lineStoreService.getOne(lWrapper);
-            int useQty = 0;
-            if (lineStore != null) {
-                useQty = lineStore.getNumber();
-            }
-            if (order.getOrderNum() - useQty >= number) {
-                orderNo = order.getOrderSn();
-                break;
-            }
-        }
-
-        return orderNo;
-    }
-
-    private String matchPur(String materialNo, Integer number) {
-        String orderNo = "";
-        QueryWrapper<ProducePurchaseOrder> wrapper = new QueryWrapper<>();
-        wrapper.eq("material_no", materialNo);
-        wrapper.orderByAsc("delivery_date");
-        List<ProducePurchaseOrder> orderList = purchaseOrderService.list(wrapper);
-        for (ProducePurchaseOrder order : orderList) {
-            QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
-            lWrapper.select("sum(number) as number ");
-            lWrapper.eq("purchase_order", order.getOrderNo());
-            LineStore lineStore = lineStoreService.getOne(lWrapper);
-            int useQty = 0;
-            if (lineStore != null) {
-                useQty = lineStore.getNumber();
-            }
-            if (order.getNumber() - useQty >= number) {
-                orderNo = order.getOrderNo();
-                break;
-            }
-        }
-
-        return orderNo;
     }
 
     @ApiOperation(value = "修改入库信息", notes = "修改入库信息")
@@ -276,22 +179,21 @@ public class LineStoreController {
 
     @ApiOperation(value = "查询入库总览", notes = "根据物料号查询入库总览")
     @GetMapping("/line_store/group")
-    public CommonResult<IPage<LineStore>> selectLineStoreGroup(String materialType, String drawingNo, String materialNo, int page, int limit, String branchCode, String tenantId) {
+    public CommonResult<IPage<LineStoreSum>> selectLineStoreGroup(String materialType, String drawingNo, String materialNo, int page, int limit, String branchCode) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
-        if (!StringUtils.isNullOrEmpty(materialType)) {
-            queryWrapper.eq("material_type", materialType);
-        }
+//        if (!StringUtils.isNullOrEmpty(materialType)) {
+//            queryWrapper.eq("material_type", materialType);
+//        }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("material_no", materialNo);
         }
-        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("branch_code", branchCode);
 
         queryWrapper.orderByAsc("drawing_no");
-        queryWrapper.groupBy("drawing_no", "material_no", "material_type");
         return CommonResult.success(lineStoreService.selectGroup(new Page<LineStore>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
