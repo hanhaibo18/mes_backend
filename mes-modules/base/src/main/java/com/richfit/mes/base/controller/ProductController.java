@@ -163,8 +163,8 @@ public class ProductController extends BaseController {
         }
 
         IPage<Product> result = productService.selectProduct(new Page<Product>(page, limit), queryWrapper);
-        List<Product> data = result.getRecords();
-        result.setRecords(findBomAndRouterByProduct(data));
+//        List<Product> data = result.getRecords();
+//        result.setRecords(findBomAndRouterByProduct(data));
         return CommonResult.success(result, PRODUCT_SUCCESS_MESSAGE);
     }
 
