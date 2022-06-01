@@ -63,4 +63,6 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @return: List<ProjectBom>
      **/
     List<ProjectBom> getProjectBomList(String drawingNo, String tenantId, String branchCode);
+
+    //TODO: 零件增删改查接口,提供对外的根据项目BOM查询条件 查询所有零件
 }
