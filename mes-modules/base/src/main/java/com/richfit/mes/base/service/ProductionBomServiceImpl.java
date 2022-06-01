@@ -175,7 +175,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 query.orderByDesc(StrUtil.toUnderlineCase(orderCol));
             }
         } else {
-            query.orderByDesc("modify_time");
+            query.orderByDesc("order_no");
         }
         return this.page(new Page<>(page, limit), query);
     }

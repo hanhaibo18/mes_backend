@@ -316,6 +316,21 @@ public class ProductionBomController extends BaseController {
         return CommonResult.success(productionBomService.deleteBom(drawingNo, tenantId, branchCode));
     }
 
+    @DeleteMapping("/deleteBomList")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "drawingNoList", value = "图号", required = true, paramType = "query", dataType = "List<String>"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
+    })
+    @ApiOperation(value = "删除多条BOM")
+    public CommonResult<Boolean> deleteBom(List<String> drawingNoList, String tenantId, String branchCode) {
+        boolean deleteBom = false;
+        for (String drawingNo : drawingNoList) {
+            deleteBom = productionBomService.deleteBom(drawingNo, tenantId, branchCode);
+        }
+        return CommonResult.success(deleteBom);
+    }
+
 
     @PutMapping("/updateBom")
     @ApiOperation(value = "修改Bom")

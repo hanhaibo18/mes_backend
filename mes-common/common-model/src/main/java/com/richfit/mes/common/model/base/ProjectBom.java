@@ -113,6 +113,7 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
     @ApiModelProperty(value = "数量", dataType = "Integer")
     private Integer number;
 
+
     public String bomKey;
 
     @ApiModelProperty(value = "来料类型", dataType = "Integer")
@@ -123,4 +124,11 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
 
     @ApiModelProperty(value = "零部件名称", dataType = "String")
     public String prodDesc;
+
+    @ApiModelProperty(value = "分组", dataType = "Integer")
+    public Integer group;
+    @ApiModelProperty(value = "是否分解", dataType = "String")
+    public String isResolution;
+    @ApiModelProperty(value = "状态(0停用,1发布)", dataType = "String")
+    public String state;
 }
