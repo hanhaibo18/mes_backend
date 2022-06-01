@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
-import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.produce.LineStore;
+import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,7 +16,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface LineStoreMapper extends BaseMapper<LineStore> {
 
-    IPage<LineStore> selectGroup(IPage<LineStore> page, @Param(Constants.WRAPPER) Wrapper<LineStore> query);
+    IPage<LineStoreSum> selectGroup(IPage<LineStore> page, @Param(Constants.WRAPPER) Wrapper<LineStore> query);
 
     IPage<LineStore> selectLineStoreByProduce(IPage<LineStore> page, @Param(Constants.WRAPPER) Wrapper<LineStore> query);
 }
