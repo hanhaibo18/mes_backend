@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
 @Api(value = "库存管理", tags = {"库存管理接口"})
 @RestController
 @RequestMapping("/api/produce/line_store")
-public class LineStoreController {
+public class LineStoreController extends BaseController {
 
     private final static String WORKBLANK_NULL_MESSAGE = "编号不能为空!";
     private final static String CODE_EXITS = "编号已存在！";
@@ -79,7 +80,7 @@ public class LineStoreController {
                                                 @ApiParam(value = "前缀字段") @RequestParam(required = false) String suffixNo,
                                                 @ApiParam(value = "自动匹配生产订单") @RequestParam Boolean isAutoMatchProd,
                                                 @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
-                                                @ApiParam(value = "所选分公司") @RequestParam String branchCode) {
+                                                @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(lineStore.getMaterialNo())) {
@@ -88,7 +89,7 @@ public class LineStoreController {
             return CommonResult.failed(DRAWING_NO_NULL_MSG);
 
             //校验编号是否已存在，如存在，返回报错信息
-        } else if (!lineStoreService.checkCodeExist(lineStore, startNo, endNo, suffixNo)) {
+        } else if (lineStoreService.checkCodeExist(lineStore, startNo, endNo, suffixNo)) {
             String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
             return CommonResult.failed(message + CODE_EXITS);
         } else {
@@ -108,7 +109,7 @@ public class LineStoreController {
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(lineStore.getDrawingNo())) {
-            return CommonResult.failed("图号不能为空！");
+            return CommonResult.failed(DRAWING_NO_NULL_MSG);
         } else {
             boolean bool = false;
             lineStore.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
@@ -136,16 +137,16 @@ public class LineStoreController {
 
     @ApiOperation(value = "分页查询入库信息", notes = "根据图号、合格证号、物料编号分页查询入库信息")
     @GetMapping("/line_store")
-    public CommonResult<IPage<LineStore>> selectLineStore(@ApiParam(value = "料单Id") @RequestParam String id,
-                                                          @ApiParam(value = "物料号") @RequestParam String materialNo,
-                                                          @ApiParam(value = "物料类型") @RequestParam String materialType,
-                                                          @ApiParam(value = "图号") @RequestParam String drawingNo,
-                                                          @ApiParam(value = "合格证号") @RequestParam String certificateNo,
-                                                          @ApiParam(value = "毛坯号") @RequestParam String workblankNo,
-                                                          @ApiParam(value = "料单状态") @RequestParam String status,
-                                                          @ApiParam(value = "跟踪方式") @RequestParam String trackType,
-                                                          @ApiParam(value = "排序方式") @RequestParam String order,
-                                                          @ApiParam(value = "排序字段") @RequestParam String orderCol,
+    public CommonResult<IPage<LineStore>> selectLineStore(@ApiParam(value = "料单Id") @RequestParam(required = false) String id,
+                                                          @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
+                                                          @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
+                                                          @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                          @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+                                                          @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
+                                                          @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
+                                                          @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
+                                                          @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                          @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
                                                           @ApiParam(value = "页码") @RequestParam int page,
                                                           @ApiParam(value = "每页记录数") @RequestParam int limit,
                                                           @ApiParam(value = "分公司") @RequestParam String branchCode) {
@@ -194,8 +195,8 @@ public class LineStoreController {
 
     @ApiOperation(value = "查询入库总览", notes = "根据物料号查询入库总览")
     @GetMapping("/line_store/group")
-    public CommonResult<IPage<LineStoreSum>> selectLineStoreGroup(@ApiParam(value = "图号") @RequestParam String drawingNo,
-                                                                  @ApiParam(value = "物料号") @RequestParam String materialNo,
+    public CommonResult<IPage<LineStoreSum>> selectLineStoreGroup(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                                  @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
                                                                   @ApiParam(value = "页码") @RequestParam int page,
                                                                   @ApiParam(value = "每页数") @RequestParam int limit,
                                                                   @ApiParam(value = "当前分公司") @RequestParam String branchCode) {
@@ -218,15 +219,15 @@ public class LineStoreController {
 
     @ApiOperation(value = "查询入库信息", notes = "根据图号、合格证号、物料编号查询入库信息")
     @GetMapping("/line_store/list")
-    public CommonResult<List<LineStore>> selectLineStoreList(@ApiParam(value = "料单Id") @RequestParam String id,
-                                                             @ApiParam(value = "料单类型") @RequestParam String materialType,
-                                                             @ApiParam(value = "物料码") @RequestParam String materialNo,
-                                                             @ApiParam(value = "图号") @RequestParam String drawingNo,
-                                                             @ApiParam(value = "合格证号") @RequestParam String certificateNo,
-                                                             @ApiParam(value = "毛坯号") @RequestParam String workblankNo,
-                                                             @ApiParam(value = "跟踪方式") @RequestParam String trackType,
-                                                             @ApiParam(value = "已用数量") @RequestParam Integer userNum,
-                                                             @ApiParam(value = "料单状态") @RequestParam String status,
+    public CommonResult<List<LineStore>> selectLineStoreList(@ApiParam(value = "料单Id") @RequestParam(required = false) String id,
+                                                             @ApiParam(value = "料单类型") @RequestParam(required = false) String materialType,
+                                                             @ApiParam(value = "物料码") @RequestParam(required = false) String materialNo,
+                                                             @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                             @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+                                                             @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
+                                                             @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
+                                                             @ApiParam(value = "已用数量") @RequestParam(required = false) Integer userNum,
+                                                             @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
                                                              @ApiParam(value = "分公司") @RequestParam String branchCode) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if (!StringUtils.isNullOrEmpty(materialType)) {
@@ -316,10 +317,10 @@ public class LineStoreController {
 
     @ApiOperation(value = "分页查询产品装配信息", notes = "根据跟踪类型，产品编号分页查询产品装配信息")
     @GetMapping("/line_store/product")
-    public CommonResult<IPage<LineStore>> selectLineStoreByProduct(@ApiParam(value = "跟踪类型") @RequestParam String trackType,
-                                                                   @ApiParam(value = "物料类型") @RequestParam String materialType,
-                                                                   @ApiParam(value = "毛坯号") @RequestParam String workblankNo,
-                                                                   @ApiParam(value = "状态") @RequestParam String status,
+    public CommonResult<IPage<LineStore>> selectLineStoreByProduct(@ApiParam(value = "跟踪类型") @RequestParam(required = false) String trackType,
+                                                                   @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
+                                                                   @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
+                                                                   @ApiParam(value = "状态") @RequestParam(required = false) String status,
                                                                    @ApiParam(value = "页码") @RequestParam int page,
                                                                    @ApiParam(value = "条数") @RequestParam int limit,
                                                                    @ApiParam(value = "分公司") @RequestParam String branchCode) {
@@ -379,7 +380,7 @@ public class LineStoreController {
                     }
                 }
 
-                item.setUserNum(0);
+                item.setUseNum(0);
                 item.setStatus("1");
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setBranchCode(SecurityUtils.getCurrentUser().getBelongOrgId());
@@ -413,9 +414,9 @@ public class LineStoreController {
 
     @ApiOperation(value = "导出库存信息", notes = "通过Excel文档导出库存信息")
     @GetMapping("/export_excel")
-    public void exportExcel(@ApiParam(value = "物料号") @RequestParam String materialNo, @ApiParam(value = "物料类型") @RequestParam String materialType,
-                            @ApiParam(value = "图号") @RequestParam String drawingNo, @ApiParam(value = "合格证编号") @RequestParam String certificateNo,
-                            @ApiParam(value = "毛坯号") @RequestParam String workblankNo, @ApiParam(value = "状态") @RequestParam String status,
+    public void exportExcel(@ApiParam(value = "物料号") @RequestParam(required = false) String materialNo, @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
+                            @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo, @ApiParam(value = "合格证编号") @RequestParam(required = false) String certificateNo,
+                            @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo, @ApiParam(value = "状态") @RequestParam(required = false) String status,
                             @ApiParam(value = "分公司") @RequestParam String branchCode, @ApiIgnore HttpServletResponse rsp) {
         try {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();

@@ -10,18 +10,19 @@
         mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
         c.branch_code limit 1) material_no,
         (
-        SELECT sum(number - ifnull(user_num,0)) FROM mes_produce.produce_line_store
-        where drawing_no = c.drawing_no and material_type = 0 and status = 1 and tenant_id = c.tenant_id and branch_code
-        = c.branch_code
+        SELECT sum(number - ifnull(use_num,0)) FROM mes_produce.produce_line_store
+        where drawing_no = c.drawing_no and material_type = '0' and status != '3' and tenant_id = c.tenant_id and
+        branch_code = c.branch_code
         ) number,
         (
-        SELECT sum(user_num) FROM mes_produce.produce_line_store
-        where drawing_no = c.drawing_no and material_type = 0 and status = 0 and tenant_id = c.tenant_id and branch_code
+        SELECT sum(use_num) FROM mes_produce.produce_line_store
+        where drawing_no = c.drawing_no and status = '1' and tenant_id = c.tenant_id and branch_code
         = c.branch_code
         ) making_number,
         (
-        SELECT sum(number - ifnull(user_num,0)) FROM mes_produce.produce_line_store
-        where drawing_no = c.drawing_no and material_type = 1 and status = 1 and tenant_id = c.tenant_id and branch_code
+        SELECT sum(number - ifnull(use_num,0)) FROM mes_produce.produce_line_store
+        where drawing_no = c.drawing_no and material_type = '1' and status = '0' and tenant_id = c.tenant_id and
+        branch_code
         = c.branch_code
         ) comp_number
 

@@ -19,4 +19,8 @@ public interface LineStoreService extends IService<LineStore> {
     boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode);
 
     boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo);
+
+    LineStore useItem(int num, String drawingNo, String workblankNo);
+
+    public boolean rollBackItem(int num, String id);
 }

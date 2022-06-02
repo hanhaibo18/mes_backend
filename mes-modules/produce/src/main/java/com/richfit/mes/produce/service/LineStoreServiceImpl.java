@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.model.code.StoreItemStatusEnum;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
@@ -50,34 +51,15 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return lineStoreMapper.selectLineStoreByProduce(page, query);
     }
 
+    //TODO 方法的业务不明确，可能造成误用
     @Override
     public boolean changeStatus(TrackHead trackHead) {
 
         String pNo = trackHead.getUserProductNo(); //毛坯编号
 
-        /*UpdateWrapper<LineStore> update = new UpdateWrapper<LineStore>();
-        UpdateWrapper<LineStore> update2 = new UpdateWrapper<LineStore>();
-        update.eq("workblank_no", pNo);
-        update.eq("drawing_no", trackHead.getDrawingNo());
-        update.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        update.apply("number = user_num");
-        update.set("status", "3"); //将状态设置为已消耗
-        update.set("out_time", new Date());
-        update2.set("status", "1"); //将状态设置为完工
-        update2.set("in_time", new Date());
-        update2.eq("workblank_no", trackHead.getProductNo());
-        update2.eq("drawing_no", trackHead.getDrawingNo());
-        update2.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
-        int count = lineStoreMapper.update(null , update);
-        if(count > 0){
-            count = lineStoreMapper.update(null , update2);
-            if(count > 0){
-                return true;
-            }
-        }*/
         UpdateWrapper<LineStore> update2 = new UpdateWrapper<LineStore>();
-        update2.set("status", "1"); //将状态设置为完工
+        update2.set("status", StoreItemStatusEnum.FINISH.getCode()); //将状态设置为完工
         update2.set("in_time", new Date());
         update2.eq("workblank_no", trackHead.getProductNo());
         update2.eq("drawing_no", trackHead.getDrawingNo());
@@ -90,12 +72,71 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return false;
     }
 
+    // 料单投用
+    @Override
+    public LineStore useItem(int num, String drawingNo, String workblankNo) {
+        int userNum = 0; //本次使用数量
+        //修改库存状态
+        LineStore lineStore1 = lineStoreMapper.selectOne(
+                new QueryWrapper<LineStore>().eq("drawing_no", drawingNo)
+                        .eq("workblank_no", workblankNo)
+                        .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
+        if (lineStore1 != null) {
+            if (lineStore1.getNumber() - lineStore1.getUseNum() <= num) {
+                userNum = lineStore1.getNumber() - lineStore1.getUseNum();
+                num -= lineStore1.getNumber() - lineStore1.getUseNum();
+                lineStore1.setUseNum(lineStore1.getNumber());
+            } else {
+                userNum = num;
+                lineStore1.setUseNum(lineStore1.getUseNum() + num);
+                num = 0;
+            }
+            if (lineStore1.getMaterialType().equals("0")) {
+                lineStore1.setOutTime(new Date());
+            }
+            changeStatus(lineStore1);
+
+            lineStoreMapper.updateById(lineStore1);
+        }
+
+        return lineStore1;
+    }
+
+    //料单投用回滚
+    // 如果已用归0，料单状态应为Finish，已用>0, 状态应为MAKING
+    @Override
+    public boolean rollBackItem(int num, String id) {
+
+        LineStore lineStore = lineStoreMapper.selectOne(
+                new QueryWrapper<LineStore>().eq("id", id)
+                        .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
+
+        lineStore.setUseNum(lineStore.getUseNum() - num);
+        changeStatus(lineStore);
+        lineStoreMapper.updateById(lineStore);
+
+        return true;
+    }
+
+    //根据料单原始数量和已投用数量对比，修改料单状态
+    private void changeStatus(LineStore lineStore) {
+
+        if (lineStore.getUseNum().equals(lineStore.getNumber())) {
+            lineStore.setStatus(StoreItemStatusEnum.USED_ALL.getCode());
+        } else if (lineStore.getUseNum() < lineStore.getNumber()) {
+            lineStore.setStatus(StoreItemStatusEnum.MAKING.getCode());
+        } else if (lineStore.getUseNum() == 0) {
+            lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
+        }
+
+    }
+
     // 材料入库
     @Override
     public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode) {
 
-        lineStore.setUserNum(0);
-        lineStore.setStatus("1");
+        lineStore.setUseNum(0);
+        lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
         lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         lineStore.setBranchCode(branchCode);
@@ -144,7 +185,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     public boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo) {
         boolean codeExist = false;
 
-        //批次
+        //循环编号
         if (startNo != null && startNo > 0) {
 
             for (int i = startNo; i <= endNo; i++) {
@@ -164,7 +205,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                     break;
                 }
             }
-            //单件
+            //单件编号
         } else {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("workblank_no", lineStore.getWorkblankNo());
@@ -178,7 +219,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return codeExist;
     }
 
-
+    //匹配生产订单
     private String matchProd(String materialNo, Integer number) {
         String orderNo = "";
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
@@ -203,6 +244,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return orderNo;
     }
 
+    //匹配采购订单
     private String matchPur(String materialNo, Integer number) {
         String orderNo = "";
         QueryWrapper<ProducePurchaseOrder> wrapper = new QueryWrapper<>();
