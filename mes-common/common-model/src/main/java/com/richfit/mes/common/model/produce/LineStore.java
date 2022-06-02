@@ -26,7 +26,7 @@ public class LineStore extends BaseEntity<LineStore> {
     @ApiModelProperty(value = "图号")
     private String drawingNo;
 
-    @ApiModelProperty(value = "状态 0在制 1完工 2作废 3已消耗")
+    @ApiModelProperty(value = "状态 0完工（初始入库） 1在制 2作废 3已消耗")
     private String status;
 
     @ApiModelProperty(value = "数量")
@@ -54,7 +54,7 @@ public class LineStore extends BaseEntity<LineStore> {
     private String trackType;
 
     @ApiModelProperty(value = "已使用数量")
-    private Integer userNum;
+    private Integer useNum;
 
     @ApiModelProperty(value = "")
     @TableField(exist = false)
@@ -162,7 +162,7 @@ public class LineStore extends BaseEntity<LineStore> {
         this.workblankNo = lineStore.workblankNo;
         this.materialType = lineStore.materialType;
         this.trackType = lineStore.trackType;
-        this.userNum = lineStore.userNum;
+        this.useNum = lineStore.useNum;
         this.assemblyId = lineStore.assemblyId;
         this.inTime = lineStore.inTime;
         this.outTime = lineStore.outTime;
