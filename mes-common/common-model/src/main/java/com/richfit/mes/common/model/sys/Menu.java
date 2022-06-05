@@ -1,15 +1,13 @@
 package com.richfit.mes.common.model.sys;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>
@@ -35,7 +33,7 @@ public class Menu extends BaseEntity<Menu> {
      * 类型
      */
     private Integer menuType;
-    
+
     /**
      * 菜单唯一编码
      */
@@ -84,4 +82,23 @@ public class Menu extends BaseEntity<Menu> {
     @TableField(exist = false)
     private String tenantMenuId;
 
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, menuName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Menu menu = (Menu) o;
+        return Objects.equals(menu.id, id);
+    }
 }
