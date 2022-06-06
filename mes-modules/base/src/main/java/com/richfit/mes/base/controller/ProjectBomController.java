@@ -90,4 +90,54 @@ public class ProjectBomController {
     public CommonResult<List<ProjectBom>> getProjectBomList(String drawingNo, String tenantId, String branchCode) {
         return CommonResult.success(projectBomService.getProjectBomList(drawingNo, tenantId, branchCode));
     }
+
+    @ApiOperation(value = "根据工作号查询项目BOM零件", notes = "点击项目BOM进入零件列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "workPlanNo", value = "工作号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
+    })
+    @GetMapping("/getProjectBomPartList")
+    public CommonResult<List<ProjectBom>> getProjectBomPartList(String workPlanNo, String tenantId, String branchCode) {
+        return CommonResult.success(projectBomService.getProjectBomPartList(workPlanNo, tenantId, branchCode));
+    }
+
+    @ApiOperation(value = "根据项目BOM的ID查询项目BOM零件", notes = "提供给其他服务使用")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "项目Id", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
+    })
+    @GetMapping("/getProjectBomPartByIdList")
+    public List<ProjectBom> getProjectBomPartByIdList(String id, String tenantId, String branchCode) {
+        return projectBomService.getProjectBomPartByIdList(id, tenantId, branchCode);
+    }
+
+    @ApiOperation(value = "根据工作号和项目名称模糊查询项目BOM", notes = "新增零件时查询")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "workPlanNo", value = "工作号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "projectName", value = "项目名称", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
+    })
+    @GetMapping("/getPartList")
+    public CommonResult<List<ProjectBom>> getPartList(String workPlanNo, String projectName, String tenantId, String branchCode) {
+        return CommonResult.success(projectBomService.getPartList(workPlanNo, projectName, tenantId, branchCode));
+    }
+
+    @ApiOperation(value = "根据项目BOM主键ID删除零件", notes = "删除零件")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "项目Id", paramType = "query", dataType = "String"),
+    })
+    @DeleteMapping("/deletePart")
+    public CommonResult<Boolean> deletePart(String id) {
+        return CommonResult.success(projectBomService.deletePart(id));
+    }
+
+    @ApiOperation(value = "新增零件", notes = "项目BOM新增零件")
+    @PostMapping("/saveBom")
+    public CommonResult<Boolean> saveBom(ProjectBom projectBom) {
+        return CommonResult.success(projectBomService.saveBom(projectBom));
+    }
+
 }
