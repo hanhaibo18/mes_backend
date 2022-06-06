@@ -16,10 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -57,10 +55,11 @@ public class CertificateController {
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
-    public CommonResult<Certificate> addCertificate(@RequestBody Certificate certificate){
-        if(StringUtils.isNullOrEmpty(certificate.getCertificateNo())){
+    public CommonResult<Certificate> addCertificate(@RequestBody Certificate certificate) {
+        if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
             return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
-        } if(certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0){
+        }
+        if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
             return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
         } else {
             certificate.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -68,15 +67,15 @@ public class CertificateController {
 
             boolean bool = certificateService.save(certificate);
 
-            if(bool){
+            if (bool) {
 
                 certificate.getTrackCertificates().stream().forEach(track -> {
-                    if(certificate.getType().equals("0")){ //工序合格证
+                    if (certificate.getType().equals("0")) { //工序合格证
                         TrackItem trackItem = new TrackItem();
                         trackItem.setId(track.getTiId());
                         trackItem.setCertificateNo(certificate.getCertificateNo());
                         trackItemService.updateById(trackItem);
-                    } else if (certificate.getType().equals("1")){ //完工合格证
+                    } else if (certificate.getType().equals("1")) { //完工合格证
                         TrackHead trackHead = new TrackHead();
                         trackHead.setId(track.getThId());
                         trackHead.setCertificateNo(certificate.getCertificateNo());
@@ -86,7 +85,7 @@ public class CertificateController {
                         QueryWrapper<LineStore> wrapper = new QueryWrapper<>();
                         wrapper.eq("workblank_no", th.getProductNo());
                         LineStore lineStore = lineStoreService.getOne(wrapper);
-                        if(lineStore != null) {
+                        if (lineStore != null) {
                             StockRecord record = new StockRecord();
                             record.setCertificateNo(lineStore.getCertificateNo());
                             record.setAssemblyId(lineStore.getAssemblyId());
@@ -115,7 +114,7 @@ public class CertificateController {
                             record.setWorkNo(lineStore.getWorkNo());
                             record.setRemark(lineStore.getRemark());
                             record.setNumber(lineStore.getNumber());
-                            record.setUserNum(lineStore.getUserNum());
+                            record.setUserNum(lineStore.getUseNum());
 
                             stockRecordService.save(record);
                         }
@@ -133,8 +132,8 @@ public class CertificateController {
 
     @ApiOperation(value = "修改合格证", notes = "修改合格证信息")
     @PutMapping("/certificate")
-    public CommonResult<Certificate> updateCertificate(@RequestBody Certificate certificate, @RequestParam(required = false) Boolean changeTrack){
-        if(StringUtils.isNullOrEmpty(certificate.getCertificateNo())){
+    public CommonResult<Certificate> updateCertificate(@RequestBody Certificate certificate, @RequestParam(required = false) Boolean changeTrack) {
+        if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
             return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
         } else {
             boolean bool = false;
@@ -142,8 +141,8 @@ public class CertificateController {
             certificate.setModifyTime(new Date());
             bool = certificateService.updateById(certificate);
 
-            if(bool){
-                if(changeTrack){
+            if (bool) {
+                if (changeTrack) {
                     QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
                     queryWrapper.eq("certificate_id", certificate.getId());
                     List<TrackCertificate> result = trackCertificateService.list(queryWrapper);
@@ -160,15 +159,15 @@ public class CertificateController {
                                 break;
                             }
                         }
-                        if("0".equals(certificate.getType())){ //工序合格证
-                            if(isNotHave){
+                        if ("0".equals(certificate.getType())) { //工序合格证
+                            if (isNotHave) {
                                 TrackItem trackItem = new TrackItem();
                                 trackItem.setId(track.getTiId());
                                 trackItem.setCertificateNo(certificate.getCertificateNo());
                                 trackItemService.updateById(trackItem);
                             }
-                        } else if ("1".equals(certificate.getType())){ //完工合格证
-                            if(isNotHave){
+                        } else if ("1".equals(certificate.getType())) { //完工合格证
+                            if (isNotHave) {
                                 TrackHead trackHead = new TrackHead();
                                 trackHead.setId(track.getThId());
                                 trackHead.setCertificateNo(certificate.getCertificateNo());
@@ -189,13 +188,13 @@ public class CertificateController {
                                 break;
                             }
                         }
-                        if(!isHave){
-                            if("0".equals(certificate.getType())){ //工序合格证
+                        if (!isHave) {
+                            if ("0".equals(certificate.getType())) { //工序合格证
                                 TrackItem trackItem = new TrackItem();
                                 trackItem.setId(track.getTiId());
                                 trackItem.setCertificateNo("");
                                 trackItemService.updateById(trackItem);
-                            } else if ("1".equals(certificate.getType())){ //完工合格证
+                            } else if ("1".equals(certificate.getType())) { //完工合格证
                                 TrackHead trackHead = new TrackHead();
                                 trackHead.setId(track.getThId());
                                 trackHead.setCertificateNo("");
@@ -216,17 +215,17 @@ public class CertificateController {
 
     @ApiOperation(value = "删除入库信息", notes = "删除入库信息")
     @DeleteMapping("/certificate")
-    public CommonResult deleteCertificate(@RequestBody List<String> ids){
+    public CommonResult deleteCertificate(@RequestBody List<String> ids) {
         QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
         queryWrapper.in("certificate_id", ids);
         List<TrackCertificate> list = trackCertificateService.list(queryWrapper);
         list.stream().forEach(track -> {
-            if("0".equals(track.getCertificateType())) { //工序合格证
+            if ("0".equals(track.getCertificateType())) { //工序合格证
                 UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.set("certificate_no", "");
                 updateWrapper.eq("id", track.getTiId());
                 trackItemService.update(updateWrapper);
-            } else if("1".equals(track.getCertificateType())) { //工序合格证
+            } else if ("1".equals(track.getCertificateType())) { //工序合格证
                 UpdateWrapper<TrackHead> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.set("certificate_no", "");
                 updateWrapper.eq("id", track.getThId());
@@ -235,7 +234,7 @@ public class CertificateController {
         });
 
         boolean bool = certificateService.removeByIds(ids);
-        if(bool){
+        if (bool) {
             return CommonResult.success(true, SUCCESS_MESSAGE);
         } else {
             return CommonResult.failed(FAILED_MESSAGE);
@@ -244,34 +243,34 @@ public class CertificateController {
 
     @ApiOperation(value = "分页查询合格证信息", notes = "根据图号、合格证号、产品编号分页合格证信息")
     @GetMapping("/certificate")
-    public CommonResult<IPage<Certificate>> selectCertificate(String startDate, String endDate, String id,  String drawingNo, String certificateNo, String productNo, String order , String orderCol,String branchCode, String tenantId, int page, int limit){
+    public CommonResult<IPage<Certificate>> selectCertificate(String startDate, String endDate, String id, String drawingNo, String certificateNo, String productNo, String order, String orderCol, String branchCode, String tenantId, int page, int limit) {
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<Certificate>();
 
-        if(!StringUtils.isNullOrEmpty(startDate)){
+        if (!StringUtils.isNullOrEmpty(startDate)) {
             queryWrapper.ge("create_time", startDate);
         }
 
-        if(!StringUtils.isNullOrEmpty(endDate)){
+        if (!StringUtils.isNullOrEmpty(endDate)) {
             queryWrapper.le("create_time", endDate);
         }
 
-        if(!StringUtils.isNullOrEmpty(id)){
+        if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("pc.id", id);
         }
-        if(!StringUtils.isNullOrEmpty(drawingNo)){
-            queryWrapper.like("drawing_no", "%" + drawingNo+ "%");
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
         }
-        if(!StringUtils.isNullOrEmpty(certificateNo)){
+        if (!StringUtils.isNullOrEmpty(certificateNo)) {
             queryWrapper.like("pc.certificate_no", "%" + certificateNo + "%");
         }
-        if(!StringUtils.isNullOrEmpty(productNo)){
+        if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", "%" + productNo + "%");
         }
-        if(!StringUtils.isNullOrEmpty(orderCol)){
-            if(!StringUtils.isNullOrEmpty(order)){
-                if(order.equals("desc")){
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if (order.equals("desc")) {
                     queryWrapper.orderByDesc("pc." + StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")){
+                } else if (order.equals("asc")) {
                     queryWrapper.orderByAsc("pc." + StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
@@ -288,9 +287,9 @@ public class CertificateController {
 
     @ApiOperation(value = "查询合格证相关跟单", notes = "根据合格证ID查询合格证相关跟单")
     @GetMapping("/certificate/track")
-    public CommonResult<List<TrackCertificate>> selectTrackCertificate(String certificateId){
+    public CommonResult<List<TrackCertificate>> selectTrackCertificate(String certificateId) {
         QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
-        if(!StringUtils.isNullOrEmpty(certificateId)){
+        if (!StringUtils.isNullOrEmpty(certificateId)) {
             queryWrapper.eq("certificate_id", certificateId);
         }
         return CommonResult.success(trackCertificateService.list(queryWrapper), SUCCESS_MESSAGE);

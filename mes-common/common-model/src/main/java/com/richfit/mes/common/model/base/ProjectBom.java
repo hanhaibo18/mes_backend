@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -126,9 +127,15 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
     public String prodDesc;
 
     @ApiModelProperty(value = "分组", dataType = "Integer")
-    public Integer group;
-    @ApiModelProperty(value = "是否分解", dataType = "String")
-    public String isResolution;
+    public Integer groupBy;
+    @ApiModelProperty(value = "是否分解", dataType = "Boolean")
+    public Boolean isResolution;
     @ApiModelProperty(value = "状态(0停用,1发布)", dataType = "String")
     public String state;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零件所属图号", dataType = "String")
+    private String byDrawingNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "等级", dataType = "String")
+    private String level;
 }

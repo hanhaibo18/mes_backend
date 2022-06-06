@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProductionBomMapper;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
 import org.apache.ibatis.annotations.Param;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -96,7 +98,13 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode) {
+    public CommonResult<Boolean> issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode) {
+        //检查是否有当前项目号
+        QueryWrapper<ProjectBom> queryWrapperProject = new QueryWrapper<>();
+        queryWrapperProject.eq("work_plan_no", workPlanNo);
+        if (!projectBomService.list(queryWrapperProject).isEmpty()) {
+            return CommonResult.failed("当前工作号已存在");
+        }
         //先处理H级别的数据
         ProductionBom productionBom = this.getById(id);
         ProjectBom projectBom = projectBomEntity(productionBom);
@@ -110,15 +118,17 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         queryWrapper.eq("main_drawing_no", productionBom.getDrawingNo());
         List<ProductionBom> productionBomList = this.list(queryWrapper);
 //        List<ProjectBom> projectBomList1 = productionBomList.stream().map(this::projectBomEntity).collect(Collectors.toList());
+        String bomKey = UUID.randomUUID().toString();
         List<ProjectBom> projectBomList = productionBomList.stream().map(production -> {
             ProjectBom project = projectBomEntity(production);
-            project.setTenantId(tenantId)
+            project.setBomKey(bomKey)
+                    .setTenantId(tenantId)
                     .setBranchCode(branchCode)
                     .setProjectName(projectName)
                     .setWorkPlanNo(workPlanNo);
             return project;
         }).collect(Collectors.toList());
-        return projectBomService.saveBatch(projectBomList);
+        return CommonResult.success(projectBomService.saveBatch(projectBomList));
     }
 
     @Override
