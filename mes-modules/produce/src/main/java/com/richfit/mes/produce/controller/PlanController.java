@@ -113,6 +113,7 @@ public class PlanController extends BaseController {
     @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
     @PutMapping("/update")
     public CommonResult<Object> updatePlan(@RequestBody Plan plan) throws GlobalException {
+        TenantUserDetails user = SecurityUtils.getCurrentUser();
         plan.setTenantId(user.getTenantId());
         return planService.updatePlan(plan);
     }
