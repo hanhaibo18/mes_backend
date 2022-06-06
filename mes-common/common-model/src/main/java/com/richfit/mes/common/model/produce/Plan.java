@@ -13,6 +13,7 @@ import java.util.Date;
 @Data
 public class Plan extends BaseEntity<Plan> {
 
+    private static final long serialVersionUID = -1472432735506772177L;
     /**
      * 计划编号
      */
@@ -25,6 +26,10 @@ public class Plan extends BaseEntity<Plan> {
      * 订单号
      */
     private String orderNo;
+    /**
+     * 订单交货日期
+     */
+    private Date orderDeliveryDate;
     /**
      * 图号
      */
