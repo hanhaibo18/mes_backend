@@ -22,7 +22,7 @@ import java.util.List;
  */
 
 @Slf4j
-@Api(value = "产品Bom管理", tags = {"产品Bom管理"})
+@Api(value = "项目Bom管理", tags = {"项目Bom管理"})
 @RestController
 @RequestMapping("/api/base/project_bom")
 public class ProjectBomController {
@@ -140,5 +140,5 @@ public class ProjectBomController {
         return CommonResult.success(projectBomService.saveBom(projectBom));
     }
 
-    
+
 }

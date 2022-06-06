@@ -127,7 +127,7 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
     public String prodDesc;
 
     @ApiModelProperty(value = "分组", dataType = "Integer")
-    public Integer group;
+    public Integer groupBy;
     @ApiModelProperty(value = "是否分解", dataType = "Boolean")
     public Boolean isResolution;
     @ApiModelProperty(value = "状态(0停用,1发布)", dataType = "String")

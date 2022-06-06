@@ -301,7 +301,7 @@ public class ProductionBomController extends BaseController {
     })
     @ApiOperation(value = "发布BOM")
     public CommonResult<Boolean> issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode) {
-        return CommonResult.success(productionBomService.issueBom(id, workPlanNo, projectName, tenantId, branchCode));
+        return productionBomService.issueBom(id, workPlanNo, projectName, tenantId, branchCode);
     }
 
 
