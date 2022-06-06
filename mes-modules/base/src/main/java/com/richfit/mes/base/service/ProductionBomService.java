@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProductionBom;
 import org.apache.ibatis.annotations.Param;
 
@@ -49,7 +50,7 @@ public interface ProductionBomService extends IService<ProductionBom> {
      * @Author: xinYu.hou
      * @return: boolean
      **/
-    boolean issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode);
+    CommonResult<Boolean> issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode);
 
 
     /**

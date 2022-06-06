@@ -76,5 +76,79 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         return this.list(queryWrapper);
     }
 
+    @Override
+    public List<ProjectBom> getProjectBomPartList(String workPlanNo, String tenantId, String branchCode) {
+        QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("work_plan_no", workPlanNo)
+                .eq("tenant_id", tenantId)
+                .eq("branch_code", branchCode);
+        List<ProjectBom> list = this.list(queryWrapper);
+        list.forEach(bom -> {
+            if (bom.getIsResolution()) {
+                QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
+                queryWrapperPart.eq("bomKey", bom.getBomKey());
+                list.addAll(this.list(queryWrapperPart));
+            }
+        });
+        return list;
+    }
+
+    @Override
+    public List<ProjectBom> getProjectBomPartByIdList(String id, String tenantId, String branchCode) {
+        QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id)
+                .eq("tenant_id", tenantId)
+                .eq("branch_code", branchCode);
+        List<ProjectBom> list = this.list(queryWrapper);
+        String drawingNo = null;
+        for (ProjectBom bom : list) {
+            bom.setLevel("2");
+            bom.setByDrawingNo(bom.getMainDrawingNo());
+            if (bom.getIsResolution()) {
+                bom.setLevel("3");
+                bom.setByDrawingNo(bom.getDrawingNo());
+                drawingNo = bom.getDrawingNo();
+                QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
+                queryWrapperPart.eq("bomKey", bom.getBomKey());
+                list.addAll(this.list(queryWrapperPart));
+            }
+        }
+
+        for (ProjectBom projectBom : list) {
+            if (id.equals(projectBom.getId())) {
+                list.remove(projectBom);
+                continue;
+            }
+            if (null != drawingNo) {
+                list.remove(projectBom);
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public List<ProjectBom> getPartList(String workPlanNo, String projectName, String tenantId, String branchCode) {
+        QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(workPlanNo)) {
+            queryWrapper.like("work_plan_no", workPlanNo);
+        }
+        if (!StringUtils.isNullOrEmpty(projectName)) {
+            queryWrapper.like("project_name", projectName);
+        }
+        queryWrapper.eq("tenant_id", tenantId)
+                .eq("branch_code", branchCode);
+        return this.list(queryWrapper);
+    }
+
+    @Override
+    public boolean deletePart(String id) {
+        return this.removeById(id);
+    }
+
+    @Override
+    public boolean saveBom(ProjectBom projectBom) {
+        return this.save(projectBom);
+    }
+
 
 }

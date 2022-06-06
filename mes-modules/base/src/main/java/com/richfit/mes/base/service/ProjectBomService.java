@@ -63,4 +63,59 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @return: List<ProjectBom>
      **/
     List<ProjectBom> getProjectBomList(String drawingNo, String tenantId, String branchCode);
+
+    //TODO: 零件增删改查接口,提供对外的根据项目BOM查询条件 查询所有零件
+
+    /**
+     * 功能描述: 根据工作号查询项目BOM零件
+     *
+     * @param workPlanNo
+     * @param tenantId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/6/2 7:25
+     * @return: List<ProjectBom>
+     **/
+    List<ProjectBom> getProjectBomPartList(String workPlanNo, String tenantId, String branchCode);
+
+    /**
+     * 功能描述:提供给第三方查询 根据ID查询
+     *
+     * @param id
+     * @param tenantId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @return: List<ProjectBom>
+     **/
+    List<ProjectBom> getProjectBomPartByIdList(String id, String tenantId, String branchCode);
+
+    /**
+     * 功能描述: 根据项目名称和工作号查询 项目BOM
+     *
+     * @param workPlanNo
+     * @param projectName
+     * @param tenantId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @return: List<ProjectBom>
+     **/
+    List<ProjectBom> getPartList(String workPlanNo, String projectName, String tenantId, String branchCode);
+
+    /**
+     * 功能描述: 删除零件BOM
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @return: boolean
+     **/
+    boolean deletePart(String id);
+
+    /**
+     * 功能描述: 新增零件BOM
+     *
+     * @param projectBom
+     * @Author: xinYu.hou
+     * @return: boolean
+     **/
+    boolean saveBom(ProjectBom projectBom);
 }
