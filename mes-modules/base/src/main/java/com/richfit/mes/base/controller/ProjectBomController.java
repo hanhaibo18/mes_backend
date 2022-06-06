@@ -1,9 +1,11 @@
 package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.richfit.mes.base.entity.DeleteProjectBomDto;
 import com.richfit.mes.base.service.ProjectBomService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -33,25 +35,21 @@ public class ProjectBomController {
     @DeleteMapping("/deleteBom")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "workPlanNo", value = "工作号", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
     })
     @ApiOperation(value = "删除BOM")
-    public CommonResult<Boolean> deleteBom(String workPlanNo, String tenantId, String branchCode) {
+    public CommonResult<Boolean> deleteBom(String workPlanNo, String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         return CommonResult.success(projectBomService.deleteBom(workPlanNo, tenantId, branchCode));
     }
 
     @DeleteMapping("/deleteBomList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "workPlanNoList", value = "工作号", required = true, paramType = "query", dataType = "List<String>"),
-            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
-    })
     @ApiOperation(value = "删除多条BOM")
-    public CommonResult<Boolean> deleteBom(List<String> workPlanNoList, String tenantId, String branchCode) {
+    public CommonResult<Boolean> deleteBom(@RequestBody DeleteProjectBomDto deleteProjectBomDto) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         boolean deleteBom = false;
-        for (String workPlanNo : workPlanNoList) {
-            deleteBom = projectBomService.deleteBom(workPlanNo, tenantId, branchCode);
+        for (String workPlanNo : deleteProjectBomDto.getWorkPlanNoList()) {
+            deleteBom = projectBomService.deleteBom(workPlanNo, tenantId, deleteProjectBomDto.getBranchCode());
         }
         return CommonResult.success(deleteBom);
     }
@@ -62,7 +60,6 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "projectName", value = "项目名称", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "prodDesc", value = "零部件名称", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "state", value = "状态", paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "order", value = "排序方式", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "orderCol", value = "排序字段", paramType = "query", dataType = "string"),
@@ -70,35 +67,38 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "limit", value = "数量", required = true, paramType = "query", dataType = "int")
     })
     @GetMapping("/project_bom")
-    public CommonResult<IPage<ProjectBom>> getProductionBomPage(String drawingNo, String projectName, String prodDesc, String state, String tenantId, String branchCode, String order, String orderCol, int page, int limit) {
+    public CommonResult<IPage<ProjectBom>> getProductionBomPage(String drawingNo, String projectName, String prodDesc, String state, String branchCode, String order, String orderCol, int page, int limit) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         return CommonResult.success(projectBomService.getProjectBomPage(drawingNo, projectName, prodDesc, state, tenantId, branchCode, order, orderCol, page, limit));
     }
 
     @PutMapping("/updateBom")
     @ApiOperation(value = "修改Bom")
     public CommonResult<Boolean> updateBom(@RequestBody ProjectBom projectBom) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        projectBom.setTenantId(tenantId);
         return CommonResult.success(projectBomService.updateBom(projectBom));
     }
 
     @ApiOperation(value = "查询项目列表", notes = "根据产品BOM图号查询项目BOM列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/project_bom_list")
-    public CommonResult<List<ProjectBom>> getProjectBomList(String drawingNo, String tenantId, String branchCode) {
+    public CommonResult<List<ProjectBom>> getProjectBomList(String drawingNo, String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         return CommonResult.success(projectBomService.getProjectBomList(drawingNo, tenantId, branchCode));
     }
 
     @ApiOperation(value = "根据工作号查询项目BOM零件", notes = "点击项目BOM进入零件列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "workPlanNo", value = "工作号", paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/getProjectBomPartList")
-    public CommonResult<List<ProjectBom>> getProjectBomPartList(String workPlanNo, String tenantId, String branchCode) {
+    public CommonResult<List<ProjectBom>> getProjectBomPartList(String workPlanNo, String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         return CommonResult.success(projectBomService.getProjectBomPartList(workPlanNo, tenantId, branchCode));
     }
 
@@ -117,11 +117,11 @@ public class ProjectBomController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "workPlanNo", value = "工作号", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "projectName", value = "项目名称", paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/getPartList")
-    public CommonResult<List<ProjectBom>> getPartList(String workPlanNo, String projectName, String tenantId, String branchCode) {
+    public CommonResult<List<ProjectBom>> getPartList(String workPlanNo, String projectName, String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         return CommonResult.success(projectBomService.getPartList(workPlanNo, projectName, tenantId, branchCode));
     }
 
@@ -137,6 +137,8 @@ public class ProjectBomController {
     @ApiOperation(value = "新增零件", notes = "项目BOM新增零件")
     @PostMapping("/saveBom")
     public CommonResult<Boolean> saveBom(ProjectBom projectBom) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        projectBom.setTenantId(tenantId);
         return CommonResult.success(projectBomService.saveBom(projectBom));
     }
 
