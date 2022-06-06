@@ -255,7 +255,7 @@ public class LineStoreController extends BaseController {
             queryWrapper.eq("status", status);
         }
         if (userNum != null && userNum > 0) {
-            queryWrapper.ge("number - user_num", userNum);
+            queryWrapper.ge("number - use_num", userNum);
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("branch_code", branchCode);
