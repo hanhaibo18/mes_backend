@@ -31,6 +31,10 @@ public class Plan extends BaseEntity<Plan> {
      */
     private Date orderDeliveryDate;
     /**
+     * 订单数量
+     */
+    private int orderNum;
+    /**
      * 图号
      */
     private String drawNo;
