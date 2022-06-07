@@ -31,7 +31,7 @@ import java.util.Map;
  * @Date: 2020/7/14 9:45
  */
 @Slf4j
-@Api("计划管理")
+@Api(tags = "计划管理")
 @RestController
 @RequestMapping("/api/produce/plan")
 public class PlanController extends BaseController {
