@@ -31,9 +31,13 @@ public class Plan extends BaseEntity<Plan> {
      */
     private Date orderDeliveryDate;
     /**
-     * 订单数量
+     * 关联项目BOM的id
      */
-    private int orderNum;
+    private String projectBom;
+    /**
+     * 关联项目BOM的名称
+     */
+    private String projectBomName;
     /**
      * 图号
      */

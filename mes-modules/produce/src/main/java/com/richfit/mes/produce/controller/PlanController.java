@@ -34,7 +34,7 @@ import java.util.Map;
  * @Date: 2020/7/14 9:45
  */
 @Slf4j
-@Api("计划管理")
+@Api(tags = "计划管理")
 @RestController
 @RequestMapping("/api/produce/plan")
 public class PlanController extends BaseController {
@@ -174,5 +174,18 @@ public class PlanController extends BaseController {
     @PostMapping("/queryPlan")
     public List<Map<String, String>> getPlanList(@RequestBody PlanQueryDto planQueryDto) {
         return planService.getPlanList(planQueryDto.getStartTime(), planQueryDto.getEndTime(), planQueryDto.getDrawingNo(), planQueryDto.getTenantId(), planQueryDto.getBranchCode());
+    }
+
+    /**
+     * 功能描述: 物料齐套性检查
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/7 11:37
+     **/
+    @ApiOperation(value = "物料齐套性检查", notes = "物料齐套性检查")
+    @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
+    @GetMapping("/completeness/{id}")
+    public CommonResult<Object> completeness(@PathVariable String id) throws GlobalException {
+        return CommonResult.success(planService.completeness(id));
     }
 }
