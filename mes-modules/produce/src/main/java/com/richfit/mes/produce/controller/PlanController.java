@@ -17,10 +17,7 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -174,5 +171,17 @@ public class PlanController extends BaseController {
     @PostMapping("/queryPlan")
     public List<Map<String, String>> getPlanList(@RequestBody PlanQueryDto planQueryDto) {
         return planService.getPlanList(planQueryDto.getStartTime(), planQueryDto.getEndTime(), planQueryDto.getDrawingNo(), planQueryDto.getTenantId(), planQueryDto.getBranchCode());
+    }
+
+    /**
+     * 功能描述: 物料齐套性检查
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/7 11:37
+     **/
+    @ApiOperation(value = "物料齐套性检查", notes = "物料齐套性检查")
+    @PostMapping("/completeness")
+    public CommonResult<Object> completeness(@ApiParam(name = "planId", value = "计划ID", required = true) @RequestParam String planId) throws GlobalException {
+        return CommonResult.success(planService.completeness(planId));
     }
 }
