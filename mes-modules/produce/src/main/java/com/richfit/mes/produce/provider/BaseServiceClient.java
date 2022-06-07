@@ -53,4 +53,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "/api/base/workingHours/hoursList")
     public CommonResult<List<Product>> queryProductName();
 
+    @GetMapping(value = "/api/base/project_bom/getProjectBomPartByIdList")
+    public List<ProjectBom> getProjectBomPartByIdList(String id);
 }
