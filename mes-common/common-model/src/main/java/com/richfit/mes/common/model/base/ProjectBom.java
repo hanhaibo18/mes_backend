@@ -115,23 +115,23 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
     private Integer number;
 
 
-    public String bomKey;
+    private String bomKey;
 
     @ApiModelProperty(value = "来料类型", dataType = "Integer")
-    public String sourceType;
+    private String sourceType;
 
     @ApiModelProperty(value = "导入序号", dataType = "Integer")
-    public Integer orderNo;
+    private Integer orderNo;
 
     @ApiModelProperty(value = "零部件名称", dataType = "String")
-    public String prodDesc;
+    private String prodDesc;
 
     @ApiModelProperty(value = "分组", dataType = "Integer")
-    public Integer groupBy;
+    private Integer groupBy;
     @ApiModelProperty(value = "是否分解", dataType = "Boolean")
-    public Boolean isResolution;
+    private Boolean isResolution;
     @ApiModelProperty(value = "状态(0停用,1发布)", dataType = "String")
-    public String state;
+    private String state;
     @TableField(exist = false)
     @ApiModelProperty(value = "零件所属图号", dataType = "String")
     private String byDrawingNo;

@@ -10,6 +10,7 @@ import com.richfit.mes.base.dao.ProjectBomMapper;
 import com.richfit.mes.common.model.base.ProjectBom;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -84,7 +85,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 .eq("branch_code", branchCode);
         List<ProjectBom> list = this.list(queryWrapper);
         list.forEach(bom -> {
-            if (bom.getIsResolution()) {
+            if (Boolean.TRUE.equals(bom.getIsResolution())) {
                 QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
                 queryWrapperPart.eq("bomKey", bom.getBomKey());
                 list.addAll(this.list(queryWrapperPart));
@@ -94,22 +95,26 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     }
 
     @Override
-    public List<ProjectBom> getProjectBomPartByIdList(String id, String tenantId, String branchCode) {
+    public List<ProjectBom> getProjectBomPartByIdList(String id) {
+        ProjectBom bom = this.getById(id);
+        if (null == bom) {
+            return Collections.emptyList();
+        }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", id)
-                .eq("tenant_id", tenantId)
-                .eq("branch_code", branchCode);
+        queryWrapper.eq("work_plan_no", bom.getWorkPlanNo())
+                .eq("tenant_id", bom.getTenantId())
+                .eq("branch_code", bom.getBranchCode());
         List<ProjectBom> list = this.list(queryWrapper);
         String drawingNo = null;
-        for (ProjectBom bom : list) {
-            bom.setLevel("2");
-            bom.setByDrawingNo(bom.getMainDrawingNo());
-            if (bom.getIsResolution()) {
-                bom.setLevel("3");
-                bom.setByDrawingNo(bom.getDrawingNo());
-                drawingNo = bom.getDrawingNo();
+        for (ProjectBom project : list) {
+            project.setLevel("2");
+            project.setByDrawingNo(project.getMainDrawingNo());
+            if (Boolean.TRUE.equals(bom.getIsResolution())) {
+                project.setLevel("3");
+                project.setByDrawingNo(project.getDrawingNo());
+                drawingNo = project.getDrawingNo();
                 QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
-                queryWrapperPart.eq("bomKey", bom.getBomKey());
+                queryWrapperPart.eq("bomKey", project.getBomKey());
                 list.addAll(this.list(queryWrapperPart));
             }
         }
@@ -117,10 +122,13 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         for (ProjectBom projectBom : list) {
             if (id.equals(projectBom.getId())) {
                 list.remove(projectBom);
-                continue;
+                break;
             }
+        }
+        for (ProjectBom projectBom : list) {
             if (null != drawingNo) {
                 list.remove(projectBom);
+                break;
             }
         }
         return list;
@@ -148,6 +156,19 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     @Override
     public boolean saveBom(ProjectBom projectBom) {
         return this.save(projectBom);
+    }
+
+    @Override
+    public boolean relevancePart(String partId, String bomId) {
+        ProjectBom part = this.getById(partId);
+        if (!StringUtils.isNullOrEmpty(bomId)) {
+            ProjectBom bom = this.getById(bomId);
+            part.setBomKey(bom.getBomKey());
+            part.setIsResolution(true);
+        } else {
+            part.setIsResolution(false);
+        }
+        return this.updateById(part);
     }
 
 

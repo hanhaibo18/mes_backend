@@ -105,12 +105,10 @@ public class ProjectBomController {
     @ApiOperation(value = "根据项目BOM的ID查询项目BOM零件", notes = "提供给其他服务使用")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "项目Id", paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/getProjectBomPartByIdList")
-    public List<ProjectBom> getProjectBomPartByIdList(String id, String tenantId, String branchCode) {
-        return projectBomService.getProjectBomPartByIdList(id, tenantId, branchCode);
+    public List<ProjectBom> getProjectBomPartByIdList(String id) {
+        return projectBomService.getProjectBomPartByIdList(id);
     }
 
     @ApiOperation(value = "根据工作号和项目名称模糊查询项目BOM", notes = "新增零件时查询")
@@ -136,11 +134,19 @@ public class ProjectBomController {
 
     @ApiOperation(value = "新增零件", notes = "项目BOM新增零件")
     @PostMapping("/saveBom")
-    public CommonResult<Boolean> saveBom(ProjectBom projectBom) {
+    public CommonResult<Boolean> saveBom(@RequestBody ProjectBom projectBom) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         projectBom.setTenantId(tenantId);
         return CommonResult.success(projectBomService.saveBom(projectBom));
     }
 
-
+    @ApiOperation(value = "关联零件分解项", notes = "关联是否分解零件")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "partId", value = "零件Id", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "bomId", value = "关联项目ID", paramType = "query", dataType = "String")
+    })
+    @GetMapping("/relevancePart")
+    public CommonResult<Boolean> relevancePart(String partId, String bomId) {
+        return CommonResult.success(projectBomService.relevancePart(partId, bomId));
+    }
 }

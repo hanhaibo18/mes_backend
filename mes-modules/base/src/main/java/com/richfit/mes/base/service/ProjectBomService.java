@@ -82,12 +82,10 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * 功能描述:提供给第三方查询 根据ID查询
      *
      * @param id
-     * @param tenantId
-     * @param branchCode
      * @Author: xinYu.hou
      * @return: List<ProjectBom>
      **/
-    List<ProjectBom> getProjectBomPartByIdList(String id, String tenantId, String branchCode);
+    List<ProjectBom> getProjectBomPartByIdList(String id);
 
     /**
      * 功能描述: 根据项目名称和工作号查询 项目BOM
@@ -118,4 +116,15 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @return: boolean
      **/
     boolean saveBom(ProjectBom projectBom);
+
+    /**
+     * 功能描述:
+     *
+     * @param partId 零件ID
+     * @param bomId  项目Id
+     * @Author: xinYu.hou
+     * @Date: 2022/6/7 16:03
+     * @return: boolean
+     **/
+    boolean relevancePart(String partId, String bomId);
 }
