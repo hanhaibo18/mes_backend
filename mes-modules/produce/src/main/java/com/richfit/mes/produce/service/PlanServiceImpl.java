@@ -9,10 +9,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.DateUtils;
-import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.base.CalendarClass;
-import com.richfit.mes.common.model.base.Router;
-import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.Plan;
@@ -222,6 +219,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
         List<Plan> planList = this.list(queryWrapper);
         return disposePlan(planList);
+    }
+
+    /**
+     * 功能描述: 物料齐套性检查
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/7 11:37
+     **/
+    @Override
+    public List<ProjectBom> completeness(String planId) {
+        Plan plan = planMapper.selectById(planId);
+        List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
+        return projectBomList;
     }
 
     public List<Map<String, String>> disposePlan(List<Plan> planList) {
