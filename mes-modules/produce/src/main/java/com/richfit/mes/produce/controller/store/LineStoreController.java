@@ -142,6 +142,9 @@ public class LineStoreController extends BaseController {
                                                           @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
                                                           @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                           @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+                                                          @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                          @ApiParam(value = "入库时间(起)") @RequestParam(required = false) String startTime,
+                                                          @ApiParam(value = "入库时间(止)") @RequestParam(required = false) String endTime,
                                                           @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
                                                           @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
                                                           @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
@@ -168,6 +171,15 @@ public class LineStoreController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("drawing_no", drawingNo);
+        }
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.like("work_no", workNo);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.ge("in_Time", startTime);
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            queryWrapper.le("in_Time", endTime);
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
             queryWrapper.like("certificate_no", certificateNo);
