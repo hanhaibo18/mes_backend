@@ -181,7 +181,7 @@ public class PlanController extends BaseController {
      **/
     @ApiOperation(value = "物料齐套性检查", notes = "物料齐套性检查")
     @PostMapping("/completeness")
-    public CommonResult<Object> completeness(@ApiParam(name = "planId", value = "计划ID", required = true) @RequestParam String planId) throws GlobalException {
+    public CommonResult<Object> completeness(@ApiParam(name = "planId", value = "计划ID", required = true) @PathVariable String planId) throws GlobalException {
         return CommonResult.success(planService.completeness(planId));
     }
 }
