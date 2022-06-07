@@ -13,7 +13,7 @@
         from produce_order o
         -- select o.*
         -- from v_order_plan o
-        -- WHERE 1=1
+        WHERE 1=1
         <trim suffixOverrides=",">
             <if test="param.orderSn != null and param.orderSn != ''">
                 and o.order_sn like '%${param.orderSn}%'
