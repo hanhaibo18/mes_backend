@@ -17,7 +17,10 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanService;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -180,8 +183,9 @@ public class PlanController extends BaseController {
      * @Date: 2022/6/7 11:37
      **/
     @ApiOperation(value = "物料齐套性检查", notes = "物料齐套性检查")
-    @PostMapping("/completeness")
-    public CommonResult<Object> completeness(@ApiParam(name = "planId", value = "计划ID", required = true) @PathVariable String planId) throws GlobalException {
-        return CommonResult.success(planService.completeness(planId));
+    @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
+    @GetMapping("/completeness/{id}")
+    public CommonResult<Object> completeness(@PathVariable String id) throws GlobalException {
+        return CommonResult.success(planService.completeness(id));
     }
 }

@@ -35,6 +35,10 @@ public class Plan extends BaseEntity<Plan> {
      */
     private String projectBom;
     /**
+     * 关联项目BOM的名称
+     */
+    private String projectBomName;
+    /**
      * 图号
      */
     private String drawNo;
