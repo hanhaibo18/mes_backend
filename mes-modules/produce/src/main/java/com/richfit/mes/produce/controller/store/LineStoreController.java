@@ -11,6 +11,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.code.StoreItemStatusEnum;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
@@ -53,6 +54,8 @@ public class LineStoreController extends BaseController {
     private final static String CODE_EXITS = "编号已存在！";
     private final static String MATERIAL_CODE_NULL_MSG = "物料编号不能为空！";
     private final static String DRAWING_NO_NULL_MSG = "图号不能为空！";
+
+    private final static String STATUS_NOT_RIGHT_FOR_EDIT = "料单当前状态不支持该操作";
 
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败！";
@@ -110,10 +113,11 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(lineStore.getDrawingNo())) {
             return CommonResult.failed(DRAWING_NO_NULL_MSG);
+        } else if (!isStatusFinish(lineStore)) {
+            return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT);
         } else {
             boolean bool = false;
-            lineStore.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-            lineStore.setModifyTime(new Date());
+
             bool = lineStoreService.updateById(lineStore);
 
             if (bool) {
@@ -127,6 +131,15 @@ public class LineStoreController extends BaseController {
     @ApiOperation(value = "删除入库信息", notes = "删除入库信息")
     @DeleteMapping("/line_store")
     public CommonResult deleteLineStore(@ApiParam(value = "料单Id数组") @RequestBody List<String> ids) {
+
+        //增加check逻辑  状态不是原始入库的，不能删除
+        for (String id : ids) {
+            LineStore lineStore = lineStoreService.getById(id);
+            if (!isStatusFinish(lineStore)) {
+                return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT + ",编号:" + lineStore.getWorkblankNo());
+            }
+        }
+
         boolean bool = lineStoreService.removeByIds(ids);
         if (bool) {
             return CommonResult.success(true, SUCCESS_MESSAGE);
@@ -487,6 +500,11 @@ public class LineStoreController extends BaseController {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+
+    private boolean isStatusFinish(LineStore lineStore) {
+        return lineStore.getStatus().equals(StoreItemStatusEnum.FINISH.getCode());
     }
 
 }
