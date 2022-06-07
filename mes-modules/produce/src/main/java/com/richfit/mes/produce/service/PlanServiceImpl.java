@@ -291,9 +291,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         checkPlan(plan);
 
         //根据计划图号判断计划类型  机加or装配or？
-//        CommonResult<Router> router = baseServiceClient.getRouterByNo(plan.getDrawNo(), null);
+//
+        CommonResult<Router> router = baseServiceClient.getRouterByNo(plan.getDrawNo(), null);
 //        plan.setDrawNoType(router.getData() != null ? router.getData().getType() : null);
-
         //更新对应订单状态
         if (StringUtils.hasText(plan.getOrderNo())) {
             Order order = orderService.findByOrderCode(plan.getOrderNo(), plan.getTenantId());
