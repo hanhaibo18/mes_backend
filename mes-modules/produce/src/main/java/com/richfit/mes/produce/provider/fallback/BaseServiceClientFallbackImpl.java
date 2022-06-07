@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     @Override
-    public CommonResult<List<Sequence>> getByRouterNo(String routerNo,String branchCode,String tenantId,String optId) {
+    public CommonResult<List<Sequence>> getByRouterNo(String routerNo, String branchCode, String tenantId, String optId) {
         return CommonResult.success(null);
     }
 
@@ -29,17 +29,17 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<Device> getDeviceById(String id)  {
+    public CommonResult<Device> getDeviceById(String id) {
         return CommonResult.success(null);
     }
 
     @Override
-    public CommonResult<List<CalendarClass>> selectCalendarClass(String name)  {
+    public CommonResult<List<CalendarClass>> selectCalendarClass(String name) {
         return CommonResult.success(null);
     }
 
     @Override
-    public CommonResult<List<CalendarDay>> selectCalendarDay(String startDate,String endDate)  {
+    public CommonResult<List<CalendarDay>> selectCalendarDay(String startDate, String endDate) {
         return CommonResult.success(null);
     }
 
@@ -50,15 +50,13 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
 
     @Override
-    public CommonResult<List<SequenceSite>> getSequenceDevice(String sequenceId, String siteId, String siteCode, String branchCode, String isDefault)
-    {
-           return CommonResult.success(null);
+    public CommonResult<List<SequenceSite>> getSequenceDevice(String sequenceId, String siteId, String siteCode, String branchCode, String isDefault) {
+        return CommonResult.success(null);
     }
 
     @Override
-    public CommonResult<List<DevicePerson>> getDevicePerson(String deviceId, String userId, String branchCode,String isDefault)
-    {
-         return CommonResult.success(null);
+    public CommonResult<List<DevicePerson>> getDevicePerson(String deviceId, String userId, String branchCode, String isDefault) {
+        return CommonResult.success(null);
     }
 
     @Override
@@ -66,4 +64,8 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return CommonResult.success(null);
     }
 
+    @Override
+    public List<ProjectBom> getProjectBomPartByIdList(String id) {
+        return null;
+    }
 }
