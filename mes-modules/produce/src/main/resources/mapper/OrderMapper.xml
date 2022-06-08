@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.produce.dao.OrderMapper">
 
-    <select id="queryOrder" resultType="com.richfit.mes.common.model.produce.Order">
+    <select id="queryOrderList" resultType="com.richfit.mes.common.model.produce.Order">
         select o.*,(select sum(p.proj_num)
         from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id
         ) as proj_num,
@@ -45,5 +45,20 @@
         </if>
     </select>
 
-
+    <select id="queryOrder" resultType="com.richfit.mes.common.model.produce.Order">
+        select o.*,
+               (select sum(p.proj_num)
+                from produce_plan p
+                where o.order_sn = p.order_no
+                  and o.tenant_id = p.tenant_id
+               ) as proj_num,
+               (select sum(ptv.store_num)
+                from plan_track_view ptv
+                where ptv.proj_code in
+                      (select proj_code from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id)
+                  and ptv.tenant_id = o.tenant_id)
+                 as store_num
+        from produce_order o
+        WHERE o.id = '${id}'
+    </select>
 </mapper>
