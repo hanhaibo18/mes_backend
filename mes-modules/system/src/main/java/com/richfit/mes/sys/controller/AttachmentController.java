@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.net.HttpHeaders;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -16,7 +17,6 @@ import com.richfit.mes.sys.service.AttachmentService;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +54,7 @@ public class AttachmentController extends BaseController {
                 attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 attachment.setAttachType(FileUtils.getFilenameExtension(file.getOriginalFilename()));
                 attachment.setAttachSize(String.valueOf(file.getSize()));
-                if (StringUtils.isNotEmpty(attachment.getAttachName())) {
+                if (!StringUtils.isNullOrEmpty(attachment.getAttachName())) {
                     attachment.setAttachName(file.getOriginalFilename());
                 }
                 attachment = attachmentService.upload(attachment, file.getBytes());
@@ -106,7 +106,7 @@ public class AttachmentController extends BaseController {
             // IE之外的浏览器使用编码输出名称
             String contentDisposition = "";
             String httpUserAgent = request.getHeader("User-Agent");
-            if (StringUtils.isNotEmpty(httpUserAgent)) {
+            if (!StringUtils.isNullOrEmpty(httpUserAgent)) {
                 httpUserAgent = httpUserAgent.toLowerCase();
                 String fileName = attachment.getAttachName();
                 contentDisposition = httpUserAgent.contains("wps") ? "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") : ServletUtils.getDownName(request, fileName);
@@ -178,26 +178,26 @@ public class AttachmentController extends BaseController {
     public CommonResult<IPage<Attachment>> query(int page, int limit, String id, String attachName, String classify, String module, String relationId, String relationName) {
 
         QueryWrapper<Attachment> queryWrapper = new QueryWrapper<Attachment>();
-        if (StringUtils.isNotEmpty(attachName)) {
+        if (!StringUtils.isNullOrEmpty(attachName)) {
             queryWrapper.eq("attach_name", attachName);
         }
         // 根据关联ID过滤
-        if (StringUtils.isNotEmpty(relationId)) {
+        if (!StringUtils.isNullOrEmpty(relationId)) {
             queryWrapper.eq("relation_id", relationId);
         }
         // 根据关联ID过滤
-        if (StringUtils.isNotEmpty(relationName)) {
+        if (!StringUtils.isNullOrEmpty(relationName)) {
             queryWrapper.like("relation_name", relationName);
         }
         // 根据分类过滤
-        if (StringUtils.isNotEmpty(classify)) {
+        if (!StringUtils.isNullOrEmpty(classify)) {
             queryWrapper.eq("classify", classify);
         }
         // 根据模块过滤
-        if (StringUtils.isNotEmpty(module)) {
+        if (!StringUtils.isNullOrEmpty(module)) {
             queryWrapper.eq("module", module);
         }
-        if (StringUtils.isNotEmpty(id)) {
+        if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
         }
 
