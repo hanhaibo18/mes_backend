@@ -5,9 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.produce.entity.OrderDto;
-import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
-
-import java.util.List;
 
 /**
  * @Author: GaoLiang
@@ -16,11 +13,17 @@ import java.util.List;
 public interface OrderService extends IService<Order> {
     IPage<Order> queryPage(Page<Order> planPage, OrderDto orderDto);
 
+    Order queryOrder(String id);
+
     void findBranchName(Order order);
+
     void setOrderStatusStart(String id);
+
     void setOrderStatusNew(String id);
+
     void setOrderStatusClose(String id);
-    Order findByOrderCode(String orderCode,String tenantId);
+
+    Order findByOrderCode(String orderCode, String tenantId);
 
 
 }
