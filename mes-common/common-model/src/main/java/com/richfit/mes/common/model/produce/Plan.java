@@ -23,6 +23,10 @@ public class Plan extends BaseEntity<Plan> {
      */
     private String workNo;
     /**
+     * 订单id
+     */
+    private String orderId;
+    /**
      * 订单号
      */
     private String orderNo;
