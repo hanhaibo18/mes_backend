@@ -14,5 +14,7 @@ import org.apache.ibatis.annotations.Param;
  */
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
-    IPage<Order> queryOrder(Page<Order> orderPage, @Param("param")OrderDto orderDto);
+    IPage<Order> queryOrderList(Page<Order> orderPage, @Param("param") OrderDto orderDto);
+
+    Order queryOrder(@Param("id") String id);
 }
