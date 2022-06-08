@@ -1,40 +1,18 @@
 package com.richfit.mes.produce.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.entity.OrderDto;
-import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -43,9 +21,9 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class OrderServiceImpl extends ServiceImpl<OrderMapper,Order> implements OrderService{
+public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService {
 
-    final int ORDER_NEW  = 0;
+    final int ORDER_NEW = 0;
     final int ORDER_START = 1;
     final int ORDER_CLOSE = 2;
 
@@ -58,57 +36,61 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper,Order> implements 
     @Override
     public IPage<Order> queryPage(Page<Order> orderPage, OrderDto orderDto) {
 
-        IPage<Order> planList =  orderMapper.queryOrder(orderPage,orderDto);
+        IPage<Order> planList = orderMapper.queryOrderList(orderPage, orderDto);
 
         List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
 
-        for(Order order :planList.getRecords()){
-            findBranchName(order,branchList);
+        for (Order order : planList.getRecords()) {
+            findBranchName(order, branchList);
         }
 
         return planList;
     }
 
+    @Override
+    public Order queryOrder(String id) {
+        return orderMapper.queryOrder(id);
+    }
 
 
     @Override
     public void findBranchName(Order order) {
         List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
-        findBranchName(order,branchList);
+        findBranchName(order, branchList);
     }
 
     @Override
     public void setOrderStatusStart(String id) {
-        setOrderStatus(id,ORDER_START);
+        setOrderStatus(id, ORDER_START);
     }
 
     @Override
     public void setOrderStatusNew(String id) {
-        setOrderStatus(id,ORDER_NEW);
+        setOrderStatus(id, ORDER_NEW);
     }
 
     @Override
     public void setOrderStatusClose(String id) {
-        setOrderStatus(id,ORDER_CLOSE);
+        setOrderStatus(id, ORDER_CLOSE);
     }
 
     @Override
     public Order findByOrderCode(String orderCode, String tenantId) {
 
-        Page<Order> orderPage = new Page<>(1,10);
+        Page<Order> orderPage = new Page<>(1, 10);
 
         OrderDto orderDto = new OrderDto();
 
         orderDto.setOrderSn(orderCode);
         orderDto.setTenantId(tenantId);
 
-        IPage<Order> planList =  orderMapper.queryOrder(orderPage,orderDto);
+        IPage<Order> planList = orderMapper.queryOrderList(orderPage, orderDto);
 
-        return planList.getRecords().size()>0?planList.getRecords().get(0):null;
+        return planList.getRecords().size() > 0 ? planList.getRecords().get(0) : null;
     }
 
 
-    private void setOrderStatus(String id ,int status){
+    private void setOrderStatus(String id, int status) {
         Order order = this.getById(id);
         order.setStatus(status);
         this.updateById(order);
@@ -116,11 +98,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper,Order> implements 
 
     private void findBranchName(Order order, List<Branch> branchList) {
 
-        for(Branch b : branchList){
-            if(b.getBranchCode().equals(order.getBranchCode())){
+        for (Branch b : branchList) {
+            if (b.getBranchCode().equals(order.getBranchCode())) {
                 order.setBranchName(b.getBranchName());
             }
-            if(b.getBranchCode().equals(order.getInChargeOrg())){
+            if (b.getBranchCode().equals(order.getInChargeOrg())) {
                 order.setInchargeOrgName(b.getBranchName());
             }
         }
