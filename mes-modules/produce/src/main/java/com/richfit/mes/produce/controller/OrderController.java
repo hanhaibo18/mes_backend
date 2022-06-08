@@ -37,7 +37,7 @@ import java.util.List;
  * @Date: 2020/8/10 18:10
  */
 @Slf4j
-@Api("订单管理")
+@Api(tags = "订单管理")
 @RestController
 @RequestMapping("/api/produce/order")
 public class OrderController extends BaseController {
@@ -116,7 +116,7 @@ public class OrderController extends BaseController {
     @ApiImplicitParam(name = "id", value = "订单Id", required = true, dataType = "String", paramType = "path")
     @GetMapping("/{id}")
     public CommonResult<Order> getPlan(@PathVariable String id) throws GlobalException {
-        Order order = orderService.getById(id);
+        Order order = orderService.queryOrder(id);
         orderService.findBranchName(order);
         return CommonResult.success(order);
     }
