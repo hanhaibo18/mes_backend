@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
@@ -24,7 +23,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -110,7 +108,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             order.setDeliveryDate(order.getEndTime());
             order.setPriority("1");
             order.setStatus(0);
-            order.setInChargeOrg(user.getBelongOrgId());
+            order.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             orderSyncService.remove(queryWrapper);
             orderSyncService.save(order);
         }
@@ -200,11 +198,12 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                             order.setMaterialCode(trimStringWith(itemNext.elementTextTrim("MATNR"), zero));
                             order.setMaterialDesc(itemNext.elementTextTrim("MAKTX"));
                             //TODO: 从xml获取的参数还需再去查询在存储
-                            order.setBranchCode(itemNext.elementTextTrim("WERKS"));
+//                            order.setBranchCode();
                             order.setOrderNum((int) Float.parseFloat(itemNext.elementTextTrim("GAMNG").trim()));
                             order.setStartTime(format.parse(itemNext.elementTextTrim("GSTRP")));
                             order.setEndTime(format.parse(itemNext.elementTextTrim("GLTRP")));
-                            order.setInChargeOrg(itemNext.elementTextTrim("DISPO"));
+//                            order.setInChargeOrg(itemNext.elementTextTrim("DISPO"));
+                            order.setInChargeOrg(itemNext.elementTextTrim("WERKS"));
                             boolean orderJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getOrderSn());
                             boolean inChargeOrgJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getInChargeOrg());
                             if (!orderJudge || !inChargeOrgJudge) {

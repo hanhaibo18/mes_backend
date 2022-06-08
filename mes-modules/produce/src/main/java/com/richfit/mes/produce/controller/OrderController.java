@@ -96,11 +96,9 @@ public class OrderController extends BaseController {
     @PostMapping("/save")
     public CommonResult<Boolean> savePlan(@RequestBody Order order) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
-        //order.setTenantId(user.getTenantId());
-        //order.setBranchCode(user.getOrgId());
         order.setStartTime(order.getOrderDate());
         order.setEndTime(order.getDeliveryDate());
-        order.setInChargeOrg(user.getBelongOrgId());
+        order.setTenantId(user.getTenantId());
 
         Action action = new Action();
         action.setActionType("0");
