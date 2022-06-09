@@ -22,7 +22,7 @@
                 and o.material_code like '%${param.materialCode}%'
             </if>
             <if test="param.branchCode != null and param.branchCode != ''">
-                and o.branch_code like '%${param.branchCode}%'
+                and o.branch_code = '${param.branchCode}'
             </if>
             <if test="param.startTime != null and param.startTime != ''">
                 and o.delivery_date >= #{param.startTime}
