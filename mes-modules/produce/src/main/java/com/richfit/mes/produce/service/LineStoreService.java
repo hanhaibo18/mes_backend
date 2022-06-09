@@ -16,7 +16,8 @@ public interface LineStoreService extends IService<LineStore> {
 
     boolean changeStatus(TrackHead trackHead);
 
-    boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode);
+    boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
+                     Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode);
 
     boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo);
 

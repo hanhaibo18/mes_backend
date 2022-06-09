@@ -36,6 +36,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     private OrderService orderService;
 
     @Autowired
+    private StoreAttachRelService storeAttachRelService;
+
+    @Autowired
     private PurchaseOrderService purchaseOrderService;
 
     @Autowired
@@ -133,7 +136,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     // 材料入库
     @Override
-    public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo, Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode) {
+    public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
+                            Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode) {
 
         lineStore.setUseNum(0);
         lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
@@ -167,6 +171,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             }
 
             bool = this.saveBatch(list);
+
+            //保存料单-附件关系
+            for (LineStore s : list) {
+                storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
+            }
+
         } else {
             if (isAutoMatchProd) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
@@ -176,7 +186,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             }
 
             bool = this.save(lineStore);
+            //保存料单-附件关系
+            storeAttachRelService.batchSaveStoreFile(lineStore.getId(), branchCode, lineStore.getFileIds());
         }
+
+
         return bool;
     }
 

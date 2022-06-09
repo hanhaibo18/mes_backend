@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author 王瑞
@@ -143,6 +144,10 @@ public class LineStore extends BaseEntity<LineStore> {
 
     @ApiModelProperty(value = "钢锭化学成分表备注")
     private String ingotRemark;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "对应资料的上传Id列表")
+    private List<String> fileIds;
 
 
     public LineStore() {
