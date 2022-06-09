@@ -2,9 +2,11 @@ package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 侯欣雨
@@ -127,4 +129,14 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @return: boolean
      **/
     boolean relevancePart(String partId, String bomId);
+
+    /**
+     * 功能描述: 根据零件Id获取名称
+     *
+     * @param partId
+     * @Author: xinYu.hou
+     * @Date: 2022/6/8 14:53
+     * @return: Map<String, String>
+     **/
+    CommonResult<Map<String, String>> getPartName(String partId);
 }

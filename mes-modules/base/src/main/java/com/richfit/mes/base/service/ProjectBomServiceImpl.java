@@ -7,11 +7,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProjectBomMapper;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 侯欣雨
@@ -86,9 +89,12 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         List<ProjectBom> list = this.list(queryWrapper);
         list.forEach(bom -> {
             if (Boolean.TRUE.equals(bom.getIsResolution())) {
-                QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
-                queryWrapperPart.eq("bomKey", bom.getBomKey());
-                list.addAll(this.list(queryWrapperPart));
+                ProjectBom projectBom = this.getById(bom.getBomKey());
+                if (null != projectBom) {
+                    QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
+                    queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo());
+                    list.addAll(this.list(queryWrapperPart));
+                }
             }
         });
         return list;
@@ -113,9 +119,12 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 project.setLevel("3");
                 project.setByDrawingNo(project.getDrawingNo());
                 drawingNo = project.getDrawingNo();
-                QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
-                queryWrapperPart.eq("bomKey", project.getBomKey());
-                list.addAll(this.list(queryWrapperPart));
+                ProjectBom projectBom = this.getById(project.getBomKey());
+                if (null != projectBom) {
+                    QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
+                    queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo());
+                    list.addAll(this.list(queryWrapperPart));
+                }
             }
         }
 
@@ -162,13 +171,23 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     public boolean relevancePart(String partId, String bomId) {
         ProjectBom part = this.getById(partId);
         if (!StringUtils.isNullOrEmpty(bomId)) {
-            ProjectBom bom = this.getById(bomId);
-            part.setBomKey(bom.getBomKey());
+            part.setBomKey(bomId);
             part.setIsResolution(true);
         } else {
             part.setIsResolution(false);
         }
         return this.updateById(part);
+    }
+
+    @Override
+    public CommonResult<Map<String, String>> getPartName(String partId) {
+        ProjectBom projectBom = this.getById(partId);
+        if (null == projectBom) {
+            return CommonResult.failed("未关联项目BOM");
+        }
+        Map<String, String> map = new HashMap<>(1);
+        map.put(projectBom.getId(), projectBom.getProjectName());
+        return CommonResult.success(map);
     }
 
 

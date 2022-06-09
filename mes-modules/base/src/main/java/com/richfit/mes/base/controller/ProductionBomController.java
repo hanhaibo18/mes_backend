@@ -383,13 +383,11 @@ public class ProductionBomController extends BaseController {
 
             list = list.stream().filter(item -> !StringUtils.isNullOrEmpty(item.getDrawingNo()) &&
                     !StringUtils.isNullOrEmpty(item.getMaterialNo())).collect(Collectors.toList());
-            String bomKey = UUID.randomUUID().toString();
             String tenantId = SecurityUtils.getCurrentUser().getTenantId();
             list.forEach(item -> {
                 item.setTenantId(tenantId);
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
-                item.setBomKey(bomKey);
                 if ("单件".equals(item.getTrackType())) {
                     item.setTrackType("0");
                 } else if ("批次".equals(item.getTrackType())) {

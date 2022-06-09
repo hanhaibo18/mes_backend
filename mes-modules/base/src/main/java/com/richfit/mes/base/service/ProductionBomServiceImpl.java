@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -117,12 +116,9 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("main_drawing_no", productionBom.getDrawingNo());
         List<ProductionBom> productionBomList = this.list(queryWrapper);
-//        List<ProjectBom> projectBomList1 = productionBomList.stream().map(this::projectBomEntity).collect(Collectors.toList());
-        String bomKey = UUID.randomUUID().toString();
         List<ProjectBom> projectBomList = productionBomList.stream().map(production -> {
             ProjectBom project = projectBomEntity(production);
-            project.setBomKey(bomKey)
-                    .setTenantId(tenantId)
+            project.setTenantId(tenantId)
                     .setBranchCode(branchCode)
                     .setProjectName(projectName)
                     .setWorkPlanNo(workPlanNo);

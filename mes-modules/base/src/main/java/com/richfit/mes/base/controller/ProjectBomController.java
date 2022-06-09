@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: ProjectBomController.java
@@ -148,5 +149,14 @@ public class ProjectBomController {
     @GetMapping("/relevancePart")
     public CommonResult<Boolean> relevancePart(String partId, String bomId) {
         return CommonResult.success(projectBomService.relevancePart(partId, bomId));
+    }
+
+    @ApiOperation(value = "关联零件分解项", notes = "关联是否分解零件")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "partId", value = "零件Id", paramType = "query", dataType = "String"),
+    })
+    @GetMapping("/getPartName")
+    public CommonResult<Map<String, String>> getPartName(String partId) {
+        return projectBomService.getPartName(partId);
     }
 }
