@@ -11,10 +11,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 侯欣雨
@@ -87,16 +85,30 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 .eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode);
         List<ProjectBom> list = this.list(queryWrapper);
-        list.forEach(bom -> {
-            if (Boolean.TRUE.equals(bom.getIsResolution())) {
-                ProjectBom projectBom = this.getById(bom.getBomKey());
+        List<ProjectBom> projectBomList = new ArrayList<>();
+        for (ProjectBom project : list) {
+            if (!StringUtils.isNullOrEmpty(project.getMainDrawingNo())) {
+                project.setLevel("2");
+                project.setByDrawingNo(project.getMainDrawingNo());
+            } else {
+                project.setLevel("1");
+            }
+            if ("1".equals(project.getIsResolution())) {
+                String drawingNo = project.getDrawingNo();
+                ProjectBom projectBom = this.getById(project.getBomKey());
                 if (null != projectBom) {
                     QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
                     queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo());
-                    list.addAll(this.list(queryWrapperPart));
+                    List<ProjectBom> projectBoms = this.list(queryWrapperPart);
+                    for (ProjectBom boms : projectBoms) {
+                        boms.setLevel("3");
+                        boms.setByDrawingNo(drawingNo);
+                    }
+                    projectBomList.addAll(projectBoms);
                 }
             }
-        });
+        }
+        list.addAll(projectBomList);
         return list;
     }
 
@@ -109,38 +121,31 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", bom.getWorkPlanNo())
                 .eq("tenant_id", bom.getTenantId())
-                .eq("branch_code", bom.getBranchCode());
+                .eq("branch_code", bom.getBranchCode())
+                .notIn("grade", "H");
         List<ProjectBom> list = this.list(queryWrapper);
-        String drawingNo = null;
+        List<ProjectBom> projectBomList = new ArrayList<>();
         for (ProjectBom project : list) {
             project.setLevel("2");
             project.setByDrawingNo(project.getMainDrawingNo());
-            if (Boolean.TRUE.equals(bom.getIsResolution())) {
-                project.setLevel("3");
-                project.setByDrawingNo(project.getDrawingNo());
-                drawingNo = project.getDrawingNo();
+            if ("1".equals(project.getIsResolution())) {
+                String drawingNo = project.getDrawingNo();
                 ProjectBom projectBom = this.getById(project.getBomKey());
                 if (null != projectBom) {
                     QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
                     queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo());
-                    list.addAll(this.list(queryWrapperPart));
+                    queryWrapperPart.notIn("grade", "H");
+                    List<ProjectBom> projectBoms = this.list(queryWrapperPart);
+                    for (ProjectBom boms : projectBoms) {
+                        boms.setLevel("3");
+                        boms.setByDrawingNo(drawingNo);
+                    }
+                    projectBomList.addAll(projectBoms);
                 }
             }
         }
-
-        for (ProjectBom projectBom : list) {
-            if (id.equals(projectBom.getId())) {
-                list.remove(projectBom);
-                break;
-            }
-        }
-        for (ProjectBom projectBom : list) {
-            if (null != drawingNo) {
-                list.remove(projectBom);
-                break;
-            }
-        }
-        return list;
+        list.addAll(projectBomList);
+        return list.stream().filter(itm -> !"1".equals(itm.getIsResolution())).collect(Collectors.toList());
     }
 
     @Override
@@ -172,9 +177,9 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         ProjectBom part = this.getById(partId);
         if (!StringUtils.isNullOrEmpty(bomId)) {
             part.setBomKey(bomId);
-            part.setIsResolution(true);
+            part.setIsResolution("1");
         } else {
-            part.setIsResolution(false);
+            part.setIsResolution("0");
         }
         return this.updateById(part);
     }

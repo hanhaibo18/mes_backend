@@ -128,8 +128,8 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
 
     @ApiModelProperty(value = "分组", dataType = "Integer")
     private Integer groupBy;
-    @ApiModelProperty(value = "是否分解", dataType = "Boolean")
-    private Boolean isResolution;
+    @ApiModelProperty(value = "是否分解", dataType = "boolean")
+    private String isResolution;
     @ApiModelProperty(value = "状态(0停用,1发布)", dataType = "String")
     private String state;
     @TableField(exist = false)

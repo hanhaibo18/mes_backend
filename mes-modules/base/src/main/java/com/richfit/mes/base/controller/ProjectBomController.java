@@ -151,7 +151,7 @@ public class ProjectBomController {
         return CommonResult.success(projectBomService.relevancePart(partId, bomId));
     }
 
-    @ApiOperation(value = "关联零件分解项", notes = "关联是否分解零件")
+    @ApiOperation(value = "查询关联分解项名称", notes = "查询关联分解项名称")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "partId", value = "零件Id", paramType = "query", dataType = "String"),
     })
