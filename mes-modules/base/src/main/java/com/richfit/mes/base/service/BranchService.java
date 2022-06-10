@@ -8,4 +8,10 @@ import com.richfit.mes.common.model.base.Branch;
  * @Description 组织结构服务
  */
 public interface BranchService extends IService<Branch> {
+
+    /**
+     * @author 鲁志强
+     * @Description 重新封装Branch加入erpcode
+     */
+    Branch branchErpCode(Branch branch);
 }
