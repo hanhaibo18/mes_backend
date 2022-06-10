@@ -32,6 +32,7 @@ public class BranchController extends BaseController {
     @Autowired
     private BranchService branchService;
 
+
     public static String BRANCH_ID_NULL_MESSAGE = "机构ID不能为空！";
     public static String BRANCH_CODE_NULL_MESSAGE = "机构编码不能为空！";
     public static String BRANCH_SUCCESS_MESSAGE = "操作成功！";
@@ -106,18 +107,25 @@ public class BranchController extends BaseController {
     @GetMapping("/branch")
     public CommonResult<Branch> selectBranchByCode(String branchCode, String id) {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
-            QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
-            queryWrapper.eq("branch_code", branchCode);
+            try {
 
-            if (!StringUtils.isNullOrEmpty(id)) {
-                queryWrapper.ne("id", id);
+
+                QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
+                queryWrapper.eq("branch_code", branchCode);
+
+                if (!StringUtils.isNullOrEmpty(id)) {
+                    queryWrapper.ne("id", id);
+                }
+
+                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                queryWrapper.orderByAsc("order_no");
+
+                Branch result = branchService.getOne(queryWrapper);
+                return CommonResult.success(branchService.branchErpCode(result), BRANCH_SUCCESS_MESSAGE);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
             }
-
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            queryWrapper.orderByAsc("order_no");
-
-            Branch result = branchService.getOne(queryWrapper);
-            return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
         }
         return CommonResult.failed(BRANCH_CODE_NULL_MESSAGE);
     }
@@ -157,6 +165,9 @@ public class BranchController extends BaseController {
         }
         queryWrapper.orderByAsc("order_no");
         List<Branch> result = branchService.list(queryWrapper);
+        for (Branch b : result) {
+            branchService.branchErpCode(b);
+        }
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
     }
 
