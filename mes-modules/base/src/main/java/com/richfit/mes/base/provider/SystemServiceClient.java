@@ -4,6 +4,7 @@ import com.richfit.mes.base.provider.fallback.SystemServiceClientFallbackImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -25,8 +26,8 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/find_one")
     public CommonResult<TenantUserVo> getUserById(@RequestParam("id") String id);
 
-    @GetMapping(value = "/api/sys/item/item/param/list" )
-    public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code,@RequestParam("name") String name,@RequestHeader(value = SecurityConstants.FROM)String header);
+    @GetMapping(value = "/api/sys/item/item/param/list")
+    public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping(value = "/api/sys/attachment/get/{id}")
     public CommonResult<Attachment> attachment(@PathVariable String id);
@@ -34,5 +35,6 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/attachment/getinput/{id}")
     public CommonResult<byte[]> getAttachmentInputStream(@PathVariable String id);
 
-
+    @GetMapping(value = "/api/sys/tenant/{id}")
+    public CommonResult<Tenant> getTenant(@PathVariable String id);
 }
