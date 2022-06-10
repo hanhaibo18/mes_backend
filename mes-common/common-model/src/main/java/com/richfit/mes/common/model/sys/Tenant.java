@@ -1,6 +1,5 @@
 package com.richfit.mes.common.model.sys;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,7 +22,7 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class Tenant extends BaseEntity<Tenant> {
 
-    private static final long serialVersionUID=1L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * 租户姓名
@@ -41,6 +40,11 @@ public class Tenant extends BaseEntity<Tenant> {
      */
     @NotBlank(message = "租户标识不能为空")
     private String tenantCode;
+
+    /**
+     * 租户ERP标识
+     */
+    private String tenantErpCode;
 
     /**
      * 当前状态
