@@ -161,7 +161,8 @@ public class ProductController extends BaseController {
         } else {
             queryWrapper.orderByDesc("p.modify_time");
         }
-
+        //只查询当前租户下的物料数据
+        queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         IPage<Product> result = productService.selectProduct(new Page<Product>(page, limit), queryWrapper);
 //        List<Product> data = result.getRecords();
 //        result.setRecords(findBomAndRouterByProduct(data));
