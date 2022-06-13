@@ -168,7 +168,7 @@ public class LineStoreController extends BaseController {
                                                           @ApiParam(value = "分公司") @RequestParam String branchCode) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if (!StringUtils.isNullOrEmpty(materialNo)) {
-            queryWrapper.eq("material_no", materialNo);
+            queryWrapper.like("material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             queryWrapper.eq("material_type", materialType);
