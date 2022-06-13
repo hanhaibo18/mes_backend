@@ -19,6 +19,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -133,7 +134,15 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "分页查询物料", notes = "根据图号、物料编码等参数分页查询物料")
     @GetMapping("/product")
-    public CommonResult<IPage<Product>> selectProduct(String drawingNo, String materialNo, String materialType, String order, String orderCol, int page, int limit, String productName) {
+    public CommonResult<IPage<Product>> selectProduct(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page,
+                                                      @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit,
+                                                      @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                      @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
+                                                      @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
+                                                      @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                      @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                      @ApiParam(value = "产品名称") @RequestParam(required = false) String productName,
+                                                      @ApiParam(value = "反向查询物料类型") @RequestParam(required = false, defaultValue = "false") Boolean material_type_reverse) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("p.drawing_no", drawingNo);
@@ -142,7 +151,12 @@ public class ProductController extends BaseController {
             queryWrapper.like("p.material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
-            queryWrapper.eq("p.material_type", materialType);
+            if (material_type_reverse) {
+                queryWrapper.ne("p.material_type", materialType);
+            } else {
+                queryWrapper.eq("p.material_type", materialType);
+            }
+
         }
         if (!StringUtils.isNullOrEmpty(productName)) {
             queryWrapper.like("p.product_name", productName);
