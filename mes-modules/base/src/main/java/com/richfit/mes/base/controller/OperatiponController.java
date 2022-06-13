@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.OperationDevice;
 import com.richfit.mes.common.model.base.Operatipon;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -91,6 +92,10 @@ public class OperatiponController extends BaseController {
         if (StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
             return CommonResult.failed("编码不能为空！");
         } else {
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
+            operatipon.setCreateBy(user.getUsername());
+            operatipon.setCreateTime(new Date());
+            operatipon.setTenantId(user.getTenantId());
             boolean bool = operatiponService.save(operatipon);
             if (bool) {
                 return CommonResult.success(operatipon, "操作成功！");
@@ -107,8 +112,10 @@ public class OperatiponController extends BaseController {
         if (StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
             return CommonResult.failed("机构编码不能为空！");
         } else {
-            operatipon.setModifyBy("test");
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
+            operatipon.setModifyBy(user.getUsername());
             operatipon.setModifyTime(new Date());
+            operatipon.setTenantId(user.getTenantId());
             boolean bool = operatiponService.updateById(operatipon);
             if (bool) {
                 return CommonResult.success(operatipon, "操作成功！");
