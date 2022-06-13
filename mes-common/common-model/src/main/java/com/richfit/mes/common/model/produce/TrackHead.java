@@ -14,6 +14,7 @@ import java.util.List;
 @Data
 public class TrackHead extends BaseEntity<TrackHead> {
 
+    private static final long serialVersionUID = 6336423092552908350L;
     /**
      * 租户ID
      */
@@ -194,4 +195,12 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Date: 2022/4/19 10:25
      **/
     private String workPlanId;
+
+    /**
+     * 描述: 跟单类型（区分试棒、普通跟单）
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/13 10:25
+     **/
+    private String type;
 }
