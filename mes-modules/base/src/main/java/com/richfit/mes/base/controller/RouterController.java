@@ -237,6 +237,13 @@ public class RouterController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
+        /**
+         * 描述: 加入版本号降序排序
+         *
+         * @Author: zhiqiang.lu
+         * @Date: 2022/6/13 10:25
+         **/
+        queryWrapper.orderByDesc("version");
         List<Router> result = routerService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
