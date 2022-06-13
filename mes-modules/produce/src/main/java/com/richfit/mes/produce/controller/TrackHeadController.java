@@ -73,7 +73,7 @@ public class TrackHeadController extends BaseController {
             }
             trackHead.setApprovalStatus("0");
             trackHead.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            //trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             trackHead.setCreateTime(new Date());
 
             /*if(trackHead.getTrackType().equals("0")){ //单件
@@ -259,6 +259,7 @@ public class TrackHeadController extends BaseController {
         } else {
             queryWrapper.orderByDesc("modify_time");
         }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
