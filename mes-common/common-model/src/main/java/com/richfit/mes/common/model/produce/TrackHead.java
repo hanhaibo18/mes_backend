@@ -3,6 +3,7 @@ package com.richfit.mes.common.model.produce;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
+
 import java.util.Date;
 import java.util.List;
 
@@ -148,10 +149,10 @@ public class TrackHead extends BaseEntity<TrackHead> {
      */
     private String routerVer;
 
-	/**
+    /**
      * 跟单完工时间
      */
-	private Date completeTime;
+    private Date completeTime;
 
     @TableField(exist = false)
     private List<TrackItem> trackItems;
@@ -184,8 +185,11 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     private String templateCode;
 
+    @TableField(exist = false)
+    private String selectedMaterialNo;
     /**
      * 描述: 计划Id
+     *
      * @Author: xinYu.hou
      * @Date: 2022/4/19 10:25
      **/

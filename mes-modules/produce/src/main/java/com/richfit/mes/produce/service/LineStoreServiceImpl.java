@@ -100,7 +100,10 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             changeStatus(lineStore1);
 
             lineStoreMapper.updateById(lineStore1);
+        } else {
+
         }
+
 
         return lineStore1;
     }
@@ -119,6 +122,42 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreMapper.updateById(lineStore);
 
         return true;
+    }
+
+    //料单 直接入库并直接全部投用
+    @Override
+    public LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String workblankNo) {
+        //TODO 增加自动料单入库 再出库的逻辑
+        LineStore lineStore = new LineStore();
+        lineStore.setBranchCode(trackHead.getBranchCode());
+        lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
+        lineStore.setDrawingNo(trackHead.getDrawingNo());
+        lineStore.setMaterialNo(trackHead.getSelectedMaterialNo());
+        lineStore.setMaterialName(trackHead.getMaterialName());
+        lineStore.setMaterialType("0");
+        lineStore.setCertificateNo(trackHead.getMaterialCertificateNo());
+        lineStore.setWeight(trackHead.getWeight());
+        lineStore.setTexture(trackHead.getTexture());
+
+        lineStore.setWorkNo(trackHead.getWorkNo());
+        lineStore.setProdNo(trackHead.getProductNo());
+        lineStore.setProductName(trackHead.getProductName());
+
+        //物料编号： QAXXX   跟单产品编号=图号+物料号  这里通过跟单产品编号反推出物料编号
+        lineStore.setWorkblankNo(workblankNo.replace(trackHead.getDrawingNo(), ""));
+
+        lineStore.setInTime(new Date());
+        lineStore.setOutTime(new Date());
+        lineStore.setNumber(trackHead.getNumber());
+        lineStore.setUseNum(trackHead.getNumber());
+        changeStatus(lineStore);
+        lineStore.setStockType("1"); //自动
+        lineStore.setTrackType(trackHead.getTrackType());
+
+        this.save(lineStore);
+
+        return lineStore;
     }
 
     //根据料单原始数量和已投用数量对比，修改料单状态

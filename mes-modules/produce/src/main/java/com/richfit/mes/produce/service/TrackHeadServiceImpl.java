@@ -59,15 +59,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (num == 0) {
                     break;
                 }
-                int userNum = 0; //本次使用数量
+                //int userNum = 0; //本次使用数量
                 //修改库存状态
                 LineStore lineStore = lineStoreService.useItem(num, trackHead.getDrawingNo(), products[i]);
+
+                if (lineStore == null) {
+                    //无库存，默认新增库存，然后出库
+                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, products[i]);
+                }
 
                 TrackHeadRelation relation = new TrackHeadRelation();
                 relation.setThId(trackHead.getId());
                 relation.setLsId(lineStore.getId());
                 relation.setType("0");
-                relation.setNumber(userNum);
+                relation.setNumber(num);
                 trackHeadRelationMapper.insert(relation);
             }
         }

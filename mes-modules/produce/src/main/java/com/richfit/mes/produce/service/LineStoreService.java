@@ -24,4 +24,6 @@ public interface LineStoreService extends IService<LineStore> {
     LineStore useItem(int num, String drawingNo, String workblankNo);
 
     public boolean rollBackItem(int num, String id);
+
+    LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String product);
 }
