@@ -77,7 +77,7 @@ public class OperatiponController extends BaseController {
             if (!StringUtils.isNullOrEmpty(optType)) {
                 queryWrapper.eq("opt_type", Integer.parseInt(optType));
             }
-            queryWrapper.orderByAsc("opt_order");
+            queryWrapper.orderByDesc("modify_time");
             IPage<Operatipon> routers = operatiponService.page(new Page<Operatipon>(page, limit), queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
@@ -93,6 +93,8 @@ public class OperatiponController extends BaseController {
             return CommonResult.failed("编码不能为空！");
         } else {
             TenantUserDetails user = SecurityUtils.getCurrentUser();
+            operatipon.setModifyBy(user.getUsername());
+            operatipon.setModifyTime(new Date());
             operatipon.setCreateBy(user.getUsername());
             operatipon.setCreateTime(new Date());
             operatipon.setTenantId(user.getTenantId());
