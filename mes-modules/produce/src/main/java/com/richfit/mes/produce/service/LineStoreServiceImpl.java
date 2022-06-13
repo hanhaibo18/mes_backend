@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author: 王瑞
@@ -77,20 +75,20 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     // 料单投用
     @Override
-    public LineStore useItem(int num, String drawingNo, String workblankNo) {
-        int userNum = 0; //本次使用数量
+    public Map useItem(int num, String drawingNo, String workblankNo) {
+        int useNum = 0; //本次使用数量
         //修改库存状态
         LineStore lineStore1 = lineStoreMapper.selectOne(
                 new QueryWrapper<LineStore>().eq("drawing_no", drawingNo)
-                        .eq("workblank_no", workblankNo)
+                        .eq("workblank_no", workblankNo.replace(drawingNo, ""))
                         .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
         if (lineStore1 != null) {
             if (lineStore1.getNumber() - lineStore1.getUseNum() <= num) {
-                userNum = lineStore1.getNumber() - lineStore1.getUseNum();
-                num -= lineStore1.getNumber() - lineStore1.getUseNum();
+                useNum = lineStore1.getNumber() - lineStore1.getUseNum();
+                num -= useNum;
                 lineStore1.setUseNum(lineStore1.getNumber());
             } else {
-                userNum = num;
+                useNum = num;
                 lineStore1.setUseNum(lineStore1.getUseNum() + num);
                 num = 0;
             }
@@ -104,8 +102,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         }
 
+        Map map = new HashMap();
+        map.put("lineStore", lineStore1);
+        map.put("remainNum", num);
+        map.put("useNum", useNum);
 
-        return lineStore1;
+        return map;
     }
 
     //料单投用回滚

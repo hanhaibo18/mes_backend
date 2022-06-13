@@ -8,6 +8,8 @@ import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
 
+import java.util.Map;
+
 public interface LineStoreService extends IService<LineStore> {
 
     IPage<LineStoreSum> selectGroup(Page<LineStore> page, QueryWrapper<LineStore> query);
@@ -21,7 +23,7 @@ public interface LineStoreService extends IService<LineStore> {
 
     boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo);
 
-    LineStore useItem(int num, String drawingNo, String workblankNo);
+    Map useItem(int num, String drawingNo, String workblankNo);
 
     public boolean rollBackItem(int num, String id);
 

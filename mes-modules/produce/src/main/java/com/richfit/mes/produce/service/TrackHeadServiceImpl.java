@@ -54,25 +54,31 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         if (result > 0) {
 
             String[] products = trackHead.getProductNo().split(",");
+
+            //本跟单总共的生产数量
             int num = trackHead.getNumber();
+
             for (int i = 0; i < products.length; i++) {
                 if (num == 0) {
                     break;
                 }
-                //int userNum = 0; //本次使用数量
-                //修改库存状态
-                LineStore lineStore = lineStoreService.useItem(num, trackHead.getDrawingNo(), products[i]);
+                //修改库存状态  本次查到的料单能否匹配生产数量完成
+                //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
+                Map retMap = lineStoreService.useItem(num, trackHead.getDrawingNo(), products[i]);
+                LineStore lineStore = (LineStore) retMap.get("lineStore");
+                num = (int) retMap.get("remainNum");
 
                 if (lineStore == null) {
-                    //无库存，默认新增库存，然后出库
+                    //无库存料单，默认新增库存料单，然后出库
                     lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, products[i]);
+                    num = 0;
                 }
 
                 TrackHeadRelation relation = new TrackHeadRelation();
                 relation.setThId(trackHead.getId());
                 relation.setLsId(lineStore.getId());
                 relation.setType("0");
-                relation.setNumber(num);
+                relation.setNumber((int) retMap.get("useNum"));
                 trackHeadRelationMapper.insert(relation);
             }
         }
