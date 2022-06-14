@@ -23,18 +23,21 @@
         select u.*
         from sys_tenant_user u
         WHERE 1=1
-        <trim  suffixOverrides="," >
-            <if test="!isAdmin" >
+        <trim suffixOverrides=",">
+            <if test="!isAdmin">
                 and tenant_id = #{param.tenantId}
             </if>
-            <if test="param.userAccount != null and param.userAccount != ''" >
+            <if test="param.userAccount != null and param.userAccount != ''">
                 and user_account like '%${param.userAccount}%'
             </if>
-            <if test="param.emplName != null and param.emplName != ''" >
+            <if test="param.emplName != null and param.emplName != ''">
                 and empl_name like '%${param.emplName}%'
             </if>
-            <if test="param.orgId != null and param.orgId != ''" >
+            <if test="param.orgId != null and param.orgId != '' and !param.orgId.contains('%')">
                 and FIND_IN_SET(belong_org_id, #{param.orgId})
+            </if>
+            <if test="param.orgId != null and param.orgId != '' and param.orgId.contains('%')">
+                and belong_org_id like '${param.param.orgId}'
             </if>
         </trim>
         order by modify_time desc
