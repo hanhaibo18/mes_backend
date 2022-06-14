@@ -10,4 +10,6 @@ public interface CertificateService extends IService<Certificate> {
 
     IPage<Certificate> selectCertificate(Page<Certificate> page, QueryWrapper<Certificate> query);
 
+    public boolean saveCertificate(Certificate certificate) throws Exception;
+
 }
