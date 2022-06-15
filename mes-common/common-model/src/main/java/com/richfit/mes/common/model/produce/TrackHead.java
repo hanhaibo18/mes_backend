@@ -158,9 +158,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @TableField(exist = false)
     private List<TrackItem> trackItems;
 
-    @TableField(exist = false)
-    private List<String> deleteRouterIds;
-
     private String userMaterialNo;
 
     @TableField(exist = false)
