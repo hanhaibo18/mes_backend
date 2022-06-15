@@ -9,7 +9,6 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Action;
-import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,7 +65,7 @@ public class TrackHeadController extends BaseController {
         } else {
 
             boolean bool = false;
-            List<LineStore> list = new ArrayList<>();
+            
             if (!"4".equals(trackHead.getStatus())) {
                 trackHead.setStatus("0");
             }
@@ -125,9 +123,9 @@ public class TrackHeadController extends BaseController {
                     list.add(lineStore);
                 }
             }*/
-            bool = trackHeadService.saveTrackHead(trackHead, list, trackHead.getTrackItems());
+            bool = trackHeadService.saveTrackHead(trackHead, trackHead.getTrackItems());
             if (bool) {
-                
+
                 return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
