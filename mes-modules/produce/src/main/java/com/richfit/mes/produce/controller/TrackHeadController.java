@@ -127,11 +127,7 @@ public class TrackHeadController extends BaseController {
             }*/
             bool = trackHeadService.saveTrackHead(trackHead, list, trackHead.getTrackItems());
             if (bool) {
-                Action action = new Action();
-                action.setActionType("0");
-                action.setActionItem("2");
-                action.setRemark("跟单号：" + trackHead.getTrackNo());
-                actionService.saveAction(action);
+                
                 return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
