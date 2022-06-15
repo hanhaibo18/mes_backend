@@ -153,7 +153,7 @@ public class TrackHeadController extends BaseController {
             boolean bool = trackHeadService.updateById(trackHead);
             if (bool) {
                 //删除修改跟单工序
-                trackItemService.removeByIds(trackHead.getDeleteRouterIds());
+//                trackItemService.removeByIds(trackHead.getDeleteRouterIds());
                 trackItemService.updateBatchById(trackHead.getTrackItems());
 
 
