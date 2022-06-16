@@ -105,6 +105,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), "");
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
+            trackHead.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("track_no", trackHead.getTrackNo());
+            queryWrapper.eq("branch_code", trackHead.getBranchCode());
+            queryWrapper.eq("tenant_id", trackHead.getTenantId());
+            List trackHeads = trackHeadMapper.selectList(queryWrapper);
+            if (trackHeads.size() > 0) {
+                throw new Exception("跟单号码已存在！请联系管理员处理流程码问题！");
+            }
             trackHeadMapper.insert(trackHead);
             //计划跟单关联
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
@@ -181,7 +191,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             codeRuleController.updateCode("track_no", "跟单号", trackHead.getTrackNo(), "", SecurityUtils.getCurrentUser().getTenantId(), "");
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage());
         }
         return true;
     }
