@@ -420,4 +420,12 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackHeadService.queryTailAfterList(afterDto));
     }
 
+    @ApiOperation(value = "合格证关联跟单查询", notes = "根据合格证Id查询关联的跟单")
+    @GetMapping("/track_head/query_by_cert")
+    public CommonResult<List<TrackHead>> selectTrackHeadbyCert(@ApiParam(value = "合格证Id") String certificateId) {
+
+        return CommonResult.success(trackHeadService.queryListByCertId(certificateId), TRACK_HEAD_SUCCESS_MESSAGE);
+
+    }
+
 }

@@ -122,4 +122,13 @@ public interface TrackHeadService extends IService<TrackHead> {
      **/
     CommonResult<Boolean> saveTrackHeader(SaveTrackHeadDto saveTrackHeadDto);
 
+    /**
+     * 功能描述: 根据合格证号查询跟单
+     *
+     * @param certificateId
+     * @Author: gaol
+     * @Date: 2022/6/16 6:34
+     * @return: List<TrackHead>
+     **/
+    List<TrackHead> queryListByCertId(String certificateId);
 }

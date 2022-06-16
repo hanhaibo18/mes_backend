@@ -460,4 +460,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHead.setNumber(saveTrackHeadDto.getNumber());
         return CommonResult.success(this.save(trackHead));
     }
+
+    @Override
+    public List<TrackHead> queryListByCertId(String certificateId) {
+        return trackHeadMapper.queryListByCertId(certificateId);
+    }
 }
