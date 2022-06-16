@@ -206,4 +206,20 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Date: 2022/6/13 10:25
      **/
     private String type;
+
+    /**
+     * 描述: 是否试棒跟单  0否  1是
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/16 10:25
+     **/
+    private String isTest;
+
+    /**
+     * 描述: 试棒跟单是否已关联  0否  1是
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/16 10:25
+     **/
+    private String isTestRelation;
 }
