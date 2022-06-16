@@ -200,5 +200,28 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String trackNo;
 
-
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品名称", dataType = "String")
+    private String productName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零部件名称", dataType = "String")
+    private String partsName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "总数量", dataType = "String")
+    private Integer totalQuantity;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "可派工数量", dataType = "String")
+    private Integer dispatchingNumber;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "重量", dataType = "Float")
+    private Float weight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工作号", dataType = "String")
+    private String workNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "计划号", dataType = "String")
+    private String workPlanNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工艺版本", dataType = "String")
+    private String versions;
 }
