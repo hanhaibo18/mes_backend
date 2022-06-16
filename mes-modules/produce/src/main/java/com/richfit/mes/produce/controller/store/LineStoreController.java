@@ -160,6 +160,7 @@ public class LineStoreController extends BaseController {
                                                           @ApiParam(value = "入库时间(止)") @RequestParam(required = false) String endTime,
                                                           @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
                                                           @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
+                                                          @ApiParam(value = "数量") @RequestParam(required = false) Integer number,
                                                           @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
                                                           @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
                                                           @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
@@ -178,6 +179,9 @@ public class LineStoreController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("status", status);
+        }
+        if (number != null) {
+            queryWrapper.eq("number", number);
         }
         if (!StringUtils.isNullOrEmpty(trackType)) {
             queryWrapper.eq("track_type", trackType);
