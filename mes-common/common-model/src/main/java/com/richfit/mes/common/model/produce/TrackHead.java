@@ -158,9 +158,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @TableField(exist = false)
     private List<TrackItem> trackItems;
 
-    @TableField(exist = false)
-    private List<String> deleteRouterIds;
-
     private String userMaterialNo;
 
     @TableField(exist = false)
@@ -203,10 +200,26 @@ public class TrackHead extends BaseEntity<TrackHead> {
      **/
     private String routerId;
     /**
-     * 描述: 跟单类型（区分试棒、普通跟单）
+     * 描述: 跟单类型 0库存生成  1物料生成  2计划生成
      *
      * @Author: zhiqiang.lu
      * @Date: 2022/6/13 10:25
      **/
     private String type;
+
+    /**
+     * 描述: 是否试棒跟单  0否  1是
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/16 10:25
+     **/
+    private String isTest;
+
+    /**
+     * 描述: 试棒跟单是否已关联  0否  1是
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/16 10:25
+     **/
+    private String isTestRelation;
 }

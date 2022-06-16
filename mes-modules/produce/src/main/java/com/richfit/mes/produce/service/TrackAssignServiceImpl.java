@@ -7,9 +7,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.entity.QueryProcessVo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author 马峰
@@ -37,6 +40,20 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode) {
 
         return trackAssignMapper.queryPage(page, siteId, trackNo, routerNo, startTime, endTime, state, userId, branchCode);
+    }
+
+    @Override
+    public List<QueryProcessVo> queryProcessList(String trackNo) {
+        List<QueryProcessVo> processList = trackAssignMapper.queryProcessList(trackNo);
+        for (QueryProcessVo queryProcess : processList) {
+            Integer dispatching = trackAssignMapper.isDispatching(queryProcess.getId());
+            if (dispatching > 0) {
+                queryProcess.setIsDispatching("是");
+            } else {
+                queryProcess.setIsDispatching("否");
+            }
+        }
+        return processList;
     }
 
 

@@ -9,7 +9,6 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Action;
-import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -17,6 +16,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +33,7 @@ import java.util.stream.Collectors;
  * @Description 跟单Controller
  */
 @Slf4j
-@Api("跟单管理")
+@Api(tags = "跟单管理")
 @RestController
 @RequestMapping("/api/produce/track_head")
 public class TrackHeadController extends BaseController {
@@ -59,83 +58,101 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_SUCCESS_MESSAGE = "操作成功！";
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
 
+
+    @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回一天跟单信息。")
+    @GetMapping("/select_by_track_no")
+    public CommonResult<TrackHead> selectByTrackNo(@ApiParam(value = "跟单号", required = true) @RequestParam String trackNo,
+                                                   @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.eq("track_no", "trackNo");
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return CommonResult.success(trackHeadService.getOne(queryWrapper));
+    }
+
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
     public CommonResult<TrackHead> addTrackHead(@RequestBody TrackHead trackHead) {
-        if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
-            return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
-        } else {
 
-            boolean bool = false;
-            List<LineStore> list = new ArrayList<>();
-            if (!"4".equals(trackHead.getStatus())) {
-                trackHead.setStatus("0");
-            }
-            trackHead.setApprovalStatus("0");
-            trackHead.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            trackHead.setCreateTime(new Date());
-
-            /*if(trackHead.getTrackType().equals("0")){ //单件
-                QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
-                queryWrapper.eq("workblank_no", trackHead.getProductNo());
-                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                List<LineStore> lineStores = lineStoreService.list(queryWrapper);
-
-                if(lineStores != null && lineStores.size() > 0){
-                    return CommonResult.failed("产品编号已存在！");
-                } else {
-                    LineStore lineStore = new LineStore();
-                    lineStore.setTenantId(trackHead.getTenantId());
-                    lineStore.setDrawingNo(trackHead.getDrawingNo());
-                    lineStore.setMaterialNo(trackHead.getMaterialNo());
-                    lineStore.setWorkblankNo(trackHead.getProductNo());
-                    lineStore.setNumber(trackHead.getNumber());
-                    lineStore.setUserNum(0);
-                    lineStore.setStatus("0");
-                    lineStore.setTrackNo(trackHead.getTrackNo());
-                    lineStore.setMaterialType("1");
-                    lineStore.setTrackType(trackHead.getTrackType());
-                    lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    lineStore.setCreateTime(new Date());
-                    list.add(lineStore);
-                }
-            } else if (trackHead.getTrackType().equals("1")){ //批次
-                for(int i = trackHead.getStartNo(); i <= trackHead.getEndNo(); i++){
-                    LineStore lineStore = new LineStore();
-                    lineStore.setTenantId(trackHead.getTenantId());
-                    lineStore.setDrawingNo(trackHead.getDrawingNo());
-                    lineStore.setMaterialNo(trackHead.getMaterialNo());
-
-                    String productNo = trackHead.getProductNo() + " " + i;
-                    if(!StringUtils.isNullOrEmpty(trackHead.getSuffixNo())){
-                        productNo += " " + trackHead.getSuffixNo();
-                    }
-                    lineStore.setWorkblankNo(productNo);
-                    lineStore.setNumber(1);
-                    lineStore.setUserNum(0);
-                    lineStore.setStatus("0");
-                    lineStore.setTrackNo(trackHead.getTrackNo());
-                    lineStore.setMaterialType("1");
-                    lineStore.setTrackType("0");
-                    lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    lineStore.setCreateTime(new Date());
-                    list.add(lineStore);
-                }
-            }*/
-            bool = trackHeadService.saveTrackHead(trackHead, list, trackHead.getTrackItems());
-            if (bool) {
-                Action action = new Action();
-                action.setActionType("0");
-                action.setActionItem("2");
-                action.setRemark("跟单号：" + trackHead.getTrackNo());
-                actionService.saveAction(action);
-                return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
+        try {
+            if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
+                return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
             } else {
-                return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
+
+                boolean bool = false;
+
+                if (!"4".equals(trackHead.getStatus())) {
+                    trackHead.setStatus("0");
+                }
+                trackHead.setApprovalStatus("0");
+                trackHead.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                trackHead.setCreateTime(new Date());
+
+                /*if(trackHead.getTrackType().equals("0")){ //单件
+                    QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+                    queryWrapper.eq("workblank_no", trackHead.getProductNo());
+                    queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                    List<LineStore> lineStores = lineStoreService.list(queryWrapper);
+
+                    if(lineStores != null && lineStores.size() > 0){
+                        return CommonResult.failed("产品编号已存在！");
+                    } else {
+                        LineStore lineStore = new LineStore();
+                        lineStore.setTenantId(trackHead.getTenantId());
+                        lineStore.setDrawingNo(trackHead.getDrawingNo());
+                        lineStore.setMaterialNo(trackHead.getMaterialNo());
+                        lineStore.setWorkblankNo(trackHead.getProductNo());
+                        lineStore.setNumber(trackHead.getNumber());
+                        lineStore.setUserNum(0);
+                        lineStore.setStatus("0");
+                        lineStore.setTrackNo(trackHead.getTrackNo());
+                        lineStore.setMaterialType("1");
+                        lineStore.setTrackType(trackHead.getTrackType());
+                        lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                        lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                        lineStore.setCreateTime(new Date());
+                        list.add(lineStore);
+                    }
+                } else if (trackHead.getTrackType().equals("1")){ //批次
+                    for(int i = trackHead.getStartNo(); i <= trackHead.getEndNo(); i++){
+                        LineStore lineStore = new LineStore();
+                        lineStore.setTenantId(trackHead.getTenantId());
+                        lineStore.setDrawingNo(trackHead.getDrawingNo());
+                        lineStore.setMaterialNo(trackHead.getMaterialNo());
+
+                        String productNo = trackHead.getProductNo() + " " + i;
+                        if(!StringUtils.isNullOrEmpty(trackHead.getSuffixNo())){
+                            productNo += " " + trackHead.getSuffixNo();
+                        }
+                        lineStore.setWorkblankNo(productNo);
+                        lineStore.setNumber(1);
+                        lineStore.setUserNum(0);
+                        lineStore.setStatus("0");
+                        lineStore.setTrackNo(trackHead.getTrackNo());
+                        lineStore.setMaterialType("1");
+                        lineStore.setTrackType("0");
+                        lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                        lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                        lineStore.setCreateTime(new Date());
+                        list.add(lineStore);
+                    }
+                }*/
+                bool = trackHeadService.saveTrackHead(trackHead, trackHead.getTrackItems());
+                if (bool) {
+
+                    return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
+                } else {
+                    return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonResult.failed(e.getMessage());
         }
     }
 
@@ -153,7 +170,7 @@ public class TrackHeadController extends BaseController {
             boolean bool = trackHeadService.updateById(trackHead);
             if (bool) {
                 //删除修改跟单工序
-                trackItemService.removeByIds(trackHead.getDeleteRouterIds());
+//                trackItemService.removeByIds(trackHead.getDeleteRouterIds());
                 trackItemService.updateBatchById(trackHead.getTrackItems());
 
 

@@ -43,6 +43,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     private Integer optType;
     private String subOptParentId;
+    @ApiModelProperty(value = "是否并行")
     private Integer optParallelType;
     /**
      * 准结时间

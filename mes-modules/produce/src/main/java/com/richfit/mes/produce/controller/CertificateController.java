@@ -7,11 +7,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.Certificate;
+import com.richfit.mes.common.model.produce.TrackCertificate;
+import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -55,84 +59,27 @@ public class CertificateController {
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
-    public CommonResult<Certificate> addCertificate(@RequestBody Certificate certificate) {
+    public CommonResult<Certificate> addCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate,
+                                                    @ApiParam(value = "分公司") @RequestParam String branchCode) throws Exception {
         if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
             return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
         }
         if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
             return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
         } else {
-            certificate.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            certificate.setCreateTime(new Date());
 
-            boolean bool = certificateService.save(certificate);
+            certificate.setBranchCode(branchCode);
 
-            if (bool) {
+            boolean b = certificateService.saveCertificate(certificate);
 
-                certificate.getTrackCertificates().stream().forEach(track -> {
-                    if (certificate.getType().equals("0")) { //工序合格证
-                        TrackItem trackItem = new TrackItem();
-                        trackItem.setId(track.getTiId());
-                        trackItem.setCertificateNo(certificate.getCertificateNo());
-                        trackItemService.updateById(trackItem);
-                    } else if (certificate.getType().equals("1")) { //完工合格证
-                        TrackHead trackHead = new TrackHead();
-                        trackHead.setId(track.getThId());
-                        trackHead.setCertificateNo(certificate.getCertificateNo());
-                        trackHeadService.updateById(trackHead);
-
-                        TrackHead th = trackHeadService.getById(track.getThId());
-                        QueryWrapper<LineStore> wrapper = new QueryWrapper<>();
-                        wrapper.eq("workblank_no", th.getProductNo());
-                        LineStore lineStore = lineStoreService.getOne(wrapper);
-                        if (lineStore != null) {
-                            StockRecord record = new StockRecord();
-                            record.setCertificateNo(lineStore.getCertificateNo());
-                            record.setAssemblyId(lineStore.getAssemblyId());
-                            record.setBatchNo(lineStore.getBatchNo());
-                            record.setContractNo(lineStore.getContractNo());
-                            record.setBeforehandAssigned(lineStore.getBeforehandAssigned());
-                            record.setDrawingNo(lineStore.getDrawingNo());
-                            record.setIsFeedErp(lineStore.getIsFeedErp());
-                            record.setIsSendErp(lineStore.getIsSendErp());
-                            record.setMaterialNo(lineStore.getMaterialNo());
-                            record.setMaterialName(lineStore.getMaterialName());
-                            record.setMaterialSource(lineStore.getMaterialSource());
-                            record.setMaterialType(lineStore.getMaterialType());
-                            record.setReplaceMaterial(lineStore.getReplaceMaterial());
-                            record.setProdNo(lineStore.getProdNo());
-                            record.setPrevTrackNum(lineStore.getPrevTrackNum());
-                            record.setProductionOrder(lineStore.getProductionOrder());
-                            record.setPurchaseOrder(lineStore.getPurchaseOrder());
-                            record.setTenantId(lineStore.getTenantId());
-                            record.setTestBarNumber(lineStore.getTestBarNumber());
-                            record.setTestBarType(lineStore.getTestBarType());
-                            record.setTrackNo(lineStore.getTrackNo());
-                            record.setTexture(lineStore.getTexture());
-                            record.setWeight(lineStore.getWeight());
-                            record.setWorkblankNo(lineStore.getWorkblankNo());
-                            record.setWorkNo(lineStore.getWorkNo());
-                            record.setRemark(lineStore.getRemark());
-                            record.setNumber(lineStore.getNumber());
-                            record.setUserNum(lineStore.getUseNum());
-
-                            stockRecordService.save(record);
-                        }
-                    }
-                    track.setCertificateType(certificate.getType());
-                    track.setCertificateId(certificate.getId());
-                });
-                trackCertificateService.saveBatch(certificate.getTrackCertificates());
-                return CommonResult.success(certificate, SUCCESS_MESSAGE);
-            } else {
-                return CommonResult.failed(FAILED_MESSAGE);
-            }
+            return CommonResult.success(certificate);
         }
     }
 
     @ApiOperation(value = "修改合格证", notes = "修改合格证信息")
     @PutMapping("/certificate")
-    public CommonResult<Certificate> updateCertificate(@RequestBody Certificate certificate, @RequestParam(required = false) Boolean changeTrack) {
+    public CommonResult<Certificate> updateCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate,
+                                                       @ApiParam(value = "是否变更关联跟单") @RequestParam(required = false) Boolean changeTrack) {
         if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
             return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
         } else {
@@ -215,7 +162,7 @@ public class CertificateController {
 
     @ApiOperation(value = "删除入库信息", notes = "删除入库信息")
     @DeleteMapping("/certificate")
-    public CommonResult deleteCertificate(@RequestBody List<String> ids) {
+    public CommonResult deleteCertificate(@ApiParam(value = "合格证Ids") @RequestBody List<String> ids) {
         QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
         queryWrapper.in("certificate_id", ids);
         List<TrackCertificate> list = trackCertificateService.list(queryWrapper);
@@ -243,7 +190,17 @@ public class CertificateController {
 
     @ApiOperation(value = "分页查询合格证信息", notes = "根据图号、合格证号、产品编号分页合格证信息")
     @GetMapping("/certificate")
-    public CommonResult<IPage<Certificate>> selectCertificate(String startDate, String endDate, String id, String drawingNo, String certificateNo, String productNo, String order, String orderCol, String branchCode, String tenantId, int page, int limit) {
+    public CommonResult<IPage<Certificate>> selectCertificate(@ApiParam(value = "创建时间(起)") @RequestParam(required = false) String startDate,
+                                                              @ApiParam(value = "创建时间(止)") @RequestParam(required = false) String endDate,
+                                                              @ApiParam(value = "合格证Id") @RequestParam(required = false) String id,
+                                                              @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                              @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+                                                              @ApiParam(value = "产品编号") @RequestParam(required = false) String productNo,
+                                                              @ApiParam(value = "排序") @RequestParam(required = false) String order,
+                                                              @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
+                                                              @ApiParam(value = "分公司") String branchCode,
+                                                              @ApiParam(value = "页码") int page,
+                                                              @ApiParam(value = "每页条数") int limit) {
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<Certificate>();
 
         if (!StringUtils.isNullOrEmpty(startDate)) {
@@ -258,13 +215,13 @@ public class CertificateController {
             queryWrapper.eq("pc.id", id);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
-            queryWrapper.like("pc.certificate_no", "%" + certificateNo + "%");
+            queryWrapper.like("pc.certificate_no", certificateNo);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
-            queryWrapper.like("product_no", "%" + productNo + "%");
+            queryWrapper.like("product_no", productNo);
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
@@ -280,14 +237,14 @@ public class CertificateController {
             queryWrapper.orderByDesc("pc.modify_time");
         }
         queryWrapper.apply("pc.id = track.certificate_id");
-        queryWrapper.eq("pc.tenant_id", tenantId);
+        queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("pc.branch_code", branchCode);
         return CommonResult.success(certificateService.selectCertificate(new Page<Certificate>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询合格证相关跟单", notes = "根据合格证ID查询合格证相关跟单")
     @GetMapping("/certificate/track")
-    public CommonResult<List<TrackCertificate>> selectTrackCertificate(String certificateId) {
+    public CommonResult<List<TrackCertificate>> selectTrackCertificate(@ApiParam(value = "页码") String certificateId) {
         QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
         if (!StringUtils.isNullOrEmpty(certificateId)) {
             queryWrapper.eq("certificate_id", certificateId);

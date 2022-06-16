@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.*;
@@ -18,7 +17,7 @@ import java.util.List;
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
-    boolean saveTrackHead(TrackHead trackHead, List<LineStore> lineStores, List<TrackItem> trackItems);
+    boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
 
     boolean deleteTrackHead(List<TrackHead> trackHeads);
 
