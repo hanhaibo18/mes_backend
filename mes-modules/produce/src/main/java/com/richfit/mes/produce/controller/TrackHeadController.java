@@ -16,6 +16,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
  * @Description 跟单Controller
  */
 @Slf4j
-@Api("跟单管理")
+@Api(tags = "跟单管理")
 @RestController
 @RequestMapping("/api/produce/track_head")
 public class TrackHeadController extends BaseController {
@@ -56,6 +57,22 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_NO_NULL_MESSAGE = "跟单编号不能为空！";
     public static String TRACK_HEAD_SUCCESS_MESSAGE = "操作成功！";
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
+
+
+    @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回一天跟单信息。")
+    @GetMapping("/select_by_track_no")
+    public CommonResult<TrackHead> selectByTrackNo(@ApiParam(value = "跟单号", required = true) @RequestParam String trackNo,
+                                                   @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.like("track_no", "%" + trackNo + "%");
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return CommonResult.success(trackHeadService.getOne(queryWrapper));
+    }
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
