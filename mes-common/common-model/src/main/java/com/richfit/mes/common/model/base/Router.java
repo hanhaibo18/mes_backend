@@ -24,14 +24,6 @@ public class Router extends BaseEntity<Router> {
      */
     private String branchCode;
     /**
-     * 物料号，必填
-     */
-    private String materialNo;
-    /**
-     * 物料号，必填
-     */
-    private String materialVersion;
-    /**
      * 工艺图号
      */
     private String routerNo;
@@ -61,13 +53,20 @@ public class Router extends BaseEntity<Router> {
      */
     private String status;
 
-
     /**
      * 2==历史
      */
     private String isActive;
 
-    
+    /**
+     * 物料号，必填
+     */
+    private String materialNo;
+    /**
+     * 物料号，必填
+     */
+    private String materialVersion;
+
     /**
      * G6流程节点
      */
