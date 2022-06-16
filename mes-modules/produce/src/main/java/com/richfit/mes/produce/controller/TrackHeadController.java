@@ -65,7 +65,7 @@ public class TrackHeadController extends BaseController {
                                                    @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("track_no", "%" + trackNo + "%");
+            queryWrapper.eq("track_no", "trackNo");
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
