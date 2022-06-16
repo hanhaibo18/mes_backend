@@ -94,7 +94,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage());
         }
         return true;
     }
@@ -106,14 +106,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
-
+            trackHead.setNumber(1);
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
             queryWrapper.eq("branch_code", trackHead.getBranchCode());
             queryWrapper.eq("tenant_id", trackHead.getTenantId());
             List trackHeads = trackHeadMapper.selectList(queryWrapper);
             if (trackHeads.size() > 0) {
-                throw new Exception("跟单号码已存在！请联系管理员处理流程码问题！");
+                throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
             }
             trackHeadMapper.insert(trackHead);
             //计划跟单关联
