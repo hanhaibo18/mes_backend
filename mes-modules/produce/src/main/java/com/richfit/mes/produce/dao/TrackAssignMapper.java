@@ -7,9 +7,12 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.produce.entity.QueryProcessVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @author 马峰
@@ -32,4 +35,23 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     //       @Select("select * from v_produce_assign")
     IPage<Assign> queryPage(Page page, @Param("siteId") String siteId, @Param("trackNo") String trackNo, @Param("routerNo") String routerNo, @Param("startTime") String starttime, @Param("endTime") String endTime, @Param("state") String state, @Param("userId") String userId, @Param("branchCode") String branchCode);
 
+    /**
+     * 功能描述: 根据跟单号查询
+     *
+     * @param trackNo
+     * @Author: xinYu.hou
+     * @return: List<QueryProcessVo>
+     **/
+    @Select("SELECT item.id,item.track_head_id,item.opt_name,item.opt_ver,item.prepare_end_hours,item.single_piece_hours,item.opt_parallel_type FROM v_produce_track_item item WHERE item.track_head_id = #{trackNo}}")
+    List<QueryProcessVo> queryProcessList(@Param("trackNo") String trackNo);
+
+    /**
+     * 功能描述: 查询当前工序是否派工
+     *
+     * @param trackItemId
+     * @Author: xinYu.hou
+     * @return: Integer
+     **/
+    @Select("SELECT COUNT(1) FROM v_produce_assign assign WHERE assign.ti_id = #{trackItemId}")
+    Integer isDispatching(@Param("trackItemId") String trackItemId);
 }

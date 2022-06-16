@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.service.TrackAssignService;
 import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackHeadService;
@@ -32,7 +33,7 @@ import java.util.UUID;
  * @Description 跟单派工Controller
  */
 @Slf4j
-@Api("跟单派工")
+@Api(value = "跟单派工", tags = {"跟单派工"})
 @RestController
 @RequestMapping("/api/produce/trackassign")
 public class TrackAssignController extends BaseController {
@@ -472,5 +473,14 @@ public class TrackAssignController extends BaseController {
             }
         }
         return CommonResult.success(null, "删除成功！");
+    }
+
+    @GetMapping("/queryProcessList")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", required = true, paramType = "query", dataType = "String"),
+    })
+    @ApiOperation(value = "根据跟单号查询工序列表")
+    public CommonResult<List<QueryProcessVo>> queryProcessList(String trackNo) {
+        return CommonResult.success(trackAssignService.queryProcessList(trackNo));
     }
 }
