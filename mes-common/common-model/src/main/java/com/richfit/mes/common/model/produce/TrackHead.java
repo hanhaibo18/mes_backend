@@ -200,7 +200,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      **/
     private String routerId;
     /**
-     * 描述: 跟单类型（区分试棒、普通跟单）
+     * 描述: 跟单类型 0库存生成  1物料生成  2计划生成
      *
      * @Author: zhiqiang.lu
      * @Date: 2022/6/13 10:25
