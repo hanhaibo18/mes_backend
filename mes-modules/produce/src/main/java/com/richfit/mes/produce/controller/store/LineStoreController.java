@@ -251,6 +251,7 @@ public class LineStoreController extends BaseController {
                                                              @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
                                                              @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
                                                              @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
+                                                             @ApiParam(value = "数量") @RequestParam(required = false) Integer number,
                                                              @ApiParam(value = "已用数量") @RequestParam(required = false) Integer userNum,
                                                              @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
                                                              @ApiParam(value = "分公司") @RequestParam String branchCode) {
@@ -278,6 +279,9 @@ public class LineStoreController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("status", status);
+        }
+        if (number != null) {
+            queryWrapper.eq("number", number);
         }
         if (userNum != null && userNum > 0) {
             queryWrapper.ge("number - use_num", userNum);
