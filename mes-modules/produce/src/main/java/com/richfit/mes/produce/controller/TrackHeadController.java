@@ -183,7 +183,9 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "修改跟单状态", notes = "修改跟单状态")
     @PutMapping("/track_head/change_status")
-    public CommonResult changeTrackHeadStatus(@RequestParam String type, @RequestParam String status, @RequestBody List<TrackHead> trackHeads) {
+    public CommonResult changeTrackHeadStatus(@ApiParam(value = "0修改审批状态  1修改跟单状态", required = true) @RequestParam String type,
+                                              @ApiParam(value = "状态代码", required = true) @RequestParam String status,
+                                              @ApiParam(value = "跟新信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
         if (type.equals("0")) { //修改审批状态
             trackHeads.stream().forEach(trackHead -> {
                 trackHead.setApprovalStatus(status);
@@ -205,7 +207,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "删除跟单", notes = "删除跟单")
     @DeleteMapping("/track_head")
-    public CommonResult deleteTrackHead(@RequestBody List<TrackHead> trackHeads) {
+    public CommonResult deleteTrackHead(@ApiParam(value = "跟新信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
         boolean bool = trackHeadService.deleteTrackHead(trackHeads);
         if (bool) {
             Action action = new Action();
@@ -220,7 +222,21 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "分页查询跟单", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单")
     @GetMapping("/track_head")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(String startDate, String endDate, String id, String trackNo, String workPlanNo, String productNo, String materialNo, String status, String approvalStatus, String order, String orderCol, String branchCode, String tenantId, int page, int limit) {
+    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                                                          @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+                                                          @ApiParam(value = "id") @RequestParam(required = false) String id,
+                                                          @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
+                                                          @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
+                                                          @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
+                                                          @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                          @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
+                                                          @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                          @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                          @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                                          @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
+                                                          @ApiParam(value = "图号") @RequestParam(required = false) int page,
+                                                          @ApiParam(value = "图号") @RequestParam(required = false) int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(startDate)) {
             queryWrapper.ge("create_time", startDate);
@@ -276,7 +292,10 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "工艺跟踪", notes = "根据图号、工艺版本号分页查询跟单工艺信息")
     @GetMapping("/track_head/router")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(String drawingNo, String optVer, int page, int limit) {
+    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                          @ApiParam(value = "工艺版本") @RequestParam(required = false) String optVer,
+                                                          @ApiParam(value = "页码", required = true) @RequestParam int page,
+                                                          @ApiParam(value = "每页条数", required = true) @RequestParam int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("th.drawing_no", "%" + drawingNo + "%");
