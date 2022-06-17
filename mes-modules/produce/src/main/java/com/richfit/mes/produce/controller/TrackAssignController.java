@@ -477,10 +477,10 @@ public class TrackAssignController extends BaseController {
 
     @GetMapping("/queryProcessList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "trackNo", value = "跟单号", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, paramType = "query", dataType = "String"),
     })
-    @ApiOperation(value = "根据跟单号查询工序列表")
-    public CommonResult<List<QueryProcessVo>> queryProcessList(String trackNo) {
-        return CommonResult.success(trackAssignService.queryProcessList(trackNo));
+    @ApiOperation(value = "根据跟单Id查询工序列表")
+    public CommonResult<List<QueryProcessVo>> queryProcessList(String trackHeadId) {
+        return CommonResult.success(trackAssignService.queryProcessList(trackHeadId));
     }
 }

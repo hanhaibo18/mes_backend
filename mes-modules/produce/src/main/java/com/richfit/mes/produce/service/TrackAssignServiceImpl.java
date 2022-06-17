@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -112,8 +113,11 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     }
 
     @Override
-    public List<QueryProcessVo> queryProcessList(String trackNo) {
-        List<QueryProcessVo> processList = trackAssignMapper.queryProcessList(trackNo);
+    public List<QueryProcessVo> queryProcessList(String trackHeadId) {
+        List<QueryProcessVo> processList = trackAssignMapper.queryProcessList(trackHeadId);
+        if (processList == null || processList.isEmpty()) {
+            return Collections.emptyList();
+        }
         for (QueryProcessVo queryProcess : processList) {
             Integer state = trackAssignMapper.isDispatching(queryProcess.getId());
             if (null != state) {
