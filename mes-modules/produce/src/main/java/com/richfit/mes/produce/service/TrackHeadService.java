@@ -19,6 +19,8 @@ public interface TrackHeadService extends IService<TrackHead> {
 
     boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
 
+    boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
+
     boolean deleteTrackHead(List<TrackHead> trackHeads);
 
     IPage<TrackHead> selectTrackHeadRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query);

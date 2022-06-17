@@ -76,7 +76,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
-    public CommonResult<TrackHead> addTrackHead(@RequestBody TrackHead trackHead) {
+    public CommonResult<TrackHead> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead) {
 
         try {
             if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
@@ -158,28 +158,22 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "修改跟单", notes = "修改跟单")
     @PutMapping("/track_head")
-    public CommonResult<TrackHead> updateTrackHead(@RequestBody TrackHead trackHead) {
+    public CommonResult<TrackHead> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead) {
         if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
             return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(trackHead.getId())) {
             return CommonResult.failed(TRACK_HEAD_ID_NULL_MESSAGE);
         } else {
-            trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-            trackHead.setModifyTime(new Date());
-
-            boolean bool = trackHeadService.updateById(trackHead);
+            boolean bool = trackHeadService.updataTrackHead(trackHead, trackHead.getTrackItems());
             if (bool) {
                 //删除修改跟单工序
 //                trackItemService.removeByIds(trackHead.getDeleteRouterIds());
-                trackItemService.updateBatchById(trackHead.getTrackItems());
-
-
+//                trackItemService.updateBatchById(trackHead.getTrackItems());
                 Action action = new Action();
                 action.setActionType("1");
                 action.setActionItem("2");
                 action.setRemark("跟单号：" + trackHead.getTrackNo());
                 actionService.saveAction(action);
-
                 return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
