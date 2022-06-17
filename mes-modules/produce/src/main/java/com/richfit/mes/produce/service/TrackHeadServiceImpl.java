@@ -133,7 +133,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), "");
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
-            trackHead.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+            trackHead.setProductNo(productsNo);
             trackHead.setNumber(1);
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
