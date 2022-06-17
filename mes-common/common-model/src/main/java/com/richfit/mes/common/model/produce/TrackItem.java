@@ -17,153 +17,243 @@ public class TrackItem extends BaseEntity<TrackItem> {
     /**
      * 跟单ID
      */
+    @ApiModelProperty(value = "跟单ID", dataType = "String")
     private String trackHeadId;
     /**
      * 产品编号
      */
+    @ApiModelProperty(value = "产品编号", dataType = "String")
     private String productNo;
     /**
      * 设备ID
      */
+    @ApiModelProperty(value = "设备ID", dataType = "String")
     private String deviceId;
     /**
      * 工序版本号
      */
+    @ApiModelProperty(value = "工序版本号", dataType = "String")
     private String optVer;
     /**
      * 工序名
      */
+    @ApiModelProperty(value = "工序名", dataType = "String")
     private String optName;
     /**
      * 工序ID
      */
+    @ApiModelProperty(value = "工序ID", dataType = "String")
     private String optId;
     /**
      * 工序类型
      */
+    @ApiModelProperty(value = "工序类型", dataType = "String")
     private Integer optType;
+    @ApiModelProperty(value = "subOptParentId", dataType = "String")
     private String subOptParentId;
-    @ApiModelProperty(value = "是否并行")
+    @ApiModelProperty(value = "是否并行", dataType = "Integer")
     private Integer optParallelType;
     /**
      * 准结时间
      */
+    @ApiModelProperty(value = "准结时间", dataType = "Double")
     private Double prepareEndHours;
     /**
      * 单件工时
      */
+    @ApiModelProperty(value = "单件工时", dataType = "Double")
     private Double singlePieceHours;
+    @ApiModelProperty(value = "technologySequence", dataType = "String")
     private String technologySequence;
+    @ApiModelProperty(value = "originalOptSequence", dataType = "Integer")
     private Integer originalOptSequence;
     /**
      * 工序号
      */
+    @ApiModelProperty(value = "工序号", dataType = "Integer")
     private Integer optSequence;
     /**
      * 下一道工序号
      */
+    @ApiModelProperty(value = "下一道工序号", dataType = "Integer")
     private Integer nextOptSequence;
     /**
      * 工序排序号
      */
+    @ApiModelProperty(value = "工序排序号", dataType = "Integer")
     private Integer sequenceOrderBy;
     private Integer partialBatchNo;
     /**
      * 返工次数
      */
+    @ApiModelProperty(value = "返工次数", dataType = "Integer")
     private Integer reworkTimes;
     /**
      * 是否当前工序
      */
+    @ApiModelProperty(value = "是否当前工序", dataType = "Integer")
     private Integer isCurrent;
     /**
      * 是否开工
      */
+    @ApiModelProperty(value = "是否开工", dataType = "Integer")
     private Integer isDoing;
+    @ApiModelProperty(value = "startDoingUser", dataType = "String")
     private String startDoingUser;
     /**
      * 开工时间
      */
+    @ApiModelProperty(value = "开工时间", dataType = "Date")
     private Date startDoingTime;
+    @ApiModelProperty(value = "isOperationComplete", dataType = "Integer")
     private Integer isOperationComplete;
     /**
      * 完工时间
      */
+    @ApiModelProperty(value = "完工时间", dataType = "Date")
     private Date operationCompleteTime;
     /**
      * 是否质检确认
      */
+    @ApiModelProperty(value = "是否质检确认", dataType = "Integer")
     private Integer isExistQualityCheck;
     /**
      * 是否质检完成
      */
+    @ApiModelProperty(value = "是否质检完成", dataType = "Integer")
     private Integer isQualityComplete;
     /**
      * 质检时间
      */
+    @ApiModelProperty(value = "质检时间", dataType = "Date")
     private Date qualityCompleteTime;
     /**
      * 质检数量?
      */
+    @ApiModelProperty(value = "质检数量?", dataType = "Integer")
     private Integer qualityQty;
     /**
      * 不合格数量?
      */
+    @ApiModelProperty(value = "不合格数量?", dataType = "Integer")
     private Integer qualityUnqty;
     /**
      * 质检结果
      */
+    @ApiModelProperty(value = "质检结果", dataType = "Integer")
     private Integer qualityResult;
     //不合格步骤?
+    @ApiModelProperty(value = "不合格步骤", dataType = "String")
     private String failProcess;
     //检验人
+    @ApiModelProperty(value = "检验人", dataType = "String")
     private String qualityCheckBy;
     /**
      * 是否调度确认
      */
+    @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
     private Integer isExistScheduleCheck;
 
     /**
      * 是否自动派工
      */
+    @ApiModelProperty(value = "是否自动派工", dataType = "Integer")
     private Integer isAutoSchedule;
 
 
     /**
      * 是否调度完成
      */
+    @ApiModelProperty(value = "是否调度完成", dataType = "Integer")
     private Integer isScheduleComplete;
+
+    @ApiModelProperty(value = "scheduleCompleteTime", dataType = "Date")
     private Date scheduleCompleteTime;
+
+    @ApiModelProperty(value = "scheduleCompleteBy", dataType = "String")
     private String scheduleCompleteBy;
+
+    @ApiModelProperty(value = "isFinalComplete", dataType = "String")
     private String isFinalComplete;
+
+    @ApiModelProperty(value = "isTrackSequenceComplete", dataType = "Integer")
     private Integer isTrackSequenceComplete;
+
+    @ApiModelProperty(value = "batchQty", dataType = "Integer")
     private Integer batchQty;
+
+    @ApiModelProperty(value = "eventId", dataType = "Integer")
     private Integer eventId;
+
+    @ApiModelProperty(value = "assignableQty", dataType = "Integer")
     private Integer assignableQty;
+
+    @ApiModelProperty(value = "completeQty", dataType = "Integer")
     private Integer completeQty;
+
+    @ApiModelProperty(value = "heatTemperature", dataType = "Integer")
     private Double heatTemperature;
+
     /**
      * 合格证编号
      */
+    @ApiModelProperty(value = "合格证编号", dataType = "Integer")
     private String certificateNo;
+
+    @ApiModelProperty(value = "isValid", dataType = "Integer")
     private Integer isValid;
+
+    @ApiModelProperty(value = "carbonDepth", dataType = "Double")
     private Double carbonDepth;
+
+    @ApiModelProperty(value = "nitrogenDepth", dataType = "Double")
     private Double nitrogenDepth;
+
+    @ApiModelProperty(value = "isCountPrepareHour", dataType = "String")
     private String isCountPrepareHour;
+
+    @ApiModelProperty(value = "qualityCertificateDestination", dataType = "String")
     private String qualityCertificateDestination;
+
+    @ApiModelProperty(value = "reserveText1", dataType = "String")
     private String reserveText1;
+
+    @ApiModelProperty(value = "reserveText2", dataType = "String")
     private String reserveText2;
+
+    @ApiModelProperty(value = "reserveText3", dataType = "String")
     private String reserveText3;
+
+    @ApiModelProperty(value = "reserveText4", dataType = "String")
     private String reserveText4;
+
+    @ApiModelProperty(value = "priority", dataType = "String")
     private String priority;
+
+    @ApiModelProperty(value = "equipmentType", dataType = "String")
     private String equipmentType;
+
+    @ApiModelProperty(value = "holdingTemperature", dataType = "Double")
     private Double holdingTemperature;
+
+    @ApiModelProperty(value = "lowerLimits", dataType = "Double")
     private Double lowerLimits;
+
+    @ApiModelProperty(value = "upperLimits", dataType = "Double")
     private Double upperLimits;
+
+    @ApiModelProperty(value = "coolingDownMethod", dataType = "String")
     private String coolingDownMethod;
+
+    @ApiModelProperty(value = "notice", dataType = "String")
     private String notice;
+
+    @ApiModelProperty(value = "机构编码", dataType = "Integer")
     private String branchCode;
+
+    @ApiModelProperty(value = "租户ID", dataType = "Integer")
     private String tenantId;
+
 
     @ApiModelProperty(value = "探伤结果", required = true)
     private Integer flawDetection;

@@ -15,88 +15,107 @@ import java.util.List;
 @Data
 public class Assign extends BaseEntity<Assign> {
 
-
+    @ApiModelProperty(value = "id", dataType = "String")
     private String id;
     /**
      * 租户ID
      */
+    @ApiModelProperty(value = "租户ID", dataType = "String")
     private String tenantId;
     /**
      * 机构编码
      */
+    @ApiModelProperty(value = "机构编码", dataType = "String")
     private String branchCode;
     /**
      * 跟单工序项ID
      */
+    @ApiModelProperty(value = "跟单工序项ID", dataType = "String")
     private String tiId;
     /**
      * 跟单ID
      */
+    @ApiModelProperty(value = "跟单ID", dataType = "String")
     private String trackId;
     /**
      * 跟单编号
      */
+    @ApiModelProperty(value = "跟单编号", dataType = "String")
     private String trackNo;
     /**
      * 派工用户ID
      */
+    @ApiModelProperty(value = "派工用户ID", dataType = "String")
     private String userId;
     /**
      * 派工用户ID
      */
+    @ApiModelProperty(value = "派工用户ID", dataType = "String")
     private String emplName;
     /**
      * 派工用户名称
      */
+    @ApiModelProperty(value = "派工用户名称", dataType = "String")
     private String siteId;
     /**
      * 派工工位名称
      */
+    @ApiModelProperty(value = "派工工位名称", dataType = "String")
     private String siteName;
     /**
      * 派工设备ID
      */
+    @ApiModelProperty(value = "派工设备ID", dataType = "String")
     private String deviceId;
     /**
      * 派工设备名称
      */
+    @ApiModelProperty(value = "派工设备名称", dataType = "String")
     private String deviceName;
     /**
      * 派工优先级  3=High、2=Medium、1=Normal、0=Low
      */
+    @ApiModelProperty(value = "派工优先级  3=High、2=Medium、1=Normal、0=Low", dataType = "int")
     private int priority;
     /**
      * 派工数量
      */
+    @ApiModelProperty(value = "派工数量", dataType = "int")
     private int qty;
     /**
      * 可报工数
      */
+    @ApiModelProperty(value = "可报工数", dataType = "int")
     private int availQty;
 
     /**
      * 派工状态
      */
+    @ApiModelProperty(value = "派工状态", dataType = "int")
     private int state;
 
     /**
      * 派工人
      */
+    @ApiModelProperty(value = "派工人", dataType = "String")
     protected String assignBy;
 
     /**
      * 派工时间
      */
+    @ApiModelProperty(value = "派工时间", dataType = "Date")
     protected Date assignTime;
 
     /**
      * 计划开始时间
      */
+    @ApiModelProperty(value = "计划开始时间", dataType = "Date")
     protected Date startTime;
 
     /**
      * 计划结束时间
      */
+    @ApiModelProperty(value = "计划结束时间", dataType = "Date")
     protected Date endTime;
 
     @TableField(exist = false)
