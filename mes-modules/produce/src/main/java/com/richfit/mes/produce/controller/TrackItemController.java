@@ -125,7 +125,7 @@ public class TrackItemController extends BaseController {
         if (!StringUtils.isNullOrEmpty(optVer)) {
             queryWrapper.like("opt_ver", optVer);
         }
-        queryWrapper.orderByAsc("opt_sequence");
+        queryWrapper.orderByAsc("sequence_order_by");
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
