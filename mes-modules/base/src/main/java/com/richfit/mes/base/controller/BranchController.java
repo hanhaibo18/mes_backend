@@ -202,7 +202,7 @@ public class BranchController extends BaseController {
 
     @ApiOperation(value = "查询下级组织机构", notes = "查询下级组织机构")
     @ApiImplicitParam(name = "branchCode", value = "机构编码", dataType = "String", paramType = "query")
-    @DeleteMapping("/queryCodeList")
+    @GetMapping("/queryCodeList")
     public CommonResult<List<Branch>> queryCode(String branchCode) {
         return CommonResult.success(branchService.queryCode(branchCode));
     }
