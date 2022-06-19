@@ -2,6 +2,7 @@ package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.BranchMapper;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,8 +39,37 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
 
     @Override
     public List<Branch> queryCode(String branchCode) {
-        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("main_branch_code", branchCode);
-        return this.list(queryWrapper);
+        List<Branch> branchList = new ArrayList<Branch>();
+        if (StringUtils.isNullOrEmpty(branchCode)) {
+            branchList = this.list();
+        } else {
+            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("main_branch_code", branchCode);
+            branchList = this.list(queryWrapper);
+        }
+        if (null == branchList) {
+            return Collections.emptyList();
+        }
+        //获取第二级别参数
+        for (Branch branch1 : branchList) {
+            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("main_branch_code", branch1.getBranchCode());
+            List<Branch> list2 = this.list(queryWrapper);
+            //获取第三级参数
+            if (list2 != null && !list2.isEmpty()) {
+                for (Branch branch2 : list2) {
+                    QueryWrapper<Branch> query = new QueryWrapper<>();
+                    query.eq("main_branch_code", branch2.getBranchCode());
+                    List<Branch> list3 = this.list(query);
+                    //添加第三级数据到第二级别
+                    if (list3 != null && !list3.isEmpty()) {
+                        branch2.setBranchList(list3);
+                    }
+                }
+                //第二级别数据添加到第三级
+                branch1.setBranchList(list2);
+            }
+        }
+        return branchList;
     }
 }

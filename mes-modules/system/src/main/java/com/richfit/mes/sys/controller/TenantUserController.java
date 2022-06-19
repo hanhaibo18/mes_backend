@@ -1,14 +1,12 @@
 package com.richfit.mes.sys.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.constant.CommonConstant;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.dto.TenantUserDto;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
@@ -23,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 /**
  * <p>
@@ -33,7 +32,7 @@ import javax.validation.Valid;
  * @since 2020-05-25
  */
 @Slf4j
-@Api("租户信息管理")
+@Api(value = "租户信息管理", tags = {"租户信息管理"})
 @RestController
 @RequestMapping("/api/sys/user")
 public class TenantUserController extends BaseController {
@@ -50,11 +49,11 @@ public class TenantUserController extends BaseController {
     @ApiOperation(value = "新增用户信息", notes = "新增用户信息")
     @ApiImplicitParam(name = "tenantUserDto", value = "租户用户", required = true, dataType = "TenantUserDto")
     @PostMapping("/save")
-    public CommonResult<Boolean> saveTenantUser(@Valid @RequestBody TenantUserDto tenantUserDto) throws GlobalException{
+    public CommonResult<Boolean> saveTenantUser(@Valid @RequestBody TenantUserDto tenantUserDto) throws GlobalException {
 
         //TODO 租户可创建用户数限制
         TenantUser tenantUser = tenantUserDto.toPo(TenantUser.class);
-        log.debug("save tenantUser:[{}]",tenantUser);
+        log.debug("save tenantUser:[{}]", tenantUser);
         return CommonResult.success(tenantUserService.add(tenantUser));
     }
 
@@ -74,14 +73,14 @@ public class TenantUserController extends BaseController {
     public CommonResult<TenantUserVo> findOne(@RequestParam(value = "id", required = true) String id) throws GlobalException {
         return CommonResult.success(tenantUserService.findById(id));
     }
-    
+
     /**
      * 更新用户
      */
     @ApiOperation(value = "修改用户信息", notes = "修改用户信息")
     @ApiImplicitParam(name = "tenantUpdateUserDto", value = "租户用户", required = true, dataType = "TenantUpdateUserDto")
     @PutMapping("/update")
-    public CommonResult<Boolean> updateUser(@Valid @RequestBody TenantUpdateUserDto tenantUpdateUserDto) throws GlobalException{
+    public CommonResult<Boolean> updateUser(@Valid @RequestBody TenantUpdateUserDto tenantUpdateUserDto) throws GlobalException {
         TenantUser tenantUser = tenantUpdateUserDto.toPo(TenantUser.class);
         return CommonResult.success(tenantUserService.update(tenantUser));
     }
@@ -105,13 +104,13 @@ public class TenantUserController extends BaseController {
             @ApiImplicitParam(name = CommonConstant.PAGE_NUM, value = "页码", defaultValue = CommonConstant.PAGE_NUM_DEFAULT, required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "userAccount", value = "用户账号", required = false, paramType = "query"),
             @ApiImplicitParam(name = "emplName", value = "人员姓名", required = false, paramType = "query"),
-            @ApiImplicitParam(name="orgId",value="组织机构",required=false,paramType="query")
+            @ApiImplicitParam(name = "orgId", value = "组织机构", required = false, paramType = "query")
     })
     @GetMapping("/query/page")
-    public CommonResult queryByCondition(@RequestParam(value = "orgId",required = false) String orgId,
-            @RequestParam(value = "userAccount", required = false) String userAccount,
+    public CommonResult queryByCondition(@RequestParam(value = "orgId", required = false) String orgId,
+                                         @RequestParam(value = "userAccount", required = false) String userAccount,
                                          @RequestParam(value = "emplName", required = false) String emplName,
-                                         @RequestParam(value = CommonConstant.PAGE_SIZE, defaultValue = CommonConstant.PAGE_SIZE_DEFAULT) int limit ,
+                                         @RequestParam(value = CommonConstant.PAGE_SIZE, defaultValue = CommonConstant.PAGE_SIZE_DEFAULT) int limit,
                                          @RequestParam(value = CommonConstant.PAGE_NUM, defaultValue = CommonConstant.PAGE_NUM_DEFAULT) int page) throws GlobalException {
         TenantUserQueryParam userQueryForm = new TenantUserQueryParam();
         userQueryForm.setUserAccount(userAccount);
@@ -131,12 +130,13 @@ public class TenantUserController extends BaseController {
     })
     @GetMapping("/query/userAccount")
     public CommonResult queryByName(@RequestParam(value = "userAccount", required = true) String userAccount,
-                                    @RequestParam(value = CommonConstant.PAGE_SIZE, defaultValue = CommonConstant.PAGE_SIZE_DEFAULT) int limit ,
+                                    @RequestParam(value = CommonConstant.PAGE_SIZE, defaultValue = CommonConstant.PAGE_SIZE_DEFAULT) int limit,
                                     @RequestParam(value = CommonConstant.PAGE_NUM, defaultValue = CommonConstant.PAGE_NUM_DEFAULT) int page) throws GlobalException {
 
-        IPage<TenantUserVo> users = tenantUserService.queryByName(new Page<TenantUser>(page, limit), userAccount,SecurityUtils.getCurrentUser().getTenantId());
+        IPage<TenantUserVo> users = tenantUserService.queryByName(new Page<TenantUser>(page, limit), userAccount, SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(users);
     }
+
     /**
      * 停用/开启用户
      */
@@ -167,7 +167,7 @@ public class TenantUserController extends BaseController {
     @PostMapping("/resetpass")
     public CommonResult<Boolean> resetPass(@RequestParam(value = "oldPassword", required = true) String oldPassword,
                                            @RequestParam(value = "newPassword", required = true) String newPassword,
-                                           @RequestParam(value = "userId", required = true) String userId) throws GlobalException{
+                                           @RequestParam(value = "userId", required = true) String userId) throws GlobalException {
 
         return CommonResult.success(tenantUserService.updatePassword(userId, oldPassword, newPassword));
     }
@@ -176,7 +176,7 @@ public class TenantUserController extends BaseController {
     @ApiImplicitParam(paramType = "query", name = "uniqueId", value = "用户唯一标识", required = true, dataType = "string")
     @ApiResponses(@ApiResponse(code = 200, message = "处理成功", response = CommonResult.class))
     @GetMapping
-    public CommonResult query(@RequestParam String uniqueId) throws GlobalException{
+    public CommonResult query(@RequestParam String uniqueId) throws GlobalException {
         log.debug("query with username {}", uniqueId);
         return CommonResult.success(tenantUserService.getByUniqueId(uniqueId));
     }
@@ -184,8 +184,15 @@ public class TenantUserController extends BaseController {
     @ApiOperation(value = "获取当前用户信息", notes = "获取当前用户信息")
     @ApiResponses(@ApiResponse(code = 200, message = "处理成功", response = CommonResult.class))
     @GetMapping("/current/profile")
-    public CommonResult currentUser() throws GlobalException{
+    public CommonResult currentUser() throws GlobalException {
         return CommonResult.success(SecurityUtils.getCurrentUser());
+    }
+
+    @ApiOperation(value = "根据组织机构获取用户列表", notes = "根据组织机构获取用户列表")
+    @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
+    @GetMapping("/queryUserByBranchCode")
+    public CommonResult<Map<String, String>> queryUserByBranchCode(String branchCode) {
+        return CommonResult.success(tenantUserService.queryUserByBranchCode(branchCode));
     }
 }
 

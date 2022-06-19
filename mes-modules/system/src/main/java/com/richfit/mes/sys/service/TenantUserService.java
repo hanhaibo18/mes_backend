@@ -6,6 +6,8 @@ import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
 
+import java.util.Map;
+
 /**
  * <p>
  * 租户用户 服务类
@@ -82,4 +84,12 @@ public interface TenantUserService {
      */
     IPage<TenantUserVo> queryByName(Page<TenantUser> page, String userAccount, String tenantId);
 
+    /**
+     * 功能描述:根据部门查询用户
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @return: List<Map < String, String>>
+     **/
+    Map<String, String> queryUserByBranchCode(String branchCode);
 }

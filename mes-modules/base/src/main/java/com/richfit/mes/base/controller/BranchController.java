@@ -24,7 +24,7 @@ import java.util.List;
  * @Description 组织结构Controller
  */
 @Slf4j
-@Api("组织机构管理")
+@Api(value = "组织机构管理", tags = {"组织机构管理"})
 @RestController
 @RequestMapping("/api/base/branch")
 public class BranchController extends BaseController {
