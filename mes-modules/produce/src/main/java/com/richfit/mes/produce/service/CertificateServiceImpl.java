@@ -6,15 +6,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.Certificate;
-import com.richfit.mes.common.model.produce.LineStore;
+import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Author: 王瑞
@@ -61,33 +65,117 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             certificate.getTrackCertificates().stream().forEach(track -> {
                 //工序合格证
                 if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
-                    TrackItem trackItem = new TrackItem();
-                    trackItem.setId(track.getTiId());
-                    trackItem.setCertificateNo(certificate.getCertificateNo());
-                    trackItemService.updateById(trackItem);
-
+                    trackItemService.linkToCert(track.getTiId(), certificate.getCertificateNo());
                     //完工合格证
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
-                    TrackHead trackHead = new TrackHead();
-                    trackHead.setId(track.getThId());
-                    trackHead.setCertificateNo(certificate.getCertificateNo());
-                    trackHeadService.updateById(trackHead);
+                    trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
 
+
+                    //半成品 成品入库
                     TrackHead th = trackHeadService.getById(track.getThId());
-
-                    //TODO  线边库成品入库
-                    QueryWrapper<LineStore> wrapper = new QueryWrapper<>();
-                    wrapper.eq("workblank_no", th.getProductNo());
-
+                    lineStoreService.autoInByCertTrack(th);
                 }
                 track.setCertificateType(certificate.getType());
                 track.setCertificateId(certificate.getId());
             });
+            //3 保存关联关系
             trackCertificateService.saveBatch(certificate.getTrackCertificates());
             return true;
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void updateCertificate(Certificate certificate, boolean changeTrack) throws Exception {
+        //1、保存合格证
+        boolean bool = this.updateById(certificate);
+
+        if (changeTrack) {
+            QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
+            queryWrapper.eq("certificate_id", certificate.getId());
+            List<TrackCertificate> result = trackCertificateService.list(queryWrapper);
+
+            //2、找出修改合格证时新选择的跟单
+            List<TrackCertificate> insert = certificate.getTrackCertificates().stream().filter(track -> {
+                track.setCertificateType(certificate.getType());
+                track.setCertificateId(certificate.getId());
+                boolean isNotHave = true;
+                for (TrackCertificate trackCertificate : result) {
+                    if (trackCertificate.getTiId().equals(track.getTiId())
+                            && trackCertificate.getThId().equals(track.getThId())) {
+                        isNotHave = false;
+                        break;
+                    }
+                }
+                if (isNotHave) {
+                    if (CertTypeEnum.ITEM_CERT.getCode().equals(certificate.getType())) {
+                        trackItemService.linkToCert(track.getTiId(), certificate.getCertificateNo());
+                    } else if (CertTypeEnum.FINISH_CERT.getCode().equals(certificate.getType())) {
+                        trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
+                        //半成品 成品入库
+                        TrackHead th = trackHeadService.getById(track.getThId());
+                        lineStoreService.autoInByCertTrack(th);
+                    }
+                }
+                return isNotHave;
+            }).collect(Collectors.toList());
+            trackCertificateService.saveBatch(insert);
+
+            //3、找出修改合格证时取消选择的跟单
+            List<String> delete = result.stream().filter(track -> {
+                boolean isHave = false;
+                for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
+                    if (trackCertificate.getTiId().equals(track.getTiId())
+                            && trackCertificate.getThId().equals(track.getThId())) {
+                        isHave = true;
+                        break;
+                    }
+                }
+                if (!isHave) {
+                    if (CertTypeEnum.ITEM_CERT.getCode().equals(certificate.getType())) {
+                        trackItemService.unLinkFromCert(track.getTiId());
+                    } else if (CertTypeEnum.FINISH_CERT.getCode().equals(certificate.getType())) {
+                        trackHeadService.unLinkFromCert(track.getThId());
+                        //删除线边库对应半成品 对应合格证号 对应跟单数量的库存
+                        TrackHead th = trackHeadService.getById(track.getThId());
+                        lineStoreService.delFixedInByCertNo(th.getCertificateNo(), th.getNumber());
+
+                    }
+                }
+                return !isHave;
+            }).map(track -> track.getId()).collect(Collectors.toList());
+            trackCertificateService.removeByIds(delete);
+        }
+
+    }
+
+    @Override
+    public void delCertificate(List<String> ids) throws Exception {
+        QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
+        queryWrapper.in("certificate_id", ids);
+        List<TrackCertificate> list = trackCertificateService.list(queryWrapper);
+        list.stream().forEach(track -> {
+            //对应跟单工序-合格证字段置空
+            if (CertTypeEnum.ITEM_CERT.getCode().equals(track.getCertificateType())) {
+                trackItemService.unLinkFromCert(track.getTiId());
+
+                //对应跟单-合格证字段置空
+            } else if (CertTypeEnum.FINISH_CERT.getCode().equals(track.getCertificateType())) {
+                trackHeadService.unLinkFromCert(track.getThId());
+
+                //回滚所有该合格证号对应的成品入库信息
+                lineStoreService.delInByCertNo(this.getById(track.getCertificateId()).getCertificateNo());
+            }
+
+            //删除关系表
+            Map map = new HashMap();
+            map.put("certificate_id", track.getCertificateId());
+            trackCertificateService.removeByMap(map);
+        });
+
+        //删除合格证
+        this.removeByIds(ids);
     }
 
 

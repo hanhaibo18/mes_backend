@@ -2,15 +2,12 @@ package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
@@ -22,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author 王瑞
@@ -79,113 +75,29 @@ public class CertificateController {
     @ApiOperation(value = "修改合格证", notes = "修改合格证信息")
     @PutMapping("/certificate")
     public CommonResult<Certificate> updateCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate,
-                                                       @ApiParam(value = "是否变更关联跟单") @RequestParam(required = false) Boolean changeTrack) {
+                                                       @ApiParam(value = "是否变更关联跟单") @RequestParam(required = false) Boolean changeTrack) throws Exception {
         if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
             return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
         } else {
             boolean bool = false;
             certificate.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             certificate.setModifyTime(new Date());
-            bool = certificateService.updateById(certificate);
 
-            if (bool) {
-                if (changeTrack) {
-                    QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
-                    queryWrapper.eq("certificate_id", certificate.getId());
-                    List<TrackCertificate> result = trackCertificateService.list(queryWrapper);
+            certificateService.updateCertificate(certificate, changeTrack);
 
-                    //找出修改合格证时新选择的跟单
-                    List<TrackCertificate> insert = certificate.getTrackCertificates().stream().filter(track -> {
-                        track.setCertificateType(certificate.getType());
-                        track.setCertificateId(certificate.getId());
-                        boolean isNotHave = true;
-                        for (TrackCertificate trackCertificate : result) {
-                            if (trackCertificate.getTiId().equals(track.getTiId())
-                                    && trackCertificate.getThId().equals(track.getThId())) {
-                                isNotHave = false;
-                                break;
-                            }
-                        }
-                        if ("0".equals(certificate.getType())) { //工序合格证
-                            if (isNotHave) {
-                                TrackItem trackItem = new TrackItem();
-                                trackItem.setId(track.getTiId());
-                                trackItem.setCertificateNo(certificate.getCertificateNo());
-                                trackItemService.updateById(trackItem);
-                            }
-                        } else if ("1".equals(certificate.getType())) { //完工合格证
-                            if (isNotHave) {
-                                TrackHead trackHead = new TrackHead();
-                                trackHead.setId(track.getThId());
-                                trackHead.setCertificateNo(certificate.getCertificateNo());
-                                trackHeadService.updateById(trackHead);
-                            }
-                        }
-                        return isNotHave;
-                    }).collect(Collectors.toList());
-                    trackCertificateService.saveBatch(insert);
-
-                    //找出修改合格证时取消选择的跟单
-                    List<String> delete = result.stream().filter(track -> {
-                        boolean isHave = false;
-                        for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
-                            if (trackCertificate.getTiId().equals(track.getTiId())
-                                    && trackCertificate.getThId().equals(track.getThId())) {
-                                isHave = true;
-                                break;
-                            }
-                        }
-                        if (!isHave) {
-                            if ("0".equals(certificate.getType())) { //工序合格证
-                                TrackItem trackItem = new TrackItem();
-                                trackItem.setId(track.getTiId());
-                                trackItem.setCertificateNo("");
-                                trackItemService.updateById(trackItem);
-                            } else if ("1".equals(certificate.getType())) { //完工合格证
-                                TrackHead trackHead = new TrackHead();
-                                trackHead.setId(track.getThId());
-                                trackHead.setCertificateNo("");
-                                trackHeadService.updateById(trackHead);
-                            }
-                        }
-                        return !isHave;
-                    }).map(track -> track.getId()).collect(Collectors.toList());
-                    trackCertificateService.removeByIds(delete);
-                }
-
-                return CommonResult.success(certificate, SUCCESS_MESSAGE);
-            } else {
-                return CommonResult.failed(FAILED_MESSAGE);
-            }
+            return CommonResult.success(certificate, SUCCESS_MESSAGE);
         }
+
     }
 
-    @ApiOperation(value = "删除入库信息", notes = "删除入库信息")
+    @ApiOperation(value = "删除合格证信息", notes = "删除合格证信息")
     @DeleteMapping("/certificate")
-    public CommonResult deleteCertificate(@ApiParam(value = "合格证Ids") @RequestBody List<String> ids) {
-        QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
-        queryWrapper.in("certificate_id", ids);
-        List<TrackCertificate> list = trackCertificateService.list(queryWrapper);
-        list.stream().forEach(track -> {
-            if ("0".equals(track.getCertificateType())) { //工序合格证
-                UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.set("certificate_no", "");
-                updateWrapper.eq("id", track.getTiId());
-                trackItemService.update(updateWrapper);
-            } else if ("1".equals(track.getCertificateType())) { //工序合格证
-                UpdateWrapper<TrackHead> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.set("certificate_no", "");
-                updateWrapper.eq("id", track.getThId());
-                trackHeadService.update(updateWrapper);
-            }
-        });
+    public CommonResult deleteCertificate(@ApiParam(value = "合格证Ids") @RequestBody List<String> ids) throws Exception {
 
-        boolean bool = certificateService.removeByIds(ids);
-        if (bool) {
-            return CommonResult.success(true, SUCCESS_MESSAGE);
-        } else {
-            return CommonResult.failed(FAILED_MESSAGE);
-        }
+        certificateService.delCertificate(ids);
+
+        return CommonResult.success(true, SUCCESS_MESSAGE);
+
     }
 
     @ApiOperation(value = "分页查询合格证信息", notes = "根据图号、合格证号、产品编号分页合格证信息")
@@ -242,8 +154,16 @@ public class CertificateController {
         return CommonResult.success(certificateService.selectCertificate(new Page<Certificate>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
-    @ApiOperation(value = "查询合格证相关跟单", notes = "根据合格证ID查询合格证相关跟单")
+    /**
+     * 弃用，返回的字段是关系表字段，数据项有限。
+     * 推荐使用/api/produce/track_head/track_head/query_by_cert
+     *
+     * @param certificateId
+     * @return
+     */
+    @ApiOperation(value = "查询合格证相关跟单ID", notes = "根据合格证ID查询合格证相关跟单")
     @GetMapping("/certificate/track")
+    @Deprecated
     public CommonResult<List<TrackCertificate>> selectTrackCertificate(@ApiParam(value = "页码") String certificateId) {
         QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
         if (!StringUtils.isNullOrEmpty(certificateId)) {
