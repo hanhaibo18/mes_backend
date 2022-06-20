@@ -296,6 +296,49 @@ public class LineStoreController extends BaseController {
         return CommonResult.success(lineStoreService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "查询入库信息", notes = "根据图号、合格证号、物料编号查询入库信息")
+    @GetMapping("/line_store/list/workblankNo")
+    public CommonResult<List<LineStore>> selectLineStoreListWorkblankNo(
+            @ApiParam(value = "料单类型") @RequestParam(required = false) String materialType,
+            @ApiParam(value = "物料码") @RequestParam(required = false) String materialNo,
+            @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+            @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+            @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
+            @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
+            @ApiParam(value = "可使用数量") @RequestParam(required = false) Integer number,
+            @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
+            @ApiParam(value = "分公司", required = true) @RequestParam String branchCode) {
+        QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+        if (!StringUtils.isNullOrEmpty(materialType)) {
+            queryWrapper.eq("material_type", materialType);
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.like("drawing_no", drawingNo);
+        }
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
+            queryWrapper.like("material_no", materialNo);
+        }
+        if (!StringUtils.isNullOrEmpty(certificateNo)) {
+            queryWrapper.like("certificate_no", certificateNo);
+        }
+        if (!StringUtils.isNullOrEmpty(workblankNo)) {
+            queryWrapper.eq("workblank_no", workblankNo);
+        }
+        if (!StringUtils.isNullOrEmpty(trackType)) {
+            queryWrapper.eq("track_type", trackType);
+        }
+        if (!StringUtils.isNullOrEmpty(status)) {
+            queryWrapper.eq("status", status);
+        }
+        if (number != null && number > 0) {
+            queryWrapper.ge("number - use_num", number);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.orderByDesc("create_time");
+        return CommonResult.success(lineStoreService.list(queryWrapper), SUCCESS_MESSAGE);
+    }
+
     @ApiOperation(value = "物料完工", notes = "物料完工")
     @GetMapping("/line_store/finish")
     public CommonResult<Boolean> finishProduct(@ApiParam(value = "跟单号") @RequestParam String trackNo,
