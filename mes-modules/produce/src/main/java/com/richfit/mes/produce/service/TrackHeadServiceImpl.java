@@ -131,10 +131,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo) {
         try {
             CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), "");
-            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
-            trackHead.setTrackNo(commonResult.getData().getCurValue());
-            trackHead.setProductNo(productsNo);
-            trackHead.setNumber(1);
+            //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
             queryWrapper.eq("branch_code", trackHead.getBranchCode());
@@ -143,7 +140,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if (trackHeads.size() > 0) {
                 throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
             }
-            trackHeadMapper.insert(trackHead);
 
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
             if ("0".equals(trackHead.getStatus())) {
@@ -166,7 +162,40 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 relation.setType("0");
                 relation.setNumber(1);
                 trackHeadRelationMapper.insert(relation);
+
+                //新增一条半成品/成品信息
+                QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<LineStore>();
+                queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
+                queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
+                if (lineStores != null && lineStores.size() > 0) {
+                    throw new RuntimeException("产品编号已存在！");
+                } else {
+                    LineStore lineStoreCp = new LineStore();
+                    lineStoreCp.setTenantId(trackHead.getTenantId());
+                    lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
+                    lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
+                    lineStoreCp.setWorkblankNo(trackHead.getProductNo());
+                    lineStoreCp.setNumber(1);//添加单件多个产品
+                    lineStoreCp.setUseNum(0);
+                    lineStoreCp.setStatus("1");//在制状态
+                    lineStoreCp.setTrackNo(trackHead.getTrackNo());
+                    lineStoreCp.setMaterialType("1");
+                    lineStoreCp.setTrackType(trackHead.getTrackType());
+                    lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    lineStoreCp.setCreateTime(new Date());
+                    lineStoreCp.setInTime(new Date());
+                    lineStoreMapper.insert(lineStoreCp);
+                    TrackHeadRelation relationCp = new TrackHeadRelation();
+                    relationCp.setThId(trackHead.getId());
+                    relationCp.setLsId(lineStoreCp.getId());
+                    relationCp.setType("1");
+                    relationCp.setNumber(1);
+                    trackHeadRelationMapper.insert(relationCp);
+                }
             }
+
             //跟单工序添加
             if (trackItems != null && trackItems.size() > 0) {
                 for (TrackItem item : trackItems) {
@@ -180,38 +209,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     trackItemMapper.insert(item);
                 }
             }
-            //新增一条半成品/成品信息
-            QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<LineStore>();
-            queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
-            queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
-            if (lineStores != null && lineStores.size() > 0) {
-                throw new RuntimeException("产品编号已存在！");
-            } else {
-                LineStore lineStoreCp = new LineStore();
-                lineStoreCp.setTenantId(trackHead.getTenantId());
-                lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
-                lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
-                lineStoreCp.setWorkblankNo(trackHead.getProductNo());
-                lineStoreCp.setNumber(1);//添加单件多个产品
-                lineStoreCp.setUseNum(0);
-                lineStoreCp.setStatus("1");//在制状态
-                lineStoreCp.setTrackNo(trackHead.getTrackNo());
-                lineStoreCp.setMaterialType("1");
-                lineStoreCp.setTrackType(trackHead.getTrackType());
-                lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                lineStoreCp.setCreateTime(new Date());
-                lineStoreCp.setInTime(new Date());
-                lineStoreMapper.insert(lineStoreCp);
-                TrackHeadRelation relationCp = new TrackHeadRelation();
-                relationCp.setThId(trackHead.getId());
-                relationCp.setLsId(lineStoreCp.getId());
-                relationCp.setType("1");
-                relationCp.setNumber(1);
-                trackHeadRelationMapper.insert(relationCp);
-            }
 
+            //添加跟单
+            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
+            trackHead.setTrackNo(commonResult.getData().getCurValue());
+            trackHead.setProductNo(productsNo);
+            trackHead.setNumber(1);
+            trackHeadMapper.insert(trackHead);
+
+            //添加日志
             Action action = new Action();
             action.setActionType("0");
             action.setActionItem("2");
