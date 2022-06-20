@@ -11,10 +11,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.entity.QueryProcessVo;
-import com.richfit.mes.produce.service.TrackAssignService;
-import com.richfit.mes.produce.service.TrackCompleteService;
-import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -24,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +46,8 @@ public class TrackAssignController extends BaseController {
     private TrackCompleteService trackCompleteService;
     @Autowired
     private TrackAssignPersonMapper trackAssignPersonMapper;
+    @Resource
+    public PlanService planService;
     @Autowired
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
 
@@ -152,6 +152,20 @@ public class TrackAssignController extends BaseController {
             IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode);
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
+            }
+            if (null != assigns.getRecords()) {
+                for (Assign assign : assigns.getRecords()) {
+                    TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                    assign.setWeight(trackHead.getWeight());
+                    assign.setWorkNo(trackHead.getWorkNo());
+                    assign.setProductName(trackHead.getProductName());
+                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        assign.setWorkPlanNo(trackHead.getWorkPlanId());
+                        Plan plan = planService.getById(trackHead.getWorkPlanId());
+                        assign.setTotalQuantity(plan.getProjNum());
+                        assign.setDispatchingNumber(plan.getTrackNum());
+                    }
+                }
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {
@@ -482,5 +496,11 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "根据跟单Id查询工序列表")
     public CommonResult<List<QueryProcessVo>> queryProcessList(String trackHeadId) {
         return CommonResult.success(trackAssignService.queryProcessList(trackHeadId));
+    }
+
+    @GetMapping("/updateProcess")
+    @ApiOperation(value = "修改已派工对象")
+    public CommonResult<Boolean> updateProcess(Assign assign) {
+        return CommonResult.success(trackAssignService.updateProcess(assign));
     }
 }

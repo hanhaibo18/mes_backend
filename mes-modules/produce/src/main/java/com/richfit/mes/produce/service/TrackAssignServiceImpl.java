@@ -42,12 +42,14 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
+                trackItem.setProductNo(trackHead.getProductNo());
+                trackItem.setProductName(trackHead.getProductName());
+                trackItem.setPartsName(trackHead.getMaterialName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
                     Plan plan = planService.getById(trackHead.getWorkPlanId());
                     trackItem.setTotalQuantity(plan.getProjNum());
                     trackItem.setDispatchingNumber(plan.getTrackNum());
-                    trackItem.setProductName(trackHead.getProductName());
                 }
             }
         }
@@ -61,12 +63,14 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
+                trackItem.setProductNo(trackHead.getProductNo());
+                trackItem.setProductName(trackHead.getProductName());
+                trackItem.setPartsName(trackHead.getMaterialName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
                     Plan plan = planService.getById(trackHead.getWorkPlanId());
                     trackItem.setTotalQuantity(plan.getProjNum());
                     trackItem.setDispatchingNumber(plan.getTrackNum());
-                    trackItem.setProductName(trackHead.getProductName());
                 }
             }
         }
@@ -80,12 +84,14 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
+                trackItem.setProductNo(trackHead.getProductNo());
+                trackItem.setProductName(trackHead.getProductName());
+                trackItem.setPartsName(trackHead.getMaterialName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
                     Plan plan = planService.getById(trackHead.getWorkPlanId());
                     trackItem.setTotalQuantity(plan.getProjNum());
                     trackItem.setDispatchingNumber(plan.getTrackNum());
-                    trackItem.setProductName(trackHead.getProductName());
                 }
             }
         }
@@ -100,12 +106,12 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
                 assign.setWeight(trackHead.getWeight());
                 assign.setWorkNo(trackHead.getWorkNo());
+                assign.setProductName(trackHead.getProductName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     assign.setWorkPlanNo(trackHead.getWorkPlanId());
                     Plan plan = planService.getById(trackHead.getWorkPlanId());
                     assign.setTotalQuantity(plan.getProjNum());
                     assign.setDispatchingNumber(plan.getTrackNum());
-                    assign.setProductName(trackHead.getProductName());
                 }
             }
         }
@@ -139,6 +145,11 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             }
         }
         return processList;
+    }
+
+    @Override
+    public boolean updateProcess(Assign assign) {
+        return this.updateById(assign);
     }
 
 

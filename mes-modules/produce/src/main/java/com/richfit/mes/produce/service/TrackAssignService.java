@@ -33,4 +33,12 @@ public interface TrackAssignService extends IService<Assign> {
      **/
     List<QueryProcessVo> queryProcessList(String trackHeadId);
 
+    /**
+     * 功能描述: 修改派工
+     *
+     * @param assign
+     * @Author: xinYu.hou
+     * @return: double
+     **/
+    boolean updateProcess(Assign assign);
 }

@@ -1,13 +1,18 @@
 package com.richfit.mes.sys.dao;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * <p>
@@ -20,5 +25,16 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface TenantUserMapper extends BaseMapper<TenantUser> {
 
-    IPage<TenantUserVo> queryTenantUser(Page page, @Param("param")TenantUserQueryParam tenantUserQueryParam, @Param("isAdmin") boolean isAdmin);
+    IPage<TenantUserVo> queryTenantUser(Page page, @Param("param") TenantUserQueryParam tenantUserQueryParam, @Param("isAdmin") boolean isAdmin);
+
+    /**
+     * 功能描述: 根据条件查询人员(不返回密码)
+     *
+     * @param queryWrapper
+     * @Author: xinYu.hou
+     * @Date: 2022/6/20 15:57
+     * @return: List<TenantUserVo>
+     **/
+    @Select("Select * From sys_tenant_user ${ew.customSqlSegment}")
+    List<TenantUserVo> queryUserList(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
 }

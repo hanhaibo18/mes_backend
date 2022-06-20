@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Map;
+import java.util.List;
 
 /**
  * <p>
@@ -191,7 +191,7 @@ public class TenantUserController extends BaseController {
     @ApiOperation(value = "根据组织机构获取用户列表", notes = "根据组织机构获取用户列表")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
     @GetMapping("/queryUserByBranchCode")
-    public CommonResult<Map<String, String>> queryUserByBranchCode(String branchCode) {
+    public CommonResult<List<TenantUserVo>> queryUserByBranchCode(String branchCode) {
         return CommonResult.success(tenantUserService.queryUserByBranchCode(branchCode));
     }
 }

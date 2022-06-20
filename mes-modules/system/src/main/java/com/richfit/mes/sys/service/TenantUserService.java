@@ -6,7 +6,7 @@ import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * <p>
@@ -91,5 +91,5 @@ public interface TenantUserService {
      * @Author: xinYu.hou
      * @return: List<Map < String, String>>
      **/
-    Map<String, String> queryUserByBranchCode(String branchCode);
+    List<TenantUserVo> queryUserByBranchCode(String branchCode);
 }

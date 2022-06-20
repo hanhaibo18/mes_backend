@@ -20,8 +20,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -183,13 +184,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
 
     @Override
-    public Map<String, String> queryUserByBranchCode(String branchCode) {
-        QueryWrapper<TenantUser> queryWrapper = new QueryWrapper<>();
+    public List<TenantUserVo> queryUserByBranchCode(String branchCode) {
+        QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("belong_org_id", branchCode);
-        List<TenantUser> userRoleList = this.list(queryWrapper);
-        if (null == userRoleList) {
-            return Collections.emptyMap();
-        }
-        return userRoleList.stream().collect(Collectors.toMap(TenantUser::getUserAccount, TenantUser::getEmplName, (key1, key2) -> key2));
+        return tenantUserMapper.queryUserList(queryWrapper);
     }
 }

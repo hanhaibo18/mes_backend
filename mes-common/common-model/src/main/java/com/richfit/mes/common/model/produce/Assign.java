@@ -170,7 +170,4 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "计划号", dataType = "String")
     private String workPlanNo;
-    @TableField(exist = false)
-    @ApiModelProperty(value = "工艺版本", dataType = "String")
-    private String versions;
 }
