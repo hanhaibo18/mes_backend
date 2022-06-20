@@ -180,37 +180,37 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     trackItemMapper.insert(item);
                 }
             }
-//            //新增一条半成品/成品信息
-//            QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
-//            queryWrapper.eq("workblank_no", trackHead.getProductNo());
-//            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-//            List<LineStore> lineStores = lineStoreService.list(queryWrapper);
-//            if (lineStores != null && lineStores.size() > 0) {
-//                throw new RuntimeException("产品编号已存在！");
-//            } else {
-//                LineStore lineStoreCp = new LineStore();
-//                lineStoreCp.setTenantId(trackHead.getTenantId());
-//                lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
-//                lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
-//                lineStoreCp.setWorkblankNo(trackHead.getProductNo());
-//                lineStoreCp.setNumber(1);//添加单件多个产品
-//                lineStoreCp.setUseNum(0);
-//                lineStoreCp.setStatus("1");//在制状态
-//                lineStoreCp.setTrackNo(trackHead.getTrackNo());
-//                lineStoreCp.setMaterialType("1");
-//                lineStoreCp.setTrackType(trackHead.getTrackType());
-//                lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-//                lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-//                lineStoreCp.setCreateTime(new Date());
-//                lineStoreCp.setInTime(new Date());
-//                lineStoreMapper.insert(lineStoreCp);
-//                TrackHeadRelation relationCp = new TrackHeadRelation();
-//                relationCp.setThId(trackHead.getId());
-//                relationCp.setLsId(lineStoreCp.getId());
-//                relationCp.setType("1");
-//                relationCp.setNumber(1);
-//                trackHeadRelationMapper.insert(relationCp);
-//            }
+            //新增一条半成品/成品信息
+            QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<LineStore>();
+            queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
+            queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
+            if (lineStores != null && lineStores.size() > 0) {
+                throw new RuntimeException("产品编号已存在！");
+            } else {
+                LineStore lineStoreCp = new LineStore();
+                lineStoreCp.setTenantId(trackHead.getTenantId());
+                lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
+                lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
+                lineStoreCp.setWorkblankNo(trackHead.getProductNo());
+                lineStoreCp.setNumber(1);//添加单件多个产品
+                lineStoreCp.setUseNum(0);
+                lineStoreCp.setStatus("1");//在制状态
+                lineStoreCp.setTrackNo(trackHead.getTrackNo());
+                lineStoreCp.setMaterialType("1");
+                lineStoreCp.setTrackType(trackHead.getTrackType());
+                lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                lineStoreCp.setCreateTime(new Date());
+                lineStoreCp.setInTime(new Date());
+                lineStoreMapper.insert(lineStoreCp);
+                TrackHeadRelation relationCp = new TrackHeadRelation();
+                relationCp.setThId(trackHead.getId());
+                relationCp.setLsId(lineStoreCp.getId());
+                relationCp.setType("1");
+                relationCp.setNumber(1);
+                trackHeadRelationMapper.insert(relationCp);
+            }
 
             Action action = new Action();
             action.setActionType("0");
@@ -243,7 +243,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
                 for (TrackHeadRelation relation : relations) {
                     if (relation.getType().equals("0")) { //输入物料
-
                         lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
                     } else if (relation.getType().equals("1")) { //输出物料
                         lineStoreService.removeById(relation.getLsId());
