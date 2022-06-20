@@ -17,6 +17,8 @@ import java.util.List;
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
+    TrackHead selectByTrackNo(String trackNo, String branchCode);
+
     boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
 
     boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems);

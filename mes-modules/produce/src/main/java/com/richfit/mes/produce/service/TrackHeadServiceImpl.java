@@ -55,6 +55,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     private ActionService actionService;
 
+    @Override
+    public TrackHead selectByTrackNo(String trackNo, String branchCode) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_no", "trackNo");
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return trackHeadMapper.selectOne(queryWrapper);
+    }
+
     @Transactional
     @Override
     public boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
@@ -103,6 +112,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
+            TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
+            //更新跟单时处理关联计划
+//            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo()) && !trackHead.getWorkPlanNo().equals(trackHeadOld.getWorkPlanNo())) {
+//                //原计划跟单还原
+//                if (!StringUtils.isNullOrEmpty(trackHeadOld.getWorkPlanNo())) {
+//                    planService.setPlanStatusNew(trackHeadOld.getWorkPlanNo(), trackHead.getTenantId());
+//                }
+//                //新计划跟单关联
+//                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
+//                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+//                }
+//            }
             trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHead.setModifyTime(new Date());
             int bool = trackHeadMapper.updateById(trackHead);
@@ -131,10 +152,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo) {
         try {
             CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), "");
+            //封装跟单信息数据
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setProductNo(productsNo);
             trackHead.setNumber(1);
+
+            //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
             queryWrapper.eq("branch_code", trackHead.getBranchCode());
@@ -143,14 +167,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if (trackHeads.size() > 0) {
                 throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
             }
-            trackHeadMapper.insert(trackHead);
 
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
             if ("0".equals(trackHead.getStatus())) {
+
                 //计划跟单关联
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
-                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
-                }
+//                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
+//                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+//                }
 
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
@@ -166,7 +190,42 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 relation.setType("0");
                 relation.setNumber(1);
                 trackHeadRelationMapper.insert(relation);
+
+                //新增一条半成品/成品信息
+                QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<LineStore>();
+                queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
+                queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
+                if (lineStores != null && lineStores.size() > 0) {
+                    throw new RuntimeException("产品编号已存在！");
+                } else {
+                    LineStore lineStoreCp = new LineStore();
+                    lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
+                    lineStoreCp.setTenantId(trackHead.getTenantId());
+                    lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
+                    lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
+                    lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + trackHead.getProductNo());
+                    lineStoreCp.setNumber(1);//添加单件多个产品
+                    lineStoreCp.setUseNum(0);
+                    lineStoreCp.setStatus("1");//在制状态
+                    lineStoreCp.setTrackNo(trackHead.getTrackNo());
+                    lineStoreCp.setMaterialType("1");
+                    lineStoreCp.setTrackType(trackHead.getTrackType());
+                    lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    lineStoreCp.setCreateTime(new Date());
+                    lineStoreCp.setInTime(new Date());
+                    lineStoreCp.setBranchCode(trackHead.getBranchCode());
+                    lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    lineStoreMapper.insert(lineStoreCp);
+                    TrackHeadRelation relationCp = new TrackHeadRelation();
+                    relationCp.setThId(trackHead.getId());
+                    relationCp.setLsId(lineStoreCp.getId());
+                    relationCp.setType("1");
+                    relationCp.setNumber(1);
+                    trackHeadRelationMapper.insert(relationCp);
+                }
             }
+
             //跟单工序添加
             if (trackItems != null && trackItems.size() > 0) {
                 for (TrackItem item : trackItems) {
@@ -180,38 +239,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     trackItemMapper.insert(item);
                 }
             }
-//            //新增一条半成品/成品信息
-//            QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
-//            queryWrapper.eq("workblank_no", trackHead.getProductNo());
-//            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-//            List<LineStore> lineStores = lineStoreService.list(queryWrapper);
-//            if (lineStores != null && lineStores.size() > 0) {
-//                throw new RuntimeException("产品编号已存在！");
-//            } else {
-//                LineStore lineStoreCp = new LineStore();
-//                lineStoreCp.setTenantId(trackHead.getTenantId());
-//                lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
-//                lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
-//                lineStoreCp.setWorkblankNo(trackHead.getProductNo());
-//                lineStoreCp.setNumber(1);//添加单件多个产品
-//                lineStoreCp.setUseNum(0);
-//                lineStoreCp.setStatus("1");//在制状态
-//                lineStoreCp.setTrackNo(trackHead.getTrackNo());
-//                lineStoreCp.setMaterialType("1");
-//                lineStoreCp.setTrackType(trackHead.getTrackType());
-//                lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-//                lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-//                lineStoreCp.setCreateTime(new Date());
-//                lineStoreCp.setInTime(new Date());
-//                lineStoreMapper.insert(lineStoreCp);
-//                TrackHeadRelation relationCp = new TrackHeadRelation();
-//                relationCp.setThId(trackHead.getId());
-//                relationCp.setLsId(lineStoreCp.getId());
-//                relationCp.setType("1");
-//                relationCp.setNumber(1);
-//                trackHeadRelationMapper.insert(relationCp);
-//            }
+            //添加跟单
+            trackHeadMapper.insert(trackHead);
 
+            //添加日志
             Action action = new Action();
             action.setActionType("0");
             action.setActionItem("2");
@@ -227,43 +258,47 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
-        List<String> ids = trackHeads.stream().filter(trackHead -> {
-            if (trackHead.getStatus().equals("0")) {
-                return true;
-            } else {
-                return false;
-            }
-        }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
-        int result = trackHeadMapper.deleteBatchIds(ids);
-        if (result > 0) {
-            for (String id : ids) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("track_head_id", id);
-                trackItemMapper.deleteByMap(map);
-                List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
-                for (TrackHeadRelation relation : relations) {
-                    if (relation.getType().equals("0")) { //输入物料
-
-                        lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
-                    } else if (relation.getType().equals("1")) { //输出物料
-                        lineStoreService.removeById(relation.getLsId());
+        try {
+            List<String> ids = trackHeads.stream().filter(trackHead -> {
+                if (trackHead.getStatus().equals("0")) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
+            int result = trackHeadMapper.deleteBatchIds(ids);
+            if (result > 0) {
+                for (String id : ids) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("track_head_id", id);
+                    trackItemMapper.deleteByMap(map);
+                    List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
+                    for (TrackHeadRelation relation : relations) {
+                        if (relation.getType().equals("0")) { //输入物料
+                            lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
+                        } else if (relation.getType().equals("1")) { //输出物料
+                            lineStoreService.removeById(relation.getLsId());
+                        }
+                        trackHeadRelationMapper.deleteById(relation.getId());
                     }
                 }
-            }
 
-            for (TrackHead head : trackHeads) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("work_plan_no", head.getWorkPlanNo());
-                map.put("tenant_id", head.getTenantId());
-                List<TrackHead> list = trackHeadMapper.selectByMap(map);
-                if (list.size() == 0) {
-                    planService.setPlanStatusNew(head.getWorkPlanNo(), head.getTenantId());
+                for (TrackHead head : trackHeads) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("work_plan_no", head.getWorkPlanNo());
+                    map.put("tenant_id", head.getTenantId());
+                    List<TrackHead> list = trackHeadMapper.selectByMap(map);
+                    if (list.size() == 0) {
+                        planService.setPlanStatusNew(head.getWorkPlanNo(), head.getTenantId());
+                    }
                 }
+                return true;
             }
-
-            return true;
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
-        return false;
     }
 
     @Override

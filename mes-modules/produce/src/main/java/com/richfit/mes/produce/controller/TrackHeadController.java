@@ -63,15 +63,7 @@ public class TrackHeadController extends BaseController {
     @GetMapping("/select_by_track_no")
     public CommonResult<TrackHead> selectByTrackNo(@ApiParam(value = "跟单号", required = true) @RequestParam String trackNo,
                                                    @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("track_no", "trackNo");
-        }
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        return CommonResult.success(trackHeadService.getOne(queryWrapper));
+        return CommonResult.success(trackHeadService.selectByTrackNo(trackNo, branchCode));
     }
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
@@ -166,9 +158,7 @@ public class TrackHeadController extends BaseController {
         } else {
             boolean bool = trackHeadService.updataTrackHead(trackHead, trackHead.getTrackItems());
             if (bool) {
-                //删除修改跟单工序
-//                trackItemService.removeByIds(trackHead.getDeleteRouterIds());
-//                trackItemService.updateBatchById(trackHead.getTrackItems());
+                //添加日志
                 Action action = new Action();
                 action.setActionType("1");
                 action.setActionItem("2");
@@ -233,6 +223,7 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
                                                           @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
                                                           @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                          @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
                                                           @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                                           @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
                                                           @ApiParam(value = "图号") @RequestParam(required = false) int page,
@@ -264,6 +255,9 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(approvalStatus)) {
             queryWrapper.eq("approval_status", approvalStatus);
+        }
+        if (!StringUtils.isNullOrEmpty(isTestBar)) {
+            queryWrapper.eq("is_test_bar", isTestBar);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
