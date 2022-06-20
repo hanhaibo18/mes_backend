@@ -529,4 +529,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public List<TrackHead> queryListByCertId(String certificateId) {
         return trackHeadMapper.queryListByCertId(certificateId);
     }
+
+    @Override
+    public Boolean linkToCert(String thId, String certNo) {
+        TrackHead trackHead = new TrackHead();
+        trackHead.setId(thId);
+        trackHead.setCertificateNo(certNo);
+        return this.updateById(trackHead);
+    }
+
+    @Override
+    public Boolean unLinkFromCert(String thId) {
+        TrackHead trackHead = new TrackHead();
+        trackHead.setId(thId);
+        trackHead.setCertificateNo(null);
+        return this.updateById(trackHead);
+    }
 }

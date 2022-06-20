@@ -130,9 +130,28 @@ public interface TrackHeadService extends IService<TrackHead> {
      * 功能描述: 根据合格证号查询跟单
      *
      * @param certificateId
-     * @Author: gaol
+     * @Author: Gaol
      * @Date: 2022/6/16 6:34
      * @return: List<TrackHead>
      **/
     List<TrackHead> queryListByCertId(String certificateId);
+
+    /**
+     * 功能描述: 绑定合格证号
+     *
+     * @param thId
+     * @param certNo
+     * @return
+     * @Author Gaol
+     */
+    Boolean linkToCert(String thId, String certNo);
+
+    /**
+     * 功能描述: 置空合格证号
+     *
+     * @param thId
+     * @return
+     * @Author Gaol
+     */
+    Boolean unLinkFromCert(String thId);
 }

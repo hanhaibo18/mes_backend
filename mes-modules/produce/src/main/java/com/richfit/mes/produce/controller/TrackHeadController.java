@@ -59,11 +59,22 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
 
 
-    @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回一天跟单信息。")
+    @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回对应跟单信息")
     @GetMapping("/select_by_track_no")
     public CommonResult<TrackHead> selectByTrackNo(@ApiParam(value = "跟单号", required = true) @RequestParam String trackNo,
-                                                   @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
-        return CommonResult.success(trackHeadService.selectByTrackNo(trackNo, branchCode));
+                                                   @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) throws Exception {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.eq("th.track_no", "trackNo");
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("th.branch_code", branchCode);
+        }
+        queryWrapper.eq("th.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        IPage<TrackHead> list = trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(1, 1), queryWrapper);
+
+        return CommonResult.success(list.getRecords().size() > 0 ? list.getRecords().get(0) : null);
     }
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
@@ -301,9 +312,11 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackHeadService.selectTrackHeadRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
-    @ApiOperation(value = "当前工序查询", notes = "根据跟单编号、图号、产品编号分页查询当前工序")
+    @ApiOperation(value = "查询跟单及当前工序", notes = "根据跟单编号、图号、产品编号分页查询跟单及当前工序")
     @GetMapping("/track_head/current")
-    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo, String certificateId, String branchCode, String tenantId, Boolean isEdit, int page, int limit) {
+    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo,
+                                                                       String certificateId, String branchCode, String tenantId, Boolean isEdit, Boolean noCertNo,
+                                                                       int page, int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
 
         if (isEdit) {
@@ -323,17 +336,22 @@ public class TrackHeadController extends BaseController {
             queryWrapper.le("th.create_time", endDate);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("th.track_no", "%" + trackNo + "%");
+            queryWrapper.like("th.track_no", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("th.status", status);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("th.drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("th.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.eq("th.product_no", productNo);
         }
+        //增加逻辑判断，只查询合格证号为空的记录
+        if (noCertNo) {
+            queryWrapper.ne("th.certificate_No", null);
+        }
+
 
         /*if(!StringUtils.isNullOrEmpty(certificateType)){
             if(certificateType.equals("0")){ //工序合格证

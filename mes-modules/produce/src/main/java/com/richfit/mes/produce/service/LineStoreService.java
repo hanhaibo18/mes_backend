@@ -28,4 +28,32 @@ public interface LineStoreService extends IService<LineStore> {
     public boolean rollBackItem(int num, String id);
 
     LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String product);
+
+    /**
+     * 功能描述: 根据合格证对应的跟单信息，实现半成品成品自动入库
+     *
+     * @param trackHead
+     * @return
+     * @Author Gaol
+     */
+    LineStore autoInByCertTrack(TrackHead trackHead);
+
+    /**
+     * 功能描述: 根据合格证编号删除入库信息
+     *
+     * @param certificateNo
+     * @return
+     * @Author Gaol
+     */
+    void delInByCertNo(String certificateNo);
+
+    /**
+     * 功能描述: 根据合格证编号删除固定数量的入库信息
+     *
+     * @param certificateNo
+     * @param number        指定数量的物料
+     * @return
+     * @Author Gaol
+     */
+    void delFixedInByCertNo(String certificateNo, Integer number);
 }

@@ -162,6 +162,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return lineStore;
     }
 
+
     //根据料单原始数量和已投用数量对比，修改料单状态
     private void changeStatus(LineStore lineStore) {
 
@@ -322,6 +323,59 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         }
 
         return orderNo;
+    }
+
+    @Override
+    public LineStore autoInByCertTrack(TrackHead trackHead) {
+        LineStore lineStore = new LineStore();
+        lineStore.setBranchCode(trackHead.getBranchCode());
+        lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
+        lineStore.setDrawingNo(trackHead.getDrawingNo());
+        lineStore.setMaterialNo(trackHead.getSelectedMaterialNo());
+        lineStore.setMaterialName(trackHead.getMaterialName());
+        //半成品成品
+        lineStore.setMaterialType("1");
+        lineStore.setCertificateNo(trackHead.getCertificateNo());
+        lineStore.setWeight(trackHead.getWeight());
+        lineStore.setTexture(trackHead.getTexture());
+
+        lineStore.setWorkNo(trackHead.getWorkNo());
+        lineStore.setProdNo(trackHead.getProductNo());
+        lineStore.setProductName(trackHead.getProductName());
+
+        lineStore.setWorkblankNo(trackHead.getWorkPlanNo());
+
+        lineStore.setInTime(new Date());
+        lineStore.setNumber(trackHead.getNumber());
+        lineStore.setUseNum(0);
+        changeStatus(lineStore);
+        lineStore.setStockType("1"); //自动
+        lineStore.setTrackType(trackHead.getTrackType());
+
+        this.save(lineStore);
+
+        return lineStore;
+    }
+
+    @Override
+    public void delInByCertNo(String certificateNo) {
+        Map map = new HashMap();
+        map.put("certificate_no", certificateNo);
+        map.put("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        this.removeByMap(map);
+    }
+
+    //TODO  半成品已经标记使用，怎么处理；没有对应数量的料单，怎么处理？
+    @Override
+    public void delFixedInByCertNo(String certificateNo, Integer number) {
+        Map map = new HashMap();
+        map.put("certificate_no", certificateNo);
+        map.put("number", number);
+        map.put("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        this.removeByMap(map);
     }
 
 }
