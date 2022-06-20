@@ -29,12 +29,12 @@ public interface PlanService extends IService<Plan> {
     /*
         计划下新增跟单，计划状态变化 1
      */
-    boolean setPlanStatusStart(String projCode, String tenantId);
+    boolean setPlanStatusStart(String orderNo, String tenantId);
 
     /*
         计划下删除跟单，如果跟单数量为0，则计划状态恢复为 0
      */
-    boolean setPlanStatusNew(String projCode, String tenantId);
+    boolean setPlanStatusNew(String orderNo, String tenantId);
 
     /*
         计划下全部任务完成，则计划状态变为 2
