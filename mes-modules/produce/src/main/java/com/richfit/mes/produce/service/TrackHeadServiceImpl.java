@@ -152,6 +152,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo) {
         try {
             CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), "");
+            //封装跟单信息数据
+            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
+            trackHead.setTrackNo(commonResult.getData().getCurValue());
+            trackHead.setProductNo(productsNo);
+            trackHead.setNumber(1);
+
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
@@ -231,12 +237,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     trackItemMapper.insert(item);
                 }
             }
-
             //添加跟单
-            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
-            trackHead.setTrackNo(commonResult.getData().getCurValue());
-            trackHead.setProductNo(productsNo);
-            trackHead.setNumber(1);
             trackHeadMapper.insert(trackHead);
 
             //添加日志
@@ -255,43 +256,47 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
-        List<String> ids = trackHeads.stream().filter(trackHead -> {
-            if (trackHead.getStatus().equals("0")) {
-                return true;
-            } else {
-                return false;
-            }
-        }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
-        int result = trackHeadMapper.deleteBatchIds(ids);
-        if (result > 0) {
-            for (String id : ids) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("track_head_id", id);
-                trackItemMapper.deleteByMap(map);
-                List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
-                for (TrackHeadRelation relation : relations) {
-                    if (relation.getType().equals("0")) { //输入物料
-                        lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
-                    } else if (relation.getType().equals("1")) { //输出物料
-                        lineStoreService.removeById(relation.getLsId());
+        try {
+            List<String> ids = trackHeads.stream().filter(trackHead -> {
+                if (trackHead.getStatus().equals("0")) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
+            int result = trackHeadMapper.deleteBatchIds(ids);
+            if (result > 0) {
+                for (String id : ids) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("track_head_id", id);
+                    trackItemMapper.deleteByMap(map);
+                    List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
+                    for (TrackHeadRelation relation : relations) {
+                        if (relation.getType().equals("0")) { //输入物料
+                            lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
+                        } else if (relation.getType().equals("1")) { //输出物料
+                            lineStoreService.removeById(relation.getLsId());
+                        }
+                        trackHeadRelationMapper.deleteById(relation.getId());
                     }
-                    trackHeadRelationMapper.deleteById(relation.getId());
                 }
-            }
 
-            for (TrackHead head : trackHeads) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("work_plan_no", head.getWorkPlanNo());
-                map.put("tenant_id", head.getTenantId());
-                List<TrackHead> list = trackHeadMapper.selectByMap(map);
-                if (list.size() == 0) {
-                    planService.setPlanStatusNew(head.getWorkPlanNo(), head.getTenantId());
+                for (TrackHead head : trackHeads) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("work_plan_no", head.getWorkPlanNo());
+                    map.put("tenant_id", head.getTenantId());
+                    List<TrackHead> list = trackHeadMapper.selectByMap(map);
+                    if (list.size() == 0) {
+                        planService.setPlanStatusNew(head.getWorkPlanNo(), head.getTenantId());
+                    }
                 }
+                return true;
             }
-
-            return true;
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
-        return false;
     }
 
     @Override
