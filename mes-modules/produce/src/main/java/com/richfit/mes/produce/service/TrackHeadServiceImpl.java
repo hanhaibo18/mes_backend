@@ -200,10 +200,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     throw new RuntimeException("产品编号已存在！");
                 } else {
                     LineStore lineStoreCp = new LineStore();
+                    lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
                     lineStoreCp.setTenantId(trackHead.getTenantId());
                     lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
                     lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
-                    lineStoreCp.setWorkblankNo(trackHead.getProductNo());
+                    lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + trackHead.getProductNo());
                     lineStoreCp.setNumber(1);//添加单件多个产品
                     lineStoreCp.setUseNum(0);
                     lineStoreCp.setStatus("1");//在制状态
@@ -211,9 +212,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     lineStoreCp.setMaterialType("1");
                     lineStoreCp.setTrackType(trackHead.getTrackType());
                     lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     lineStoreCp.setCreateTime(new Date());
                     lineStoreCp.setInTime(new Date());
+                    lineStoreCp.setBranchCode(trackHead.getBranchCode());
+                    lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     lineStoreMapper.insert(lineStoreCp);
                     TrackHeadRelation relationCp = new TrackHeadRelation();
                     relationCp.setThId(trackHead.getId());
