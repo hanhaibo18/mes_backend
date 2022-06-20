@@ -231,6 +231,8 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
                                                           @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
                                                           @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                          @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
+                                                          @ApiParam(value = "试棒跟单是否已关联  0否  1是") @RequestParam(required = false) String isTestBarRelation,
                                                           @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                                           @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
                                                           @ApiParam(value = "图号") @RequestParam(required = false) int page,
@@ -262,6 +264,12 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(approvalStatus)) {
             queryWrapper.eq("approval_status", approvalStatus);
+        }
+        if (!StringUtils.isNullOrEmpty(isTestBar)) {
+            queryWrapper.eq("is_test_bar", isTestBar);
+        }
+        if (!StringUtils.isNullOrEmpty(isTestBarRelation)) {
+            queryWrapper.eq("is_test_bar_relation", isTestBarRelation);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);

@@ -103,6 +103,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
+            TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
+            //更新跟单时处理关联计划
+//            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo()) && !trackHead.getWorkPlanNo().equals(trackHeadOld.getWorkPlanNo())) {
+//                //原计划跟单还原
+//                if (!StringUtils.isNullOrEmpty(trackHeadOld.getWorkPlanNo())) {
+//                    planService.setPlanStatusNew(trackHeadOld.getWorkPlanNo(), trackHead.getTenantId());
+//                }
+//                //新计划跟单关联
+//                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
+//                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+//                }
+//            }
             trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHead.setModifyTime(new Date());
             int bool = trackHeadMapper.updateById(trackHead);
@@ -143,10 +155,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
             if ("0".equals(trackHead.getStatus())) {
+
                 //计划跟单关联
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
-                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
-                }
+//                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
+//                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+//                }
 
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
