@@ -1,18 +1,21 @@
 package com.richfit.mes.common.model.produce;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author 王瑞
  * @Description 跟单库存关联表
  */
 @Data
-public class TrackHeadRelation  {
+public class TrackHeadRelation {
+
+    /**
+     * 描述: 主键
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/20 10:25
+     **/
+    private long id;
 
     /**
      * 跟单ID
