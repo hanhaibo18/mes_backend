@@ -215,11 +215,4 @@ public class TrackHead extends BaseEntity<TrackHead> {
      **/
     private String isTestBar;
 
-    /**
-     * 描述: 试棒跟单是否已关联  0否  1是
-     *
-     * @Author: zhiqiang.lu
-     * @Date: 2022/6/16 10:25
-     **/
-    private String isTestBarRelation;
 }
