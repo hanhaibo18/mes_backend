@@ -281,18 +281,18 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     @Override
-    public boolean setPlanStatusStart(String orderNo, String tenantId) {
-        return setPlanStatus(PLAN_START, orderNo, tenantId);
+    public boolean setPlanStatusStart(String projCode, String tenantId) {
+        return setPlanStatus(PLAN_START, projCode, tenantId);
     }
 
     @Override
-    public boolean setPlanStatusNew(String orderNo, String tenantId) {
-        return setPlanStatus(PLAN_NEW, orderNo, tenantId);
+    public boolean setPlanStatusNew(String projCode, String tenantId) {
+        return setPlanStatus(PLAN_NEW, projCode, tenantId);
     }
 
     @Override
-    public boolean setPlanStatusClose(String orderNo, String tenantId) {
-        return setPlanStatus(PLAN_CLOSE, orderNo, tenantId);
+    public boolean setPlanStatusClose(String projCode, String tenantId) {
+        return setPlanStatus(PLAN_CLOSE, projCode, tenantId);
     }
 
     @Override
@@ -368,11 +368,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return result;
     }
 
-    private boolean setPlanStatus(int status, String orderNo, String tenantId) {
+    private boolean setPlanStatus(int status, String projCode, String tenantId) {
 
         UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
         planUpdateWrapper.eq("tenant_id", tenantId);
-        planUpdateWrapper.eq("order_no", orderNo);
+        planUpdateWrapper.eq("proj_code", projCode);
 
         Plan plan = this.getOne(planUpdateWrapper);
 
