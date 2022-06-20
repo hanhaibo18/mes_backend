@@ -275,6 +275,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     } else if (relation.getType().equals("1")) { //输出物料
                         lineStoreService.removeById(relation.getLsId());
                     }
+                    trackHeadRelationMapper.deleteById(relation.getId());
                 }
             }
 
