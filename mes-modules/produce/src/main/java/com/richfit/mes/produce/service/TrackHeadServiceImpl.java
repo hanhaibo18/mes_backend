@@ -58,7 +58,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public TrackHead selectByTrackNo(String trackNo, String branchCode) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_no", "trackNo");
+        queryWrapper.eq("track_no", trackNo);
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return trackHeadMapper.selectOne(queryWrapper);
