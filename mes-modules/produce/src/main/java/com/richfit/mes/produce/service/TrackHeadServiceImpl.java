@@ -343,17 +343,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * 功能描述: 对当前跟单增加计划
      *
      * @param trackHeads 跟单列表
-     * @param workPlanId 计划Id
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 18:07
      * @return: boolean
      **/
     @Override
     @Transactional
-    public boolean updateTrackHeadPlan(List<TrackHead> trackHeads, String workPlanId) {
+    public boolean updateTrackHeadPlan(List<TrackHead> trackHeads) {
         try {
             for (TrackHead t : trackHeads) {
-                t.setWorkPlanId(workPlanId);
                 trackHeadMapper.updateById(t);
             }
         } catch (Exception e) {

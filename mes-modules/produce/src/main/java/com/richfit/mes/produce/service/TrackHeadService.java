@@ -51,12 +51,11 @@ public interface TrackHeadService extends IService<TrackHead> {
      * 功能描述: 对当前跟单增加计划
      *
      * @param trackHeads 跟单列表
-     * @param workPlanId 计划Id
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 18:07
      * @return: boolean
      **/
-    boolean updateTrackHeadPlan(List<TrackHead> trackHeads, String workPlanId);
+    boolean updateTrackHeadPlan(List<TrackHead> trackHeads);
 
     /**
      * 功能描述: 根据计划Id 查询跟单
