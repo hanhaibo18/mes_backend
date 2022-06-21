@@ -67,6 +67,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         queryWrapper.eq("track_no", trackNo);
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        //当重复跟单号数据已经出现异常，这时候前端并不返回错误，为了方便数据维护，添加更新时间排序，返回最新的跟单
+        queryWrapper.orderByDesc("modify_time");
         List<TrackHead> l = trackHeadMapper.selectList(queryWrapper);
         return l.size() > 0 ? l.get(0) : null;
     }
