@@ -10,8 +10,8 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -36,8 +36,8 @@ public class TrackCheckDetailController extends BaseController {
      * @Date: 2022/6/21 10:25
      **/
     @ApiOperation(value = "查询工序质检项目", notes = "通过工序id查询当前工序质检项目")
-    @GetMapping("/select/tiid")
-    public CommonResult<List<TrackCheckDetail>> selectByTiId(@ApiParam(value = "工序id", required = true) @RequestParam String tiId) {
+    @GetMapping("/select/{tiId}")
+    public CommonResult<List<TrackCheckDetail>> selectByTiId(@ApiParam(value = "工序id", required = true) @PathVariable String tiId) {
         return CommonResult.success(trackCheckDetailService.selectByTiId(tiId));
     }
 }
