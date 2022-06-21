@@ -81,13 +81,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     @Transactional
     @Override
-    public boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
+    public boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems, boolean batch) {
         //单件跟单处理
         try {
             if ("0".equals(trackHead.getTrackType())) { //单件
                 String[] products = trackHead.getProductNo().split(",");
-                for (int i = 0; i < products.length; i++) {
-                    trackHeadSingleton(trackHead, trackItems, products[i].split(" ")[1]);
+                if (batch) {
+                    for (int i = 0; i < products.length; i++) {
+                        trackHeadSingleton(trackHead, trackItems, products[i].split(" ")[1]);
+                    }
+                } else {
+                    trackHeadSingleton(trackHead, trackItems, products[0].split(" ")[1]);
                 }
             }
 //            else if (trackHead.getTrackType().equals("1")) { //批次
