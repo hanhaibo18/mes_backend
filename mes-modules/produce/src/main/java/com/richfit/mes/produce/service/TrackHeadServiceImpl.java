@@ -338,20 +338,29 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
     }
 
+
     /**
      * 功能描述: 对当前跟单增加计划
      *
-     * @param documentaryId 跟单Id
-     * @param workPlanId    计划Id
-     * @Author: xinYu.hou
-     * @Date: 2022/4/19 18:07
+     * @param trackHeads 跟单列表
+     * @param workPlanId 计划Id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 18:07
      * @return: boolean
      **/
     @Override
-    public boolean updateTrackHeadPlan(String documentaryId, String workPlanId) {
-        TrackHead trackHead = this.getById(documentaryId);
-        trackHead.setWorkPlanId(workPlanId);
-        return this.updateById(trackHead);
+    @Transactional
+    public boolean updateTrackHeadPlan(List<TrackHead> trackHeads, String workPlanId) {
+        try {
+            for (TrackHead t : trackHeads) {
+                t.setWorkPlanId(workPlanId);
+                trackHeadMapper.updateById(t);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+        return true;
     }
 
     @Override
