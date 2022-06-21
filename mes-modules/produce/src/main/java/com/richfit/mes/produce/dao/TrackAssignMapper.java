@@ -42,7 +42,7 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
      * @Author: xinYu.hou
      * @return: List<QueryProcessVo>
      **/
-    @Select("SELECT item.id,item.track_head_id,item.opt_name,item.opt_ver,item.prepare_end_hours,item.single_piece_hours,item.opt_parallel_type,item.is_current FROM v_produce_track_item item WHERE item.track_head_id = #{trackNo}")
+    @Select("SELECT item.id,item.track_head_id,item.opt_id,item.opt_name,item.opt_ver,item.prepare_end_hours,item.single_piece_hours,item.opt_parallel_type,item.is_current FROM v_produce_track_item item WHERE item.track_head_id = #{trackNo}")
     List<QueryProcessVo> queryProcessList(@Param("trackNo") String trackNo);
 
     /**

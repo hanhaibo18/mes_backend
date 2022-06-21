@@ -17,6 +17,8 @@ public class QueryProcessVo {
     private String id;
     @ApiModelProperty(value = "跟单Id", dataType = "String")
     private String trackHeadId;
+    @ApiModelProperty(value = "工序ID", dataType = "String")
+    public String optId;
     @ApiModelProperty(value = "工序名称", dataType = "String")
     private String optName;
     @ApiModelProperty(value = "工序版本", dataType = "String")
@@ -34,4 +36,5 @@ public class QueryProcessVo {
     private Integer optParallelType;
     @ApiModelProperty(value = "是否派工", dataType = "String")
     public String isDispatching;
+
 }

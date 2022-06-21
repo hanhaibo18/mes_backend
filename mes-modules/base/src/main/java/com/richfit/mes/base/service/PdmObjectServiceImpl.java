@@ -17,17 +17,25 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
 
     /**
      * 功能描述: 根据图号和数据分组查询工装
+     *
+     * @param id        图号
+     * @param dataGroup 数据粉最
      * @Author: xinYu.hou
      * @Date: 2022/4/21 14:58
-     * @param id 图号
-     * @param dataGroup 数据粉最
      * @return: List<PdmObject>
      **/
     @Override
     public List<PdmObject> queryIndustrialAssembly(String id, String dataGroup) {
         QueryWrapper<PdmObject> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id",id);
-        queryWrapper.eq("dataGroup",dataGroup);
+        queryWrapper.eq("id", id);
+        queryWrapper.eq("dataGroup", dataGroup);
+        return this.list(queryWrapper);
+    }
+
+    @Override
+    public List<PdmObject> selectFixtureList(String optId) {
+        QueryWrapper<PdmObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("op_id", optId);
         return this.list(queryWrapper);
     }
 }
