@@ -17,10 +17,28 @@ import java.util.List;
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
+    /**
+     * 描述: 根据跟单编码查询唯一跟单
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     TrackHead selectByTrackNo(String trackNo, String branchCode);
 
+    /**
+     * 描述: 跟单新增
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
 
+    /**
+     * 描述: 跟单更新
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
 
     boolean deleteTrackHead(List<TrackHead> trackHeads);

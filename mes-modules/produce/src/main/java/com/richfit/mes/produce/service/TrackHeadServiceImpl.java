@@ -55,15 +55,28 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     private ActionService actionService;
 
+    /**
+     * 描述: 根据跟单编码查询唯一跟单
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     @Override
     public TrackHead selectByTrackNo(String trackNo, String branchCode) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_no", trackNo);
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        return trackHeadMapper.selectOne(queryWrapper);
+        List<TrackHead> l = trackHeadMapper.selectList(queryWrapper);
+        return l.size() > 0 ? l.get(0) : null;
     }
 
+    /**
+     * 描述: 跟单新增
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     @Transactional
     @Override
     public boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
@@ -108,6 +121,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return true;
     }
 
+    /**
+     * 描述: 跟单更新
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     @Transactional
     @Override
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
@@ -148,6 +167,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
+    /**
+     * 描述: 跟单单个添加方法
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     @Transactional
     public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo) {
         try {

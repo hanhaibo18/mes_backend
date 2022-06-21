@@ -63,18 +63,7 @@ public class TrackHeadController extends BaseController {
     @GetMapping("/select_by_track_no")
     public CommonResult<TrackHead> selectByTrackNo(@ApiParam(value = "跟单号", required = true) @RequestParam String trackNo,
                                                    @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) throws Exception {
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("th.track_no", "trackNo");
-        }
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("th.branch_code", branchCode);
-        }
-        queryWrapper.eq("th.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-
-        IPage<TrackHead> list = trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(1, 1), queryWrapper);
-
-        return CommonResult.success(list.getRecords().size() > 0 ? list.getRecords().get(0) : null);
+        return CommonResult.success(trackHeadService.selectByTrackNo(trackNo, branchCode));
     }
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
