@@ -31,6 +31,7 @@ import java.util.List;
 public class CertificateController {
 
     public static String CERTIFICATE_NO_NULL_MESSAGE = "合格证编号不能为空!";
+    public static String CERTIFICATE_NO_EXIST_MESSAGE = "合格证编号已存在,不能重复!";
     public static String TRACK_NO_NULL_MESSAGE = "请选择跟单!";
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败！";
@@ -62,11 +63,14 @@ public class CertificateController {
         }
         if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
             return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
+        }
+        if (certificateService.certNoExits(certificate.getCertificateNo(), branchCode)) {
+            return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
         } else {
 
             certificate.setBranchCode(branchCode);
 
-            boolean b = certificateService.saveCertificate(certificate);
+            certificateService.saveCertificate(certificate);
 
             return CommonResult.success(certificate);
         }

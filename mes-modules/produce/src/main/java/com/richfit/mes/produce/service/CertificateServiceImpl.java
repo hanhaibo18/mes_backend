@@ -69,8 +69,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                     //完工合格证
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
-
-
+                    
                     //半成品 成品入库
                     TrackHead th = trackHeadService.getById(track.getThId());
                     lineStoreService.autoInByCertTrack(th);
@@ -178,5 +177,18 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         this.removeByIds(ids);
     }
 
+    @Override
+    public boolean certNoExits(String certNo, String branchCode) {
+
+        boolean exit = false;
+        QueryWrapper<Certificate> queryWrapper = new QueryWrapper<Certificate>();
+        queryWrapper.eq("certificate_no", certNo);
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_Id", SecurityUtils.getCurrentUser().getTenantId());
+
+        Certificate cert = this.certificateMapper.selectOne(queryWrapper);
+
+        return cert != null;
+    }
 
 }
