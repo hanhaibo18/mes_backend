@@ -157,7 +157,7 @@ public class DevicePersonController extends BaseController {
 
     @ApiOperation(value = "根据人员Id查找记录列表", notes = "根据人员Id查找记录列表")
     @ApiImplicitParam(name = "userId", required = true, dataType = "String", paramType = "query")
-    @PostMapping("/queryDeviceByUserId")
+    @GetMapping("/queryDeviceByUserId")
     public CommonResult<List<Device>> queryDeviceByUserId(String userId) {
         return CommonResult.success(devicePersonService.queryDeviceByUserId(userId));
     }
