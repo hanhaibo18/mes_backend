@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,8 +52,11 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
                     .eq("tenant_id", tenantId);
             branchList = this.list(queryWrapper);
         }
-        if (null == branchList) {
-            return Collections.emptyList();
+        if (branchList.isEmpty()) {
+            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("branch_code", branchCode)
+                    .eq("tenant_id", tenantId);
+            return this.list(queryWrapper);
         }
         //获取第二级别参数
         for (Branch branch1 : branchList) {
