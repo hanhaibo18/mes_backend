@@ -68,8 +68,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
-    public CommonResult<TrackHead> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead,
-                                                @ApiParam(value = "是否批量") @RequestParam(required = false, defaultValue = "false") boolean batch) {
+    public CommonResult<TrackHead> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead) {
 
         try {
             if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
@@ -135,7 +134,7 @@ public class TrackHeadController extends BaseController {
                         list.add(lineStore);
                     }
                 }*/
-                bool = trackHeadService.saveTrackHead(trackHead, batch);
+                bool = trackHeadService.saveTrackHead(trackHead);
                 if (bool) {
 
                     return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);

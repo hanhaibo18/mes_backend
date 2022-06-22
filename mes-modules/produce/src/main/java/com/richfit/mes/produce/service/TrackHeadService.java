@@ -31,7 +31,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    boolean saveTrackHead(TrackHead trackHead, boolean batch);
+    boolean saveTrackHead(TrackHead trackHead);
 
     /**
      * 描述: 跟单更新
