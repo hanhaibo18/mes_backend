@@ -32,30 +32,29 @@ public interface LineStoreService extends IService<LineStore> {
     LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String product);
 
     /**
-     * 功能描述: 根据合格证对应的跟单信息，实现半成品成品自动入库
+     * 功能描述: 合格证生成，根据合格证对应的跟单信息，实现半成品成品合格证信息更新
      *
      * @param trackHead
      * @return
      * @Author Gaol
      */
-    LineStore autoInByCertTrack(TrackHead trackHead);
+    LineStore updateCertNoByCertTrack(TrackHead trackHead);
 
     /**
-     * 功能描述: 根据合格证编号删除入库信息
+     * 功能描述: 对应的合格证被删除，根据合格证编号更新半成品/成品料单状态为在制，清空合格证号
      *
      * @param certificateNo
      * @return
      * @Author Gaol
      */
-    void delInByCertNo(String certificateNo);
+    void reSetCertNoByTrackHead(String certificateNo);
 
     /**
-     * 功能描述: 根据合格证编号删除固定数量的入库信息
+     * 功能描述: 跟单与合格证解绑 根据合跟单号更新半成品/成品料单状态为在制，清空合格证号
      *
-     * @param certificateNo
-     * @param number        指定数量的物料
+     * @param trackHead
      * @return
      * @Author Gaol
      */
-    void delFixedInByCertNo(String certificateNo, Integer number);
+    void reSetCertNoByTrackHead(TrackHead trackHead);
 }
