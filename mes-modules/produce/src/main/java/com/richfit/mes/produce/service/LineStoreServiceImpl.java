@@ -43,6 +43,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     LineStoreMapper lineStoreMapper;
 
     @Override
+    public LineStore LineStoreById(String id) {
+        return lineStoreMapper.selectById(id);
+    }
+
+    @Override
     public IPage<LineStoreSum> selectGroup(Page<LineStore> page, QueryWrapper<LineStore> query) {
         return lineStoreMapper.selectGroup(page, query);
     }

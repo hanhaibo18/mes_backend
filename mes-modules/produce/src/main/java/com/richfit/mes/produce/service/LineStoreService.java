@@ -12,6 +12,8 @@ import java.util.Map;
 
 public interface LineStoreService extends IService<LineStore> {
 
+    LineStore LineStoreById(String id);
+
     IPage<LineStoreSum> selectGroup(Page<LineStore> page, QueryWrapper<LineStore> query);
 
     IPage<LineStore> selectLineStoreByProduce(Page<LineStore> page, QueryWrapper<LineStore> query);

@@ -222,6 +222,12 @@ public class LineStoreController extends BaseController {
         return CommonResult.success(lineStoreService.page(new Page<LineStore>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "通过id查询库存", notes = "通过id查询库存")
+    @GetMapping("/line_store/{id}")
+    public CommonResult<LineStore> selectLineStore(@ApiParam(value = "料单Id", required = true) @PathVariable String id) {
+        return CommonResult.success(lineStoreService.LineStoreById(id));
+    }
+
     @ApiOperation(value = "查询入库总览", notes = "根据物料号查询入库总览")
     @GetMapping("/line_store/group")
     public CommonResult<IPage<LineStoreSum>> selectLineStoreGroup(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
