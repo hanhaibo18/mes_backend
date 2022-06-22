@@ -92,6 +92,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 useNum = lineStore1.getNumber() - lineStore1.getUseNum();
                 num -= useNum;
                 lineStore1.setUseNum(lineStore1.getNumber());
+                changeStatus(lineStore1);//没有消耗光不需要修改状态
             } else {
                 useNum = num;
                 lineStore1.setUseNum(lineStore1.getUseNum() + num);
@@ -100,8 +101,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (lineStore1.getMaterialType().equals("0")) {
                 lineStore1.setOutTime(new Date());
             }
-            changeStatus(lineStore1);
-
             lineStoreMapper.updateById(lineStore1);
         } else {
 

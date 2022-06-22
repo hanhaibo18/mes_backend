@@ -81,18 +81,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     @Transactional
     @Override
-    public boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems, boolean batch) {
+    public boolean saveTrackHead(TrackHead trackHead, boolean batch) {
         //单件跟单处理
         try {
             if ("0".equals(trackHead.getTrackType())) { //单件
                 String[] products = trackHead.getProductNo().split(",");
                 if (batch) {
                     for (int i = 0; i < products.length; i++) {
-                        trackHead.setNumber(1); //处理批量生成数量为1
-                        trackHeadSingleton(trackHead, trackItems, products[i].split(" ")[1]);
+                        trackHeadSingleton(trackHead, trackHead.getTrackItems(), products[i].split(" ")[1], (Integer) trackHead.getStoreList().get(i).get("num"));
                     }
                 } else {
-                    trackHeadSingleton(trackHead, trackItems, products[0].split(" ")[1]);
+                    trackHeadSingleton(trackHead, trackHead.getTrackItems(), products[0].split(" ")[1], trackHead.getNumber());
                 }
             }
 //            else if (trackHead.getTrackType().equals("1")) { //批次
@@ -181,14 +180,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Transactional
-    public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo) {
+    public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), "");
             //封装跟单信息数据
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setProductNo(productsNo);
-
+            trackHead.setNumber(number);
 
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
@@ -210,7 +209,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
-                Map retMap = lineStoreService.useItem(trackHead.getNumber(), trackHead.getDrawingNo(), productsNo);
+                Map retMap = lineStoreService.useItem(number, trackHead.getDrawingNo(), productsNo);
                 LineStore lineStore = (LineStore) retMap.get("lineStore");
                 if (lineStore == null) {
                     //无库存料单，默认新增库存料单，然后出库
@@ -220,7 +219,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 relation.setThId(trackHead.getId());
                 relation.setLsId(lineStore.getId());
                 relation.setType("0");
-                relation.setNumber(trackHead.getNumber());
+                relation.setNumber(number);
                 trackHeadRelationMapper.insert(relation);
 
                 //新增一条半成品/成品信息
@@ -253,7 +252,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     relationCp.setThId(trackHead.getId());
                     relationCp.setLsId(lineStoreCp.getId());
                     relationCp.setType("1");
-                    relationCp.setNumber(1);
+                    relationCp.setNumber(number);
                     trackHeadRelationMapper.insert(relationCp);
                 }
             }

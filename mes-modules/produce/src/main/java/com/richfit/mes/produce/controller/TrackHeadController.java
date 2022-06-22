@@ -135,7 +135,7 @@ public class TrackHeadController extends BaseController {
                         list.add(lineStore);
                     }
                 }*/
-                bool = trackHeadService.saveTrackHead(trackHead, trackHead.getTrackItems(), batch);
+                bool = trackHeadService.saveTrackHead(trackHead, batch);
                 if (bool) {
 
                     return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);

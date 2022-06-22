@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 王瑞
@@ -155,8 +156,18 @@ public class TrackHead extends BaseEntity<TrackHead> {
      */
     private Date completeTime;
 
+    /**
+     * 跟单工序
+     */
     @TableField(exist = false)
     private List<TrackItem> trackItems;
+    
+    /**
+     * 跟单库存使用列表
+     */
+    @TableField(exist = false)
+    private List<Map> storeList;
+
 
     private String userMaterialNo;
 
