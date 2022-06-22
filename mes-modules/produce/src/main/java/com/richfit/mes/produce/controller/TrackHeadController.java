@@ -13,16 +13,24 @@ import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
-import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.TrackCertificateService;
+import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -44,11 +52,6 @@ public class TrackHeadController extends BaseController {
     @Autowired
     private TrackCertificateService trackCertificateService;
 
-    @Autowired
-    private TrackItemService trackItemService;
-
-    @Autowired
-    private LineStoreService lineStoreService;
 
     @Autowired
     private ActionService actionService;
@@ -57,6 +60,33 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_NO_NULL_MESSAGE = "跟单编号不能为空！";
     public static String TRACK_HEAD_SUCCESS_MESSAGE = "操作成功！";
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
+
+
+    @ApiOperation(value = "下载完工资料", notes = "通过跟单id、下载完工资料")
+    @GetMapping("/downloads_completion_data/{id}")
+    public void downloadsCompletionData(@ApiIgnore HttpServletResponse response,
+                                        @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
+        String path = trackHeadService.completionData(id);
+        File file = new File(path);
+        InputStream inputStream = new FileInputStream(file);
+        response.reset();
+        response.setContentType("application/octet-stream");
+        response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(id, "UTF-8"));
+        ServletOutputStream outputStream = response.getOutputStream();
+        byte[] b = new byte[1024];
+        int len;
+        // 从输入流中读取一定数量的字节，并将其存储在缓冲区字节数组中，读到末尾返回-1
+        while ((len = inputStream.read(b)) > 0) {
+            outputStream.write(b, 0, len);
+        }
+        inputStream.close();
+    }
+
+    @ApiOperation(value = "生成完工资料", notes = "通过跟单id、生成完工资料")
+    @GetMapping("/completion_data/{id}")
+    public void completionData(@ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
+        trackHeadService.completionData(id);
+    }
 
 
     @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回对应跟单信息")

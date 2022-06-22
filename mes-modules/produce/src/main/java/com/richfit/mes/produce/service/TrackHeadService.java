@@ -18,6 +18,14 @@ import java.util.List;
 public interface TrackHeadService extends IService<TrackHead> {
 
     /**
+     * 描述: 生成完工资料
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/22 10:25
+     **/
+    String completionData(String id) throws Exception;
+
+    /**
      * 描述: 根据跟单编码查询唯一跟单
      *
      * @Author: zhiqiang.lu

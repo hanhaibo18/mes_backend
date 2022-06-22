@@ -1,5 +1,7 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ZipUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -8,17 +10,19 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.IErrorCode;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.store.StoreAttachRel;
+import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.CodeRuleController;
-import com.richfit.mes.produce.dao.LineStoreMapper;
-import com.richfit.mes.produce.dao.TrackHeadMapper;
-import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
-import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,7 +36,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
 
     @Autowired
-    LineStoreMapper lineStoreMapper;
+    private LineStoreMapper lineStoreMapper;
 
     @Autowired
     private TrackHeadMapper trackHeadMapper;
@@ -54,6 +58,63 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Autowired
     private ActionService actionService;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
+
+
+    @Autowired
+    public StoreAttachRelMapper storeAttachRelMapper;
+
+    /**
+     * 描述: 生成完工资料
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/22 10:25
+     **/
+    @Override
+    public String completionData(String id) throws Exception {
+        try {
+            String path = "D:/测试" + "/" + id;
+            QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("th_id", id);
+            queryWrapper.eq("type", "0");
+            List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapper);
+            for (TrackHeadRelation thr : trackHeadRelations) {
+                LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
+                QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
+                queryWrapper.eq("line_store_id", thr.getLsId());
+                List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
+                for (StoreAttachRel sar : storeAttachRels) {
+                    downloads(sar.getAttachmentId(), path + "/" + lineStore.getDrawingNo() + " " + lineStore.getMaterialNo());
+                }
+            }
+            ZipUtil.zip(path);
+            return path + ".zip";
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("下载出现异常，请联系管理员");
+        }
+    }
+
+    public void downloads(String id, String path) throws Exception {
+        try {
+            CommonResult<Attachment> atta = systemServiceClient.attachment(id);
+            CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
+            if (data.getStatus() == 200) {
+                File file = new File(path + "/" + atta.getData().getAttachName());
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                FileUtil.writeBytes(data.getData(), file);
+            } else {
+                throw new Exception("从文件服务器下载文件失败");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("下载出现异常，请联系管理员");
+        }
+    }
 
     /**
      * 描述: 根据跟单编码查询唯一跟单
