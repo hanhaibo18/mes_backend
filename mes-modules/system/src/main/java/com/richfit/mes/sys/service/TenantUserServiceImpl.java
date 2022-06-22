@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
@@ -185,8 +186,13 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     @Override
     public List<TenantUserVo> queryUserByBranchCode(String branchCode) {
-        QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("belong_org_id", branchCode);
-        return tenantUserMapper.queryUserList(queryWrapper);
+        CommonResult<List<Branch>> queryCode = baseServiceClient.queryCode(branchCode);
+        List<TenantUserVo> tenantUserList = new ArrayList<>();
+        for (Branch branch : queryCode.getData()) {
+            QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("belong_org_id", branch.getBranchCode());
+            tenantUserList.addAll(tenantUserMapper.queryUserList(queryWrapper));
+        }
+        return tenantUserList;
     }
 }
