@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -54,7 +55,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     @Override
     public boolean saveCertificate(Certificate certificate) throws Exception {
-        certificate.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
 
         //1 保存合格证
         boolean bool = this.save(certificate);
@@ -69,10 +70,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                     //完工合格证
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
-                    
-                    //半成品 成品入库
+
+                    //半成品 成品更新状态及合格证号
                     TrackHead th = trackHeadService.getById(track.getThId());
-                    lineStoreService.autoInByCertTrack(th);
+                    lineStoreService.updateCertNoByCertTrack(th);
                 }
                 track.setCertificateType(certificate.getType());
                 track.setCertificateId(certificate.getId());
@@ -88,10 +89,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Override
     public void updateCertificate(Certificate certificate, boolean changeTrack) throws Exception {
         //1、保存合格证
-        boolean bool = this.updateById(certificate);
+        this.updateById(certificate);
 
         if (changeTrack) {
-            QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
+            QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_id", certificate.getId());
             List<TrackCertificate> result = trackCertificateService.list(queryWrapper);
 
@@ -114,7 +115,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                         trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
                         //半成品 成品入库
                         TrackHead th = trackHeadService.getById(track.getThId());
-                        lineStoreService.autoInByCertTrack(th);
+                        lineStoreService.updateCertNoByCertTrack(th);
                     }
                 }
                 return isNotHave;
@@ -136,9 +137,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                         trackItemService.unLinkFromCert(track.getTiId());
                     } else if (CertTypeEnum.FINISH_CERT.getCode().equals(certificate.getType())) {
                         trackHeadService.unLinkFromCert(track.getThId());
-                        //删除线边库对应半成品 对应合格证号 对应跟单数量的库存
+
+                        //删除线边库对应半成品 对应合格证号
                         TrackHead th = trackHeadService.getById(track.getThId());
-                        lineStoreService.delFixedInByCertNo(th.getCertificateNo(), th.getNumber());
+                        lineStoreService.reSetCertNoByTrackHead(th);
 
                     }
                 }
@@ -163,8 +165,8 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             } else if (CertTypeEnum.FINISH_CERT.getCode().equals(track.getCertificateType())) {
                 trackHeadService.unLinkFromCert(track.getThId());
 
-                //回滚所有该合格证号对应的成品入库信息
-                lineStoreService.delInByCertNo(this.getById(track.getCertificateId()).getCertificateNo());
+                //清空所有该合格证号对应的成品入库信息中的合格证号
+                lineStoreService.reSetCertNoByTrackHead(this.getById(track.getCertificateId()).getCertificateNo());
             }
 
             //删除关系表
@@ -178,13 +180,12 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
-    public boolean certNoExits(String certNo, String branchCode) {
+    public boolean certNoExits(String certNo, String branchCode) throws NullPointerException {
 
-        boolean exit = false;
-        QueryWrapper<Certificate> queryWrapper = new QueryWrapper<Certificate>();
+        QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("certificate_no", certNo);
         queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.eq("tenant_Id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_Id", Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
 
         Certificate cert = this.certificateMapper.selectOne(queryWrapper);
 

@@ -9,7 +9,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.CertificateService;
+import com.richfit.mes.produce.service.TrackCertificateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -41,18 +42,6 @@ public class CertificateController {
 
     @Autowired
     private TrackCertificateService trackCertificateService;
-
-    @Autowired
-    private TrackHeadService trackHeadService;
-
-    @Autowired
-    private TrackItemService trackItemService;
-
-    @Autowired
-    private StockRecordService stockRecordService;
-
-    @Autowired
-    private LineStoreService lineStoreService;
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
