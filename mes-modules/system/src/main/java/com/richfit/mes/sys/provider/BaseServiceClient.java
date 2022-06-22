@@ -21,4 +21,7 @@ public interface BaseServiceClient {
 
     @GetMapping(value = "/api/base/branch/branch/one")
     public CommonResult<Branch> selectBranchByCodeAndTenantId(@RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
+
+    @GetMapping(value = "/api/base/branch/queryCodeList")
+    public CommonResult<List<Branch>> queryCode(@RequestParam("branchCode") String branchCode);
 }
