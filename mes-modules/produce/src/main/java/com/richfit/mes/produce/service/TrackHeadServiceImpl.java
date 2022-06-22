@@ -88,6 +88,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 String[] products = trackHead.getProductNo().split(",");
                 if (batch) {
                     for (int i = 0; i < products.length; i++) {
+                        trackHead.setNumber(1); //处理批量生成数量为1
                         trackHeadSingleton(trackHead, trackItems, products[i].split(" ")[1]);
                     }
                 } else {
@@ -187,7 +188,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setProductNo(productsNo);
-            trackHead.setNumber(1);
+
 
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
@@ -209,7 +210,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
-                Map retMap = lineStoreService.useItem(1, trackHead.getDrawingNo(), productsNo);
+                Map retMap = lineStoreService.useItem(trackHead.getNumber(), trackHead.getDrawingNo(), productsNo);
                 LineStore lineStore = (LineStore) retMap.get("lineStore");
                 if (lineStore == null) {
                     //无库存料单，默认新增库存料单，然后出库
@@ -219,7 +220,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 relation.setThId(trackHead.getId());
                 relation.setLsId(lineStore.getId());
                 relation.setType("0");
-                relation.setNumber(1);
+                relation.setNumber(trackHead.getNumber());
                 trackHeadRelationMapper.insert(relation);
 
                 //新增一条半成品/成品信息
@@ -236,7 +237,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
                     lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
                     lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + trackHead.getProductNo());
-                    lineStoreCp.setNumber(1);//添加单件多个产品
+                    lineStoreCp.setNumber(trackHead.getNumber());//添加单件多个产品
                     lineStoreCp.setUseNum(0);
                     lineStoreCp.setStatus("1");//在制状态
                     lineStoreCp.setTrackNo(trackHead.getTrackNo());
