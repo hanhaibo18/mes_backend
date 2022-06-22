@@ -54,6 +54,7 @@ public class LineStoreController extends BaseController {
     private final static String CODE_EXITS = "编号已存在！";
     private final static String MATERIAL_CODE_NULL_MSG = "物料编号不能为空！";
     private final static String DRAWING_NO_NULL_MSG = "图号不能为空！";
+    private final static String MATERIAL_NO_NOT_EXIST = "物料号不存在！";
 
     private final static String STATUS_NOT_RIGHT_FOR_EDIT = "料单当前状态不支持该操作";
 
@@ -90,7 +91,9 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(MATERIAL_CODE_NULL_MSG);
         } else if (StringUtils.isNullOrEmpty(lineStore.getDrawingNo())) {
             return CommonResult.failed(DRAWING_NO_NULL_MSG);
-
+            //校验物料号是否存在
+        } else if (!isMaterialNoExist(lineStore.getMaterialNo())) {
+            return CommonResult.failed(MATERIAL_NO_NOT_EXIST);
             //校验编号是否已存在，如存在，返回报错信息
         } else if (lineStoreService.checkCodeExist(lineStore, startNo, endNo, suffixNo)) {
             String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
@@ -115,6 +118,8 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(DRAWING_NO_NULL_MSG);
         } else if (!isStatusFinish(lineStore)) {
             return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT);
+        } else if (!isMaterialNoExist(lineStore.getMaterialNo())) {
+            return CommonResult.failed(MATERIAL_NO_NOT_EXIST);
         } else {
             boolean bool = false;
 
@@ -562,6 +567,13 @@ public class LineStoreController extends BaseController {
 
     private boolean isStatusFinish(LineStore lineStore) {
         return lineStore.getStatus().equals(StoreItemStatusEnum.FINISH.getCode());
+    }
+
+    //校验物料号是否在物料表中存在
+    private boolean isMaterialNoExist(String materialNo) {
+        CommonResult<List<Product>> result = baseServiceClient.selectProduct(materialNo, null, null);
+
+        return result.getData().size() > 0;
     }
 
 }
