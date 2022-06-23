@@ -4,7 +4,9 @@
     <select id="selectCertificate" resultType="com.richfit.mes.common.model.produce.Certificate">
         SELECT *
         FROM produce_certificate pc, (
-        select tc.certificate_id, sum(th.number) number, th.drawing_no, group_concat(th.product_no) product_no, th.material_no,
+        select tc.certificate_id, sum(th.number) number, th.drawing_no, group_concat(th.product_no) product_no,
+        th.material_no,max(th.test_Bar_Number) test_Bar_Number,max(th.test_Bar_Type) test_Bar_Type,
+        max(th.batch_no) batch_no,max(th.texture) texture,max(th.weight) weight,
         ti.opt_id, ti.opt_name, ti.opt_ver from
         produce_track_certificate tc
         left join produce_track_head th on tc.th_id = th.id
