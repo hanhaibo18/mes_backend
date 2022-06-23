@@ -185,7 +185,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "eventId", dataType = "Integer")
     private Integer eventId;
 
-    @ApiModelProperty(value = "assignableQty", dataType = "Integer")
+    @ApiModelProperty(value = "可派工数量", dataType = "Integer")
     private Integer assignableQty;
 
     @ApiModelProperty(value = "completeQty", dataType = "Integer")

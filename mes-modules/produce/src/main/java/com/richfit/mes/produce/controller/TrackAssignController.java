@@ -46,6 +46,8 @@ public class TrackAssignController extends BaseController {
     @Autowired
     private TrackAssignPersonMapper trackAssignPersonMapper;
     @Resource
+    private TrackAssignPersonService trackAssignPersonService;
+    @Resource
     public PlanService planService;
     @Autowired
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
@@ -300,8 +302,6 @@ public class TrackAssignController extends BaseController {
     @PostMapping("/update")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign> updateAssign(@RequestBody Assign assign) {
-
-
         try {
             if (StringUtils.isNullOrEmpty(assign.getTiId())) {
                 return CommonResult.failed("关联工序ID编码不能为空！");
@@ -320,9 +320,7 @@ public class TrackAssignController extends BaseController {
                     TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
                     if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
                         return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
-
                     }
-
                 }
                 // 判断修改的派工数量是否在合理范围
                 Assign oldassign = trackAssignService.getById(assign.getId());
@@ -344,7 +342,7 @@ public class TrackAssignController extends BaseController {
                 for (AssignPerson person : assign.getAssignPersons()) {
                     person.setModifyTime(new Date());
                     person.setAssignId(assign.getId());
-                    trackAssignPersonMapper.insert(person);
+                    trackAssignPersonService.saveOrUpdate(person);
                 }
                 trackItem.setAssignableQty(trackItem.getAssignableQty() - (assign.getQty() - oldassign.getQty()));
                 if (assign.getState() == 1) {
