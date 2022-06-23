@@ -108,20 +108,16 @@ public class BranchController extends BaseController {
     public CommonResult<Branch> selectBranchByCode(String branchCode, String id) {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             try {
-
-
                 QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
                 queryWrapper.eq("branch_code", branchCode);
 
                 if (!StringUtils.isNullOrEmpty(id)) {
                     queryWrapper.ne("id", id);
                 }
-
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 queryWrapper.orderByAsc("order_no");
-
-                Branch result = branchService.getOne(queryWrapper);
-                return CommonResult.success(branchService.branchErpCode(result), BRANCH_SUCCESS_MESSAGE);
+                List<Branch> branchs = branchService.list(queryWrapper);
+                return CommonResult.success(branchs.size() > 0 ? branchs.get(0) : null, BRANCH_SUCCESS_MESSAGE);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw e;
