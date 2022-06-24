@@ -161,7 +161,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      */
     @TableField(exist = false)
     private List<TrackItem> trackItems;
-    
+
     /**
      * 跟单库存使用列表
      */
@@ -179,6 +179,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     @TableField(exist = false)
     private String tiId;
+
+    @TableField(exist = false)
+    private String sequenceOrderBy;
 
     private String userProductNo;
 

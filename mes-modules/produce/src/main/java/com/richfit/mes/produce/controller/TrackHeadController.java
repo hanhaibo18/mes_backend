@@ -368,7 +368,7 @@ public class TrackHeadController extends BaseController {
         }
         //增加逻辑判断，只查询合格证号为空的记录
         if (noCertNo) {
-            queryWrapper.ne("th.certificate_No", null);
+            queryWrapper.and(wapper -> wapper.eq("th.certificate_No", "").or().isNull("th.certificate_No"));
         }
 
 
