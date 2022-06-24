@@ -40,6 +40,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (null != pageAssignsByStatus.getRecords()) {
             for (TrackItem trackItem : pageAssignsByStatus.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                trackItem.setRouterId(trackHead.getRouterId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
                 trackItem.setProductNo(trackHead.getProductNo());
@@ -61,6 +62,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (null != trackItemList.getRecords()) {
             for (TrackItem trackItem : trackItemList.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                trackItem.setRouterId(trackHead.getRouterId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
                 trackItem.setProductNo(trackHead.getProductNo());
@@ -82,6 +84,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (null != trackItemList.getRecords()) {
             for (TrackItem trackItem : trackItemList.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                trackItem.setRouterId(trackHead.getRouterId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
                 trackItem.setProductNo(trackHead.getProductNo());
@@ -104,6 +107,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                assign.setRouterId(trackHead.getRouterId());
                 assign.setWeight(trackHead.getWeight());
                 assign.setWorkNo(trackHead.getWorkNo());
                 assign.setProductName(trackHead.getProductName());

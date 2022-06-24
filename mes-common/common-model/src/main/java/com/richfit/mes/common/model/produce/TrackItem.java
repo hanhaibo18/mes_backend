@@ -311,4 +311,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     @ApiModelProperty(value = "计划号", dataType = "String")
     private String workPlanNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工艺Id", dataType = "String")
+    private String routerId;
 }
