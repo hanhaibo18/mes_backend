@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.enmus.RouterStatusEnum;
+import com.richfit.mes.base.entity.QueryIsHistory;
+import com.richfit.mes.base.entity.QueryProcessRecordsVo;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -413,5 +415,20 @@ public class RouterController extends BaseController {
             log.error(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+
+    @ApiOperation(value = "查询工艺是否为历史工艺", notes = "查询工艺是否为历史工艺")
+    @ApiImplicitParam(name = "routerId", value = "工艺Id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/queryIsHistory")
+    public CommonResult<QueryIsHistory> queryIsHistory(String routerId) {
+        return CommonResult.success(routerService.queryIsHistory(routerId));
+    }
+
+    @ApiOperation(value = "查询新旧工艺", notes = "查询新旧工艺")
+    @ApiImplicitParam(name = "routerId", value = "工艺Id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/queryProcessRecords")
+    public CommonResult<QueryProcessRecordsVo> queryProcessRecords(String routerId) {
+        return CommonResult.success(routerService.queryProcessRecords(routerId));
     }
 }
