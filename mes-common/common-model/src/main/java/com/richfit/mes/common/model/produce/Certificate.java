@@ -47,6 +47,10 @@ public class Certificate extends BaseEntity<Certificate> {
     @TableField(exist = false)
     private String productNo;
 
+    @ApiModelProperty(value = "产品名称 from跟单")
+    @TableField(exist = false)
+    private String productName;
+
     @ApiModelProperty(value = "物料号 from跟单")
     @TableField(exist = false)
     private String materialNo;
@@ -66,6 +70,10 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "工序版本 from跟单工序")
     @TableField(exist = false)
     private String optVer;
+
+    @ApiModelProperty(value = "工序序号 from跟单工序")
+    @TableField(exist = false)
+    private String sequenceOrderBy;
 
     @ApiModelProperty(value = "工序列表 ")
     @TableField(exist = false)

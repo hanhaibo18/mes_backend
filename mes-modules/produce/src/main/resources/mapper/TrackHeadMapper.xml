@@ -18,10 +18,10 @@
 
 
     <select id="queryListByCertId" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id
-        FROM mes_produce.produce_track_head th
-        left join mes_produce.produce_track_certificate tc on tc.th_id = th.id
+        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id,ti.sequence_order_by
+        FROM mes_produce.produce_track_certificate tc
+        left join mes_produce.produce_track_head th on tc.th_id = th.id
         LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id and ti.id = tc.ti_id
-        where th.id in (select th_id from mes_produce.produce_track_certificate where certificate_id=#{certId})
+        where tc.certificate_id=#{certId}
     </select>
 </mapper>
