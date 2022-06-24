@@ -101,6 +101,8 @@ public class CertificateController {
                                                               @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                               @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
                                                               @ApiParam(value = "产品编号") @RequestParam(required = false) String productNo,
+                                                              @ApiParam(value = "类型") @RequestParam(required = false) String type,
+                                                              @ApiParam(value = "来源") @RequestParam(required = false) String origin,
                                                               @ApiParam(value = "排序") @RequestParam(required = false) String order,
                                                               @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
                                                               @ApiParam(value = "分公司") String branchCode,
@@ -118,6 +120,12 @@ public class CertificateController {
 
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("pc.id", id);
+        }
+        if (!StringUtils.isNullOrEmpty(type)) {
+            queryWrapper.eq("pc.type", type);
+        }
+        if (!StringUtils.isNullOrEmpty(origin)) {
+            queryWrapper.eq("pc.cert_origin", origin);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("drawing_no", drawingNo);
