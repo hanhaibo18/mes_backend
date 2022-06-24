@@ -43,15 +43,14 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         if (StringUtils.isNullOrEmpty(branchCode)) {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.isNull("main_branch_code");
             queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getBelongOrgId());
             queryWrapper.eq("tenant_id", tenantId);
             branchList = this.list(queryWrapper);
         } else {
-            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("main_branch_code", branchCode)
-                    .eq("tenant_id", tenantId);
-            branchList = this.list(queryWrapper);
+            QueryWrapper<Branch> queryWrapperTop = new QueryWrapper<>();
+            queryWrapperTop.eq("branch_code", branchCode);
+            queryWrapperTop.eq("tenant_id", tenantId);
+            branchList = this.list(queryWrapperTop);
         }
         if (branchList.isEmpty()) {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
