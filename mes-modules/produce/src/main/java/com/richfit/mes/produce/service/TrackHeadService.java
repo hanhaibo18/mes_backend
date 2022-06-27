@@ -17,7 +17,37 @@ import java.util.List;
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
-    boolean saveTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
+    /**
+     * 描述: 生成完工资料
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/22 10:25
+     **/
+    String completionData(String id) throws Exception;
+
+    /**
+     * 描述: 根据跟单编码查询唯一跟单
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
+    TrackHead selectByTrackNo(String trackNo, String branchCode);
+
+    /**
+     * 描述: 跟单新增
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
+    boolean saveTrackHead(TrackHead trackHead);
+
+    /**
+     * 描述: 跟单更新
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
+    boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
 
     boolean deleteTrackHead(List<TrackHead> trackHeads);
 
@@ -28,13 +58,12 @@ public interface TrackHeadService extends IService<TrackHead> {
     /**
      * 功能描述: 对当前跟单增加计划
      *
-     * @param documentaryId 跟单Id
-     * @param workPlanId    计划Id
-     * @Author: xinYu.hou
-     * @Date: 2022/4/19 18:07
+     * @param trackHeads 跟单列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 18:07
      * @return: boolean
      **/
-    boolean updateTrackHeadPlan(String documentaryId, String workPlanId);
+    boolean updateTrackHeadPlan(List<TrackHead> trackHeads);
 
     /**
      * 功能描述: 根据计划Id 查询跟单
@@ -122,4 +151,32 @@ public interface TrackHeadService extends IService<TrackHead> {
      **/
     CommonResult<Boolean> saveTrackHeader(SaveTrackHeadDto saveTrackHeadDto);
 
+    /**
+     * 功能描述: 根据合格证号查询跟单
+     *
+     * @param certificateId
+     * @Author: Gaol
+     * @Date: 2022/6/16 6:34
+     * @return: List<TrackHead>
+     **/
+    List<TrackHead> queryListByCertId(String certificateId);
+
+    /**
+     * 功能描述: 绑定合格证号
+     *
+     * @param thId
+     * @param certNo
+     * @return
+     * @Author Gaol
+     */
+    Boolean linkToCert(String thId, String certNo);
+
+    /**
+     * 功能描述: 置空合格证号
+     *
+     * @param thId
+     * @return
+     * @Author Gaol
+     */
+    Boolean unLinkFromCert(String thId);
 }

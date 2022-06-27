@@ -6,7 +6,6 @@ import com.richfit.mes.sys.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +23,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @Override
     public CommonResult<Branch> selectBranchByCodeAndTenantId(String branchCode, String tenantId) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<List<Branch>> queryCode(String branchCode) {
         return CommonResult.success(null);
     }
 }

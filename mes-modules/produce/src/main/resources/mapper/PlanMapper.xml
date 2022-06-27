@@ -3,60 +3,92 @@
 <mapper namespace="com.richfit.mes.produce.dao.PlanMapper">
 
     <select id="queryPlan" resultType="com.richfit.mes.common.model.produce.Plan">
-
-        select p.*, (select `produce_order`.`order_sn` from `produce_order` where (`produce_order`.`id` = `p`.`order_no`)) AS `order_code`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS `track_num`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where ((`produce_track_head`.`status` = '1') and (`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS `process_num`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where ((`produce_track_head`.`status` = '2') and (`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS `store_num`,(select count(1) from `produce_track_item` where `produce_track_item`.`track_head_id` in (select `produce_track_head`.`id` from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`)))) AS `total_option`,(select ifnull(sum(`produce_track_item`.`complete_qty`),0) from `produce_track_item` where ((`produce_track_item`.`is_final_complete` = 1) and `produce_track_item`.`track_head_id` in (select `produce_track_head`.`id` from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))))) AS `complete_option`,(select sum(cast(`produce_track_head`.`status` as signed)) from `produce_track_head` where ((`produce_track_head`.`work_plan_no` = `p`.`proj_code`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`) and (`produce_track_head`.`branch_code` = `p`.`branch_code`))) AS `real_status` from produce_plan p
-
+        select `p`.`id` AS `id`,`p`.`proj_code` AS `proj_code`,`p`.`work_no` AS `work_no`,`p`.`order_id` AS
+        `order_id`,`p`.`order_no` AS `order_no`,`p`.`order_delivery_date` AS `order_delivery_date`,`p`.`project_bom` AS
+        `project_bom`,`p`.`project_bom_name` AS `project_bom_name`,`p`.`draw_no` AS `draw_no`,`p`.`proj_num` AS
+        `proj_num`,`p`.`sort_no` AS `sort_no`,`p`.`start_time` AS `start_time`,`p`.`end_time` AS
+        `end_time`,`p`.`priority` AS `priority`,`p`.`proj_type` AS `proj_type`,`p`.`branch_code` AS
+        `branch_code`,`p`.`incharge_org` AS `incharge_org`,`p`.`status` AS `status`,`p`.`alarm_status` AS
+        `alarm_status`,`p`.`create_by` AS `create_by`,`p`.`create_time` AS `create_time`,`p`.`modify_by` AS
+        `modify_by`,`p`.`modify_time` AS `modify_time`,`p`.`remark` AS `remark`,`p`.`tenant_id` AS
+        `tenant_id`,`p`.`draw_no_name` AS `draw_no_name`,`p`.`draw_no_type` AS `draw_no_type`,(select
+        `produce_order`.`order_sn` from `produce_order` where (`produce_order`.`id` = `p`.`order_no`)) AS
+        `order_code`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where
+        ((`produce_track_head`.`work_plan_id` = `p`.`id`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS
+        `track_num`,(select ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where
+        ((`produce_track_head`.`status` = '1') and (`produce_track_head`.`work_plan_id` = `p`.`id`) and
+        (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))) AS `process_num`,(select
+        ifnull(sum(`produce_track_head`.`number`),0) from `produce_track_head` where ((`produce_track_head`.`status` =
+        '2') and (`produce_track_head`.`work_plan_id` = `p`.`id`) and (`produce_track_head`.`tenant_id` =
+        `p`.`tenant_id`))) AS `store_num`,(select count(1) from `produce_track_item` where
+        `produce_track_item`.`track_head_id` in (select `produce_track_head`.`id` from `produce_track_head` where
+        ((`produce_track_head`.`work_plan_id` = `p`.`id`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`)))) AS
+        `total_option`,(select ifnull(sum(`produce_track_item`.`complete_qty`),0) from `produce_track_item` where
+        ((`produce_track_item`.`is_final_complete` = 1) and `produce_track_item`.`track_head_id` in (select
+        `produce_track_head`.`id` from `produce_track_head` where ((`produce_track_head`.`work_plan_id` = `p`.`id`) and
+        (`produce_track_head`.`tenant_id` = `p`.`tenant_id`))))) AS `complete_option`,(select
+        sum(cast(`produce_track_head`.`status` as signed)) from `produce_track_head` where
+        ((`produce_track_head`.`work_plan_id` = `p`.`id`) and (`produce_track_head`.`tenant_id` = `p`.`tenant_id`) and
+        (`produce_track_head`.`branch_code` = `p`.`branch_code`))) AS `real_status` from `produce_plan` `p`
         WHERE 1=1
-        <trim  suffixOverrides="," >
-            <if test="param.projCode != null and param.projCode != ''" >
+        <trim suffixOverrides=",">
+            <if test="param.projCode != null and param.projCode != ''">
                 and p.proj_code like '%${param.projCode}%'
             </if>
-            <if test="param.workNo != null and param.workNo != ''" >
+            <if test="param.workNo != null and param.workNo != ''">
                 and p.work_no like '%${param.workNo}%'
             </if>
-            <if test="param.orderNo != null and param.orderNo != ''" >
+            <if test="param.orderNo != null and param.orderNo != ''">
                 and p.order_no like '%${param.orderNo}%'
             </if>
-            <if test="param.drawNo != null and param.drawNo != ''" >
+            <if test="param.drawNo != null and param.drawNo != ''">
                 and p.draw_no like '%${param.drawNo}%'
             </if>
-            <if test="param.startTime != null and param.startTime != ''" >
+            <if test="param.startTime != null and param.startTime != ''">
                 and p.start_time >= #{param.startTime}
             </if>
-            <if test="param.endTime != null and param.endTime != ''" >
+            <if test="param.endTime != null and param.endTime != ''">
                 and p.start_time &lt;= #{param.endTime}
             </if>
-            <if test="param.status != null and param.status != -1" >
+            <if test="param.status != null and param.status != -1">
                 and p.status = ${param.status}
             </if>
-            <if test="param.tenantId != null and param.tenantId != ''" >
+            <if test="param.tenantId != null and param.tenantId != ''">
                 and p.tenant_id = #{param.tenantId}
             </if>
-            <if test="param.branchCode != null and param.branchCode != ''" >
+            <if test="param.branchCode != null and param.branchCode != ''">
                 and p.branch_code = #{param.branchCode}
             </if>
-            <if test="param.fiterClose == true" >
+            <if test="param.fiterClose == true">
                 and p.status != 2
             </if>
-            <if test="param.fiterTrackAll != null and param.fiterTrackAll == true" >
+            <if test="param.fiterTrackAll != null and param.fiterTrackAll == true">
                 and proj_num > pt.track_num
             </if>
         </trim>
-        <if test="param.orderCol != null and param.orderCol != ''" >
-            order by ${param.orderCol}  ${param.order}
+        <if test="param.orderCol != null and param.orderCol != ''">
+            order by ${param.orderCol} ${param.order}
         </if>
     </select>
 
-    <select id="findPlan"  resultType="com.richfit.mes.common.model.produce.Plan">
-        select p.*, pt.order_code,pt.process_num as processing_num,pt.store_num,pt.total_option as total_progress,pt.complete_option as option_progress
+    <select id="findPlan" resultType="com.richfit.mes.common.model.produce.Plan">
+        select p.*,
+               pt.order_code,
+               pt.process_num     as processing_num,
+               pt.store_num,
+               pt.total_option    as total_progress,
+               pt.complete_option as option_progress
         from produce_plan p
-        left join plan_track_view pt
-        on p.id = pt.id
-        WHERE p.proj_Code=#{code} and p.branch_code = #{branch_code}
+                 left join plan_track_view pt
+                           on p.id = pt.id
+        WHERE p.proj_Code = #{code}
+          and p.branch_code = #{branch_code}
     </select>
 
     <select id="queryPlanTrackItem" resultType="com.richfit.mes.produce.entity.PlanTrackItemViewDto">
-        SELECT * FROM mes_produce.plan_track_item_view where plan_id=#{planId};
+        SELECT *
+        FROM mes_produce.plan_track_item_view
+        where plan_id = #{planId};
     </select>
 
 </mapper>

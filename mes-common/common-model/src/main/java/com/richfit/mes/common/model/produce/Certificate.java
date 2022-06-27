@@ -39,15 +39,19 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "检测日期")
     private Date checkTime;
 
-    @ApiModelProperty(value = "图号")
+    @ApiModelProperty(value = "图号 from跟单")
     @TableField(exist = false)
     private String drawingNo;
 
-    @ApiModelProperty(value = "产品编号")
+    @ApiModelProperty(value = "产品编号 from跟单")
     @TableField(exist = false)
     private String productNo;
 
-    @ApiModelProperty(value = "物料号")
+    @ApiModelProperty(value = "产品名称 from跟单")
+    @TableField(exist = false)
+    private String productName;
+
+    @ApiModelProperty(value = "物料号 from跟单")
     @TableField(exist = false)
     private String materialNo;
 
@@ -55,20 +59,47 @@ public class Certificate extends BaseEntity<Certificate> {
     @TableField(exist = false)
     private Integer number;
 
-    @ApiModelProperty(value = "工序Id")
+    @ApiModelProperty(value = "工序Id from跟单工序")
     @TableField(exist = false)
     private String optId;
 
-    @ApiModelProperty(value = "工序名称")
+    @ApiModelProperty(value = "工序名称 from跟单工序")
     @TableField(exist = false)
     private String optName;
 
-    @ApiModelProperty(value = "工序版本")
+    @ApiModelProperty(value = "工序版本 from跟单工序")
     @TableField(exist = false)
     private String optVer;
 
-    @ApiModelProperty(value = "工序列表")
+    @ApiModelProperty(value = "工序序号 from跟单工序")
+    @TableField(exist = false)
+    private String sequenceOrderBy;
+
+    @ApiModelProperty(value = "工序列表 ")
     @TableField(exist = false)
     private List<TrackCertificate> trackCertificates;
 
+    //以下字段2022-06-23 gaol 添加
+    @ApiModelProperty(value = "合格证来源 0：开出合格证 1：接收合格证")
+    private String certOrigin;
+
+    @ApiModelProperty(value = "试棒数量 from跟单")
+    @TableField(exist = false)
+    private Integer testBarNumber;
+
+    @ApiModelProperty(value = "试棒类型 from跟单")
+    @TableField(exist = false)
+    private String testBarType;
+
+    @ApiModelProperty(value = "炉批号 from跟单")
+    @TableField(exist = false)
+    private String batchNo;
+
+    @ApiModelProperty(value = "材质 from跟单")
+    @TableField(exist = false)
+    private String texture;
+
+    @ApiModelProperty(value = "单重 from跟单")
+    @TableField(exist = false)
+    private Float weight;
 }

@@ -15,6 +15,10 @@ import java.util.List;
 @Data
 public class LineStore extends BaseEntity<LineStore> {
 
+    private static final long serialVersionUID = -1820038423448467701L;
+    @ApiModelProperty(value = "主键")
+    private String id;
+
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
@@ -154,6 +158,7 @@ public class LineStore extends BaseEntity<LineStore> {
     }
 
     public LineStore(LineStore lineStore) {
+        this.id = lineStore.id;
         this.tenantId = lineStore.tenantId;
         this.trackNo = lineStore.trackNo;
         this.materialNo = lineStore.materialNo;

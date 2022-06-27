@@ -12,6 +12,8 @@ import java.util.Map;
 
 public interface LineStoreService extends IService<LineStore> {
 
+    LineStore LineStoreById(String id);
+
     IPage<LineStoreSum> selectGroup(Page<LineStore> page, QueryWrapper<LineStore> query);
 
     IPage<LineStore> selectLineStoreByProduce(Page<LineStore> page, QueryWrapper<LineStore> query);
@@ -28,4 +30,31 @@ public interface LineStoreService extends IService<LineStore> {
     public boolean rollBackItem(int num, String id);
 
     LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String product);
+
+    /**
+     * 功能描述: 合格证生成，根据合格证对应的跟单信息，实现半成品成品合格证信息更新
+     *
+     * @param trackHead
+     * @return
+     * @Author Gaol
+     */
+    LineStore updateCertNoByCertTrack(TrackHead trackHead);
+
+    /**
+     * 功能描述: 对应的合格证被删除，根据合格证编号更新半成品/成品料单状态为在制，清空合格证号
+     *
+     * @param certificateNo
+     * @return
+     * @Author Gaol
+     */
+    void reSetCertNoByTrackHead(String certificateNo);
+
+    /**
+     * 功能描述: 跟单与合格证解绑 根据合跟单号更新半成品/成品料单状态为在制，清空合格证号
+     *
+     * @param trackHead
+     * @return
+     * @Author Gaol
+     */
+    void reSetCertNoByTrackHead(TrackHead trackHead);
 }

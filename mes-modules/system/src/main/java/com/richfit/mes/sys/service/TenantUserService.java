@@ -2,10 +2,11 @@ package com.richfit.mes.sys.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
+
+import java.util.List;
 
 /**
  * <p>
@@ -15,7 +16,7 @@ import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
  * @author gaoliang
  * @since 2020-05-25
  */
-public interface TenantUserService{
+public interface TenantUserService {
     /**
      * 根据用户唯一标识获取用户信息
      *
@@ -23,6 +24,7 @@ public interface TenantUserService{
      * @return
      */
     TenantUser getByUniqueId(String uniqueId);
+
     /**
      * 获取用户
      *
@@ -63,6 +65,7 @@ public interface TenantUserService{
      * @return
      */
     boolean delete(String id);
+
     /**
      * 修改密码
      *
@@ -71,7 +74,7 @@ public interface TenantUserService{
      * @param newPassword
      * @return
      */
-    boolean updatePassword(String id,String oldPassword,String newPassword);
+    boolean updatePassword(String id, String oldPassword, String newPassword);
 
 
     /**
@@ -79,5 +82,14 @@ public interface TenantUserService{
      *
      * @return
      */
-    IPage<TenantUserVo> queryByName(Page<TenantUser> page, String userAccount,String tenantId);
+    IPage<TenantUserVo> queryByName(Page<TenantUser> page, String userAccount, String tenantId);
+
+    /**
+     * 功能描述:根据部门查询用户
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @return: List<Map < String, String>>
+     **/
+    List<TenantUserVo> queryUserByBranchCode(String branchCode);
 }

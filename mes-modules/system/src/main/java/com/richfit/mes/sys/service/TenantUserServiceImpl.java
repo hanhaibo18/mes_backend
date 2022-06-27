@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
-import com.richfit.mes.common.core.constant.CacheConstant;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.TenantUser;
@@ -17,7 +16,6 @@ import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
 import com.richfit.mes.sys.provider.BaseServiceClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,7 +63,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Override
     public TenantUserVo get(String id) {
         TenantUser tenantUser = this.getById(id);
-        if(null == tenantUser) {
+        if (null == tenantUser) {
             tenantUser = this.getOne(new QueryWrapper<TenantUser>()
                     .eq("user_account", id));
         }
@@ -78,7 +76,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
-    public TenantUserVo findById(String id){
+    public TenantUserVo findById(String id) {
         TenantUser tenantUser = this.getById(id);
         if (Objects.isNull(tenantUser)) {
             throw new GlobalException("user not found with id:" + id, ResultCode.ITEM_NOT_FOUND);
@@ -99,7 +97,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     @Override
     public IPage<TenantUserVo> query(Page<TenantUser> page, TenantUserQueryParam tenantUserQueryParam) {
-        if(tenantUserQueryParam.getOrgId() != null) {
+        if (tenantUserQueryParam.getOrgId() != null) {
             List<Branch> branchList = baseServiceClient.selectBranchChildByCode(tenantUserQueryParam.getOrgId()).getData();
             StringBuilder strBuilder = new StringBuilder();
             for (Branch b : branchList) {
@@ -113,7 +111,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         boolean isAdmin = false;
         for (GrantedAuthority authority : authorities) {
             //超级管理员 ROLE_12345678901234567890000000000000
-            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
+            if ("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
                 isAdmin = true;
                 break;
             }
@@ -185,4 +183,16 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     }
 
+
+    @Override
+    public List<TenantUserVo> queryUserByBranchCode(String branchCode) {
+        CommonResult<List<Branch>> queryCode = baseServiceClient.queryCode(branchCode);
+        List<TenantUserVo> tenantUserList = new ArrayList<>();
+        for (Branch branch : queryCode.getData()) {
+            QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("belong_org_id", branch.getBranchCode());
+            tenantUserList.addAll(tenantUserMapper.queryUserList(queryWrapper));
+        }
+        return tenantUserList;
+    }
 }

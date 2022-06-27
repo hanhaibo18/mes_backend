@@ -11,10 +11,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.entity.QueryProcessVo;
-import com.richfit.mes.produce.service.TrackAssignService;
-import com.richfit.mes.produce.service.TrackCompleteService;
-import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -24,9 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author 马峰
@@ -48,6 +45,10 @@ public class TrackAssignController extends BaseController {
     private TrackCompleteService trackCompleteService;
     @Autowired
     private TrackAssignPersonMapper trackAssignPersonMapper;
+    @Resource
+    private TrackAssignPersonService trackAssignPersonService;
+    @Resource
+    public PlanService planService;
     @Autowired
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
 
@@ -148,10 +149,27 @@ public class TrackAssignController extends BaseController {
     @GetMapping("/querypage")
     public CommonResult<IPage<Assign>> querypage(int page, int limit, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
         try {
-
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode);
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            calendar.setTime(sdf.parse(endTime));
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, sdf.format(calendar.getTime()), state, userId, branchCode);
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
+            }
+            if (null != assigns.getRecords()) {
+                for (Assign assign : assigns.getRecords()) {
+                    TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                    assign.setWeight(trackHead.getWeight());
+                    assign.setWorkNo(trackHead.getWorkNo());
+                    assign.setProductName(trackHead.getProductName());
+                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        assign.setWorkPlanNo(trackHead.getWorkPlanId());
+                        Plan plan = planService.getById(trackHead.getWorkPlanId());
+                        assign.setTotalQuantity(plan.getProjNum());
+                        assign.setDispatchingNumber(plan.getTrackNum());
+                    }
+                }
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {
@@ -284,8 +302,6 @@ public class TrackAssignController extends BaseController {
     @PostMapping("/update")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign> updateAssign(@RequestBody Assign assign) {
-
-
         try {
             if (StringUtils.isNullOrEmpty(assign.getTiId())) {
                 return CommonResult.failed("关联工序ID编码不能为空！");
@@ -304,9 +320,7 @@ public class TrackAssignController extends BaseController {
                     TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
                     if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
                         return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
-
                     }
-
                 }
                 // 判断修改的派工数量是否在合理范围
                 Assign oldassign = trackAssignService.getById(assign.getId());
@@ -325,10 +339,13 @@ public class TrackAssignController extends BaseController {
                 assign.setModifyTime(new Date());
                 assign.setAvailQty(assign.getQty());
                 boolean bool = trackAssignService.updateById(assign);
+                QueryWrapper<AssignPerson> queryWrapper = new QueryWrapper<AssignPerson>();
+                queryWrapper.eq("assign_id", assign.getId());
+                trackAssignPersonService.remove(queryWrapper);
                 for (AssignPerson person : assign.getAssignPersons()) {
                     person.setModifyTime(new Date());
                     person.setAssignId(assign.getId());
-                    trackAssignPersonMapper.insert(person);
+                    trackAssignPersonService.save(person);
                 }
                 trackItem.setAssignableQty(trackItem.getAssignableQty() - (assign.getQty() - oldassign.getQty()));
                 if (assign.getState() == 1) {
@@ -383,7 +400,8 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query")
     })
     @GetMapping("/getPageAssignsByStatus")
-    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) {
+    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
+            routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
 
@@ -423,7 +441,7 @@ public class TrackAssignController extends BaseController {
     }
 
     @ApiOperation(value = "删除派工", notes = "根据id删除派工")
-    @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "path")
+    @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "query")
     @PostMapping("/delete")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign> delete(@RequestBody String[] ids) {
@@ -477,10 +495,16 @@ public class TrackAssignController extends BaseController {
 
     @GetMapping("/queryProcessList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "trackNo", value = "跟单号", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, paramType = "query", dataType = "String"),
     })
-    @ApiOperation(value = "根据跟单号查询工序列表")
-    public CommonResult<List<QueryProcessVo>> queryProcessList(String trackNo) {
-        return CommonResult.success(trackAssignService.queryProcessList(trackNo));
+    @ApiOperation(value = "根据跟单Id查询工序列表")
+    public CommonResult<List<QueryProcessVo>> queryProcessList(String trackHeadId) {
+        return CommonResult.success(trackAssignService.queryProcessList(trackHeadId));
+    }
+
+    @GetMapping("/updateProcess")
+    @ApiOperation(value = "修改已派工对象")
+    public CommonResult<Boolean> updateProcess(Assign assign) {
+        return CommonResult.success(trackAssignService.updateProcess(assign));
     }
 }

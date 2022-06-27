@@ -58,4 +58,23 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return: IPage<TrackItem>
      **/
     IPage<TrackItem> queryFlawDetectionPage(QueryDto<QueryFlawDetectionListDto> queryDto);
+
+    /**
+     * 功能描述: 绑定合格证号
+     *
+     * @param tiId
+     * @param certNo
+     * @return
+     * @Author gaol
+     */
+    Boolean linkToCert(String tiId, String certNo);
+
+    /**
+     * 功能描述: 置空合格证号
+     *
+     * @param tiId
+     * @return
+     * @Author gaol
+     */
+    Boolean unLinkFromCert(String tiId);
 }

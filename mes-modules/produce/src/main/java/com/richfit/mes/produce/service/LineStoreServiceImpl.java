@@ -43,6 +43,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     LineStoreMapper lineStoreMapper;
 
     @Override
+    public LineStore LineStoreById(String id) {
+        return lineStoreMapper.selectById(id);
+    }
+
+    @Override
     public IPage<LineStoreSum> selectGroup(Page<LineStore> page, QueryWrapper<LineStore> query) {
         return lineStoreMapper.selectGroup(page, query);
     }
@@ -87,6 +92,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 useNum = lineStore1.getNumber() - lineStore1.getUseNum();
                 num -= useNum;
                 lineStore1.setUseNum(lineStore1.getNumber());
+                changeStatus(lineStore1);//没有消耗光不需要修改状态
             } else {
                 useNum = num;
                 lineStore1.setUseNum(lineStore1.getUseNum() + num);
@@ -95,8 +101,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (lineStore1.getMaterialType().equals("0")) {
                 lineStore1.setOutTime(new Date());
             }
-            changeStatus(lineStore1);
-
             lineStoreMapper.updateById(lineStore1);
         } else {
 
@@ -111,7 +115,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     //料单投用回滚
-    // 如果已用归0，料单状态应为Finish，已用>0, 状态应为MAKING
     @Override
     public boolean rollBackItem(int num, String id) {
 
@@ -126,7 +129,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return true;
     }
 
-    //料单 直接入库并直接全部投用
+    /**
+     * 料单 直接入库并直接全部投用
+     * <p>
+     * 对应的是通过物料号生成跟单的情况，如果对应物料无库存，则进行如下料单补料操作
+     */
+
     @Override
     public LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String workblankNo) {
         //TODO 增加自动料单入库 再出库的逻辑
@@ -162,16 +170,36 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return lineStore;
     }
 
-    //根据料单原始数量和已投用数量对比，修改料单状态
+
+    /**
+     * 根据料单原始数量和已投用数量对比，修改料单状态
+     * <p>
+     * 单件、批次毛坯物料： 只有入库  消耗   作废状态； 无在制状态
+     * 单件、批次半成品/成品：有在制  入库  消耗 作废状态
+     *
+     * @param lineStore
+     */
     private void changeStatus(LineStore lineStore) {
 
-        if (lineStore.getUseNum().equals(lineStore.getNumber())) {
-            lineStore.setStatus(StoreItemStatusEnum.USED_ALL.getCode());
-        } else if (lineStore.getUseNum() < lineStore.getNumber()) {
-            lineStore.setStatus(StoreItemStatusEnum.MAKING.getCode());
-        } else if (lineStore.getUseNum() == 0) {
-            lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
+        //毛坯
+        if ("0".equals(lineStore.getMaterialType())) {
+            if (lineStore.getUseNum().equals(lineStore.getNumber())) {
+                lineStore.setStatus(StoreItemStatusEnum.USED_ALL.getCode());
+            } else {
+                lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
+            }
+            //半成品 成品
+        } else if ("1".equals(lineStore.getMaterialType())) {
+            if (lineStore.getUseNum().equals(lineStore.getNumber())) {
+                lineStore.setStatus(StoreItemStatusEnum.USED_ALL.getCode());
+            } else if (null == lineStore.getCertificateNo()) {
+                lineStore.setStatus(StoreItemStatusEnum.MAKING.getCode());
+            } else if (null != lineStore.getCertificateNo()) {
+                lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
+            }
+
         }
+
 
     }
 
@@ -322,6 +350,54 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         }
 
         return orderNo;
+    }
+
+    @Override
+    public LineStore updateCertNoByCertTrack(TrackHead trackHead) {
+
+        UpdateWrapper<LineStore> update = new UpdateWrapper<LineStore>();
+
+        //将状态设置为完工
+        update.set("status", StoreItemStatusEnum.FINISH.getCode());
+        update.set("certificate_No", trackHead.getCertificateNo());
+
+        update.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        update.eq("branch_code", trackHead.getBranchCode());
+        update.eq("track_no", trackHead.getTrackNo());
+
+        lineStoreMapper.update(null, update);
+
+        return null;
+    }
+
+    @Override
+    public void reSetCertNoByTrackHead(String certificateNo) {
+        UpdateWrapper<LineStore> update = new UpdateWrapper<LineStore>();
+
+        //将状态设置为在制 合格证号清空
+        update.set("status", StoreItemStatusEnum.MAKING.getCode());
+        update.set("certificate_No", null);
+
+        update.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        update.eq("certificate_No", certificateNo);
+
+        lineStoreMapper.update(null, update);
+    }
+
+
+    @Override
+    public void reSetCertNoByTrackHead(TrackHead trackHead) {
+        UpdateWrapper<LineStore> update = new UpdateWrapper<LineStore>();
+
+        //将状态设置为在制 合格证号清空
+        update.set("status", StoreItemStatusEnum.MAKING.getCode());
+        update.set("certificate_No", null);
+
+        update.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        update.eq("branch_code", trackHead.getBranchCode());
+        update.eq("track_no", trackHead.getTrackNo());
+
+        lineStoreMapper.update(null, update);
     }
 
 }

@@ -13,16 +13,24 @@ import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
-import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.TrackCertificateService;
+import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -44,11 +52,6 @@ public class TrackHeadController extends BaseController {
     @Autowired
     private TrackCertificateService trackCertificateService;
 
-    @Autowired
-    private TrackItemService trackItemService;
-
-    @Autowired
-    private LineStoreService lineStoreService;
 
     @Autowired
     private ActionService actionService;
@@ -59,24 +62,43 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
 
 
-    @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回一天跟单信息。")
+    @ApiOperation(value = "下载完工资料", notes = "通过跟单id、下载完工资料")
+    @GetMapping("/downloads_completion_data/{id}")
+    public void downloadsCompletionData(@ApiIgnore HttpServletResponse response,
+                                        @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
+        String path = trackHeadService.completionData(id);
+        File file = new File(path);
+        InputStream inputStream = new FileInputStream(file);
+        response.reset();
+        response.setContentType("application/octet-stream");
+        response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(id, "UTF-8"));
+        ServletOutputStream outputStream = response.getOutputStream();
+        byte[] b = new byte[1024];
+        int len;
+        // 从输入流中读取一定数量的字节，并将其存储在缓冲区字节数组中，读到末尾返回-1
+        while ((len = inputStream.read(b)) > 0) {
+            outputStream.write(b, 0, len);
+        }
+        inputStream.close();
+    }
+
+    @ApiOperation(value = "生成完工资料", notes = "通过跟单id、生成完工资料")
+    @GetMapping("/completion_data/{id}")
+    public void completionData(@ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
+        trackHeadService.completionData(id);
+    }
+
+
+    @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回对应跟单信息")
     @GetMapping("/select_by_track_no")
     public CommonResult<TrackHead> selectByTrackNo(@ApiParam(value = "跟单号", required = true) @RequestParam String trackNo,
-                                                   @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("track_no", "trackNo");
-        }
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        return CommonResult.success(trackHeadService.getOne(queryWrapper));
+                                                   @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) throws Exception {
+        return CommonResult.success(trackHeadService.selectByTrackNo(trackNo, branchCode));
     }
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
-    public CommonResult<TrackHead> addTrackHead(@RequestBody TrackHead trackHead) {
+    public CommonResult<TrackHead> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead) {
 
         try {
             if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
@@ -142,7 +164,7 @@ public class TrackHeadController extends BaseController {
                         list.add(lineStore);
                     }
                 }*/
-                bool = trackHeadService.saveTrackHead(trackHead, trackHead.getTrackItems());
+                bool = trackHeadService.saveTrackHead(trackHead);
                 if (bool) {
 
                     return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
@@ -158,28 +180,20 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "修改跟单", notes = "修改跟单")
     @PutMapping("/track_head")
-    public CommonResult<TrackHead> updateTrackHead(@RequestBody TrackHead trackHead) {
+    public CommonResult<TrackHead> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead) {
         if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
             return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(trackHead.getId())) {
             return CommonResult.failed(TRACK_HEAD_ID_NULL_MESSAGE);
         } else {
-            trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-            trackHead.setModifyTime(new Date());
-
-            boolean bool = trackHeadService.updateById(trackHead);
+            boolean bool = trackHeadService.updataTrackHead(trackHead, trackHead.getTrackItems());
             if (bool) {
-                //删除修改跟单工序
-//                trackItemService.removeByIds(trackHead.getDeleteRouterIds());
-                trackItemService.updateBatchById(trackHead.getTrackItems());
-
-
+                //添加日志
                 Action action = new Action();
                 action.setActionType("1");
                 action.setActionItem("2");
                 action.setRemark("跟单号：" + trackHead.getTrackNo());
                 actionService.saveAction(action);
-
                 return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
@@ -189,7 +203,9 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "修改跟单状态", notes = "修改跟单状态")
     @PutMapping("/track_head/change_status")
-    public CommonResult changeTrackHeadStatus(@RequestParam String type, @RequestParam String status, @RequestBody List<TrackHead> trackHeads) {
+    public CommonResult changeTrackHeadStatus(@ApiParam(value = "0修改审批状态  1修改跟单状态", required = true) @RequestParam String type,
+                                              @ApiParam(value = "状态代码", required = true) @RequestParam String status,
+                                              @ApiParam(value = "跟新信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
         if (type.equals("0")) { //修改审批状态
             trackHeads.stream().forEach(trackHead -> {
                 trackHead.setApprovalStatus(status);
@@ -211,7 +227,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "删除跟单", notes = "删除跟单")
     @DeleteMapping("/track_head")
-    public CommonResult deleteTrackHead(@RequestBody List<TrackHead> trackHeads) {
+    public CommonResult deleteTrackHead(@ApiParam(value = "跟单信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
         boolean bool = trackHeadService.deleteTrackHead(trackHeads);
         if (bool) {
             Action action = new Action();
@@ -226,7 +242,22 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "分页查询跟单", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单")
     @GetMapping("/track_head")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(String startDate, String endDate, String id, String trackNo, String workPlanNo, String productNo, String materialNo, String status, String approvalStatus, String order, String orderCol, String branchCode, String tenantId, int page, int limit) {
+    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                                                          @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+                                                          @ApiParam(value = "id") @RequestParam(required = false) String id,
+                                                          @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
+                                                          @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
+                                                          @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
+                                                          @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                          @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
+                                                          @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                          @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                          @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
+                                                          @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                                          @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
+                                                          @ApiParam(value = "图号") @RequestParam(required = false) int page,
+                                                          @ApiParam(value = "图号") @RequestParam(required = false) int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(startDate)) {
             queryWrapper.ge("create_time", startDate);
@@ -255,6 +286,9 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(approvalStatus)) {
             queryWrapper.eq("approval_status", approvalStatus);
         }
+        if (!StringUtils.isNullOrEmpty(isTestBar)) {
+            queryWrapper.eq("is_test_bar", isTestBar);
+        }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
@@ -282,7 +316,10 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "工艺跟踪", notes = "根据图号、工艺版本号分页查询跟单工艺信息")
     @GetMapping("/track_head/router")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(String drawingNo, String optVer, int page, int limit) {
+    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                          @ApiParam(value = "工艺版本") @RequestParam(required = false) String optVer,
+                                                          @ApiParam(value = "页码", required = true) @RequestParam int page,
+                                                          @ApiParam(value = "每页条数", required = true) @RequestParam int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("th.drawing_no", "%" + drawingNo + "%");
@@ -294,9 +331,11 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackHeadService.selectTrackHeadRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
-    @ApiOperation(value = "当前工序查询", notes = "根据跟单编号、图号、产品编号分页查询当前工序")
+    @ApiOperation(value = "查询跟单及当前工序", notes = "根据跟单编号、图号、产品编号分页查询跟单及当前工序")
     @GetMapping("/track_head/current")
-    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo, String certificateId, String branchCode, String tenantId, Boolean isEdit, int page, int limit) {
+    public CommonResult<IPage<TrackHead>> selectTrackHeadCurrentRouter(String startDate, String endDate, String trackNo, String status, String drawingNo, String productNo, String certificateType, String certificateNo,
+                                                                       String certificateId, String branchCode, String tenantId, Boolean isEdit, Boolean noCertNo,
+                                                                       int page, int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
 
         if (isEdit) {
@@ -316,17 +355,25 @@ public class TrackHeadController extends BaseController {
             queryWrapper.le("th.create_time", endDate);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("th.track_no", "%" + trackNo + "%");
+            queryWrapper.like("th.track_no", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("th.status", status);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("th.drawing_no", "%" + drawingNo + "%");
+            queryWrapper.like("th.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.eq("th.product_no", productNo);
         }
+        //增加逻辑判断，只查询合格证号为空的记录
+        if (noCertNo) {
+            queryWrapper.and(wapper -> wapper.eq("th.certificate_No", "").or().isNull("th.certificate_No"));
+            if ("0".equals(certificateType)) {
+                queryWrapper.and(wapper -> wapper.eq("ti.certificate_No", "").or().isNull("ti.certificate_No"));
+            }
+        }
+
 
         /*if(!StringUtils.isNullOrEmpty(certificateType)){
             if(certificateType.equals("0")){ //工序合格证
@@ -348,10 +395,10 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
-    @GetMapping("/plan/{documentaryId}/{workPlanId}")
+    @PostMapping("/plan")
     @ApiOperation(value = "修改跟单与计划管理", notes = "根据跟单ID和计划ID进行计划关联")
-    public CommonResult<Boolean> updateTrackHeadPlan(@PathVariable String documentaryId, @PathVariable String workPlanId) {
-        return CommonResult.success(trackHeadService.updateTrackHeadPlan(documentaryId, workPlanId));
+    public CommonResult<Boolean> updateTrackHeadPlan(@ApiParam(value = "跟单信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
+        return CommonResult.success(trackHeadService.updateTrackHeadPlan(trackHeads));
     }
 
     @GetMapping("/queryMaterialListPage")
@@ -418,6 +465,14 @@ public class TrackHeadController extends BaseController {
     @PostMapping("queryTailAfterList")
     public CommonResult<IPage<TailAfterVo>> queryTailAfterList(QueryDto<QueryTailAfterDto> afterDto) {
         return CommonResult.success(trackHeadService.queryTailAfterList(afterDto));
+    }
+
+    @ApiOperation(value = "合格证关联跟单查询", notes = "根据合格证Id查询关联的跟单")
+    @GetMapping("/track_head/query_by_cert")
+    public CommonResult<List<TrackHead>> selectTrackHeadbyCert(@ApiParam(value = "合格证Id") String certificateId) {
+
+        return CommonResult.success(trackHeadService.queryListByCertId(certificateId), TRACK_HEAD_SUCCESS_MESSAGE);
+
     }
 
 }

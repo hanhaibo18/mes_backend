@@ -14,6 +14,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 /**
  * @author 王瑞
  * @Description 跟单Mapper
@@ -121,4 +123,5 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
             "\tproduce_track_head head")
     IPage<TailAfterVo> queryTailAfterList(IPage<QueryTailAfterDto> page, @Param(Constants.WRAPPER) QueryWrapper<TrackHead> queryWrapper);
 
+    List<TrackHead> queryListByCertId(@Param("certId") String certId);
 }

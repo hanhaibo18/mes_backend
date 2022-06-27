@@ -54,6 +54,7 @@ public class LineStoreController extends BaseController {
     private final static String CODE_EXITS = "编号已存在！";
     private final static String MATERIAL_CODE_NULL_MSG = "物料编号不能为空！";
     private final static String DRAWING_NO_NULL_MSG = "图号不能为空！";
+    private final static String MATERIAL_NO_NOT_EXIST = "物料号不存在！";
 
     private final static String STATUS_NOT_RIGHT_FOR_EDIT = "料单当前状态不支持该操作";
 
@@ -90,7 +91,9 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(MATERIAL_CODE_NULL_MSG);
         } else if (StringUtils.isNullOrEmpty(lineStore.getDrawingNo())) {
             return CommonResult.failed(DRAWING_NO_NULL_MSG);
-
+            //校验物料号是否存在
+        } else if (!isMaterialNoExist(lineStore.getMaterialNo())) {
+            return CommonResult.failed(MATERIAL_NO_NOT_EXIST);
             //校验编号是否已存在，如存在，返回报错信息
         } else if (lineStoreService.checkCodeExist(lineStore, startNo, endNo, suffixNo)) {
             String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
@@ -115,6 +118,8 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(DRAWING_NO_NULL_MSG);
         } else if (!isStatusFinish(lineStore)) {
             return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT);
+        } else if (!isMaterialNoExist(lineStore.getMaterialNo())) {
+            return CommonResult.failed(MATERIAL_NO_NOT_EXIST);
         } else {
             boolean bool = false;
 
@@ -222,6 +227,12 @@ public class LineStoreController extends BaseController {
         return CommonResult.success(lineStoreService.page(new Page<LineStore>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "通过id查询库存", notes = "通过id查询库存")
+    @GetMapping("/line_store/{id}")
+    public CommonResult<LineStore> selectLineStore(@ApiParam(value = "料单Id", required = true) @PathVariable String id) {
+        return CommonResult.success(lineStoreService.LineStoreById(id));
+    }
+
     @ApiOperation(value = "查询入库总览", notes = "根据物料号查询入库总览")
     @GetMapping("/line_store/group")
     public CommonResult<IPage<LineStoreSum>> selectLineStoreGroup(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
@@ -289,6 +300,49 @@ public class LineStoreController extends BaseController {
         }
         if (userNum != null && userNum > 0) {
             queryWrapper.ge("number - use_num", userNum);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.orderByDesc("create_time");
+        return CommonResult.success(lineStoreService.list(queryWrapper), SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "查询入库信息", notes = "根据图号、合格证号、物料编号查询入库信息")
+    @GetMapping("/line_store/list/workblankNo")
+    public CommonResult<List<LineStore>> selectLineStoreListWorkblankNo(
+            @ApiParam(value = "料单类型") @RequestParam(required = false) String materialType,
+            @ApiParam(value = "物料码") @RequestParam(required = false) String materialNo,
+            @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+            @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+            @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
+            @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
+            @ApiParam(value = "可使用数量") @RequestParam(required = false) Integer number,
+            @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
+            @ApiParam(value = "分公司", required = true) @RequestParam String branchCode) {
+        QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+        if (!StringUtils.isNullOrEmpty(materialType)) {
+            queryWrapper.eq("material_type", materialType);
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.like("drawing_no", drawingNo);
+        }
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
+            queryWrapper.like("material_no", materialNo);
+        }
+        if (!StringUtils.isNullOrEmpty(certificateNo)) {
+            queryWrapper.like("certificate_no", certificateNo);
+        }
+        if (!StringUtils.isNullOrEmpty(workblankNo)) {
+            queryWrapper.eq("workblank_no", workblankNo);
+        }
+        if (!StringUtils.isNullOrEmpty(trackType)) {
+            queryWrapper.eq("track_type", trackType);
+        }
+        if (!StringUtils.isNullOrEmpty(status)) {
+            queryWrapper.eq("status", status);
+        }
+        if (number != null && number > 0) {
+            queryWrapper.ge("number - use_num", number);
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("branch_code", branchCode);
@@ -513,6 +567,13 @@ public class LineStoreController extends BaseController {
 
     private boolean isStatusFinish(LineStore lineStore) {
         return lineStore.getStatus().equals(StoreItemStatusEnum.FINISH.getCode());
+    }
+
+    //校验物料号是否在物料表中存在
+    private boolean isMaterialNoExist(String materialNo) {
+        CommonResult<List<Product>> result = baseServiceClient.selectProduct(materialNo, null, null);
+
+        return result.getData().size() > 0;
     }
 
 }

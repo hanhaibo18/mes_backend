@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -16,10 +17,17 @@ public class QueryProcessVo {
     private String id;
     @ApiModelProperty(value = "跟单Id", dataType = "String")
     private String trackHeadId;
+    @ApiModelProperty(value = "工序ID", dataType = "String")
+    public String optId;
     @ApiModelProperty(value = "工序名称", dataType = "String")
     private String optName;
     @ApiModelProperty(value = "工序版本", dataType = "String")
     private String optVer;
+    @ApiModelProperty(value = "工序状态", dataType = "String")
+    @TableField
+    private String optState;
+    @ApiModelProperty(value = "是否是当前工序", dataType = "Integer")
+    private Integer isCurrent;
     @ApiModelProperty(value = "准结工时", dataType = "Double")
     private Double prepareEndHours;
     @ApiModelProperty(value = "单件工时", dataType = "Double")
@@ -28,4 +36,5 @@ public class QueryProcessVo {
     private Integer optParallelType;
     @ApiModelProperty(value = "是否派工", dataType = "String")
     public String isDispatching;
+
 }

@@ -1,10 +1,9 @@
 package com.richfit.mes.common.model.produce;
 
-import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
 import java.util.Date;
 
 /**
@@ -17,69 +16,85 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     /**
      * 租户ID
      */
-    protected String tenantId;
+    @ApiModelProperty(value = "租户ID", dataType = "String")
+    private String tenantId;
     /**
      * 机构编码
      */
-    protected String branchCode;
+    @ApiModelProperty(value = "机构编码", dataType = "String")
+    private String branchCode;
     /**
      * 跟单工序项ID
      */
-    protected String tiId;
-      /**
+    @ApiModelProperty(value = "跟单工序项ID", dataType = "String")
+    private String tiId;
+    /**
      * 跟单ID
      */
-    protected String thId;
+    @ApiModelProperty(value = "跟单ID", dataType = "String")
+    private String thId;
     /**
      * 质检类型 0-半检 1-全检 2-抽检
      */
-    protected int type;
-     /**
+    @ApiModelProperty(value = "质检类型 0-半检 1-全检 2-抽检", dataType = "int")
+    private int type;
+    /**
      * 质检结果 0-不合格 1-合格
      */
-    protected int result;
-     /**
+    @ApiModelProperty(value = "质检结果 0-不合格 1-合格", dataType = "int")
+    private int result;
+    /**
      * 不合格原因
      */
-    protected String reason;
-     /**
+    @ApiModelProperty(value = "不合格原因", dataType = "String")
+    private String reason;
+    /**
      * 合格数量
      */
-    protected int qualify;
-      /**
+    @ApiModelProperty(value = "合格数量", dataType = "int")
+    private int qualify;
+    /**
      * 不合格数量
      */
-    protected int unqualify;
-         /**
+    @ApiModelProperty(value = "不合格数量", dataType = "int")
+    private int unqualify;
+    /**
      * 让步数量
      */
-    protected int stepQty;
-     /**
+    @ApiModelProperty(value = "让步数量", dataType = "int")
+    private int stepQty;
+    /**
      * 返修数量
      */
-    protected int fixQty;
+    @ApiModelProperty(value = "返修数量", dataType = "int")
+    private int fixQty;
     /**
      * 废弃数量
      */
-    protected int discardQty;
+    @ApiModelProperty(value = "废弃数量", dataType = "int")
+    private int discardQty;
     /**
      * 处理单号
      */
-    protected String dealNo;
-    
-     /**
+    @ApiModelProperty(value = "处理单号", dataType = "String")
+    private String dealNo;
+
+    /**
      * 处理人
      */
-    protected String dealBy;
+    @ApiModelProperty(value = "处理人", dataType = "String")
+    private String dealBy;
     /**
      * 处理时间
      */
-    protected Date dealTime;
-    
-       /**
+    @ApiModelProperty(value = "处理时间", dataType = "Date")
+    private Date dealTime;
+
+    /**
      * 处理意见
      */
-    protected String remark;
-    
-    
+    @ApiModelProperty(value = "处理意见", dataType = "String")
+    private String remark;
+
+
 }

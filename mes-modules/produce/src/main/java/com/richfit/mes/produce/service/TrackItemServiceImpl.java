@@ -100,4 +100,20 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         return this.page(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
     }
 
+    @Override
+    public Boolean linkToCert(String tiId, String certNo) {
+        TrackItem trackItem = new TrackItem();
+        trackItem.setId(tiId);
+        trackItem.setCertificateNo(certNo);
+        return this.updateById(trackItem);
+    }
+
+    @Override
+    public Boolean unLinkFromCert(String tiId) {
+        TrackItem trackItem = new TrackItem();
+        trackItem.setId(tiId);
+        trackItem.setCertificateNo(null);
+        return this.updateById(trackItem);
+    }
+
 }

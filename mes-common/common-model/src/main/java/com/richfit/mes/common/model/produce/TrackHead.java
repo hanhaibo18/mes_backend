@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 王瑞
@@ -155,8 +156,18 @@ public class TrackHead extends BaseEntity<TrackHead> {
      */
     private Date completeTime;
 
+    /**
+     * 跟单工序
+     */
     @TableField(exist = false)
     private List<TrackItem> trackItems;
+
+    /**
+     * 跟单库存使用列表
+     */
+    @TableField(exist = false)
+    private List<Map> storeList;
+
 
     private String userMaterialNo;
 
@@ -168,6 +179,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     @TableField(exist = false)
     private String tiId;
+
+    @TableField(exist = false)
+    private String sequenceOrderBy;
 
     private String userProductNo;
 
@@ -213,13 +227,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/16 10:25
      **/
-    private String isTest;
+    private String isTestBar;
 
-    /**
-     * 描述: 试棒跟单是否已关联  0否  1是
-     *
-     * @Author: zhiqiang.lu
-     * @Date: 2022/6/16 10:25
-     **/
-    private String isTestRelation;
 }

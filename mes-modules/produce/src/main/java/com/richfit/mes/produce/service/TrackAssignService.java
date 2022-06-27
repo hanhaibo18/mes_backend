@@ -27,10 +27,18 @@ public interface TrackAssignService extends IService<Assign> {
     /**
      * 功能描述: 根据跟单号查询 跟单工序
      *
-     * @param trackNo
+     * @param trackHeadId
      * @Author: xinYu.hou
      * @return: List<QueryProcessVo>
      **/
-    List<QueryProcessVo> queryProcessList(String trackNo);
+    List<QueryProcessVo> queryProcessList(String trackHeadId);
 
+    /**
+     * 功能描述: 修改派工
+     *
+     * @param assign
+     * @Author: xinYu.hou
+     * @return: double
+     **/
+    boolean updateProcess(Assign assign);
 }
