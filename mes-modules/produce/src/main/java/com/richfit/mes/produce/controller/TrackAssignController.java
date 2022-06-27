@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -401,13 +402,17 @@ public class TrackAssignController extends BaseController {
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) {
+            routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
 
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null )");
-            queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + endTime + "') or a.modify_time is null)");
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            calendar.setTime(sdf.parse(endTime));
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "') or a.modify_time is null)");
         }
         if ("4".equals(optType)) {
             queryWrapper.apply("opt_type = 3 and is_final_complete <> '1'");
