@@ -412,6 +412,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean updateTrackHeadPlan(List<TrackHead> trackHeads) {
         try {
             for (TrackHead t : trackHeads) {
+                //修改跟单状态改为1
+                Plan plan = planService.getById(t.getWorkPlanId());
+                plan.setStatus(1);
+                planService.updatePlan(plan);
+                //修改跟单管理计划id
                 trackHeadMapper.updateById(t);
             }
         } catch (Exception e) {

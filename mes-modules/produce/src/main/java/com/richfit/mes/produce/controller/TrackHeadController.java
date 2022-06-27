@@ -14,6 +14,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackCertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
@@ -45,6 +46,10 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/produce/track_head")
 public class TrackHeadController extends BaseController {
+
+
+    @Autowired
+    private PlanService planService;
 
     @Autowired
     private TrackHeadService trackHeadService;
