@@ -9,10 +9,12 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.entity.CountDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -23,9 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 
 /**
  * @author mafeng
@@ -55,6 +59,8 @@ public class TrackCheckController extends BaseController {
     private PlanService planService;
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Resource
+    private SystemServiceClient systemServiceClient;
 
     /**
      * ***
@@ -118,8 +124,6 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(productNo)) {
                 queryWrapper.inSql("product_no", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where product_no ='" + productNo + "')");
             }
-
-
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
 
@@ -131,8 +135,16 @@ public class TrackCheckController extends BaseController {
             if ("1".equals(isExistScheduleCheck)) {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
+//            queryWrapper.eq("is_doing", "1");
             queryWrapper.orderByDesc("modify_time");
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
+            for (TrackItem item : assigns.getRecords()) {
+                TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
+                item.setTrackNo(trackHead.getTrackNo());
+                item.setProductNo(trackHead.getProductNo());
+                item.setDrawingNo(trackHead.getDrawingNo());
+                item.setQty(trackHead.getNumber());
+            }
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -182,6 +194,18 @@ public class TrackCheckController extends BaseController {
             }
             queryWrapper.orderByDesc("modify_time");
             IPage<TrackCheck> checks = trackCheckService.page(new Page<TrackCheck>(page, limit), queryWrapper);
+            for (TrackCheck check : checks.getRecords()) {
+                TrackHead trackHead = trackHeadService.getById(check.getThId());
+                check.setProductNo(trackHead.getProductNo());
+                check.setDrawingNo(trackHead.getDrawingNo());
+                check.setNumber(trackHead.getNumber());
+                TrackItem trackItem = trackItemService.getById(check.getTiId());
+                check.setOptId(trackItem.getOptId());
+                check.setOptName(trackItem.getOptName());
+                check.setOptType(trackItem.getOptType());
+                CommonResult<TenantUserVo> user = systemServiceClient.queryByUserAccount(check.getDealBy());
+                check.setDealBy(user.getData().getEmplName());
+            }
             return CommonResult.success(checks);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());

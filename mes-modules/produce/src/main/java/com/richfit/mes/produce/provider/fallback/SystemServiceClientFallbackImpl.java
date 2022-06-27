@@ -1,19 +1,13 @@
 package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.sys.Attachment;
-import com.richfit.mes.common.model.sys.TenantUser;
+import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-import com.richfit.mes.common.model.sys.ItemClass;
-import com.richfit.mes.common.model.sys.ItemParam;
-import org.springframework.web.bind.annotation.PostMapping;
 
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -25,6 +19,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
 
     @Override
     public CommonResult<TenantUserVo> getUserById(String id) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<TenantUserVo> queryByUserAccount(String userAccount) {
         return CommonResult.success(null);
     }
 
