@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,7 +27,7 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     /**
      * 跟单工序项ID
      */
-    @ApiModelProperty(value = "跟单工序项ID", dataType = "String")
+    @ApiModelProperty(value = "跟单工序项ID(trackNo  )", dataType = "String")
     private String tiId;
     /**
      * 跟单ID
@@ -96,5 +97,28 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @ApiModelProperty(value = "处理意见", dataType = "String")
     private String remark;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "质检人", dataType = "String")
+    private String userName;
 
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品编号", dataType = "String")
+    private String productNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "图号", dataType = "String")
+    private String drawingNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "数量", dataType = "int")
+    private int number;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序名称", dataType = "String")
+    private String optName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序类型", dataType = "Integer")
+    private Integer optType;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String optId;
 }
