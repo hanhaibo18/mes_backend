@@ -37,7 +37,7 @@
                 and FIND_IN_SET(belong_org_id, #{param.orgId})
             </if>
             <if test="param.orgId != null and param.orgId != '' and param.orgId.contains('%')">
-                and belong_org_id like '${param.param.orgId}'
+                and belong_org_id = '${param.param.orgId}'
             </if>
         </trim>
         order by modify_time desc
