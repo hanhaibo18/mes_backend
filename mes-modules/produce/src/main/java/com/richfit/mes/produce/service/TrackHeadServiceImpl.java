@@ -417,6 +417,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 plan.setStatus(1);
                 planService.updatePlan(plan);
                 //修改跟单管理计划id
+                t.setWorkPlanNo(plan.getProjCode());
+                t.setProductionOrder(plan.getOrderNo());
+                t.setWorkNo(plan.getWorkNo());
                 trackHeadMapper.updateById(t);
             }
         } catch (Exception e) {
