@@ -76,10 +76,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public String completionData(String id) throws Exception {
         try {
-            String path = "C:/temp" + "/" + id;
+            String path = "C:/temp";
             if (File.separator.equals("/")) {
-                path = "/temp" + "/" + id;
+                path = "/temp";
             }
+            FileUtil.del(path);
+            path = path + "/" + id;
             QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("th_id", id);
             queryWrapper.eq("type", "0");
