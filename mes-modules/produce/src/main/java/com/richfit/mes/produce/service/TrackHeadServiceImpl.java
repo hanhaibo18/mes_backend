@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ZipUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -67,6 +68,39 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public StoreAttachRelMapper storeAttachRelMapper;
 
     /**
+     * 描述: 其他资料列表
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/22 10:25
+     **/
+    @Override
+    public List<LineStore> otherData(String id) throws Exception {
+        try {
+            List<LineStore> lineStores = new ArrayList<>();
+            QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("th_id", id);
+            queryWrapper.eq("type", "0");
+            List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapper);
+            for (TrackHeadRelation thr : trackHeadRelations) {
+                LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
+                QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
+                queryWrapper.eq("line_store_id", thr.getLsId());
+                List<Attachment> attachments = new ArrayList<>();
+                for (StoreAttachRel sar : storeAttachRelMapper.selectList(queryWrapperStoreAttachRel)) {
+                    CommonResult<Attachment> atta = systemServiceClient.attachment(sar.getAttachmentId());
+                    attachments.add(atta.getData());
+                }
+                lineStore.setStoreAttachRel(attachments);
+                lineStores.add(lineStore);
+            }
+            return lineStores;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("下载出现异常，请联系管理员");
+        }
+    }
+
+    /**
      * 描述: 生成完工资料
      *
      * @Author: zhiqiang.lu
@@ -75,7 +109,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public String completionData(String id) throws Exception {
         try {
-            String path = "D:/测试" + "/" + id;
+            String path = "C:/temp";
+            if (File.separator.equals("/")) {
+                path = "/temp";
+            }
+            FileUtil.del(path);
+            path = path + "/" + id;
             QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("th_id", id);
             queryWrapper.eq("type", "0");
@@ -102,7 +141,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
             if (data.getStatus() == 200) {
-                File file = new File(path + "/" + atta.getData().getAttachName());
+                File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? UUID.randomUUID().toString() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
                 }
@@ -146,8 +185,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //单件跟单处理
         try {
             if ("0".equals(trackHead.getTrackType())) { //单件
-                for (Map m : trackHead.getStoreList()) {
-                    trackHeadSingleton(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                System.out.println(JSON.toJSONString(trackHead.getStoreList()));
+                if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
+                    for (Map m : trackHead.getStoreList()) {
+                        trackHeadSingleton(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                    }
+                } else {
+                    trackHeadSingleton(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
                 }
             }
 //            else if (trackHead.getTrackType().equals("1")) { //批次
@@ -174,8 +218,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 //                    list.add(lineStore);
 //                }
 //            }
-
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
@@ -245,18 +287,23 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setProductNo(productsNo);
             trackHead.setNumber(number);
 
-            //查询跟单号码是否存在
-            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("track_no", trackHead.getTrackNo());
-            queryWrapper.eq("branch_code", trackHead.getBranchCode());
-            queryWrapper.eq("tenant_id", trackHead.getTenantId());
-            List trackHeads = trackHeadMapper.selectList(queryWrapper);
-            if (trackHeads.size() > 0) {
-                throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
+
+            //只有机加进行跟单编码校验
+            if ("1".equals(trackHead.getClasses())) {
+                //查询跟单号码是否存在
+                QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("track_no", trackHead.getTrackNo());
+                queryWrapper.eq("branch_code", trackHead.getBranchCode());
+                queryWrapper.eq("tenant_id", trackHead.getTenantId());
+                List trackHeads = trackHeadMapper.selectList(queryWrapper);
+                if (trackHeads.size() > 0) {
+                    throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
+                }
             }
 
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-            if ("0".equals(trackHead.getStatus())) {
+            //只有机加创建跟单时才会进行库存料单关联
+            if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
 
                 //计划跟单关联
 //                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
