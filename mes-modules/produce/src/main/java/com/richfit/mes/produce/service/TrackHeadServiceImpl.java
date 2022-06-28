@@ -68,6 +68,34 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public StoreAttachRelMapper storeAttachRelMapper;
 
     /**
+     * 描述: 其他资料列表
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/22 10:25
+     **/
+    @Override
+    public List<LineStore> otherData(String id) throws Exception {
+        try {
+            List<LineStore> lineStores = new ArrayList<>();
+            QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("th_id", id);
+            queryWrapper.eq("type", "0");
+            List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapper);
+            for (TrackHeadRelation thr : trackHeadRelations) {
+                LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
+                QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
+                queryWrapper.eq("line_store_id", thr.getLsId());
+                lineStore.setStoreAttachRel(storeAttachRelMapper.selectList(queryWrapperStoreAttachRel));
+                lineStores.add(lineStore);
+            }
+            return lineStores;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("下载出现异常，请联系管理员");
+        }
+    }
+
+    /**
      * 描述: 生成完工资料
      *
      * @Author: zhiqiang.lu

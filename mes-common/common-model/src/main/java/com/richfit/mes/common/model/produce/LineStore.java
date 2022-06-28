@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -152,6 +153,10 @@ public class LineStore extends BaseEntity<LineStore> {
     @TableField(exist = false)
     @ApiModelProperty(value = "对应资料的上传Id列表")
     private List<String> fileIds;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "对应资料附件列表")
+    private List<StoreAttachRel> storeAttachRel;
 
 
     public LineStore() {
