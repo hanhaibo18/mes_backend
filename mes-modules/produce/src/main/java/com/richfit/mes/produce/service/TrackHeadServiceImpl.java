@@ -76,7 +76,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public String completionData(String id) throws Exception {
         try {
-            String path = "D:/测试" + "/" + id;
+            String path = "C:/temp" + "/" + id;
+            if (File.separator.equals("/")) {
+                path = "/temp" + "/" + id;
+            }
             QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("th_id", id);
             queryWrapper.eq("type", "0");
@@ -103,7 +106,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
             if (data.getStatus() == 200) {
-                File file = new File(path + "/" + atta.getData().getAttachName());
+                File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? UUID.randomUUID().toString() : atta.getData().getAttachName() + "." + atta.getData().getAttachType()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
                 }
