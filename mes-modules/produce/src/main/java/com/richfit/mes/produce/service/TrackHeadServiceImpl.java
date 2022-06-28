@@ -108,7 +108,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
             if (data.getStatus() == 200) {
-                File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? UUID.randomUUID().toString() : atta.getData().getAttachName() + "." + atta.getData().getAttachType()));
+                File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? UUID.randomUUID().toString() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
                 }
