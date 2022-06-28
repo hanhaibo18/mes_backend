@@ -85,7 +85,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
                 QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
                 queryWrapper.eq("line_store_id", thr.getLsId());
-                lineStore.setStoreAttachRel(storeAttachRelMapper.selectList(queryWrapperStoreAttachRel));
+                List<Attachment> attachments = new ArrayList<>();
+                for (StoreAttachRel sar : storeAttachRelMapper.selectList(queryWrapperStoreAttachRel)) {
+                    CommonResult<Attachment> atta = systemServiceClient.attachment(sar.getAttachmentId());
+                    attachments.add(atta.getData());
+                }
+                lineStore.setStoreAttachRel(attachments);
                 lineStores.add(lineStore);
             }
             return lineStores;
