@@ -43,9 +43,9 @@
     <!-- 查询装配库存 库存量-->
     <select id="selectStoreNumForAssembly" resultType="com.richfit.mes.common.model.produce.store.LineStoreSumZp">
         select c.drawing_no,
-        (select s.material_name from
+        (select s.product_name from
         mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
-        c.branch_code limit 1) material_name,
+        c.branch_code limit 1) product_name,
         (select s.material_no from
         mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
         c.branch_code limit 1) material_no,

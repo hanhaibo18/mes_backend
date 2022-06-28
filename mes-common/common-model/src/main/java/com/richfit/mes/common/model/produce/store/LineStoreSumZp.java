@@ -18,8 +18,8 @@ public class LineStoreSumZp {
     @ApiModelProperty(value = "物料编号")
     private String materialNo;
 
-    @ApiModelProperty(value = "物料名称")
-    private String materialName;
+    @ApiModelProperty(value = "产品名称")
+    private String productName;
 
     @ApiModelProperty(value = "库存数量")
     private Integer storeNumber;
