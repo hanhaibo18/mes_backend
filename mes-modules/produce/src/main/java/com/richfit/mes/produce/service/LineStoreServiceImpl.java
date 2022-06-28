@@ -12,6 +12,7 @@ import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
+import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -400,4 +401,54 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreMapper.update(null, update);
     }
 
+
+    @Override
+    public List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception {
+
+        //1 当前库存量
+        List<LineStoreSumZp> storeList = this.lineStoreMapper.selectStoreNumForAssembly(parMap);
+        log.debug("库存记录条数 [{}]", storeList.size());
+        //2 当前配送量
+        List<LineStoreSumZp> deliveryList = this.lineStoreMapper.selectDeliveryNumber(parMap);
+        log.debug("配送记录条数 [{}]", deliveryList.size());
+        //3 跟单需求量
+        List<LineStoreSumZp> requireList = this.lineStoreMapper.selectRequireNum(parMap);
+        log.debug("跟单需求条数 [{}]", requireList.size());
+        //4 跟单已装量
+        List<LineStoreSumZp> assemblyList = this.lineStoreMapper.selectAssemblyNum(parMap);
+        log.debug("跟单已装条数 [{}]", assemblyList.size());
+
+        //根据图号  把 2 、3 、4 的数据 更新到 1 中
+        for (LineStoreSumZp store : storeList) {
+
+            for (LineStoreSumZp delivery : deliveryList) {
+                if (store.getDrawingNo().equals(delivery.getDrawingNo())) {
+                    store.setDeliveryNumber(delivery.getDeliveryNumber());
+                    deliveryList.remove(delivery);
+                    break;
+                }
+            }
+
+            for (LineStoreSumZp require : requireList) {
+                if (store.getDrawingNo().equals(require.getDrawingNo())) {
+                    store.setRequireNumber(require.getRequireNumber());
+                    requireList.remove(require);
+                    break;
+                }
+            }
+
+            for (LineStoreSumZp assembly : assemblyList) {
+                if (store.getDrawingNo().equals(assembly.getDrawingNo())) {
+                    store.setAssemblyNumber(assembly.getAssemblyNumber());
+                    assemblyList.remove(assembly);
+                    break;
+                }
+            }
+            
+            store.setWaitAssemblyNumber((store.getRequireNumber() == null ? 0 : store.getRequireNumber()) - (store.getAssemblyNumber() == null ? 0 : store.getAssemblyNumber()));
+
+        }
+
+        return storeList;
+    }
 }

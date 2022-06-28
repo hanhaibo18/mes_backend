@@ -15,6 +15,7 @@ import com.richfit.mes.common.model.code.StoreItemStatusEnum;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
+import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.LineStoreService;
@@ -34,10 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -255,6 +253,23 @@ public class LineStoreController extends BaseController {
 
         queryWrapper.orderByAsc("drawing_no");
         return CommonResult.success(lineStoreService.selectGroup(new Page<LineStore>(page, limit), queryWrapper), SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "装配库存总览", notes = "根据物料号查询装配库存总览")
+    @GetMapping("/sum/zp")
+    public CommonResult<List<LineStoreSumZp>> selectLineStoreSumZp(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                                   @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
+                                                                   @ApiParam(value = "当前分公司") @RequestParam String branchCode) throws Exception {
+
+        Map parMap = new HashMap();
+        parMap.put("branchCode", branchCode);
+        parMap.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
+        parMap.put("drawingNo", drawingNo);
+        parMap.put("materialNo", materialNo);
+
+        List list = lineStoreService.queryLineStoreSumZp(parMap);
+
+        return CommonResult.success(list);
     }
 
     @ApiOperation(value = "查询入库信息", notes = "根据图号、合格证号、物料编号查询入库信息")

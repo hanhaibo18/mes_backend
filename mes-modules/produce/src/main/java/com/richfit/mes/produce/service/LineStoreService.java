@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
+import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 
+import java.util.List;
 import java.util.Map;
 
 public interface LineStoreService extends IService<LineStore> {
@@ -30,6 +32,15 @@ public interface LineStoreService extends IService<LineStore> {
     public boolean rollBackItem(int num, String id);
 
     LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String product);
+
+    /**
+     * 功能描述: 装配库存查询
+     *
+     * @param parMap
+     * @return
+     * @Author Gaol
+     */
+    List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception;
 
     /**
      * 功能描述: 合格证生成，根据合格证对应的跟单信息，实现半成品成品合格证信息更新
