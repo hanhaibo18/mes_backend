@@ -14,6 +14,7 @@ import java.util.Date;
 @Data
 public class TrackItem extends BaseEntity<TrackItem> {
 
+    private static final long serialVersionUID = -7319209148899298755L;
     /**
      * 跟单ID
      */
@@ -48,7 +49,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
      * 工序类型
      */
     @ApiModelProperty(value = "工序类型", dataType = "String")
-    private Integer optType;
+    private String optType;
     @ApiModelProperty(value = "subOptParentId", dataType = "String")
     private String subOptParentId;
     @ApiModelProperty(value = "是否并行", dataType = "Integer")

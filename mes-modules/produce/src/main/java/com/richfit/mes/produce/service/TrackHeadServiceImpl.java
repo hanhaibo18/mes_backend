@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ZipUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -146,8 +147,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //单件跟单处理
         try {
             if ("0".equals(trackHead.getTrackType())) { //单件
-                for (Map m : trackHead.getStoreList()) {
-                    trackHeadSingleton(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                System.out.println(JSON.toJSONString(trackHead.getStoreList()));
+                if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
+                    for (Map m : trackHead.getStoreList()) {
+                        trackHeadSingleton(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                    }
+                } else {
+                    trackHeadSingleton(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
                 }
             }
 //            else if (trackHead.getTrackType().equals("1")) { //批次
@@ -174,8 +180,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 //                    list.add(lineStore);
 //                }
 //            }
-
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
