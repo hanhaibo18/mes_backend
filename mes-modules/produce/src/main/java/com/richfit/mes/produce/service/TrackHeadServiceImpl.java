@@ -260,7 +260,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
 
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-            if ("0".equals(trackHead.getStatus())) {
+            //只有机加创建跟单时才会进行库存料单关联
+            if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
 
                 //计划跟单关联
 //                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
