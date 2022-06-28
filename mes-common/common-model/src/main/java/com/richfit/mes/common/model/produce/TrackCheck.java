@@ -14,6 +14,7 @@ import java.util.Date;
 @Data
 public class TrackCheck extends BaseEntity<TrackCheck> {
 
+    private static final long serialVersionUID = -822677447762645846L;
     /**
      * 租户ID
      */
@@ -116,8 +117,8 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @ApiModelProperty(value = "工序名称", dataType = "String")
     private String optName;
     @TableField(exist = false)
-    @ApiModelProperty(value = "工序类型", dataType = "Integer")
-    private Integer optType;
+    @ApiModelProperty(value = "工序类型", dataType = "String")
+    private String optType;
     @TableField(exist = false)
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String optId;

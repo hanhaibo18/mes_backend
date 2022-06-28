@@ -249,14 +249,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setProductNo(productsNo);
             trackHead.setNumber(number);
 
-            //查询跟单号码是否存在
-            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("track_no", trackHead.getTrackNo());
-            queryWrapper.eq("branch_code", trackHead.getBranchCode());
-            queryWrapper.eq("tenant_id", trackHead.getTenantId());
-            List trackHeads = trackHeadMapper.selectList(queryWrapper);
-            if (trackHeads.size() > 0) {
-                throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
+
+            //只有机加进行跟单编码校验
+            if ("1".equals(trackHead.getClasses())) {
+                //查询跟单号码是否存在
+                QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("track_no", trackHead.getTrackNo());
+                queryWrapper.eq("branch_code", trackHead.getBranchCode());
+                queryWrapper.eq("tenant_id", trackHead.getTenantId());
+                List trackHeads = trackHeadMapper.selectList(queryWrapper);
+                if (trackHeads.size() > 0) {
+                    throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
+                }
             }
 
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
