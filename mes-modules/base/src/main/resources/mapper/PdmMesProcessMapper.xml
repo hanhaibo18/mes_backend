@@ -19,6 +19,8 @@
         <result property="drawNo" column="draw_no"/>
         <result property="sycTime" column="syc_time"/>
         <result property="dataGroup" column="dataGroup"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="modifyBy" column="modify_by"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
