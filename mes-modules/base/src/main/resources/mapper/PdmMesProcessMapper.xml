@@ -27,7 +27,7 @@
     <sql id="BaseColumnList">
         draw_id_group
         ,id,rev,process_user,name,item_status,release_time,process_type,blank_type,ty_item_id,substitute_mat
-        ,reserve1,reserve2,reserve3,draw_no,syc_time,dataGroup,modifyTime,modifyBy
+        ,reserve1,reserve2,reserve3,draw_no,syc_time,dataGroup,modify_time,modify_by
     </sql>
 
     <!-- 查询条件 -->
