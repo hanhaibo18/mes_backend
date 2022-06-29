@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -273,6 +274,7 @@ public class TrackCheckController extends BaseController {
                 } else {
                     checkitem.setCreateTime(new Date());
                     checkitem.setModifyTime(new Date());
+                    checkitem.setDealBy(SecurityUtils.getCurrentUser().getUserId());
                     trackCheckService.save(checkitem);
                 }
 
@@ -351,12 +353,13 @@ public class TrackCheckController extends BaseController {
     }
 
     @ApiOperation(value = "回滚质检审核", notes = "回滚质检审核")
-    @ApiImplicitParam(name = "trackItems", value = "跟单工序项", required = true, dataType = "TrackItem[]", paramType = "query")
+    @ApiImplicitParam(name = "trackChecks", value = "trackCheck的ID", required = true, dataType = "List<String>", paramType = "query")
     @PostMapping("/rollbackQuality")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<TrackCheck[]> rollbackQuality(@RequestBody TrackCheck[] trackChecks) {
-        boolean bool = true;
-        for (TrackCheck trackCheck : trackChecks) {
+    public CommonResult<Boolean> rollbackQuality(@RequestBody List<String> trackChecks) {
+        boolean bool = false;
+        for (String trackCheckId : trackChecks) {
+            TrackCheck trackCheck = trackCheckService.getById(trackCheckId);
             if (StringUtils.isNullOrEmpty(trackCheck.getId())) {
                 return CommonResult.failed("关联工序ID编码不能为空！");
             }
@@ -383,7 +386,7 @@ public class TrackCheckController extends BaseController {
                         } else {
                             //回滚激活当前工序，工序在制状态设置为0
                             for (int j = 0; j < items.size(); j++) {
-                                if (items.get(i).getOptSequence() == items.get(j).getOptSequence()) {
+                                if (Objects.equals(items.get(i).getOptSequence(), items.get(j).getOptSequence())) {
                                     items.get(j).setIsCurrent(0);
                                     items.get(j).setIsDoing(0);
                                     trackItemService.updateById(items.get(j));
@@ -410,9 +413,10 @@ public class TrackCheckController extends BaseController {
 
             trackCheckDetailService.remove(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheck.getTiId()));
             trackCheckService.removeById(trackCheck.getId());
+            bool = true;
         }
         if (bool) {
-            return CommonResult.success(trackChecks, "操作成功！");
+            return CommonResult.success(true, "操作成功！");
         } else {
             return CommonResult.failed("操作失败，请重试！");
         }

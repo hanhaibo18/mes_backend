@@ -66,12 +66,13 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_NO_NULL_MESSAGE = "跟单编号不能为空！";
     public static String TRACK_HEAD_SUCCESS_MESSAGE = "操作成功！";
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
-    
+
     @ApiOperation(value = "其他资料", notes = "通过跟单id、查看其他资料")
     @GetMapping("/other_data/{id}")
     public CommonResult<List<LineStore>> otherData(
             @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
-        return CommonResult.success(trackHeadService.otherData(id));
+        List<LineStore> l = trackHeadService.otherData(id);
+        return CommonResult.success(l);
     }
 
     @ApiOperation(value = "下载完工资料", notes = "通过跟单id、下载完工资料")
