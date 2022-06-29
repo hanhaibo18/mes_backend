@@ -43,8 +43,9 @@ public class PdmOptionController {
         QueryWrapper<PdmOption> queryWrapper = new QueryWrapper<>();
         queryWrapper.like(!StringUtils.isNullOrEmpty(pdmOption.getOpNo()), "op_no", pdmOption.getOpNo())
                 .like(!StringUtils.isNullOrEmpty(pdmOption.getName()), "name", pdmOption.getName())
-                .eq(!StringUtils.isNullOrEmpty(pdmOption.getProcessId()), "process_id", pdmOption.getProcessId());
-        queryWrapper.orderByAsc("op_no");
+                .eq(!StringUtils.isNullOrEmpty(pdmOption.getProcessId()), "process_id", pdmOption.getProcessId())
+                .orderByAsc("op_no + 1")
+                .eq("dataGroup", pdmOption.getDataGroup());
         List<PdmOption> list = pdmOptionService.list(queryWrapper);
         return CommonResult.success(list);
     }
@@ -60,6 +61,17 @@ public class PdmOptionController {
                 .orderByAsc("op_no + 1")
                 .eq("dataGroup", pdmOption.getDataGroup());
         return CommonResult.success(pdmOptionService.page(new Page<>(page, limit), queryWrapper));
+    }
+
+    @GetMapping("/queryOptionDraw/optionDrawList")
+    @ApiOperation(value = "工序图纸列表查询", notes = "工序图纸列表查询")
+    @ApiImplicitParam(name = "pdmDraw", value = "图纸VO", required = true, dataType = "pdmDraw", paramType = "body")
+    public CommonResult<List<PdmDraw>> optionDrawList(PdmOption pdmOption) {
+        QueryWrapper<PdmDraw> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmOption.getId()), "op_id", pdmOption.getId());
+        queryWrapper.orderByDesc("syc_time")
+                .eq("dataGroup", pdmOption.getDataGroup());
+        return CommonResult.success(pdmDrawService.list(queryWrapper));
     }
 
     @GetMapping("/queryOptionDraw/optionDrawPageList")
