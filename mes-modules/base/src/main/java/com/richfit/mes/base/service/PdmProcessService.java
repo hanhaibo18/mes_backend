@@ -11,4 +11,6 @@ public interface PdmProcessService extends IService<PdmProcess> {
     IPage<PdmProcess> queryPageList(int page, int limit, PdmProcess pdmProcess);
 
     List<PdmProcess> queryList(PdmProcess pdmProcess);
+
+    void synctomes(String id) throws Exception;
 }
