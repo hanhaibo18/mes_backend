@@ -63,6 +63,10 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
     @Transactional(rollbackFor = Exception.class)
     public void synctomes(String id) throws Exception {
         try {
+            // 查询要同步的工艺，修改工艺状态
+            PdmProcess pdmProcess = pdmProcessMapper.selectById(id);
+            pdmProcess.setItemStatus("已同步");
+
             // 删除MES数据中工序
             QueryWrapper<PdmMesOption> queryWrapperPdmMesOption = new QueryWrapper<>();
             queryWrapperPdmMesOption.eq("process_id", id);
@@ -102,12 +106,27 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
                 pdmMesOptionService.save(pdmMesOption);
             }
 
+            //删除图纸
+            QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
+            queryWrapperPdmMesDraw.eq("isop", '1');
+            queryWrapperPdmMesDraw.and(wrapper -> wrapper.eq("op_id", pdmProcess.getDrawIdGroup()).or().eq("op_id", pdmProcess.getDrawNo() + "@" + pdmProcess.getDrawNo() + "@" + pdmProcess.getDataGroup()));
+            queryWrapperPdmMesDraw.eq("dataGroup", pdmProcess.getDataGroup());
+            pdmMesDrawService.remove(queryWrapperPdmMesDraw);
+            // 查询并保存图纸到MES
+            QueryWrapper<PdmDraw> queryWrapperPdmDraw = new QueryWrapper<>();
+            queryWrapperPdmDraw.eq("isop", '1');
+            queryWrapperPdmDraw.and(wrapper -> wrapper.eq("op_id", pdmProcess.getDrawIdGroup()).or().eq("op_id", pdmProcess.getDrawNo() + "@" + pdmProcess.getDrawNo() + "@" + pdmProcess.getDataGroup()));
+            queryWrapperPdmDraw.eq("dataGroup", pdmProcess.getDataGroup());
+            List<PdmDraw> pdmDrawList = pdmDrawService.list(queryWrapperPdmDraw);
+            for (PdmDraw pdmDraw : pdmDrawList) {
+                PdmMesDraw pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmDraw), PdmMesDraw.class);
+                pdmMesDrawService.save(pdmMesOption);
+            }
+
             // 删除MES数据中工艺
             pdmMesProcessService.removeById(id);
 
             // 保存MES工艺，并更新工艺接收状态
-            PdmProcess pdmProcess = pdmProcessMapper.selectById(id);
-            pdmProcess.setItemStatus("已同步");
             PdmMesProcess pdmMesProcess = JSON.parseObject(JSON.toJSONString(pdmProcess), PdmMesProcess.class);
             pdmMesProcess.setItemStatus("待发布");
             pdmMesProcess.setModifyTime(new Date());
