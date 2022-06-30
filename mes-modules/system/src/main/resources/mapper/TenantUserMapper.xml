@@ -33,10 +33,10 @@
             <if test="param.emplName != null and param.emplName != ''">
                 and empl_name like '%${param.emplName}%'
             </if>
-            <if test="param.orgId != null and param.orgId != '' and !param.orgId.contains('%')">
+            <if test="param.orgId != null and param.orgId != '' and !param.orgId.contains('%'.toString())">
                 and FIND_IN_SET(belong_org_id, #{param.orgId})
             </if>
-            <if test="param.orgId != null and param.orgId != '' and param.orgId.contains('%')">
+            <if test="param.orgId != null and param.orgId != '' and param.orgId.contains('%'.toString())">
                 and belong_org_id like '${param.orgId}'
             </if>
         </trim>
