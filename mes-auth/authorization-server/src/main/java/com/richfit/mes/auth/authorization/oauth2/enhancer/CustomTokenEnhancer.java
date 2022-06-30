@@ -21,10 +21,11 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         //TODO 自定义token内容
         TenantUserDetails tenantUserDetails = (TenantUserDetails) authentication.getUserAuthentication().getPrincipal();
 
-        additionalInfo.put("id",tenantUserDetails.getUserId());
-        additionalInfo.put("tenantId",tenantUserDetails.getTenantId());
-        additionalInfo.put("orgId",tenantUserDetails.getOrgId());
-        additionalInfo.put("belongOrgId",tenantUserDetails.getBelongOrgId());
+        additionalInfo.put("id", tenantUserDetails.getUserId());
+        additionalInfo.put("tenantId", tenantUserDetails.getTenantId());
+        additionalInfo.put("orgId", tenantUserDetails.getOrgId());
+        additionalInfo.put("belongOrgId", tenantUserDetails.getBelongOrgId());
+        additionalInfo.put("tenantErpCode", tenantUserDetails.getTenantErpCode());
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
         return accessToken;

@@ -48,11 +48,18 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Autowired
     private BaseServiceClient baseServiceClient;
 
+    @Autowired
+    private TenantService tenantService;
+
     @Override
     //@Cacheable(value = CacheConstant.SYS_USER_DETAILS, key = "#uniqueId")
     public TenantUser getByUniqueId(String uniqueId) {
         TenantUser user = this.getOne(new QueryWrapper<TenantUser>()
                 .eq("user_account", uniqueId));
+
+        //获取租户对应的ERP—code
+        user.setTenantErpCode(tenantService.getById(user.getTenantId()).getTenantErpCode());
+
         if (Objects.isNull(user)) {
             throw new GlobalException("user not found with uniqueId:" + uniqueId, ResultCode.ITEM_NOT_FOUND);
         }

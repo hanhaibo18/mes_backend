@@ -46,7 +46,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 true,
                 true,
                 true,
-                this.obtainGrantedAuthorities(user));
+                this.obtainGrantedAuthorities(user), user.getTenantErpCode());
     }
 
     /**

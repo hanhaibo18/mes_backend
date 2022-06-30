@@ -1,7 +1,6 @@
 package com.richfit.mes.common.model.sys;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -86,5 +85,8 @@ public class TenantUser extends BaseEntity<TenantUser> {
 
     @TableField(exist = false)
     private String belongOrgName;
+
+    @TableField(exist = false)
+    private String tenantErpCode;
 
 }

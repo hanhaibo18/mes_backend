@@ -32,12 +32,18 @@ public class TenantUserDetails extends User {
      */
     private String belongOrgId;
 
-    public TenantUserDetails(String id, String tenantId, String orgId, String belongOrgId, String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities) {
+    /**
+     * 所在租户ERP code
+     */
+    private String tenantErpCode;
+
+    public TenantUserDetails(String id, String tenantId, String orgId, String belongOrgId, String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities, String tenantErpCode) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.userId = id;
         this.tenantId = tenantId;
         this.orgId = orgId;
         this.belongOrgId = belongOrgId;
+        this.tenantErpCode = tenantErpCode;
     }
 
     public String getUserId() {
@@ -54,6 +60,10 @@ public class TenantUserDetails extends User {
 
     public String getBelongOrgId() {
         return belongOrgId;
+    }
+
+    public String getTenantErpCode() {
+        return tenantErpCode;
     }
 
     public boolean isSysAdmin() {
