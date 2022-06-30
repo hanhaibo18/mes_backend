@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.*;
@@ -16,6 +17,14 @@ import java.util.List;
  * @Description 跟单服务
  */
 public interface TrackHeadService extends IService<TrackHead> {
+
+    /**
+     * 描述: 其他资料列表
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/22 10:25
+     **/
+    List<LineStore> otherData(String id) throws Exception;
 
     /**
      * 描述: 生成完工资料

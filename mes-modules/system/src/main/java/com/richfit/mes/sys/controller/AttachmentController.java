@@ -11,22 +11,28 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.core.utils.ServletUtils;
+import com.richfit.mes.common.model.produce.CheckAttachment;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.sys.provider.ProduceServiceClient;
 import com.richfit.mes.sys.service.AttachmentService;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author sun
@@ -41,6 +47,8 @@ public class AttachmentController extends BaseController {
 
     @Autowired
     private AttachmentService attachmentService;
+    @Resource
+    private ProduceServiceClient produceService;
 
     @PostMapping("upload")
     @ApiOperation(value = "上传文件", notes = "上传文件")
@@ -67,6 +75,46 @@ public class AttachmentController extends BaseController {
         } else {
             return CommonResult.failed("请上传文件");
         }
+    }
+
+    @PostMapping("/filesUpload")
+    @Transactional(rollbackFor = Exception.class)
+    @ApiOperation(value = "上传文件", notes = "上传文件")
+    //, FilesUpload filesUpload
+    public CommonResult<List<Attachment>> filesUpload(@ApiParam(value = "要上传的文件", required = true) @RequestParam("file") MultipartFile[] files, String thId, String tiId, String classify, String branchCode) {
+        List<Attachment> attachments = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                try {
+                    String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                    Attachment attachment = new Attachment();
+                    attachment.setTenantId(tenantId);
+                    attachment.setAttachType(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+                    attachment.setAttachSize(String.valueOf(file.getSize()));
+                    attachment.setAttachName(file.getOriginalFilename());
+                    attachment.setGroupName(thId);
+                    attachment.setClassify(classify);
+                    attachment = attachmentService.upload(attachment, file.getBytes());
+                    attachments.add(attachment);
+                    //关联文件
+                    CheckAttachment checkAttachment = new CheckAttachment();
+                    checkAttachment.setThId(thId);
+                    checkAttachment.setTiId(tiId);
+                    checkAttachment.setClassify(classify);
+                    checkAttachment.setBranchCode(branchCode);
+                    checkAttachment.setTenantId(tenantId);
+                    checkAttachment.setFileId(attachment.getId());
+                    produceService.saveCheckFile(checkAttachment);
+                } catch (Exception e) {
+                    log.error("upload attachment error: {}", e.getMessage(), e);
+                    e.printStackTrace();
+                    return CommonResult.failed(e.getMessage());
+                }
+            } else {
+                return CommonResult.failed("请上传文件");
+            }
+        }
+        return CommonResult.success(attachments);
     }
 
     @GetMapping("save")

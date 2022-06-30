@@ -9,11 +9,13 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Action;
+import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackCertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
@@ -46,6 +48,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/produce/track_head")
 public class TrackHeadController extends BaseController {
 
+
+    @Autowired
+    private PlanService planService;
+
     @Autowired
     private TrackHeadService trackHeadService;
 
@@ -61,6 +67,13 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_SUCCESS_MESSAGE = "操作成功！";
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
 
+    @ApiOperation(value = "其他资料", notes = "通过跟单id、查看其他资料")
+    @GetMapping("/other_data/{id}")
+    public CommonResult<List<LineStore>> otherData(
+            @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
+        List<LineStore> l = trackHeadService.otherData(id);
+        return CommonResult.success(l);
+    }
 
     @ApiOperation(value = "下载完工资料", notes = "通过跟单id、下载完工资料")
     @GetMapping("/downloads_completion_data/{id}")

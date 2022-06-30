@@ -32,6 +32,16 @@ public class PdmObjectController {
     @Autowired
     private PdmObjectService pdmObjectService;
 
+    @GetMapping("/query/list")
+    @ApiOperation(value = "工装列表查询", notes = "工装列表查询")
+    @ApiImplicitParam(name = "pdmObject", value = "工装VO", required = true, dataType = "pdmObject", paramType = "body")
+    public CommonResult<List<PdmObject>> getList(PdmObject pdmObject) {
+        QueryWrapper<PdmObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmObject.getOpId()), "op_id", pdmObject.getOpId());
+        queryWrapper.orderByDesc("rev").eq("dataGroup", pdmObject.getDataGroup());
+        return CommonResult.success(pdmObjectService.list(queryWrapper));
+    }
+
     @GetMapping("/query/pageList")
     @ApiOperation(value = "工装分页查询", notes = "工装分页查询")
     @ApiImplicitParam(name = "pdmObject", value = "工装VO", required = true, dataType = "pdmObject", paramType = "body")

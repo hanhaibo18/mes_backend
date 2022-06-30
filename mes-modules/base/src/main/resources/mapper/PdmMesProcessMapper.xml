@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.base.dao.PdmMesProcessMapper">
+    <resultMap type="com.richfit.mes.common.model.base.PdmMesProcess" id="pdmMesProcessResultMap">
+        <id property="drawIdGroup" column="draw_id_group"/>
+        <result property="id" column="id"/>
+        <result property="rev" column="rev"/>
+        <result property="processUser" column="process_user"/>
+        <result property="name" column="name"/>
+        <result property="itemStatus" column="item_status"/>
+        <result property="releaseTime" column="release_time"/>
+        <result property="processType" column="process_type"/>
+        <result property="blankType" column="blank_type"/>
+        <result property="substituteMat" column="substitute_mat"/>
+        <result property="tyItemId" column="ty_item_id"/>
+        <result property="reserve1" column="reserve1"/>
+        <result property="reserve2" column="reserve2"/>
+        <result property="reserve3" column="reserve3"/>
+        <result property="drawNo" column="draw_no"/>
+        <result property="sycTime" column="syc_time"/>
+        <result property="dataGroup" column="dataGroup"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="modifyBy" column="modify_by"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="BaseColumnList">
+        draw_id_group
+        ,id,rev,process_user,name,item_status,release_time,process_type,blank_type,ty_item_id,substitute_mat
+        ,reserve1,reserve2,reserve3,draw_no,syc_time,dataGroup,modify_time,modify_by
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="BaseQuerySql">
+        <where>
+            1 = 1
+            <if test="pageVO != null">
+                <if test="pageVO.drawNo !=null">
+                    AND draw_no LIKE CONCAT(CONCAT('%',#{pageVO.drawNo}),'%')
+                </if>
+                <if test="pageVO.itemStatus !=null and pageVO.itemStatus !=''">
+                    AND item_status = #{pageVO.itemStatus}
+                </if>
+            </if>
+            and process_type not in ('下料工艺','铆工工艺','油漆工艺')
+            and dataGroup = #{pageVO.dataGroup}
+        </where>
+    </sql>
+
+    <select id="queryList" resultMap="pdmMesProcessResultMap">
+        select
+        <include refid="BaseColumnList"/>
+        from base_mes_pdm_process
+        <include refid="BaseQuerySql"/>
+        order by syc_time DESC
+    </select>
+
+    <select id="queryPageList" resultMap="pdmMesProcessResultMap">
+        select
+        <include refid="BaseColumnList"/>
+        from base_mes_pdm_process
+        <include refid="BaseQuerySql"/>
+        order by syc_time DESC
+    </select>
+
+</mapper>

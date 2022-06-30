@@ -37,4 +37,15 @@ public interface TenantUserMapper extends BaseMapper<TenantUser> {
      **/
     @Select("Select * From sys_tenant_user ${ew.customSqlSegment}")
     List<TenantUserVo> queryUserList(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
+
+    /**
+     * 功能描述: 查询用户
+     *
+     * @param queryWrapper
+     * @Author: xinYu.hou
+     * @Date: 2022/6/27 16:47
+     * @return: TenantUserVo
+     **/
+    @Select("Select * From sys_tenant_user ${ew.customSqlSegment}")
+    TenantUserVo queryUser(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
 }

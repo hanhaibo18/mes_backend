@@ -92,4 +92,15 @@ public interface TenantUserService {
      * @return: List<Map < String, String>>
      **/
     List<TenantUserVo> queryUserByBranchCode(String branchCode);
+
+
+    /**
+     * 功能描述: 根据用户编号查询用户信息
+     *
+     * @param userAccount
+     * @Author: xinYu.hou
+     * @Date: 2022/6/27 16:43
+     * @return: TenantUserVo
+     **/
+    TenantUserVo queryByUserAccount(String userAccount);
 }

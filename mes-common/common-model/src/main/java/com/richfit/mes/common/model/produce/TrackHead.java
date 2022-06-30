@@ -229,4 +229,19 @@ public class TrackHead extends BaseEntity<TrackHead> {
      **/
     private String isTestBar;
 
+    /**
+     * 描述: 项目bomID
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/27 10:25
+     **/
+    private String projectBomId;
+
+    /**
+     * 描述: 跟单分类：1机加  2装配 3热处理 4钢结构
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/28 10:25
+     **/
+    private String classes;
 }

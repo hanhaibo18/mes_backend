@@ -27,7 +27,7 @@ public class CustomGlobalExceptionHandler {
     /**
      * 处理参数校验异常
      *
-     * @param ex      ex
+     * @param ex ex
      * @return ResponseEntity
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -38,7 +38,7 @@ public class CustomGlobalExceptionHandler {
                 .stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.joining(","));
-        CommonResult<List<String>> responseBean = new CommonResult(ResultCode.INVALID_ARGUMENTS.getCode(), errors,null);
+        CommonResult<List<String>> responseBean = new CommonResult(ResultCode.INVALID_ARGUMENTS.getCode(), errors, null);
         return new ResponseEntity<>(responseBean, HttpStatus.BAD_REQUEST);
     }
 
@@ -50,7 +50,7 @@ public class CustomGlobalExceptionHandler {
      * @return ResponseEntity
      */
     @ExceptionHandler(GlobalException.class)
-    public ResponseEntity handleGlobalException(GlobalException globalException){
+    public ResponseEntity handleGlobalException(GlobalException globalException) {
         ResultCode errorCode = globalException.getErrorCode();
         HttpStatus status;
 
@@ -73,13 +73,14 @@ public class CustomGlobalExceptionHandler {
                 break;
         }
 
-        return new ResponseEntity(CommonResult.failed(errorCode,globalException.getMessage()),new HttpHeaders(), status);
+        return new ResponseEntity(CommonResult.failed(errorCode, globalException.getMessage()), new HttpHeaders(), status);
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public ResponseEntity handleException(Exception e){
-        CommonResult<List<String>> responseBean = new CommonResult<>(ResultCode.FAILED.getCode(),e.getMessage(),null);
+    public ResponseEntity handleException(Exception e) {
+        e.printStackTrace();
+        CommonResult<List<String>> responseBean = new CommonResult<>(ResultCode.FAILED.getCode(), e.getMessage(), null);
         return new ResponseEntity<>(responseBean, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
