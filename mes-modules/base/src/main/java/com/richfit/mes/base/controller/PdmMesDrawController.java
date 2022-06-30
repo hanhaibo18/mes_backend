@@ -34,7 +34,8 @@ public class PdmMesDrawController {
     @ApiImplicitParam(name = "pdmDraw", value = "工序图纸VO", required = true, dataType = "PdmDraw", paramType = "body")
     public CommonResult<List<PdmMesDraw>> getList(PdmMesDraw pdmMesDraw) {
         QueryWrapper<PdmMesDraw> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmMesDraw.getItemId()), "item_id", pdmMesDraw.getItemId());
+        queryWrapper.eq("isop", '1');
+        queryWrapper.and(wrapper -> wrapper.eq("op_id", pdmMesDraw.getOpId()).or().eq("op_id", pdmMesDraw.getItemId() + "@" + pdmMesDraw.getItemId() + "@" + pdmMesDraw.getDataGroup()));
         queryWrapper.orderByDesc("syc_time")
                 .eq("dataGroup", pdmMesDraw.getDataGroup());
         List<PdmMesDraw> list = pdmMesDrawService.list(queryWrapper);
@@ -46,6 +47,8 @@ public class PdmMesDrawController {
     @ApiImplicitParam(name = "pdmDraw", value = "工序VO", required = true, dataType = "pdmDraw", paramType = "body")
     public CommonResult<IPage<PdmMesDraw>> getPageList(int page, int limit, PdmMesDraw pdmMesDraw) {
         QueryWrapper<PdmMesDraw> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("isop", '1');
+        queryWrapper.eq("op_id", pdmMesDraw.getOpId());
         queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmMesDraw.getItemId()), "item_id", pdmMesDraw.getItemId());
         queryWrapper.orderByDesc("syc_time")
                 .eq("dataGroup", pdmMesDraw.getDataGroup());
