@@ -83,6 +83,9 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "合格证来源 0：开出合格证 1：接收合格证")
     private String certOrigin;
 
+    @ApiModelProperty(value = "是否推送 0：未推送  1：已推送")
+    private String isPush;
+
     @ApiModelProperty(value = "试棒数量 from跟单")
     @TableField(exist = false)
     private Integer testBarNumber;
