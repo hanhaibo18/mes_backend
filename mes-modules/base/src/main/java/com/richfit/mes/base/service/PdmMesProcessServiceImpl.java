@@ -39,6 +39,9 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     @Autowired
     private SequenceService sequenceService;
 
+    @Autowired
+    private OperatiponService operatiponService;
+
     @Override
     public IPage<PdmMesProcess> queryPageList(int page, int limit, PdmMesProcess pdmProcess) {
         Page<PdmMesProcess> ipage = new Page<>(page, limit);
@@ -59,8 +62,34 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             queryWrapperPdmMesOption.eq("process_id", pdmMesProcess.getDrawIdGroup());
             List<PdmMesOption> pdmMesOptionList = pdmMesOptionService.list(queryWrapperPdmMesOption);
             for (PdmMesOption pdmMesOption : pdmMesOptionList) {
+
+                //工序字典
+                QueryWrapper<Operatipon> queryWrapperOperatipon = new QueryWrapper<>();
+                queryWrapperOperatipon.eq("opt_name", pdmMesOption.getName());
+                queryWrapperOperatipon.eq("branch_code", pdmMesOption.getDataGroup());
+                queryWrapperOperatipon.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                List<Operatipon> operatipons = operatiponService.list(queryWrapperOperatipon);
+
                 //添加工序
                 Sequence sequence = new Sequence();
+                if (operatipons.size() > 0) {
+                    //工序字典存在当前工序
+                    sequence.setOptId(operatipons.get(0).getOptName());
+                } else {
+                    //工序字典不存在当前工序
+                    //添加工序字典
+                    Operatipon operatipon = new Operatipon();
+                    operatipon.setId(UUID.randomUUID().toString().replace("-", ""));
+                    operatipon.setOptCode(pdmMesOption.getName());
+                    operatipon.setOptName(pdmMesOption.getName());
+                    operatipon.setBranchCode(pdmMesOption.getDataGroup());
+                    operatipon.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    operatipon.setCreateTime(new Date());
+                    operatipon.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    operatipon.setModifyTime(new Date());
+                    operatipon.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    operatiponService.save(operatipon);
+                }
                 sequence.setRouterId(routerId);
                 sequence.setId(UUID.randomUUID().toString().replace("-", ""));
                 sequence.setOptOrder(Integer.parseInt(pdmMesOption.getOpNo()));
