@@ -5,16 +5,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.PdmMesProcessMapper;
-import com.richfit.mes.common.model.base.PdmMesDraw;
-import com.richfit.mes.common.model.base.PdmMesObject;
-import com.richfit.mes.common.model.base.PdmMesOption;
-import com.richfit.mes.common.model.base.PdmMesProcess;
+import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author zhiqiang.lu
@@ -35,6 +33,12 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     @Autowired
     private PdmMesDrawService pdmMesDrawService;
 
+    @Autowired
+    public RouterService routerService;
+
+    @Autowired
+    private SequenceService sequenceService;
+
     @Override
     public IPage<PdmMesProcess> queryPageList(int page, int limit, PdmMesProcess pdmProcess) {
         Page<PdmMesProcess> ipage = new Page<>(page, limit);
@@ -49,11 +53,32 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     @Override
     public void release(PdmMesProcess pdmMesProcess) throws Exception {
         try {
+            String routerId = UUID.randomUUID().toString().replace("-", "");
             // MES数据中工序
             QueryWrapper<PdmMesOption> queryWrapperPdmMesOption = new QueryWrapper<>();
             queryWrapperPdmMesOption.eq("process_id", pdmMesProcess.getDrawIdGroup());
             List<PdmMesOption> pdmMesOptionList = pdmMesOptionService.list(queryWrapperPdmMesOption);
             for (PdmMesOption pdmMesOption : pdmMesOptionList) {
+                //添加工序
+                Sequence sequence = new Sequence();
+                sequence.setRouterId(routerId);
+                sequence.setId(UUID.randomUUID().toString().replace("-", ""));
+                sequence.setOptOrder(Integer.parseInt(pdmMesOption.getOpNo()));
+                sequence.setOp_no(pdmMesOption.getOpNo());
+                sequence.setType(pdmMesOption.getType());
+                sequence.setOptName(pdmMesOption.getName());
+                sequence.setContent(pdmMesOption.getContent());
+                sequence.setGzs(pdmMesOption.getGzs());
+                sequence.setDrawing(pdmMesOption.getDrawing());
+                sequence.setVersionCode(pdmMesOption.getRev());
+                sequence.setBranchCode(pdmMesOption.getDataGroup());
+                sequence.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                sequence.setCreateTime(new Date());
+                sequence.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                sequence.setModifyTime(new Date());
+                sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                sequenceService.save(sequence);
+
                 // MES数据中工序的工装
                 QueryWrapper<PdmMesObject> queryWrapperPdmMesObject = new QueryWrapper<>();
                 queryWrapperPdmMesObject.eq("op_id", pdmMesOption.getId());
@@ -76,6 +101,31 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             pdmMesProcess.setModifyTime(new Date());
             pdmMesProcess.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             pdmMesProcessMapper.updateById(pdmMesProcess);
+
+            //更新老工艺状态模块
+            Router router = new Router();
+            router.setIsActive("0");
+            router.setStatus("2");
+            QueryWrapper<Router> queryWrapperRouter = new QueryWrapper<Router>();
+            queryWrapperRouter.eq("router_no", pdmMesProcess.getDrawNo());
+            queryWrapperRouter.eq("branch_code", pdmMesProcess.getDataGroup());
+            queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            routerService.update(router, queryWrapperRouter);
+            //添加新工艺模块
+            router.setId(routerId);
+            router.setVersion(pdmMesProcess.getRev());
+            router.setRouterName(pdmMesProcess.getName());
+            router.setRouterNo(pdmMesProcess.getDrawNo());
+            router.setRemark(pdmMesProcess.getDrawNo());
+            router.setBranchCode(pdmMesProcess.getDataGroup());
+            router.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            router.setCreateTime(new Date());
+            router.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+            router.setModifyTime(new Date());
+            router.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            router.setStatus("1");
+            router.setIsActive("1");
+            routerService.save(router);
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("同步MES出现异常");
