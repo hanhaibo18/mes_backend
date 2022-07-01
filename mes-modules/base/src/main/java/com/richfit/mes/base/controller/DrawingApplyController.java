@@ -58,6 +58,7 @@ public class DrawingApplyController extends BaseController {
         } else {
             QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
             queryWrapper.eq("drawing_no", drawingApply.getDrawingNo());
+            queryWrapper.eq("branch_code", drawingApply.getBranchCode());
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
             if (oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())) {
@@ -86,6 +87,7 @@ public class DrawingApplyController extends BaseController {
             if (!drawingApply.getDrawingNo().equals(oldDrawingNo)) {
                 QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
                 queryWrapper.eq("drawing_no", drawingApply.getDrawingNo());
+                queryWrapper.eq("branch_code", drawingApply.getBranchCode());
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
                 if (oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())) {

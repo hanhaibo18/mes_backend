@@ -12,6 +12,7 @@ import lombok.Data;
 public class Sequence extends BaseEntity<Sequence> {
 
 
+    private static final long serialVersionUID = 2195891974936492858L;
     /**
      * 工序ID
      */
@@ -98,4 +99,43 @@ public class Sequence extends BaseEntity<Sequence> {
      */
     @ApiModelProperty(value = "下工序", dataType = "int")
     private int optNextOrder;
+
+    /**
+     * 是否有工序图（PDM新增）
+     */
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String drawing;
+
+    /**
+     * 工序类型PDM
+     */
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String type;
+
+
+    /**
+     * 工序序号pdm
+     */
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String op_no;
+
+
+    /**
+     * 关/重/试件（PDM新增）
+     */
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String gzs;
+
+
+    /**
+     * 工序内容（PDM新增）
+     */
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String content;
+
+    /**
+     * 版本号
+     */
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String versionCode;
 }

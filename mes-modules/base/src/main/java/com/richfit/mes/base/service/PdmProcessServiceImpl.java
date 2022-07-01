@@ -6,10 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.PdmProcessMapper;
-import com.richfit.mes.common.model.base.PdmMesOption;
-import com.richfit.mes.common.model.base.PdmMesProcess;
-import com.richfit.mes.common.model.base.PdmOption;
-import com.richfit.mes.common.model.base.PdmProcess;
+import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +36,9 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
     private PdmDrawService pdmDrawService;
 
     @Autowired
+    private PdmBomService pdmBomService;
+
+    @Autowired
     private PdmMesProcessService pdmMesProcessService;
 
     @Autowired
@@ -49,6 +49,9 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
 
     @Autowired
     private PdmMesDrawService pdmMesDrawService;
+
+    @Autowired
+    private PdmMesBomService pdmMesBomService;
 
 
     @Override
@@ -64,81 +67,94 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void synctomes(String id) throws Exception {
+    public void synctomes(PdmProcess pdmProcess) throws Exception {
         try {
             // 查询要同步的工艺，修改工艺状态
-            PdmProcess pdmProcess = pdmProcessMapper.selectById(id);
             pdmProcess.setItemStatus("已同步");
 
             // 删除MES数据中工序
             QueryWrapper<PdmMesOption> queryWrapperPdmMesOption = new QueryWrapper<>();
-            queryWrapperPdmMesOption.eq("process_id", id);
+            queryWrapperPdmMesOption.eq("process_id", pdmProcess.getDrawIdGroup());
             pdmMesOptionService.remove(queryWrapperPdmMesOption);
 
             // 查询并保存工序到MES
             QueryWrapper<PdmOption> queryWrapperPdmOption = new QueryWrapper<>();
-            queryWrapperPdmOption.eq("process_id", id);
+            queryWrapperPdmOption.eq("process_id", pdmProcess.getDrawIdGroup());
             List<PdmOption> PdmOptionList = pdmOptionService.list(queryWrapperPdmOption);
             for (PdmOption pdmOption : PdmOptionList) {
-//                // 删除MES数据中工序的工装
-//                QueryWrapper<PdmMesObject> queryWrapperPdmMesObject = new QueryWrapper<>();
-//                queryWrapperPdmMesObject.eq("op_id", pdmOption.getId());
-//                pdmMesObjectService.remove(queryWrapperPdmMesObject);
-//                // 查询并保存工序的工装到MES
-//                QueryWrapper<PdmObject> queryWrapperPdmObject = new QueryWrapper<>();
-//                queryWrapperPdmObject.eq("op_id", pdmOption.getId());
-//                List<PdmObject> pdmObjectList = pdmObjectService.list(queryWrapperPdmObject);
-//                for (PdmObject pdmObject : pdmObjectList) {
-//                    PdmMesObject pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmObject), PdmMesObject.class);
-//                    pdmMesObjectService.save(pdmMesOption);
-//                }
-//                // 删除MES数据中工序的图纸
-//                QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
-//                queryWrapperPdmMesDraw.eq("op_id", pdmOption.getId());
-//                pdmMesDrawService.remove(queryWrapperPdmMesDraw);
-//                // 查询并保存工序的图纸到MES
-//                QueryWrapper<PdmDraw> queryWrapperPdmDraw = new QueryWrapper<>();
-//                queryWrapperPdmDraw.eq("op_id", pdmOption.getId());
-//                List<PdmDraw> pdmDrawList = pdmDrawService.list(queryWrapperPdmDraw);
-//                for (PdmDraw pdmDraw : pdmDrawList) {
-//                    PdmMesDraw pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmDraw), PdmMesDraw.class);
-//                    pdmMesDrawService.save(pdmMesOption);
-//                }
+                // 删除MES数据中工序的工装
+                QueryWrapper<PdmMesObject> queryWrapperPdmMesObject = new QueryWrapper<>();
+                queryWrapperPdmMesObject.eq("op_id", pdmOption.getId());
+                pdmMesObjectService.remove(queryWrapperPdmMesObject);
+                // 查询并保存工序的工装到MES
+                QueryWrapper<PdmObject> queryWrapperPdmObject = new QueryWrapper<>();
+                queryWrapperPdmObject.eq("op_id", pdmOption.getId());
+                List<PdmObject> pdmObjectList = pdmObjectService.list(queryWrapperPdmObject);
+                for (PdmObject pdmObject : pdmObjectList) {
+                    PdmMesObject pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmObject), PdmMesObject.class);
+                    pdmMesObjectService.save(pdmMesOption);
+                }
+                // 删除MES数据中工序的图纸
+                QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
+                queryWrapperPdmMesDraw.eq("op_id", pdmOption.getId());
+                pdmMesDrawService.remove(queryWrapperPdmMesDraw);
+                // 查询并保存工序的图纸到MES
+                QueryWrapper<PdmDraw> queryWrapperPdmDraw = new QueryWrapper<>();
+                queryWrapperPdmDraw.eq("op_id", pdmOption.getId());
+                List<PdmDraw> pdmDrawList = pdmDrawService.list(queryWrapperPdmDraw);
+                for (PdmDraw pdmDraw : pdmDrawList) {
+                    PdmMesDraw pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmDraw), PdmMesDraw.class);
+                    pdmMesDrawService.save(pdmMesOption);
+                }
                 // 保存工序到MES
                 PdmMesOption pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmOption), PdmMesOption.class);
                 pdmMesOptionService.save(pdmMesOption);
             }
 
-//            //删除图纸
-//            QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
-//            queryWrapperPdmMesDraw.eq("isop", '1');
-//            queryWrapperPdmMesDraw.and(wrapper -> wrapper.eq("op_id", pdmProcess.getDrawIdGroup()).or().eq("op_id", pdmProcess.getDrawNo() + "@" + pdmProcess.getDrawNo() + "@" + pdmProcess.getDataGroup()));
-//            queryWrapperPdmMesDraw.eq("dataGroup", pdmProcess.getDataGroup());
-//            pdmMesDrawService.remove(queryWrapperPdmMesDraw);
-//            // 查询并保存图纸到MES
-//            QueryWrapper<PdmDraw> queryWrapperPdmDraw = new QueryWrapper<>();
-//            queryWrapperPdmDraw.eq("isop", '1');
-//            queryWrapperPdmDraw.and(wrapper -> wrapper.eq("op_id", pdmProcess.getDrawIdGroup()).or().eq("op_id", pdmProcess.getDrawNo() + "@" + pdmProcess.getDrawNo() + "@" + pdmProcess.getDataGroup()));
-//            queryWrapperPdmDraw.eq("dataGroup", pdmProcess.getDataGroup());
-//            List<PdmDraw> pdmDrawList = pdmDrawService.list(queryWrapperPdmDraw);
-//            for (PdmDraw pdmDraw : pdmDrawList) {
-//                PdmMesDraw pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmDraw), PdmMesDraw.class);
-//                pdmMesDrawService.save(pdmMesOption);
-//            }
+            //删除图纸
+            QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
+            queryWrapperPdmMesDraw.eq("isop", '1');
+            queryWrapperPdmMesDraw.and(wrapper -> wrapper.eq("op_id", pdmProcess.getDrawIdGroup()).or().eq("op_id", pdmProcess.getDrawNo() + "@" + pdmProcess.getDrawNo() + "@" + pdmProcess.getDataGroup()));
+            queryWrapperPdmMesDraw.eq("dataGroup", pdmProcess.getDataGroup());
+            pdmMesDrawService.remove(queryWrapperPdmMesDraw);
+            // 查询并保存图纸到MES
+            QueryWrapper<PdmDraw> queryWrapperPdmDraw = new QueryWrapper<>();
+            queryWrapperPdmDraw.eq("isop", '1');
+            queryWrapperPdmDraw.and(wrapper -> wrapper.eq("op_id", pdmProcess.getDrawIdGroup()).or().eq("op_id", pdmProcess.getDrawNo() + "@" + pdmProcess.getDrawNo() + "@" + pdmProcess.getDataGroup()));
+            queryWrapperPdmDraw.eq("dataGroup", pdmProcess.getDataGroup());
+            List<PdmDraw> pdmDrawList = pdmDrawService.list(queryWrapperPdmDraw);
+            for (PdmDraw pdmDraw : pdmDrawList) {
+                PdmMesDraw pdmMesOption = JSON.parseObject(JSON.toJSONString(pdmDraw), PdmMesDraw.class);
+                pdmMesDrawService.save(pdmMesOption);
+            }
 
-            // 删除MES数据中工艺
-            pdmMesProcessService.removeById(id);
+            //全量保存更新BOM
+            PdmBom bom = pdmBomService.getBomByProcessIdAndRev(pdmProcess.getDrawNo(), pdmProcess.getRev());
+            PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
+            pdmMesBomService.saveOrUpdate(pdmMesBom);
+            getBomList(bom.getChildBom());
 
-            // 保存MES工艺，并更新工艺接收状态
+            // 保存&更新MES工艺，并更新工艺接收状态
             PdmMesProcess pdmMesProcess = JSON.parseObject(JSON.toJSONString(pdmProcess), PdmMesProcess.class);
             pdmMesProcess.setItemStatus("待发布");
             pdmMesProcess.setModifyTime(new Date());
             pdmMesProcess.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-            pdmMesProcessService.save(pdmMesProcess);
+            pdmMesProcessService.saveOrUpdate(pdmMesProcess);
             pdmProcessMapper.updateById(pdmProcess);
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("同步MES出现异常");
+        }
+    }
+
+    //递归函数
+    public void getBomList(List<PdmBom> pdmBoms) {
+        for (PdmBom bom : pdmBoms) {
+            PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
+            pdmMesBomService.saveOrUpdate(pdmMesBom);
+            if (bom.getChildBom().size() > 0) {
+                getBomList(bom.getChildBom());
+            }
         }
     }
 }

@@ -23,7 +23,17 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public List<Attachment> selectAttachmentsList(List<String> idList) {
+        return null;
+    }
+
+    @Override
     public CommonResult<TenantUserVo> queryByUserAccount(String userAccount) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<Boolean> delete(String id) {
         return CommonResult.success(null);
     }
 
