@@ -40,7 +40,7 @@ public class PdmMesBomController {
     @Autowired
     private PdmMesBomService pdmMesBomService;
 
-    @GetMapping(value = "/getBomByProcesMessIdAndRev")
+    @GetMapping(value = "/getBomByProcessIdAndRev")
     public CommonResult<List<PdmMesBom>> getList(String id, String ver) {
         ArrayList<PdmMesBom> pdmBoms = new ArrayList<>();
         pdmBoms.add(pdmMesBomService.getBomByProcessIdAndRev(id, ver));
