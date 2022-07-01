@@ -10,12 +10,10 @@ import com.richfit.mes.common.model.base.PdmMesProcess;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -51,6 +49,14 @@ public class PdmMesProcessController {
     @ApiImplicitParam(name = "pdmMesProcess", value = "工艺VO", required = true, dataType = "PdmMesProcess", paramType = "body")
     public CommonResult<IPage<PdmMesProcess>> getPageList(int page, int limit, PdmMesProcess pdmMesProcess) {
         return CommonResult.success(pdmMesProcessService.queryPageList(page, limit, pdmMesProcess));
+    }
+
+    @PostMapping("/release")
+    @ApiOperation(value = "发布", notes = "发布")
+    public void release(@ApiParam(value = "发布的工艺列表") @RequestBody List<PdmMesProcess> pdmMesProcesses) throws Exception {
+        for (PdmMesProcess p : pdmMesProcesses) {
+            pdmMesProcessService.release(p);
+        }
     }
 
 

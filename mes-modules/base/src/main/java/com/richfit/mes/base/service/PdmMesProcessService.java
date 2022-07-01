@@ -15,4 +15,6 @@ public interface PdmMesProcessService extends IService<PdmMesProcess> {
     IPage<PdmMesProcess> queryPageList(int page, int limit, PdmMesProcess pdmProcess);
 
     List<PdmMesProcess> queryList(PdmMesProcess pdmProcess);
+
+    void release(PdmMesProcess pdmMesProcess) throws Exception;
 }
