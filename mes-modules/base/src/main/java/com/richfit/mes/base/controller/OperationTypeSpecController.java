@@ -78,6 +78,27 @@ public class OperationTypeSpecController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "工艺类型与质量资料", notes = "工艺类型与质量资料")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "optType", value = "工艺类型", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, paramType = "query", dataType = "string")
+    })
+    @GetMapping("/list")
+    public CommonResult<List<OperationTypeSpec>> list(String optType, String branchCode, String tenantId) {
+        QueryWrapper<OperationTypeSpec> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if (!StringUtils.isNullOrEmpty(optType)) {
+            queryWrapper.eq("opt_type", Integer.parseInt(optType));
+        }
+        return CommonResult.success(operatiponTypeSpecService.list(queryWrapper));
+    }
+
     @ApiOperation(value = "新增工艺类型与质量资料", notes = "新增工艺类型与质量资料")
     @ApiImplicitParam(name = "operatipon", value = "工序字典", required = true, dataType = "OperationTypeSpec", paramType = "path")
     @PostMapping("/add")

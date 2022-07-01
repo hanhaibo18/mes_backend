@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.base.OperationTypeSpec;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +30,14 @@ public class OperationTypeSpecServiceImpl extends ServiceImpl<OperationTypeSpecM
         this.removeByMap(parMap);
 
         //2 重新保存新的配置
-        for (int ii = 0; ii < operatiponTypeSpecs.size(); ii++) {
-            this.save(operatiponTypeSpecs.get(ii));
+//        for (int ii = 0; ii < operatiponTypeSpecs.size(); ii++) {
+//            this.save(operatiponTypeSpecs.get(ii));
+//        }
+        for (OperationTypeSpec operationTypeSpec : operatiponTypeSpecs) {
+            operationTypeSpec.setModifyTime(new Date());
+            operationTypeSpec.setRemark("A");
+            this.save(operationTypeSpec);
         }
-        
+
     }
 }

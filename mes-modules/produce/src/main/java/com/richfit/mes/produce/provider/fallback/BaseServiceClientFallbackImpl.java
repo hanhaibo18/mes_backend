@@ -68,4 +68,14 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     public List<ProjectBom> getProjectBomPartByIdList(String id) {
         return null;
     }
+
+    @Override
+    public CommonResult<List<RouterCheck>> find(String drawingNo, String optId, String type) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<List<OperationTypeSpec>> list(String optType, String branchCode, String tenantId) {
+        return CommonResult.success(null);
+    }
 }

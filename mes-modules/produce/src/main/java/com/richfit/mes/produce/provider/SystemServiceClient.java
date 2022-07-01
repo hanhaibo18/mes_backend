@@ -22,8 +22,14 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/find_one")
     public CommonResult<TenantUserVo> getUserById(@RequestParam("id") String id);
 
+    @GetMapping("/api/sys/attachment/selectAttachmentsList")
+    public List<Attachment> selectAttachmentsList(List<String> idList);
+
     @GetMapping(value = "/api/sys/user/queryByUserAccount")
     public CommonResult<TenantUserVo> queryByUserAccount(@RequestParam("userAccount") String userAccount);
+
+    @DeleteMapping("/api/sys/attachment/{id}")
+    public CommonResult<Boolean> delete(@PathVariable String id);
 
     @GetMapping(value = "/api/sys/item/item/param/list")
     public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name, @RequestHeader(value = SecurityConstants.FROM) String header);

@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author 马峰
@@ -122,4 +123,12 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @TableField(exist = false)
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String optId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "文件Id集合", dataType = "List<String>")
+    List<String> fileId;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "质检详情集合", dataType = "List<TrackCheckDetail>")
+    List<TrackCheckDetail> checkDetailsList;
+
 }

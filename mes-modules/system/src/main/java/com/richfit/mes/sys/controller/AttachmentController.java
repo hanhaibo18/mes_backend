@@ -80,7 +80,6 @@ public class AttachmentController extends BaseController {
     @PostMapping("/filesUpload")
     @Transactional(rollbackFor = Exception.class)
     @ApiOperation(value = "上传文件", notes = "上传文件")
-    //, FilesUpload filesUpload
     public CommonResult<List<Attachment>> filesUpload(@ApiParam(value = "要上传的文件", required = true) @RequestParam("file") MultipartFile[] files, String thId, String tiId, String classify, String branchCode) {
         List<Attachment> attachments = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -268,4 +267,9 @@ public class AttachmentController extends BaseController {
 
     }
 
+    @GetMapping("/selectAttachmentsList")
+    @ApiOperation(value = "获取文件列表", notes = "获取文件列表")
+    public List<Attachment> selectAttachmentsList(List<String> idList) {
+        return attachmentService.selectAttachmentsList(idList);
+    }
 }

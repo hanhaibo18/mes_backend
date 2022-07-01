@@ -1,5 +1,8 @@
 package com.richfit.mes.sys.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -11,9 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -45,6 +45,11 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
             throw new GlobalException("attachment not found with id:" + id, ResultCode.ITEM_NOT_FOUND);
         }
         return attachment;
+    }
+
+    @Override
+    public List<Attachment> selectAttachmentsList(List<String> idList) {
+        return this.listByIds(idList);
     }
 
     @Override
