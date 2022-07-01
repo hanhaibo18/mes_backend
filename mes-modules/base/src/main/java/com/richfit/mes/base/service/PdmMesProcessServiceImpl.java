@@ -83,6 +83,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                     operatipon.setId(optId);
                     operatipon.setOptCode(pdmMesOption.getName());
                     operatipon.setOptName(pdmMesOption.getName());
+                    operatipon.setOptType(0);
                     operatipon.setBranchCode(pdmMesOption.getDataGroup());
                     operatipon.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     operatipon.setCreateTime(new Date());
