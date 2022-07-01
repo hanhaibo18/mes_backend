@@ -163,6 +163,7 @@ public class ItemController extends BaseController {
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         ItemClass iClass = itemClassService.getOne(queryWrapper);
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
@@ -200,4 +201,16 @@ public class ItemController extends BaseController {
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(itemClassService.list(queryWrapper), ITEM_SUCCESS_MESSAGE);
     }
+
+    @ApiOperation(value = "根据Code查询指定字典项", notes = "查询字典项")
+    @GetMapping("/param/find_by_code")
+    public CommonResult<ItemParam> findItemParamByCode(String code) {
+
+        QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+        wrapper.eq("code", code);
+        wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        return CommonResult.success(itemParamService.getOne(wrapper));
+    }
+
 }

@@ -31,6 +31,9 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/item/item/param/list")
     public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name);
 
+    @GetMapping(value = "/api/sys/item/param/find_by_code")
+    public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code);
+
     @GetMapping(value = "/api/sys/attachment/get/{id}")
     public CommonResult<Attachment> attachment(@PathVariable String id);
 
