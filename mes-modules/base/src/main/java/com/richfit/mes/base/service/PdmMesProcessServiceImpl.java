@@ -74,12 +74,13 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 Sequence sequence = new Sequence();
                 if (operatipons.size() > 0) {
                     //工序字典存在当前工序
-                    sequence.setOptId(operatipons.get(0).getOptName());
+                    sequence.setOptId(operatipons.get(0).getId());
                 } else {
                     //工序字典不存在当前工序
                     //添加工序字典
+                    String optId = UUID.randomUUID().toString().replace("-", "");
                     Operatipon operatipon = new Operatipon();
-                    operatipon.setId(UUID.randomUUID().toString().replace("-", ""));
+                    operatipon.setId(optId);
                     operatipon.setOptCode(pdmMesOption.getName());
                     operatipon.setOptName(pdmMesOption.getName());
                     operatipon.setBranchCode(pdmMesOption.getDataGroup());
@@ -89,6 +90,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                     operatipon.setModifyTime(new Date());
                     operatipon.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                     operatiponService.save(operatipon);
+                    sequence.setOptId(optId);
                 }
                 sequence.setRouterId(routerId);
                 sequence.setId(UUID.randomUUID().toString().replace("-", ""));
