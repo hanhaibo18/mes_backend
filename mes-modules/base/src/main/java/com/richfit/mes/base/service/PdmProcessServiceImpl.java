@@ -36,6 +36,9 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
     private PdmDrawService pdmDrawService;
 
     @Autowired
+    private PdmBomService pdmBomService;
+
+    @Autowired
     private PdmMesProcessService pdmMesProcessService;
 
     @Autowired
@@ -46,6 +49,9 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
 
     @Autowired
     private PdmMesDrawService pdmMesDrawService;
+
+    @Autowired
+    private PdmMesBomService pdmMesBomService;
 
 
     @Override
@@ -123,6 +129,12 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
                 pdmMesDrawService.save(pdmMesOption);
             }
 
+            //全量保存更新BOM
+            PdmBom bom = pdmBomService.getBomByProcessIdAndRev(pdmProcess.getDrawNo(), pdmProcess.getRev());
+            PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
+            pdmMesBomService.saveOrUpdate(pdmMesBom);
+            getBomList(bom.getChildBom());
+
             // 删除MES数据中工艺
             pdmMesProcessService.removeById(id);
 
@@ -136,6 +148,17 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("同步MES出现异常");
+        }
+    }
+
+    //递归函数
+    public void getBomList(List<PdmBom> pdmBoms) {
+        for (PdmBom bom : pdmBoms) {
+            PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
+            pdmMesBomService.saveOrUpdate(pdmMesBom);
+            if (bom.getChildBom().size() > 0) {
+                getBomList(bom.getChildBom());
+            }
         }
     }
 }
