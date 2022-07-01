@@ -64,7 +64,7 @@ public class PdmProcessController {
     @ApiOperation(value = "同步到MES", notes = "同步到MES")
     public void synctomes(@ApiParam(value = "同步的工艺列表") @RequestBody List<PdmProcess> pdmProcesses) throws Exception {
         for (PdmProcess p : pdmProcesses) {
-            pdmProcessService.synctomes(p.getDrawIdGroup());
+            pdmProcessService.synctomes(p);
         }
     }
 }

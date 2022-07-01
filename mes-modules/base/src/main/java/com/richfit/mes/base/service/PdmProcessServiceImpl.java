@@ -67,20 +67,19 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void synctomes(String id) throws Exception {
+    public void synctomes(PdmProcess pdmProcess) throws Exception {
         try {
             // 查询要同步的工艺，修改工艺状态
-            PdmProcess pdmProcess = pdmProcessMapper.selectById(id);
             pdmProcess.setItemStatus("已同步");
 
             // 删除MES数据中工序
             QueryWrapper<PdmMesOption> queryWrapperPdmMesOption = new QueryWrapper<>();
-            queryWrapperPdmMesOption.eq("process_id", id);
+            queryWrapperPdmMesOption.eq("process_id", pdmProcess.getDrawIdGroup());
             pdmMesOptionService.remove(queryWrapperPdmMesOption);
 
             // 查询并保存工序到MES
             QueryWrapper<PdmOption> queryWrapperPdmOption = new QueryWrapper<>();
-            queryWrapperPdmOption.eq("process_id", id);
+            queryWrapperPdmOption.eq("process_id", pdmProcess.getDrawIdGroup());
             List<PdmOption> PdmOptionList = pdmOptionService.list(queryWrapperPdmOption);
             for (PdmOption pdmOption : PdmOptionList) {
                 // 删除MES数据中工序的工装
@@ -135,15 +134,12 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
             pdmMesBomService.saveOrUpdate(pdmMesBom);
             getBomList(bom.getChildBom());
 
-            // 删除MES数据中工艺
-            pdmMesProcessService.removeById(id);
-
-            // 保存MES工艺，并更新工艺接收状态
+            // 保存&更新MES工艺，并更新工艺接收状态
             PdmMesProcess pdmMesProcess = JSON.parseObject(JSON.toJSONString(pdmProcess), PdmMesProcess.class);
             pdmMesProcess.setItemStatus("待发布");
             pdmMesProcess.setModifyTime(new Date());
             pdmMesProcess.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-            pdmMesProcessService.save(pdmMesProcess);
+            pdmMesProcessService.saveOrUpdate(pdmMesProcess);
             pdmProcessMapper.updateById(pdmProcess);
         } catch (Exception e) {
             e.printStackTrace();
