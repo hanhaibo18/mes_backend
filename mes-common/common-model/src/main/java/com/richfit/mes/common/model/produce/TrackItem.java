@@ -64,9 +64,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "单件工时", dataType = "Double")
     private Double singlePieceHours;
-    @ApiModelProperty(value = "technologySequence", dataType = "String")
+    @ApiModelProperty(value = "技术顺序", dataType = "String")
     private String technologySequence;
-    @ApiModelProperty(value = "originalOptSequence", dataType = "Integer")
+    @ApiModelProperty(value = "原工序顺序", dataType = "Integer")
     private Integer originalOptSequence;
     /**
      * 工序号
@@ -83,6 +83,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "工序排序号", dataType = "Integer")
     private Integer sequenceOrderBy;
+    @ApiModelProperty(value = "部分批次号", dataType = "Integer")
     private Integer partialBatchNo;
     /**
      * 返工次数
@@ -99,7 +100,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "是否开工", dataType = "Integer")
     private Integer isDoing;
-    @ApiModelProperty(value = "startDoingUser", dataType = "String")
+    @ApiModelProperty(value = "开工人", dataType = "String")
     private String startDoingUser;
     /**
      * 开工时间
@@ -168,16 +169,16 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "是否调度完成", dataType = "Integer")
     private Integer isScheduleComplete;
 
-    @ApiModelProperty(value = "scheduleCompleteTime", dataType = "Date")
+    @ApiModelProperty(value = "调度完成时间", dataType = "Date")
     private Date scheduleCompleteTime;
 
-    @ApiModelProperty(value = "scheduleCompleteBy", dataType = "String")
+    @ApiModelProperty(value = "调度人", dataType = "String")
     private String scheduleCompleteBy;
 
-    @ApiModelProperty(value = "isFinalComplete", dataType = "String")
+    @ApiModelProperty(value = "是否最终完成", dataType = "String")
     private String isFinalComplete;
 
-    @ApiModelProperty(value = "isTrackSequenceComplete", dataType = "Integer")
+    @ApiModelProperty(value = "跟单顺序完成", dataType = "Integer")
     private Integer isTrackSequenceComplete;
 
     @ApiModelProperty(value = "batchQty", dataType = "Integer")
@@ -189,10 +190,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "可派工数量", dataType = "Integer")
     private Integer assignableQty;
 
-    @ApiModelProperty(value = "completeQty", dataType = "Integer")
+    @ApiModelProperty(value = "工序完成数量", dataType = "Integer")
     private Integer completeQty;
 
-    @ApiModelProperty(value = "heatTemperature", dataType = "Integer")
+    @ApiModelProperty(value = "加热温度", dataType = "Integer")
     private Double heatTemperature;
 
     /**
@@ -201,7 +202,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "合格证编号", dataType = "Integer")
     private String certificateNo;
 
-    @ApiModelProperty(value = "isValid", dataType = "Integer")
+    @ApiModelProperty(value = "是有效的", dataType = "Integer")
     private Integer isValid;
 
     @ApiModelProperty(value = "carbonDepth", dataType = "Double")
@@ -316,4 +317,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺Id", dataType = "String")
     private String routerId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String texture;
 }

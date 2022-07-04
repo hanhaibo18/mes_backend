@@ -267,9 +267,9 @@ public class AttachmentController extends BaseController {
 
     }
 
-    @GetMapping("/selectAttachmentsList")
+    @PostMapping("/selectAttachmentsList")
     @ApiOperation(value = "获取文件列表", notes = "获取文件列表")
-    public List<Attachment> selectAttachmentsList(List<String> idList) {
+    public List<Attachment> selectAttachmentsList(@RequestBody List<String> idList) {
         return attachmentService.selectAttachmentsList(idList);
     }
 }

@@ -11,12 +11,13 @@ import com.richfit.mes.common.model.base.OperationTypeSpec;
 import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackCheckAttachmentMapper;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.entity.CountDto;
 import com.richfit.mes.produce.entity.QueryQualityTestingDetailsVo;
-import com.richfit.mes.produce.entity.QueryQualityTestingResultVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
@@ -68,6 +69,9 @@ public class TrackCheckController extends BaseController {
     private SystemServiceClient systemServiceClient;
     @Resource
     private TrackCheckAttachmentService trackCheckAttachmentService;
+    @Resource
+    private TrackCheckAttachmentMapper trackCheckAttachmentMapper;
+
 
     /**
      * ***
@@ -142,6 +146,7 @@ public class TrackCheckController extends BaseController {
             if ("1".equals(isExistScheduleCheck)) {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
+            //TODO:开发结束以下注释需要打开
 //            queryWrapper.eq("is_doing", "1");
             queryWrapper.orderByDesc("modify_time");
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
@@ -151,6 +156,11 @@ public class TrackCheckController extends BaseController {
                 item.setProductNo(trackHead.getProductNo());
                 item.setDrawingNo(trackHead.getDrawingNo());
                 item.setQty(trackHead.getNumber());
+                item.setProductName(trackHead.getProductName());
+                item.setWorkNo(trackHead.getWorkNo());
+                item.setTrackType(trackHead.getTrackType());
+                item.setTexture(trackHead.getTexture());
+                item.setPartsName(trackHead.getMaterialName());
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {
@@ -210,6 +220,7 @@ public class TrackCheckController extends BaseController {
                 check.setOptId(trackItem.getOptId());
                 check.setOptName(trackItem.getOptName());
                 check.setOptType(trackItem.getOptType());
+                check.setIsCurrent(trackItem.getIsCurrent());
                 CommonResult<TenantUserVo> user = systemServiceClient.queryByUserAccount(check.getDealBy());
                 check.setDealBy(user.getData().getEmplName());
             }
@@ -707,6 +718,14 @@ public class TrackCheckController extends BaseController {
                     }
                 }
             }
+            //验证文件列表
+            List<String> fileIdList = trackCheckAttachmentMapper.queryFileIdList(trackCheck.getTiId());
+            fileIdList.removeAll(trackCheck.getFileId());
+            if (!fileIdList.isEmpty()) {
+                for (String id : fileIdList) {
+                    systemServiceClient.delete(id);
+                }
+            }
         } catch (Exception e) {
             //处理报错 删除文件
             QueryWrapper<CheckAttachment> queryWrapper = new QueryWrapper<>();
@@ -742,8 +761,14 @@ public class TrackCheckController extends BaseController {
     @ApiOperation(value = "查询质检审核详情", notes = "查询质检审核详情")
     @ApiImplicitParam(name = "tiId", value = "工序Id", required = true, paramType = "query", dataType = "string")
     @GetMapping("/queryQualityTestingResult")
-    public CommonResult<QueryQualityTestingResultVo> queryQualityTestingResult(String tiId) {
+    public CommonResult<TrackCheck> queryQualityTestingResult(String tiId) {
         return CommonResult.success(trackCheckDetailService.queryQualityTestingResult(tiId));
     }
 
+    @ApiOperation(value = "查询质检审核文件", notes = "查询质检审核文件")
+    @ApiImplicitParam(name = "tiId", value = "工序Id", required = true, paramType = "query", dataType = "string")
+    @GetMapping("/getAttachmentListByTiId")
+    public CommonResult<List<Attachment>> getAttachmentListByTiId(String tiId) {
+        return CommonResult.success(trackCheckDetailService.getAttachmentListByTiId(tiId));
+    }
 }

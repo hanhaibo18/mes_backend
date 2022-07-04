@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -189,10 +190,15 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private Integer endNo;
     private String suffixNo;
 
+    @ApiModelProperty(value = "零部件名称", dataType = "String")
     private String materialName;
+    @ApiModelProperty(value = "产品名称", dataType = "String")
     private String productName;
+    @ApiModelProperty(value = "代用材料", dataType = "String")
     private String replaceMaterial;
+    @ApiModelProperty(value = "重量", dataType = "Float")
     private Float weight;
+    @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
 
     private String templateCode;

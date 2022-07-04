@@ -131,4 +131,7 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @ApiModelProperty(value = "质检详情集合", dataType = "List<TrackCheckDetail>")
     List<TrackCheckDetail> checkDetailsList;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "质检详情集合", dataType = "Integer")
+    private Integer isCurrent;
 }

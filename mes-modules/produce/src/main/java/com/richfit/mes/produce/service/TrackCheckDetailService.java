@@ -1,8 +1,9 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.produce.TrackCheck;
 import com.richfit.mes.common.model.produce.TrackCheckDetail;
-import com.richfit.mes.produce.entity.QueryQualityTestingResultVo;
+import com.richfit.mes.common.model.sys.Attachment;
 
 import java.util.List;
 
@@ -26,7 +27,17 @@ public interface TrackCheckDetailService extends IService<TrackCheckDetail> {
      * @param tiId 工序id
      * @Author: xinYu.hou
      * @Date: 2022/6/30 17:43
-     * @return: QueryQualityTestingResultVo
+     * @return: TrackCheck
      **/
-    QueryQualityTestingResultVo queryQualityTestingResult(String tiId);
+    TrackCheck queryQualityTestingResult(String tiId);
+
+    /**
+     * 功能描述: 获取质检文件列表
+     *
+     * @param tiId
+     * @Author: xinYu.hou
+     * @Date: 2022/7/1 14:43
+     * @return: List<Attachment>
+     **/
+    List<Attachment> getAttachmentListByTiId(String tiId);
 }
