@@ -192,6 +192,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     }
                 } else {
                     trackHeadSingleton(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
+
+                    //当匹配计划时更新计划状态
+                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        Plan plan = planService.getById(trackHead.getWorkPlanId());
+                        plan.setStatus(1);
+                        planService.updatePlan(plan);
+                    }
                 }
             }
 //            else if (trackHead.getTrackType().equals("1")) { //批次
