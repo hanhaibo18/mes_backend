@@ -79,6 +79,13 @@ public class AttachmentController extends BaseController {
 
     @PostMapping("/filesUpload")
     @Transactional(rollbackFor = Exception.class)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "thId", value = "跟单ID", dataType = "String"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序Id", dataType = "String"),
+            @ApiImplicitParam(name = "classify", value = "类型", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "车间", dataType = "String")
+
+    })
     @ApiOperation(value = "上传文件", notes = "上传文件")
     public CommonResult<List<Attachment>> filesUpload(@ApiParam(value = "要上传的文件", required = true) @RequestParam("file") MultipartFile[] files, String thId, String tiId, String classify, String branchCode) {
         List<Attachment> attachments = new ArrayList<>();

@@ -12,7 +12,6 @@ import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckAttachmentMapper;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
@@ -216,13 +215,12 @@ public class TrackCheckController extends BaseController {
                 check.setProductNo(trackHead.getProductNo());
                 check.setDrawingNo(trackHead.getDrawingNo());
                 check.setNumber(trackHead.getNumber());
+                check.setTrackNo(trackHead.getTrackNo());
                 TrackItem trackItem = trackItemService.getById(check.getTiId());
                 check.setOptId(trackItem.getOptId());
                 check.setOptName(trackItem.getOptName());
                 check.setOptType(trackItem.getOptType());
                 check.setIsCurrent(trackItem.getIsCurrent());
-                CommonResult<TenantUserVo> user = systemServiceClient.queryByUserAccount(check.getDealBy());
-                check.setDealBy(user.getData().getEmplName());
             }
             return CommonResult.success(checks);
         } catch (Exception e) {
@@ -681,6 +679,8 @@ public class TrackCheckController extends BaseController {
             if (StringUtils.isNullOrEmpty(trackCheck.getDealBy())) {
                 return CommonResult.failed("处理人不能为空");
             }
+            trackCheck.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            trackCheck.setDealTime(new Date());
             TrackItem item = trackItemService.getById(trackCheck.getTiId());
             item.setIsQualityComplete(1);
             item.setQualityResult(trackCheck.getResult());
@@ -718,25 +718,8 @@ public class TrackCheckController extends BaseController {
                     }
                 }
             }
-            //验证文件列表
-            List<String> fileIdList = trackCheckAttachmentMapper.queryFileIdList(trackCheck.getTiId());
-            fileIdList.removeAll(trackCheck.getFileId());
-            if (!fileIdList.isEmpty()) {
-                for (String id : fileIdList) {
-                    systemServiceClient.delete(id);
-                }
-            }
         } catch (Exception e) {
-            //处理报错 删除文件
-            QueryWrapper<CheckAttachment> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("th_id", trackCheck.getThId());
-            queryWrapper.eq("ti_id", trackCheck.getTiId());
-            List<CheckAttachment> checkAttachmentList = trackCheckAttachmentService.list(queryWrapper);
-            for (CheckAttachment fileId : checkAttachmentList) {
-                systemServiceClient.delete(fileId.getFileId());
-            }
-            //报错删除关联信息
-            trackCheckAttachmentService.removeByIds(checkAttachmentList);
+            return CommonResult.failed(e.getMessage());
         }
         return CommonResult.success(Boolean.TRUE);
     }

@@ -29,7 +29,7 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     /**
      * 跟单工序项ID
      */
-    @ApiModelProperty(value = "跟单工序项ID(trackNo  )", dataType = "String")
+    @ApiModelProperty(value = "跟单工序项ID(trackNo)", dataType = "String")
     private String tiId;
     /**
      * 跟单ID
@@ -126,12 +126,16 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "文件Id集合", dataType = "List<String>")
-    List<String> fileId;
+    private List<String> fileId;
     @TableField(exist = false)
     @ApiModelProperty(value = "质检详情集合", dataType = "List<TrackCheckDetail>")
-    List<TrackCheckDetail> checkDetailsList;
+    private List<TrackCheckDetail> checkDetailsList;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "质检详情集合", dataType = "Integer")
     private Integer isCurrent;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单号", dataType = "String")
+    private String trackNo;
 }
