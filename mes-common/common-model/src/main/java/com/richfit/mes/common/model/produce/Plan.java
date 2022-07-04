@@ -39,9 +39,17 @@ public class Plan extends BaseEntity<Plan> {
      */
     private String projectBom;
     /**
+     * 关联项目BOM的workno
+     */
+    private String projectBomWork;
+    /**
      * 关联项目BOM的名称
      */
     private String projectBomName;
+    /**
+     * bom分组选择
+     */
+    private String projectBomGroup;
     /**
      * 图号
      */

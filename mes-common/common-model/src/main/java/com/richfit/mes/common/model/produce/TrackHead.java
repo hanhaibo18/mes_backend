@@ -244,6 +244,21 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String projectBomId;
 
     /**
+     * 关联项目BOM的workno
+     */
+    private String projectBomWork;
+
+    /**
+     * 关联项目BOM的名称
+     */
+    private String projectBomName;
+    
+    /**
+     * bom分组选择
+     */
+    private String projectBomGroup;
+
+    /**
      * 描述: 跟单分类：1机加  2装配 3热处理 4钢结构
      *
      * @Author: zhiqiang.lu
