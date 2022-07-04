@@ -5,7 +5,8 @@
     <select id="queryPlan" resultType="com.richfit.mes.common.model.produce.Plan">
         select `p`.`id` AS `id`,`p`.`proj_code` AS `proj_code`,`p`.`work_no` AS `work_no`,`p`.`order_id` AS
         `order_id`,`p`.`order_no` AS `order_no`,`p`.`order_delivery_date` AS `order_delivery_date`,`p`.`project_bom` AS
-        `project_bom`,`p`.`project_bom_name` AS `project_bom_name`,`p`.`draw_no` AS `draw_no`,`p`.`proj_num` AS
+        `project_bom`,`p`.`project_bom_name` AS `project_bom_name`,`p`.`project_bom_work` AS
+        `project_bom_work`,`p`.`project_bom_group` AS `project_bom_group`,`p`.`draw_no` AS `draw_no`,`p`.`proj_num` AS
         `proj_num`,`p`.`sort_no` AS `sort_no`,`p`.`start_time` AS `start_time`,`p`.`end_time` AS
         `end_time`,`p`.`priority` AS `priority`,`p`.`proj_type` AS `proj_type`,`p`.`branch_code` AS
         `branch_code`,`p`.`incharge_org` AS `incharge_org`,`p`.`status` AS `status`,`p`.`alarm_status` AS
