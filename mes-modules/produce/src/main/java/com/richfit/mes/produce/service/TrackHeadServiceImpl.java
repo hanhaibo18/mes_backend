@@ -401,7 +401,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
             List<String> ids = trackHeads.stream().filter(trackHead -> {
-                if (trackHead.getStatus().equals("0")) {
+                if ("0".equals(trackHead.getStatus()) || "4".equals(trackHead.getStatus())) {
                     return true;
                 } else {
                     return false;
