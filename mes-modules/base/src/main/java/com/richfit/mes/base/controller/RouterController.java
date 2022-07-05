@@ -289,6 +289,7 @@ public class RouterController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
+        queryWrapper.eq("status", "1");
         List<Router> routers = routerService.list(queryWrapper);
         if (routers.size() > 0) {
             return CommonResult.success(routers.get(0), "操作成功！");
