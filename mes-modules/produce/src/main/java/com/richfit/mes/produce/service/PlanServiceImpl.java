@@ -231,6 +231,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public List<ProjectBom> completeness(String planId) {
         Plan plan = planMapper.selectById(planId);
         List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
+        for (ProjectBom pb : projectBomList) {
+            System.out.println("-------------------");
+            System.out.println(pb.getProjectName());
+        }
         return projectBomList;
     }
 

@@ -54,7 +54,7 @@ public interface BaseServiceClient {
     public CommonResult<List<Product>> queryProductName();
 
     @GetMapping(value = "/api/base/project_bom/getProjectBomPartByIdList")
-    public List<ProjectBom> getProjectBomPartByIdList(String id);
+    public List<ProjectBom> getProjectBomPartByIdList(@RequestParam("id") String id);
 
     @GetMapping("/api/base/routerCheck/find")
     public CommonResult<List<RouterCheck>> find(@RequestParam("drawingNo") String drawingNo, @RequestParam("optId") String optId, @RequestParam("type") String type);
