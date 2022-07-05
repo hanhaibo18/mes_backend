@@ -319,7 +319,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
-                Map retMap = lineStoreService.useItem(number, trackHead.getDrawingNo(), productsNo);
+                Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
                 LineStore lineStore = (LineStore) retMap.get("lineStore");
                 if (lineStore == null) {
                     //无库存料单，默认新增库存料单，然后出库
