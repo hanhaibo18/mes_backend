@@ -30,8 +30,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName: MaterialSyncServiceImpl.java
@@ -59,9 +57,9 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                 "   <soapenv:Header/>\n" +
                 "   <soapenv:Body>\n" +
                 "      <urn:Z_PPFM0004>\n" +
-                "         <urn:ZDATUM>"+materialSyncDto.getDate()+"</urn:ZDATUM>\n" +
+                "         <urn:ZDATUM>" + materialSyncDto.getDate() + "</urn:ZDATUM>\n" +
                 "         <urn:ZWERKS>\n" +
-                "         <urn:WERKS>"+materialSyncDto.getCode()+"</urn:WERKS>\n" +
+                "         <urn:WERKS>" + materialSyncDto.getCode() + "</urn:WERKS>\n" +
                 "         </urn:ZWERKS>\n" +
                 "     \n" +
                 "      </urn:Z_PPFM0004>\n" +
@@ -79,20 +77,24 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
         //获取工厂ID
-        return xmlAnalysis(tmpStr);
+        return xmlAnalysis(tmpStr, materialSyncDto);
     }
-    private List<Product> xmlAnalysis(String xml){
+
+    private List<Product> xmlAnalysis(String xml, MaterialSyncDto materialSyncDto) {
+        System.out.println("------------------------");
+        System.out.println(materialSyncDto.getCode());
         Document doc = null;
         char zero = 48;
         List<Product> list = new ArrayList<>();
-        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
-        Map<String, ItemParam> maps = listCommonResult.getData().stream().collect(Collectors.toMap(ItemParam::getCode, Function.identity(), (key1, key2) -> key2));
+//        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
+//        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass(materialSyncDto.getCode(), "", SecurityConstants.FROM_INNER);
+//        Map<String, ItemParam> maps = listCommonResult.getData().stream().collect(Collectors.toMap(ItemParam::getCode, Function.identity(), (key1, key2) -> key2));
         try {
             doc = DocumentHelper.parseText(xml);
             Element rootElt = doc.getRootElement();
             Iterator<Element> body = rootElt.elementIterator("Body");
             while (body.hasNext()) {
-                Element bodyNext =  body.next();
+                Element bodyNext = body.next();
                 Iterator<Element> response = bodyNext.elementIterator("Z_PPFM0004.Response");
                 while (response.hasNext()) {
                     Element responseNext = response.next();
@@ -103,17 +105,17 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                         while (item.hasNext()) {
                             Element itemNext = item.next();
                             String drawingNo = itemNext.elementTextTrim("ZEINR");
-                            if (!StringUtils.isEmpty(drawingNo)){
+                            if (!StringUtils.isEmpty(drawingNo)) {
                                 Product product = new Product();
-                                product.setMaterialNo(trimStringWith(itemNext.elementTextTrim("MATNR"),zero));
+                                product.setMaterialNo(trimStringWith(itemNext.elementTextTrim("MATNR"), zero));
                                 String name = itemNext.elementTextTrim("MAKTX");
                                 String[] data = name.split("\\s+");
-                                if(data.length>3){
-                                    product.setProductName(data[1] +" " + data[2]);
-                                }else {
+                                if (data.length > 3) {
+                                    product.setProductName(data[1] + " " + data[2]);
+                                } else {
                                     product.setProductName(data[1]);
                                 }
-                                if (data[data.length-1].matches("[a-zA-Z]+")|| "/".equals(data[data.length-1])){
+                                if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
                                     MaterialTypeDto type = materialType().get(data[data.length - 1]);
                                     product.setMaterialType(type.getNewCode());
                                     product.setMaterialTypeName(type.getDesc());
@@ -121,26 +123,28 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                                 product.setMaterialDesc(name);
                                 product.setDrawingNo(drawingNo);
                                 product.setUnit(itemNext.elementTextTrim("ZYL1"));
-                                String branchCode = maps.get(itemNext.elementTextTrim("WERKS")).getLabel();
-                                product.setBranchCode(branchCode);
+//                                String branchCode = maps.get(itemNext.elementTextTrim("WERKS")).getLabel();
+                                product.setBranchCode(materialSyncDto.getCode());
                                 list.add(product);
                             }
                         }
                     }
                 }
             }
-            }catch (DocumentException e) {
+        } catch (DocumentException e) {
             log.error(e.getMessage());
             e.printStackTrace();
         }
         return list;
     }
+
     /**
      * 功能描述:字符串截取
-     * @Author: xinYu.hou
-     * @Date: 2022/1/13 9:31
+     *
      * @param str
      * @param beTrim
+     * @Author: xinYu.hou
+     * @Date: 2022/1/13 9:31
      * @return: String
      **/
     private String trimStringWith(String str, char beTrim) {
@@ -154,20 +158,21 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
         return st > 0 ? str.substring(st, len) : str;
     }
 
-    public static Map<String, MaterialTypeDto> materialType(){
+    public static Map<String, MaterialTypeDto> materialType() {
         Map<String, MaterialTypeDto> map = new HashMap<>(4);
-        map.put("Z",new MaterialTypeDto("Z","0","铸件"));
-        map.put("D",new MaterialTypeDto("D","1","锻件"));
-        map.put("JZ",new MaterialTypeDto("JZ","2","精铸件"));
-        map.put("/",new MaterialTypeDto("/","3","成品/半成品"));
+        map.put("Z", new MaterialTypeDto("Z", "0", "铸件"));
+        map.put("D", new MaterialTypeDto("D", "1", "锻件"));
+        map.put("JZ", new MaterialTypeDto("JZ", "2", "精铸件"));
+        map.put("/", new MaterialTypeDto("/", "3", "成品/半成品"));
         return map;
     }
 
     /**
      * 功能描述: 同步选中物料数据
+     *
+     * @param productList
      * @Author: xinYu.hou
      * @Date: 2022/2/10 16:00
-     * @param productList
      * @return: CommonResult<Boolean>
      **/
     @Override
@@ -177,19 +182,20 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
         String message = "操作失败";
         for (Product product : productList) {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("material_no",product.getMaterialNo());
+            queryWrapper.eq("material_no", product.getMaterialNo());
             boolean remove = materialSyncService.remove(queryWrapper);
             boolean save = materialSyncService.save(product);
-            if (remove && save){
+            if (remove && save) {
                 data = true;
                 message = "操作成功!";
             }
         }
-        return CommonResult.success(data,message);
+        return CommonResult.success(data, message);
     }
 
     /**
      * 功能描述: 定时同步物料数据
+     *
      * @Author: xinYu.hou
      * @Date: 2022/2/10 16:01
      * @return: CommonResult<Boolean>
@@ -216,10 +222,10 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                 product.setBranchCode(itemParam.getLabel());
                 product.setTenantId(itemParam.getTenantId());
                 QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("material_no",product.getMaterialNo());
+                queryWrapper.eq("material_no", product.getMaterialNo());
                 boolean remove = materialSyncService.remove(queryWrapper);
                 boolean save = materialSyncService.save(product);
-                if (remove && save){
+                if (remove && save) {
                     data = true;
                 }
             }

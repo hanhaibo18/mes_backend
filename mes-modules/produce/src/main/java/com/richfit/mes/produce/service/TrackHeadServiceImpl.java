@@ -377,6 +377,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                     item.setModifyTime(new Date());
                     item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    //可分配数量
+                    item.setAssignableQty(number);
                     trackItemMapper.insert(item);
                 }
             }

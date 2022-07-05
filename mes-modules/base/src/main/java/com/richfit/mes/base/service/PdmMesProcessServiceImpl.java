@@ -84,6 +84,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                     operatipon.setOptCode(pdmMesOption.getName());
                     operatipon.setOptName(pdmMesOption.getName());
                     operatipon.setOptType(0);
+
                     operatipon.setBranchCode(pdmMesOption.getDataGroup());
                     operatipon.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     operatipon.setCreateTime(new Date());
@@ -103,6 +104,16 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 sequence.setGzs(pdmMesOption.getGzs());
                 sequence.setDrawing(pdmMesOption.getDrawing());
                 sequence.setVersionCode(pdmMesOption.getRev());
+                //工序类型
+                sequence.setOptType("0");
+                //质检确认
+                sequence.setIsQualityCheck("1");
+                //调度确认
+                sequence.setIsScheduleCheck("1");
+                //是否并行
+                sequence.setIsParallel("0");
+                //自动派工
+                sequence.setIsAutoAssign("0");
                 sequence.setBranchCode(pdmMesOption.getDataGroup());
                 sequence.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 sequence.setCreateTime(new Date());

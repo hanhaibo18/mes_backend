@@ -107,6 +107,7 @@ public class ProjectBomController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "项目Id", paramType = "query", dataType = "String"),
     })
+    
     @GetMapping("/getProjectBomPartByIdList")
     public List<ProjectBom> getProjectBomPartByIdList(String id) {
         return projectBomService.getProjectBomPartByIdList(id);
