@@ -259,7 +259,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         Plan plan = planMapper.findPlan(projCode, tenantId);
 
         if (plan.getProjNum() == plan.getStoreNum() && plan.getStatus() != 2) {
-            plan.setStatus(2);
+            //已完成
+            plan.setStatus(3);
             this.updateById(plan);
         }
         if (plan.getProjNum() > plan.getStoreNum() && plan.getStatus() == 2) {
