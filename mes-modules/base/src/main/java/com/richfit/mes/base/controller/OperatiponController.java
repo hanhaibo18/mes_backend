@@ -8,6 +8,7 @@ import com.richfit.mes.base.service.OperationDeviceService;
 import com.richfit.mes.base.service.OperatiponService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.base.OperationDevice;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
@@ -92,6 +93,19 @@ public class OperatiponController extends BaseController {
         if (StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
             return CommonResult.failed("编码不能为空！");
         } else {
+
+            QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
+            if (!StringUtils.isNullOrEmpty(operatipon.getBranchCode())) {
+                queryWrapper.eq("branch_code", operatipon.getBranchCode());
+            }
+            if (!StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
+                queryWrapper.eq("code", operatipon.getOptCode());
+            }
+            List<Operatipon> list = operatiponService.list(queryWrapper);
+            if(list.size()>0) {
+                return CommonResult.failed("操作失败，工序编码不能重复！");
+            }
+
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             operatipon.setModifyBy(user.getUsername());
             operatipon.setModifyTime(new Date());

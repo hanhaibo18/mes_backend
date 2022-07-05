@@ -102,6 +102,18 @@ public class DeviceController extends BaseController {
         if (StringUtils.isNullOrEmpty(device.getName())) {
             return CommonResult.failed("编码不能为空！");
         } else {
+
+            QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
+            if (!StringUtils.isNullOrEmpty(device.getBranchCode())) {
+                queryWrapper.eq("branch_code", device.getBranchCode());
+            }
+            if (!StringUtils.isNullOrEmpty(device.getCode())) {
+                queryWrapper.eq("code", device.getCode());
+            }
+            List<Device> list = deviceService.list(queryWrapper);
+            if(list.size()>0) {
+                return CommonResult.failed("操作失败，设备编码不能重复！");
+            }
             if (null != SecurityUtils.getCurrentUser()) {
                 device.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
 
