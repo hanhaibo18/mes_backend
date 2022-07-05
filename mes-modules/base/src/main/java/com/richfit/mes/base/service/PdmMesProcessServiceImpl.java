@@ -104,6 +104,8 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 sequence.setGzs(pdmMesOption.getGzs());
                 sequence.setDrawing(pdmMesOption.getDrawing());
                 sequence.setVersionCode(pdmMesOption.getRev());
+                //工序类型
+                sequence.setOptType("0");
                 //质检确认
                 sequence.setIsQualityCheck("1");
                 //调度确认
