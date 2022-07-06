@@ -521,13 +521,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         //计划数据更新
         if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-            Plan paln = planService.getById(trackHead.getWorkPlanId());
-            int totalNum = paln.getDeliveryNum() + trackHead.getNumber();
-            paln.setDeliveryNum(totalNum);
-            if (paln.getProjNum() >= totalNum) {
-                paln.setStatus(3);
+            Plan plan = planService.getById(trackHead.getWorkPlanId());
+            int totalNum = plan.getDeliveryNum() + trackHead.getNumber();
+            plan.setDeliveryNum(totalNum);
+            if (plan.getProjNum() >= totalNum) {
+                plan.setStatus(3);
             }
-            planService.updatePlan(paln);
+            planService.updatePlan(plan);
         }
 
     }
