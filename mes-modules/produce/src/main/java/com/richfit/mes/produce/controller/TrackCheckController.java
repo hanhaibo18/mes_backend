@@ -373,7 +373,14 @@ public class TrackCheckController extends BaseController {
                 if (0 == trackItem.getNextOptSequence()) {
                     trackHeadService.trackHeadFinish(trackItem.getTrackHeadId());
                 } else {
-                    trackItem.setIsPrepare(0);
+                    trackItem.setIsFinalComplete("1");
+                    trackItem.setCompleteQty(trackItem.getBatchQty());
+
+                    if (null != SecurityUtils.getCurrentUser()) {
+                        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                    }
+                    trackItem.setScheduleCompleteTime(new Date());
+                    this.activeTrackItem(trackItem);
                 }
             } catch (Exception e) {
                 return CommonResult.failed("跟单结束异常");
