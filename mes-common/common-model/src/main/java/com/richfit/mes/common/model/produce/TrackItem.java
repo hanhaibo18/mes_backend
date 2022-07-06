@@ -175,6 +175,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "调度人", dataType = "String")
     private String scheduleCompleteBy;
 
+    @ApiModelProperty(value = "调度意见", dataType = "String")
+    private String scheduleCompleteResult;
+
     @ApiModelProperty(value = "是否最终完成", dataType = "String")
     private String isFinalComplete;
 
@@ -324,5 +327,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "是否派工(未派工=0,已派工=1)", dataType = "int")
     private int isSchedule;
-
+    @ApiModelProperty(value = "是否给予准结工时", dataType = "int")
+    private int isPrepare;
 }
