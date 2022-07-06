@@ -461,16 +461,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
-    @Override
-    public IPage<TrackHead> selectTrackHeadRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
-        return trackHeadMapper.selectTrackHeadRouter(page, query);
-    }
-
-    @Override
-    public IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
-        return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
-    }
-
 
     /**
      * 功能描述: 对当前跟单增加计划
@@ -504,6 +494,53 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             throw new RuntimeException(e.getMessage());
         }
         return true;
+    }
+
+
+    /**
+     * 功能描述: 跟单完成
+     *
+     * @param id 跟单id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 18:07
+     * @return: boolean
+     **/
+    @Override
+    @Transactional
+    public void trackHeadFinish(String id) {
+        TrackHead trackHead = trackHeadMapper.selectById(id);
+        trackHead.setStatus("2");
+        QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<LineStore>();
+        queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
+        queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
+        //完成品料单数据更新
+        for (LineStore lineStore : lineStores) {
+            lineStore.setStatus("0");
+            lineStoreService.updateById(lineStore);
+        }
+        //计划数据更新
+        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+            Plan paln = planService.getById(trackHead.getWorkPlanId());
+            int totalNum = paln.getDeliveryNum() + trackHead.getNumber();
+            paln.setDeliveryNum(totalNum);
+            if (paln.getProjNum() >= totalNum) {
+                paln.setStatus(3);
+            }
+            planService.updatePlan(paln);
+        }
+
+    }
+
+
+    @Override
+    public IPage<TrackHead> selectTrackHeadRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+        return trackHeadMapper.selectTrackHeadRouter(page, query);
+    }
+
+    @Override
+    public IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+        return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
     }
 
     @Override

@@ -59,6 +59,10 @@ public class Plan extends BaseEntity<Plan> {
      */
     private int projNum;
     /**
+     * 交付数量
+     */
+    private int deliveryNum;
+    /**
      * 已跟单数量
      */
     @TableField(exist = false)
