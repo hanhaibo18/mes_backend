@@ -84,7 +84,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             for (TrackHeadRelation thr : trackHeadRelations) {
                 LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
                 QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
-                queryWrapper.eq("line_store_id", thr.getLsId());
+                queryWrapperStoreAttachRel.eq("line_store_id", thr.getLsId());
                 List<Attachment> attachments = new ArrayList<>();
                 for (StoreAttachRel sar : storeAttachRelMapper.selectList(queryWrapperStoreAttachRel)) {
                     CommonResult<Attachment> atta = systemServiceClient.attachment(sar.getAttachmentId());
@@ -120,11 +120,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("type", "0");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapper);
             for (TrackHeadRelation thr : trackHeadRelations) {
+                System.out.println("---" + thr.getLsId());
                 LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
                 QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
-                queryWrapper.eq("line_store_id", thr.getLsId());
+                queryWrapperStoreAttachRel.eq("line_store_id", thr.getLsId());
                 List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
                 for (StoreAttachRel sar : storeAttachRels) {
+                    System.out.println("-----" + sar.getAttachmentId());
                     downloads(sar.getAttachmentId(), path + "/" + lineStore.getDrawingNo() + " " + lineStore.getMaterialNo());
                 }
             }
