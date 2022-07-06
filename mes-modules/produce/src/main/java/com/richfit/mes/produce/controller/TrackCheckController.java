@@ -251,7 +251,7 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(tiId)) {
                 queryWrapper.eq("ti_id", tiId);
             }
-
+            queryWrapper.orderByDesc("modify_time");
             IPage<TrackCheckDetail> checks = trackCheckDetailService.page(new Page<TrackCheckDetail>(page, limit), queryWrapper);
             return CommonResult.success(checks);
         } catch (Exception e) {
@@ -368,15 +368,17 @@ public class TrackCheckController extends BaseController {
             trackItem.setScheduleCompleteResult(batchAddScheduleDto.getResult());
             trackItem.setIsPrepare(batchAddScheduleDto.getIsPrepare());
             trackItem.setIsScheduleComplete(1);
-            bool = trackItemService.updateById(trackItem);
             //判断工序是否是最后一道工序
             try {
                 if (0 == trackItem.getNextOptSequence()) {
                     trackHeadService.trackHeadFinish(trackItem.getTrackHeadId());
+                } else {
+                    trackItem.setIsPrepare(0);
                 }
             } catch (Exception e) {
                 return CommonResult.failed("跟单结束异常");
             }
+            bool = trackItemService.updateById(trackItem);
         }
         if (bool) {
             return CommonResult.success(true, "操作成功！");
