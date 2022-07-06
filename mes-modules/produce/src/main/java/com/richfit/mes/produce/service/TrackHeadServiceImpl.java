@@ -525,8 +525,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //计划数据更新
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                 Plan plan = planService.getById(trackHead.getWorkPlanId());
+                //计算交付数量
                 int totalNum = plan.getDeliveryNum() + trackHead.getNumber();
                 plan.setDeliveryNum(totalNum);
+                //当交付数量==计划数量时更新计划为已完成状态
                 if (plan.getProjNum() >= totalNum) {
                     plan.setStatus(3);
                 }
