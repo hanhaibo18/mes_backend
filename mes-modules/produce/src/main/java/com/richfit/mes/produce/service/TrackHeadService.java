@@ -66,7 +66,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Date: 2022/6/21 18:07
      * @return: boolean
      **/
-    void trackHeadFinish(String id);
+    void trackHeadFinish(String id) throws Exception;
 
     boolean deleteTrackHead(List<TrackHead> trackHeads);
 

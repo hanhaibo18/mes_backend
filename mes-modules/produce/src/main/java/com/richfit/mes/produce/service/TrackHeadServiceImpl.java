@@ -506,30 +506,38 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: boolean
      **/
     @Override
-    @Transactional
-    public void trackHeadFinish(String id) {
-        TrackHead trackHead = trackHeadMapper.selectById(id);
-        trackHead.setStatus("2");
-        QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<LineStore>();
-        queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
-        queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
-        //完成品料单数据更新
-        for (LineStore lineStore : lineStores) {
-            lineStore.setStatus("0");
-            lineStoreService.updateById(lineStore);
-        }
-        //计划数据更新
-        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-            Plan plan = planService.getById(trackHead.getWorkPlanId());
-            int totalNum = plan.getDeliveryNum() + trackHead.getNumber();
-            plan.setDeliveryNum(totalNum);
-            if (plan.getProjNum() >= totalNum) {
-                plan.setStatus(3);
-            }
-            planService.updatePlan(plan);
-        }
+    @Transactional(rollbackFor = Exception.class)
+    public void trackHeadFinish(String id) throws Exception {
+        try {
+            TrackHead trackHead = trackHeadMapper.selectById(id);
+            trackHead.setStatus("2");
 
+            //完成品料单数据更新
+            QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
+            queryWrapperTrackHeadRelation.eq("th_id", id);
+            queryWrapperTrackHeadRelation.eq("type", "1");
+            List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
+            for (TrackHeadRelation trackHeadRelation : trackHeadRelations) {
+                LineStore lineStore = lineStoreService.getById(trackHeadRelation.getLsId());
+                lineStore.setStatus("0");
+                lineStoreService.updateById(lineStore);
+            }
+            //计划数据更新
+            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                Plan plan = planService.getById(trackHead.getWorkPlanId());
+                int totalNum = plan.getDeliveryNum() + trackHead.getNumber();
+                plan.setDeliveryNum(totalNum);
+                if (plan.getProjNum() >= totalNum) {
+                    plan.setStatus(3);
+                }
+                planService.updatePlan(plan);
+            }
+            //更新跟单动作
+            trackHeadMapper.updateById(trackHead);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("跟单完成操作失败");
+        }
     }
 
 
