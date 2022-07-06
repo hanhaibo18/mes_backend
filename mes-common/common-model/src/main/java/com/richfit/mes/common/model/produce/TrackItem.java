@@ -321,4 +321,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
+
+    @ApiModelProperty(value = "是否派工(未派工=0,已派工=1)", dataType = "int")
+    private int isSchedule;
+
 }

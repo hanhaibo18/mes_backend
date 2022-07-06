@@ -101,9 +101,35 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         return trackItemList;
     }
 
+
     @Override
     public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode) {
-        IPage<Assign> queryPage = trackAssignMapper.queryPage(page, siteId, trackNo, routerNo, startTime, endTime, state, userId, branchCode);
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.like("u.track_no2", trackNo);
+        }
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.like("u.drawing_no", routerNo);
+        }
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.like("u.assign_by", siteId);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + startTime + " ')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + " 00:00:00')");
+        }
+        if ("0,1".equals(state)) {
+            queryWrapper.in("u.state", 0, 1);
+        }
+        if ("2".equals(state)) {
+            queryWrapper.in("u.state", 2);
+        }
+        if (!StringUtils.isNullOrEmpty(userId)) {
+            queryWrapper.eq("u.user_id", userId);
+        }
+        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());

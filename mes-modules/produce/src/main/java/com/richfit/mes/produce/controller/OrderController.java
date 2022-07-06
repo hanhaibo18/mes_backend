@@ -77,7 +77,7 @@ public class OrderController extends BaseController {
         if (StringUtils.hasText(orderDto.getOrderCol())) {
             orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
         } else {
-            orderDto.setOrderCol("status");
+            orderDto.setOrderCol("modify_time");
             orderDto.setOrder("desc");
         }
 

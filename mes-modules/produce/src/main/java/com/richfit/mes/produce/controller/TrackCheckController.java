@@ -337,28 +337,47 @@ public class TrackCheckController extends BaseController {
     })
     @PostMapping("/batchAddSchedule")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<TrackItem[]> batchAddSchedule(@RequestBody TrackItem[] trackItems, String isPrepare) {
-        boolean bool = true;
-        for (TrackItem item : trackItems) {
-            if (StringUtils.isNullOrEmpty(item.getId())) {
-                return CommonResult.failed("关联工序ID编码不能为空！");
-            } else {
-                //如果不需要调度审核，则将工序设置为完成，并激活下个工序
-                if (item.getIsScheduleComplete() == 1) {
-                    item.setIsFinalComplete("1");
-                    item.setCompleteQty(item.getBatchQty());
-
-                    if (null != SecurityUtils.getCurrentUser()) {
-                        item.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-                    }
-                    item.setScheduleCompleteTime(new Date());
-                    this.activeTrackItem(item);
-                }
-                item.setModifyTime(new Date());
-                trackItemService.updateById(item);
-            }
-
+    public CommonResult<TrackItem[]> batchAddSchedule(@RequestBody TrackItem[] trackItems, String tiId, String branchCode, String isPrepare, String result) {
+        //TODO: 装配额外逻辑,调度审核第一道工序时要根据 物料号加图号生成生产编码
+        //数据校验
+        if (StringUtils.isNullOrEmpty(tiId)) {
+            return CommonResult.failed("关联工序ID编码不能为空！");
         }
+//        //获取装配车间列表 对比传入车间是否是装配
+//        CommonResult<List<ItemParam>> itemClass = systemServiceClient.selectItemClass("zpCode", null);
+//        boolean branchCodeEqual = false;
+//        for (ItemParam item : itemClass.getData()) {
+//            branchCodeEqual = item.getCode().equals(branchCode);
+//        }
+//        //装配额外的业务逻辑
+//        TrackItem trackItem = trackItemService.getById(tiId);
+//        if (branchCodeEqual) {
+//            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+//            if (null != trackHead && StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
+//                //来料入库的物料料单 获取H级别的 物料编码+图号生成生产编码
+//
+//            }
+//        }
+        TrackItem trackItem = trackItemService.getById(tiId);
+
+        //正常调度审核业务
+        boolean bool = true;
+        //如果不需要调度审核，则将工序设置为完成，并激活下个工序
+        if (trackItem.getIsScheduleComplete() == 1) {
+            trackItem.setIsFinalComplete("1");
+            trackItem.setCompleteQty(trackItem.getBatchQty());
+
+            if (null != SecurityUtils.getCurrentUser()) {
+                trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+            }
+            trackItem.setScheduleCompleteTime(new Date());
+            this.activeTrackItem(trackItem);
+        }
+        trackItem.setModifyTime(new Date());
+        trackItem.setScheduleCompleteTime(new Date());
+        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+        //缺少 意见字段
+        bool = trackItemService.updateById(trackItem);
         if (bool) {
             return CommonResult.success(trackItems, "操作成功！");
         } else {
@@ -679,7 +698,8 @@ public class TrackCheckController extends BaseController {
             if (StringUtils.isNullOrEmpty(trackCheck.getDealBy())) {
                 return CommonResult.failed("处理人不能为空");
             }
-            trackCheck.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+            trackCheck.setTenantId(tenantId);
             trackCheck.setDealTime(new Date());
             TrackItem item = trackItemService.getById(trackCheck.getTiId());
             item.setIsQualityComplete(1);
@@ -706,6 +726,8 @@ public class TrackCheckController extends BaseController {
             //处理审核详情信息
             if (null != trackCheck.getCheckDetailsList()) {
                 for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
+                    trackCheckDetail.setTenantId(tenantId);
+                    trackCheckDetail.setBranchCode(trackCheck.getBranchCode());
                     if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
                         List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
                         if (!list.isEmpty()) {

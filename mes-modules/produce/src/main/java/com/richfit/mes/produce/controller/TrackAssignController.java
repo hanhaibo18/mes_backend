@@ -249,7 +249,6 @@ public class TrackAssignController extends BaseController {
                         if (trackItem.getAssignableQty() < assign.getQty()) {
                             return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
                         }
-
                         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                         assign.setTrackNo(trackHead.getTrackNo());
                         if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
@@ -261,6 +260,7 @@ public class TrackAssignController extends BaseController {
                         trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
                         trackItem.setIsCurrent(1);
                         trackItem.setIsDoing(0);
+                        trackItem.setIsSchedule(1);
                         trackItemService.updateById(trackItem);
                     }
                     assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
@@ -354,6 +354,7 @@ public class TrackAssignController extends BaseController {
                     trackItem.setStartDoingTime(new Date());
                     trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
                 } else {
+                    trackItem.setIsSchedule(0);
                     trackItem.setIsDoing(0);
                 }
                 trackItemService.updateById(trackItem);
@@ -421,8 +422,8 @@ public class TrackAssignController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
-
         }
+        queryWrapper.eq("is_schedule", 0);
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
                 if (order.equals("desc")) {

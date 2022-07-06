@@ -81,12 +81,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     // 料单投用
     @Override
-    public Map useItem(int num, String drawingNo, String workblankNo) {
+    public Map useItem(int num, TrackHead trackHead, String workblankNo) {
         int useNum = 0; //本次使用数量
         //修改库存状态
         LineStore lineStore1 = lineStoreMapper.selectOne(
-                new QueryWrapper<LineStore>().eq("drawing_no", drawingNo)
-                        .eq("workblank_no", workblankNo.replace(drawingNo, ""))
+                new QueryWrapper<LineStore>().eq("drawing_no", trackHead.getDrawingNo())
+                        .eq("workblank_no", workblankNo.replace(trackHead.getDrawingNo(), ""))
                         .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
         if (lineStore1 != null) {
             if (lineStore1.getNumber() - lineStore1.getUseNum() <= num) {
@@ -102,6 +102,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (lineStore1.getMaterialType().equals("0")) {
                 lineStore1.setOutTime(new Date());
             }
+
+            //关联跟单号码
+            lineStore1.setTrackNo(trackHead.getTrackNo());
             lineStoreMapper.updateById(lineStore1);
         } else {
 
@@ -165,6 +168,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         changeStatus(lineStore);
         lineStore.setStockType("1"); //自动
         lineStore.setTrackType(trackHead.getTrackType());
+
+        //关联跟单号码
+        lineStore.setTrackNo(trackHead.getTrackNo());
 
         this.save(lineStore);
 
@@ -444,7 +450,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                     break;
                 }
             }
-            
+
             store.setWaitAssemblyNumber((store.getRequireNumber() == null ? 0 : store.getRequireNumber()) - (store.getAssemblyNumber() == null ? 0 : store.getAssemblyNumber()));
 
         }

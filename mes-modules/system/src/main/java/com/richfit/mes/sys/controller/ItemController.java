@@ -159,22 +159,26 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "查询字典参数", notes = "根据参数类别和参数名称查询字典参数")
     @GetMapping("/item/param/list")
-    public CommonResult<List<ItemParam>> selectItemParamByCode(String code, String label) {
+    public CommonResult<List<ItemParam>> selectItemParamByCode(String code, String label) throws Exception {
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
+        System.out.println(code);
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+//            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
-        ItemClass iClass = itemClassService.getOne(queryWrapper);
-        QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
-        wrapper.eq("class_id", iClass.getId());
-        if (!StringUtils.isNullOrEmpty(label)) {
-            wrapper.like("label", label);
+        List<ItemClass> iClasses = itemClassService.list(queryWrapper);
+        if (iClasses.size() > 0) {
+            QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+            wrapper.eq("class_id", iClasses.get(0).getId());
+            if (!StringUtils.isNullOrEmpty(label)) {
+                wrapper.like("label", label);
+            }
+//            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            wrapper.orderByAsc("order_num");
+            return CommonResult.success(itemParamService.list(wrapper), ITEM_SUCCESS_MESSAGE);
+        } else {
+            throw new Exception("没有找到key=" + code + "的字典！");
         }
-
-        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        wrapper.orderByAsc("order_num");
-        return CommonResult.success(itemParamService.list(wrapper), ITEM_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询字典参数数量", notes = "根据参数分类查询字典参数总数")

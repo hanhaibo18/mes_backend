@@ -35,6 +35,9 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     //       @Select("select * from v_produce_assign")
     IPage<Assign> queryPage(Page page, @Param("siteId") String siteId, @Param("trackNo") String trackNo, @Param("routerNo") String routerNo, @Param("startTime") String starttime, @Param("endTime") String endTime, @Param("state") String state, @Param("userId") String userId, @Param("branchCode") String branchCode);
 
+    @Select("select u.* from v_produce_assign u ${ew.customSqlSegment}")
+    IPage<Assign> queryPageNew(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
+
     /**
      * 功能描述: 根据跟单号查询
      *
