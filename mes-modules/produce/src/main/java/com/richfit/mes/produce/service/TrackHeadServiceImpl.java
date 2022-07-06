@@ -502,8 +502,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      *
      * @param id 跟单id
      * @Author: zhiqiang.lu
-     * @Date: 2022/6/21 18:07
-     * @return: boolean
+     * @Date: 2022/7/6 18:07
+     * @return: void
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
