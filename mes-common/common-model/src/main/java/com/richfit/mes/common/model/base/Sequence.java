@@ -138,4 +138,11 @@ public class Sequence extends BaseEntity<Sequence> {
      */
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String versionCode;
+
+
+    /**
+     * 注意事项
+     */
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String notice;
 }
