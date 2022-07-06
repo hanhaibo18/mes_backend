@@ -30,7 +30,8 @@
                 and u.state in (2)
             </if>
             <if test="userId != null and userId != ''">
-                and (u.user_id = #{userId} || u.user_id = #{userCode})
+                -- and (u.user_id = #{userId} || u.user_id = #{userCode})
+                and u.user_id = #{userId}
 
             </if>
             <if test="branchCode != null and branchCode != ''">
