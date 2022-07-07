@@ -145,6 +145,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
                 }
             }
+            File file = new File(path);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
             ZipUtil.zip(path);
             return path + ".zip";
         } catch (Exception e) {
