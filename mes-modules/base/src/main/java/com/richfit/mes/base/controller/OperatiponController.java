@@ -99,7 +99,7 @@ public class OperatiponController extends BaseController {
                 queryWrapper.eq("branch_code", operatipon.getBranchCode());
             }
             if (!StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
-                queryWrapper.eq("code", operatipon.getOptCode());
+                queryWrapper.eq("opt_code", operatipon.getOptCode());
             }
             List<Operatipon> list = operatiponService.list(queryWrapper);
             if(list.size()>0) {
