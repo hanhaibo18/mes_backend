@@ -67,6 +67,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     public StoreAttachRelMapper storeAttachRelMapper;
 
+    @Autowired
+    public TrackCheckDetailService trackCheckDetailService;
+
+
     /**
      * 描述: 其他资料列表
      *
@@ -115,10 +119,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             FileUtil.del(path);
             path = path + "/" + id;
-            QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("th_id", id);
-            queryWrapper.eq("type", "0");
-            List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapper);
+
+            //料单资料
+            QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
+            queryWrapperTrackHeadRelation.eq("th_id", id);
+            queryWrapperTrackHeadRelation.eq("type", "0");
+            List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation thr : trackHeadRelations) {
                 System.out.println("---" + thr.getLsId());
                 LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
@@ -126,8 +132,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 queryWrapperStoreAttachRel.eq("line_store_id", thr.getLsId());
                 List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
                 for (StoreAttachRel sar : storeAttachRels) {
-                    System.out.println("-----" + sar.getAttachmentId());
                     downloads(sar.getAttachmentId(), path + "/" + lineStore.getDrawingNo() + " " + lineStore.getMaterialNo());
+                }
+            }
+            //工序资料
+            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+            queryWrapperTrackItem.eq("track_head_id", id);
+            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+            for (TrackItem trackItem : trackItemList) {
+                List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
+                for (Attachment sar : attachments) {
+                    downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
                 }
             }
             ZipUtil.zip(path);
@@ -143,7 +158,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
             if (data.getStatus() == 200) {
-                File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? UUID.randomUUID().toString() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
+                File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
                 }
@@ -446,16 +461,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
-    @Override
-    public IPage<TrackHead> selectTrackHeadRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
-        return trackHeadMapper.selectTrackHeadRouter(page, query);
-    }
-
-    @Override
-    public IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
-        return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
-    }
-
 
     /**
      * 功能描述: 对当前跟单增加计划
@@ -489,6 +494,63 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             throw new RuntimeException(e.getMessage());
         }
         return true;
+    }
+
+
+    /**
+     * 功能描述: 跟单完成
+     *
+     * @param id 跟单id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/6 18:07
+     * @return: void
+     **/
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void trackHeadFinish(String id) throws Exception {
+        try {
+            TrackHead trackHead = trackHeadMapper.selectById(id);
+            trackHead.setStatus("2");
+
+            //完成品料单数据更新
+            QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
+            queryWrapperTrackHeadRelation.eq("th_id", id);
+            queryWrapperTrackHeadRelation.eq("type", "1");
+            List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
+            for (TrackHeadRelation trackHeadRelation : trackHeadRelations) {
+                LineStore lineStore = lineStoreService.getById(trackHeadRelation.getLsId());
+                lineStore.setStatus("0");
+                lineStoreService.updateById(lineStore);
+            }
+            //计划数据更新
+            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                Plan plan = planService.getById(trackHead.getWorkPlanId());
+                //计算交付数量
+                int totalNum = plan.getDeliveryNum() + trackHead.getNumber();
+                plan.setDeliveryNum(totalNum);
+                //当交付数量==计划数量时更新计划为已完成状态
+                if (plan.getProjNum() >= totalNum) {
+                    plan.setStatus(3);
+                }
+                planService.updatePlan(plan);
+            }
+            //更新跟单动作
+            trackHeadMapper.updateById(trackHead);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("跟单完成操作失败");
+        }
+    }
+
+
+    @Override
+    public IPage<TrackHead> selectTrackHeadRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+        return trackHeadMapper.selectTrackHeadRouter(page, query);
+    }
+
+    @Override
+    public IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+        return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
     }
 
     @Override

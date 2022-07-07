@@ -52,9 +52,11 @@ public class TrackCheckDetailServiceImpl extends ServiceImpl<TrackCheckDetailMap
         TrackCheck trackCheck = new TrackCheck();
         QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", tiId);
+        queryWrapper.orderByDesc("modify_time");
         trackCheck = trackCheckService.getOne(queryWrapper);
         QueryWrapper<TrackCheckDetail> queryWrapperDetail = new QueryWrapper<>();
         queryWrapperDetail.eq("ti_id", tiId);
+        queryWrapper.orderByDesc("modify_time");
         List<TrackCheckDetail> trackCheckDetails = this.list(queryWrapperDetail);
         trackCheck.setCheckDetailsList(trackCheckDetails);
         return trackCheck;

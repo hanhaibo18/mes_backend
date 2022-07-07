@@ -58,6 +58,16 @@ public interface TrackHeadService extends IService<TrackHead> {
      **/
     boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
 
+    /**
+     * 功能描述: 跟单完成
+     *
+     * @param id 跟单id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/6 18:07
+     * @return: void
+     **/
+    void trackHeadFinish(String id) throws Exception;
+
     boolean deleteTrackHead(List<TrackHead> trackHeads);
 
     IPage<TrackHead> selectTrackHeadRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query);

@@ -15,6 +15,7 @@ import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckAttachmentMapper;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
+import com.richfit.mes.produce.entity.BatchAddScheduleDto;
 import com.richfit.mes.produce.entity.CountDto;
 import com.richfit.mes.produce.entity.QueryQualityTestingDetailsVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -250,7 +251,7 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(tiId)) {
                 queryWrapper.eq("ti_id", tiId);
             }
-
+            queryWrapper.orderByDesc("modify_time");
             IPage<TrackCheckDetail> checks = trackCheckDetailService.page(new Page<TrackCheckDetail>(page, limit), queryWrapper);
             return CommonResult.success(checks);
         } catch (Exception e) {
@@ -332,54 +333,62 @@ public class TrackCheckController extends BaseController {
 
     @ApiOperation(value = "批量调度审核", notes = "批量调度审核")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "isPrepare", value = "是否给予准结工时", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "trackItems", value = "跟单工序项", required = true, dataType = "TrackItem[]", paramType = "query")
+            @ApiImplicitParam(name = "tiId", value = "工序Id", required = true, paramType = "query", dataType = "Integer"),
+            @ApiImplicitParam(name = "result", value = "质检意见", required = true, paramType = "query", dataType = "Integer"),
+            @ApiImplicitParam(name = "isPrepare", value = "是否给予准结工时", required = true, paramType = "query", dataType = "Integer"),
+
     })
     @PostMapping("/batchAddSchedule")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<TrackItem[]> batchAddSchedule(@RequestBody TrackItem[] trackItems, String tiId, String branchCode, String isPrepare, String result) {
-        //TODO: 装配额外逻辑,调度审核第一道工序时要根据 物料号加图号生成生产编码
-        //数据校验
-        if (StringUtils.isNullOrEmpty(tiId)) {
-            return CommonResult.failed("关联工序ID编码不能为空！");
+    public CommonResult<Boolean> batchAddSchedule(@RequestBody BatchAddScheduleDto batchAddScheduleDto) {
+        if (null == batchAddScheduleDto) {
+            return CommonResult.failed("参数不能为空！");
         }
-//        //获取装配车间列表 对比传入车间是否是装配
-//        CommonResult<List<ItemParam>> itemClass = systemServiceClient.selectItemClass("zpCode", null);
-//        boolean branchCodeEqual = false;
-//        for (ItemParam item : itemClass.getData()) {
-//            branchCodeEqual = item.getCode().equals(branchCode);
-//        }
-//        //装配额外的业务逻辑
-//        TrackItem trackItem = trackItemService.getById(tiId);
-//        if (branchCodeEqual) {
-//            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-//            if (null != trackHead && StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
-//                //来料入库的物料料单 获取H级别的 物料编码+图号生成生产编码
-//
-//            }
-//        }
-        TrackItem trackItem = trackItemService.getById(tiId);
+        if (null == batchAddScheduleDto.getTiId()) {
+            return CommonResult.failed("工序ID列表不能为空！");
+        }
+        boolean bool = false;
+        for (String tiId : batchAddScheduleDto.getTiId()) {
+            //正常调度审核业务
+            TrackItem trackItem = trackItemService.getById(tiId);
+            //如果不需要调度审核，则将工序设置为完成，并激活下个工序
+            if (trackItem.getIsScheduleComplete() == 1) {
+                trackItem.setIsFinalComplete("1");
+                trackItem.setCompleteQty(trackItem.getBatchQty());
 
-        //正常调度审核业务
-        boolean bool = true;
-        //如果不需要调度审核，则将工序设置为完成，并激活下个工序
-        if (trackItem.getIsScheduleComplete() == 1) {
-            trackItem.setIsFinalComplete("1");
-            trackItem.setCompleteQty(trackItem.getBatchQty());
-
-            if (null != SecurityUtils.getCurrentUser()) {
-                trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                if (null != SecurityUtils.getCurrentUser()) {
+                    trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                trackItem.setScheduleCompleteTime(new Date());
+                this.activeTrackItem(trackItem);
             }
+            trackItem.setModifyTime(new Date());
             trackItem.setScheduleCompleteTime(new Date());
-            this.activeTrackItem(trackItem);
+            trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+            trackItem.setScheduleCompleteResult(batchAddScheduleDto.getResult());
+            trackItem.setIsPrepare(batchAddScheduleDto.getIsPrepare());
+            trackItem.setIsScheduleComplete(1);
+            //判断工序是否是最后一道工序
+            try {
+                if (0 == trackItem.getNextOptSequence()) {
+                    trackHeadService.trackHeadFinish(trackItem.getTrackHeadId());
+                } else {
+                    trackItem.setIsFinalComplete("1");
+                    trackItem.setCompleteQty(trackItem.getBatchQty());
+
+                    if (null != SecurityUtils.getCurrentUser()) {
+                        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                    }
+                    trackItem.setScheduleCompleteTime(new Date());
+                    this.activeTrackItem(trackItem);
+                }
+            } catch (Exception e) {
+                return CommonResult.failed("跟单结束异常");
+            }
+            bool = trackItemService.updateById(trackItem);
         }
-        trackItem.setModifyTime(new Date());
-        trackItem.setScheduleCompleteTime(new Date());
-        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-        //缺少 意见字段
-        bool = trackItemService.updateById(trackItem);
         if (bool) {
-            return CommonResult.success(trackItems, "操作成功！");
+            return CommonResult.success(true, "操作成功！");
         } else {
             return CommonResult.failed("操作失败，请重试！");
         }

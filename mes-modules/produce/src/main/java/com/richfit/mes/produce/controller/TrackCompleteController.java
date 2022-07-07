@@ -7,14 +7,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -25,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +57,9 @@ public class TrackCompleteController extends BaseController {
     private PlanService planService;
     @Autowired
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
 
     /**
      * ***
@@ -133,6 +140,12 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.orderByDesc("modify_time");
             }
             IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
+            for (TrackComplete track : completes.getRecords()) {
+                CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
+                track.setUserName(tenantUserVo.getData().getEmplName());
+                CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
+                track.setDeviceName(device.getData().getName());
+            }
             return CommonResult.success(completes);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
