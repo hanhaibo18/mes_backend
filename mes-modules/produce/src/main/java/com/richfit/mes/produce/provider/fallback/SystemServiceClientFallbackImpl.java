@@ -51,11 +51,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     public CommonResult<ItemParam> findItemParamByCode(String code) {
         return CommonResult.success(null);
     }
-<<<<<<< Updated upstream
-    
-=======
 
->>>>>>> Stashed changes
     @Override
     public CommonResult<Attachment> attachment(@PathVariable String id) {
         return CommonResult.success(null);
