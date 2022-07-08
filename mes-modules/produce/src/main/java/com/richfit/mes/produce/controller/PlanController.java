@@ -92,18 +92,40 @@ public class PlanController extends BaseController {
     })
     @GetMapping("/page")
     public CommonResult page(BasePageDto<String> queryDto) throws GlobalException {
+        PlanDto planDto = null;
+        try {
+            planDto = objectMapper.readValue(queryDto.getParam(), PlanDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
-//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(isTestBar)) {
-//            queryWrapper.eq("is_test_bar", isTestBar);
-//        }
-//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(branchCode)) {
-//            queryWrapper.eq("branch_code", branchCode);
-//        }
-//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(tenantId)) {
-//            queryWrapper.eq("tenant_id", tenantId);
-//        } else {
-//            //queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-//        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getProjCode())) {
+            queryWrapper.eq("proj_code", planDto.getProjCode());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getWorkNo())) {
+            queryWrapper.eq("work_no", planDto.getWorkNo());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getDrawNo())) {
+            queryWrapper.eq("draw_no", planDto.getDrawNo());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime()) || !com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime())) {
+                planDto.setStartTime("1990-01-01 00:00:00");
+            }
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
+                planDto.setEndTime("2100-01-01 00:00:00");
+            }
+            queryWrapper.between("start_time", planDto.getStartTime(), planDto.getEndTime());
+        }
+        if (planDto.getStatus() != -1) {
+            queryWrapper.eq("status", planDto.getStatus());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
+            queryWrapper.eq("branch_code", planDto.getBranchCode());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getTenantId())) {
+            queryWrapper.eq("tenant_id", planDto.getTenantId());
+        }
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         return CommonResult.success(planList);
     }

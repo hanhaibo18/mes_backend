@@ -479,12 +479,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         try {
             for (TrackHead t : trackHeads) {
                 TrackHead trackHeadOld = trackHeadMapper.selectById(t.getId());
-                //修改老跟单匹配计划
-                if (!StringUtils.isNullOrEmpty(trackHeadOld.getWorkPlanId())) {
-                    planService.planData(trackHeadOld.getWorkPlanId());
-                }
-                //修改新跟单匹配计划
-                planService.planData(t.getWorkPlanId());
+
                 Plan plan = planService.getById(t.getWorkPlanId());
                 //修改跟单管理计划id
                 t.setWorkPlanNo(plan.getProjCode());
@@ -495,6 +490,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 t.setProjectBomWork(plan.getProjectBomWork());
                 t.setProjectBomGroup(plan.getProjectBomGroup());
                 trackHeadMapper.updateById(t);
+
+                //修改老跟单匹配计划
+                if (!StringUtils.isNullOrEmpty(trackHeadOld.getWorkPlanId())) {
+                    planService.planData(trackHeadOld.getWorkPlanId());
+                }
+                //修改新跟单匹配计划
+                planService.planData(t.getWorkPlanId());
             }
         } catch (Exception e) {
             e.printStackTrace();

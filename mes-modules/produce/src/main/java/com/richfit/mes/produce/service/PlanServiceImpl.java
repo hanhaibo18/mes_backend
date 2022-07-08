@@ -264,7 +264,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         int optProcessNumber = 0;
         for (TrackHead trackHead : trackHeadList) {
             QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
-            queryWrapperTrackItem.eq("track_head_id", id);
+            queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
             List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
             optNumber += trackItemList.size();
             if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
