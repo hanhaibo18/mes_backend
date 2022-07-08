@@ -7,15 +7,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.model.code.StoreItemStatusEnum;
-import com.richfit.mes.common.model.produce.LineStore;
-import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
-import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +40,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Autowired
     LineStoreMapper lineStoreMapper;
+
+    @Autowired
+    CertificateService certificateService;
 
     @Override
     public LineStore LineStoreById(String id) {
@@ -177,6 +178,31 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return lineStore;
     }
 
+    @Override
+    public LineStore addStoreByCertTransfer(Certificate certificate) throws Exception {
+
+        //1 保存新合格证信息
+        //2 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
+        //2 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
+        certificateService.saveCertificate(certificate);
+
+        //3 如果对应物料产品编号在系统不存在 则新增料单入库
+        QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("workblank_no", certificate.getProductNo());
+        queryWrapper.eq("branch_code", certificate.getNextOptWork());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        LineStore lineStore = this.getOne(queryWrapper);
+
+        if (null == lineStore) {
+            lineStore = new LineStore(certificate);
+            changeStatus(lineStore);
+            this.save(lineStore);
+        }
+
+        return lineStore;
+    }
+
 
     /**
      * 根据料单原始数量和已投用数量对比，修改料单状态
@@ -230,13 +256,15 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             String oldWorkblankNo = lineStore.getWorkblankNo();
 
             for (int i = startNo; i <= endNo; i++) {
-                LineStore entity = new LineStore(lineStore);
+                LineStore entity = new LineStore();
+                //改为浅拷贝
+                BeanUtils.copyProperties(lineStore, entity);
                 if (isAutoMatchProd) {
                     entity.setProductionOrder(matchProd(entity.getMaterialNo(), entity.getNumber()));
                 }
-                if (isAutoMatchPur) {
-                    entity.setPurchaseOrder(matchPur(entity.getMaterialNo(), entity.getNumber()));
-                }
+//                if (isAutoMatchPur) {
+//                    entity.setPurchaseOrder(matchPur(entity.getMaterialNo(), entity.getNumber()));
+//                }
                 String workblankNo = oldWorkblankNo + "" + i;
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
                     workblankNo += "_" + suffixNo;
