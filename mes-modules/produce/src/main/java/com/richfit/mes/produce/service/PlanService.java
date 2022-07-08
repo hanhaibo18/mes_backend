@@ -77,4 +77,12 @@ public interface PlanService extends IService<Plan> {
      * @Date: 2022/6/7 11:37
      **/
     List<ProjectBom> completeness(String planId);
+
+    /**
+     * 功能描述: 计划数据自动计算
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/8 11:37
+     **/
+    void planData(String planId);
 }

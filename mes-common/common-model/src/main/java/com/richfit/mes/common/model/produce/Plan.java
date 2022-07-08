@@ -79,6 +79,14 @@ public class Plan extends BaseEntity<Plan> {
      */
     private int trackHeadFinishNumber;
     /**
+     * 跟单数量
+     */
+    private int optNumber;
+    /**
+     * 已完成跟单数量
+     */
+    private int optFinishNumber;
+    /**
      * 已跟单数量
      */
     @TableField(exist = false)
