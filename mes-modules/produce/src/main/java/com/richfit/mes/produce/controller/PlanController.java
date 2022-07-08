@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -78,6 +79,32 @@ public class PlanController extends BaseController {
 
         IPage<Plan> planList = planService.queryPage(new Page<Plan>(queryDto.getPage(), queryDto.getLimit()), planDto);
 
+        return CommonResult.success(planList);
+    }
+
+
+    /**
+     * 分页查询plan
+     */
+    @ApiOperation(value = "查询计划信息", notes = "根据查询条件返回计划信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "queryDto", value = "计划属性", paramType = "BasePageDto")
+    })
+    @GetMapping("/page")
+    public CommonResult page(BasePageDto<String> queryDto) throws GlobalException {
+        QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
+//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(isTestBar)) {
+//            queryWrapper.eq("is_test_bar", isTestBar);
+//        }
+//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(branchCode)) {
+//            queryWrapper.eq("branch_code", branchCode);
+//        }
+//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(tenantId)) {
+//            queryWrapper.eq("tenant_id", tenantId);
+//        } else {
+//            //queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+//        }
+        IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         return CommonResult.success(planList);
     }
 
