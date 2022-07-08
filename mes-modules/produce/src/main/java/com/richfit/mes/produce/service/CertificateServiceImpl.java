@@ -4,12 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
+import com.richfit.mes.produce.entity.CertQueryDto;
+import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +51,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Autowired
     private TrackCertificateService trackCertificateService;
 
+    @Autowired
+    private CertAdditionalBsns certAdditionalBsns;
+
     @Override
     public IPage<Certificate> selectCertificate(Page<Certificate> page, QueryWrapper<Certificate> query) {
         return certificateMapper.selectCertificate(page, query);
@@ -56,13 +62,16 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Override
     public boolean saveCertificate(Certificate certificate) throws Exception {
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
-
+        certificate.setIsPush("0");
         //1 保存合格证
         boolean bool = this.save(certificate);
 
+        //2 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
+        additionalBsns(certificate);
+
         if (bool) {
 
-            //2 更新跟单或工序对应的合格证编号
+            //3 更新跟单或工序对应的合格证编号
             certificate.getTrackCertificates().stream().forEach(track -> {
                 //工序合格证
                 if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
@@ -78,12 +87,25 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                 track.setCertificateType(certificate.getType());
                 track.setCertificateId(certificate.getId());
             });
-            //3 保存关联关系
-            trackCertificateService.saveBatch(certificate.getTrackCertificates());
+            //4 保存关联关系
+            if (certificate.getTrackCertificates().size() > 0) {
+                trackCertificateService.saveBatch(certificate.getTrackCertificates());
+            }
             return true;
         } else {
             return false;
         }
+    }
+
+    private void additionalBsns(Certificate certificate) {
+
+        //完工合格证情况   转车间   交库    报工时
+        if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
+            certAdditionalBsns.doAdditionalBsns(certificate);
+
+            this.certPushComplete(certificate);
+        }
+
     }
 
     @Override
@@ -190,6 +212,35 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         Certificate cert = this.certificateMapper.selectOne(queryWrapper);
 
         return cert != null;
+    }
+
+    @Override
+    public IPage<Certificate> selectNeedTransferCert(CertQueryDto queryDto) {
+
+        //查询 未推送的（is_push =0 ） 接收单位是本单位，生产单位不是本单位的合格证
+        QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pc.is_push", "0");
+        queryWrapper.eq("pc.next_opt_work", queryDto.getBranchCode());
+        queryWrapper.ne("pc.branch_code", queryDto.getBranchCode());
+
+        if (!StringUtils.isNullOrEmpty(queryDto.getCertificateNo())) {
+            queryWrapper.like("pc.certificate_no", queryDto.getCertificateNo());
+        }
+
+        if (!StringUtils.isNullOrEmpty(queryDto.getDrawingNo())) {
+            queryWrapper.like("drawing_no", queryDto.getDrawingNo());
+        }
+
+        return this.selectCertificate(new Page<>(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
+
+    }
+
+    @Override
+    public boolean certPushComplete(Certificate certificate) {
+
+        certificate.setIsPush("1");
+
+        return this.updateById(certificate);
     }
 
 }
