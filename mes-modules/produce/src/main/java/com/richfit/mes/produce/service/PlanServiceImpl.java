@@ -1,5 +1,9 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -11,15 +15,18 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.DateUtils;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
+import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -58,6 +65,13 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Autowired
     private TrackItemMapper trackItemMapper;
+
+    @Autowired
+    private LineStoreMapper lineStoreMapper;
+
+
+    @Value("${interface.store-remaining-number}")
+    private String urlStoreRemainingNumber;
 
 
     private double getDailyHour() {
@@ -231,19 +245,58 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     /**
      * 功能描述: 物料齐套性检查
      *
+     * @param planId 计划id
      * @Author: zhiqiang.lu
      * @Date: 2022/6/7 11:37
      **/
     @Override
-    public List<ProjectBom> completeness(String planId) {
+    public List<ProjectBomComplete> completeness(String planId) {
+        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         Plan plan = planMapper.selectById(planId);
         List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
-        for (ProjectBom pb : projectBomList) {
-            System.out.println("-------------------");
-            System.out.println(pb.getProjectName());
+        Map<String, String> group = new HashMap<>();
+        if (!StringUtil.isNullOrEmpty(plan.getProjectBomGroup())) {
+            group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
         }
-        return projectBomList;
+        for (ProjectBom pb : projectBomList) {
+            if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                    projectBomCompleteList.add(JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class));
+                }
+            } else {
+                projectBomCompleteList.add(JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class));
+            }
+        }
+        for (ProjectBomComplete pbc : projectBomCompleteList) {
+            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
+            int totalErp = 0;
+            int totalStore = 0;
+            int totalMiss = 0;
+            if ("0".equals(result.getString("code"))) {
+                JSONArray resultList = JSON.parseArray(result.getString("data"));
+                for (Object o : resultList) {
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+                    if (!StringUtil.isNullOrEmpty(jsonObject.getString("QUANTITY"))) {
+                        totalErp += Double.parseDouble(jsonObject.getString("QUANTITY"));
+                    }
+                }
+            }
+            pbc.setErpNumber(totalErp);
+            Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
+            if (totalMaterial != null) {
+                totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
+                pbc.setStoreNumber(totalStore);
+            }
+            totalMiss = pbc.getNumber() - totalErp - totalStore;
+            if (totalMiss > 0) {
+                pbc.setMissingNumber(totalMiss);
+            } else {
+                pbc.setMissingNumber(0);
+            }
+        }
+        return projectBomCompleteList;
     }
+
 
     /**
      * 功能描述: 计划数据自动计算
@@ -253,10 +306,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @Date: 2022/7/8 11:37
      **/
     @Override
-    public void planData(String id) {
-        Plan plan = planMapper.selectById(id);
+    public void planData(String planId) {
+        Plan plan = planMapper.selectById(planId);
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        queryWrapper.eq("work_plan_id", id);
+        queryWrapper.eq("work_plan_id", planId);
         List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
         int trackHeadFinish = 0;
         int processNum = 0;

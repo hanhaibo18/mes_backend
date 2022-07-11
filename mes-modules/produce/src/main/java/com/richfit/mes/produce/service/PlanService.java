@@ -4,10 +4,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
+import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 
 import java.util.Date;
 import java.util.List;
@@ -76,7 +76,7 @@ public interface PlanService extends IService<Plan> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/7 11:37
      **/
-    List<ProjectBom> completeness(String planId);
+    List<ProjectBomComplete> completeness(String planId);
 
     /**
      * 功能描述: 计划数据自动计算
