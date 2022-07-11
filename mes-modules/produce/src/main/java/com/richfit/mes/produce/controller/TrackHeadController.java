@@ -67,6 +67,19 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_SUCCESS_MESSAGE = "操作成功！";
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
 
+    @ApiOperation(value = "取消计划", notes = "通过跟单id、取消计划")
+    @PostMapping("/plan_cancel/{id}")
+    public void planCancel(
+            @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
+        TrackHead trackHead = trackHeadService.getById(id);
+        String workPlanId = trackHead.getWorkPlanId();
+        trackHead.setWorkPlanId("");
+        trackHead.setWorkPlanNo("");
+        trackHead.setProductionOrder("");
+        trackHeadService.updateById(trackHead);
+        planService.planData(workPlanId);
+    }
+
     @ApiOperation(value = "其他资料", notes = "通过跟单id、查看其他资料")
     @GetMapping("/other_data/{id}")
     public CommonResult<List<LineStore>> otherData(
@@ -259,7 +272,7 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                           @ApiParam(value = "id") @RequestParam(required = false) String id,
                                                           @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
-                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
+                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanId,
                                                           @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
                                                           @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
                                                           @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
@@ -284,8 +297,8 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.like("track_no", "%" + trackNo + "%");
         }
-        if (!StringUtils.isNullOrEmpty(workPlanNo)) {
-            queryWrapper.like("work_plan_no", "%" + workPlanNo + "%");
+        if (!StringUtils.isNullOrEmpty(workPlanId)) {
+            queryWrapper.like("work_plan_id", "%" + workPlanId + "%");
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", "%" + productNo + "%");

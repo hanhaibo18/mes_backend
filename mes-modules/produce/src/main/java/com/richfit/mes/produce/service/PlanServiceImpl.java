@@ -10,10 +10,10 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.DateUtils;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.Action;
-import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.Plan;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.produce.dao.PlanMapper;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
+import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -40,7 +41,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Autowired
     PlanMapper planMapper;
 
-    @Autowired
+    @Resource
     private BaseServiceClient baseServiceClient;
 
     @Autowired
@@ -51,6 +52,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Autowired
     private ActionService actionService;
+
+    @Autowired
+    private TrackHeadMapper trackHeadMapper;
+
+    @Autowired
+    private TrackItemMapper trackItemMapper;
 
 
     private double getDailyHour() {
@@ -236,6 +243,73 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             System.out.println(pb.getProjectName());
         }
         return projectBomList;
+    }
+
+    /**
+     * 功能描述: 计划数据自动计算
+     *
+     * @param planId 计划id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/8 11:37
+     **/
+    @Override
+    public void planData(String id) {
+        Plan plan = planMapper.selectById(id);
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+        queryWrapper.eq("work_plan_id", id);
+        List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
+        int trackHeadFinish = 0;
+        int processNum = 0;
+        int deliveryNum = 0;
+        int optNumber = 0;
+        int optProcessNumber = 0;
+        for (TrackHead trackHead : trackHeadList) {
+            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+            queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+            optNumber += trackItemList.size();
+            if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
+                trackHeadFinish++;
+                deliveryNum += trackHead.getNumber();
+            } else if ("0".equals(trackHead.getStatus())) {
+                //未派工
+                for (TrackItem trackItem : trackItemList) {
+                    if (trackItem.getIsOperationComplete() == 0) {
+                        optProcessNumber++;
+                    }
+                }
+            } else if ("1".equals(trackHead.getStatus())) {
+                //在制
+                System.out.println("---------------在制");
+                processNum += trackHead.getNumber();
+                for (TrackItem trackItem : trackItemList) {
+                    if (trackItem.getIsOperationComplete() == 0) {
+                        optProcessNumber++;
+                    }
+                }
+            } else {
+                //其余都算完工
+                trackHeadFinish++;
+                deliveryNum += trackHead.getNumber();
+            }
+        }
+
+        plan.setProcessNum(processNum);
+        plan.setDeliveryNum(deliveryNum);
+        plan.setTrackHeadNumber(trackHeadList.size());
+        plan.setTrackHeadFinishNumber(trackHeadFinish);
+        plan.setOptNumber(optNumber);
+        plan.setOptFinishNumber(optNumber - optProcessNumber);
+        if (plan.getProjNum() <= plan.getDeliveryNum()) {
+            plan.setStatus(3);
+        } else {
+            if (plan.getTrackHeadNumber() > 0) {
+                plan.setStatus(1);
+            } else {
+                plan.setStatus(0);
+            }
+        }
+        planMapper.updateById(plan);
     }
 
     public List<Map<String, String>> disposePlan(List<Plan> planList) {

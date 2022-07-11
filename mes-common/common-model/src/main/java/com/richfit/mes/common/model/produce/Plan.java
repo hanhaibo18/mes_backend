@@ -15,6 +15,10 @@ public class Plan extends BaseEntity<Plan> {
 
     private static final long serialVersionUID = -1472432735506772177L;
     /**
+     * 项目号
+     */
+    private String projectNo;
+    /**
      * 计划编号
      */
     private String projCode;
@@ -59,9 +63,29 @@ public class Plan extends BaseEntity<Plan> {
      */
     private int projNum;
     /**
+     * 在制数量
+     */
+    private int processNum;
+    /**
      * 交付数量
      */
     private int deliveryNum;
+    /**
+     * 跟单数量
+     */
+    private int trackHeadNumber;
+    /**
+     * 已完成跟单数量
+     */
+    private int trackHeadFinishNumber;
+    /**
+     * 跟单数量
+     */
+    private int optNumber;
+    /**
+     * 已完成跟单数量
+     */
+    private int optFinishNumber;
     /**
      * 已跟单数量
      */
@@ -175,4 +199,9 @@ public class Plan extends BaseEntity<Plan> {
      */
     @TableField(exist = false)
     private float alreadyWorkHour;
+
+    /**
+     * 材质
+     */
+    private String texture;
 }

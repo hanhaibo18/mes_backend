@@ -204,4 +204,36 @@ public class LineStore extends BaseEntity<LineStore> {
         this.branchCode = lineStore.branchCode;
         this.inputType = lineStore.inputType;
     }
+
+    public LineStore(Certificate certificate) {
+        this.tenantId = certificate.getTenantId();
+        this.materialNo = certificate.getMaterialNo();
+        this.drawingNo = certificate.getDrawingNo();
+        this.number = certificate.getNumber();
+        this.certificateNo = certificate.getCertificateNo();
+        this.materialSource = certificate.getBranchCode();
+        this.batchNo = certificate.getBatchNo();
+
+        this.workblankNo = certificate.getProductNo();
+        this.materialType = null;
+        this.trackType = null;
+        this.useNum = 0;
+        this.inTime = new Date();
+
+        this.testBarNumber = certificate.getTestBarNumber();
+        this.testBarType = certificate.getTestBarType();
+        this.productionOrder = null;
+
+        this.productName = certificate.getProductName();
+        this.texture = certificate.getTexture();
+        this.weight = certificate.getWeight();
+
+
+        this.isSendErp = "0";
+        this.isFeedErp = "0";
+        this.stockType = "0";
+        this.branchCode = certificate.getNextOptWork();
+        this.inputType = "1";
+    }
+
 }

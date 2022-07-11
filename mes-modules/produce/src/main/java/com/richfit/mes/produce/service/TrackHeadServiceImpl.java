@@ -145,6 +145,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
                 }
             }
+            File file = new File(path);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
             ZipUtil.zip(path);
             return path + ".zip";
         } catch (Exception e) {
@@ -212,9 +216,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                     //当匹配计划时更新计划状态
                     if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                        Plan plan = planService.getById(trackHead.getWorkPlanId());
-                        plan.setStatus(1);
-                        planService.updatePlan(plan);
+                        planService.planData(trackHead.getWorkPlanId());
                     }
                 }
             }
@@ -444,6 +446,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
 
                 for (TrackHead head : trackHeads) {
+                    planService.planData(head.getWorkPlanId());
                     Map<String, Object> map = new HashMap<>();
                     map.put("work_plan_no", head.getWorkPlanNo());
                     map.put("tenant_id", head.getTenantId());
@@ -475,10 +478,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean updateTrackHeadPlan(List<TrackHead> trackHeads) {
         try {
             for (TrackHead t : trackHeads) {
-                //修改跟单计划状态改为1
+                TrackHead trackHeadOld = trackHeadMapper.selectById(t.getId());
+
                 Plan plan = planService.getById(t.getWorkPlanId());
-                plan.setStatus(1);
-                planService.updatePlan(plan);
                 //修改跟单管理计划id
                 t.setWorkPlanNo(plan.getProjCode());
                 t.setProductionOrder(plan.getOrderNo());
@@ -488,6 +490,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 t.setProjectBomWork(plan.getProjectBomWork());
                 t.setProjectBomGroup(plan.getProjectBomGroup());
                 trackHeadMapper.updateById(t);
+
+                //修改老跟单匹配计划
+                if (!StringUtils.isNullOrEmpty(trackHeadOld.getWorkPlanId())) {
+                    planService.planData(trackHeadOld.getWorkPlanId());
+                }
+                //修改新跟单匹配计划
+                planService.planData(t.getWorkPlanId());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -524,15 +533,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //计划数据更新
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                Plan plan = planService.getById(trackHead.getWorkPlanId());
-                //计算交付数量
-                int totalNum = plan.getDeliveryNum() + trackHead.getNumber();
-                plan.setDeliveryNum(totalNum);
-                //当交付数量==计划数量时更新计划为已完成状态
-                if (plan.getProjNum() >= totalNum) {
-                    plan.setStatus(3);
-                }
-                planService.updatePlan(plan);
+                planService.planData(trackHead.getWorkPlanId());
             }
             //更新跟单动作
             trackHeadMapper.updateById(trackHead);

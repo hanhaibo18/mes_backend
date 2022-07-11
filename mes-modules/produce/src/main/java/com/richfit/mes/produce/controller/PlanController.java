@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -78,6 +79,54 @@ public class PlanController extends BaseController {
 
         IPage<Plan> planList = planService.queryPage(new Page<Plan>(queryDto.getPage(), queryDto.getLimit()), planDto);
 
+        return CommonResult.success(planList);
+    }
+
+
+    /**
+     * 分页查询plan
+     */
+    @ApiOperation(value = "查询计划信息", notes = "根据查询条件返回计划信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "queryDto", value = "计划属性", paramType = "BasePageDto")
+    })
+    @GetMapping("/page")
+    public CommonResult page(BasePageDto<String> queryDto) throws GlobalException {
+        PlanDto planDto = null;
+        try {
+            planDto = objectMapper.readValue(queryDto.getParam(), PlanDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getProjCode())) {
+            queryWrapper.eq("proj_code", planDto.getProjCode());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getWorkNo())) {
+            queryWrapper.eq("work_no", planDto.getWorkNo());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getDrawNo())) {
+            queryWrapper.eq("draw_no", planDto.getDrawNo());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime()) || !com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime())) {
+                planDto.setStartTime("1990-01-01 00:00:00");
+            }
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
+                planDto.setEndTime("2100-01-01 00:00:00");
+            }
+            queryWrapper.between("start_time", planDto.getStartTime(), planDto.getEndTime());
+        }
+        if (planDto.getStatus() != -1) {
+            queryWrapper.eq("status", planDto.getStatus());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
+            queryWrapper.eq("branch_code", planDto.getBranchCode());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getTenantId())) {
+            queryWrapper.eq("tenant_id", planDto.getTenantId());
+        }
+        IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         return CommonResult.success(planList);
     }
 

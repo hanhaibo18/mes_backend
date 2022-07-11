@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
@@ -32,6 +33,15 @@ public interface LineStoreService extends IService<LineStore> {
     public boolean rollBackItem(int num, String id);
 
     LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String product);
+
+    /**
+     * 功能描述: 根据推送合格证入库
+     *
+     * @param certificate
+     * @return
+     * @Author Gaol
+     */
+    LineStore addStoreByCertTransfer(Certificate certificate) throws Exception;
 
     /**
      * 功能描述: 装配库存查询

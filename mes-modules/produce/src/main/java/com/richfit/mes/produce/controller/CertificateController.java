@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackCertificateService;
 import io.swagger.annotations.Api;
@@ -155,6 +156,14 @@ public class CertificateController {
         return CommonResult.success(certificateService.selectCertificate(new Page<Certificate>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "查询需要本单位接收的合格证", notes = "根据图号、合格证号查询分页合格证信息")
+    @GetMapping("/certificate/need_transfer")
+    public CommonResult<IPage<Certificate>> selectCertificateForTransf(@ApiParam(value = "queryDto") CertQueryDto queryDto) {
+
+        return CommonResult.success(certificateService.selectNeedTransferCert(queryDto), SUCCESS_MESSAGE);
+
+    }
+
     /**
      * 弃用，返回的字段是关系表字段，数据项有限。
      * 推荐使用/api/produce/track_head/track_head/query_by_cert
@@ -172,4 +181,6 @@ public class CertificateController {
         }
         return CommonResult.success(trackCertificateService.list(queryWrapper), SUCCESS_MESSAGE);
     }
+
+
 }
