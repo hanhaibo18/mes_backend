@@ -238,4 +238,14 @@ public class PlanController extends BaseController {
     public CommonResult<Object> completeness(@PathVariable String id) throws GlobalException {
         return CommonResult.success(planService.completeness(id));
     }
+
+    @ApiOperation(value = "物料齐套性检查", notes = "物料齐套性检查")
+    @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
+    @PostMapping("/completeness/list")
+    public CommonResult<Object> completeness_list(@RequestBody List<Plan> planList) throws GlobalException {
+        for (Plan plan : planList) {
+            planService.completeness(plan.getId());
+        }
+        return CommonResult.success("");
+    }
 }

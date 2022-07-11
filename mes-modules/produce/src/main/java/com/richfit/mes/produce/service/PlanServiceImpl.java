@@ -289,12 +289,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
                 pbc.setStoreNumber(totalStore);
             }
-            totalMiss = pbc.getNumber() - totalErp - totalStore;
+            totalMiss = plan.getProjNum() * pbc.getNumber() - totalErp - totalStore;
             if (totalMiss > 0) {
                 pbc.setMissingNumber(totalMiss);
             } else {
                 pbc.setMissingNumber(0);
             }
+            pbc.setPlanNumber(plan.getProjNum());
+            pbc.setPlanNeedNumber(plan.getProjNum() * pbc.getNumber());
         }
         return projectBomCompleteList;
     }

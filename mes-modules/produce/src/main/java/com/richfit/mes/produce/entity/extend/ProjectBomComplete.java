@@ -17,6 +17,14 @@ public class ProjectBomComplete extends ProjectBom {
      */
     private String isFinish;
     /**
+     * 计划数量
+     */
+    private int planNumber;
+    /**
+     * 计划所需数量
+     */
+    private int planNeedNumber;
+    /**
      * 已安装数量
      */
     private int installNumber;
