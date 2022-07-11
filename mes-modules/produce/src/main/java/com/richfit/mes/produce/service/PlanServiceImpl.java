@@ -259,41 +259,41 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
         }
         for (ProjectBom pb : projectBomList) {
-            if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+            if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
+                if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                    if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                        projectBomCompleteList.add(JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class));
+                    }
+                } else {
                     projectBomCompleteList.add(JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class));
                 }
-            } else {
-                projectBomCompleteList.add(JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class));
             }
         }
         for (ProjectBomComplete pbc : projectBomCompleteList) {
-            if ("L".equals(pbc.getGrade()) && "1".equals(pbc.getIsCheck())) {
-                JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
-                int totalErp = 0;
-                int totalStore = 0;
-                int totalMiss = 0;
-                if ("0".equals(result.getString("code"))) {
-                    JSONArray resultList = JSON.parseArray(result.getString("data"));
-                    for (Object o : resultList) {
-                        JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-                        if (!StringUtil.isNullOrEmpty(jsonObject.getString("QUANTITY"))) {
-                            totalErp += Double.parseDouble(jsonObject.getString("QUANTITY"));
-                        }
+            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
+            int totalErp = 0;
+            int totalStore = 0;
+            int totalMiss = 0;
+            if ("0".equals(result.getString("code"))) {
+                JSONArray resultList = JSON.parseArray(result.getString("data"));
+                for (Object o : resultList) {
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+                    if (!StringUtil.isNullOrEmpty(jsonObject.getString("QUANTITY"))) {
+                        totalErp += Double.parseDouble(jsonObject.getString("QUANTITY"));
                     }
                 }
-                pbc.setErpNumber(totalErp);
-                Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
-                if (totalMaterial != null) {
-                    totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
-                    pbc.setStoreNumber(totalStore);
-                }
-                totalMiss = pbc.getNumber() - totalErp - totalStore;
-                if (totalMiss > 0) {
-                    pbc.setMissingNumber(totalMiss);
-                } else {
-                    pbc.setMissingNumber(0);
-                }
+            }
+            pbc.setErpNumber(totalErp);
+            Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
+            if (totalMaterial != null) {
+                totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
+                pbc.setStoreNumber(totalStore);
+            }
+            totalMiss = pbc.getNumber() - totalErp - totalStore;
+            if (totalMiss > 0) {
+                pbc.setMissingNumber(totalMiss);
+            } else {
+                pbc.setMissingNumber(0);
             }
         }
         return projectBomCompleteList;
