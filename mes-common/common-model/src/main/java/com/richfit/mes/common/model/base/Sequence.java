@@ -43,12 +43,12 @@ public class Sequence extends BaseEntity<Sequence> {
      * 准结工时
      */
     @ApiModelProperty(value = "准结工时", dataType = "int")
-    private int prepareEndHours;
+    private float prepareEndHours;
     /**
      * 额定工时
      */
     @ApiModelProperty(value = "额定工时", dataType = "int")
-    private int singlePieceHours;
+    private float singlePieceHours;
     /**
      * 技术要求
      */
