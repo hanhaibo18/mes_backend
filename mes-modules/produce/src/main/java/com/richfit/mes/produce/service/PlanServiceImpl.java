@@ -251,24 +251,63 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      **/
     @Override
     public List<ProjectBomComplete> completeness(String planId) {
-        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         Plan plan = planMapper.selectById(planId);
-        List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
-        Map<String, String> group = new HashMap<>();
-        if (!StringUtil.isNullOrEmpty(plan.getProjectBomGroup())) {
-            group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
-        }
-        for (ProjectBom pb : projectBomList) {
-            if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
-                if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                    if (pb.getId().equals(group.get(pb.getGroupBy()))) {
-                        projectBomCompleteList.add(JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class));
+        List<ProjectBomComplete> projectBomCompleteList = poject_bom_complete_list(plan);
+        return poject_bom_complete_store_list(projectBomCompleteList);
+    }
+
+    @Override
+    public List<ProjectBomComplete> completeness_list(List<Plan> planList) {
+        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
+        for (Plan plan : planList) {
+            List<ProjectBomComplete> projectBomCompleteListNew = poject_bom_complete_list(plan);
+            for (ProjectBomComplete pbcn : projectBomCompleteListNew) {
+                boolean flag = true;
+                for (ProjectBomComplete pbc : projectBomCompleteList) {
+                    if (pbcn.getMaterialNo().equals(pbc.getMaterialNo())) {
+                        flag = false;
+                        pbc.setPlanNumber(pbc.getPlanNumber() + pbcn.getPlanNumber());
+                        pbc.setPlanNeedNumber(pbc.getPlanNeedNumber() + pbcn.getPlanNeedNumber());
                     }
-                } else {
-                    projectBomCompleteList.add(JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class));
+                }
+                if (flag) {
+                    projectBomCompleteList.add(pbcn);
                 }
             }
         }
+        return poject_bom_complete_store_list(projectBomCompleteList);
+    }
+
+    List<ProjectBomComplete> poject_bom_complete_list(Plan plan) {
+        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
+        if (!StringUtil.isNullOrEmpty(plan.getProjectBom())) {
+            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
+            Map<String, String> group = new HashMap<>();
+            if (!StringUtil.isNullOrEmpty(plan.getProjectBomGroup())) {
+                group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
+            }
+            for (ProjectBom pb : projectBomList) {
+                if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
+                    if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                        if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                            ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
+                            pbc.setPlanNumber(plan.getProjNum());
+                            pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
+                            projectBomCompleteList.add(pbc);
+                        }
+                    } else {
+                        ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
+                        pbc.setPlanNumber(plan.getProjNum());
+                        pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
+                        projectBomCompleteList.add(pbc);
+                    }
+                }
+            }
+        }
+        return projectBomCompleteList;
+    }
+
+    List<ProjectBomComplete> poject_bom_complete_store_list(List<ProjectBomComplete> projectBomCompleteList) {
         for (ProjectBomComplete pbc : projectBomCompleteList) {
             JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
             int totalErp = 0;
@@ -289,14 +328,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
                 pbc.setStoreNumber(totalStore);
             }
-            totalMiss = plan.getProjNum() * pbc.getNumber() - totalErp - totalStore;
+            totalMiss = pbc.getPlanNeedNumber() + pbc.getInstallNumber() - totalErp - totalStore;
             if (totalMiss > 0) {
                 pbc.setMissingNumber(totalMiss);
             } else {
                 pbc.setMissingNumber(0);
             }
-            pbc.setPlanNumber(plan.getProjNum());
-            pbc.setPlanNeedNumber(plan.getProjNum() * pbc.getNumber());
         }
         return projectBomCompleteList;
     }

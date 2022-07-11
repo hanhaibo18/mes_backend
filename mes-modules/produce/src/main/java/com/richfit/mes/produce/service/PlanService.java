@@ -78,6 +78,15 @@ public interface PlanService extends IService<Plan> {
      **/
     List<ProjectBomComplete> completeness(String planId);
 
+
+    /**
+     * 功能描述: 物料齐套性检查
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/11 11:37
+     **/
+    List<ProjectBomComplete> completeness_list(List<Plan> planList);
+
     /**
      * 功能描述: 计划数据自动计算
      *
