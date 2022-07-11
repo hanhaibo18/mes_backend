@@ -105,4 +105,8 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "单重 from跟单")
     @TableField(exist = false)
     private Float weight;
+
+    @ApiModelProperty(value = "零件名称 from跟单")
+    @TableField(exist = false)
+    private String materialName;
 }

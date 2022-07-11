@@ -222,9 +222,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.eq("pc.is_push", "0");
         queryWrapper.eq("pc.next_opt_work", queryDto.getBranchCode());
         queryWrapper.ne("pc.branch_code", queryDto.getBranchCode());
+        queryWrapper.apply("pc.id = track.certificate_id");
+        queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         if (!StringUtils.isNullOrEmpty(queryDto.getCertificateNo())) {
-            queryWrapper.like("pc.certificate_no", queryDto.getCertificateNo());
+            queryWrapper.like("certificate_no", queryDto.getCertificateNo());
         }
 
         if (!StringUtils.isNullOrEmpty(queryDto.getDrawingNo())) {

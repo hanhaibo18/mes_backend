@@ -5,8 +5,8 @@
         SELECT *
         FROM produce_certificate pc, (
         select tc.certificate_id, sum(th.number) number, th.drawing_no, max(th.product_name)
-        product_name,group_concat(th.product_no) product_no,
-        th.material_no,max(th.test_Bar_Number) test_Bar_Number,max(th.test_Bar_Type) test_Bar_Type,
+        product_name,group_concat(th.product_no) product_no,max(th.material_name) material_name,
+        th.material_no,max(th.test_bar_number) test_Bar_Number,max(th.test_bar_type) test_Bar_Type,
         max(th.batch_no) batch_no,max(th.texture) texture,max(th.weight) weight,
         ti.opt_id, ti.opt_name, ti.opt_ver, max(ti.sequence_order_by) sequence_order_by from
         produce_track_certificate tc
