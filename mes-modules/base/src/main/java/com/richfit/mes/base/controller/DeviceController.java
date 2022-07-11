@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.enmus.MessageEnum;
+import com.richfit.mes.base.service.DevicePersonService;
 import com.richfit.mes.base.service.DeviceService;
+import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -42,6 +44,9 @@ public class DeviceController extends BaseController {
 
     @Autowired
     private DeviceService deviceService;
+
+    @Autowired
+    private DevicePersonService devicePersonService;
 
     /**
      * ***
@@ -266,7 +271,10 @@ public class DeviceController extends BaseController {
     @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "path")
     @PostMapping("/delete")
     public CommonResult<Device> delete(@RequestBody String[] ids) {
-
+        // 删除关联的人员
+        QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<DevicePerson>();
+        queryWrapper.in("device_id",ids);
+        devicePersonService.remove(queryWrapper);
         boolean bool = deviceService.removeByIds(java.util.Arrays.asList(ids));
         if (bool) {
             return CommonResult.success(null, "删除成功！");
