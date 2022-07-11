@@ -126,6 +126,7 @@ public class PlanController extends BaseController {
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getTenantId())) {
             queryWrapper.eq("tenant_id", planDto.getTenantId());
         }
+        queryWrapper.orderByDesc("modify_time");
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         return CommonResult.success(planList);
     }
