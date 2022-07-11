@@ -18,6 +18,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class ProjectBom extends BaseEntity<ProjectBom> {
 
+    private static final long serialVersionUID = -4961039311634052413L;
     /**
      * 租户ID
      */
@@ -126,8 +127,8 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
     @ApiModelProperty(value = "零部件名称", dataType = "String")
     private String prodDesc;
 
-    @ApiModelProperty(value = "分组", dataType = "Integer")
-    private Integer groupBy;
+    @ApiModelProperty(value = "分组", dataType = "String")
+    private String groupBy;
     @ApiModelProperty(value = "是否分解", dataType = "String")
     private String isResolution;
     @ApiModelProperty(value = "状态(0停用,1发布)", dataType = "String")
