@@ -248,6 +248,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     /**
      * 功能描述: 计划数据自动计算
      *
+     * @param planId 计划id
      * @Author: zhiqiang.lu
      * @Date: 2022/7/8 11:37
      **/
