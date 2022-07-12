@@ -272,6 +272,19 @@ public class LineStoreController extends BaseController {
         return CommonResult.success(list);
     }
 
+    @ApiOperation(value = "装配当前库数量", notes = "根据物料号查询装配库存数量")
+    @GetMapping("/sum/zp_num")
+    public CommonResult<Integer> selectLineStoreSumZpNumber(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                            @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo) throws Exception {
+
+        Map parMap = new HashMap();
+        parMap.put("drawingNo", drawingNo);
+        parMap.put("materialNo", materialNo);
+        Integer number = lineStoreService.queryLineStoreSumZpNumber(parMap);
+
+        return CommonResult.success(number);
+    }
+
     @ApiOperation(value = "查询入库信息", notes = "根据图号、合格证号、物料编号查询入库信息")
     @GetMapping("/line_store/list")
     public CommonResult<List<LineStore>> selectLineStoreList(@ApiParam(value = "料单Id") @RequestParam(required = false) String id,

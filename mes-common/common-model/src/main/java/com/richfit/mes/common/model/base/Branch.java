@@ -66,6 +66,7 @@ public class Branch extends BaseEntity<Branch> {
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点", dataType = "String")
     private List<Branch> branchList;
+    
 
     /**
      * 描述: 分类：1机加  2装配 3热处理 4钢结构

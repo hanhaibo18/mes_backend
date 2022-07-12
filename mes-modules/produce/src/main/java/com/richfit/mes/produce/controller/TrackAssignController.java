@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
@@ -150,11 +151,7 @@ public class TrackAssignController extends BaseController {
     @GetMapping("/querypage")
     public CommonResult<IPage<Assign>> querypage(int page, int limit, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
         try {
-            Calendar calendar = new GregorianCalendar();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            calendar.setTime(sdf.parse(endTime));
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, sdf.format(calendar.getTime()), state, userId, branchCode);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode);
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }
@@ -512,5 +509,14 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "修改已派工对象")
     public CommonResult<Boolean> updateProcess(Assign assign) {
         return CommonResult.success(trackAssignService.updateProcess(assign));
+    }
+
+    @GetMapping("/KittingExamine")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, paramType = "query", dataType = "String"),
+    })
+    @ApiOperation(value = "根据跟单id齐套性检查")
+    public CommonResult<List<KittingVo>> KittingExamine(String trackHeadId) {
+        return CommonResult.success(trackAssignService.KittingExamine(trackHeadId));
     }
 }

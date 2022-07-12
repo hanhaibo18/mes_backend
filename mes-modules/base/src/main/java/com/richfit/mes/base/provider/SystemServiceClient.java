@@ -37,4 +37,15 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/tenant/{id}")
     public CommonResult<Tenant> getTenant(@PathVariable String id);
+
+    /**
+     * 功能描述: 根据组织机构获取质检人员
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/7/8 16:04
+     * @return: List<TenantUserVo>
+     **/
+    @GetMapping("/api/sys/user/queryByBranchCode")
+    public List<TenantUserVo> queryByBranchCode(@RequestParam("branchCode") String branchCode);
 }

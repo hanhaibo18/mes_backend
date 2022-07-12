@@ -8,6 +8,7 @@ import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
 
     @Autowired
     private BranchMapper branchMapper;
-
 
     @Resource
     private SystemServiceClient systemServiceClient;
@@ -81,5 +81,18 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
             }
         }
         return branchList;
+    }
+
+    @Override
+    public List<TenantUserVo> queryUserList(String branchCode) {
+        List<Branch> queryCode = this.queryCode(branchCode);
+        List<TenantUserVo> tenantUserVoList = new ArrayList<>();
+        if (!queryCode.isEmpty()) {
+            //不为空查询人员信 并进行递归查询
+            for (Branch branch : queryCode) {
+                tenantUserVoList.addAll(systemServiceClient.queryByBranchCode(branch.getBranchCode()));
+            }
+        }
+        return tenantUserVoList;
     }
 }

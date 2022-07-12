@@ -6,6 +6,7 @@ import com.richfit.mes.base.service.BranchService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -203,5 +204,10 @@ public class BranchController extends BaseController {
         return CommonResult.success(branchService.queryCode(branchCode));
     }
 
-
+    @ApiOperation(value = "查询组织机构+质检人员", notes = "查询组织机构+质检人员")
+    @ApiImplicitParam(name = "branchCode", value = "机构编码", dataType = "String", paramType = "query")
+    @GetMapping("/queryUserList")
+    public CommonResult<List<TenantUserVo>> queryUserList(String branchCode) {
+        return CommonResult.success(branchService.queryUserList(branchCode));
+    }
 }

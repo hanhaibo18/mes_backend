@@ -53,6 +53,16 @@ public interface LineStoreService extends IService<LineStore> {
     List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception;
 
     /**
+     * 功能描述: 装配库存数量查询
+     *
+     * @param parMap
+     * @Author: xinYu.hou
+     * @Date: 2022/7/7 17:08
+     * @return: Integer
+     **/
+    Integer queryLineStoreSumZpNumber(Map parMap);
+
+    /**
      * 功能描述: 合格证生成，根据合格证对应的跟单信息，实现半成品成品合格证信息更新
      *
      * @param trackHead

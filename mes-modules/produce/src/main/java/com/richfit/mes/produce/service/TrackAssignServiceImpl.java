@@ -5,19 +5,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author 马峰
@@ -34,6 +38,10 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     public TrackHeadService trackHeadService;
     @Resource
     public PlanService planService;
+    @Resource
+    private BaseServiceClient baseServiceClient;
+    @Resource
+    private LineStoreService lineStoreService;
 
     public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw) {
         IPage<TrackItem> pageAssignsByStatus = trackAssignMapper.getPageAssignsByStatus(page, qw);
@@ -103,7 +111,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode) {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.like("u.track_no2", trackNo);
@@ -118,7 +126,11 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + startTime + " ')");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + " 00:00:00')");
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            calendar.setTime(sdf.parse(endTime));
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
         }
         if ("0,1".equals(state)) {
             queryWrapper.in("u.state", 0, 1);
@@ -129,6 +141,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (!StringUtils.isNullOrEmpty(userId)) {
             queryWrapper.eq("u.user_id", userId);
         }
+        queryWrapper.orderByDesc("assign_time");
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
@@ -180,6 +193,37 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     @Override
     public boolean updateProcess(Assign assign) {
         return this.updateById(assign);
+    }
+
+    @Override
+    public List<KittingVo> KittingExamine(String trackHeadId) {
+        List<KittingVo> kittingList = new ArrayList<>();
+        if (!StringUtils.isNullOrEmpty(trackHeadId)) {
+            TrackHead trackHead = trackHeadService.getById(trackHeadId);
+            if (null != trackHead && !StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
+                List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHead.getProjectBomId());
+                for (ProjectBom projectBom : projectBomList) {
+                    Map<String, String> map = new HashMap<>(2);
+                    map.put("drawingNo", projectBom.getDrawingNo());
+                    map.put("materialNo", projectBom.getMaterialNo());
+                    Integer number = lineStoreService.queryLineStoreSumZpNumber(map);
+                    KittingVo kitting = new KittingVo();
+                    kitting.setDrawingNo(projectBom.getDrawingNo());
+                    kitting.setMaterialName(projectBom.getProjectName());
+                    kitting.setUnitNumber(projectBom.getNumber());
+                    kitting.setNeedUnitNumber(1);
+                    kitting.setInventory(number);
+                    kitting.setSurplusNumber(number - projectBom.getNumber());
+                    if (number - projectBom.getNumber() >= 0) {
+                        kitting.setIsKitting(1);
+                    } else {
+                        kitting.setIsKitting(0);
+                    }
+                    kittingList.add(kitting);
+                }
+            }
+        }
+        return kittingList;
     }
 
 

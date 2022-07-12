@@ -209,4 +209,14 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         queryWrapper.eq("user_account", userAccount);
         return tenantUserMapper.queryUser(queryWrapper);
     }
+
+    @Override
+    public List<TenantUserVo> queryByBranchCode(String branchCode) {
+        QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+        //Todo:后期放到配置文件中 方便配置
+        queryWrapper.eq("role.role_id", "0697-63FB-476E-BD86-9E157B336ED7");
+        queryWrapper.eq("users.belong_org_id", branchCode);
+        queryWrapper.eq("users.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return tenantUserMapper.queryByBranchCode(queryWrapper);
+    }
 }

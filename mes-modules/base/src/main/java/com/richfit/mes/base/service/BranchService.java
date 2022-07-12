@@ -2,6 +2,7 @@ package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 
 import java.util.List;
 
@@ -26,4 +27,13 @@ public interface BranchService extends IService<Branch> {
      **/
     List<Branch> queryCode(String branchCode);
 
+    /**
+     * 功能描述: 获取车间下质检人员
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/7/8 14:55
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryUserList(String branchCode);
 }

@@ -145,6 +145,8 @@ public class TrackCompleteController extends BaseController {
                 track.setUserName(tenantUserVo.getData().getEmplName());
                 CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
                 track.setDeviceName(device.getData().getName());
+                TrackItem trackItem = trackItemService.getById(track.getTiId());
+                track.setIsQualityComplete(trackItem.getIsQualityComplete());
             }
             return CommonResult.success(completes);
         } catch (Exception e) {
