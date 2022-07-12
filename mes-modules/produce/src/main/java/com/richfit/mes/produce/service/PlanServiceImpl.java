@@ -349,61 +349,63 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Override
     public void planData(String planId) {
         Plan plan = planMapper.selectById(planId);
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        queryWrapper.eq("work_plan_id", planId);
-        List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-        int trackHeadFinish = 0;
-        int processNum = 0;
-        int deliveryNum = 0;
-        int optNumber = 0;
-        int optProcessNumber = 0;
-        for (TrackHead trackHead : trackHeadList) {
-            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
-            queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
-            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
-            optNumber += trackItemList.size();
-            if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
-                trackHeadFinish++;
-                deliveryNum += trackHead.getNumber();
-            } else if ("0".equals(trackHead.getStatus())) {
-                //未派工
-                for (TrackItem trackItem : trackItemList) {
-                    if (trackItem.getIsOperationComplete() == 0) {
-                        optProcessNumber++;
+        if (plan != null) {
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+            queryWrapper.eq("work_plan_id", planId);
+            List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
+            int trackHeadFinish = 0;
+            int processNum = 0;
+            int deliveryNum = 0;
+            int optNumber = 0;
+            int optProcessNumber = 0;
+            for (TrackHead trackHead : trackHeadList) {
+                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+                List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+                optNumber += trackItemList.size();
+                if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
+                    trackHeadFinish++;
+                    deliveryNum += trackHead.getNumber();
+                } else if ("0".equals(trackHead.getStatus())) {
+                    //未派工
+                    for (TrackItem trackItem : trackItemList) {
+                        if (trackItem.getIsOperationComplete() == 0) {
+                            optProcessNumber++;
+                        }
                     }
-                }
-            } else if ("1".equals(trackHead.getStatus())) {
-                //在制
-                System.out.println("---------------在制");
-                processNum += trackHead.getNumber();
-                for (TrackItem trackItem : trackItemList) {
-                    if (trackItem.getIsOperationComplete() == 0) {
-                        optProcessNumber++;
+                } else if ("1".equals(trackHead.getStatus())) {
+                    //在制
+                    System.out.println("---------------在制");
+                    processNum += trackHead.getNumber();
+                    for (TrackItem trackItem : trackItemList) {
+                        if (trackItem.getIsOperationComplete() == 0) {
+                            optProcessNumber++;
+                        }
                     }
+                } else {
+                    //其余都算完工
+                    trackHeadFinish++;
+                    deliveryNum += trackHead.getNumber();
                 }
-            } else {
-                //其余都算完工
-                trackHeadFinish++;
-                deliveryNum += trackHead.getNumber();
             }
-        }
 
-        plan.setProcessNum(processNum);
-        plan.setDeliveryNum(deliveryNum);
-        plan.setTrackHeadNumber(trackHeadList.size());
-        plan.setTrackHeadFinishNumber(trackHeadFinish);
-        plan.setOptNumber(optNumber);
-        plan.setOptFinishNumber(optNumber - optProcessNumber);
-        if (plan.getProjNum() <= plan.getDeliveryNum()) {
-            plan.setStatus(3);
-        } else {
-            if (plan.getTrackHeadNumber() > 0) {
-                plan.setStatus(1);
+            plan.setProcessNum(processNum);
+            plan.setDeliveryNum(deliveryNum);
+            plan.setTrackHeadNumber(trackHeadList.size());
+            plan.setTrackHeadFinishNumber(trackHeadFinish);
+            plan.setOptNumber(optNumber);
+            plan.setOptFinishNumber(optNumber - optProcessNumber);
+            if (plan.getProjNum() <= plan.getDeliveryNum()) {
+                plan.setStatus(3);
             } else {
-                plan.setStatus(0);
+                if (plan.getTrackHeadNumber() > 0) {
+                    plan.setStatus(1);
+                } else {
+                    plan.setStatus(0);
+                }
             }
+            planMapper.updateById(plan);
         }
-        planMapper.updateById(plan);
     }
 
     public List<Map<String, String>> disposePlan(List<Plan> planList) {
