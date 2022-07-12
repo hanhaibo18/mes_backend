@@ -71,6 +71,10 @@ public class Plan extends BaseEntity<Plan> {
      */
     private int deliveryNum;
     /**
+     * 缺件数量
+     */
+    private int missingNum;
+    /**
      * 跟单数量
      */
     private int trackHeadNumber;
