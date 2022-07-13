@@ -8,6 +8,7 @@ import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
 
     @Autowired
     private BranchMapper branchMapper;
-
 
     @Resource
     private SystemServiceClient systemServiceClient;
@@ -81,5 +81,40 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
             }
         }
         return branchList;
+    }
+
+    @Override
+    public List<TenantUserVo> queryUserList(String branchCode) {
+        List<Branch> branchList = new ArrayList<Branch>();
+        List<TenantUserVo> tenantUserVo = new ArrayList<TenantUserVo>();
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        branchList = this.list(queryWrapper);
+        if (!branchList.isEmpty()) {
+            //不为空查询人员信 并进行递归查询
+            for (Branch branch : branchList) {
+                tenantUserVo.addAll(systemServiceClient.queryByBranchCode(branchCode));
+            }
+            queryByBranchCode(branchList, tenantUserVo);
+        }
+        return tenantUserVo;
+    }
+
+    private void queryByBranchCode(List<Branch> branchList, List<TenantUserVo> users) {
+        for (Branch branch : branchList) {
+            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("main_branch_code", branch.getBranchCode())
+                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            List<Branch> branches = this.list(queryWrapper);
+            if (branches.isEmpty()) {
+                continue;
+            }
+            for (Branch branch1 : branches) {
+                users.addAll(systemServiceClient.queryByBranchCode(branch1.getBranchCode()));
+            }
+            queryByBranchCode(branches, users);
+            branch.setBranchList(branches);
+        }
     }
 }

@@ -1,5 +1,9 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -11,15 +15,18 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.DateUtils;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
+import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -58,6 +65,13 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Autowired
     private TrackItemMapper trackItemMapper;
+
+    @Autowired
+    private LineStoreMapper lineStoreMapper;
+
+
+    @Value("${interface.store-remaining-number}")
+    private String urlStoreRemainingNumber;
 
 
     private double getDailyHour() {
@@ -231,19 +245,99 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     /**
      * 功能描述: 物料齐套性检查
      *
+     * @param planId 计划id
      * @Author: zhiqiang.lu
      * @Date: 2022/6/7 11:37
      **/
     @Override
-    public List<ProjectBom> completeness(String planId) {
+    public List<ProjectBomComplete> completeness(String planId) {
         Plan plan = planMapper.selectById(planId);
-        List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
-        for (ProjectBom pb : projectBomList) {
-            System.out.println("-------------------");
-            System.out.println(pb.getProjectName());
-        }
-        return projectBomList;
+        List<ProjectBomComplete> projectBomCompleteList = poject_bom_complete_list(plan);
+        return poject_bom_complete_store_list(projectBomCompleteList);
     }
+
+    @Override
+    public List<ProjectBomComplete> completeness_list(List<Plan> planList) {
+        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
+        for (Plan plan : planList) {
+            List<ProjectBomComplete> projectBomCompleteListNew = poject_bom_complete_list(plan);
+            for (ProjectBomComplete pbcn : projectBomCompleteListNew) {
+                boolean flag = true;
+                for (ProjectBomComplete pbc : projectBomCompleteList) {
+                    if (pbcn.getMaterialNo().equals(pbc.getMaterialNo())) {
+                        flag = false;
+                        pbc.setPlanNumber(pbc.getPlanNumber() + pbcn.getPlanNumber());
+                        pbc.setPlanNeedNumber(pbc.getPlanNeedNumber() + pbcn.getPlanNeedNumber());
+                    }
+                }
+                if (flag) {
+                    projectBomCompleteList.add(pbcn);
+                }
+            }
+        }
+        return poject_bom_complete_store_list(projectBomCompleteList);
+    }
+
+    List<ProjectBomComplete> poject_bom_complete_list(Plan plan) {
+        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
+        if (!StringUtil.isNullOrEmpty(plan.getProjectBom())) {
+            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
+            Map<String, String> group = new HashMap<>();
+            if (!StringUtil.isNullOrEmpty(plan.getProjectBomGroup())) {
+                group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
+            }
+            for (ProjectBom pb : projectBomList) {
+                if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
+                    if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                        if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                            ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
+                            pbc.setPlanNumber(plan.getProjNum());
+                            pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
+                            projectBomCompleteList.add(pbc);
+                        }
+                    } else {
+                        ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
+                        pbc.setPlanNumber(plan.getProjNum());
+                        pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
+                        projectBomCompleteList.add(pbc);
+                    }
+                }
+            }
+        }
+        return projectBomCompleteList;
+    }
+
+    List<ProjectBomComplete> poject_bom_complete_store_list(List<ProjectBomComplete> projectBomCompleteList) {
+        for (ProjectBomComplete pbc : projectBomCompleteList) {
+            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
+            int totalErp = 0;
+            int totalStore = 0;
+            int totalMiss = 0;
+            if ("0".equals(result.getString("code"))) {
+                JSONArray resultList = JSON.parseArray(result.getString("data"));
+                for (Object o : resultList) {
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+                    if (!StringUtil.isNullOrEmpty(jsonObject.getString("QUANTITY"))) {
+                        totalErp += Double.parseDouble(jsonObject.getString("QUANTITY"));
+                    }
+                }
+            }
+            pbc.setErpNumber(totalErp);
+            Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
+            if (totalMaterial != null) {
+                totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
+                pbc.setStoreNumber(totalStore);
+            }
+            totalMiss = pbc.getPlanNeedNumber() + pbc.getInstallNumber() - totalErp - totalStore;
+            if (totalMiss > 0) {
+                pbc.setMissingNumber(totalMiss);
+            } else {
+                pbc.setMissingNumber(0);
+            }
+        }
+        return projectBomCompleteList;
+    }
+
 
     /**
      * 功能描述: 计划数据自动计算
@@ -253,63 +347,65 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @Date: 2022/7/8 11:37
      **/
     @Override
-    public void planData(String id) {
-        Plan plan = planMapper.selectById(id);
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        queryWrapper.eq("work_plan_id", id);
-        List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-        int trackHeadFinish = 0;
-        int processNum = 0;
-        int deliveryNum = 0;
-        int optNumber = 0;
-        int optProcessNumber = 0;
-        for (TrackHead trackHead : trackHeadList) {
-            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
-            queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
-            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
-            optNumber += trackItemList.size();
-            if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
-                trackHeadFinish++;
-                deliveryNum += trackHead.getNumber();
-            } else if ("0".equals(trackHead.getStatus())) {
-                //未派工
-                for (TrackItem trackItem : trackItemList) {
-                    if (trackItem.getIsOperationComplete() == 0) {
-                        optProcessNumber++;
+    public void planData(String planId) {
+        Plan plan = planMapper.selectById(planId);
+        if (plan != null) {
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+            queryWrapper.eq("work_plan_id", planId);
+            List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
+            int trackHeadFinish = 0;
+            int processNum = 0;
+            int deliveryNum = 0;
+            int optNumber = 0;
+            int optProcessNumber = 0;
+            for (TrackHead trackHead : trackHeadList) {
+                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+                List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+                optNumber += trackItemList.size();
+                if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
+                    trackHeadFinish++;
+                    deliveryNum += trackHead.getNumber();
+                } else if ("0".equals(trackHead.getStatus())) {
+                    //未派工
+                    for (TrackItem trackItem : trackItemList) {
+                        if (trackItem.getIsOperationComplete() == 0) {
+                            optProcessNumber++;
+                        }
                     }
-                }
-            } else if ("1".equals(trackHead.getStatus())) {
-                //在制
-                System.out.println("---------------在制");
-                processNum += trackHead.getNumber();
-                for (TrackItem trackItem : trackItemList) {
-                    if (trackItem.getIsOperationComplete() == 0) {
-                        optProcessNumber++;
+                } else if ("1".equals(trackHead.getStatus())) {
+                    //在制
+                    System.out.println("---------------在制");
+                    processNum += trackHead.getNumber();
+                    for (TrackItem trackItem : trackItemList) {
+                        if (trackItem.getIsOperationComplete() == 0) {
+                            optProcessNumber++;
+                        }
                     }
+                } else {
+                    //其余都算完工
+                    trackHeadFinish++;
+                    deliveryNum += trackHead.getNumber();
                 }
-            } else {
-                //其余都算完工
-                trackHeadFinish++;
-                deliveryNum += trackHead.getNumber();
             }
-        }
 
-        plan.setProcessNum(processNum);
-        plan.setDeliveryNum(deliveryNum);
-        plan.setTrackHeadNumber(trackHeadList.size());
-        plan.setTrackHeadFinishNumber(trackHeadFinish);
-        plan.setOptNumber(optNumber);
-        plan.setOptFinishNumber(optNumber - optProcessNumber);
-        if (plan.getProjNum() <= plan.getDeliveryNum()) {
-            plan.setStatus(3);
-        } else {
-            if (plan.getTrackHeadNumber() > 0) {
-                plan.setStatus(1);
+            plan.setProcessNum(processNum);
+            plan.setDeliveryNum(deliveryNum);
+            plan.setTrackHeadNumber(trackHeadList.size());
+            plan.setTrackHeadFinishNumber(trackHeadFinish);
+            plan.setOptNumber(optNumber);
+            plan.setOptFinishNumber(optNumber - optProcessNumber);
+            if (plan.getProjNum() <= plan.getDeliveryNum()) {
+                plan.setStatus(3);
             } else {
-                plan.setStatus(0);
+                if (plan.getTrackHeadNumber() > 0) {
+                    plan.setStatus(1);
+                } else {
+                    plan.setStatus(0);
+                }
             }
+            planMapper.updateById(plan);
         }
-        planMapper.updateById(plan);
     }
 
     public List<Map<String, String>> disposePlan(List<Plan> planList) {

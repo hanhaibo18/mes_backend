@@ -485,4 +485,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         return storeList;
     }
+
+    @Override
+    public Integer queryLineStoreSumZpNumber(Map parMap) {
+        List<LineStoreSumZp> storeList = this.lineStoreMapper.selectStoreNumForAssembly(parMap);
+        log.debug("库存记录条数 [{}]", storeList.size());
+        return storeList.size();
+    }
+
 }

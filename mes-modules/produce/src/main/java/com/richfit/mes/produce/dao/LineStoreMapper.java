@@ -9,6 +9,7 @@ import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 import java.util.Map;
@@ -31,4 +32,14 @@ public interface LineStoreMapper extends BaseMapper<LineStore> {
     List<LineStoreSumZp> selectRequireNum(@Param("param") Map parMap);
 
     List<LineStoreSumZp> selectAssemblyNum(@Param("param") Map parMap);
+
+    /**
+     * 功能描述: 通过物料号码查询物料库存合计数量
+     *
+     * @param materialNo 物料号码
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/11 11:37
+     **/
+    @Select("select sum(number-use_num) as total from produce_line_store where material_no=#{materialNo} and branch_code=#{branchCode} and tenant_id = #{tenantId} and status='0'")
+    Integer selectTotalNum(@Param("materialNo") String materialNo, @Param("branchCode") String branchCode, @Param("tenantId") String tenantId);
 }

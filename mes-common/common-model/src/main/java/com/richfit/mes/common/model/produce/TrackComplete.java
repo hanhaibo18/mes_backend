@@ -1,11 +1,10 @@
 package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
 import java.util.Date;
 
 /**
@@ -27,7 +26,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 跟单工序项ID
      */
     protected String tiId;
-      /**
+    /**
      * 跟单工序项ID
      */
     protected String assignId;
@@ -39,27 +38,27 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 完工用户ID
      */
     protected String userName;
-     /**
+    /**
      * 跟单ID
      */
     protected String trackId;
-     /**
+    /**
      * 跟单ID
      */
     protected String trackNo;
-      /**
+    /**
      * 产品编号
      */
     protected String prodNo;
-       /**
+    /**
      * 外协单号
      */
     protected String outNo;
-     /**
+    /**
      * 完工设备ID
      */
     protected String deviceId;
-      /**
+    /**
      * 完工设备ID
      */
     protected String deviceName;
@@ -71,8 +70,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 拒绝数量
      */
     protected Double rejectQty;
-    
-     /**
+
+    /**
      * 完工工时
      */
     protected Double completedHours;
@@ -80,7 +79,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 实际工时
      */
     protected Double actualHours;
-     /**
+    /**
      * 报告工时
      */
     protected Double reportHours;
@@ -88,7 +87,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 静态工时
      */
     protected Double staticHours;
-     /**
+    /**
      * 报工人
      */
     protected String completeBy;
@@ -97,8 +96,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 报工时间
      */
     protected Date completeTime;
-    
-     /**
+
+    /**
      * 探伤结果
      */
     protected String detectionResult;
@@ -135,6 +134,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private Double singlePieceHours;
 
-
+    @ApiModelProperty(value = "是否质检完成", dataType = "Integer")
+    @TableField(exist = false)
+    private Integer isQualityComplete;
 
 }

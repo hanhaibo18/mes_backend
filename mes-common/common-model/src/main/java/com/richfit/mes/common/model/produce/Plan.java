@@ -71,6 +71,10 @@ public class Plan extends BaseEntity<Plan> {
      */
     private int deliveryNum;
     /**
+     * 缺件数量
+     */
+    private int missingNum;
+    /**
      * 跟单数量
      */
     private int trackHeadNumber;
@@ -135,6 +139,10 @@ public class Plan extends BaseEntity<Plan> {
      */
     private String inchargeOrg;
     /**
+     * 加工车间名称
+     */
+    private String inchargeOrgName;
+    /**
      * 状态
      */
     private int status;
@@ -176,11 +184,6 @@ public class Plan extends BaseEntity<Plan> {
      */
     @TableField(exist = false)
     private String branchName;
-    /**
-     * 加工车间名称
-     */
-    @TableField(exist = false)
-    private String inchargeOrgName;
 
     /**
      * 关联订单编号

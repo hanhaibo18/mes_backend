@@ -48,4 +48,15 @@ public interface TenantUserMapper extends BaseMapper<TenantUser> {
      **/
     @Select("Select * From sys_tenant_user ${ew.customSqlSegment}")
     TenantUserVo queryUser(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
+
+    /**
+     * 功能描述: 根据车间code查询人员
+     *
+     * @param queryWrapper
+     * @Author: xinYu.hou
+     * @Date: 2022/7/8 15:49
+     * @return: List<TenantUserVo>
+     **/
+    @Select("SELECT * FROM sys_tenant_user users LEFT JOIN sys_user_role role ON role.user_id = users.id ${ew.customSqlSegment}")
+    List<TenantUserVo> queryByBranchCode(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
 }

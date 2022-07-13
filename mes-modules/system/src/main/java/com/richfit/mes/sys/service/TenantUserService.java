@@ -103,4 +103,14 @@ public interface TenantUserService {
      * @return: TenantUserVo
      **/
     TenantUserVo queryByUserAccount(String userAccount);
+
+    /**
+     * 功能描述: 根据车间code查询人员列表
+     *
+     * @param BranchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/7/8 15:57
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryByBranchCode(String BranchCode);
 }

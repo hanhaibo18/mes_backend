@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -22,7 +24,7 @@ public interface TrackAssignService extends IService<Assign> {
 
     IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw);
 
-    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode);
+    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode) throws ParseException;
 
     /**
      * 功能描述: 根据跟单号查询 跟单工序
@@ -41,4 +43,15 @@ public interface TrackAssignService extends IService<Assign> {
      * @return: double
      **/
     boolean updateProcess(Assign assign);
+
+    /**
+     * 功能描述: 齐套性检查
+     *
+     * @param trackHeadId 跟单Id
+     * @Author: xinYu.hou
+     * @Date: 2022/7/7 15:46
+     * @return: List<KittingVo>
+     **/
+    List<KittingVo> KittingExamine(String trackHeadId);
+
 }

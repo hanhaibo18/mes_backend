@@ -120,12 +120,17 @@ public class PlanController extends BaseController {
         if (planDto.getStatus() != -1) {
             queryWrapper.eq("status", planDto.getStatus());
         }
+        if (planDto.isFiterClose()) {
+            queryWrapper.ne("status", 2);
+        }
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getTenantId())) {
             queryWrapper.eq("tenant_id", planDto.getTenantId());
         }
+        queryWrapper.orderByDesc("priority");
+        queryWrapper.orderByDesc("modify_time");
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         return CommonResult.success(planList);
     }
@@ -236,5 +241,12 @@ public class PlanController extends BaseController {
     @GetMapping("/completeness/{id}")
     public CommonResult<Object> completeness(@PathVariable String id) throws GlobalException {
         return CommonResult.success(planService.completeness(id));
+    }
+
+    @ApiOperation(value = "物料齐套性检查", notes = "物料齐套性检查")
+    @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
+    @PostMapping("/completeness/list")
+    public CommonResult<Object> completeness_list(@RequestBody List<Plan> planList) throws GlobalException {
+        return CommonResult.success(planService.completeness_list(planList));
     }
 }
