@@ -156,6 +156,8 @@ public class CodeRuleController extends BaseController {
                         }
                     }
                     subvalue = String.valueOf(Integer.parseInt(cris.get(i).getSnCurrentValue()) + Integer.parseInt(cris.get(i).getSnStep())) + cris.get(i).getSuffixChar();
+                    System.out.println("----------------------");
+                    System.out.println(subvalue);
                 }
                 //用户输入项
                 if ("3".equals(cris.get(i).getType())) {

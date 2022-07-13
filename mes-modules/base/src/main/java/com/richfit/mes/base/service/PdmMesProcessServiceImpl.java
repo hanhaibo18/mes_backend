@@ -56,7 +56,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     @Override
     public void release(PdmMesProcess pdmMesProcess) throws Exception {
         try {
-            String routerId = UUID.randomUUID().toString().replace("-", "");
+            String routerId = pdmMesProcess.getDrawIdGroup();
             // MES数据中工序
             QueryWrapper<PdmMesOption> queryWrapperPdmMesOption = new QueryWrapper<>();
             queryWrapperPdmMesOption.eq("process_id", pdmMesProcess.getDrawIdGroup());
@@ -75,6 +75,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 if (operatipons.size() > 0) {
                     //工序字典存在当前工序
                     sequence.setOptId(operatipons.get(0).getId());
+                    sequence.setOptCode(operatipons.get(0).getOptCode());
                 } else {
                     //工序字典不存在当前工序
                     //添加工序字典
@@ -93,12 +94,14 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                     operatipon.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                     operatiponService.save(operatipon);
                     sequence.setOptId(optId);
+                    sequence.setOptCode(operatipon.getOptCode());
                 }
                 sequence.setRouterId(routerId);
-                sequence.setId(UUID.randomUUID().toString().replace("-", ""));
+                sequence.setId(pdmMesOption.getId());
                 sequence.setOptOrder(Integer.parseInt(pdmMesOption.getOpNo()));
-                sequence.setOp_no(pdmMesOption.getOpNo());
+                sequence.setOpNo(pdmMesOption.getOpNo());
                 sequence.setType(pdmMesOption.getType());
+
                 sequence.setOptName(pdmMesOption.getName());
                 sequence.setContent(pdmMesOption.getContent());
                 sequence.setGzs(pdmMesOption.getGzs());
@@ -120,24 +123,24 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 sequence.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 sequence.setModifyTime(new Date());
                 sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                sequenceService.save(sequence);
+                sequenceService.saveOrUpdate(sequence);
 
                 // MES数据中工序的工装
-                QueryWrapper<PdmMesObject> queryWrapperPdmMesObject = new QueryWrapper<>();
-                queryWrapperPdmMesObject.eq("op_id", pdmMesOption.getId());
-                List<PdmMesObject> pdmMesObjectList = pdmMesObjectService.list(queryWrapperPdmMesObject);
+//                    QueryWrapper<PdmMesObject> queryWrapperPdmMesObject = new QueryWrapper<>();
+//                    queryWrapperPdmMesObject.eq("op_id", pdmMesOption.getId());
+//                    List<PdmMesObject> pdmMesObjectList = pdmMesObjectService.list(queryWrapperPdmMesObject);
 
                 // MES数据中工序的图纸
-                QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
-                queryWrapperPdmMesDraw.eq("op_id", pdmMesOption.getId());
-                List<PdmMesDraw> pdmMesDrawList = pdmMesDrawService.list(queryWrapperPdmMesDraw);
+//                    QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
+//                    queryWrapperPdmMesDraw.eq("op_id", pdmMesOption.getId());
+//                    List<PdmMesDraw> pdmMesDrawList = pdmMesDrawService.list(queryWrapperPdmMesDraw);
             }
             //图纸
-            QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
-            queryWrapperPdmMesDraw.eq("isop", '1');
-            queryWrapperPdmMesDraw.and(wrapper -> wrapper.eq("op_id", pdmMesProcess.getDrawIdGroup()).or().eq("op_id", pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDataGroup()));
-            queryWrapperPdmMesDraw.eq("dataGroup", pdmMesProcess.getDataGroup());
-            List<PdmMesDraw> pdmMesDrawList = pdmMesDrawService.list(queryWrapperPdmMesDraw);
+//                QueryWrapper<PdmMesDraw> queryWrapperPdmMesDraw = new QueryWrapper<>();
+//                queryWrapperPdmMesDraw.eq("isop", '1');
+//                queryWrapperPdmMesDraw.and(wrapper -> wrapper.eq("op_id", pdmMesProcess.getDrawIdGroup()).or().eq("op_id", pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDataGroup()));
+//                queryWrapperPdmMesDraw.eq("dataGroup", pdmMesProcess.getDataGroup());
+//                List<PdmMesDraw> pdmMesDrawList = pdmMesDrawService.list(queryWrapperPdmMesDraw);
 
             // 保存&更新MES工艺，并更新工艺接收状态
             pdmMesProcess.setItemStatus("已发布");
@@ -159,6 +162,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             router.setVersion(pdmMesProcess.getRev());
             router.setRouterName(pdmMesProcess.getName());
             router.setRouterNo(pdmMesProcess.getDrawNo());
+            router.setDrawNo(pdmMesProcess.getDrawNo());
             router.setRemark(pdmMesProcess.getDrawNo());
             router.setBranchCode(pdmMesProcess.getDataGroup());
             router.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -168,7 +172,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             router.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             router.setStatus("1");
             router.setIsActive("1");
-            routerService.save(router);
+            routerService.saveOrUpdate(router);
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("同步MES出现异常");

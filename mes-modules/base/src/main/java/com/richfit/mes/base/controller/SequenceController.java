@@ -17,10 +17,7 @@ import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +49,28 @@ public class SequenceController extends BaseController {
     public RouterService routerService;
     @Autowired
     private OperatiponService operatiponService;
+
+
+    /**
+     * 功能描述: 工序查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/13 11:37
+     **/
+    @ApiOperation(value = "工艺", notes = "工艺")
+    @GetMapping("/list")
+    public CommonResult<List<Sequence>> list(@ApiParam(value = "工艺id", required = true) @RequestParam String routerId) {
+        try {
+            QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
+            queryWrapper.eq("router_id", routerId);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.orderByAsc("opt_order");
+            List<Sequence> sequences = sequenceService.list(queryWrapper);
+            return CommonResult.success(sequences);
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 
     /**
      * ***

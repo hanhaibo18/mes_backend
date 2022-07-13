@@ -117,7 +117,7 @@ public class Sequence extends BaseEntity<Sequence> {
      * 工序序号pdm
      */
     @ApiModelProperty(value = "工序Id", dataType = "String")
-    private String op_no;
+    private String opNo;
 
 
     /**
