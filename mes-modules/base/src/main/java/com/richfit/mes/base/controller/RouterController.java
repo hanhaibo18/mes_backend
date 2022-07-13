@@ -325,6 +325,49 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "导入工艺", notes = "根据Excel文档导入工艺")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "query")
+    @PostMapping("/import_excel2")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult importExcel2(@RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
+        CommonResult result = null;
+        //封装证件信息实体类
+        java.lang.reflect.Field[] fields = Router.class.getDeclaredFields();
+        //封装证件信息实体类
+        String[] fieldNames = new String[fields.length];
+        for (int i = 0; i < fields.length; i++) {
+            fieldNames[i] = fields[i].getName();
+        }
+        File excelFile = null;
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+            //将导入的excel数据生成证件实体类list
+            List<Router> list = ExcelUtils.importExcel(excelFile, Router.class, fieldNames, 1, 0, 0, tempName.toString());
+            FileUtils.delete(excelFile);
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setTenantId(tenantId);
+                list.get(i).setBranchCode(branchCode);
+                if (null != SecurityUtils.getCurrentUser()) {
+                    list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+            }
+            //list = list.stream().filter(item -> item.getMaterialNo() != null).collect(Collectors.toList());
+            boolean bool = routerService.saveBatch(list);
+            if (bool) {
+                return CommonResult.success(null, "成功");
+            } else {
+                return CommonResult.failed("失败");
+            }
+        } catch (Exception e) {
+            return CommonResult.failed("失败:" + e.getMessage());
+        }
+    }
+
+
+    @ApiOperation(value = "导入工艺", notes = "根据Excel文档导入工艺")
+    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "query")
     @PostMapping("/import_excel")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult importExcel(@RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
