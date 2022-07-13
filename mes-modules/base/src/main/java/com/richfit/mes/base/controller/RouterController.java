@@ -9,6 +9,8 @@ import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.enmus.RouterStatusEnum;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
+import com.richfit.mes.base.entity.RouterCheckDto;
+import com.richfit.mes.base.entity.RouterCheckQualityDto;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -30,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -357,6 +360,51 @@ public class RouterController extends BaseController {
             } else {
                 return CommonResult.failed("失败");
             }
+        } catch (Exception e) {
+            return CommonResult.failed("失败:" + e.getMessage());
+        }
+    }
+
+
+    @ApiOperation(value = "导入工艺质量资料", notes = "根据Excel文档导入工艺质量资料")
+    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "query")
+    @PostMapping("/import_excel_check")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult importExcelCheck(@RequestParam("file") MultipartFile[] files, String tenantId, String branchCode) {
+
+
+        List<RouterCheckDto> list = new ArrayList<>();
+        try {
+            for (MultipartFile file : files) {
+                File excelFile = null;
+                //给导入的excel一个临时的文件名
+                StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+                tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+                excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+                file.transferTo(excelFile);
+                //将导入的excel数据生成证件实体类list
+                java.lang.reflect.Field[] fields = RouterCheckDto.class.getDeclaredFields();
+                //封装证件信息实体类
+                String[] fieldNames = new String[fields.length];
+                for (int i = 0; i < fields.length; i++) {
+                    fieldNames[i] = fields[i].getName();
+                }
+                List<RouterCheckDto> checkList = ExcelUtils.importExcel(excelFile, RouterCheckDto.class, fieldNames, 1, 0, 0, tempName.toString());
+                FileUtils.delete(excelFile);
+                list = checkList;
+
+                java.lang.reflect.Field[] qualityFields = RouterCheckQualityDto.class.getDeclaredFields();
+                //封装证件信息实体类
+                String[] qualityFieldNames = new String[qualityFields.length];
+                for (int i = 0; i < qualityFieldNames.length; i++) {
+                    qualityFieldNames[i] = qualityFields[i].getName();
+                }
+                List<RouterCheckQualityDto> qualityList = ExcelUtils.importExcel(excelFile, RouterCheckQualityDto.class, qualityFieldNames, 1, 0, 0, tempName.toString());
+                FileUtils.delete(excelFile);
+
+
+            }
+            return CommonResult.success(list, "成功");
         } catch (Exception e) {
             return CommonResult.failed("失败:" + e.getMessage());
         }
