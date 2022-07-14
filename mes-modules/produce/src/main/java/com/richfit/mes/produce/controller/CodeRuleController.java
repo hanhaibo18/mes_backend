@@ -291,15 +291,14 @@ public class CodeRuleController extends BaseController {
                     CodeRuleValue codeRuleValue = new CodeRuleValue();
                     codeRuleValue.setItemId(inputTtem.getId());
                     codeRuleValue.setInputValue(input);
+                    codeRuleValue.setBranchCode(inputTtem.getBranchCode());
+                    codeRuleValue.setTenantId(inputTtem.getTenantId());
                     codeRuleValue.setSnValue(inputTtem.getSnDefault());
                     codeRuleValueService.save(codeRuleValue);
                 } else {
                     //如果不是空，则编码项依赖流水号自增，如图号
                     for (int i = 0; i < list.size(); i++) {
-                        if (input.equals(list.get(i).getSnValue())) {
-                            return CommonResult.failed("该编号已存在！");
-                        } else {
-                            // 流水号自增
+                        if (input.equals(list.get(i).getInputValue())) {
                             list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(inputTtem.getSnStep())));
                             codeRuleValueService.updateById(list.get(i));
                         }
@@ -313,14 +312,13 @@ public class CodeRuleController extends BaseController {
                     CodeRuleValue codeRuleValue = new CodeRuleValue();
                     codeRuleValue.setItemId(dateRuleItem.getId());
                     codeRuleValue.setInputValue(input);
+                    codeRuleValue.setBranchCode(inputTtem.getBranchCode());
+                    codeRuleValue.setTenantId(inputTtem.getTenantId());
                     codeRuleValue.setSnValue(dateRuleItem.getSnDefault());
                     codeRuleValueService.save(codeRuleValue);
                 } else {
                     for (int i = 0; i < list.size(); i++) {
-                        if (input.equals(list.get(i).getSnValue())) {
-                            // return CommonResult.failed("该编号已存在！");
-                        } else {
-                            // 流水号自增
+                        if (input.equals(list.get(i).getInputValue())) {
                             list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(dateRuleItem.getSnStep())));
                             codeRuleValueService.updateById(list.get(i));
                         }
