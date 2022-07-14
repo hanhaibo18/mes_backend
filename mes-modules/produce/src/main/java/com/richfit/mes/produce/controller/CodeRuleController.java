@@ -440,7 +440,7 @@ public class CodeRuleController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         List<CodeRuleValue> list = codeRuleValueService.list(queryWrapper);
-        if (list.size() == 0 || StringUtils.isNullOrEmpty(input)) {
+        if (list.size() == 0 ) {
             CodeRuleValue codeRuleValue = new CodeRuleValue();
             codeRuleValue.setItemId(id);
             codeRuleValue.setInputValue(input);
