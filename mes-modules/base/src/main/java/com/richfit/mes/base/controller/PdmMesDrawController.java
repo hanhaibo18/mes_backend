@@ -3,7 +3,6 @@ package com.richfit.mes.base.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.PdmMesDrawService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.PdmMesDraw;
@@ -39,6 +38,9 @@ public class PdmMesDrawController {
         queryWrapper.orderByDesc("syc_time")
                 .eq("dataGroup", pdmMesDraw.getDataGroup());
         List<PdmMesDraw> list = pdmMesDrawService.list(queryWrapper);
+        System.out.println("--------------------------------------------------------------------");
+        System.out.println(list.size());
+        System.out.println(pdmMesDraw.getItemId());
         return CommonResult.success(list);
     }
 
@@ -48,8 +50,7 @@ public class PdmMesDrawController {
     public CommonResult<IPage<PdmMesDraw>> getPageList(int page, int limit, PdmMesDraw pdmMesDraw) {
         QueryWrapper<PdmMesDraw> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("isop", '1');
-        queryWrapper.eq("op_id", pdmMesDraw.getOpId());
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmMesDraw.getItemId()), "item_id", pdmMesDraw.getItemId());
+        queryWrapper.and(wrapper -> wrapper.eq("op_id", pdmMesDraw.getOpId()).or().eq("op_id", pdmMesDraw.getItemId() + "@" + pdmMesDraw.getItemId() + "@" + pdmMesDraw.getDataGroup()));
         queryWrapper.orderByDesc("syc_time")
                 .eq("dataGroup", pdmMesDraw.getDataGroup());
         return CommonResult.success(pdmMesDrawService.page(new Page<>(page, limit), queryWrapper));

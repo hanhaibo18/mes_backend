@@ -8,15 +8,15 @@ import com.richfit.mes.base.service.RouterCheckService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.RouterCheck;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
+import com.richfit.mes.common.security.util.SecurityUtils;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,6 +31,31 @@ public class RouterCheckController extends BaseController {
 
     @Autowired
     private RouterCheckService routerCheckService;
+
+
+    /**
+     * 功能描述: 列表查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/14 11:37
+     **/
+    @ApiOperation(value = "技术要求分页查询", notes = "技术要求分页查询")
+    @GetMapping("/list")
+    public CommonResult<List<RouterCheck>> list(@ApiParam(value = "工序id", required = true) @RequestParam String sequenceId,
+                                                @ApiParam(value = "状态") @RequestParam(required = false) String status) {
+        try {
+            QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
+            queryWrapper.eq("sequence_id", sequenceId);
+            if (!StringUtils.isNullOrEmpty(status)) {
+                queryWrapper.eq("status", status);
+            }
+            queryWrapper.orderByAsc("check_order");
+            return CommonResult.success(routerCheckService.list(queryWrapper));
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
 
     /**
      * ***
@@ -120,6 +145,12 @@ public class RouterCheckController extends BaseController {
         if (StringUtils.isNullOrEmpty(routerCheck.getName())) {
             return CommonResult.failed("名称不能为空！");
         } else {
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
+            routerCheck.setCreateBy(user.getUsername());
+            routerCheck.setCreateTime(new Date());
+            routerCheck.setModifyBy(user.getUsername());
+            routerCheck.setModifyTime(new Date());
+            routerCheck.setTenantId(user.getTenantId());
             boolean bool = routerCheckService.save(routerCheck);
             if (bool) {
                 return CommonResult.success(routerCheck, "操作成功！");
@@ -137,6 +168,10 @@ public class RouterCheckController extends BaseController {
         if (StringUtils.isNullOrEmpty(routerCheck.getId())) {
             return CommonResult.failed("ID不能为空！");
         } else {
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
+            routerCheck.setModifyBy(user.getUsername());
+            routerCheck.setModifyTime(new Date());
+            routerCheck.setTenantId(user.getTenantId());
             boolean bool = routerCheckService.updateById(routerCheck);
             if (bool) {
                 return CommonResult.success(routerCheck, "操作成功！");
