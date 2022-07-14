@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.code.StoreInputTypeEnum;
 import com.richfit.mes.common.model.sys.Attachment;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -205,18 +206,20 @@ public class LineStore extends BaseEntity<LineStore> {
         this.inputType = lineStore.inputType;
     }
 
-    public LineStore(Certificate certificate) {
-        this.tenantId = certificate.getTenantId();
+    public LineStore(Certificate certificate, TrackCertificate tc) {
+        
         this.materialNo = certificate.getMaterialNo();
         this.drawingNo = certificate.getDrawingNo();
-        this.number = certificate.getNumber();
         this.certificateNo = certificate.getCertificateNo();
         this.materialSource = certificate.getBranchCode();
-        this.batchNo = certificate.getBatchNo();
 
-        this.workblankNo = certificate.getProductNo();
-        this.materialType = null;
-        this.trackType = null;
+        this.batchNo = tc.getBatchNo();
+        this.number = tc.getNumber();
+        this.workblankNo = tc.getProductNo();
+
+        //半成品 成品
+        this.materialType = "1";
+        this.trackType = "0";
         this.useNum = 0;
         this.inTime = new Date();
 
@@ -228,12 +231,11 @@ public class LineStore extends BaseEntity<LineStore> {
         this.texture = certificate.getTexture();
         this.weight = certificate.getWeight();
 
-
         this.isSendErp = "0";
         this.isFeedErp = "0";
         this.stockType = "0";
         this.branchCode = certificate.getNextOptWork();
-        this.inputType = "1";
+        this.inputType = StoreInputTypeEnum.CERT_ACCEPT.getCode();
     }
 
 }

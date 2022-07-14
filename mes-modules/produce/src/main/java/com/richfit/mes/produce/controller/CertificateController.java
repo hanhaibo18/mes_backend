@@ -150,7 +150,7 @@ public class CertificateController {
         } else {
             queryWrapper.orderByDesc("pc.modify_time");
         }
-        queryWrapper.apply("pc.id = track.certificate_id");
+//        queryWrapper.apply("pc.id = track.certificate_id");
         queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("pc.branch_code", branchCode);
         return CommonResult.success(certificateService.selectCertificate(new Page<Certificate>(page, limit), queryWrapper), SUCCESS_MESSAGE);

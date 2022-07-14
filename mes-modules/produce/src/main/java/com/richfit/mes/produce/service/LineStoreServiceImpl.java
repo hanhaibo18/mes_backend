@@ -179,28 +179,42 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
-    public LineStore addStoreByCertTransfer(Certificate certificate) throws Exception {
+    public Boolean addStoreByCertTransfer(Certificate certificate) throws Exception {
+
+        //0 原合格证推送状态改为已推送
+        certificateService.certPushComplete(certificate);
 
         //1 保存新合格证信息
         //2 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
         //2 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
-        certificateService.saveCertificate(certificate);
+        certificate.setCertOrigin("1");
+        certificate.setBranchCode(certificate.getNextOptWork());
+        certificate.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        certificate.setCreateTime(new Date());
+        certificate.setModifyTime(new Date());
+        certificate.setId(null);
+        certificateService.savePushCert(certificate);
 
+        //3 合格证下包括多个物料信息，需要逐条处理
         //3 如果对应物料产品编号在系统不存在 则新增料单入库
-        QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("workblank_no", certificate.getProductNo());
-        queryWrapper.eq("branch_code", certificate.getNextOptWork());
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        for (TrackCertificate tc : certificate.getTrackCertificates()) {
+            QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("workblank_no", tc.getProductNo());
+            queryWrapper.eq("branch_code", certificate.getNextOptWork());
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
-        LineStore lineStore = this.getOne(queryWrapper);
+            LineStore lineStore = this.getOne(queryWrapper);
 
-        if (null == lineStore) {
-            lineStore = new LineStore(certificate);
-            changeStatus(lineStore);
-            this.save(lineStore);
+            if (null == lineStore) {
+                lineStore = new LineStore(certificate, tc);
+                lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                changeStatus(lineStore);
+                this.save(lineStore);
+            }
         }
 
-        return lineStore;
+
+        return true;
     }
 
 
