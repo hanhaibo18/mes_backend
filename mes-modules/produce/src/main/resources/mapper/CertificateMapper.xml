@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.produce.dao.CertificateMapper">
     <select id="selectCertificate" resultType="com.richfit.mes.common.model.produce.Certificate">
-        SELECT *
-        FROM produce_certificate pc, (
+        SELECT pc.* ,track.*
+        FROM produce_certificate pc left join (
         select tc.certificate_id, sum(th.number) number, th.drawing_no, max(th.product_name)
         product_name,group_concat(th.product_no) product_no,max(th.material_name) material_name,
         th.material_no,max(th.test_bar_number) test_Bar_Number,max(th.test_bar_type) test_Bar_Type,
@@ -13,6 +13,7 @@
         left join produce_track_head th on tc.th_id = th.id
         left join produce_track_item ti on tc.ti_id = ti.id
         group by tc.certificate_id, th.drawing_no, th.material_no, ti.opt_id, ti.opt_name, ti.opt_ver) as track
+        on pc.id = track.certificate_id
         ${ew.customSqlSegment}
     </select>
 </mapper>

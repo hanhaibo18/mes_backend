@@ -15,6 +15,8 @@ public interface CertificateService extends IService<Certificate> {
 
     public boolean saveCertificate(Certificate certificate) throws Exception;
 
+    public boolean savePushCert(Certificate certificate) throws Exception;
+
     public void updateCertificate(Certificate certificate, boolean changeTrack) throws Exception;
 
     public void delCertificate(List<String> ids) throws Exception;

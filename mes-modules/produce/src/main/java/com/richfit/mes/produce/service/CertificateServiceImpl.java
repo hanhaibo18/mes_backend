@@ -97,6 +97,18 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         }
     }
 
+    @Override
+    public boolean savePushCert(Certificate certificate) throws Exception {
+        certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
+        certificate.setIsPush("0");
+        //1 保存合格证
+        boolean bool = this.save(certificate);
+
+        //TODO 如果是出去又回来的合格证，则需要更新对应跟单的当前工序为 完工
+
+        return bool;
+    }
+
     private void additionalBsns(Certificate certificate) {
 
         //完工合格证情况   转车间   交库    报工时
@@ -222,7 +234,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.eq("pc.is_push", "0");
         queryWrapper.eq("pc.next_opt_work", queryDto.getBranchCode());
         queryWrapper.ne("pc.branch_code", queryDto.getBranchCode());
-        queryWrapper.apply("pc.id = track.certificate_id");
+//        queryWrapper.apply("pc.id = track.certificate_id");
         queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         if (!StringUtils.isNullOrEmpty(queryDto.getCertificateNo())) {
@@ -240,9 +252,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Override
     public boolean certPushComplete(Certificate certificate) {
 
-        certificate.setIsPush("1");
+        Certificate cert = new Certificate();
+        cert.setId(certificate.getId());
+        cert.setIsPush("1");
 
-        return this.updateById(certificate);
+        return this.updateById(cert);
     }
 
 }

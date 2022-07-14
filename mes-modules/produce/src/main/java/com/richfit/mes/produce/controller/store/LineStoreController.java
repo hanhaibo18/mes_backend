@@ -12,6 +12,7 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.code.StoreItemStatusEnum;
+import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
@@ -105,6 +106,15 @@ public class LineStoreController extends BaseController {
             }
         }
 
+    }
+
+    @ApiOperation(value = "来料接收入库", notes = "根据合格证，实现半成品/成品入库")
+    @PostMapping("/add_by_cert")
+    public CommonResult<Boolean> addLineStoreByCert(@ApiParam(value = "合格证信息") @RequestBody Certificate cert) throws Exception {
+
+        Boolean b = lineStoreService.addStoreByCertTransfer(cert);
+
+        return CommonResult.success(b);
     }
 
     @ApiOperation(value = "修改入库信息", notes = "修改入库信息")

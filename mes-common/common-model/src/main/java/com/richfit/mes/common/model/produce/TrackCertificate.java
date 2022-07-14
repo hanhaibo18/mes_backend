@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -27,5 +28,17 @@ public class TrackCertificate {
 
     @ApiModelProperty(value = "跟单工序ID")
     private String tiId;
+
+    @ApiModelProperty(value = "产品编号")
+    @TableField(exist = false)
+    private String productNo;
+
+    @ApiModelProperty(value = "炉批号")
+    @TableField(exist = false)
+    private String batchNo;
+
+    @ApiModelProperty(value = "数量")
+    @TableField(exist = false)
+    private Integer number;
 
 }

@@ -41,7 +41,7 @@ public interface LineStoreService extends IService<LineStore> {
      * @return
      * @Author Gaol
      */
-    LineStore addStoreByCertTransfer(Certificate certificate) throws Exception;
+    Boolean addStoreByCertTransfer(Certificate certificate) throws Exception;
 
     /**
      * 功能描述: 装配库存查询
