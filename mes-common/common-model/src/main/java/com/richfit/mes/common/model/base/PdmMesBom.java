@@ -126,7 +126,7 @@ public class PdmMesBom {
         if (StringUtils.isEmpty(quantity) || quantity.equals("0")) {
             quantity = " 未填写";
         }
-        return this.showName = "[" + orderNo + "]" + name + " 【产品名:" + productName + "】 【图号:" + id + "】 【物料号:" + materiaNo + "】 【数量:" + quantity + "】";
+        return this.showName = "[" + orderNo + "] " + name + " 【产品名:" + productName + "】 【图号:" + id + "】 【物料号:" + materiaNo + "】 【数量:" + quantity + "】";
     }
 
 
