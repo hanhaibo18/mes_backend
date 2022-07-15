@@ -16,6 +16,8 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
@@ -29,16 +31,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author 马峰
  * @Description 跟单派工Controller
  */
 @Slf4j
-@Api("跟单派工")
+@Api(value = "跟单派工", tags = {"跟单派工"})
 @RestController
 @RequestMapping("/api/produce/trackcomplete")
 public class TrackCompleteController extends BaseController {
@@ -61,6 +62,9 @@ public class TrackCompleteController extends BaseController {
     @Resource
     private SystemServiceClient systemServiceClient;
 
+    @Resource
+    private TrackCompleteCacheService trackCompleteCacheService;
+
     /**
      * ***
      * 分页查询
@@ -73,7 +77,7 @@ public class TrackCompleteController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
     public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol) {
@@ -102,10 +106,13 @@ public class TrackCompleteController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
-
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + endTime + "')");
+                Calendar calendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                calendar.setTime(sdf.parse(endTime));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
 
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -146,7 +153,22 @@ public class TrackCompleteController extends BaseController {
                 CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
                 track.setDeviceName(device.getData().getName());
                 TrackItem trackItem = trackItemService.getById(track.getTiId());
-                track.setIsQualityComplete(trackItem.getIsQualityComplete());
+                //增加判断返回是否能修改
+                //条件一 需要质检 并且已质检
+                if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
+                    track.setIsUpdate(1);
+                }
+                //条件二 需要调度 并且以调度
+                if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
+                    track.setIsUpdate(1);
+                }
+                //条件三 不质检 不调度
+                if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+                    track.setIsUpdate(1);
+                }
+                if (null == track.getIsUpdate()) {
+                    track.setIsUpdate(0);
+                }
             }
             return CommonResult.success(completes);
         } catch (Exception e) {
@@ -222,6 +244,7 @@ public class TrackCompleteController extends BaseController {
         }
     }
 
+    @Deprecated
     @ApiOperation(value = "新增派工", notes = "新增派工")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "qcpersonId", value = "质检人员", required = true, dataType = "String", paramType = "query"),
@@ -270,7 +293,7 @@ public class TrackCompleteController extends BaseController {
                 }
                 //更新工序完成数量
                 if (sum <= assign.getQty() && trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
-                    trackItem.setCompleteQty(sum.intValue());
+                    trackItem.setCompleteQty(sum);
                     assign.setAvailQty(assign.getQty() - sum.intValue());
                     trackAssignService.updateById(assign);
                     trackItemService.updateById(trackItem);
@@ -293,7 +316,7 @@ public class TrackCompleteController extends BaseController {
                         }
 
                         trackItem.setOperationCompleteTime(new Date());
-                        trackItem.setCompleteQty(sum.intValue());
+                        trackItem.setCompleteQty(sum);
                         trackItem.setIsOperationComplete(isComplete);
                         if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
                             trackItem.setIsFinalComplete(String.valueOf(isComplete));
@@ -335,12 +358,12 @@ public class TrackCompleteController extends BaseController {
 
             //合计当前派工下的已报工数
             Double sum = complete.getCompletedQty();
-            trackItem.setCompleteQty(sum.intValue());
+            trackItem.setCompleteQty(sum);
             complete.setAssignId(complete.getTiId());
             complete.setModifyTime(new Date());
             complete.setCreateTime(new Date());
             trackItem.setOperationCompleteTime(new Date());
-            trackItem.setCompleteQty(sum.intValue());
+            trackItem.setCompleteQty(sum);
             trackItem.setIsOperationComplete(1);
             if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
                 trackItem.setIsFinalComplete(String.valueOf(1));
@@ -411,14 +434,14 @@ public class TrackCompleteController extends BaseController {
                     if (items.get(j).getOptSequence() > trackItem.getOptSequence() && items.get(j).getIsCurrent() == 1) {
                         items.get(j).setIsCurrent(0);
                         items.get(j).setIsDoing(0);
-                        items.get(j).setCompleteQty(0);
+                        items.get(j).setCompleteQty(0.0);
                         items.get(j).setIsFinalComplete("0");
                         trackItemService.updateById(items.get(j));
                     }
                 }
                 //将当前工序设置为激活
                 if (msg.equals("")) {
-                    trackItem.setCompleteQty(0);
+                    trackItem.setCompleteQty(0.0);
                     trackItem.setIsDoing(0);
                     trackItem.setIsCurrent(1);
                     trackItem.setIsFinalComplete("0");
@@ -498,7 +521,7 @@ public class TrackCompleteController extends BaseController {
                 isComplete = 0;
             }
 
-            int completeQty = sum.intValue();
+            double completeQty = sum;
             for (int j = 0; j < assigns.size(); j++) {
                 if (!assigns.get(j).getId().equals(assign.getId()) && assigns.get(j).getState() != 2) {
                     isComplete = 0;
@@ -633,14 +656,14 @@ public class TrackCompleteController extends BaseController {
                         if (items.get(j).getOptSequence() > trackItem.getOptSequence() && items.get(j).getIsCurrent() == 1) {
                             items.get(j).setIsCurrent(0);
                             items.get(j).setIsDoing(0);
-                            items.get(j).setCompleteQty(0);
+                            items.get(j).setCompleteQty(0.0);
                             items.get(j).setIsFinalComplete("0");
                             trackItemService.updateById(items.get(j));
                         }
                     }
                     //将当前工序设置为激活
                     if (msg.equals("")) {
-                        trackItem.setCompleteQty(0);
+                        trackItem.setCompleteQty(0.0);
                         trackItem.setIsDoing(0);
                         trackItem.setIsCurrent(1);
                         trackItem.setIsFinalComplete("0");
@@ -794,9 +817,43 @@ public class TrackCompleteController extends BaseController {
                 }
             }
         }
-
-
         return msg;
+    }
 
+    @ApiOperation(value = "报工查询详情(新)", notes = "报工查询详情")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "assignId", value = "派工Id", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "tiId", value = "工序Id", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "state", value = "页面状态", required = true, dataType = "Integer", paramType = "query")
+
+    })
+    @GetMapping("/queryDetails")
+    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state) {
+        return trackCompleteService.queryDetails(assignId, tiId, state);
+    }
+
+    @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
+    @PostMapping("/saveComplete")
+    public CommonResult<Boolean> saveComplete(@RequestBody CompleteDto completeDto) {
+        return trackCompleteService.saveComplete(completeDto);
+    }
+
+    @ApiOperation(value = "保存报工(新)", notes = "保存报工(新)")
+    @PostMapping("/saveCompleteCache")
+    public CommonResult<Boolean> saveCompleteCache(@RequestBody CompleteDto completeDto) {
+        return trackCompleteCacheService.saveCompleteCache(completeDto);
+    }
+
+    @ApiOperation(value = "修改报工(新)", notes = "修改报工(新)")
+    @PutMapping("/updateComplete")
+    public CommonResult<Boolean> updateComplete(@RequestBody CompleteDto completeDto) {
+        return trackCompleteService.updateComplete(completeDto);
+    }
+
+    @ApiOperation(value = "回滚(新)", notes = "回滚(新)")
+    @ApiImplicitParam(name = "id", value = "报工Id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("rollBack")
+    public CommonResult<Boolean> rollBack(String id) {
+        return trackCompleteService.rollBack(id);
     }
 }

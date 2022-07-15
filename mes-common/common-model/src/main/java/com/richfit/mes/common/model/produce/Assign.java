@@ -17,6 +17,7 @@ public class Assign extends BaseEntity<Assign> {
 
     @ApiModelProperty(value = "id", dataType = "String")
     private String id;
+
     /**
      * 租户ID
      */

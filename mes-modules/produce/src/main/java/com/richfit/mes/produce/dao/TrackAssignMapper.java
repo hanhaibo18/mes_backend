@@ -39,6 +39,17 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     IPage<Assign> queryPageNew(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 
     /**
+     * 功能描述: 查询派工还视图
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/7/13 14:08
+     * @return: Assign
+     **/
+    @Select("select u.* from v_produce_assign u where u.id = #{id}")
+    Assign queryAssign(@Param("id") String id);
+
+    /**
      * 功能描述: 根据跟单号查询
      *
      * @param trackNo

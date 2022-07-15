@@ -147,7 +147,7 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
             //TODO:开发结束以下注释需要打开
-//            queryWrapper.eq("is_doing", "1");
+//            queryWrapper.eq("is_doing", "2");
             queryWrapper.orderByDesc("modify_time");
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             for (TrackItem item : assigns.getRecords()) {
@@ -279,7 +279,7 @@ public class TrackCheckController extends BaseController {
                 //如果不需要调度审核，则将工序设置为完成，并激活下个工序
                 if (item.getIsExistScheduleCheck() == 0 && item.getIsQualityComplete() == 1) {
                     item.setIsFinalComplete("1");
-                    item.setCompleteQty(item.getBatchQty());
+                    item.setCompleteQty(item.getBatchQty().doubleValue());
                     this.activeTrackItem(item);
                 }
                 trackItemService.updateById(item);
@@ -354,7 +354,7 @@ public class TrackCheckController extends BaseController {
             //如果不需要调度审核，则将工序设置为完成，并激活下个工序
             if (trackItem.getIsScheduleComplete() == 1) {
                 trackItem.setIsFinalComplete("1");
-                trackItem.setCompleteQty(trackItem.getBatchQty());
+                trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
 
                 if (null != SecurityUtils.getCurrentUser()) {
                     trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
@@ -374,7 +374,7 @@ public class TrackCheckController extends BaseController {
                     trackHeadService.trackHeadFinish(trackItem.getTrackHeadId());
                 } else {
                     trackItem.setIsFinalComplete("1");
-                    trackItem.setCompleteQty(trackItem.getBatchQty());
+                    trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
 
                     if (null != SecurityUtils.getCurrentUser()) {
                         trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
@@ -442,7 +442,7 @@ public class TrackCheckController extends BaseController {
             }
             //回滚后，当前工序状态为1，工序在制状态设置为0，是否最终完成为0，是否质检完成为0
             item.setIsCurrent(1);
-            item.setCompleteQty(0);
+            item.setCompleteQty(0.0);
             item.setIsFinalComplete("0");
             item.setIsQualityComplete(0);
 
@@ -513,7 +513,7 @@ public class TrackCheckController extends BaseController {
             }
             //回滚后，当前工序状态为1，工序在制状态设置为0，是否最终完成为0，是否调度完成为0
             item.setIsCurrent(1);
-            item.setCompleteQty(0);
+            item.setCompleteQty(0.0);
             item.setIsFinalComplete("0");
             item.setIsScheduleComplete(0);
             trackItemService.updateById(item);
@@ -720,7 +720,7 @@ public class TrackCheckController extends BaseController {
             //如果不需要调度审核，则将工序设置为完成，并激活下个工序
             if (item.getIsExistScheduleCheck() == 0 && item.getIsQualityComplete() == 1) {
                 item.setIsFinalComplete("1");
-                item.setCompleteQty(item.getBatchQty());
+                item.setCompleteQty(item.getBatchQty().doubleValue());
                 this.activeTrackItem(item);
             }
             trackItemService.updateById(item);

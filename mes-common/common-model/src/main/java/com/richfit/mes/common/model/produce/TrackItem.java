@@ -98,7 +98,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     /**
      * 是否开工
      */
-    @ApiModelProperty(value = "是否开工", dataType = "Integer")
+    @ApiModelProperty(value = "是否开工(0 = 未开工 1= 已开工 2 = 已完工)", dataType = "Integer")
     private Integer isDoing;
     @ApiModelProperty(value = "开工人", dataType = "String")
     private String startDoingUser;
@@ -107,7 +107,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "开工时间", dataType = "Date")
     private Date startDoingTime;
-    @ApiModelProperty(value = "isOperationComplete", dataType = "Integer")
+    @ApiModelProperty(value = "当前工序是否完成", dataType = "Integer")
     private Integer isOperationComplete;
     /**
      * 完工时间
@@ -194,7 +194,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private Integer assignableQty;
 
     @ApiModelProperty(value = "工序完成数量", dataType = "Integer")
-    private Integer completeQty;
+    private Double completeQty;
 
     @ApiModelProperty(value = "加热温度", dataType = "Integer")
     private Double heatTemperature;
