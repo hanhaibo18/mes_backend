@@ -196,7 +196,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     }
 
     @Override
-    public List<KittingVo> KittingExamine(String trackHeadId) {
+    public List<KittingVo> kittingExamine(String trackHeadId) {
         List<KittingVo> kittingList = new ArrayList<>();
         if (!StringUtils.isNullOrEmpty(trackHeadId)) {
             TrackHead trackHead = trackHeadService.getById(trackHeadId);

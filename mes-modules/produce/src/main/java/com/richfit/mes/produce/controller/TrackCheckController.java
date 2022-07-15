@@ -101,12 +101,12 @@ public class TrackCheckController extends BaseController {
             if (isRecheck) {
                 queryWrapper.eq("", "不合格状态码");
             }
-            if (!StringUtils.isNullOrEmpty(isCurrent)) {
-                queryWrapper.eq("is_current", Integer.parseInt(isCurrent));
-            }
-            if (!StringUtils.isNullOrEmpty(isDoing)) {
-                queryWrapper.in("is_doing", Integer.parseInt(isDoing));
-            }
+//            if (!StringUtils.isNullOrEmpty(isCurrent)) {
+//                queryWrapper.eq("is_current", Integer.parseInt(isCurrent));
+//            }
+//            if (!StringUtils.isNullOrEmpty(isDoing)) {
+//                queryWrapper.in("is_doing", Integer.parseInt(isDoing));
+//            }
             if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
@@ -121,9 +121,9 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("is_schedule_complete", Integer.parseInt(isScheduleComplete));
 
             }
-            if (!StringUtils.isNullOrEmpty(assignableQty)) {
-                queryWrapper.eq("assignable_qty", Integer.parseInt(assignableQty));
-            }
+//            if (!StringUtils.isNullOrEmpty(assignableQty)) {
+//                queryWrapper.eq("assignable_qty", Integer.parseInt(assignableQty));
+//            }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
                     queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no ='" + trackNo + "')");
@@ -147,7 +147,8 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
             //TODO:开发结束以下注释需要打开
-//            queryWrapper.eq("is_doing", "2");
+            queryWrapper.eq("is_doing", 2);
+            queryWrapper.eq("is_operation_complete", 1);
             queryWrapper.orderByDesc("modify_time");
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             for (TrackItem item : assigns.getRecords()) {

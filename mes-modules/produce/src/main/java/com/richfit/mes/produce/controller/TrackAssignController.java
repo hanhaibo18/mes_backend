@@ -511,12 +511,12 @@ public class TrackAssignController extends BaseController {
         return CommonResult.success(trackAssignService.updateProcess(assign));
     }
 
-    @GetMapping("/KittingExamine")
+    @GetMapping("/kittingExamine")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, paramType = "query", dataType = "String"),
     })
     @ApiOperation(value = "根据跟单id齐套性检查")
-    public CommonResult<List<KittingVo>> KittingExamine(String trackHeadId) {
-        return CommonResult.success(trackAssignService.KittingExamine(trackHeadId));
+    public CommonResult<List<KittingVo>> kittingExamine(String trackHeadId) {
+        return CommonResult.success(trackAssignService.kittingExamine(trackHeadId));
     }
 }

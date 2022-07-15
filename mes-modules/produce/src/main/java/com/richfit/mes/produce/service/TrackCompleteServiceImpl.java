@@ -96,7 +96,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (numDouble > assign.getQty()) {
             return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
         }
-        if (numDouble < intervalNumber) {
+        if (numDouble < intervalNumber - 0.1) {
             return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
         }
         if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
@@ -106,6 +106,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
             map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
             publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+            //更改状态 标识当前工序完成
+            trackItem.setIsDoing(2);
+            trackItem.setIsOperationComplete(1);
             trackItemService.updateById(trackItem);
             trackCompleteCacheService.remove(queryWrapper);
         }
@@ -181,13 +184,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (numDouble > assign.getQty()) {
             return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得大于" + assign.getQty());
         }
-        if (numDouble < intervalNumber) {
+        if (numDouble < intervalNumber - 0.1) {
             return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得少于" + +(intervalNumber - 0.1));
         }
         //跟新工序完成数量
         trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
         trackItemService.updateById(trackItem);
-        return CommonResult.success(this.updateBatchById(completeDto.getTrackCompleteList()));
+        return CommonResult.success(this.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
     }
 
     @Override
@@ -271,84 +274,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             return CommonResult.failed("操作失败，请重试！" + msg);
         }
-    }
-
-    public CommonResult<Boolean> rollBacks(String id) {
-        String msg = "";
-        TrackComplete trackComplete = this.getById(id);
-        Assign assign = trackAssignService.getById(trackComplete.getAssignId());
-        if (null == assign) {
-            removeComplete(trackComplete.getTiId());
-        } else {
-            TrackItem trackItem = trackItemService.getById(assign.getTiId());
-            if (null == trackItem) {
-                removeComplete(trackComplete.getTiId());
-            } else {
-                QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
-                if (!StringUtils.isNullOrEmpty(id)) {
-                    queryWrapper.eq("track_id", id);
-                } else {
-                    queryWrapper.eq("track_id", "-1");
-                }
-                queryWrapper.orderByAsc("modify_time");
-                List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
-                //判断跟单号已质检完成，报工无法取消
-                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
-                    msg += assign.getTrackNo() + "跟单号已质检完成，报工无法取消！";
-                }
-                //判断跟单号已质检完成，报工无法取消
-                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                    msg += assign.getTrackNo() + "跟单号已调度完成，报工无法取消！";
-                }
-                //判断后置工序是否已派工，否则不可回滚
-                QueryWrapper<Assign> queryWrapperAssign = new QueryWrapper<Assign>();
-                queryWrapperAssign.eq("ti_id", trackItem.getId());
-                List<Assign> assigns = trackAssignService.list(queryWrapperAssign);
-                for (int j = 0; j < assigns.size(); j++) {
-                    TrackItem cstrackItem = trackItemService.getById(assigns.get(j).getTiId());
-                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                        return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已派工，需要先取消后序工序");
-                    }
-                }
-                //判断后置工序是否已报工，否则不可回滚
-                for (int j = 0; j < cs.size(); j++) {
-                    TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
-                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                        return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已报工，需要先取消后序工序");
-                    }
-                }
-
-                //将后置工序IS_CURRENT设置为否，状态为1
-                List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
-                for (TrackItem trackItems : items) {
-                    if (trackItems.getOptSequence() > trackItem.getOptSequence() && trackItems.getIsCurrent() == 1) {
-                        trackItems.setIsCurrent(0);
-                        trackItems.setIsDoing(0);
-                        trackItems.setCompleteQty(0.0);
-                        trackItems.setIsFinalComplete("0");
-                        trackItemService.updateById(trackItems);
-                    }
-                }
-                //将当前工序设置为激活
-                if (msg.equals("")) {
-                    trackItem.setCompleteQty(0.0);
-                    trackItem.setIsDoing(0);
-                    trackItem.setIsCurrent(1);
-                    trackItem.setIsFinalComplete("0");
-                    trackItem.setIsOperationComplete(0);
-                    trackItemService.updateById(trackItem);
-                    TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                    trackHead.setStatus("0");
-                    trackHeadService.updateById(trackHead);
-                    assign.setAvailQty(assign.getQty() + trackComplete.getCompletedQty().intValue());
-                    assign.setState(1);
-                    trackAssignService.updateById(assign);
-                    trackCompleteService.removeById(id);
-                }
-            }
-
-        }
-        return null;
     }
 
 

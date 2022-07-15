@@ -52,6 +52,6 @@ public interface TrackAssignService extends IService<Assign> {
      * @Date: 2022/7/7 15:46
      * @return: List<KittingVo>
      **/
-    List<KittingVo> KittingExamine(String trackHeadId);
+    List<KittingVo> kittingExamine(String trackHeadId);
 
 }
