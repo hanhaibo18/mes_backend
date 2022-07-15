@@ -8,7 +8,6 @@ import com.richfit.mes.base.service.OperationDeviceService;
 import com.richfit.mes.base.service.OperatiponService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.base.OperationDevice;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author 马峰
@@ -102,11 +102,12 @@ public class OperatiponController extends BaseController {
                 queryWrapper.eq("opt_code", operatipon.getOptCode());
             }
             List<Operatipon> list = operatiponService.list(queryWrapper);
-            if(list.size()>0) {
+            if (list.size() > 0) {
                 return CommonResult.failed("操作失败，工序编码不能重复！");
             }
 
             TenantUserDetails user = SecurityUtils.getCurrentUser();
+            operatipon.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             operatipon.setModifyBy(user.getUsername());
             operatipon.setModifyTime(new Date());
             operatipon.setCreateBy(user.getUsername());
