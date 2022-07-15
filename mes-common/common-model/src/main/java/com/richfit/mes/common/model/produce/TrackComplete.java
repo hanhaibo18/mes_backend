@@ -134,8 +134,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private Double singlePieceHours;
 
-    @ApiModelProperty(value = "是否质检完成", dataType = "Integer")
+    @ApiModelProperty(value = "是否修改", dataType = "Integer")
     @TableField(exist = false)
-    private Integer isQualityComplete;
+    private Integer isUpdate;
 
 }
