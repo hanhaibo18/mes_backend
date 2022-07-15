@@ -43,7 +43,10 @@ public class PdmMesBomController {
     @GetMapping(value = "/getBomByProcessIdAndRev")
     public CommonResult<List<PdmMesBom>> getList(String id, String ver) {
         ArrayList<PdmMesBom> pdmBoms = new ArrayList<>();
-        pdmBoms.add(pdmMesBomService.getBomByProcessIdAndRev(id, ver));
+        PdmMesBom pdmMesBom = pdmMesBomService.getBomByProcessIdAndRev(id, ver);
+        if (pdmMesBom != null) {
+            pdmBoms.add(pdmMesBom);
+        }
         return CommonResult.success(pdmBoms);
     }
 

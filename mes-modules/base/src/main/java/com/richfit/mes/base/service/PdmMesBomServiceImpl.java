@@ -21,7 +21,7 @@ public class PdmMesBomServiceImpl extends ServiceImpl<PdmMesBomMapper, PdmMesBom
 
     @Override
     public PdmMesBom getBomByProcessIdAndRev(String id, String ver) {
-        PdmMesBom pdmBom = new PdmMesBom();
+
         QueryWrapper<PdmMesBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id)
                 .eq("ver", ver)
@@ -30,6 +30,7 @@ public class PdmMesBomServiceImpl extends ServiceImpl<PdmMesBomMapper, PdmMesBom
         List<PdmMesBom> list = this.list(queryWrapper);
 
         if (list.size() > 0) {
+            PdmMesBom pdmBom = new PdmMesBom();
             pdmBom = list.get(0);
             String pid = pdmBom.getId() + '@' + pdmBom.getVer();
             QueryWrapper<PdmMesBom> queryWrapper2 = new QueryWrapper<>();
@@ -38,8 +39,10 @@ public class PdmMesBomServiceImpl extends ServiceImpl<PdmMesBomMapper, PdmMesBom
             //递归往下找
             getChildBom(childBom);
             pdmBom.setChildBom(childBom);
+            return pdmBom;
+        } else {
+            return null;
         }
-        return pdmBom;
     }
 
     //递归函数
