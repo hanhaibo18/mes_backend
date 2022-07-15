@@ -316,12 +316,7 @@ public class SequenceController extends BaseController {
     @PostMapping("/import_excel")
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
         CommonResult result = null;
-        java.lang.reflect.Field[] fields = Sequence.class.getDeclaredFields();
-        //封装证件信息实体类
-        String[] fieldNames = new String[fields.length];
-        for (int i = 0; i < fields.length; i++) {
-            fieldNames[i] = fields[i].getName();
-        }
+        String[] fieldNames = {"status", "content","remark","versionCode","optName",  "optCode","optType",  "singlePieceHours","prepareEndHours","isQualityCheck", "isScheduleCheck"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -334,6 +329,10 @@ public class SequenceController extends BaseController {
             FileUtils.delete(excelFile);
             String msg = "";
             for (int i = 0; i < list.size(); i++) {
+
+                list.get(i).setContent("");
+                list.get(i).setRemark("");
+                list.get(i).setStatus("1");
                 list.get(i).setTenantId(tenantId);
                 list.get(i).setBranchCode(branchCode);
                 if (null != SecurityUtils.getCurrentUser()) {
@@ -394,6 +393,20 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "导出工艺信息", notes = "通过Excel文档导出工艺信息")
     @GetMapping("/export_excel")
     public void exportExcel(String routerId, String routerNo, String optCode, String optName, String branchCode, HttpServletResponse rsp) {
+
+        QueryWrapper<Router> queryWrapper2 = new QueryWrapper<Router>();
+        if (!StringUtils.isNullOrEmpty(routerId)) {
+            queryWrapper2.eq("router_id", routerId);
+        }
+        if (!StringUtils.isNullOrEmpty(routerNo)) {
+            queryWrapper2.eq("router_no", routerNo);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper2.eq("branch_code", branchCode);
+        }
+        List<Router> routers = routerService.list(queryWrapper2);
+
+
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
         if (!StringUtils.isNullOrEmpty(routerId)) {
             queryWrapper.eq("router_id", routerId);
@@ -420,6 +433,10 @@ public class SequenceController extends BaseController {
 
         //处理返回数据
         for (Sequence sequence : sequences) {
+            sequence.setContent(routers.get(0).getRouterNo());
+
+            sequence.setRemark(routers.get(0).getRouterName());
+            sequence.setVersionCode(routers.get(0).getVersion());
             sequence.setIsScheduleCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsScheduleCheck())));
             sequence.setIsQualityCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsQualityCheck())));
             sequence.setIsParallel(MessageEnum.getMessage(Integer.parseInt(sequence.getIsParallel())));
@@ -431,8 +448,8 @@ public class SequenceController extends BaseController {
 
         String fileName = "工艺数据" + format.format(new Date()) + ".xlsx";
 
-        String[] columnHeaders = {"id", "工序名", "工序类型", "工序编码", "准结工时", "额定工时", "调度确认?", "质检确认?", "是否并行?", "自动派工?", "工步", "下工步"};
-        String[] fieldNames = {"id", "optName", "optType", "optCode", "prepareEndHours", "singlePieceHours", "isScheduleCheck", "isQualityCheck", "isParallel", "isAutoAssign", "optId", "optNextOrder"};
+        String[] columnHeaders = {"是否导入", "工艺号", "工艺描述", "版本号", "工序名", "工序号", "工序类型", "单件", "准结", "质检确认", "调度确认"};
+        String[] fieldNames = {"status", "content","remark","versionCode","optName",  "optCode","optType",  "singlePieceHours","prepareEndHours","isQualityCheck", "isScheduleCheck"};
         //export
         try {
             ExcelUtils.exportExcel(fileName, sequences, columnHeaders, fieldNames, rsp);

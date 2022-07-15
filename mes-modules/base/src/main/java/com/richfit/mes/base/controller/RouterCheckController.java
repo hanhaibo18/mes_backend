@@ -4,10 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.entity.RouterCheckDto;
+import com.richfit.mes.base.entity.RouterCheckQualityDto;
 import com.richfit.mes.base.service.RouterCheckService;
+import com.richfit.mes.base.service.SequenceService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.RouterCheck;
+import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.*;
@@ -15,9 +21,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author 马峰
@@ -32,7 +42,8 @@ public class RouterCheckController extends BaseController {
     @Autowired
     private RouterCheckService routerCheckService;
 
-
+    @Autowired
+    private SequenceService sequenceService;
     /**
      * 功能描述: 列表查询
      *
@@ -194,6 +205,170 @@ public class RouterCheckController extends BaseController {
         }
         return CommonResult.success(null, "删除成功！");
 
+    }
+
+    @ApiOperation(value = "导入工艺质量资料", notes = "根据Excel文档导入工艺质量资料")
+    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "query")
+    @PostMapping("/import_excel_check")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult importExcelCheck(@RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
+
+
+        List<RouterCheckDto> list = new ArrayList<>();
+        try {
+
+            File excelFile = null;
+            //给导入的excel一个临时的文件名
+            StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+            tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+            //将导入的excel数据生成证件实体类list
+            java.lang.reflect.Field[] fields = RouterCheckDto.class.getDeclaredFields();
+            //封装证件信息实体类
+            String[] fieldNames = new String[fields.length];
+            for (int i = 0; i < fields.length; i++) {
+                fieldNames[i] = fields[i].getName();
+            }
+            List<RouterCheckDto> checkList = ExcelUtils.importExcel(excelFile, RouterCheckDto.class, fieldNames, 1, 0, 0, tempName.toString());
+            FileUtils.delete(excelFile);
+            list = checkList;
+            // 获取图号列表
+            String drawnos = "";
+            for (int i =0;i<checkList.size();i++) {
+                if(!drawnos.contains(checkList.get(i).getRouterNo()+",")) {
+                    drawnos += checkList.get(i).getRouterNo()+",";
+                }
+            }
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
+            // 遍历图号插入检查内容
+            for (int i =0;i<drawnos.split(",").length;i++) {
+                // 先删除历史数据
+                QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
+                queryWrapper.eq("type","检查内容");
+                queryWrapper.eq("tenant_id",tenantId);
+                queryWrapper.eq("branch_code",branchCode);
+                queryWrapper.eq("drawing_no",drawnos.split(",")[i]);
+                routerCheckService.remove(queryWrapper);
+                int check_order =1;
+                // 插入新数据
+                QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
+                queryWrapper2.eq("opt_name", checkList.get(i).getOptName());
+                queryWrapper2.eq("tenant_id", tenantId);
+                queryWrapper2.eq("branch_code", branchCode);
+                queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + checkList.get(i).getRouterNo() + "' and branch_code='" + branchCode + "'");
+
+                List<Sequence> sequences = sequenceService.list(queryWrapper2);
+                if(sequences.size()==1) {
+                    for (int j = 0; j < checkList.size(); j++) {
+                        if (checkList.get(j).getRouterNo().equals(drawnos.split(",")[i])) {
+                            RouterCheck routerCheck = new RouterCheck();
+                            routerCheck.setCreateBy(user.getUsername());
+                            routerCheck.setRouterId(sequences.get(0).getRouterId());
+                            routerCheck.setSequenceId(sequences.get(0).getId());
+                            routerCheck.setCreateTime(new Date());
+                            routerCheck.setModifyBy(user.getUsername());
+                            routerCheck.setModifyTime(new Date());
+                            routerCheck.setTenantId(tenantId);
+                            routerCheck.setBranchCode(branchCode);
+                            routerCheck.setType("检查内容");
+                            routerCheck.setName(checkList.get(j).getName());
+                            routerCheck.setDrawingNo(checkList.get(j).getName());
+                            routerCheck.setCheckOrder(check_order);
+                            routerCheck.setUnit(checkList.get(j).getPropertyUnit());
+                            routerCheck.setMethod(checkList.get(j).getPropertyInputtype());
+                            routerCheck.setIsEmpty(1);
+                            routerCheck.setDefualtValue(checkList.get(i).getPropertyDefaultvalue());
+                            routerCheck.setStatus("1");
+                            routerCheck.setPropertySymbol(checkList.get(i).getPropertySymbol());
+                            routerCheck.setPropertyLowerlimit(checkList.get(i).getPropertyLowerlimit());
+                            routerCheck.setPropertyUplimit(checkList.get(i).getPropertyUplimit());
+                            routerCheck.setPropertyTestmethod(checkList.get(i).getPropertyTestmethod());
+                            routerCheck.setPropertyDatatype(checkList.get(i).getPropertyInputtype());
+                            check_order++;
+                            routerCheckService.save(routerCheck);
+                        }
+                    }
+                }
+            }
+
+
+            java.lang.reflect.Field[] qualityFields = RouterCheckQualityDto.class.getDeclaredFields();
+            //封装证件信息实体类
+            String[] qualityFieldNames = new String[qualityFields.length];
+            for (int i = 0; i < qualityFieldNames.length; i++) {
+                qualityFieldNames[i] = qualityFields[i].getName();
+            }
+            List<RouterCheckQualityDto> qualityList = ExcelUtils.importExcel(excelFile, RouterCheckQualityDto.class, qualityFieldNames, 1, 0, 0, tempName.toString());
+            FileUtils.delete(excelFile);
+
+            drawnos = "";
+            for (int i =0;i<qualityList.size();i++) {
+                if(!drawnos.contains(qualityList.get(i).getRouterNo()+",")) {
+                    drawnos += qualityList.get(i).getRouterNo()+",";
+                }
+            }
+            // 遍历图号插入资料资料
+            for (int i =0;i<drawnos.split(",").length;i++) {
+                // 先删除历史数据
+                QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
+                queryWrapper.eq("type", "质量资料");
+                queryWrapper.eq("tenant_id", tenantId);
+                queryWrapper.eq("branch_code", branchCode);
+                queryWrapper.eq("drawing_no", drawnos.split(",")[i]);
+
+                routerCheckService.remove(queryWrapper);
+                int check_order = 1;
+                // 插入新数据
+                QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
+                queryWrapper2.eq("opt_name", qualityList.get(i).getOptName());
+                queryWrapper2.eq("tenant_id", tenantId);
+                queryWrapper2.eq("branch_code", branchCode);
+                queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + qualityList.get(i).getRouterNo() + "' and branch_code='" + branchCode + "'");
+
+                List<Sequence> sequences = sequenceService.list(queryWrapper2);
+                if (sequences.size() == 1) {
+                    for (int j = 0; j < qualityList.size(); j++) {
+                        RouterCheck routerCheck = new RouterCheck();
+                        routerCheck.setCreateBy(user.getUsername());
+                        routerCheck.setRouterId(sequences.get(0).getRouterId());
+                        routerCheck.setSequenceId(sequences.get(0).getId());
+                        routerCheck.setCreateTime(new Date());
+                        routerCheck.setModifyBy(user.getUsername());
+                        routerCheck.setModifyTime(new Date());
+                        routerCheck.setTenantId(tenantId);
+                        routerCheck.setBranchCode(branchCode);
+                        routerCheck.setType("检查内容");
+                        routerCheck.setCreateBy(user.getUsername());
+                        routerCheck.setRouterId(sequences.get(0).getRouterId());
+                        routerCheck.setSequenceId(sequences.get(0).getId());
+                        routerCheck.setCreateTime(new Date());
+                        routerCheck.setModifyBy(user.getUsername());
+                        routerCheck.setModifyTime(new Date());
+                        routerCheck.setTenantId(tenantId);
+                        routerCheck.setTenantId(branchCode);
+                        routerCheck.setType("资料资料");
+                        routerCheck.setName(qualityList.get(j).getName());
+                        routerCheck.setDrawingNo(qualityList.get(j).getRouterNo());
+                        routerCheck.setCheckOrder(check_order);
+                        routerCheck.setIsEmpty(1);
+                        routerCheck.setStatus("1");
+                        routerCheck.setPropertyObjectname(qualityList.get(j).getName());
+                        check_order++;
+                        routerCheckService.save(routerCheck);
+
+
+
+                    }
+                }
+            }
+
+
+
+            return CommonResult.success(list, "成功");
+        } catch (Exception e) {
+            return CommonResult.failed("失败:" + e.getMessage());
+        }
     }
 
 

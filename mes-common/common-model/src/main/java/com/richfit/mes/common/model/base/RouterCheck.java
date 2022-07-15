@@ -103,7 +103,7 @@ public class RouterCheck extends BaseEntity<RouterCheck> {
      */
     private Date modifyTime;
 
-
+    private String drawingNo;
     private String propertySymbol;
     private String propertyNum;
     private String propertyRule;
