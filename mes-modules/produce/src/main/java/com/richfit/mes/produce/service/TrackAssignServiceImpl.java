@@ -10,6 +10,7 @@ import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
@@ -111,7 +112,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode) throws ParseException {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.like("u.track_no2", trackNo);
@@ -121,6 +122,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.like("u.assign_by", siteId);
+        }
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.like("u.product_no", productNo);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + startTime + " ')");
@@ -141,6 +145,8 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (!StringUtils.isNullOrEmpty(userId)) {
             queryWrapper.eq("u.user_id", userId);
         }
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("assign_time");
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         if (null != queryPage.getRecords()) {

@@ -149,9 +149,9 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "userId", value = "操作人ID", paramType = "query", dataType = "String"),
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
         try {
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo);
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }

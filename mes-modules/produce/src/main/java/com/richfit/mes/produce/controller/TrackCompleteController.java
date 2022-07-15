@@ -80,7 +80,7 @@ public class TrackCompleteController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String productNo, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -89,16 +89,16 @@ public class TrackCompleteController extends BaseController {
             if (!StringUtils.isNullOrEmpty(userId)) {
                 queryWrapper.apply("(user_id='" + userId + "' or user_name='" + userName + "')");
             }
-
+            if (!StringUtils.isNullOrEmpty(productNo)) {
+                queryWrapper.eq("product_no", productNo);
+            }
             if (!StringUtils.isNullOrEmpty(workNo)) {
                 queryWrapper.eq("work_no", workNo);
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-
                 queryWrapper.like("drawing_no", routerNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
-
                 queryWrapper.like("track_no2", trackNo);
             }
             if (!StringUtils.isNullOrEmpty(siteId)) {

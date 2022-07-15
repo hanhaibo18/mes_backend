@@ -24,7 +24,7 @@ public interface TrackAssignService extends IService<Assign> {
 
     IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw);
 
-    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode) throws ParseException;
+    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo) throws ParseException;
 
     /**
      * 功能描述: 根据跟单号查询 跟单工序
