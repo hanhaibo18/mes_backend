@@ -52,9 +52,6 @@ public class CodeRuleController extends BaseController {
     public static String CLASS_NAME_NULL_MESSAGE = "名称不能为空!";
     public static String SUCCESS_MESSAGE = "操作成功！";
 
-    @Autowired
-    private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
-
 
     @ApiOperation(value = "分页查询编码规则", notes = "根据编码、名称、分类分页查询编码规则")
     @GetMapping("/page")
@@ -287,7 +284,7 @@ public class CodeRuleController extends BaseController {
             //如果当前编码项是流水号，且重置依赖不为空
             if (null != inputTtem && enableInputTtem) {
                 // 获取编码项依赖流水号列表
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "')) "));
+                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='"+ branchCode +"')) "));
                 if (list.size() == 0) {
                     //如果是空，则新产生一个编码项依赖流水号自增，如图号
                     CodeRuleValue codeRuleValue = new CodeRuleValue();
@@ -309,7 +306,7 @@ public class CodeRuleController extends BaseController {
             }
             // 如果流水号重置的依赖条件为日期，且日期输入项不为空
             if (null != dateRuleItem && enableDateRuleItem) {
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "')) "));
+                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='"+ branchCode +"')) "));
                 if (list.size() == 0) {
                     CodeRuleValue codeRuleValue = new CodeRuleValue();
                     codeRuleValue.setItemId(dateRuleItem.getId());
@@ -331,7 +328,6 @@ public class CodeRuleController extends BaseController {
 
             item.setCurValue(value);
             codeRuleService.updateById(item);
-
             return CommonResult.success(item);
 
         } else {
