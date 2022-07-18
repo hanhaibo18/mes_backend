@@ -9,14 +9,14 @@ import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.enmus.RouterStatusEnum;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
-import com.richfit.mes.base.entity.RouterCheckDto;
-import com.richfit.mes.base.entity.RouterCheckQualityDto;
 import com.richfit.mes.base.service.RouterService;
+import com.richfit.mes.base.service.SequenceService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Router;
+import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +48,9 @@ public class RouterController extends BaseController {
 
     @Autowired
     public RouterService routerService;
+
+    @Autowired
+    public SequenceService sequenceService;
 
     public RouterController(RouterService routerService) {
         this.routerService = routerService;
@@ -87,8 +89,6 @@ public class RouterController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(status)) {
                 queryWrapper.in("status", status.split(","));
-            } else {
-                queryWrapper.in("is_active", "0,1".split(","));
             }
             if (isPDM) {
                 queryWrapper.isNull("draw_no");
@@ -299,7 +299,6 @@ public class RouterController extends BaseController {
         } else {
             return CommonResult.success(null, "操作成功！");
         }
-
     }
 
     @ApiOperation(value = "删除工艺", notes = "根据id删除工艺")
@@ -307,17 +306,23 @@ public class RouterController extends BaseController {
     @PostMapping("/delete")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Router> delete(@RequestBody String[] ids) {
-
         for (int i = 0; i < ids.length; i++) {
+            // 删除工艺关联的工序
+            QueryWrapper<Sequence> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("router_id", ids[i]);
+            sequenceService.remove(queryWrapper);
+
             Router r = this.getByRouterId(ids[i]).getData();
-            //如果不是历史版本，需要将历史版本先删除
-            if (null != r && !r.getStatus().equals("2")) {
-                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2", r.getTenantId()).getData();
-                for (int j = 0; j < routers.size(); j++) {
-                    routerService.removeById(routers.get(j).getId());
-                }
-            }
+//如果不是历史版本，需要将历史版本先删除
+//            if (null != r && !"2".equals(r.getStatus())) {
+//                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2", r.getTenantId()).getData();
+//                for (int j = 0; j < routers.size(); j++) {
+//                    routerService.removeById(routers.get(j).getId());
+//                }
+//            }
             routerService.removeById(ids[i]);
+
+
         }
         return CommonResult.success(null, "删除成功！");
 
@@ -407,8 +412,6 @@ public class RouterController extends BaseController {
             return CommonResult.failed("失败:" + e.getMessage());
         }
     }
-
-
 
 
     @ApiOperation(value = "导出工艺信息", notes = "通过Excel文档导出工艺信息")

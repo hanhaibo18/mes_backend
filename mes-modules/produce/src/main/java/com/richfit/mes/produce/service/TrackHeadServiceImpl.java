@@ -306,7 +306,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Transactional
     public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
-            CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"跟单编号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
             //封装跟单信息数据
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
