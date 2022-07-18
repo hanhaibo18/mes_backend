@@ -231,7 +231,7 @@ public class RouterCheckController extends BaseController {
                 fieldNames[i] = fields[i].getName();
             }
             List<RouterCheckDto> checkList = ExcelUtils.importExcel(excelFile, RouterCheckDto.class, fieldNames, 1, 0, 0, tempName.toString());
-            FileUtils.delete(excelFile);
+
             list = checkList;
             // 获取图号列表
             String drawnos = "";
