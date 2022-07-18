@@ -414,7 +414,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
-            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), "2022", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());

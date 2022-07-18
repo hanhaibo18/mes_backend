@@ -52,7 +52,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
     @Resource
     private BaseServiceClient baseServiceClient;
 
-    @Value("${synchronization.purchase-order-synchronization}")
+    @Value("${interface.erp.purchase-order-synchronization}")
     private String url;
 
     @Override

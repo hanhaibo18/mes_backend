@@ -51,7 +51,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     @Resource
     private SystemServiceClient systemServiceClient;
 
-    @Value("${synchronization.orders-synchronization}")
+    @Value("${interface.erp.orders-synchronization}")
     private String url;
 
     @Override

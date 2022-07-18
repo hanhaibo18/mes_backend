@@ -70,7 +70,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     private LineStoreMapper lineStoreMapper;
 
 
-    @Value("${interface.store-remaining-number}")
+    @Value("${interface.wms.material-remaining-number}")
     private String urlStoreRemainingNumber;
 
 
