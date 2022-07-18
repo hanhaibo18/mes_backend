@@ -235,9 +235,7 @@ public class RouterController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
-            queryWrapper.in("status", status);
-        } else {
-            queryWrapper.in("is_active", "0,1".split(","));
+            queryWrapper.in("status", status.split(","));
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
@@ -248,7 +246,7 @@ public class RouterController extends BaseController {
          * @Author: zhiqiang.lu
          * @Date: 2022/6/13 10:25
          **/
-        queryWrapper.orderByDesc("version");
+        queryWrapper.orderByAsc("status").orderByDesc("version");
         List<Router> result = routerService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
