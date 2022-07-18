@@ -306,13 +306,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Transactional
     public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
-            CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"流水号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
             //封装跟单信息数据
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setProductNo(productsNo);
             trackHead.setNumber(number);
 
+            //当跟单中存在bom
+            if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
+
+            }
 
             //只有机加进行跟单编码校验
             if ("1".equals(trackHead.getClasses())) {
@@ -410,7 +414,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
-            codeRuleController.updateCode("track_no", "跟单号", trackHead.getTrackNo(), "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
