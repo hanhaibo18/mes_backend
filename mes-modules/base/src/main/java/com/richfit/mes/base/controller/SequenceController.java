@@ -316,6 +316,7 @@ public class SequenceController extends BaseController {
     @PostMapping("/import_excel")
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
         CommonResult result = null;
+        String msg = "";
         String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "optCode", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
@@ -341,11 +342,13 @@ public class SequenceController extends BaseController {
                     drawnames += list.get(i).getRemark() + ",";
                 }
             }
-
             FileUtils.delete(excelFile);
-            String msg = "";
+            msg = "导入完成";
 
+            // 遍历图号
             for (int j = 0; j < drawnos.split(",").length; j++) {
+                int optOrder = 0;
+                // 遍历导入数据
                 for (int i = 0; i < list.size(); i++) {
                     if (list.get(i).getContent().equals(drawnos.split(",")[j])) {
                         List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
@@ -361,6 +364,10 @@ public class SequenceController extends BaseController {
                             r.setIsActive("1");
                             r.setDrawNo(drawnos.split(",")[j]);
                             r.setRouterName(drawnos.split(",")[j]);
+                            r.setCreateTime(new Date());
+                            r.setModifyTime(new Date());
+                            r.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                            r.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                             routerService.save(r);
                             routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
 
@@ -372,6 +379,8 @@ public class SequenceController extends BaseController {
                             msg += "第" + (i + 1) + "行:" + "找不到图号,";
                             list.get(i).setStatus("0");
                         }
+                        msg = "工艺获取完成";
+                        // 获取工艺类型
                         int optType = 0;
                         if (list.get(i).getOptType().equals("普通工序")) {
                             optType = 0;
@@ -389,15 +398,16 @@ public class SequenceController extends BaseController {
                             optType = 4;
                             list.get(i).setOptType("4");
                         }
+                        // 获取工序
                         List<Operatipon> opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type", optType));
                         if (opts.size() > 0) {
                             list.get(i).setOptId(opts.get(0).getId());
                             list.get(i).setOptCode(opts.get(0).getOptCode());
+
                         } else {
                             // 如果没有工序则新增工序
                             Operatipon o = new Operatipon();
                             o.setOptCode(list.get(i).getOptCode());
-                            o.setOptName(list.get(i).getOptName());
                             o.setOptType(optType);
                             o.setTenantId(tenantId);
                             o.setBranchCode(branchCode);
@@ -407,6 +417,7 @@ public class SequenceController extends BaseController {
                             list.get(i).setOptCode(opts.get(0).getOptCode());
 
                         }
+                        msg = "工序获取完成";
                         if ("是".equals(list.get(i).getIsQualityCheck())) {
                             list.get(i).setIsQualityCheck("1");
                         }
@@ -425,14 +436,22 @@ public class SequenceController extends BaseController {
                         if ("否".equals(list.get(i).getIsParallel())) {
                             list.get(i).setIsParallel("0");
                         }
-
+                        list.get(i).setOptOrder(optOrder);
+                        list.get(i).setTechnologySequence(String.valueOf(optOrder));
+                        list.get(i).setOptNextOrder(optOrder + 1);
+                        list.get(i).setIsParallel("0");
+                        list.get(i).setCreateTime(new Date());
+                        list.get(i).setModifyTime(new Date());
+                        list.get(i).setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                        list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                     }
                 }
             }
             if ("".equals(msg)) {
+
                 boolean bool = sequenceService.saveBatch(list);
                 if (bool) {
-                    return CommonResult.success("");
+                    return CommonResult.success(msg);
                 } else {
                     return CommonResult.failed(msg);
                 }
@@ -440,7 +459,7 @@ public class SequenceController extends BaseController {
                 return CommonResult.failed(msg);
             }
         } catch (Exception e) {
-            return CommonResult.failed();
+            return CommonResult.failed(e.getMessage() + msg);
         }
     }
 
