@@ -84,18 +84,14 @@ public class RouterController extends BaseController {
             if (!StringUtils.isNullOrEmpty(routerName)) {
                 queryWrapper.like("router_name", routerName);
             }
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
-            }
             if (!StringUtils.isNullOrEmpty(status)) {
                 queryWrapper.in("status", status.split(","));
             }
             if (isPDM) {
                 queryWrapper.isNull("draw_no");
             }
-            if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.eq("tenant_id", tenantId);
-            }
+            queryWrapper.eq("branch_code", branchCode);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
                     if (order.equals("desc")) {
@@ -107,7 +103,7 @@ public class RouterController extends BaseController {
                     queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
-                queryWrapper.orderByDesc("modify_time");
+                queryWrapper.orderByDesc("router_no").orderByAsc("status");
             }
             IPage<Router> routers = routerService.selectPageAndChild(new Page<Router>(page, limit), queryWrapper);
             return CommonResult.success(routers);
@@ -121,32 +117,29 @@ public class RouterController extends BaseController {
     @PostMapping("/add")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Router> addRouter(@RequestBody Router router) {
-        // 如果新增的不是历史状态，则将其他的状态设置为历史状态
-        // 2为历史 1为启用 0为未启用
-
-        //如果不是历史版本，需要将历史版本先删除
-
-        if (null != router && !router.getStatus().equals("2")) {
-            CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1", router.getTenantId());
-            if (result.getData().size() > 0) {
-                //将当前激活的工艺状态设置为历史状态
-                for (int i = 0; i < result.getData().size(); i++) {
-                    Router oldRouter = result.getData().get(i);
-                    oldRouter.setStatus("2");
-                    routerService.updateById(oldRouter);
-                }
-            }
-        }
         if (StringUtils.isNullOrEmpty(router.getRouterNo())) {
             return CommonResult.failed("工艺不能为空！");
         } else {
+            if ("1".equals(router.getStatus())) {
+                System.out.println("-------------------");
+                //更新老工艺状态模块
+                Router routerOlds = new Router();
+                routerOlds.setIsActive("0");
+                routerOlds.setStatus("2");
+                QueryWrapper<Router> queryWrapperRouter = new QueryWrapper<>();
+                queryWrapperRouter.eq("status", "1");
+                queryWrapperRouter.eq("router_no", router.getRouterNo());
+                queryWrapperRouter.eq("branch_code", router.getBranchCode());
+                queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                routerService.update(routerOlds, queryWrapperRouter);
+                //更新新工艺状态模块
+                router.setIsActive("1");
+            }
             if (null != SecurityUtils.getCurrentUser()) {
                 String tenantId = SecurityUtils.getCurrentUser().getTenantId();
                 router.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 router.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-
                 router.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-
             }
             router.setCreateTime(new Date());
             router.setModifyTime(new Date());
@@ -177,7 +170,6 @@ public class RouterController extends BaseController {
         } else {
             if (null != SecurityUtils.getCurrentUser()) {
                 router.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-
                 router.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             }
             router.setModifyTime(new Date());
@@ -187,17 +179,19 @@ public class RouterController extends BaseController {
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
-            } else {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1", router.getTenantId());
-                if (result.getData().size() > 0) {
-                    //将当前激活的工艺状态设置为历史状态
-                    for (int i = 0; i < result.getData().size(); i++) {
-                        Router oldRouter = result.getData().get(i);
-                        oldRouter.setStatus("2");
-                        oldRouter.setIsActive("2");
-                        routerService.updateById(oldRouter);
-                    }
-                }
+            } else if (router.getStatus().equals("1")) {
+                //更新老工艺状态模块
+                Router routerOlds = new Router();
+                routerOlds.setIsActive("0");
+                routerOlds.setStatus("2");
+                QueryWrapper<Router> queryWrapperRouter = new QueryWrapper<>();
+                queryWrapperRouter.eq("status", "1");
+                queryWrapperRouter.eq("router_no", router.getRouterNo());
+                queryWrapperRouter.eq("branch_code", router.getBranchCode());
+                queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                routerService.update(routerOlds, queryWrapperRouter);
+                //更新新工艺状态模块
+                router.setIsActive("1");
             }
             boolean bool = routerService.updateById(router);
             if (bool) {

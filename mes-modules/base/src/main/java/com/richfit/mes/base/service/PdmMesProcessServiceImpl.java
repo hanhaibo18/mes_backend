@@ -153,6 +153,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             router.setIsActive("0");
             router.setStatus("2");
             QueryWrapper<Router> queryWrapperRouter = new QueryWrapper<Router>();
+            queryWrapperRouter.eq("status", "1");
             queryWrapperRouter.eq("router_no", pdmMesProcess.getDrawNo());
             queryWrapperRouter.eq("branch_code", pdmMesProcess.getDataGroup());
             queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
