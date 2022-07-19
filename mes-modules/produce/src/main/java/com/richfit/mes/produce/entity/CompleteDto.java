@@ -22,11 +22,11 @@ public class CompleteDto {
     private String tiId;
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String assignId;
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "跟单ID", dataType = "String")
     private String trackId;
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "跟单号", dataType = "String")
     private String trackNo;
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "产品编号", dataType = "String")
     private String prodNo;
     @ApiModelProperty(value = "报工人", dataType = "String")
     private String completeBy;

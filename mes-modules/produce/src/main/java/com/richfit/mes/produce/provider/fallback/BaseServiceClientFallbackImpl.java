@@ -78,4 +78,9 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     public CommonResult<List<OperationTypeSpec>> list(String optType, String branchCode, String tenantId) {
         return CommonResult.success(null);
     }
+
+    @Override
+    public Boolean queryBom(String id, String drawingNo, String level) {
+        return null;
+    }
 }

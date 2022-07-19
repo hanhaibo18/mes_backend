@@ -449,6 +449,32 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreMapper.update(null, update);
     }
 
+    @Override
+    public Boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
+        QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+        queryWrapper.eq("drawing_no", drawingNo);
+        queryWrapper.eq("prod_no", prodNo);
+        LineStore lineStore = this.getOne(queryWrapper);
+        if (1 == state) {
+            if ("3".equals(lineStore.getStatus())) {
+                return false;
+            }
+            int num = lineStore.getUseNum() + number;
+            lineStore.setUseNum(num);
+            if (lineStore.getNumber() == num) {
+                lineStore.setStatus("3");
+            }
+            return this.updateById(lineStore);
+        } else {
+            int num = lineStore.getUseNum() - number;
+            lineStore.setUseNum(num);
+            if ("3".equals(lineStore.getStatus())) {
+                lineStore.setStatus("0");
+            }
+            return this.updateById(lineStore);
+        }
+    }
+
 
     @Override
     public List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception {

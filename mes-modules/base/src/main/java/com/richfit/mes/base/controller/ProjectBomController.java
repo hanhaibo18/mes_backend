@@ -107,7 +107,7 @@ public class ProjectBomController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "项目Id", paramType = "query", dataType = "String"),
     })
-    
+
     @GetMapping("/getProjectBomPartByIdList")
     public List<ProjectBom> getProjectBomPartByIdList(String id) {
         return projectBomService.getProjectBomPartByIdList(id);
@@ -159,5 +159,16 @@ public class ProjectBomController {
     @GetMapping("/getPartName")
     public CommonResult<Map<String, String>> getPartName(String partId) {
         return projectBomService.getPartName(partId);
+    }
+
+    @ApiOperation(value = "装配验证是否H级别图号", notes = "查询关联分解项名称")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "Id", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "level", value = "级别", paramType = "query", dataType = "String"),
+    })
+    @GetMapping("/queryBom")
+    public Boolean queryBom(String id, String drawingNo, String level) {
+        return projectBomService.queryBom(id, drawingNo, level);
     }
 }

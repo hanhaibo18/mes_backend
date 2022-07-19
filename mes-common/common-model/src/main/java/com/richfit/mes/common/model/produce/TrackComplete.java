@@ -138,4 +138,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private Integer isUpdate;
 
+    @ApiModelProperty(value = "产品名称", dataType = "String")
+    @TableField(exist = false)
+    private String productName;
 }

@@ -59,5 +59,10 @@ public class PdmDrawController {
         return pdmDrawService.queryDraw(itemId, dataGroup);
     }
 
-
+    @ApiOperation(value = "根据图号查询列表", notes = "根据图号查询列表")
+    @ApiImplicitParam(name = "itemId", value = "图号", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/query/queryDrawList")
+    public List<PdmDraw> queryDrawList(String itemId) {
+        return pdmDrawService.queryDrawList(itemId);
+    }
 }

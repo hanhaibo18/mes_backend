@@ -139,4 +139,16 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @return: Map<String, String>
      **/
     CommonResult<Map<String, String>> getPartName(String partId);
+
+    /**
+     * 功能描述: 装配生成产品编号 验证是否是H级别图号
+     *
+     * @param id
+     * @param drawingNo
+     * @param level
+     * @Author: xinYu.hou
+     * @Date: 2022/7/19 16:06
+     * @return: Boolean
+     **/
+    Boolean queryBom(String id, String drawingNo, String level);
 }

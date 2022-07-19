@@ -17,8 +17,15 @@ public class PdmDrawServiceImpl extends ServiceImpl<PdmDrawMapper, PdmDraw> impl
     @Override
     public List<PdmDraw> queryDraw(String itemId, String dataGroup) {
         QueryWrapper<PdmDraw> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id",itemId);
-        queryWrapper.eq("dataGroup",dataGroup);
+        queryWrapper.eq("item_id", itemId);
+        queryWrapper.eq("dataGroup", dataGroup);
+        return this.list(queryWrapper);
+    }
+
+    @Override
+    public List<PdmDraw> queryDrawList(String itemId) {
+        QueryWrapper<PdmDraw> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("item_id", itemId);
         return this.list(queryWrapper);
     }
 }
