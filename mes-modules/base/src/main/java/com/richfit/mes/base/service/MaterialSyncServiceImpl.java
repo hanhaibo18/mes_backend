@@ -42,7 +42,7 @@ import java.util.*;
 @EnableScheduling
 public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product> implements MaterialSyncService {
 
-    @Value("http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase")
+    @Value("${interface.erp.material-synchronization}")
     private String url;
 
     @Resource
@@ -65,6 +65,8 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                 "      </urn:Z_PPFM0004>\n" +
                 "   </soapenv:Body>\n" +
                 "</soapenv:Envelope>";
+        System.out.println("物料同步");
+        System.out.println(soapRequestData);
         //构造http请求头
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
@@ -74,8 +76,10 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
         RestTemplate restTemplate = builder.build();
         //返回结果
         String resultStr = restTemplate.postForObject(url, formEntity, String.class);
+        System.out.println(resultStr);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
+        System.out.println(tmpStr);
         //获取工厂ID
         return xmlAnalysis(tmpStr, materialSyncDto);
     }
