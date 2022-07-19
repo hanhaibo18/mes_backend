@@ -439,9 +439,7 @@ public class RouterController extends BaseController {
         } else {
             queryWrapper.in("is_active", "0,1".split(","));
         }
-        if (isPDM) {
-            queryWrapper.isNull("draw_no");
-        }
+
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }

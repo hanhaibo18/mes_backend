@@ -316,7 +316,7 @@ public class SequenceController extends BaseController {
     @PostMapping("/import_excel")
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
         CommonResult result = null;
-        String[] fieldNames = {"status", "content","remark","versionCode","optName",  "optCode","optType",  "singlePieceHours","prepareEndHours","isQualityCheck", "isScheduleCheck"};
+        String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "optCode", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -324,56 +324,110 @@ public class SequenceController extends BaseController {
         try {
             excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
+
             //将导入的excel数据生成证件实体类list
             List<Sequence> list = ExcelUtils.importExcel(excelFile, Sequence.class, fieldNames, 1, 0, 0, tempName.toString());
+            // 获取图号列表
+            String drawnos = "";
+            for (int i = 0; i < list.size(); i++) {
+                if (!drawnos.contains(list.get(i).getContent() + ",")) {
+                    drawnos += list.get(i).getContent() + ",";
+
+                }
+            }
+            String drawnames = "";
+            for (int i = 0; i < list.size(); i++) {
+                if (!drawnames.contains(list.get(i).getRemark() + ",")) {
+                    drawnames += list.get(i).getRemark() + ",";
+                }
+            }
+
             FileUtils.delete(excelFile);
             String msg = "";
-            for (int i = 0; i < list.size(); i++) {
 
-                list.get(i).setContent("");
-                list.get(i).setRemark("");
-                list.get(i).setStatus("1");
-                list.get(i).setTenantId(tenantId);
-                list.get(i).setBranchCode(branchCode);
-                if (null != SecurityUtils.getCurrentUser()) {
+            for (int j = 0; j < drawnos.split(",").length; j++) {
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).getContent().equals(drawnos.split(",")[j])) {
+                        List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
+                        if (null != SecurityUtils.getCurrentUser()) {
+                            list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                        }
+                        // 如果没有工艺，则新增工艺
+                        if (routers.size() == 0) {
+                            Router r = new Router();
+                            r.setTenantId(tenantId);
+                            r.setBranchCode(branchCode);
+                            r.setStatus("1");
+                            r.setIsActive("1");
+                            r.setDrawNo(drawnos.split(",")[j]);
+                            r.setRouterName(drawnos.split(",")[j]);
+                            routerService.save(r);
+                            routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
 
-                    list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                }
-                list.get(i).setStatus("1");
-                List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(i).getRouterId()).eq("status", "1").eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
-                if (routers.size() > 0) {
-                    list.get(i).setRouterId(routers.get(0).getId());
-                } else {
-                    msg += "第" + (i + 1) + "行:" + "找不到图号,";
-                    list.get(i).setStatus("0");
-                }
-                List<Operatipon> opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type", list.get(i).getOptType()));
-                if (opts.size() > 0) {
-                    list.get(i).setOptId(opts.get(0).getId());
-                    list.get(i).setOptCode(opts.get(0).getOptCode());
-                } else {
-                    msg += "第" + (i + 1) + "行:" + "字典中无此工序名,";
-                    list.get(i).setStatus("0");
-                }
-                if ("是".equals(list.get(i).getIsQualityCheck())) {
-                    list.get(i).setIsQualityCheck("1");
-                }
-                if ("否".equals(list.get(i).getIsQualityCheck())) {
-                    list.get(i).setIsQualityCheck("0");
-                }
-                if ("是".equals(list.get(i).getIsScheduleCheck())) {
-                    list.get(i).setIsScheduleCheck("1");
-                }
-                if ("否".equals(list.get(i).getIsScheduleCheck())) {
-                    list.get(i).setIsScheduleCheck("0");
-                }
-                if ("是".equals(list.get(i).getIsParallel())) {
-                    list.get(i).setIsParallel("1");
-                }
-                if ("否".equals(list.get(i).getIsParallel())) {
-                    list.get(i).setIsParallel("0");
-                }
+                        }
+                        list.get(i).setStatus("1");
+                        if (routers.size() > 0) {
+                            list.get(i).setRouterId(routers.get(0).getId());
+                        } else {
+                            msg += "第" + (i + 1) + "行:" + "找不到图号,";
+                            list.get(i).setStatus("0");
+                        }
+                        int optType = 0;
+                        if (list.get(i).getOptType().equals("普通工序")) {
+                            optType = 0;
+                            list.get(i).setOptType("0");
+                        } else if (list.get(i).getOptType().equals("装配工序")) {
+                            optType = 1;
+                            list.get(i).setOptType("1");
+                        } else if (list.get(i).getOptType().equals("热处理工序")) {
+                            optType = 2;
+                            list.get(i).setOptType("2");
+                        } else if (list.get(i).getOptType().equals("质检工序")) {
+                            optType = 3;
+                            list.get(i).setOptType("3");
+                        } else if (list.get(i).getOptType().equals("外协工序")) {
+                            optType = 4;
+                            list.get(i).setOptType("4");
+                        }
+                        List<Operatipon> opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type", optType));
+                        if (opts.size() > 0) {
+                            list.get(i).setOptId(opts.get(0).getId());
+                            list.get(i).setOptCode(opts.get(0).getOptCode());
+                        } else {
+                            // 如果没有工序则新增工序
+                            Operatipon o = new Operatipon();
+                            o.setOptCode(list.get(i).getOptCode());
+                            o.setOptName(list.get(i).getOptName());
+                            o.setOptType(optType);
+                            o.setTenantId(tenantId);
+                            o.setBranchCode(branchCode);
+                            operatiponService.save(o);
+                            opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type", optType));
+                            list.get(i).setOptId(opts.get(0).getId());
+                            list.get(i).setOptCode(opts.get(0).getOptCode());
 
+                        }
+                        if ("是".equals(list.get(i).getIsQualityCheck())) {
+                            list.get(i).setIsQualityCheck("1");
+                        }
+                        if ("否".equals(list.get(i).getIsQualityCheck())) {
+                            list.get(i).setIsQualityCheck("0");
+                        }
+                        if ("是".equals(list.get(i).getIsScheduleCheck())) {
+                            list.get(i).setIsScheduleCheck("1");
+                        }
+                        if ("否".equals(list.get(i).getIsScheduleCheck())) {
+                            list.get(i).setIsScheduleCheck("0");
+                        }
+                        if ("是".equals(list.get(i).getIsParallel())) {
+                            list.get(i).setIsParallel("1");
+                        }
+                        if ("否".equals(list.get(i).getIsParallel())) {
+                            list.get(i).setIsParallel("0");
+                        }
+
+                    }
+                }
             }
             if ("".equals(msg)) {
                 boolean bool = sequenceService.saveBatch(list);
@@ -409,14 +463,7 @@ public class SequenceController extends BaseController {
 
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
         if (!StringUtils.isNullOrEmpty(routerId)) {
-            queryWrapper.eq("router_id", routerId);
-        }
-        if (!StringUtils.isNullOrEmpty(routerNo)) {
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.inSql("router_id", "select id from base_router where router_no ='" + routerNo + "' and branch_code='" + branchCode + "'");
-            } else {
-                queryWrapper.inSql("router_id", "select id from base_router where router_no ='" + routerNo + "'");
-            }
+            queryWrapper.eq("router_id", routers.get(0).getId());
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -434,7 +481,6 @@ public class SequenceController extends BaseController {
         //处理返回数据
         for (Sequence sequence : sequences) {
             sequence.setContent(routers.get(0).getRouterNo());
-
             sequence.setRemark(routers.get(0).getRouterName());
             sequence.setVersionCode(routers.get(0).getVersion());
             sequence.setIsScheduleCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsScheduleCheck())));
@@ -449,7 +495,7 @@ public class SequenceController extends BaseController {
         String fileName = "工艺数据" + format.format(new Date()) + ".xlsx";
 
         String[] columnHeaders = {"是否导入", "工艺号", "工艺描述", "版本号", "工序名", "工序号", "工序类型", "单件", "准结", "质检确认", "调度确认"};
-        String[] fieldNames = {"status", "content","remark","versionCode","optName",  "optCode","optType",  "singlePieceHours","prepareEndHours","isQualityCheck", "isScheduleCheck"};
+        String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "optCode", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
         //export
         try {
             ExcelUtils.exportExcel(fileName, sequences, columnHeaders, fieldNames, rsp);
