@@ -44,6 +44,7 @@ public class RouterCheckController extends BaseController {
 
     @Autowired
     private SequenceService sequenceService;
+
     /**
      * 功能描述: 列表查询
      *
@@ -53,10 +54,14 @@ public class RouterCheckController extends BaseController {
     @ApiOperation(value = "技术要求分页查询", notes = "技术要求分页查询")
     @GetMapping("/list")
     public CommonResult<List<RouterCheck>> list(@ApiParam(value = "工序id", required = true) @RequestParam String sequenceId,
+                                                @ApiParam(value = "类型") @RequestParam(required = false) String type,
                                                 @ApiParam(value = "状态") @RequestParam(required = false) String status) {
         try {
             QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
             queryWrapper.eq("sequence_id", sequenceId);
+            if (!StringUtils.isNullOrEmpty(type)) {
+                queryWrapper.eq("type", type);
+            }
             if (!StringUtils.isNullOrEmpty(status)) {
                 queryWrapper.eq("status", status);
             }
@@ -64,6 +69,42 @@ public class RouterCheckController extends BaseController {
             return CommonResult.success(routerCheckService.list(queryWrapper));
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    /**
+     * 功能描述: 更新质量资料
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/19 11:37
+     **/
+    @ApiOperation(value = "更新质量资料", notes = "更新质量资料")
+    @PostMapping("/update_zlzl")
+    public void updateZlzl(@ApiParam(value = "质量资料列表", required = true) @RequestBody List<RouterCheck> routerChecks) throws Exception {
+        try {
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
+            RouterCheck rc = routerChecks.get(0);
+            QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
+            queryWrapperRouterCheck.eq("sequence_id", rc.getSequenceId());
+            queryWrapperRouterCheck.eq("type", "质量资料");
+            queryWrapperRouterCheck.eq("branch_code", rc.getBranchCode());
+            queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
+            routerCheckService.remove(queryWrapperRouterCheck);
+            for (RouterCheck routerCheck : routerChecks) {
+                routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                routerCheck.setType("质量资料");
+                routerCheck.setStatus("1");
+                routerCheck.setTenantId(user.getTenantId());
+                routerCheck.setCreateTime(new Date());
+                routerCheck.setCreateBy(user.getUsername());
+                routerCheck.setModifyTime(new Date());
+                routerCheck.setModifyBy(user.getUsername());
+                routerCheckService.save(routerCheck);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("更新质量资料异常");
         }
     }
 
@@ -235,22 +276,22 @@ public class RouterCheckController extends BaseController {
             list = checkList;
             // 获取图号列表
             String drawnos = "";
-            for (int i =0;i<checkList.size();i++) {
-                if(!drawnos.contains(checkList.get(i).getRouterNo()+",")) {
-                    drawnos += checkList.get(i).getRouterNo()+",";
+            for (int i = 0; i < checkList.size(); i++) {
+                if (!drawnos.contains(checkList.get(i).getRouterNo() + ",")) {
+                    drawnos += checkList.get(i).getRouterNo() + ",";
                 }
             }
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             // 遍历图号插入检查内容
-            for (int i =0;i<drawnos.split(",").length;i++) {
+            for (int i = 0; i < drawnos.split(",").length; i++) {
                 // 先删除历史数据
                 QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
-                queryWrapper.eq("type","检查内容");
-                queryWrapper.eq("tenant_id",tenantId);
-                queryWrapper.eq("branch_code",branchCode);
-                queryWrapper.eq("drawing_no",drawnos.split(",")[i]);
+                queryWrapper.eq("type", "检查内容");
+                queryWrapper.eq("tenant_id", tenantId);
+                queryWrapper.eq("branch_code", branchCode);
+                queryWrapper.eq("drawing_no", drawnos.split(",")[i]);
                 routerCheckService.remove(queryWrapper);
-                int check_order =1;
+                int check_order = 1;
                 // 插入新数据
                 QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                 queryWrapper2.eq("opt_name", checkList.get(i).getOptName());
@@ -259,7 +300,7 @@ public class RouterCheckController extends BaseController {
                 queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + checkList.get(i).getRouterNo() + "' and branch_code='" + branchCode + "'");
 
                 List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                if(sequences.size()==1) {
+                if (sequences.size() == 1) {
                     for (int j = 0; j < checkList.size(); j++) {
                         if (checkList.get(j).getRouterNo().equals(drawnos.split(",")[i])) {
                             RouterCheck routerCheck = new RouterCheck();
@@ -303,13 +344,13 @@ public class RouterCheckController extends BaseController {
             FileUtils.delete(excelFile);
 
             drawnos = "";
-            for (int i =0;i<qualityList.size();i++) {
-                if(!drawnos.contains(qualityList.get(i).getRouterNo()+",")) {
-                    drawnos += qualityList.get(i).getRouterNo()+",";
+            for (int i = 0; i < qualityList.size(); i++) {
+                if (!drawnos.contains(qualityList.get(i).getRouterNo() + ",")) {
+                    drawnos += qualityList.get(i).getRouterNo() + ",";
                 }
             }
             // 遍历图号插入资料资料
-            for (int i =0;i<drawnos.split(",").length;i++) {
+            for (int i = 0; i < drawnos.split(",").length; i++) {
                 // 先删除历史数据
                 QueryWrapper<RouterCheck> queryWrapper = new QueryWrapper<RouterCheck>();
                 queryWrapper.eq("type", "质量资料");
@@ -358,11 +399,9 @@ public class RouterCheckController extends BaseController {
                         routerCheckService.save(routerCheck);
 
 
-
                     }
                 }
             }
-
 
 
             return CommonResult.success(list, "成功");

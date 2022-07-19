@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.PdmMesProcessMapper;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,12 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     @Autowired
     private OperatiponService operatiponService;
 
+    @Autowired
+    private OperationTypeSpecService operatiponTypeSpecService;
+
+    @Autowired
+    private RouterCheckService routerCheckService;
+
     @Override
     public IPage<PdmMesProcess> queryPageList(int page, int limit, PdmMesProcess pdmProcess) {
         Page<PdmMesProcess> ipage = new Page<>(page, limit);
@@ -56,6 +64,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     @Override
     public void release(PdmMesProcess pdmMesProcess) throws Exception {
         try {
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
             String routerId = pdmMesProcess.getDrawIdGroup();
             // MES数据中工序
             QueryWrapper<PdmMesOption> queryWrapperPdmMesOption = new QueryWrapper<>();
@@ -87,11 +96,11 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                     operatipon.setOptType(0);
 
                     operatipon.setBranchCode(pdmMesOption.getDataGroup());
-                    operatipon.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    operatipon.setTenantId(user.getTenantId());
                     operatipon.setCreateTime(new Date());
-                    operatipon.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    operatipon.setCreateBy(user.getUsername());
                     operatipon.setModifyTime(new Date());
-                    operatipon.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    operatipon.setModifyBy(user.getUsername());
                     operatiponService.save(operatipon);
                     sequence.setOptId(optId);
                     sequence.setOptCode(operatipon.getOptCode());
@@ -118,12 +127,49 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 //自动派工
                 sequence.setIsAutoAssign("0");
                 sequence.setBranchCode(pdmMesOption.getDataGroup());
-                sequence.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                sequence.setTenantId(user.getTenantId());
                 sequence.setCreateTime(new Date());
-                sequence.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                sequence.setCreateBy(user.getUsername());
                 sequence.setModifyTime(new Date());
-                sequence.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                sequence.setModifyBy(user.getUsername());
                 sequenceService.saveOrUpdate(sequence);
+
+                //删除工序已关联的质量资料历史数据
+                QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
+                queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
+                queryWrapperRouterCheck.eq("type", "质量资料");
+                queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
+                queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
+                routerCheckService.remove(queryWrapperRouterCheck);
+
+                //工序质量资料
+                if (!StringUtils.isNullOrEmpty(sequence.getOptCode())) {
+                    //查询类型关联的质量资料
+                    QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
+                    queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
+                    queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
+                    queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
+                    List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
+                    for (OperationTypeSpec dts : operationTypeSpecs) {
+                        RouterCheck routerCheck = new RouterCheck();
+                        routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                        routerCheck.setSequenceId(sequence.getId());
+                        routerCheck.setRouterId(sequence.getRouterId());
+                        routerCheck.setName(dts.getPropertyName());
+                        routerCheck.setType("质量资料");
+                        routerCheck.setStatus("1");
+                        routerCheck.setDefualtValue(dts.getPropertyValue());
+                        routerCheck.setPropertyObjectname(dts.getPropertyName());
+
+                        routerCheck.setBranchCode(sequence.getBranchCode());
+                        routerCheck.setTenantId(user.getTenantId());
+                        routerCheck.setCreateTime(new Date());
+                        routerCheck.setCreateBy(user.getUsername());
+                        routerCheck.setModifyTime(new Date());
+                        routerCheck.setModifyBy(user.getUsername());
+                        routerCheckService.save(routerCheck);
+                    }
+                }
 
                 // MES数据中工序的工装
 //                    QueryWrapper<PdmMesObject> queryWrapperPdmMesObject = new QueryWrapper<>();
@@ -145,7 +191,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             // 保存&更新MES工艺，并更新工艺接收状态
             pdmMesProcess.setItemStatus("已发布");
             pdmMesProcess.setModifyTime(new Date());
-            pdmMesProcess.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            pdmMesProcess.setModifyBy(user.getUsername());
             pdmMesProcessMapper.updateById(pdmMesProcess);
 
             //更新老工艺状态模块
@@ -156,7 +202,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             queryWrapperRouter.eq("status", "1");
             queryWrapperRouter.eq("router_no", pdmMesProcess.getDrawNo());
             queryWrapperRouter.eq("branch_code", pdmMesProcess.getDataGroup());
-            queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapperRouter.eq("tenant_id", user.getTenantId());
             routerService.update(router, queryWrapperRouter);
             //添加新工艺模块
             router.setId(routerId);
@@ -166,11 +212,11 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             router.setDrawNo(pdmMesProcess.getDrawNo());
             router.setRemark(pdmMesProcess.getDrawNo());
             router.setBranchCode(pdmMesProcess.getDataGroup());
-            router.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            router.setTenantId(user.getTenantId());
             router.setCreateTime(new Date());
-            router.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+            router.setCreateBy(user.getUsername());
             router.setModifyTime(new Date());
-            router.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            router.setModifyBy(user.getUsername());
             router.setStatus("1");
             router.setIsActive("1");
             routerService.saveOrUpdate(router);
