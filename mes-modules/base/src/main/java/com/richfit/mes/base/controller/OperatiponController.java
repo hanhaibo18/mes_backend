@@ -105,6 +105,18 @@ public class OperatiponController extends BaseController {
             if (list.size() > 0) {
                 return CommonResult.failed("操作失败，工序编码不能重复！");
             }
+            QueryWrapper<Operatipon> queryWrapper2 = new QueryWrapper<Operatipon>();
+            if (!StringUtils.isNullOrEmpty(operatipon.getBranchCode())) {
+                queryWrapper2.eq("branch_code", operatipon.getBranchCode());
+            }
+            if (!StringUtils.isNullOrEmpty(operatipon.getOptName())) {
+                queryWrapper2.eq("opt_name", operatipon.getOptName());
+            }
+            List<Operatipon> list2 = operatiponService.list(queryWrapper2);
+            if (list2.size() > 0) {
+                return CommonResult.failed("操作失败，工序名称不能重复！");
+            }
+
 
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             operatipon.setId(UUID.randomUUID().toString().replaceAll("-", ""));
