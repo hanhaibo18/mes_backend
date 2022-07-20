@@ -143,7 +143,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 routerCheckService.remove(queryWrapperRouterCheck);
 
                 //工序质量资料
-                if (!StringUtils.isNullOrEmpty(sequence.getOptCode())) {
+                if (!StringUtils.isNullOrEmpty(sequence.getOptType())) {
                     //查询类型关联的质量资料
                     QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
                     queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
