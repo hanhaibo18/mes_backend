@@ -88,4 +88,18 @@ public interface LineStoreService extends IService<LineStore> {
      * @Author Gaol
      */
     void reSetCertNoByTrackHead(TrackHead trackHead);
+
+    /**
+     * 功能描述:根据图号和物料号 消耗数量
+     *
+     * @param drawingNo
+     * @param materialNo
+     * @param number
+     * @param state
+     * @Author: xinYu.hou
+     * @Date: 2022/7/19 10:59
+     * @return: Boolean
+     **/
+    Boolean zpExpend(String drawingNo, String materialNo, int number, int state);
+
 }

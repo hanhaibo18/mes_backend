@@ -68,6 +68,8 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                 "      </urn:ZC80_PPIF009>" +
                 "   </soapenv:Body>" +
                 "</soapenv:Envelope>";
+        System.out.println("订单同步");
+        System.out.println(soapRequestData);
         //构造http请求头
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
@@ -77,6 +79,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         RestTemplate restTemplate = builder.build();
         //返回结果
         String resultStr = restTemplate.postForObject(url, formEntity, String.class);
+        System.out.println(resultStr);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
         //获取工厂ID

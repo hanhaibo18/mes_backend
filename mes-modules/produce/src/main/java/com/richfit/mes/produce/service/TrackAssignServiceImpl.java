@@ -112,7 +112,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo) throws ParseException {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.like("u.track_no2", trackNo);
@@ -145,6 +145,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (!StringUtils.isNullOrEmpty(userId)) {
             queryWrapper.eq("u.user_id", userId);
         }
+        queryWrapper.eq("classes", classes);
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("assign_time");
@@ -209,6 +210,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             if (null != trackHead && !StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHead.getProjectBomId());
                 for (ProjectBom projectBom : projectBomList) {
+                    if ("0".equals(projectBom.getIsKeyPart())) {
+                        continue;
+                    }
                     Map<String, String> map = new HashMap<>(2);
                     map.put("drawingNo", projectBom.getDrawingNo());
                     map.put("materialNo", projectBom.getMaterialNo());

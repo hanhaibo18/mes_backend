@@ -147,11 +147,12 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "state", value = "状态", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "userId", value = "操作人ID", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "classes", value = "跟单类型", required = true, paramType = "query", dataType = "String"),
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes) {
         try {
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes);
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }
@@ -161,6 +162,7 @@ public class TrackAssignController extends BaseController {
                     assign.setWeight(trackHead.getWeight());
                     assign.setWorkNo(trackHead.getWorkNo());
                     assign.setProductName(trackHead.getProductName());
+                    assign.setPartsName(trackHead.getMaterialName());
                     if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                         assign.setWorkPlanNo(trackHead.getWorkPlanId());
                         Plan plan = planService.getById(trackHead.getWorkPlanId());

@@ -154,17 +154,27 @@ public class TrackCompleteController extends BaseController {
                 track.setDeviceName(device.getData().getName());
                 TrackItem trackItem = trackItemService.getById(track.getTiId());
                 //增加判断返回是否能修改
+                TrackHead trackHead = trackHeadService.getById(track.getTrackId());
+                track.setProductName(trackHead.getProductName());
                 //条件一 需要质检 并且已质检
                 if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
                     track.setIsUpdate(1);
+                    continue;
                 }
                 //条件二 需要调度 并且以调度
                 if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
                     track.setIsUpdate(1);
+                    continue;
                 }
                 //条件三 不质检 不调度
                 if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
                     track.setIsUpdate(1);
+                    continue;
+                }
+                //条件四 当前操作人不是宝工人
+                if (!SecurityUtils.getCurrentUser().getUsername().equals(trackItem.getStartDoingUser())) {
+                    track.setIsUpdate(1);
+                    continue;
                 }
                 if (null == track.getIsUpdate()) {
                     track.setIsUpdate(0);
@@ -832,6 +842,7 @@ public class TrackCompleteController extends BaseController {
         return trackCompleteService.queryDetails(assignId, tiId, state);
     }
 
+    //Todo:报工需要增加一个报工参数
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
     @PostMapping("/saveComplete")
     public CommonResult<Boolean> saveComplete(@RequestBody CompleteDto completeDto) {

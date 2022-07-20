@@ -97,7 +97,9 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setIsOperationComplete(isComplete);
             trackItemService.updateById(trackItem);
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-            planService.planData(trackHead.getWorkPlanId());
+            if (null != trackHead.getWorkPlanId()) {
+                planService.planData(trackHead.getWorkPlanId());
+            }
             if (isNext) {
                 //TODO:下工序激活
                 String trackHeadId = map.get("trackHeadId");
@@ -118,7 +120,15 @@ public class PublicServiceImpl implements PublicService {
         for (TrackItem trackItem : currentTrackItemList) {
             trackItem.setIsCurrent(0);
         }
-
+        //判断还有没有下工序
+        if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
+            try {
+                trackHeadService.trackHeadFinish(trackHeadId);
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         boolean activation = false;
         if (!currentTrackItemList.isEmpty() && currentTrackItemList.get(0).getNextOptSequence() != 0) {
             //激活下工序

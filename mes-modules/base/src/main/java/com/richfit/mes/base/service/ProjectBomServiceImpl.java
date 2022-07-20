@@ -195,5 +195,14 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         return CommonResult.success(map);
     }
 
+    @Override
+    public Boolean queryBom(String id, String drawingNo, String level) {
+        QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id);
+        queryWrapper.eq("drawing_no", drawingNo);
+        queryWrapper.eq("grade", level);
+        return null != this.getOne(queryWrapper);
+    }
+
 
 }

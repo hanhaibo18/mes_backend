@@ -174,4 +174,7 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺Id", dataType = "String")
     private String routerId;
+
+    @ApiModelProperty(value = "跟单分类：1机加  2装配 3热处理 4钢结构 ", dataType = "String")
+    private String classes;
 }
