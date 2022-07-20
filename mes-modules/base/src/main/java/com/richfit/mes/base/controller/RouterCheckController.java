@@ -253,11 +253,9 @@ public class RouterCheckController extends BaseController {
     @PostMapping("/import_excel_check")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult importExcelCheck(@RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
-
-
+        String step = "";
         List<RouterCheckDto> list = new ArrayList<>();
         try {
-
             File excelFile = null;
             //给导入的excel一个临时的文件名
             StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -272,15 +270,22 @@ public class RouterCheckController extends BaseController {
                 fieldNames[i] = fields[i].getName();
             }
             List<RouterCheckDto> checkList = ExcelUtils.importExcel(excelFile, RouterCheckDto.class, fieldNames, 1, 0, 0, tempName.toString());
-
+            step = "获取列表成功";
+            List<RouterCheckDto> list2 = new ArrayList<>();
             list = checkList;
             // 获取图号列表
             String drawnos = "";
             for (int i = 0; i < checkList.size(); i++) {
+                if (!StringUtils.isNullOrEmpty(checkList.get(i).getRouterNo())) {
+                    list2.add(checkList.get(i));
+                }
                 if (!drawnos.contains(checkList.get(i).getRouterNo() + ",")) {
                     drawnos += checkList.get(i).getRouterNo() + ",";
                 }
             }
+            step = "获取图号成功";
+            
+            checkList = list2;
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             // 遍历图号插入检查内容
             for (int i = 0; i < drawnos.split(",").length; i++) {
@@ -332,7 +337,7 @@ public class RouterCheckController extends BaseController {
                     }
                 }
             }
-
+            step = "检查内容保存完成";
 
             java.lang.reflect.Field[] qualityFields = RouterCheckQualityDto.class.getDeclaredFields();
             //封装证件信息实体类
@@ -342,13 +347,19 @@ public class RouterCheckController extends BaseController {
             }
             List<RouterCheckQualityDto> qualityList = ExcelUtils.importExcel(excelFile, RouterCheckQualityDto.class, qualityFieldNames, 1, 0, 0, tempName.toString());
             FileUtils.delete(excelFile);
-
+            step = "资料类型列表获取";
+            List<RouterCheckQualityDto> list3 = new ArrayList<>();
             drawnos = "";
             for (int i = 0; i < qualityList.size(); i++) {
+                if (!StringUtils.isNullOrEmpty(checkList.get(i).getRouterNo())) {
+                    list3.add(qualityList.get(i));
+                }
                 if (!drawnos.contains(qualityList.get(i).getRouterNo() + ",")) {
                     drawnos += qualityList.get(i).getRouterNo() + ",";
                 }
             }
+            qualityList = list3;
+            step = "资料类型列表去空";
             // 遍历图号插入资料资料
             for (int i = 0; i < drawnos.split(",").length; i++) {
                 // 先删除历史数据
@@ -402,11 +413,10 @@ public class RouterCheckController extends BaseController {
                     }
                 }
             }
-
-
+            step = "资料类型列表保存";
             return CommonResult.success(list, "成功");
         } catch (Exception e) {
-            return CommonResult.failed("失败:" + e.getMessage());
+            return CommonResult.failed("失败:" + step + e.getMessage());
         }
     }
 
