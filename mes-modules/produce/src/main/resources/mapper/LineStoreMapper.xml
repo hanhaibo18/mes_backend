@@ -3,7 +3,7 @@
 <mapper namespace="com.richfit.mes.produce.dao.LineStoreMapper">
     <select id="selectGroup" resultType="com.richfit.mes.common.model.produce.store.LineStoreSum">
         SELECT c.drawing_no,
-        (select s.material_name from
+        (select s.product_name from
         mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
         c.branch_code limit 1) material_name,
         (select s.material_no from
