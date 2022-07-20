@@ -370,6 +370,7 @@ public class SequenceController extends BaseController {
                                 r.setStatus("1");
                                 r.setIsActive("1");
                                 r.setType("0");
+                                r.setVersion(list.get(i).getVersionCode());
                                 r.setRouterNo(drawnos.split(",")[j]);
                                 r.setRouterName(drawnames.split(",")[j]);
                                 r.setCreateTime(new Date());
@@ -489,9 +490,7 @@ public class SequenceController extends BaseController {
 
 
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
-        if (!StringUtils.isNullOrEmpty(routerId)) {
-            queryWrapper.eq("router_id", routers.get(0).getId());
-        }
+        queryWrapper.eq("router_id", routers.get(0).getId());
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
