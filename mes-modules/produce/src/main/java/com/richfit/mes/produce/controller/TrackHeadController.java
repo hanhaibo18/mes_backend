@@ -111,7 +111,9 @@ public class TrackHeadController extends BaseController {
     @ApiOperation(value = "生成完工资料", notes = "通过跟单id、生成完工资料")
     @GetMapping("/completion_data/{id}")
     public void completionData(@ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
-        trackHeadService.completionData(id);
+        TrackHead trackHead = trackHeadService.getById(id);
+        trackHead.setIsCompletionData("Y");
+        trackHeadService.updateById(trackHead);
     }
 
 
