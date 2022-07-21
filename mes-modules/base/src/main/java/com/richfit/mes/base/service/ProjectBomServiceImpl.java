@@ -120,9 +120,9 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", bom.getWorkPlanNo())
+//                .notIn("grade", "H")
                 .eq("tenant_id", bom.getTenantId())
-                .eq("branch_code", bom.getBranchCode())
-                .notIn("grade", "H");
+                .eq("branch_code", bom.getBranchCode());
         List<ProjectBom> list = this.list(queryWrapper);
         List<ProjectBom> projectBomList = new ArrayList<>();
         for (ProjectBom project : list) {
