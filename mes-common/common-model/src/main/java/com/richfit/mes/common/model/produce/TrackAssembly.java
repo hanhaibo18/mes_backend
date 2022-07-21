@@ -50,19 +50,14 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
      * 是否是关键件
      */
     @ApiModelProperty(value = "是否是关键件", dataType = "int")
-    private Integer isKeyPart;
+    private String isKeyPart;
 
     /**
      * 跟踪方式
      */
     @ApiModelProperty(value = "跟踪方式", dataType = "int")
-    private Integer trackType;
+    private String trackType;
 
-    /**
-     * 编号来源
-     */
-    @ApiModelProperty(value = "编号来源", dataType = "String")
-    private String sourceNumber;
 
     /**
      * 重量
@@ -93,24 +88,6 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
      */
     @ApiModelProperty(value = "产品编号", dataType = "String")
     private String productNo;
-
-    /**
-     * 上级设备编号? (是否还需要)
-     */
-    @ApiModelProperty(value = "上级设备编号", dataType = "String")
-    private String mainCompNo;
-
-    /**
-     * 子设备编号?(是否还需要)
-     */
-    @ApiModelProperty(value = "子设备编号", dataType = "String")
-    private String subCompNo;
-
-    /**
-     * 子设备图号
-     */
-    @ApiModelProperty(value = "子设备图号", dataType = "String")
-    private String subCompDrawNo;
 
     /**
      * 所属机构
