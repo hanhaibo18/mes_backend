@@ -298,16 +298,18 @@ public class RouterCheckController extends BaseController {
                     queryWrapper.eq("drawing_no", drawnos.split(",")[i]);
                     routerCheckService.remove(queryWrapper);
                     int check_order = 1;
-                    // 插入新数据
-                    QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
-                    queryWrapper2.eq("opt_name", checkList.get(i).getOptName());
-                    queryWrapper2.eq("tenant_id", tenantId);
-                    queryWrapper2.eq("branch_code", branchCode);
-                    queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + checkList.get(i).getRouterNo() + "' and branch_code='" + branchCode + "'");
 
-                    List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                    if (sequences.size() == 1) {
-                        for (int j = 0; j < checkList.size(); j++) {
+
+                    for (int j = 0; j < checkList.size(); j++) {
+                        // 插入新数据
+
+                        QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
+                        queryWrapper2.eq("opt_name", checkList.get(j).getOptName());
+                        queryWrapper2.eq("tenant_id", tenantId);
+                        queryWrapper2.eq("branch_code", branchCode);
+                        queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
+                        List<Sequence> sequences = sequenceService.list(queryWrapper2);
+                        if (sequences.size() == 1) {
                             if (checkList.get(j).getRouterNo().equals(drawnos.split(",")[i])) {
                                 RouterCheck routerCheck = new RouterCheck();
                                 routerCheck.setCreateBy(user.getUsername());
@@ -377,15 +379,17 @@ public class RouterCheckController extends BaseController {
                     routerCheckService.remove(queryWrapper);
                     int check_order = 1;
                     // 插入新数据
-                    QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
-                    queryWrapper2.eq("opt_name", qualityList.get(i).getOptName());
-                    queryWrapper2.eq("tenant_id", tenantId);
-                    queryWrapper2.eq("branch_code", branchCode);
-                    queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + qualityList.get(i).getRouterNo() + "' and branch_code='" + branchCode + "'");
 
-                    List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                    if (sequences.size() == 1) {
-                        for (int j = 0; j < qualityList.size(); j++) {
+
+                    for (int j = 0; j < qualityList.size(); j++) {
+                        QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
+                        queryWrapper2.eq("opt_name", qualityList.get(j).getOptName());
+                        queryWrapper2.eq("tenant_id", tenantId);
+                        queryWrapper2.eq("branch_code", branchCode);
+                        queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
+
+                        List<Sequence> sequences = sequenceService.list(queryWrapper2);
+                        if (sequences.size() == 1) {
                             RouterCheck routerCheck = new RouterCheck();
                             routerCheck.setCreateBy(user.getUsername());
                             routerCheck.setRouterId(sequences.get(0).getRouterId());
@@ -395,15 +399,6 @@ public class RouterCheckController extends BaseController {
                             routerCheck.setModifyTime(new Date());
                             routerCheck.setTenantId(tenantId);
                             routerCheck.setBranchCode(branchCode);
-                            routerCheck.setType("检查内容");
-                            routerCheck.setCreateBy(user.getUsername());
-                            routerCheck.setRouterId(sequences.get(0).getRouterId());
-                            routerCheck.setSequenceId(sequences.get(0).getId());
-                            routerCheck.setCreateTime(new Date());
-                            routerCheck.setModifyBy(user.getUsername());
-                            routerCheck.setModifyTime(new Date());
-                            routerCheck.setTenantId(tenantId);
-                            routerCheck.setTenantId(branchCode);
                             routerCheck.setType("资料资料");
                             routerCheck.setName(qualityList.get(j).getName());
                             routerCheck.setDrawingNo(qualityList.get(j).getRouterNo());
