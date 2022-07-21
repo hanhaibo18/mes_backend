@@ -2,8 +2,6 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -309,19 +307,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     List<ProjectBomComplete> poject_bom_complete_store_list(List<ProjectBomComplete> projectBomCompleteList) {
         for (ProjectBomComplete pbc : projectBomCompleteList) {
-            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
-            int totalErp = 0;
+            int totalErp = Double.valueOf(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()).replaceAll("\uFEFF", "")).intValue();
             int totalStore = 0;
             int totalMiss = 0;
-            if ("0".equals(result.getString("code"))) {
-                JSONArray resultList = JSON.parseArray(result.getString("data"));
-                for (Object o : resultList) {
-                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-                    if (!StringUtil.isNullOrEmpty(jsonObject.getString("QUANTITY"))) {
-                        totalErp += Double.parseDouble(jsonObject.getString("QUANTITY"));
-                    }
-                }
-            }
+//            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
+//            if ("0".equals(result.getString("code"))) {
+//                JSONArray resultList = JSON.parseArray(result.getString("data"));
+//                for (Object o : resultList) {
+//                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+//                    if (!StringUtil.isNullOrEmpty(jsonObject.getString("QUANTITY"))) {
+//                        totalErp += Double.parseDouble(jsonObject.getString("QUANTITY"));
+//                    }
+//                }
+//            }
             pbc.setErpNumber(totalErp);
             Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
             if (totalMaterial != null) {
