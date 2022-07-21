@@ -470,29 +470,21 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 group = JSON.parseObject(trackHead.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
+                TrackAssembly trackAssembly = new TrackAssembly();
+                trackAssembly.setGrade(pb.getGrade());
+                trackAssembly.setName(pb.getProdDesc());
+                trackAssembly.setDrawingNo(pb.getDrawingNo());
+                trackAssembly.setMaterialNo(pb.getMaterialNo());
+                trackAssembly.setTrackHeadId(trackHead.getId());
+                trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
+                trackAssembly.setIsKeyPart(pb.getIsKeyPart());
+                trackAssembly.setTrackType(pb.getTrackType());
+                trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
                 if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                     if (pb.getId().equals(group.get(pb.getGroupBy()))) {
-                        TrackAssembly trackAssembly = JSON.parseObject(JSON.toJSONString(pb), TrackAssembly.class);
-                        trackAssembly.setName(pb.getProdDesc());
-                        trackAssembly.setDrawingNo(pb.getDrawingNo());
-                        trackAssembly.setMaterialNo(pb.getMaterialNo());
-                        trackAssembly.setTrackHeadId(trackHead.getId());
-                        trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
-                        trackAssembly.setIsKeyPart(pb.getIsKeyPart());
-                        trackAssembly.setTrackType(pb.getTrackType());
-                        trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
                         trackAssemblyList.add(trackAssembly);
                     }
                 } else {
-                    TrackAssembly trackAssembly = new TrackAssembly();
-                    trackAssembly.setName(pb.getProdDesc());
-                    trackAssembly.setDrawingNo(pb.getDrawingNo());
-                    trackAssembly.setMaterialNo(pb.getMaterialNo());
-                    trackAssembly.setTrackHeadId(trackHead.getId());
-                    trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
-                    trackAssembly.setIsKeyPart(pb.getIsKeyPart());
-                    trackAssembly.setTrackType(pb.getTrackType());
-                    trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
                     trackAssemblyList.add(trackAssembly);
                 }
 
