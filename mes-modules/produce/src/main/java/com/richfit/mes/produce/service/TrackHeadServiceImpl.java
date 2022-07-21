@@ -453,7 +453,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
-            //codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), "2022", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
@@ -542,11 +542,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     }
                     //取消跟单关联
                     QueryWrapper<LineStore> queryWrapperLineStore = new QueryWrapper<>();
-                    queryWrapperLineStore.eq("track_no", trackHead.getId());
+                    queryWrapperLineStore.eq("track_no", trackHead.getTrackNo());
                     queryWrapperLineStore.eq("branch_code", trackHead.getBranchCode());
                     queryWrapperLineStore.eq("tenant_id", trackHead.getTenantId());
                     LineStore lineStore = new LineStore();
-                    lineStore.setTrackNo(null);
+                    lineStore.setTrackNo("");
                     lineStoreService.update(lineStore, queryWrapperLineStore);
                 }
                 return true;
