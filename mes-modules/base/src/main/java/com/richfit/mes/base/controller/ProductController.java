@@ -235,7 +235,7 @@ public class ProductController extends BaseController {
                 queryWrapper.eq("material_type", materialType);
             }
         }
-        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");
 
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
@@ -262,7 +262,7 @@ public class ProductController extends BaseController {
                 queryWrapper.eq("material_type", materialType);
             }
         }
-        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");
 
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
@@ -289,6 +289,7 @@ public class ProductController extends BaseController {
                 queryWrapper.eq("material_type", materialType);
             }
         }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");
         IPage<Product> result = productService.selectProduct(new Page<Product>(page, limit), queryWrapper);
         return CommonResult.success(result.getRecords(), PRODUCT_SUCCESS_MESSAGE);
@@ -315,7 +316,7 @@ public class ProductController extends BaseController {
                 queryWrapper.eq("material_type", materialType);
             }
         }
-        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");
 
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
@@ -336,7 +337,7 @@ public class ProductController extends BaseController {
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.eq("drawing_no", drawingNo);
         }
-        // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
     }
