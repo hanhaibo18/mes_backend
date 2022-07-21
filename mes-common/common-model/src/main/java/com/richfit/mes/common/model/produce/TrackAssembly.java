@@ -29,6 +29,12 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     private String drawingNo;
 
     /**
+     * 级别
+     */
+    @ApiModelProperty(value = "级别", dataType = "String")
+    private String grade;
+
+    /**
      * 物料号
      */
     @ApiModelProperty(value = "物料号", dataType = "String")
