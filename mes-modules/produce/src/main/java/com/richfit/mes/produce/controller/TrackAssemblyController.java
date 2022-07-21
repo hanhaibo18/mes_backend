@@ -235,4 +235,11 @@ public class TrackAssemblyController extends BaseController {
         return CommonResult.success(trackAssemblyService.updateComplete(idList));
     }
 
+    @ApiOperation(value = "解绑非关键件(新)", notes = "解绑非关键件(新)")
+    @ApiImplicitParam(name = "idList", value = "Id列表", required = true, dataType = "String", paramType = "query")
+    @PutMapping("/unbindComplete")
+    public CommonResult<Boolean> unbindComplete(@RequestBody List<String> idList) {
+        return CommonResult.success(trackAssemblyService.unbindComplete(idList));
+    }
+
 }

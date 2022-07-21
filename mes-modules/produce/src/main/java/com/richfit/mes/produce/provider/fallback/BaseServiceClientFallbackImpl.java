@@ -75,6 +75,12 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public List<RouterCheck> queryRouterList(String optId, String type, String branchCode, String tenantId) {
+        return null;
+    }
+
+
+    @Override
     public CommonResult<List<OperationTypeSpec>> list(String optType, String branchCode, String tenantId) {
         return CommonResult.success(null);
     }

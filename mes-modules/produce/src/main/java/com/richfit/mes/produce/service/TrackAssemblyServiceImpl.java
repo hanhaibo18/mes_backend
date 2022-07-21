@@ -76,7 +76,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         boolean isComplete = false;
         for (String id : idList) {
             TrackAssembly trackAssembly = this.getById(id);
-            if (0 == trackAssembly.getIsKeyPart()) {
+            List<TrackAssemblyBinding> bindingList = assemblyBindingService.queryAssemblyBindingList(id);
+            if (0 == trackAssembly.getIsKeyPart() && bindingList.isEmpty()) {
                 trackAssembly.setNumberInstall(trackAssembly.getNumber());
                 isComplete = this.updateById(trackAssembly);
                 TrackAssemblyBinding assemblyBinding = new TrackAssemblyBinding();
@@ -88,5 +89,21 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             }
         }
         return isComplete;
+    }
+
+    @Override
+    public Boolean unbindComplete(List<String> idList) {
+        boolean isSucceed = false;
+        for (String id : idList) {
+            TrackAssembly trackAssembly = this.getById(id);
+            if (0 == trackAssembly.getIsKeyPart()) {
+                trackAssembly.setNumberInstall(trackAssembly.getNumber() - trackAssembly.getNumberInstall());
+                QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("assembly_id", id);
+                this.updateById(trackAssembly);
+                isSucceed = assemblyBindingService.remove(queryWrapper);
+            }
+        }
+        return isSucceed;
     }
 }

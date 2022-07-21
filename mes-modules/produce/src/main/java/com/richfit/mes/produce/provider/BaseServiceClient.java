@@ -59,6 +59,10 @@ public interface BaseServiceClient {
     @GetMapping("/api/base/routerCheck/find")
     public CommonResult<List<RouterCheck>> find(@RequestParam("drawingNo") String drawingNo, @RequestParam("optId") String optId, @RequestParam("type") String type);
 
+    @GetMapping("/api/base/routerCheck/queryRouterList")
+    public List<RouterCheck> queryRouterList(@RequestParam("optId") String optId, @RequestParam("type") String type, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
+
+
     @GetMapping("/api/base/opttypespec/list")
     public CommonResult<List<OperationTypeSpec>> list(@RequestParam("optType") String optType, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 

@@ -424,5 +424,16 @@ public class RouterCheckController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "查询质量资料列表", notes = "查询质量资料列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "optId", value = "optId", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "type", value = "类型", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "tenantId", value = "租户", required = true, dataType = "String", paramType = "query"),
+    })
+    @GetMapping("/queryRouterList")
+    public List<RouterCheck> queryRouterList(String optId, String type, String branchCode, String tenantId) {
+        return routerCheckService.queryRouterList(optId, type, branchCode, tenantId);
+    }
 
 }

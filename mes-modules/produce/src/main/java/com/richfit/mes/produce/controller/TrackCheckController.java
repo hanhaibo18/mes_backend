@@ -7,8 +7,6 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.DevicePerson;
-import com.richfit.mes.common.model.base.OperationTypeSpec;
-import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -63,7 +61,7 @@ public class TrackCheckController extends BaseController {
     private LineStoreService lineStoreService;
     @Autowired
     private PlanService planService;
-    @Autowired
+    @Resource
     private BaseServiceClient baseServiceClient;
     @Resource
     private SystemServiceClient systemServiceClient;
@@ -333,12 +331,6 @@ public class TrackCheckController extends BaseController {
     }
 
     @ApiOperation(value = "批量调度审核", notes = "批量调度审核")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "tiId", value = "工序Id", required = true, paramType = "query", dataType = "Integer"),
-            @ApiImplicitParam(name = "result", value = "质检意见", required = true, paramType = "query", dataType = "Integer"),
-            @ApiImplicitParam(name = "isPrepare", value = "是否给予准结工时", required = true, paramType = "query", dataType = "Integer"),
-
-    })
     @PostMapping("/batchAddSchedule")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> batchAddSchedule(@RequestBody BatchAddScheduleDto batchAddScheduleDto) {
@@ -385,6 +377,9 @@ public class TrackCheckController extends BaseController {
                 }
             } catch (Exception e) {
                 return CommonResult.failed("跟单结束异常");
+            }
+            if (null != batchAddScheduleDto.getNextBranchCode()) {
+                trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
             }
             bool = trackItemService.updateById(trackItem);
         }
@@ -759,17 +754,15 @@ public class TrackCheckController extends BaseController {
     @ApiOperation(value = "查询质检审核条件详情信息", notes = "查询质检审核条件详情信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "optId", value = "工序Id", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "drawingNo", value = "图号", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "optType", value = "工序类型", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/queryQualityTestingDetails")
-    public CommonResult<QueryQualityTestingDetailsVo> queryQualityTestingDetails(String optId, String drawingNo, String branchCode, String optType) {
-        CommonResult<List<RouterCheck>> routerResult = baseServiceClient.find(drawingNo, optId, null);
-        CommonResult<List<OperationTypeSpec>> operationResult = baseServiceClient.list(optType, branchCode, SecurityUtils.getCurrentUser().getTenantId());
+    public CommonResult<QueryQualityTestingDetailsVo> queryQualityTestingDetails(String optId, String branchCode) {
+        //检查内容 质量资料
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         QueryQualityTestingDetailsVo queryQualityTestingDetailsVo = new QueryQualityTestingDetailsVo();
-        queryQualityTestingDetailsVo.setRouterCheckList(routerResult.getData());
-        queryQualityTestingDetailsVo.setOperationTypeSpecs(operationResult.getData());
+        queryQualityTestingDetailsVo.setRouterCheckList(baseServiceClient.queryRouterList(optId, "检查内容", branchCode, tenantId));
+        queryQualityTestingDetailsVo.setOperationTypeSpecs(baseServiceClient.queryRouterList(optId, "质量资料", branchCode, tenantId));
         return CommonResult.success(queryQualityTestingDetailsVo);
     }
 
