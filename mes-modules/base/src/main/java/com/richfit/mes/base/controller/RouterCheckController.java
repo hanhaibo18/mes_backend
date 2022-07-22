@@ -272,9 +272,9 @@ public class RouterCheckController extends BaseController {
                     fieldNames[i] = fields[i].getName();
                 }
                 List<RouterCheckDto> checkList = ExcelUtils.importExcel(excelFile, RouterCheckDto.class, fieldNames, 1, 0, 0, tempName.toString());
-                step = "获取列表成功";
+                step += "获取列表成功";
                 List<RouterCheckDto> list2 = new ArrayList<>();
-                list = checkList;
+
                 // 获取图号列表
                 String drawnos = "";
                 for (int i = 0; i < checkList.size(); i++) {
@@ -285,9 +285,10 @@ public class RouterCheckController extends BaseController {
                         drawnos += checkList.get(i).getRouterNo() + ",";
                     }
                 }
-                step = "获取图号成功";
+                step += "获取图号成功";
 
                 checkList = list2;
+                list = checkList;
                 // 遍历图号插入检查内容
                 for (int i = 0; i < drawnos.split(",").length; i++) {
                     // 先删除历史数据
@@ -304,12 +305,13 @@ public class RouterCheckController extends BaseController {
                         // 插入新数据
 
                         QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
-                        queryWrapper2.eq("opt_name", checkList.get(j).getOptName());
+                        queryWrapper2.eq("opt_name", checkList.get(j).getOptName().trim());
                         queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
                         queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                        if (sequences.size() == 1) {
+                        if (sequences.size() > 1) {
+                            step += sequences.get(0).getRouterId() + sequences.get(0).getId() + checkList.get(j).getOptName();
                             if (checkList.get(j).getRouterNo().equals(drawnos.split(",")[i])) {
                                 RouterCheck routerCheck = new RouterCheck();
                                 routerCheck.setCreateBy(user.getUsername());
@@ -322,7 +324,7 @@ public class RouterCheckController extends BaseController {
                                 routerCheck.setBranchCode(branchCode);
                                 routerCheck.setType("检查内容");
                                 routerCheck.setName(checkList.get(j).getName());
-                                routerCheck.setDrawingNo(checkList.get(j).getName());
+                                routerCheck.setDrawingNo(drawnos.split(",")[i]);
                                 routerCheck.setCheckOrder(check_order);
                                 routerCheck.setUnit(checkList.get(j).getPropertyUnit());
                                 routerCheck.setMethod(checkList.get(j).getPropertyInputtype());
@@ -344,7 +346,7 @@ public class RouterCheckController extends BaseController {
             } catch (Exception ex) {
                 step += ex.getMessage();
             }
-            step = "检查内容保存完成";
+            step += "检查内容保存完成";
             try {
                 java.lang.reflect.Field[] qualityFields = RouterCheckQualityDto.class.getDeclaredFields();
                 //封装证件信息实体类
@@ -354,7 +356,7 @@ public class RouterCheckController extends BaseController {
                 }
                 List<RouterCheckQualityDto> qualityList = ExcelUtils.importExcel(excelFile, RouterCheckQualityDto.class, qualityFieldNames, 1, 0, 1, tempName.toString());
                 FileUtils.delete(excelFile);
-                step = "资料类型列表获取";
+                step += "资料类型列表获取";
                 List<RouterCheckQualityDto> list3 = new ArrayList<>();
                 String drawnos = "";
                 for (int i = 0; i < qualityList.size(); i++) {
@@ -366,7 +368,8 @@ public class RouterCheckController extends BaseController {
                     }
                 }
                 qualityList = list3;
-                step = "资料类型列表去空";
+
+                step += "资料类型列表去空";
                 // 遍历图号插入资料资料
                 for (int i = 0; i < drawnos.split(",").length; i++) {
                     // 先删除历史数据
@@ -383,13 +386,14 @@ public class RouterCheckController extends BaseController {
 
                     for (int j = 0; j < qualityList.size(); j++) {
                         QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
-                        queryWrapper2.eq("opt_name", qualityList.get(j).getOptName());
+                        queryWrapper2.eq("opt_name", qualityList.get(j).getOptName().trim());
                         queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
                         queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
 
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                        if (sequences.size() == 1) {
+                        if (sequences.size() > 1) {
+                            step += sequences.get(0).getRouterId() + sequences.get(0).getId() + qualityList.get(j).getOptName();
                             RouterCheck routerCheck = new RouterCheck();
                             routerCheck.setCreateBy(user.getUsername());
                             routerCheck.setRouterId(sequences.get(0).getRouterId());
@@ -399,7 +403,7 @@ public class RouterCheckController extends BaseController {
                             routerCheck.setModifyTime(new Date());
                             routerCheck.setTenantId(tenantId);
                             routerCheck.setBranchCode(branchCode);
-                            routerCheck.setType("资料资料");
+                            routerCheck.setType("质量资料");
                             routerCheck.setName(qualityList.get(j).getName());
                             routerCheck.setDrawingNo(qualityList.get(j).getRouterNo());
                             routerCheck.setCheckOrder(check_order);
@@ -413,12 +417,12 @@ public class RouterCheckController extends BaseController {
                         }
                     }
                 }
-                step = "资料类型列表保存";
+                step += "资料类型列表保存";
             } catch (Exception ex) {
                 step += ex.getMessage();
             }
 
-            return CommonResult.success(list, "成功");
+            return CommonResult.success(step, "成功");
         } catch (Exception e) {
             return CommonResult.failed("失败:" + step + e.getMessage());
         }
