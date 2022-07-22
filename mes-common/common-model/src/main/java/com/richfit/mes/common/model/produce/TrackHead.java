@@ -252,7 +252,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * 关联项目BOM的名称
      */
     private String projectBomName;
-    
+
     /**
      * bom分组选择
      */
@@ -265,4 +265,13 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Date: 2022/6/28 10:25
      **/
     private String classes;
+
+
+    /**
+     * 描述: 完工资料：Y是
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/21 10:25
+     **/
+    private String isCompletionData;
 }

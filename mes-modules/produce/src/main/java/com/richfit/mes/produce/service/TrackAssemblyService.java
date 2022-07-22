@@ -36,4 +36,14 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @return: Boolean
      **/
     Boolean updateComplete(List<String> idList);
+
+    /**
+     * 功能描述:解绑非关键件
+     *
+     * @param idList
+     * @Author: xinYu.hou
+     * @Date: 2022/7/20 10:53
+     * @return: Boolean
+     **/
+    Boolean unbindComplete(List<String> idList);
 }
