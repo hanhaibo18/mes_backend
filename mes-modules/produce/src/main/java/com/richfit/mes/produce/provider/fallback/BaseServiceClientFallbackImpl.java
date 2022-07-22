@@ -86,7 +86,9 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public Boolean queryBom(String id, String drawingNo, String level) {
+    public ProjectBom queryBom(String workPlanNo, String branchCode) {
         return null;
     }
+
+
 }

@@ -137,6 +137,53 @@ public class PublicServiceImpl implements PublicService {
         return activation;
     }
 
+    @Override
+    public Boolean thirdPartyAction(String trackHeadId) {
+        QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
+        currentTrackItem.eq("track_head_id", trackHeadId);
+        currentTrackItem.eq("is_current", 1);
+        currentTrackItem.orderByDesc("sequence_order_by");
+        List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
+        //判断是否质检
+        boolean isNext = false;
+        for (TrackItem trackItem : currentTrackItemList) {
+            if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+                isNext = true;
+                continue;
+            }
+            if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete() && 0 == trackItem.getIsExistScheduleCheck()) {
+                isNext = true;
+                continue;
+            }
+            if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
+                isNext = true;
+            }
+        }
+        //判断还有没有下工序
+        if (isNext && currentTrackItemList.get(0).getNextOptSequence() == 0) {
+            try {
+                trackHeadService.trackHeadFinish(trackHeadId);
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        boolean activation = false;
+        if (isNext) {
+            for (TrackItem trackItem : currentTrackItemList) {
+                //是否是当前工序
+                trackItem.setIsCurrent(0);
+                //3 == 完工
+                trackItem.setIsDoing(3);
+                //当前工序是否完成
+                trackItem.setIsOperationComplete(1);
+            }
+            trackItemService.updateBatchById(currentTrackItemList);
+            activation = activation(currentTrackItemList.get(0));
+        }
+        return activation;
+    }
+
     private boolean activation(TrackItem trackItem) {
         //激活下工序
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
@@ -144,11 +191,11 @@ public class PublicServiceImpl implements PublicService {
         queryWrapper.eq("opt_sequence", trackItem.getNextOptSequence());
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
         trackItemEntity.setIsCurrent(1);
-        trackItemService.updateById(trackItemEntity);
+        boolean update = trackItemService.updateById(trackItemEntity);
         if (trackItemEntity.getOptParallelType() == 1 && trackItemEntity.getNextOptSequence() != 0) {
             queryTrackItemList(trackItemEntity);
         }
-        return true;
+        return update;
     }
 
     private void queryTrackItemList(TrackItem trackItems) {
@@ -162,4 +209,6 @@ public class PublicServiceImpl implements PublicService {
             queryTrackItemList(trackItems);
         }
     }
+
+
 }

@@ -67,5 +67,5 @@ public interface BaseServiceClient {
     public CommonResult<List<OperationTypeSpec>> list(@RequestParam("optType") String optType, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 
     @GetMapping("/api/base/project_bom/queryBom")
-    public Boolean queryBom(@RequestParam("id") String id, @RequestParam("drawingNo") String drawingNo, @RequestParam("level") String level);
+    public ProjectBom queryBom(@RequestParam("workPlanNo") String workPlanNo, @RequestParam("branchCode") String branchCode);
 }
