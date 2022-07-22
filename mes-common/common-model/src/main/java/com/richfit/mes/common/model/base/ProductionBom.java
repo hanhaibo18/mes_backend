@@ -63,6 +63,11 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
     @ApiModelProperty(value = "单位", dataType = "String")
     private String unit;
 
+    /**
+     * 是否是编号来源
+     */
+    @ApiModelProperty(value = "是否是编号来源", dataType = "String")
+    private String isNumFrom;
 
     /**
      * 是否关键件
@@ -114,4 +119,10 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
 
     @ApiModelProperty(value = "零部件名称", dataType = "String")
     public String prodDesc;
+
+    /**
+     * 配料工序名
+     */
+    @ApiModelProperty(value = "配料工序名", dataType = "String")
+    private String optName;
 }

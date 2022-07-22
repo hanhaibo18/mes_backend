@@ -74,6 +74,11 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
     @ApiModelProperty(value = "单位", dataType = "String")
     private String unit;
 
+    /**
+     * 是否是编号来源
+     */
+    @ApiModelProperty(value = "是否是编号来源", dataType = "String")
+    private String isNumFrom;
 
     /**
      * 是否关键件
@@ -139,4 +144,10 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
     @TableField(exist = false)
     @ApiModelProperty(value = "等级", dataType = "String")
     private String level;
+
+    /**
+     * 配料工序名
+     */
+    @ApiModelProperty(value = "配料工序名", dataType = "String")
+    private String optName;
 }
