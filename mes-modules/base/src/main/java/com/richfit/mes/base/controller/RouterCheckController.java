@@ -308,7 +308,7 @@ public class RouterCheckController extends BaseController {
                         queryWrapper2.eq("opt_name", checkList.get(j).getOptName().trim());
                         queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
-                        queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
+                        queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
                         if (sequences.size() > 1) {
                             step += sequences.get(0).getRouterId() + sequences.get(0).getId() + checkList.get(j).getOptName();
@@ -389,7 +389,7 @@ public class RouterCheckController extends BaseController {
                         queryWrapper2.eq("opt_name", qualityList.get(j).getOptName().trim());
                         queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
-                        queryWrapper.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
+                        queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
 
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
                         if (sequences.size() > 1) {
