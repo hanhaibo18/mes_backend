@@ -82,6 +82,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         System.out.println(resultStr);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
+        System.out.println(tmpStr);
         //获取工厂ID
         return xmlAnalysis(tmpStr, orderSynchronizationDto);
     }
@@ -207,16 +208,17 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                             order.setEndTime(format.parse(itemNext.elementTextTrim("GLTRP")));
 //                            order.setInChargeOrg(itemNext.elementTextTrim("DISPO"));
                             order.setInChargeOrg(itemNext.elementTextTrim("WERKS"));
+                            order.setController(itemNext.elementTextTrim("DISPO"));
                             boolean orderJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getOrderSn());
-                            boolean inChargeOrgJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getInChargeOrg());
-                            if (!orderJudge || !inChargeOrgJudge) {
+                            boolean controllerJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getController());
+                            if (!orderJudge || !controllerJudge) {
                                 boolean orderSnData = !orderJudge && orderSynchronizationDto.getOrderSn().equals(order.getOrderSn());
-                                boolean inChargeOrgData = !inChargeOrgJudge && orderSynchronizationDto.getInChargeOrg().equals(order.getInChargeOrg());
+                                boolean inChargeOrgData = !controllerJudge && (orderSynchronizationDto.getController().equals(order.getController()));
                                 if (orderSnData && inChargeOrgData) {
                                     list.add(order);
                                     continue;
                                 }
-                                if (orderSnData && inChargeOrgJudge) {
+                                if (orderSnData && controllerJudge) {
                                     list.add(order);
                                     continue;
                                 }

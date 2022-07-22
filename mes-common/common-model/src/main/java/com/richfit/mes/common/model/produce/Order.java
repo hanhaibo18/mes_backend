@@ -13,6 +13,7 @@ import java.util.Date;
 @Data
 public class Order extends BaseEntity<Order> {
 
+    private static final long serialVersionUID = 4043017035595029309L;
     private String orderSn;
     private String materialCode;
     private int orderNum;
@@ -39,4 +40,8 @@ public class Order extends BaseEntity<Order> {
 
     @TableField(exist = false)  //已交数量
     private int storeNum;
+
+    @TableField(exist = false)  //控制着
+    private String controller;
+
 }

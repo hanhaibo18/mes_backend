@@ -21,7 +21,7 @@ public class OrdersSynchronizationDto {
     /**
      * 控制者
      */
-    private String inChargeOrg;
+    private String controller;
     /**
      * 订单编号
      */
