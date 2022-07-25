@@ -2,7 +2,7 @@ server:
   port: ${SERVER_PORT:8015}
 spring:
   application:
-    name: produce-service
+    name: erp-service
   cloud:
     nacos:
       username: nacos

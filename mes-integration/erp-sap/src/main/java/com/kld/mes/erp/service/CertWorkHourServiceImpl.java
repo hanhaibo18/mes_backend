@@ -40,10 +40,13 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
     @Override
     public boolean sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
 
+        //生成报文主体
         Zc80Ppif024 zc80Ppif024 = generateRequstBody(trackItemList, erpCode, orderNo, qty, unit);
 
+        //获取调用服务接口类实例
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
 
+        //发起接口调用
         Zc80Ppif024Response zc80Ppif024Response = (Zc80Ppif024Response) webServiceTemplate
                 .marshalSendAndReceive(URL, zc80Ppif024);
 

@@ -13,9 +13,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication(scanBasePackages = "com.kld.mes", exclude = {DataSourceAutoConfiguration.class})
 @EnableDiscoveryClient
 @EnableFeignClients
-public class ErpSapIntegreationApplication {
+public class ErpSapIntegrationApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ErpSapIntegreationApplication.class, args);
+        SpringApplication.run(ErpSapIntegrationApplication.class, args);
     }
 }
