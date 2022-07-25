@@ -62,7 +62,7 @@ public class AttachmentController extends BaseController {
                 attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 attachment.setAttachType(FileUtils.getFilenameExtension(file.getOriginalFilename()));
                 attachment.setAttachSize(String.valueOf(file.getSize()));
-                if (!StringUtils.isNullOrEmpty(attachment.getAttachName())) {
+                if (StringUtils.isNullOrEmpty(attachment.getAttachName())) {
                     attachment.setAttachName(file.getOriginalFilename());
                 }
                 attachment = attachmentService.upload(attachment, file.getBytes());

@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProductionBom;
 import org.apache.ibatis.annotations.Param;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -89,4 +90,15 @@ public interface ProductionBomService extends IService<ProductionBom> {
      * @return: IPage<ProductionBom>
      **/
     IPage<ProductionBom> getProductionBomPage(String drawingNo, String tenantId, String branchCode, String order, String orderCol, int page, int limit);
+
+    /**
+     * 功能描述: 导出BOM
+     *
+     * @param idList
+     * @param rsp
+     * @Author: xinYu.hou
+     * @Date: 2022/7/22 10:39
+     * @return: void
+     **/
+    void exportExcel(List<String> idList, HttpServletResponse rsp);
 }

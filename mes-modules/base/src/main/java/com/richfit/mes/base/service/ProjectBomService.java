@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +68,6 @@ public interface ProjectBomService extends IService<ProjectBom> {
      **/
     List<ProjectBom> getProjectBomList(String drawingNo, String tenantId, String branchCode);
 
-    //TODO: 零件增删改查接口,提供对外的根据项目BOM查询条件 查询所有零件
 
     /**
      * 功能描述: 根据工作号查询项目BOM零件
@@ -141,14 +142,24 @@ public interface ProjectBomService extends IService<ProjectBom> {
     CommonResult<Map<String, String>> getPartName(String partId);
 
     /**
-     * 功能描述: 装配生成产品编号 验证是否是H级别图号
+     * 功能描述: 查询并返回能生成编号的对象
      *
-     * @param id
-     * @param drawingNo
-     * @param level
+     * @param workPlanNo
+     * @param branchCode
      * @Author: xinYu.hou
-     * @Date: 2022/7/19 16:06
+     * @Date: 2022/7/21 18:33
      * @return: Boolean
      **/
-    Boolean queryBom(String id, String drawingNo, String level);
+    ProjectBom queryBom(String workPlanNo, String branchCode);
+
+    /**
+     * 功能描述: 导出BOM
+     *
+     * @param idList
+     * @param rsp
+     * @Author: xinYu.hou
+     * @Date: 2022/7/21 9:58
+     * @return: void
+     **/
+    void exportExcel(List<String> idList, HttpServletResponse rsp) throws IOException;
 }

@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.IErrorCode;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -17,7 +18,9 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.CodeRuleController;
 import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +38,12 @@ import java.util.stream.Collectors;
 @Transactional
 public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead> implements TrackHeadService {
 
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private TrackAssemblyService trackAssemblyService;
 
     @Autowired
     private LineStoreMapper lineStoreMapper;
@@ -213,11 +222,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     }
                 } else {
                     trackHeadSingleton(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
-
-                    //当匹配计划时更新计划状态
-                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                        planService.planData(trackHead.getWorkPlanId());
-                    }
+                }
+                //当匹配计划时更新计划状态
+                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                    planService.planData(trackHead.getWorkPlanId());
                 }
             }
 //            else if (trackHead.getTrackType().equals("1")) { //批次
@@ -273,6 +281,27 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 //                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
 //                }
 //            }
+
+            //当跟单中存在bom
+            if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId()) && !trackHead.getProjectBomId().equals(trackHeadOld.getProjectBomId())) {
+                //删除历史数据
+                QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("track_head_id", trackHead.getId());
+                queryWrapper.eq("branch_code", trackHead.getBranchCode());
+                queryWrapper.eq("tenant_id", trackHead.getTenantId());
+                trackAssemblyService.remove(queryWrapper);
+                //添加新的bom
+                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
+                for (TrackAssembly trackAssembly : trackAssemblyList) {
+                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    trackAssembly.setCreateTime(new Date());
+                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    trackAssembly.setModifyTime(new Date());
+                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    trackAssemblyService.save(trackAssembly);
+                }
+            }
             trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHead.setModifyTime(new Date());
             int bool = trackHeadMapper.updateById(trackHead);
@@ -315,7 +344,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //当跟单中存在bom
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
-
+                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
+                for (TrackAssembly trackAssembly : trackAssemblyList) {
+                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    trackAssembly.setCreateTime(new Date());
+                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    trackAssembly.setModifyTime(new Date());
+                    trackAssembly.setBranchCode(trackHead.getBranchCode());
+                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    trackAssemblyService.save(trackAssembly);
+                }
             }
 
             //只有机加进行跟单编码校验
@@ -414,12 +453,44 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
-            //codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), "2022", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
         return true;
+    }
+
+    List<TrackAssembly> pojectBomList(TrackHead trackHead) {
+        List<TrackAssembly> trackAssemblyList = new ArrayList<>();
+        if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomId())) {
+            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHead.getProjectBomId());
+            Map<String, String> group = new HashMap<>();
+            if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomGroup())) {
+                group = JSON.parseObject(trackHead.getProjectBomGroup(), Map.class);
+            }
+            for (ProjectBom pb : projectBomList) {
+                TrackAssembly trackAssembly = new TrackAssembly();
+                trackAssembly.setGrade(pb.getGrade());
+                trackAssembly.setName(pb.getProdDesc());
+                trackAssembly.setDrawingNo(pb.getDrawingNo());
+                trackAssembly.setMaterialNo(pb.getMaterialNo());
+                trackAssembly.setTrackHeadId(trackHead.getId());
+                trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
+                trackAssembly.setIsKeyPart(pb.getIsKeyPart());
+                trackAssembly.setTrackType(pb.getTrackType());
+                trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
+                if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                    if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                        trackAssemblyList.add(trackAssembly);
+                    }
+                } else {
+                    trackAssemblyList.add(trackAssembly);
+                }
+
+            }
+        }
+        return trackAssemblyList;
     }
 
     @Override
@@ -434,6 +505,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
             int result = trackHeadMapper.deleteBatchIds(ids);
             if (result > 0) {
+                //删除工序垃圾数据，避免数据库垃圾数据，料单数据处理
                 for (String id : ids) {
                     Map<String, Object> map = new HashMap<>();
                     map.put("track_head_id", id);
@@ -441,6 +513,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
                     for (TrackHeadRelation relation : relations) {
                         if (relation.getType().equals("0")) { //输入物料
+                            //回滚数量
                             lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
                         } else if (relation.getType().equals("1")) { //输出物料
                             lineStoreService.removeById(relation.getLsId());
@@ -448,16 +521,25 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         trackHeadRelationMapper.deleteById(relation.getId());
                     }
                 }
-
-                for (TrackHead head : trackHeads) {
-                    planService.planData(head.getWorkPlanId());
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("work_plan_no", head.getWorkPlanNo());
-                    map.put("tenant_id", head.getTenantId());
-                    List<TrackHead> list = trackHeadMapper.selectByMap(map);
-                    if (list.size() == 0) {
-                        planService.setPlanStatusNew(head.getWorkPlanNo(), head.getTenantId());
+                for (TrackHead trackHead : trackHeads) {
+                    //删除bom垃圾数据，避免数据库垃圾数据
+                    QueryWrapper<TrackAssembly> queryWrapperTrackAssembly = new QueryWrapper<>();
+                    queryWrapperTrackAssembly.eq("track_head_id", trackHead.getId());
+                    queryWrapperTrackAssembly.eq("branch_code", trackHead.getBranchCode());
+                    queryWrapperTrackAssembly.eq("tenant_id", trackHead.getTenantId());
+                    trackAssemblyService.remove(queryWrapperTrackAssembly);
+                    //处理计划细节状态等
+                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        planService.planData(trackHead.getWorkPlanId());
                     }
+                    //取消跟单关联
+                    QueryWrapper<LineStore> queryWrapperLineStore = new QueryWrapper<>();
+                    queryWrapperLineStore.eq("track_no", trackHead.getTrackNo());
+                    queryWrapperLineStore.eq("branch_code", trackHead.getBranchCode());
+                    queryWrapperLineStore.eq("tenant_id", trackHead.getTenantId());
+                    LineStore lineStore = new LineStore();
+                    lineStore.setTrackNo("");
+                    lineStoreService.update(lineStore, queryWrapperLineStore);
                 }
                 return true;
             }

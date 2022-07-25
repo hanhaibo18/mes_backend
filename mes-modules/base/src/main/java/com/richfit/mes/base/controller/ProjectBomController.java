@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -168,7 +170,15 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "level", value = "级别", paramType = "query", dataType = "String"),
     })
     @GetMapping("/queryBom")
-    public Boolean queryBom(String id, String drawingNo, String level) {
-        return projectBomService.queryBom(id, drawingNo, level);
+    public ProjectBom queryBom(String workPlanNo, String branchCode) {
+        return projectBomService.queryBom(workPlanNo, branchCode);
+    }
+
+
+    @ApiOperation(value = "导出BOM到Excel", notes = "导出BOM到Excel")
+    @ApiImplicitParam(name = "idList", value = "idList", paramType = "query", allowMultiple = true, dataType = "String")
+    @PostMapping("/exportExcel")
+    public void exportExcel(@RequestBody List<String> idList, HttpServletResponse rsp) throws IOException {
+        projectBomService.exportExcel(idList, rsp);
     }
 }

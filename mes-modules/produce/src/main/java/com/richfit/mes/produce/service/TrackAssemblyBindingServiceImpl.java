@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -49,8 +50,10 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         if (1 == isBinding) {
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() + 1);
             if (null != trackHead && StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
-                Boolean bom = baseServiceClient.queryBom(trackHead.getProjectBomId(), trackAssembly.getDrawingNo(), "H");
-                if (Boolean.TRUE.equals(bom)) {
+                ProjectBom projectBom = baseServiceClient.queryBom(trackHead.getProjectBomWork(), trackAssembly.getBranchCode());
+                if (projectBom != null) {
+                    trackHead.setProductNo(projectBom.getDrawingNo() + " " + assemblyBinding.getNumber());
+                } else {
                     trackHead.setProductNo(trackHead.getDrawingNo() + " " + assemblyBinding.getNumber());
                 }
             }

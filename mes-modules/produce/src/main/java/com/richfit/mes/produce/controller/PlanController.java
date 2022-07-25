@@ -99,23 +99,23 @@ public class PlanController extends BaseController {
             e.printStackTrace();
         }
         QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getOrderNo())) {
+            queryWrapper.like("order_no", planDto.getOrderNo());
+        }
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getProjCode())) {
-            queryWrapper.eq("proj_code", planDto.getProjCode());
+            queryWrapper.like("proj_code", planDto.getProjCode());
         }
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getWorkNo())) {
-            queryWrapper.eq("work_no", planDto.getWorkNo());
+            queryWrapper.like("work_no", planDto.getWorkNo());
         }
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getDrawNo())) {
-            queryWrapper.eq("draw_no", planDto.getDrawNo());
+            queryWrapper.like("draw_no", planDto.getDrawNo());
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime()) || !com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
-            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime())) {
-                planDto.setStartTime("1990-01-01 00:00:00");
-            }
-            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
-                planDto.setEndTime("2100-01-01 00:00:00");
-            }
-            queryWrapper.between("start_time", planDto.getStartTime(), planDto.getEndTime());
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime())) {
+            queryWrapper.ge("start_time", planDto.getStartTime());
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
+            queryWrapper.le("end_time", planDto.getEndTime());
         }
         if (planDto.getStatus() != -1) {
             queryWrapper.eq("status", planDto.getStatus());

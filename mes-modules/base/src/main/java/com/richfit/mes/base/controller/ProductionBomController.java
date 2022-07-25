@@ -393,6 +393,11 @@ public class ProductionBomController extends BaseController {
                 } else if ("批次".equals(item.getTrackType())) {
                     item.setTrackType("1");
                 }
+                if ("否".equals(item.getIsNumFrom())) {
+                    item.setIsCheck("0");
+                } else if ("是".equals(item.getIsNumFrom())) {
+                    item.setIsCheck("1");
+                }
                 if ("否".equals(item.getIsCheck())) {
                     item.setIsCheck("0");
                 } else if ("是".equals(item.getIsCheck())) {
@@ -406,6 +411,11 @@ public class ProductionBomController extends BaseController {
                 if ("否".equals(item.getIsNeedPicking())) {
                     item.setIsNeedPicking("0");
                 } else if ("是".equals(item.getIsNeedPicking())) {
+                    item.setIsNeedPicking("1");
+                }
+                if ("否".equals(item.getIsKeyPart())) {
+                    item.setIsNeedPicking("0");
+                } else if ("是".equals(item.getIsKeyPart())) {
                     item.setIsNeedPicking("1");
                 }
             });
@@ -423,5 +433,13 @@ public class ProductionBomController extends BaseController {
         } catch (Exception e) {
             return CommonResult.failed(BOM_IMPORT_EXCEL_EXCEPTION_MESSAGE + e.getMessage());
         }
+    }
+
+
+    @ApiOperation(value = "导出BOM到Excel", notes = "导出BOM到Excel")
+    @ApiImplicitParam(name = "idList", value = "idList", paramType = "query", allowMultiple = true, dataType = "List<String>")
+    @PostMapping("/newExportExcel")
+    public void newExportExcel(@RequestBody List<String> idList, HttpServletResponse rsp) {
+        productionBomService.exportExcel(idList, rsp);
     }
 }

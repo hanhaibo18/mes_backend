@@ -39,4 +39,14 @@ public interface PublicService {
      * @return: Boolean
      **/
     Boolean activationProcess(String trackItemId);
+
+    /**
+     * 功能描述: 第三方下工序激活
+     *
+     * @param trackHeadId
+     * @Author: xinYu.hou
+     * @Date: 2022/7/22 9:30
+     * @return: Boolean
+     **/
+    Boolean thirdPartyAction(String trackHeadId);
 }
