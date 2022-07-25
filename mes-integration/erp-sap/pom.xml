@@ -80,22 +80,7 @@
             <version>1.9.6</version>
         </dependency>
     </dependencies>
-    <!-- tag::profile -->
-    <profiles>
-        <profile>
-            <id>java11</id>
-            <activation>
-                <jdk>[11,)</jdk>
-            </activation>
 
-            <dependencies>
-                <dependency>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-runtime</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
     <!-- end::profile -->
     <build>
         <plugins>
@@ -124,7 +109,7 @@
                     <schemas>
                         <schema>
                             <url>
-                                file:///D:/PS_ZC80_PPIF026.wsdl
+                                src/main/resources/wsdl/PS_ZC80_PPIF026.wsdl
                             </url>
                         </schema>
                     </schemas>

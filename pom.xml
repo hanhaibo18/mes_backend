@@ -21,6 +21,7 @@
         <module>mes-gateway</module>
         <module>mes-auth</module>
         <module>mes-monitor</module>
+        <module>mes-integration</module>
     </modules>
 
     <properties>
@@ -199,6 +200,11 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
