@@ -41,7 +41,6 @@ public class Order extends BaseEntity<Order> {
     @TableField(exist = false)  //已交数量
     private int storeNum;
 
-    @TableField(exist = false)  //控制着
     private String controller;
 
 }

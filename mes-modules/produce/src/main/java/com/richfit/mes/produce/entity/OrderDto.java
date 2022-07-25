@@ -8,13 +8,15 @@ import lombok.Data;
  * @Date: 2020/8/10 18:14
  */
 @Data
-public class OrderDto  extends BasePageDto<OrderDto> {
+public class OrderDto extends BasePageDto<OrderDto> {
 
     private String orderSn;
 
     private String tenantId;
 
     private String branchCode;
+
+    private String controller;
 
     private String status;
 
