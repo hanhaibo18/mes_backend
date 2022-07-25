@@ -137,4 +137,22 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     @TableField(exist = false)
     @ApiModelProperty(value = "绑定信息", dataType = "List<TrackAssemblyBinding>")
     List<TrackAssemblyBinding> assemblyBinding;
+
+    /**
+     * 是否齐套检查
+     */
+    @ApiModelProperty(value = "是否齐套检查", dataType = "String")
+    private String isCheck;
+
+    /**
+     * 是否仓储领料
+     */
+    @ApiModelProperty(value = "是否仓储领料", dataType = "String")
+    private String isNeedPicking;
+
+    /**
+     * 实物配送区分
+     */
+    @ApiModelProperty(value = "实物配送区分", dataType = "String")
+    private String isEdgeStore;
 }

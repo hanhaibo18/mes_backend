@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.produce.entity.AssembleKittingVo;
 
 import java.util.List;
 
@@ -46,4 +47,15 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @return: Boolean
      **/
     Boolean unbindComplete(List<String> idList);
+
+    /**
+     * 功能描述: 齐套性检查
+     *
+     * @param trackHeadId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/7/22 16:59
+     * @return: List<AssembleKittingVo>
+     **/
+    List<AssembleKittingVo> kittingExamine(String trackHeadId, String branchCode);
 }

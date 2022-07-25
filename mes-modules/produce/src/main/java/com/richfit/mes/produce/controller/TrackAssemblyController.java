@@ -6,6 +6,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
+import com.richfit.mes.produce.entity.AssembleKittingVo;
 import com.richfit.mes.produce.entity.BindingDto;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
@@ -240,6 +241,16 @@ public class TrackAssemblyController extends BaseController {
     @PutMapping("/unbindComplete")
     public CommonResult<Boolean> unbindComplete(@RequestBody List<String> idList) {
         return CommonResult.success(trackAssemblyService.unbindComplete(idList));
+    }
+
+    @ApiOperation(value = "齐套性检查", notes = "齐套性检查")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, dataType = "String", paramType = "query"),
+    })
+    @GetMapping("/kittingExamine")
+    public CommonResult<List<AssembleKittingVo>> kittingExamine(String trackHeadId, String branchCode) {
+        return CommonResult.success(trackAssemblyService.kittingExamine(trackHeadId, branchCode));
     }
 
 }

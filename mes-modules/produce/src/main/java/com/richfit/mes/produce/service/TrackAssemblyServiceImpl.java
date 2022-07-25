@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -11,11 +12,16 @@ import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
+import com.richfit.mes.produce.entity.AssembleKittingVo;
+import io.netty.util.internal.StringUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 马峰
@@ -106,4 +112,54 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         }
         return isSucceed;
     }
+
+    @Override
+    public List<AssembleKittingVo> kittingExamine(String trackHeadId, String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        queryWrapper.notIn("is_check", "1");
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", tenantId);
+        List<TrackAssembly> trackAssemblyList = this.list(queryWrapper);
+        List<AssembleKittingVo> list = new ArrayList<>();
+        for (TrackAssembly trackAssembly : trackAssemblyList) {
+            AssembleKittingVo assemble = new AssembleKittingVo();
+            assemble.setDrawingNo(trackAssembly.getDrawingNo());
+            assemble.setMaterialNo(trackAssembly.getMaterialNo());
+            assemble.setMaterialName(trackAssembly.getName());
+            //需要安装数量
+            assemble.setNeedNumber(trackAssembly.getNumber());
+            //安装数量
+            assemble.setInstallNumber(trackAssembly.getNumberInstall());
+            //线边库
+            Integer integer = lineStoreMapper.selectTotalNum(trackAssembly.getMaterialNo(), branchCode, tenantId);
+            assemble.setRepertoryNumber(integer);
+            //可配送数量 WMS库存数量
+            assemble.setDeliverableQuantity(queryMaterialCount(trackAssembly.getMaterialNo()));
+            //已领取数量
+            assemble.setAcquireNumber(0);
+            //缺件数量
+            assemble.setShortQuantity(trackAssembly.getNumber() - trackAssembly.getNumberInstall());
+            assemble.setIsNeedPicking(trackAssembly.getIsNeedPicking());
+            assemble.setIsEdgeStore(trackAssembly.getIsEdgeStore());
+            assemble.setIsKeyPart(trackAssembly.getIsKeyPart());
+            list.add(assemble);
+        }
+        return list;
+    }
+
+    private int queryMaterialCount(String materialNo) {
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("wstr", materialNo);
+        params.put("page", 1);
+        params.put("token", "66da1b74a0f22adadc4a865e00435e72");
+        String url = "http://10.134.100.21:908/getapi.php";
+        String number = HttpUtil.get(url, params);
+        if (StringUtil.isNullOrEmpty(number)) {
+            return 0;
+        }
+        return Integer.parseInt(number);
+    }
+
 }
