@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import org.apache.ibatis.annotations.Mapper;
@@ -68,4 +69,8 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
      **/
     @Select("SELECT assign.state FROM v_produce_assign assign WHERE assign.ti_id = #{trackItemId}")
     Integer isDispatching(@Param("trackItemId") String trackItemId);
+
+
+    IPage<TrackHead> getPageTrackHeadByType(Page page, @Param(Constants.WRAPPER) Wrapper<TrackHead> wrapper);
+
 }

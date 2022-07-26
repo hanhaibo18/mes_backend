@@ -445,6 +445,66 @@ public class TrackAssignController extends BaseController {
         }
     }
 
+
+    @ApiOperation(value = "按类型查询派工跟单", notes = "按类型查询派工跟单")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "routerNo", value = "图号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = "排序类型", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query")
+    })
+    @GetMapping("/getPageTrackHeadByType")
+    public CommonResult<IPage<TrackHead>> getPageTrackHeadByType(int page, int limit, String
+            routerNo, String
+                                                                         trackNo, String
+                                                                         prodNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
+
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+
+        if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
+            queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null )");
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            calendar.setTime(sdf.parse(endTime));
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "') or a.modify_time is null)");
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("a.branch_code", branchCode);
+        }
+        if (!StringUtils.isNullOrEmpty(prodNo)) {
+            queryWrapper.like("a.product_no", prodNo);
+        }
+        queryWrapper.exists("select * from produce_track_item b where a.id = b.track_head_id and b.opt_type='" + optType + "' and b.is_current=1 and b.is_operation_complete = 0");
+
+        queryWrapper.in("a.status", "0,1".split(","));
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.eq("a.track_num", trackNo);
+        }
+        if (!StringUtils.isNullOrEmpty(routerNo)) {
+            queryWrapper.eq("a.router_no", routerNo);
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if (order.equals("desc")) {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                } else if (order.equals("asc")) {
+                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+            }
+        } else {
+            queryWrapper.orderByDesc("a.modify_time");
+        }
+        return CommonResult.success(trackAssignService.getPageTrackHeadByType(new Page<TrackItem>(page, limit), queryWrapper), "操作成功！");
+
+    }
+
+
     @ApiOperation(value = "删除派工", notes = "根据id删除派工")
     @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "query")
     @PostMapping("/delete")

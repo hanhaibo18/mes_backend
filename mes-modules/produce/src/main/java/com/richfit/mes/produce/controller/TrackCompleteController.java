@@ -121,10 +121,10 @@ public class TrackCompleteController extends BaseController {
 
             //外协报工判断过滤，外协报工类型是4
 
-            if ("4".equals(optType)) {
-                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type = 3)");
+            if (!StringUtils.isNullOrEmpty(optType)) {
+                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type = '" + optType + "')");
             } else {
-                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type <> 3)");
+                queryWrapper.apply("ti_id in (select id from produce_track_item where (opt_type ='0' or  opt_type ='1') )");
             }
             // todo 如果是管理员或租户管理员，那么不过滤完工用户ID
             if (null != SecurityUtils.getCurrentUser()) {

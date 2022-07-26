@@ -237,4 +237,17 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     }
 
 
+    /**
+     * 功能描述: 按类型获取待派工跟单
+     *
+     * @Author: mafeng
+     * @Date: 2022/7/26 09:00
+     * @return: IPage<TrackHead>
+     **/
+    public IPage<TrackHead> getPageTrackHeadByType(Page page, QueryWrapper<TrackHead> qw) {
+        IPage<TrackHead> list = trackAssignMapper.getPageTrackHeadByType(page, qw);
+        return list;
+    }
+
+
 }

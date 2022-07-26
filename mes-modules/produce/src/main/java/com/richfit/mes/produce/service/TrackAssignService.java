@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
@@ -53,5 +54,14 @@ public interface TrackAssignService extends IService<Assign> {
      * @return: List<KittingVo>
      **/
     List<KittingVo> kittingExamine(String trackHeadId);
+
+    /**
+     * 功能描述: 按类型获取待派工跟单
+     *
+     * @Author: mafeng
+     * @Date: 2022/7/26 09:00
+     * @return: IPage<TrackHead>
+     **/
+    IPage<TrackHead> getPageTrackHeadByType(Page page, QueryWrapper<TrackHead> qw);
 
 }

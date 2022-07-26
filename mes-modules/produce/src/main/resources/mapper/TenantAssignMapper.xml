@@ -41,4 +41,11 @@
         order by u.priority desc,u.modify_time desc
     </select>
 
+
+    <select id="getPageTrackHeadByType" resultType="com.richfit.mes.common.model.produce.TrackHead">
+        <!-- 设置别名 -->
+        select a.* from produce_track_head a
+        ${ew.customSqlSegment}
+    </select>
+
 </mapper>
