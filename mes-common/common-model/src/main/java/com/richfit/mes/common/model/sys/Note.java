@@ -8,11 +8,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import javax.xml.soap.Text;
 import java.util.List;
 
 /**
  * sys_note
+ *
  * @author
  */
 @Data
