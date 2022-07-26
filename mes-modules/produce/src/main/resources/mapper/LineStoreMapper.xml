@@ -111,15 +111,15 @@
 
     <!-- 查询装配库存 跟单已装量-->
     <select id="selectAssemblyNum" resultType="com.richfit.mes.common.model.produce.store.LineStoreSumZp">
-        select sub_comp_draw_no drawing_no,
+        select drawing_no drawing_no,
         sum(ifnull(number,0)) assembly_number
         from produce_track_assembly
         where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
-                and sub_comp_draw_no like CONCAT('%',#{param.drawingNo},'%')
+                and drawing_no like CONCAT('%',#{param.drawingNo},'%')
             </if>
         </trim>
-        group by sub_comp_draw_no
+        group by drawing_no
     </select>
 </mapper>
