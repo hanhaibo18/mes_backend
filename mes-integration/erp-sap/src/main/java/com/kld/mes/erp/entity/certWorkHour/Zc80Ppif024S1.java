@@ -1,25 +1,18 @@
-//
-// 此文件是由 JavaTM Architecture for XML Binding (JAXB) 引用实现 v2.3.0 生成的
-// 请访问 <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
-// 在重新编译源模式时, 对此文件的所有修改都将丢失。
-// 生成时间: 2022.07.21 时间 11:02:35 AM CST 
-//
-
 
 package com.kld.mes.erp.entity.certWorkHour;
 
+import java.math.BigDecimal;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import java.math.BigDecimal;
 
 
 /**
  * <p>Zc80ppif024S1 complex type的 Java 类。
- *
+ * 
  * <p>以下模式片段指定包含在此类中的预期内容。
- *
+ * 
  * <pre>
  * &lt;complexType name="Zc80ppif024S1"&gt;
  *   &lt;complexContent&gt;
@@ -51,30 +44,32 @@ import java.math.BigDecimal;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
+ * 
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Zc80ppif024S1", propOrder = {
-        "werks",
-        "aufnr",
-        "vornr",
-        "lmnga",
-        "xmnga",
-        "meinh",
-        "ile01",
-        "ism01",
-        "ile02",
-        "ism02",
-        "ile03",
-        "ism03",
-        "ile04",
-        "ism04",
-        "ile05",
-        "ism05",
-        "ile06",
-        "ism06",
-        "finConf",
-        "budat",
-        "zflag"
+    "werks",
+    "aufnr",
+    "vornr",
+    "lmnga",
+    "xmnga",
+    "meinh",
+    "ile01",
+    "ism01",
+    "ile02",
+    "ism02",
+    "ile03",
+    "ism03",
+    "ile04",
+    "ism04",
+    "ile05",
+    "ism05",
+    "ile06",
+    "ism06",
+    "finConf",
+    "budat",
+    "zflag"
 })
 public class Zc80Ppif024S1 {
 
@@ -123,9 +118,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取werks属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getWerks() {
         return werks;
@@ -133,9 +130,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置werks属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setWerks(String value) {
         this.werks = value;
@@ -143,9 +142,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取aufnr属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getAufnr() {
         return aufnr;
@@ -153,9 +154,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置aufnr属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setAufnr(String value) {
         this.aufnr = value;
@@ -163,9 +166,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取vornr属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getVornr() {
         return vornr;
@@ -173,9 +178,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置vornr属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setVornr(String value) {
         this.vornr = value;
@@ -183,9 +190,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取lmnga属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getLmnga() {
         return lmnga;
@@ -193,9 +202,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置lmnga属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setLmnga(BigDecimal value) {
         this.lmnga = value;
@@ -203,9 +214,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取xmnga属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getXmnga() {
         return xmnga;
@@ -213,9 +226,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置xmnga属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setXmnga(BigDecimal value) {
         this.xmnga = value;
@@ -223,9 +238,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取meinh属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getMeinh() {
         return meinh;
@@ -233,9 +250,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置meinh属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setMeinh(String value) {
         this.meinh = value;
@@ -243,9 +262,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ile01属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getIle01() {
         return ile01;
@@ -253,9 +274,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ile01属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setIle01(String value) {
         this.ile01 = value;
@@ -263,9 +286,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ism01属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getIsm01() {
         return ism01;
@@ -273,9 +298,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ism01属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setIsm01(BigDecimal value) {
         this.ism01 = value;
@@ -283,9 +310,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ile02属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getIle02() {
         return ile02;
@@ -293,9 +322,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ile02属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setIle02(String value) {
         this.ile02 = value;
@@ -303,9 +334,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ism02属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getIsm02() {
         return ism02;
@@ -313,9 +346,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ism02属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setIsm02(BigDecimal value) {
         this.ism02 = value;
@@ -323,9 +358,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ile03属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getIle03() {
         return ile03;
@@ -333,9 +370,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ile03属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setIle03(String value) {
         this.ile03 = value;
@@ -343,9 +382,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ism03属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getIsm03() {
         return ism03;
@@ -353,9 +394,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ism03属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setIsm03(BigDecimal value) {
         this.ism03 = value;
@@ -363,9 +406,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ile04属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getIle04() {
         return ile04;
@@ -373,9 +418,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ile04属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setIle04(String value) {
         this.ile04 = value;
@@ -383,9 +430,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ism04属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getIsm04() {
         return ism04;
@@ -393,9 +442,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ism04属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setIsm04(BigDecimal value) {
         this.ism04 = value;
@@ -403,9 +454,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ile05属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getIle05() {
         return ile05;
@@ -413,9 +466,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ile05属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setIle05(String value) {
         this.ile05 = value;
@@ -423,9 +478,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ism05属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getIsm05() {
         return ism05;
@@ -433,9 +490,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ism05属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setIsm05(BigDecimal value) {
         this.ism05 = value;
@@ -443,9 +502,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ile06属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getIle06() {
         return ile06;
@@ -453,9 +514,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ile06属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setIle06(String value) {
         this.ile06 = value;
@@ -463,9 +526,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取ism06属性的值。
-     *
-     * @return possible object is
-     * {@link BigDecimal }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
      */
     public BigDecimal getIsm06() {
         return ism06;
@@ -473,9 +538,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置ism06属性的值。
-     *
-     * @param value allowed object is
-     *              {@link BigDecimal }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
      */
     public void setIsm06(BigDecimal value) {
         this.ism06 = value;
@@ -483,9 +550,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取finConf属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getFinConf() {
         return finConf;
@@ -493,9 +562,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置finConf属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setFinConf(String value) {
         this.finConf = value;
@@ -503,9 +574,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取budat属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getBudat() {
         return budat;
@@ -513,9 +586,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置budat属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setBudat(String value) {
         this.budat = value;
@@ -523,9 +598,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 获取zflag属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getZflag() {
         return zflag;
@@ -533,9 +610,11 @@ public class Zc80Ppif024S1 {
 
     /**
      * 设置zflag属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setZflag(String value) {
         this.zflag = value;
