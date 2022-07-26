@@ -1,5 +1,6 @@
 package com.richfit.mes.common.core.config;
 
+import com.google.common.base.Predicates;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +35,8 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.richfit.mes"))
+                .apis(Predicates.or(RequestHandlerSelectors.basePackage("com.richfit.mes"),
+                        RequestHandlerSelectors.basePackage("com.kld.mes")))
                 .paths(PathSelectors.any())
                 .build()
                 .securitySchemes(securitySchemes())
@@ -49,14 +51,15 @@ public class SwaggerConfig {
                 .version("1.0")
                 .build();
     }
+
     private List<ApiKey> securitySchemes() {
-        List<ApiKey> apiKeyList= new ArrayList();
+        List<ApiKey> apiKeyList = new ArrayList();
         apiKeyList.add(new ApiKey("Authorization", "Authorization", "header"));
         return apiKeyList;
     }
 
     private List<SecurityContext> securityContexts() {
-        List<SecurityContext> securityContexts=new ArrayList<>();
+        List<SecurityContext> securityContexts = new ArrayList<>();
         securityContexts.add(
                 SecurityContext.builder()
                         .securityReferences(defaultAuth())
@@ -69,7 +72,7 @@ public class SwaggerConfig {
         AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
         authorizationScopes[0] = authorizationScope;
-        List<SecurityReference> securityReferences=new ArrayList<>();
+        List<SecurityReference> securityReferences = new ArrayList<>();
         securityReferences.add(new SecurityReference("Authorization", authorizationScopes));
         return securityReferences;
     }
