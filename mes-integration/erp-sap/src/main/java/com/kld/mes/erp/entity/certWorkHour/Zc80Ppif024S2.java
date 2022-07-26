@@ -1,10 +1,3 @@
-//
-// 此文件是由 JavaTM Architecture for XML Binding (JAXB) 引用实现 v2.3.0 生成的
-// 请访问 <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
-// 在重新编译源模式时, 对此文件的所有修改都将丢失。
-// 生成时间: 2022.07.21 时间 11:02:35 AM CST 
-//
-
 
 package com.kld.mes.erp.entity.certWorkHour;
 
@@ -16,9 +9,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Zc80ppif024S2 complex type的 Java 类。
- *
+ * 
  * <p>以下模式片段指定包含在此类中的预期内容。
- *
+ * 
  * <pre>
  * &lt;complexType name="Zc80ppif024S2"&gt;
  *   &lt;complexContent&gt;
@@ -36,16 +29,18 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
+ * 
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Zc80ppif024S2", propOrder = {
-        "aufnr",
-        "vornr",
-        "zflag",
-        "rueck",
-        "rmzhl",
-        "zreturnType",
-        "zreturnMsg"
+    "aufnr",
+    "vornr",
+    "zflag",
+    "rueck",
+    "rmzhl",
+    "zreturnType",
+    "zreturnMsg"
 })
 public class Zc80Ppif024S2 {
 
@@ -66,9 +61,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 获取aufnr属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getAufnr() {
         return aufnr;
@@ -76,9 +73,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 设置aufnr属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setAufnr(String value) {
         this.aufnr = value;
@@ -86,9 +85,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 获取vornr属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getVornr() {
         return vornr;
@@ -96,9 +97,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 设置vornr属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setVornr(String value) {
         this.vornr = value;
@@ -106,9 +109,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 获取zflag属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getZflag() {
         return zflag;
@@ -116,9 +121,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 设置zflag属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setZflag(String value) {
         this.zflag = value;
@@ -126,9 +133,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 获取rueck属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getRueck() {
         return rueck;
@@ -136,9 +145,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 设置rueck属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setRueck(String value) {
         this.rueck = value;
@@ -146,9 +157,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 获取rmzhl属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getRmzhl() {
         return rmzhl;
@@ -156,9 +169,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 设置rmzhl属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setRmzhl(String value) {
         this.rmzhl = value;
@@ -166,9 +181,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 获取zreturnType属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getZreturnType() {
         return zreturnType;
@@ -176,9 +193,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 设置zreturnType属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setZreturnType(String value) {
         this.zreturnType = value;
@@ -186,9 +205,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 获取zreturnMsg属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getZreturnMsg() {
         return zreturnMsg;
@@ -196,9 +217,11 @@ public class Zc80Ppif024S2 {
 
     /**
      * 设置zreturnMsg属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setZreturnMsg(String value) {
         this.zreturnMsg = value;
