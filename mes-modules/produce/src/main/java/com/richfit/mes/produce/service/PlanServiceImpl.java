@@ -367,6 +367,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     deliveryNum += trackHead.getNumber();
                 } else if ("0".equals(trackHead.getStatus())) {
                     //未派工
+//                    for (TrackItem trackItem : trackItemList) {
+//                        if (trackItem.getIsOperationComplete() == 0) {
+//                            optProcessNumber++;
+//                        }
+//                    }
+                    //在制
+                    System.out.println("---------------在制");
+                    processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
                         if (trackItem.getIsOperationComplete() == 0) {
                             optProcessNumber++;
