@@ -726,7 +726,7 @@ public class TrackCompleteController extends BaseController {
         //判断同工序序号的其他工序是否已完成
         for (int i = 0; i < items.size(); i++) {
             if (curItem.getOptSequence() == items.get(i).getOptSequence() && !items.get(i).getId().equals(curItem.getId())) {
-                if (!items.get(i).getIsFinalComplete().equals("1")) {
+                if (!StringUtils.isNullOrEmpty(items.get(i).getIsFinalComplete()) && !items.get(i).getIsFinalComplete().equals("1")) {
                     curOrderEnable = false;
                 }
             }
