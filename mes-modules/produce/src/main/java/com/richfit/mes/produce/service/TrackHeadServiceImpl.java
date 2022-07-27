@@ -79,6 +79,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     public TrackCheckDetailService trackCheckDetailService;
 
+    @Autowired
+    public TrackFlowMapper trackFlowMapper;
+
 
     /**
      * 描述: 其他资料列表
@@ -214,44 +217,185 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
-            if ("0".equals(trackHead.getTrackType())) { //单件
-                System.out.println(JSON.toJSONString(trackHead.getStoreList()));
+            if ("Y".equals(trackHead.getIsBatch())) {
                 if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
                     for (Map m : trackHead.getStoreList()) {
-                        trackHeadSingleton(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                        trackHead.setProductNo(trackHead.getDrawingNo() + " " + (String) m.get("workblankNo"));
+                        trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
                 } else {
-                    trackHeadSingleton(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
+                    throw new Exception("请添加产品编码");
                 }
-                //当匹配计划时更新计划状态
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                    planService.planData(trackHead.getWorkPlanId());
+            } else {
+                trackHeadAdd(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
+            }
+            //当匹配计划时更新计划状态
+            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                planService.planData(trackHead.getWorkPlanId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+        return true;
+    }
+
+    /**
+     * 描述: 跟单单个添加方法
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
+    @Transactional
+    public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+        try {
+            CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"跟单编号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            //封装跟单信息数据
+            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
+            trackHead.setTrackNo(commonResult.getData().getCurValue());
+            trackHead.setNumberComplete(0);
+            trackHead.setNumber(number);
+
+            //当跟单中存在bom(装配)
+            if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
+                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
+                for (TrackAssembly trackAssembly : trackAssemblyList) {
+                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    trackAssembly.setCreateTime(new Date());
+                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    trackAssembly.setModifyTime(new Date());
+                    trackAssembly.setBranchCode(trackHead.getBranchCode());
+                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    trackAssemblyService.save(trackAssembly);
                 }
             }
-//            else if (trackHead.getTrackType().equals("1")) { //批次
-//                for (int i = trackHead.getStartNo(); i <= trackHead.getEndNo(); i++) {
-//                    LineStore lineStore = new LineStore();
-//                    lineStore.setTenantId(trackHead.getTenantId());
-//                    lineStore.setDrawingNo(trackHead.getDrawingNo());
-//                    lineStore.setMaterialNo(trackHead.getMaterialNo());
-//
-//                    String productNo = trackHead.getProductNo() + " " + i;
-//                    if (!StringUtils.isNullOrEmpty(trackHead.getSuffixNo())) {
-//                        productNo += " " + trackHead.getSuffixNo();
-//                    }
-//                    lineStore.setWorkblankNo(productNo);
-//                    lineStore.setNumber(1);
-//                    lineStore.setUseNum(0);
-//                    lineStore.setStatus("0");
-//                    lineStore.setTrackNo(trackHead.getTrackNo());
-//                    lineStore.setMaterialType("1");
-//                    lineStore.setTrackType("0");
-//                    lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-//                    lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-//                    lineStore.setCreateTime(new Date());
-//                    list.add(lineStore);
-//                }
-//            }
+
+            //只有机加进行跟单编码校验
+            if ("1".equals(trackHead.getClasses())) {
+                //查询跟单号码是否存在
+                QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("track_no", trackHead.getTrackNo());
+                queryWrapper.eq("branch_code", trackHead.getBranchCode());
+                queryWrapper.eq("tenant_id", trackHead.getTenantId());
+                List trackHeads = trackHeadMapper.selectList(queryWrapper);
+                if (trackHeads.size() > 0) {
+                    throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
+                }
+            }
+
+            //添加跟单
+            trackHeadMapper.insert(trackHead);
+
+            //添加跟单分流
+            if ("Y".equals(trackHead.getIsBatch())) {
+                trackHeadFlow(trackHead, trackItems, productsNo, number);
+            } else {
+                if (trackHead != null && trackHead.getStoreList().size() > 0) {
+                    for (Map m : trackHead.getStoreList()) {
+                        trackHeadFlow(trackHead, trackItems, (String) m.get("workblankNo"), (Integer) m.get("num"));
+                    }
+                } else {
+                    trackHeadFlow(trackHead, trackItems, productsNo, number);
+                }
+            }
+            //添加日志
+            Action action = new Action();
+            action.setActionType("0");
+            action.setActionItem("2");
+            action.setRemark("跟单号：" + trackHead.getTrackNo());
+            actionService.saveAction(action);
+            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+        return true;
+    }
+
+    /**
+     * 描述: 跟单单个添加方法
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
+    @Transactional
+    public boolean trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+        try {
+            //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
+            //只有机加创建跟单时才会进行库存料单关联
+            if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
+                //修改库存状态  本次查到的料单能否匹配生产数量完成
+                //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
+                Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
+                LineStore lineStore = (LineStore) retMap.get("lineStore");
+                if (lineStore == null) {
+                    //无库存料单，默认新增库存料单，然后出库
+                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, productsNo);
+                }
+                TrackHeadRelation relation = new TrackHeadRelation();
+                relation.setThId(trackHead.getId());
+                relation.setLsId(lineStore.getId());
+                relation.setType("0");
+                relation.setNumber(number);
+                trackHeadRelationMapper.insert(relation);
+
+                //新增一条半成品/成品信息
+                QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<>();
+                queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
+                queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
+                if (lineStores != null && lineStores.size() > 0) {
+                    throw new RuntimeException("产品编号已存在！");
+                } else {
+                    LineStore lineStoreCp = new LineStore();
+                    lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
+                    lineStoreCp.setTenantId(trackHead.getTenantId());
+                    lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
+                    lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
+                    lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
+                    lineStoreCp.setNumber(trackHead.getNumber());//添加单件多个产品
+                    lineStoreCp.setUseNum(0);
+                    lineStoreCp.setStatus("1");//在制状态
+                    lineStoreCp.setTrackNo(trackHead.getTrackNo());
+                    lineStoreCp.setMaterialType("1");
+                    lineStoreCp.setTrackType(trackHead.getTrackType());
+                    lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    lineStoreCp.setCreateTime(new Date());
+                    lineStoreCp.setInTime(new Date());
+                    lineStoreCp.setBranchCode(trackHead.getBranchCode());
+                    lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    lineStoreMapper.insert(lineStoreCp);
+                    TrackHeadRelation relationCp = new TrackHeadRelation();
+                    relationCp.setThId(trackHead.getId());
+                    relationCp.setLsId(lineStoreCp.getId());
+                    relationCp.setType("1");
+                    relationCp.setNumber(number);
+                    trackHeadRelationMapper.insert(relationCp);
+                }
+            }
+            //添加跟单分流
+            TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
+            trackFlow.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            trackFlow.setTrackHeadId(trackHead.getId());
+            trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+            trackFlowMapper.insert(trackFlow);
+            //跟单工序添加
+            if (trackItems != null && trackItems.size() > 0) {
+                for (TrackItem item : trackItems) {
+                    item.setId(UUID.randomUUID().toString().replace("-", ""));
+                    item.setTrackHeadId(trackHead.getId());
+                    item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+                    item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    item.setCreateTime(new Date());
+                    item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    item.setModifyTime(new Date());
+                    item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    //可分配数量
+                    item.setAssignableQty(number);
+                    trackItemMapper.insert(item);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
@@ -326,140 +470,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
-    /**
-     * 描述: 跟单单个添加方法
-     *
-     * @Author: zhiqiang.lu
-     * @Date: 2022/6/21 10:25
-     **/
-    @Transactional
-    public boolean trackHeadSingleton(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
-        try {
-            CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"跟单编号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-            //封装跟单信息数据
-            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
-            trackHead.setTrackNo(commonResult.getData().getCurValue());
-            trackHead.setProductNo(productsNo);
-            trackHead.setNumber(number);
-
-            //当跟单中存在bom
-            if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
-                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
-                for (TrackAssembly trackAssembly : trackAssemblyList) {
-                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setCreateTime(new Date());
-                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setModifyTime(new Date());
-                    trackAssembly.setBranchCode(trackHead.getBranchCode());
-                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    trackAssemblyService.save(trackAssembly);
-                }
-            }
-
-            //只有机加进行跟单编码校验
-            if ("1".equals(trackHead.getClasses())) {
-                //查询跟单号码是否存在
-                QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("track_no", trackHead.getTrackNo());
-                queryWrapper.eq("branch_code", trackHead.getBranchCode());
-                queryWrapper.eq("tenant_id", trackHead.getTenantId());
-                List trackHeads = trackHeadMapper.selectList(queryWrapper);
-                if (trackHeads.size() > 0) {
-                    throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
-                }
-            }
-
-            //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-            //只有机加创建跟单时才会进行库存料单关联
-            if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
-
-                //计划跟单关联
-//                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
-//                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
-//                }
-
-                //修改库存状态  本次查到的料单能否匹配生产数量完成
-                //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
-                Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
-                LineStore lineStore = (LineStore) retMap.get("lineStore");
-                if (lineStore == null) {
-                    //无库存料单，默认新增库存料单，然后出库
-                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, productsNo);
-                }
-                TrackHeadRelation relation = new TrackHeadRelation();
-                relation.setThId(trackHead.getId());
-                relation.setLsId(lineStore.getId());
-                relation.setType("0");
-                relation.setNumber(number);
-                trackHeadRelationMapper.insert(relation);
-
-                //新增一条半成品/成品信息
-                QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<LineStore>();
-                queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + trackHead.getProductNo());
-                queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
-                if (lineStores != null && lineStores.size() > 0) {
-                    throw new RuntimeException("产品编号已存在！");
-                } else {
-                    LineStore lineStoreCp = new LineStore();
-                    lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
-                    lineStoreCp.setTenantId(trackHead.getTenantId());
-                    lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
-                    lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
-                    lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + trackHead.getProductNo());
-                    lineStoreCp.setNumber(trackHead.getNumber());//添加单件多个产品
-                    lineStoreCp.setUseNum(0);
-                    lineStoreCp.setStatus("1");//在制状态
-                    lineStoreCp.setTrackNo(trackHead.getTrackNo());
-                    lineStoreCp.setMaterialType("1");
-                    lineStoreCp.setTrackType(trackHead.getTrackType());
-                    lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    lineStoreCp.setCreateTime(new Date());
-                    lineStoreCp.setInTime(new Date());
-                    lineStoreCp.setBranchCode(trackHead.getBranchCode());
-                    lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    lineStoreMapper.insert(lineStoreCp);
-                    TrackHeadRelation relationCp = new TrackHeadRelation();
-                    relationCp.setThId(trackHead.getId());
-                    relationCp.setLsId(lineStoreCp.getId());
-                    relationCp.setType("1");
-                    relationCp.setNumber(number);
-                    trackHeadRelationMapper.insert(relationCp);
-                }
-            }
-
-            //跟单工序添加
-            if (trackItems != null && trackItems.size() > 0) {
-                for (TrackItem item : trackItems) {
-                    item.setId(UUID.randomUUID().toString().replace("-", ""));
-                    item.setTrackHeadId(trackHead.getId());
-                    item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    item.setCreateTime(new Date());
-                    item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    item.setModifyTime(new Date());
-                    item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    //可分配数量
-                    item.setAssignableQty(number);
-                    trackItemMapper.insert(item);
-                }
-            }
-            //添加跟单
-            trackHeadMapper.insert(trackHead);
-
-            //添加日志
-            Action action = new Action();
-            action.setActionType("0");
-            action.setActionItem("2");
-            action.setRemark("跟单号：" + trackHead.getTrackNo());
-            actionService.saveAction(action);
-            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
-        }
-        return true;
-    }
 
     List<TrackAssembly> pojectBomList(TrackHead trackHead) {
         List<TrackAssembly> trackAssemblyList = new ArrayList<>();
