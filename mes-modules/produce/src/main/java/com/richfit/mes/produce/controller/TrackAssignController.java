@@ -414,10 +414,11 @@ public class TrackAssignController extends BaseController {
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "') or a.modify_time is null)");
         }
-        if ("4".equals(optType)) {
-            queryWrapper.apply("opt_type = 3 and is_final_complete <> '1'");
+        // 如果工序类型不为空，则按类型获取，否则获取普通0和装配工序2
+        if (!StringUtils.isNullOrEmpty(optType)) {
+            queryWrapper.apply("a.opt_type = '" + optType + "'");
         } else {
-            queryWrapper.apply("opt_type <> 3");
+            queryWrapper.apply("(a.opt_type ='0' or a.opt_type ='2')");
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
