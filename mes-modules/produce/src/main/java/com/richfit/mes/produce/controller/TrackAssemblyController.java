@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -252,5 +254,14 @@ public class TrackAssemblyController extends BaseController {
     public CommonResult<List<AssembleKittingVo>> kittingExamine(String trackHeadId, String branchCode) {
         return CommonResult.success(trackAssemblyService.kittingExamine(trackHeadId, branchCode));
     }
+
+
+    @ApiOperation(value = "查询装配信息", notes = "根据跟单ID查询装配信息")
+    @GetMapping("/queryTrackAssemblyByTrackNo/{trackNo}")
+    public CommonResult<Map> queryTrackAssemblyByTrackNo(@PathVariable String trackNo) {
+        Map<String, List<TrackAssembly>> collect = trackAssemblyService.queryTrackAssemblyByTrackNo(trackNo).stream().collect(Collectors.groupingBy(t -> t.getDrawingNo().split(" ")[0]));
+        return CommonResult.success(collect);
+    }
+
 
 }

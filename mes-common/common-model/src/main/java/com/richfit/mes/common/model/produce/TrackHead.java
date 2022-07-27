@@ -274,4 +274,20 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Date: 2022/7/21 10:25
      **/
     private String isCompletionData;
+
+    /**
+     * 描述: 是否批次：Y是 N否
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/26 10:25
+     **/
+    private String isBatch;
+
+    /**
+     * 描述: 完成数量
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/26 10:25
+     **/
+    private int numberComplete;
 }

@@ -198,4 +198,8 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author Gaol
      */
     Boolean unLinkFromCert(String thId);
+
+    List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo);
+
+    IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads);
 }
