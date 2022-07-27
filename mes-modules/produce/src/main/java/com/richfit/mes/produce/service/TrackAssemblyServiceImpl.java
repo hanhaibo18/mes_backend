@@ -162,4 +162,11 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         return Integer.parseInt(number);
     }
 
+
+    @Override
+    public List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo) {
+        QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
+        wrapper.eq("track_head_id",trackNo);
+        return this.list(wrapper);
+    }
 }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.IncomingMaterialVO;
 import com.richfit.mes.produce.entity.QueryTailAfterDto;
@@ -124,4 +125,7 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
     IPage<TailAfterVo> queryTailAfterList(IPage<QueryTailAfterDto> page, @Param(Constants.WRAPPER) QueryWrapper<TrackHead> queryWrapper);
 
     List<TrackHead> queryListByCertId(@Param("certId") String certId);
+
+    @Select("")
+    IPage<TrackHead> queryBomList(Page<Object> objectPage, List<TrackHead> trackHeadList);
 }

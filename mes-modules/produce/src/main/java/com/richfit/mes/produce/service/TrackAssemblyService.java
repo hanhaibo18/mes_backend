@@ -58,4 +58,6 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @return: List<AssembleKittingVo>
      **/
     List<AssembleKittingVo> kittingExamine(String trackHeadId, String branchCode);
+
+    List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo);
 }

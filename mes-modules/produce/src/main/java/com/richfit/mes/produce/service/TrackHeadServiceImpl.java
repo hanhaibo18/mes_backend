@@ -5,6 +5,7 @@ import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
@@ -860,5 +861,33 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHead.setId(thId);
         trackHead.setCertificateNo(null);
         return this.updateById(trackHead);
+    }
+
+    @Override
+    public List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo) {
+        QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
+        wrapper.eq("track_head_id",trackNo);
+        List<TrackAssembly> list = trackAssemblyService.list(wrapper);
+        List<TrackHead> trackHeads = new ArrayList<>();
+        list.forEach(i ->{
+            QueryWrapper<TrackHead> tWrapper = new QueryWrapper<>();
+            tWrapper.eq("product_no",i.getProductNo());
+            TrackHead one = this.getOne(tWrapper);
+            if (ObjectUtils.isNotNull(one)){
+                trackHeads.add(one);
+            }
+        });
+        Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
+        return new ArrayList<>(collect.values());
+    }
+
+    @Override
+    public IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads) {
+        TrackHead trackHead = trackHeads.getParam();
+        if (!StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
+            List<TrackHead> trackHeadList = queryTrackAssemblyByTrackNo(trackHead.getTrackNo());
+            trackHeadMapper.queryBomList(new Page<>(trackHeads.getPage(), trackHeads.getSize()),trackHeadList);
+        }
+        return null;
     }
 }
