@@ -111,14 +111,13 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     private void additionalBsns(Certificate certificate) {
 
-        //完工合格证情况   转车间   交库    报工时
+        //完工合格证情况  交库    报工时
         if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
             certAdditionalBsns.doAdditionalBsns(certificate);
-
-            this.certPushComplete(certificate);
         }
 
     }
+
 
     @Override
     public void updateCertificate(Certificate certificate, boolean changeTrack) throws Exception {
@@ -221,9 +220,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_Id", Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
 
-        Certificate cert = this.certificateMapper.selectOne(queryWrapper);
+        int count = this.certificateMapper.selectCount(queryWrapper);
 
-        return cert != null;
+        return count > 0;
     }
 
     @Override
@@ -257,6 +256,14 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         cert.setIsPush("1");
 
         return this.updateById(cert);
+    }
+
+    @Override
+    public void setPushHourComplete(Certificate certificate) {
+        Certificate cert = new Certificate();
+        cert.setId(certificate.getId());
+        cert.setIsSendWorkHour("1");
+        this.updateById(cert);
     }
 
 }

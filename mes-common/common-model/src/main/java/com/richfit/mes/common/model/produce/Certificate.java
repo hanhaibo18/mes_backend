@@ -83,8 +83,12 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "合格证来源 0：开出合格证 1：接收合格证")
     private String certOrigin;
 
-    @ApiModelProperty(value = "是否推送 0：未推送  1：已推送")
+    @ApiModelProperty(value = "是否下车间已接收 0：未接收  1：已接收")
     private String isPush;
+
+    //2022-07-26 gaol 添加
+    @ApiModelProperty(value = "是否推送工时给ERP  0：未推送  1：已推送")
+    private String isSendWorkHour;
 
     @ApiModelProperty(value = "试棒数量 from跟单")
     @TableField(exist = false)
