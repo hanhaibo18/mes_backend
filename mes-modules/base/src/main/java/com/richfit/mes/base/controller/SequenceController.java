@@ -584,7 +584,6 @@ public class SequenceController extends BaseController {
                 sequence.setIsParallel(MessageEnum.getMessage(Integer.parseInt(sequence.getIsParallel())));
                 sequence.setOptType(OptTypeEnum.getMessage(Integer.parseInt(sequence.getOptType())));
             } catch (Exception ex) {
-
             }
         }
 
