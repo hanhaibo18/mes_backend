@@ -10,7 +10,7 @@ import com.richfit.mes.produce.provider.WmsServiceClient;
  */
 public class WmsServiceClientFallbackImpl implements WmsServiceClient {
     @Override
-    public CommonResult<Boolean> sendJcInfo(Certificate certificate) {
+    public CommonResult<Boolean> sendJkInfo(Certificate certificate) {
         return null;
     }
 }

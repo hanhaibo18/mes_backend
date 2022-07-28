@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "wms-service", decode404 = true, fallback = WmsServiceClientFallbackImpl.class)
 public interface WmsServiceClient {
 
-    @PostMapping("/api/integration/wms/send_scjc")
-    public CommonResult<Boolean> sendJcInfo(@RequestBody Certificate certificate);
+    @PostMapping("/api/integration/wms/send_scjk")
+    public CommonResult<Boolean> sendJkInfo(@RequestBody Certificate certificate);
 
 }

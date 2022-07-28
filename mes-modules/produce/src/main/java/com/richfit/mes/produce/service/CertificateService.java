@@ -26,7 +26,7 @@ public interface CertificateService extends IService<Certificate> {
     /**
      * 查询待接收的合格证列表
      *
-     * @param page query
+     * @param queryDto
      * @return
      */
     IPage<Certificate> selectNeedTransferCert(CertQueryDto queryDto);
@@ -39,5 +39,11 @@ public interface CertificateService extends IService<Certificate> {
      */
     public boolean certPushComplete(Certificate certificate);
 
-
+    /**
+     * 合格证完工的，推送工时给ERP后，改状态字段为已推送工时
+     *
+     * @param certificate
+     * @return
+     */
+    void setPushHourComplete(Certificate certificate);
 }

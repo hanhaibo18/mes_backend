@@ -27,8 +27,8 @@ public class WmsController {
     ProductToWmsService productToWmsService;
 
     @ApiOperation(value = "生产交库", notes = "根据合格证将产品信息推送给仓储条码接口")
-    @PostMapping("/send_scjc")
-    public CommonResult<Boolean> sendJcInfo(@ApiParam(value = "合格证") @RequestBody Certificate cert) {
+    @PostMapping("/send_scjk")
+    public CommonResult<Boolean> sendJkInfo(@ApiParam(value = "合格证") @RequestBody Certificate cert) {
 
         log.debug("receive send Scjk request [{}]", cert);
         boolean b = productToWmsService.sendRequest(cert);

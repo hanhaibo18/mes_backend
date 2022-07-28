@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service.bsns;
 
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
@@ -8,8 +9,10 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.ErpServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,7 @@ import java.util.List;
  * @Date: 2022/7/1 16:26
  */
 @Service
+@Slf4j
 public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
     @Autowired
@@ -37,12 +41,15 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     @Autowired
     BaseServiceClient baseServiceClient;
 
+    @Autowired
+    CertificateService certificateService;
+
     @Override
     public void doAdditionalBsns(Certificate certificate) {
 
         if (needScjk(certificate)) {
 
-            wmsServiceClient.sendJcInfo(certificate);
+            wmsServiceClient.sendJkInfo(certificate);
 
             //erp工时推送
             String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
@@ -59,9 +66,14 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
                 List trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
 
-                erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), certificate.getNumber(), unit);
+                CommonResult<Boolean> b = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), certificate.getNumber(), unit);
+
+                log.debug("[{}] query erp push-hour finish , result is [{}]", trackHead.getTrackNo(), b.getData());
 
             }
+
+            //标记已推送工时状态
+            certificateService.setPushHourComplete(certificate);
         }
     }
 
