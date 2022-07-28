@@ -323,6 +323,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Transactional
     public boolean trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
+            String flowId = UUID.randomUUID().toString().replaceAll("-", "");
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
             //只有机加创建跟单时才会进行库存料单关联
             if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
@@ -377,7 +378,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
-            trackFlow.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            trackFlow.setId(flowId);
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             trackFlowMapper.insert(trackFlow);
@@ -386,6 +387,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 for (TrackItem item : trackItems) {
                     item.setId(UUID.randomUUID().toString().replace("-", ""));
                     item.setTrackHeadId(trackHead.getId());
+                    item.setFlowId(flowId);
                     item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
                     item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                     item.setCreateTime(new Date());
@@ -876,14 +878,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo) {
         QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("track_head_id",trackNo);
+        wrapper.eq("track_head_id", trackNo);
         List<TrackAssembly> list = trackAssemblyService.list(wrapper);
         List<TrackHead> trackHeads = new ArrayList<>();
-        list.forEach(i ->{
+        list.forEach(i -> {
             QueryWrapper<TrackHead> tWrapper = new QueryWrapper<>();
-            tWrapper.eq("product_no",i.getProductNo());
+            tWrapper.eq("product_no", i.getProductNo());
             TrackHead one = this.getOne(tWrapper);
-            if (ObjectUtils.isNotNull(one)){
+            if (ObjectUtils.isNotNull(one)) {
                 trackHeads.add(one);
             }
         });
@@ -896,7 +898,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         TrackHead trackHead = trackHeads.getParam();
         if (!StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
             List<TrackHead> trackHeadList = queryTrackAssemblyByTrackNo(trackHead.getTrackNo());
-            trackHeadMapper.queryBomList(new Page<>(trackHeads.getPage(), trackHeads.getSize()),trackHeadList);
+            trackHeadMapper.queryBomList(new Page<>(trackHeads.getPage(), trackHeads.getSize()), trackHeadList);
         }
         return null;
     }
