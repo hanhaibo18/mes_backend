@@ -1,7 +1,10 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.richfit.mes.common.model.produce.CodeRuleItem;
  */
 public interface CodeRuleItemService extends IService<CodeRuleItem> {
 
+    
 }
