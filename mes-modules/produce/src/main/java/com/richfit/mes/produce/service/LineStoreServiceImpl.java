@@ -142,7 +142,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Override
     public LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String workblankNo) {
-        //TODO 增加自动料单入库 再出库的逻辑
+        //自动料单入库 再出库的逻辑
         LineStore lineStore = new LineStore();
         lineStore.setBranchCode(trackHead.getBranchCode());
         lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -299,9 +299,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (isAutoMatchProd) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
             }
-            if (isAutoMatchPur) {
-                lineStore.setPurchaseOrder(matchPur(lineStore.getMaterialNo(), lineStore.getNumber()));
-            }
+
+            //新业务要求：不匹配采购订单
+//            if (isAutoMatchPur) {
+//                lineStore.setPurchaseOrder(matchPur(lineStore.getMaterialNo(), lineStore.getNumber()));
+//            }
 
             bool = this.save(lineStore);
             //保存料单-附件关系
