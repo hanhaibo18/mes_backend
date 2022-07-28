@@ -574,14 +574,18 @@ public class SequenceController extends BaseController {
 
         //处理返回数据
         for (Sequence sequence : sequences) {
-            sequence.setContent(routers.get(0).getRouterNo());
-            sequence.setRemark(routers.get(0).getRouterName());
-            sequence.setVersionCode(routers.get(0).getVersion());
-            sequence.setIsScheduleCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsScheduleCheck())));
-            sequence.setIsQualityCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsQualityCheck())));
-            sequence.setIsParallel(MessageEnum.getMessage(Integer.parseInt(sequence.getIsParallel())));
-            sequence.setIsAutoAssign(MessageEnum.getMessage(Integer.parseInt(sequence.getIsAutoAssign())));
-            sequence.setOptType(OptTypeEnum.getMessage(Integer.parseInt(sequence.getOptType())));
+            try {
+                sequence.setStatus("X");
+                sequence.setContent(routers.get(0).getRouterNo());
+                sequence.setRemark(routers.get(0).getRouterName());
+                sequence.setVersionCode(routers.get(0).getVersion());
+                sequence.setIsScheduleCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsScheduleCheck())));
+                sequence.setIsQualityCheck(MessageEnum.getMessage(Integer.parseInt(sequence.getIsQualityCheck())));
+                sequence.setIsParallel(MessageEnum.getMessage(Integer.parseInt(sequence.getIsParallel())));
+                sequence.setOptType(OptTypeEnum.getMessage(Integer.parseInt(sequence.getOptType())));
+            } catch (Exception ex) {
+
+            }
         }
 
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");

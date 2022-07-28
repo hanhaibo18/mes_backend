@@ -306,11 +306,11 @@ public class RouterCheckController extends BaseController {
 
                         QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                         queryWrapper2.eq("opt_name", checkList.get(j).getOptName().trim());
-                        queryWrapper2.eq("tenant_id", tenantId);
+                        //queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
                         queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                        if (sequences.size() > 1) {
+                        if (sequences.size() >= 1) {
                             step += sequences.get(0).getRouterId() + sequences.get(0).getId() + checkList.get(j).getOptName();
                             if (checkList.get(j).getRouterNo().equals(drawnos.split(",")[i])) {
                                 RouterCheck routerCheck = new RouterCheck();
@@ -387,12 +387,12 @@ public class RouterCheckController extends BaseController {
                     for (int j = 0; j < qualityList.size(); j++) {
                         QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                         queryWrapper2.eq("opt_name", qualityList.get(j).getOptName().trim());
-                        queryWrapper2.eq("tenant_id", tenantId);
+                        //queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
                         queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
 
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                        if (sequences.size() > 1) {
+                        if (sequences.size() >= 1) {
                             step += sequences.get(0).getRouterId() + sequences.get(0).getId() + qualityList.get(j).getOptName();
                             RouterCheck routerCheck = new RouterCheck();
                             routerCheck.setCreateBy(user.getUsername());
