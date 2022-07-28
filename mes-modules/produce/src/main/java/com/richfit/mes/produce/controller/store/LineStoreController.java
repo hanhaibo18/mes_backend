@@ -354,7 +354,8 @@ public class LineStoreController extends BaseController {
             @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
             @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
             @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
-            @ApiParam(value = "可使用数量") @RequestParam(required = false) Integer number,
+            @ApiParam(value = "数量") @RequestParam(required = false) Integer number,
+            @ApiParam(value = "可使用数量") @RequestParam(required = false) Integer usableNumber,
             @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
             @ApiParam(value = "分公司", required = true) @RequestParam String branchCode) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
@@ -380,7 +381,10 @@ public class LineStoreController extends BaseController {
             queryWrapper.eq("status", status);
         }
         if (number != null && number > 0) {
-            queryWrapper.ge("number - use_num", number);
+            queryWrapper.eq("number", number);
+        }
+        if (usableNumber != null && usableNumber > 0) {
+            queryWrapper.ge("number - use_num", usableNumber);
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("branch_code", branchCode);
