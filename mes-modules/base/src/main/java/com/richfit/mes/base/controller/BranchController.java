@@ -210,4 +210,10 @@ public class BranchController extends BaseController {
     public CommonResult<List<TenantUserVo>> queryUserList(String branchCode) {
         return CommonResult.success(branchService.queryUserList(branchCode));
     }
+
+    @ApiOperation(value = "查询所有组织机构", notes = "查询所有组织机构")
+    @GetMapping("/queryAllCode")
+    public CommonResult<List<Branch>> queryAllCode() {
+        return CommonResult.success(branchService.queryAllCode());
+    }
 }

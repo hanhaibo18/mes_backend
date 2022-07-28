@@ -30,6 +30,13 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "设备ID", dataType = "String")
     private String deviceId;
+
+    /**
+     * 跟单分流Id
+     */
+    @ApiModelProperty(value = "分流Id", dataType = "String")
+    private String flowId;
+
     /**
      * 工序版本号
      */
