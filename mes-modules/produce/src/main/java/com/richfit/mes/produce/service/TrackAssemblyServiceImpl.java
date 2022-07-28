@@ -2,22 +2,24 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.model.produce.TrackAssembly;
-import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.AESUtil;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
-import com.richfit.mes.produce.entity.AssembleKittingVo;
+import com.richfit.mes.produce.entity.*;
 import io.netty.util.internal.StringUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +36,12 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private TrackAssemblyBindingService assemblyBindingService;
     @Resource
     private LineStoreMapper lineStoreMapper;
+    @Resource
+    private TrackHeadService trackHeadService;
+    @Resource
+    private TrackItemService trackItemService;
+    @Resource
+    private TrackAssignService trackAssignService;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
@@ -78,7 +86,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean updateComplete(List<String> idList) {
+    public Boolean updateComplete(List<String> idList, String itemId) {
         boolean isComplete = false;
         for (String id : idList) {
             TrackAssembly trackAssembly = this.getById(id);
@@ -90,6 +98,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 assemblyBinding.setPartDrawingNo(trackAssembly.getDrawingNo());
                 assemblyBinding.setQuantity(trackAssembly.getNumber());
                 assemblyBinding.setAssemblyId(id);
+                assemblyBinding.setItemId(itemId);
                 assemblyBinding.setIsBinding(1);
                 assemblyBindingService.save(assemblyBinding);
             }
@@ -118,7 +127,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackHeadId);
-        queryWrapper.notIn("is_check", "1");
+        queryWrapper.eq("is_check", "1");
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", tenantId);
         List<TrackAssembly> trackAssemblyList = this.list(queryWrapper);
@@ -134,7 +143,11 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             assemble.setInstallNumber(trackAssembly.getNumberInstall());
             //线边库
             Integer integer = lineStoreMapper.selectTotalNum(trackAssembly.getMaterialNo(), branchCode, tenantId);
-            assemble.setRepertoryNumber(integer);
+            if (integer != null) {
+                assemble.setRepertoryNumber(integer);
+            } else {
+                assemble.setRepertoryNumber(0);
+            }
             //可配送数量 WMS库存数量
             assemble.setDeliverableQuantity(queryMaterialCount(trackAssembly.getMaterialNo()));
             //已领取数量
@@ -148,6 +161,66 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         }
         return list;
     }
+    
+
+    @Override
+    public ApplicationResult application(AdditionalMaterialDto additionalMaterialDto) {
+        TrackHead trackHead = trackHeadService.getById(additionalMaterialDto.getTrackHeadId());
+        TrackItem trackItem = trackItemService.getById(additionalMaterialDto.getTiId());
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_id", trackHead.getId());
+        queryWrapper.eq("ti_id", trackItem.getId());
+        List<Assign> list = trackAssignService.list(queryWrapper);
+        IngredientApplicationDto ingredient = new IngredientApplicationDto();
+        //申请单号
+        ingredient.setSqd(trackItem.getId() + "@0");
+        ingredient.setGc(additionalMaterialDto.getBranchCode());
+        //车间
+        ingredient.setCj(additionalMaterialDto.getBranchCode());
+        //车间名称
+        //工位 == 车间?
+        ingredient.setGw(additionalMaterialDto.getBranchCode());
+        //工位名称
+        //工序
+        ingredient.setGx(trackItem.getId());
+        //工序名称
+        ingredient.setGxName(trackItem.getOptName());
+        //生产订单编号
+        ingredient.setScdd(trackHead.getProductionOrder());
+        //跟单Id
+        ingredient.setGd(trackHead.getId());
+        //产品编号
+        ingredient.setCp(trackHead.getProductNo());
+        //产品名称
+        ingredient.setCpName(trackHead.getProductName());
+        //优先级
+        ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
+        //派工时间
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmSS");
+        ingredient.setPgsj(format.format(list.get(0).getAssignTime()));
+        //追加物料
+        List<LineList> lineLists = new ArrayList<LineList>();
+        LineList lineList = new LineList();
+        //
+        lineList.setMaterialDesc(additionalMaterialDto.getMaterialName());
+        lineList.setMaterialNum(additionalMaterialDto.getMaterialNo());
+        lineList.setSwFlag(additionalMaterialDto.getIsEdgeStore());
+        lineList.setQuantity(additionalMaterialDto.getCount());
+        //单位
+        lineLists.add(lineList);
+        ingredient.setLineList(lineLists);
+        ApplicationResult applicationResult = null;
+        try {
+            applicationResult = anApplicationForm(ingredient);
+        } catch (Exception e) {
+            ApplicationResult result = new ApplicationResult();
+            result.setRetStatus("500");
+            result.setRetMsg(e.getMessage());
+            e.printStackTrace();
+            return result;
+        }
+        return applicationResult;
+    }
 
     private int queryMaterialCount(String materialNo) {
         Map<String, Object> params = new HashMap<>(3);
@@ -159,14 +232,27 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         if (StringUtil.isNullOrEmpty(number)) {
             return 0;
         }
-        return Integer.parseInt(number);
+        String replaceAll = number.replaceAll("\\ufeff", "");
+        double value = Double.parseDouble(replaceAll);
+        return (int) value;
     }
 
+    private ApplicationResult anApplicationForm(IngredientApplicationDto ingredientApplicationDto) throws Exception {
+        String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
+//        String aes = AESUtil.decryptAES(jsonStr, "1234123412ABCDEF", "0102030405060708");
+        String aes = AESUtil.encrypt(jsonStr, "123");
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("i_data", aes);
+        String url = "http://11.11.136.204:9081/bsj/mes2barcode/scddUpload?i_data=" + aes;
+        String s = HttpUtil.get(url, params, 120000);
+        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
+        return applicationResult;
+    }
 
     @Override
     public List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo) {
         QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("track_head_id",trackNo);
+        wrapper.eq("track_head_id", trackNo);
         return this.list(wrapper);
     }
 }
