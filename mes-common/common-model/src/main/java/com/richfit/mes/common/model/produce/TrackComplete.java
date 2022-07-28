@@ -96,6 +96,14 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 报工时间
      */
     protected Date completeTime;
+    /**
+     * 质检人
+     */
+    protected String qualityCheckBy;
+    /**
+     * 备注
+     */
+    protected String remarks;
 
     /**
      * 探伤结果
