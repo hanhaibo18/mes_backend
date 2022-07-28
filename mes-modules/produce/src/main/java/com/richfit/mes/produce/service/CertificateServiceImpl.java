@@ -221,9 +221,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_Id", Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
 
-        Certificate cert = this.certificateMapper.selectOne(queryWrapper);
+        int count = this.certificateMapper.selectCount(queryWrapper);
 
-        return cert != null;
+        return count > 0;
     }
 
     @Override

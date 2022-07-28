@@ -112,11 +112,11 @@ public class CertificateController {
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<Certificate>();
 
         if (!StringUtils.isNullOrEmpty(startDate)) {
-            queryWrapper.ge("create_time", startDate);
+            queryWrapper.ge("check_time", startDate);
         }
 
         if (!StringUtils.isNullOrEmpty(endDate)) {
-            queryWrapper.le("create_time", endDate);
+            queryWrapper.le("check_time", endDate);
         }
 
         if (!StringUtils.isNullOrEmpty(id)) {
