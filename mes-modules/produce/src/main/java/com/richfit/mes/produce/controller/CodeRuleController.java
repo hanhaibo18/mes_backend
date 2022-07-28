@@ -81,131 +81,10 @@ public class CodeRuleController extends BaseController {
     })
     @GetMapping("/gerCode")
     public CommonResult<CodeRule> gerCode(String code, String name, String[] inputs, String tenantId, String branchCode) {
-        QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
-        if (!StringUtils.isNullOrEmpty(name)) {
-            queryWrapper.eq("name", name);
-        }
-        if (!StringUtils.isNullOrEmpty(code)) {
-            queryWrapper.eq("code", code);
-        }
-        queryWrapper.eq("status", 1);
-        if (!StringUtils.isNullOrEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id", tenantId);
-        }
-
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
-        List<CodeRule> items = codeRuleService.list(queryWrapper);
-        CodeRule item = null;
-        if (items.size() > 0) {
-            item = items.get(0);
-
-        } else {
-            return CommonResult.failed("找不到该编码规则");
-        }
-        item.setCurValue("");
-        int index = 0;
         try {
-            String value = "";
-            List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null, tenantId, branchCode).getData();
-            for (int i = 0; i < cris.size(); i++) {
-                String subvalue = "";
-                if (StringUtils.isNullOrEmpty(cris.get(i).getSuffixChar())) {
-                    cris.get(i).setSuffixChar("");
-                }
-                // 常量
-                if ("0".equals(cris.get(i).getType())) {
-                    subvalue = cris.get(i).getConstant() + cris.get(i).getSuffixChar();
-                }
-                // 日期
-                if ("1".equals(cris.get(i).getType())) {
-                    Date currentTime = new Date();
-                    SimpleDateFormat formatter = new SimpleDateFormat(cris.get(i).getDateFormat());
-                    String dateString = formatter.format(currentTime);
-
-                    subvalue = dateString + cris.get(i).getSuffixChar();
-                }
-                //流水号
-                if ("2".equals(cris.get(i).getType())) {
-                    //如果规则项 值重置的逻辑处理，根据年，月，日，最大值的变化来重置
-                    if (!StringUtils.isNullOrEmpty(cris.get(i).getSnResetDependency())) {
-                        if ("year".equals(cris.get(i).getSnResetDependency())) {
-                            if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                        } else if ("quarter".equals(cris.get(i).getSnResetDependency())) {
-                        } else if ("month".equals(cris.get(i).getSnResetDependency())) {
-                            if (new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                        } else if ("date".equals(cris.get(i).getSnResetDependency())) {
-                            if (new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                        } else if ("input".equals(cris.get(i).getSnResetDependency())) {
-
-                        } else {
-
-                            if (Integer.parseInt(cris.get(i).getSnCurrentValue()) >= Integer.parseInt(cris.get(i).getSnResetDependency())) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                        }
-                    }
-                    subvalue = String.valueOf(Integer.parseInt(cris.get(i).getSnCurrentValue()) + Integer.parseInt(cris.get(i).getSnStep())) + cris.get(i).getSuffixChar();
-                    System.out.println("----------------------");
-                    System.out.println(subvalue);
-                }
-                //用户输入项
-                if ("3".equals(cris.get(i).getType())) {
-
-                    if ("0".equals(cris.get(i).getCheckType())) {
-
-                        if (!java.util.regex.Pattern.matches("^[0-9]*$", inputs[index])) {
-                            return CommonResult.failed(i + " 不是数字。");
-                        }
-                    }
-                    if ("1".equals(cris.get(i).getCheckType())) {
-
-                        if (!java.util.regex.Pattern.matches("[a-zA-Z]+", inputs[index])) {
-                            return CommonResult.failed(i + " 不是字母。");
-                        }
-                    }
-                    if ("2".equals(cris.get(i).getCheckType()) && !StringUtils.isNullOrEmpty(cris.get(i).getCheckRegex())) {
-
-                        if (!java.util.regex.Pattern.matches(cris.get(i).getCheckRegex(), inputs[index])) {
-                            return CommonResult.failed(i + " 不满足正则校验。");
-                        }
-                    }
-
-
-                    subvalue = inputs[index] + cris.get(i).getSuffixChar();
-                    index++;
-                }
-                //GUID
-                if ("4".equals(cris.get(i).getType())) {
-
-
-                    subvalue = java.util.UUID.randomUUID() + cris.get(i).getSuffixChar();
-                    index++;
-                }
-                if (!StringUtils.isNullOrEmpty(cris.get(i).getCompChar())) {
-                    if ("0".equals(cris.get(i).getCompDirect())) {
-                        subvalue = org.apache.commons.lang.StringUtils.leftPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
-                    } else {
-                        subvalue = org.apache.commons.lang.StringUtils.rightPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
-                    }
-                }
-                value = value + subvalue;
-            }
-            if (!StringUtils.isNullOrEmpty(item.getMaxLength())) {
-                if (value.length() > Integer.parseInt(item.getMaxLength())) {
-                    return CommonResult.failed("编码长度超出范围，最大为" + item.getMaxLength());
-                }
-            }
-            item.setCurValue(value);
-            return CommonResult.success(item, SUCCESS_MESSAGE);
-        } catch (Exception e) {
+            return CommonResult.success(codeRuleService.gerCode(code, name, inputs, tenantId, branchCode), SUCCESS_MESSAGE);
+        } catch (
+                Exception e) {
             return CommonResult.failed(e.getMessage());
         }
 
@@ -221,117 +100,13 @@ public class CodeRuleController extends BaseController {
     @GetMapping("/updateCode")
     public CommonResult<CodeRule> updateCode(String code, String name, String value, String input, String tenantId, String branchCode) {
 
-        QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
-        if (!StringUtils.isNullOrEmpty(name)) {
-            queryWrapper.eq("name", name);
-        }
-        if (!StringUtils.isNullOrEmpty(code)) {
-            queryWrapper.eq("code", code);
-        }
-        queryWrapper.eq("status", 1);
-        if (!StringUtils.isNullOrEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id", tenantId);
-        }
+        try {
 
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
-        // 获取编码项列表
-        List<CodeRule> items = codeRuleService.list(queryWrapper);
-        CodeRule item = null;
-        if (items.size() > 0) {
-            item = items.get(0);
-            // 输入依赖项
-            CodeRuleItem inputTtem = null;
-            // 日期项
-            CodeRuleItem dateRuleItem = null;
-            //是否流水号按输入依赖项自增
-            boolean enableInputTtem = false;
-            //是否流水号按日项自增
-            boolean enableDateRuleItem = false;
+            return CommonResult.success(codeRuleService.updateCode(code, name, value, input, tenantId, branchCode));
 
-            // 获取编码项
-            List<CodeRuleItem> list2 = codeRuleItemService.list(new QueryWrapper<CodeRuleItem>().eq("code_rule_id", item.getId()));
-            for (int i = 0; i < list2.size(); i++) {
-                if ("3".equals(list2.get(i).getType())) {
-                    inputTtem = list2.get(i);
-                }
-                if ("1".equals(list2.get(i).getType())) {
-                    dateRuleItem = list2.get(i);
-                }
-                //如果当前编码项是流水号，且重置依赖是空，则当前编码项的流水号自增
-                if ("2".equals(list2.get(i).getType()) && StringUtils.isNullOrEmpty(list2.get(i).getSnResetDependency())) {
-                    if (!StringUtils.isNullOrEmpty(list2.get(i).getSnCurrentValue())) {
-                        //如果当前值不是空，当前编码项的流水号自增
-                        list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
-                    } else {
-                        //如果当前值是空，则读取重置值，写入
-                        list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault())));
-
-                    }
-                    codeRuleItemService.updateById(list2.get(i));
-                } else {
-                    if ("input".equals(list2.get(i).getSnResetDependency())) {
-                        enableInputTtem = true;
-                    }
-                    if ("year".equals(list2.get(i).getSnResetDependency()) || "month".equals(list2.get(i).getSnResetDependency()) || "date".equals(list2.get(i).getSnResetDependency())) {
-                        enableDateRuleItem = true;
-                    }
-                }
-            }
-
-
-            //如果当前编码项是流水号，且重置依赖不为空
-            if (null != inputTtem && enableInputTtem) {
-                // 获取编码项依赖流水号列表
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='"+ branchCode +"')) "));
-                if (list.size() == 0) {
-                    //如果是空，则新产生一个编码项依赖流水号自增，如图号
-                    CodeRuleValue codeRuleValue = new CodeRuleValue();
-                    codeRuleValue.setItemId(inputTtem.getId());
-                    codeRuleValue.setInputValue(input);
-                    codeRuleValue.setBranchCode(inputTtem.getBranchCode());
-                    codeRuleValue.setTenantId(inputTtem.getTenantId());
-                    codeRuleValue.setSnValue(inputTtem.getSnDefault());
-                    codeRuleValueService.save(codeRuleValue);
-                } else {
-                    //如果不是空，则编码项依赖流水号自增，如图号
-                    for (int i = 0; i < list.size(); i++) {
-                        if (input.equals(list.get(i).getInputValue())) {
-                            list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(inputTtem.getSnStep())));
-                            codeRuleValueService.updateById(list.get(i));
-                        }
-                    }
-                }
-            }
-            // 如果流水号重置的依赖条件为日期，且日期输入项不为空
-            if (null != dateRuleItem && enableDateRuleItem) {
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='"+ branchCode +"')) "));
-                if (list.size() == 0) {
-                    CodeRuleValue codeRuleValue = new CodeRuleValue();
-                    codeRuleValue.setItemId(dateRuleItem.getId());
-                    codeRuleValue.setInputValue(input);
-                    codeRuleValue.setBranchCode(inputTtem.getBranchCode());
-                    codeRuleValue.setTenantId(inputTtem.getTenantId());
-                    codeRuleValue.setSnValue(dateRuleItem.getSnDefault());
-                    codeRuleValueService.save(codeRuleValue);
-                } else {
-                    for (int i = 0; i < list.size(); i++) {
-                        if (input.equals(list.get(i).getInputValue())) {
-                            list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(dateRuleItem.getSnStep())));
-                            codeRuleValueService.updateById(list.get(i));
-                        }
-                    }
-                }
-            }
-
-
-            item.setCurValue(value);
-            codeRuleService.updateById(item);
-            return CommonResult.success(item);
-
-        } else {
-            return CommonResult.failed("找不到该编码规则");
+        } catch (
+                Exception e) {
+            return CommonResult.failed(e.getMessage());
         }
 
     }
@@ -436,7 +211,7 @@ public class CodeRuleController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         List<CodeRuleValue> list = codeRuleValueService.list(queryWrapper);
-        if (list.size() == 0 ) {
+        if (list.size() == 0) {
             CodeRuleValue codeRuleValue = new CodeRuleValue();
             codeRuleValue.setItemId(id);
             codeRuleValue.setInputValue(input);
