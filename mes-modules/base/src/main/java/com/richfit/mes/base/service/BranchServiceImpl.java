@@ -58,27 +58,8 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
                     .eq("tenant_id", tenantId);
             return this.list(queryWrapper);
         }
-        //获取第二级别参数
-        for (Branch branch1 : branchList) {
-            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("main_branch_code", branch1.getBranchCode())
-                    .eq("tenant_id", tenantId);
-            List<Branch> list2 = this.list(queryWrapper);
-            //获取第三级参数
-            if (list2 != null && !list2.isEmpty()) {
-                for (Branch branch2 : list2) {
-                    QueryWrapper<Branch> query = new QueryWrapper<>();
-                    query.eq("main_branch_code", branch2.getBranchCode())
-                            .eq("tenant_id", tenantId);
-                    List<Branch> list3 = this.list(query);
-                    //添加第三级数据到第二级别
-                    if (list3 != null && !list3.isEmpty()) {
-                        branch2.setBranchList(list3);
-                    }
-                }
-                //第二级别数据添加到第三级
-                branch1.setBranchList(list2);
-            }
+        for (Branch branch : branchList) {
+            queryByBranchCode(branch);
         }
         return branchList;
     }
@@ -101,6 +82,18 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         return tenantUserVo;
     }
 
+    @Override
+    public List<Branch> queryAllCode() {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.isNull("main_branch_code")
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<Branch> branches = this.list(queryWrapper);
+        for (Branch branch : branches) {
+            queryByBranchCode(branch);
+        }
+        return branches;
+    }
+
     private void queryByBranchCode(List<Branch> branchList, List<TenantUserVo> users) {
         for (Branch branch : branchList) {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
@@ -116,5 +109,16 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
             queryByBranchCode(branches, users);
             branch.setBranchList(branches);
         }
+    }
+
+    private void queryByBranchCode(Branch branch) {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("main_branch_code", branch.getBranchCode())
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<Branch> branches = this.list(queryWrapper);
+        for (Branch branch1 : branches) {
+            queryByBranchCode(branch1);
+        }
+        branch.setBranchList(branches);
     }
 }
