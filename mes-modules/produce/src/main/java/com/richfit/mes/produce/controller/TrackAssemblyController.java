@@ -6,8 +6,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
-import com.richfit.mes.produce.entity.AssembleKittingVo;
-import com.richfit.mes.produce.entity.BindingDto;
+import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -203,7 +202,7 @@ public class TrackAssemblyController extends BaseController {
     })
     @PutMapping("/updateBinding")
     public CommonResult<Boolean> updateBinding(@RequestBody BindingDto bindingDto) {
-        return assemblyBingService.updateBinding(bindingDto.getId(), bindingDto.getIsBinding());
+        return assemblyBingService.updateBinding(bindingDto.getId(), bindingDto.getIsBinding(), bindingDto.getItemId());
     }
 
     @ApiOperation(value = "删除(新)", notes = "删除(新)")
@@ -234,8 +233,8 @@ public class TrackAssemblyController extends BaseController {
     @ApiOperation(value = "绑定非关键件(新)", notes = "绑定非关键件(新)")
     @ApiImplicitParam(name = "idList", value = "Id列表", required = true, dataType = "List<String>", paramType = "body")
     @PutMapping("/updateComplete")
-    public CommonResult<Boolean> updateComplete(@RequestBody List<String> idList) {
-        return CommonResult.success(trackAssemblyService.updateComplete(idList));
+    public CommonResult<Boolean> updateComplete(@RequestBody NonKeyDto nonKeyDto) {
+        return CommonResult.success(trackAssemblyService.updateComplete(nonKeyDto.getIdList(), nonKeyDto.getItemId()));
     }
 
     @ApiOperation(value = "解绑非关键件(新)", notes = "解绑非关键件(新)")
@@ -264,4 +263,9 @@ public class TrackAssemblyController extends BaseController {
     }
 
 
+    @ApiOperation(value = "发送申请单", notes = "发送申请单")
+    @PostMapping("/application")
+    public ApplicationResult application(@RequestBody AdditionalMaterialDto additionalMaterialDto) {
+        return trackAssemblyService.application(additionalMaterialDto);
+    }
 }

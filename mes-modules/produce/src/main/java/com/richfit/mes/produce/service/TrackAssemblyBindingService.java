@@ -28,11 +28,13 @@ public interface TrackAssemblyBindingService extends IService<TrackAssemblyBindi
      * 功能描述: 绑定
      *
      * @param id
+     * @param isBinding
+     * @param itemId
      * @Author: xinYu.hou
-     * @Date: 2022/7/18 10:56
+     * @Date: 2022/7/26 10:52
      * @return: CommonResult<Boolean>
      **/
-    CommonResult<Boolean> updateBinding(String id, int isBinding);
+    CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId);
 
     /**
      * 功能描述: 删除记录
