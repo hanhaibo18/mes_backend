@@ -363,6 +363,7 @@ public class RouterCheckController extends BaseController {
                     if (!StringUtils.isNullOrEmpty(qualityList.get(i).getRouterNo())) {
                         list3.add(qualityList.get(i));
                     }
+                    
                     if (!drawnos.contains(qualityList.get(i).getRouterNo() + ",")) {
                         drawnos += qualityList.get(i).getRouterNo() + ",";
                     }
