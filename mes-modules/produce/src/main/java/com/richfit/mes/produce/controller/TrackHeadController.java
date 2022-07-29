@@ -4,6 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -35,7 +37,9 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -80,7 +84,7 @@ public class TrackHeadController extends BaseController {
         planService.planData(workPlanId);
     }
 
-    @ApiOperation(value = "其他资料", notes = "通过跟单id、查看其他资料")
+    @ApiOperation(value = "其他资料", notes = "通过跟单分流id、查看其他资料")
     @GetMapping("/other_data/{id}")
     public CommonResult<List<LineStore>> otherData(
             @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
@@ -284,8 +288,8 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
                                                           @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                                           @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
-                                                          @ApiParam(value = "图号") @RequestParam(required = false) int page,
-                                                          @ApiParam(value = "图号") @RequestParam(required = false) int limit) {
+                                                          @ApiParam(value = "页码") @RequestParam(required = false) int page,
+                                                          @ApiParam(value = "条数") @RequestParam(required = false) int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(startDate)) {
             queryWrapper.ge("create_time", startDate);
@@ -340,6 +344,38 @@ public class TrackHeadController extends BaseController {
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "分页查询跟单分流表", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单分流信息")
+    @GetMapping("/track_flow_page")
+    public CommonResult<PageInfo<TrackHead>> selectTrackFLow(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                                                             @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+                                                             @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
+                                                             @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                             @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
+                                                             @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+                                                             @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                             @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                             @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
+                                                             @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
+                                                             @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                                             @ApiParam(value = "页码") @RequestParam(required = false) int page,
+                                                             @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("templateCode", templateCode);
+        map.put("status", status);
+        map.put("productNo", productNo);
+        map.put("trackNo", trackNo);
+        map.put("workNo", workNo);
+        map.put("drawingNo", drawingNo);
+        map.put("batchNo", batchNo);
+        map.put("productionOrder", productionOrder);
+        map.put("branchCode", branchCode);
+        map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
+        PageHelper.startPage(page, limit);
+        List trackFlowList = trackHeadService.selectTrackFlowList(map);
+        PageInfo<TrackHead> trackFlowPage = new PageInfo(trackFlowList);
+        return CommonResult.success(trackFlowPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "工艺跟踪", notes = "根据图号、工艺版本号分页查询跟单工艺信息")
@@ -521,7 +557,7 @@ public class TrackHeadController extends BaseController {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
         String fileName = "BOM跟单_" + format.format(new Date()) + ".xlsx";
 
-        String[] columnHeaders = {"跟踪类型", "跟踪状态", "跟单号", "产品编号", "工作号", "图号", "填发日期", "模板编号", "材质", "物料编号","订单"};
+        String[] columnHeaders = {"跟踪类型", "跟踪状态", "跟单号", "产品编号", "工作号", "图号", "填发日期", "模板编号", "材质", "物料编号", "订单"};
         String[] fieldNames = {"trackType", "status", "trackNo", "productNo", "workNo", "drawingNo", "issueTime", "templateCode", "texture", "materialNo", "production_order"};
         //export
         try {

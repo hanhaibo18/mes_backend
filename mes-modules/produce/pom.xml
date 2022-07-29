@@ -40,7 +40,7 @@
             <groupId>com.richfit.mes</groupId>
             <artifactId>common-security</artifactId>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>com.richfit.mes</groupId>
             <artifactId>common-oss</artifactId>
         </dependency>
@@ -55,6 +55,12 @@
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
             <version>1.9.6</version>
+        </dependency>
+        <!-- 分页小工具 zhiqiang.lu-->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+            <version>1.4.3</version>
         </dependency>
     </dependencies>
     <build>

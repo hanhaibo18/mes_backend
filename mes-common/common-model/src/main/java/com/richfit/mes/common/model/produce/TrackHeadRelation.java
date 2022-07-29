@@ -23,6 +23,11 @@ public class TrackHeadRelation {
     private String thId;
 
     /**
+     * 跟单分流ID
+     */
+    private String flowId;
+
+    /**
      * 库存ID
      */
     private String lsId;
