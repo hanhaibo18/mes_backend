@@ -324,7 +324,7 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
             boolean enableInputTtem = false;
             //是否流水号按日项自增
             boolean enableDateRuleItem = false;
-
+            CodeRuleItem snItem = new CodeRuleItem();
             // 获取编码项
             List<CodeRuleItem> list2 = codeRuleItemService.list(new QueryWrapper<CodeRuleItem>().eq("code_rule_id", item.getId()));
             for (int i = 0; i < list2.size(); i++) {
@@ -334,8 +334,10 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                 if ("1".equals(list2.get(i).getType())) {
                     dateRuleItem = list2.get(i);
                 }
+
                 //如果当前编码项是流水号，且重置依赖是空，则当前编码项的流水号自增
-                if ("2".equals(list2.get(i).getType()) && StringUtils.isNullOrEmpty(list2.get(i).getSnResetDependency())) {
+                if ("2".equals(list2.get(i).getType())) {
+                    snItem = list2.get(i);
                     if (!StringUtils.isNullOrEmpty(list2.get(i).getSnCurrentValue())) {
                         //如果当前值不是空，当前编码项的流水号自增
                         list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
@@ -355,49 +357,52 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                 }
             }
 
+            try {
+                //如果当前编码项是流水号，且重置依赖不为空, 将值写入到Code_Rule_Value表中
+                if (null != inputTtem && enableInputTtem) {
+                    // 获取编码项依赖流水号列表
+                    List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='" + branchCode + "')) "));
+                    if (list.size() == 0) {
+                        //如果是空，则新产生一个编码项依赖流水号自增，如图号
+                        CodeRuleValue codeRuleValue = new CodeRuleValue();
+                        codeRuleValue.setItemId(inputTtem.getId());
+                        codeRuleValue.setInputValue(input);
+                        codeRuleValue.setBranchCode(inputTtem.getBranchCode());
+                        codeRuleValue.setTenantId(inputTtem.getTenantId());
+                        codeRuleValue.setSnValue(inputTtem.getSnDefault());
+                        codeRuleValueService.save(codeRuleValue);
+                    } else {
+                        //如果不是空，则编码项依赖流水号自增，如图号
+                        for (int i = 0; i < list.size(); i++) {
+                            if (input.equals(list.get(i).getInputValue())) {
+                                list.get(i).setSnValue(String.valueOf(Integer.parseInt(snItem.getSnCurrentValue()) + Integer.parseInt(snItem.getSnStep())));
+                                codeRuleValueService.updateById(list.get(i));
+                            }
+                        }
+                    }
+                }
+                // 如果流水号重置的依赖条件为日期，且日期输入项不为空
+                if (null != dateRuleItem && enableDateRuleItem) {
+                    List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='" + branchCode + "')) "));
+                    if (list.size() == 0) {
+                        CodeRuleValue codeRuleValue = new CodeRuleValue();
+                        codeRuleValue.setItemId(dateRuleItem.getId());
+                        codeRuleValue.setInputValue(input);
+                        codeRuleValue.setBranchCode(inputTtem.getBranchCode());
+                        codeRuleValue.setTenantId(inputTtem.getTenantId());
+                        codeRuleValue.setSnValue(dateRuleItem.getSnDefault());
+                        codeRuleValueService.save(codeRuleValue);
+                    } else {
+                        for (int i = 0; i < list.size(); i++) {
+                            if (input.equals(list.get(i).getInputValue())) {
+                                list.get(i).setSnValue(String.valueOf(Integer.parseInt(snItem.getSnCurrentValue()) + Integer.parseInt(snItem.getSnStep())));
+                                codeRuleValueService.updateById(list.get(i));
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ex) {
 
-            //如果当前编码项是流水号，且重置依赖不为空
-            if (null != inputTtem && enableInputTtem) {
-                // 获取编码项依赖流水号列表
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='" + branchCode + "')) "));
-                if (list.size() == 0) {
-                    //如果是空，则新产生一个编码项依赖流水号自增，如图号
-                    CodeRuleValue codeRuleValue = new CodeRuleValue();
-                    codeRuleValue.setItemId(inputTtem.getId());
-                    codeRuleValue.setInputValue(input);
-                    codeRuleValue.setBranchCode(inputTtem.getBranchCode());
-                    codeRuleValue.setTenantId(inputTtem.getTenantId());
-                    codeRuleValue.setSnValue(inputTtem.getSnDefault());
-                    codeRuleValueService.save(codeRuleValue);
-                } else {
-                    //如果不是空，则编码项依赖流水号自增，如图号
-                    for (int i = 0; i < list.size(); i++) {
-                        if (input.equals(list.get(i).getInputValue())) {
-                            list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(inputTtem.getSnStep())));
-                            codeRuleValueService.updateById(list.get(i));
-                        }
-                    }
-                }
-            }
-            // 如果流水号重置的依赖条件为日期，且日期输入项不为空
-            if (null != dateRuleItem && enableDateRuleItem) {
-                List<CodeRuleValue> list = codeRuleValueService.list(new QueryWrapper<CodeRuleValue>().eq("input_value", input).apply("item_id  in (select id from produce_code_rule_item where code_rule_id in (select id from produce_code_rule where code = '" + code + "' and branch_code='" + branchCode + "')) "));
-                if (list.size() == 0) {
-                    CodeRuleValue codeRuleValue = new CodeRuleValue();
-                    codeRuleValue.setItemId(dateRuleItem.getId());
-                    codeRuleValue.setInputValue(input);
-                    codeRuleValue.setBranchCode(inputTtem.getBranchCode());
-                    codeRuleValue.setTenantId(inputTtem.getTenantId());
-                    codeRuleValue.setSnValue(dateRuleItem.getSnDefault());
-                    codeRuleValueService.save(codeRuleValue);
-                } else {
-                    for (int i = 0; i < list.size(); i++) {
-                        if (input.equals(list.get(i).getInputValue())) {
-                            list.get(i).setSnValue(String.valueOf(Integer.parseInt(list.get(i).getSnValue()) + Integer.parseInt(dateRuleItem.getSnStep())));
-                            codeRuleValueService.updateById(list.get(i));
-                        }
-                    }
-                }
             }
 
 
