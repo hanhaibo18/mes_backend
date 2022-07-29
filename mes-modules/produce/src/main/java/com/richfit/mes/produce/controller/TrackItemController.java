@@ -129,6 +129,23 @@ public class TrackItemController extends BaseController {
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "查询跟单分流工序", notes = "根据跟单ID查询跟单分流工序")
+    @GetMapping("/track_flow_item")
+    public CommonResult<List<TrackItem>> trackFlowItem(String id, String flowId, String optVer) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        if (!StringUtils.isNullOrEmpty(id)) {
+            queryWrapper.eq("id", id);
+        }
+        if (!StringUtils.isNullOrEmpty(flowId)) {
+            queryWrapper.eq("flow_id", flowId);
+        }
+        if (!StringUtils.isNullOrEmpty(optVer)) {
+            queryWrapper.like("opt_ver", optVer);
+        }
+        queryWrapper.orderByAsc("sequence_order_by");
+        return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
+    }
+
     @ApiOperation(value = "激活工序", notes = "激活工序")
     @GetMapping("/active_trackitem")
     public CommonResult<List<TrackItem>> activeTrackItem(String trackHeadId, Boolean isGoNextOpt) {
