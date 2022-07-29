@@ -61,6 +61,9 @@ public class RouterCheckController extends BaseController {
             queryWrapper.eq("sequence_id", sequenceId);
             if (!StringUtils.isNullOrEmpty(type)) {
                 queryWrapper.eq("type", type);
+            } else {
+                queryWrapper.in("type", "0,1,2,3,4,5,检查内容".split(","));
+
             }
             if (!StringUtils.isNullOrEmpty(status)) {
                 queryWrapper.eq("status", status);
@@ -363,7 +366,7 @@ public class RouterCheckController extends BaseController {
                     if (!StringUtils.isNullOrEmpty(qualityList.get(i).getRouterNo())) {
                         list3.add(qualityList.get(i));
                     }
-                    
+
                     if (!drawnos.contains(qualityList.get(i).getRouterNo() + ",")) {
                         drawnos += qualityList.get(i).getRouterNo() + ",";
                     }
