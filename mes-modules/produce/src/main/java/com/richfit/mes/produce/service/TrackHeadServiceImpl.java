@@ -83,6 +83,45 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     public TrackFlowMapper trackFlowMapper;
 
+    /**
+     * 功能描述: 工序资料下载指定位置
+     *
+     * @param flowId 跟单分流id
+     * @param path   保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    @Override
+    public void downloadTrackItem(String flowId, String path) throws Exception {
+        //工序资料下载指定位置
+        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+        queryWrapperTrackItem.eq("flow_id", flowId);
+        List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+        for (TrackItem trackItem : trackItemList) {
+            List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
+            for (Attachment sar : attachments) {
+                downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
+            }
+        }
+    }
+
+    /**
+     * 功能描述: 下载料单文件
+     *
+     * @param id   料单id
+     * @param path 保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    @Override
+    public void downloadStoreFile(String id, String path) throws Exception {
+        QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
+        queryWrapperStoreAttachRel.eq("line_store_id", id);
+        List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
+        for (StoreAttachRel sar : storeAttachRels) {
+            downloads(sar.getAttachmentId(), path);
+        }
+    }
 
     @Override
     public List<TrackHead> selectTrackFlowList(Map<String, String> map) throws Exception {
@@ -92,7 +131,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     /**
      * 描述: 其他资料列表查询
      *
-     * @param id 分流id
+     * @param flowId 分流id
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25
      **/
@@ -130,39 +169,26 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public String completionData(String id) throws Exception {
+    public String completionData(String flowId) throws Exception {
         try {
             String path = "C:/temp";
             if (File.separator.equals("/")) {
                 path = "/temp";
             }
-            path = path + "/" + id;
+            path = path + "/" + SecurityUtils.getCurrentUser().getUsername();
             FileUtil.del(path);
-            //料单资料
+            //查询料单
             QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
-            queryWrapperTrackHeadRelation.eq("flow_id", id);
+            queryWrapperTrackHeadRelation.eq("flow_id", flowId);
             queryWrapperTrackHeadRelation.eq("type", "0");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation thr : trackHeadRelations) {
-                System.out.println("---" + thr.getLsId());
                 LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
-                QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
-                queryWrapperStoreAttachRel.eq("line_store_id", thr.getLsId());
-                List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
-                for (StoreAttachRel sar : storeAttachRels) {
-                    downloads(sar.getAttachmentId(), path + "/" + lineStore.getDrawingNo() + " " + lineStore.getMaterialNo());
-                }
+                //料单资料下载
+                downloadStoreFile(thr.getLsId(), path + "/" + lineStore.getDrawingNo() + " " + lineStore.getMaterialNo());
             }
-            //工序资料
-            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
-            queryWrapperTrackItem.eq("flow_id", id);
-            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
-            for (TrackItem trackItem : trackItemList) {
-                List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
-                for (Attachment sar : attachments) {
-                    downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
-                }
-            }
+            //工序资料下载
+            downloadTrackItem(flowId, path);
             File file = new File(path);
             if (!file.exists()) {
                 file.mkdirs();
