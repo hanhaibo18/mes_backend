@@ -30,22 +30,22 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             "  and status = #{status} " +
             " </if> " +
             " <if test='productNo != null and productNo != \"\"'> " +
-            "  and product_no like '#{%productNo%}' " +
+            "  and product_no like concat('%',#{productNo},'%') " +
             " </if> " +
             " <if test='trackNo != null and trackNo != \"\"'> " +
-            "  and track_no like #{%trackNo%} " +
+            "  and track_no like concat('%',#{trackNo},'%') " +
             " </if> " +
             " <if test='workNo != null and workNo != \"\"'> " +
-            "  and work_no like #{%workNo%} " +
+            "  and work_no like concat('%',#{workNo},'%') " +
             " </if> " +
             " <if test='drawingNo != null and drawingNo != \"\"'> " +
-            "  and drawing_no like #{%drawingNo%} " +
+            "  and drawing_no like concat('%',#{drawingNo},'%') " +
             " </if> " +
             " <if test='batchNo != null and batchNo != \"\"'> " +
-            "  and batch_no like #{%batchNo%} " +
+            "  and batch_no like concat('%',#{batchNo},'%') " +
             " </if> " +
             " <if test='productionOrder != null and productionOrder != \"\"'> " +
-            "  and production_order like #{%productionOrder%} " +
+            "  and production_order like concat('%',#{productionOrder},'%') " +
             " </if> " +
             " <if test='branchCode != null and branchCode != \"\"'> " +
             "  and branch_code = #{branchCode} " +
