@@ -290,4 +290,13 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Date: 2022/7/26 10:25
      **/
     private int numberComplete;
+
+    /**
+     * 描述: 分流id
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/26 10:25
+     **/
+    @TableField(exist = false)
+    private String flowId;
 }

@@ -20,8 +20,6 @@ import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.LineStoreService;
-import com.richfit.mes.produce.service.OrderService;
-import com.richfit.mes.produce.service.PurchaseOrderService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -69,11 +67,6 @@ public class LineStoreController extends BaseController {
     @Autowired
     private BaseServiceClient baseServiceClient;
 
-    @Autowired
-    private OrderService orderService;
-
-    @Autowired
-    private PurchaseOrderService purchaseOrderService;
 
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
     @PostMapping("/line_store")
@@ -111,6 +104,9 @@ public class LineStoreController extends BaseController {
     @ApiOperation(value = "来料接收入库", notes = "根据合格证，实现半成品/成品入库")
     @PostMapping("/add_by_cert")
     public CommonResult<Boolean> addLineStoreByCert(@ApiParam(value = "合格证信息") @RequestBody Certificate cert) throws Exception {
+
+        //TODO 逻辑验证
+
 
         Boolean b = lineStoreService.addStoreByCertTransfer(cert);
 
@@ -347,17 +343,16 @@ public class LineStoreController extends BaseController {
 
     @ApiOperation(value = "查询入库信息", notes = "根据图号、合格证号、物料编号查询入库信息")
     @GetMapping("/line_store/list/workblankNo")
-    public CommonResult<List<LineStore>> selectLineStoreListWorkblankNo(
-            @ApiParam(value = "料单类型") @RequestParam(required = false) String materialType,
-            @ApiParam(value = "物料码") @RequestParam(required = false) String materialNo,
-            @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
-            @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
-            @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
-            @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
-            @ApiParam(value = "数量") @RequestParam(required = false) Integer number,
-            @ApiParam(value = "可使用数量") @RequestParam(required = false) Integer usableNumber,
-            @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
-            @ApiParam(value = "分公司", required = true) @RequestParam String branchCode) {
+    public CommonResult<List<LineStore>> selectLineStoreListWorkblankNo(@ApiParam(value = "料单类型") @RequestParam(required = false) String materialType,
+                                                                        @ApiParam(value = "物料码") @RequestParam(required = false) String materialNo,
+                                                                        @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                                        @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+                                                                        @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
+                                                                        @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
+                                                                        @ApiParam(value = "数量") @RequestParam(required = false) Integer number,
+                                                                        @ApiParam(value = "可使用数量") @RequestParam(required = false) Integer usableNumber,
+                                                                        @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
+                                                                        @ApiParam(value = "分公司", required = true) @RequestParam String branchCode) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         if (!StringUtils.isNullOrEmpty(materialType)) {
             queryWrapper.eq("material_type", materialType);

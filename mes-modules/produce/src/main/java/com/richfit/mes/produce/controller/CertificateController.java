@@ -46,19 +46,16 @@ public class CertificateController {
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
-    public CommonResult<Certificate> addCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate,
-                                                    @ApiParam(value = "分公司") @RequestParam String branchCode) throws Exception {
+    public CommonResult<Certificate> addCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate) throws Exception {
         if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
             return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
         }
         if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
             return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
         }
-        if (certificateService.certNoExits(certificate.getCertificateNo(), branchCode)) {
+        if (certificateService.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
             return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
         } else {
-
-            certificate.setBranchCode(branchCode);
 
             certificateService.saveCertificate(certificate);
 

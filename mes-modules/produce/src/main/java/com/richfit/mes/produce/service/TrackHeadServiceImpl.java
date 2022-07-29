@@ -84,18 +84,24 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public TrackFlowMapper trackFlowMapper;
 
 
+    @Override
+    public List<TrackHead> selectTrackFlowList(Map<String, String> map) throws Exception {
+        return trackFlowMapper.selectTrackFlowList(map);
+    }
+
     /**
-     * 描述: 其他资料列表
+     * 描述: 其他资料列表查询
      *
+     * @param id 分流id
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public List<LineStore> otherData(String id) throws Exception {
+    public List<LineStore> otherData(String flowId) throws Exception {
         try {
             List<LineStore> lineStores = new ArrayList<>();
             QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("th_id", id);
+            queryWrapper.eq("flow_id", flowId);
             queryWrapper.eq("type", "0");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapper);
             for (TrackHeadRelation thr : trackHeadRelations) {
@@ -130,12 +136,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if (File.separator.equals("/")) {
                 path = "/temp";
             }
-            FileUtil.del(path);
             path = path + "/" + id;
-
+            FileUtil.del(path);
             //料单资料
             QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
-            queryWrapperTrackHeadRelation.eq("th_id", id);
+            queryWrapperTrackHeadRelation.eq("flow_id", id);
             queryWrapperTrackHeadRelation.eq("type", "0");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation thr : trackHeadRelations) {
@@ -150,7 +155,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //工序资料
             QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
-            queryWrapperTrackItem.eq("track_head_id", id);
+            queryWrapperTrackItem.eq("flow_id", id);
             List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
             for (TrackItem trackItem : trackItemList) {
                 List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
@@ -169,6 +174,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             throw new Exception("下载出现异常，请联系管理员");
         }
     }
+
 
     public void downloads(String id, String path) throws Exception {
         try {
@@ -335,8 +341,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //无库存料单，默认新增库存料单，然后出库
                     lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, productsNo);
                 }
+
+                //添加跟单-分流-料单的关联信息
                 TrackHeadRelation relation = new TrackHeadRelation();
                 relation.setThId(trackHead.getId());
+                relation.setFlowId(flowId);
                 relation.setLsId(lineStore.getId());
                 relation.setType("0");
                 relation.setNumber(number);
@@ -350,6 +359,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (lineStores != null && lineStores.size() > 0) {
                     throw new RuntimeException("产品编号已存在！");
                 } else {
+                    //新增一条半成品/成品信息
                     LineStore lineStoreCp = new LineStore();
                     lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
                     lineStoreCp.setTenantId(trackHead.getTenantId());
@@ -368,8 +378,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     lineStoreCp.setBranchCode(trackHead.getBranchCode());
                     lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     lineStoreMapper.insert(lineStoreCp);
+                    //添加跟单-分流-料单的关联信息
                     TrackHeadRelation relationCp = new TrackHeadRelation();
                     relationCp.setThId(trackHead.getId());
+                    relation.setFlowId(flowId);
                     relationCp.setLsId(lineStoreCp.getId());
                     relationCp.setType("1");
                     relationCp.setNumber(number);
