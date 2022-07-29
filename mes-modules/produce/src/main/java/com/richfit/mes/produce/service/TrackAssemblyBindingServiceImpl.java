@@ -42,9 +42,10 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> updateBinding(String id, int isBinding) {
+    public CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId) {
         TrackAssemblyBinding assemblyBinding = this.getById(id);
         assemblyBinding.setIsBinding(isBinding);
+        assemblyBinding.setItemId(itemId);
         TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
         TrackHead trackHead = trackHeadService.getById(trackAssembly.getTrackHeadId());
         if (1 == isBinding) {

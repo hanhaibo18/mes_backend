@@ -182,7 +182,7 @@ public class TrackCompleteController extends BaseController {
                     }
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
             return CommonResult.success(completes);
         } catch (Exception e) {

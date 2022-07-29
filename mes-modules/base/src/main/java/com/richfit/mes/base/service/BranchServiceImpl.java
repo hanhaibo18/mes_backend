@@ -84,14 +84,18 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
 
     @Override
     public List<Branch> queryAllCode() {
+        List<Branch> branchList = new ArrayList<>();
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.isNull("main_branch_code")
-                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.isNull("main_branch_code");
         List<Branch> branches = this.list(queryWrapper);
-        for (Branch branch : branches) {
-            queryByBranchCode(branch);
+        Branch branch = new Branch();
+        branch.setBranchName("总公司");
+        branch.setBranchList(branches);
+        branchList.add(branch);
+        for (Branch branch1 : branches) {
+            queryByBranchCode(branch1);
         }
-        return branches;
+        return branchList;
     }
 
     private void queryByBranchCode(List<Branch> branchList, List<TenantUserVo> users) {

@@ -52,7 +52,6 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setRouterId(trackHead.getRouterId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
-                trackItem.setProductNo(trackHead.getProductNo());
                 trackItem.setProductName(trackHead.getProductName());
                 trackItem.setPartsName(trackHead.getMaterialName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
@@ -74,7 +73,6 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setRouterId(trackHead.getRouterId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
-                trackItem.setProductNo(trackHead.getProductNo());
                 trackItem.setProductName(trackHead.getProductName());
                 trackItem.setPartsName(trackHead.getMaterialName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
@@ -96,7 +94,6 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setRouterId(trackHead.getRouterId());
                 trackItem.setWeight(trackHead.getWeight());
                 trackItem.setWorkNo(trackHead.getWorkNo());
-                trackItem.setProductNo(trackHead.getProductNo());
                 trackItem.setProductName(trackHead.getProductName());
                 trackItem.setPartsName(trackHead.getMaterialName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
