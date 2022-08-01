@@ -52,6 +52,12 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "工序ID", dataType = "String")
     private String optId;
+
+    /**
+     * 工序序号
+     */
+    @ApiModelProperty(value = "工序序号", dataType = "String")
+    private String optXh;
     /**
      * 工序类型
      */
