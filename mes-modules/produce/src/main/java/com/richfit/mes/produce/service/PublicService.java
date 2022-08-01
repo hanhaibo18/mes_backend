@@ -31,6 +31,16 @@ public interface PublicService {
     Boolean updateComplete(Map<String, String> map);
 
     /**
+     * 功能描述: 更改派工状态
+     *
+     * @param map
+     * @Author: xinYu.hou
+     * @Date: 2022/8/1 16:12
+     * @return: Boolean
+     **/
+    Boolean updateDispatching(Map<String, String> map);
+
+    /**
      * 功能描述: 激活工序
      *
      * @param trackItemId
