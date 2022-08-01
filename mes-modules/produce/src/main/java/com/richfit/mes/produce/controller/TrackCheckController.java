@@ -364,7 +364,7 @@ public class TrackCheckController extends BaseController {
             //判断工序是否是最后一道工序
             try {
                 if (0 == trackItem.getNextOptSequence()) {
-                    trackHeadService.trackHeadFinish(trackItem.getTrackHeadId());
+                    trackHeadService.trackHeadFinish(trackItem.getFlowId());
                 } else {
                     trackItem.setIsFinalComplete("1");
                     trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
