@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -78,6 +79,17 @@ public class DevicePersonController extends BaseController {
     @ApiImplicitParam(name = "device", value = "设备人员记录", required = true, dataType = "DevicePerson", paramType = "path")
     @PostMapping("/add")
     public CommonResult<DevicePerson[]> addDevicePerson(@RequestBody DevicePerson[] devicePersons) {
+        //根据设备id查询已经关联人员
+        List<String> deviceIds = new ArrayList<>();
+        if(devicePersons.length>0){
+            for (int i=0;i<devicePersons.length;i++){
+                deviceIds.add(devicePersons[i].getDeviceId());
+            }
+        }
+        List<DevicePerson> devicePersonByDeviceId = devicePersonService.list(new QueryWrapper<DevicePerson>().in("device_id", deviceIds));
+        //根据设备id分组
+        Map<String, Set<String>> devicePersonMap = devicePersonByDeviceId.stream().collect(Collectors.groupingBy(DevicePerson::getDeviceId, Collectors.mapping(DevicePerson::getUserId, Collectors.toSet())));
+
         for (DevicePerson devicePerson : devicePersons) {
             if (StringUtils.isNullOrEmpty(devicePerson.getDeviceId())) {
                 return CommonResult.failed("编码不能为空！");
@@ -88,8 +100,10 @@ public class DevicePersonController extends BaseController {
                 devicePerson.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                 devicePerson.setModifyTime(new Date());
                 devicePerson.setBranchCode(devicePerson.getBranchCode());
-                boolean bool = devicePersonService.save(devicePerson);
-
+                //保存没有被关联过的用户
+                if(ObjectUtil.isEmpty(devicePersonMap.get(devicePerson.getDeviceId())) || !devicePersonMap.get(devicePerson.getDeviceId()).contains(devicePerson.getUserId())){
+                    boolean bool = devicePersonService.save(devicePerson);
+                }
             }
         }
         return CommonResult.success(devicePersons, "操作成功！");
