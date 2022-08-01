@@ -34,7 +34,7 @@ public class PublicServiceImpl implements PublicService {
     public Boolean publicUpdateState(Map<String, String> map, int code) {
         //派工
         if (PublicCodeEnum.DISPATCHING.getCode() == code) {
-            return null;
+            return updateDispatching(map);
         }
         //报工
         if (PublicCodeEnum.COMPLETE.getCode() == code) {
@@ -107,6 +107,39 @@ public class PublicServiceImpl implements PublicService {
             }
         }
         return activationProcess;
+    }
+
+    @Override
+    public Boolean updateDispatching(Map<String, String> map) {
+        String tiId = map.get("trackItemId");
+        TrackItem trackItem = trackItemService.getById(tiId);
+
+        String trackHeadId = map.get("trackHeadId");
+        TrackHead trackHead = trackHeadService.getById(trackHeadId);
+        if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
+            //将跟单状态改为在制
+            trackHead.setStatus("1");
+            trackHeadService.updateById(trackHead);
+        }
+
+        boolean activation = false;
+        if (null == trackItem) {
+            return false;
+        } else {
+            trackItem.setIsCurrent(1);
+            trackItem.setIsDoing(0);
+            trackItem.setIsSchedule(1);
+            String number = map.get("number");
+            trackItem.setAssignableQty(trackItem.getAssignableQty() - Integer.parseInt(number));
+            trackItemService.updateById(trackItem);
+            if (0 == trackItem.getAssignableQty()) {
+                if (trackItem.getIsCurrent() == 1 && trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsExistQualityCheck() == 0) {
+                    //激活下工序
+                    activation = activation(trackItem);
+                }
+            }
+        }
+        return activation;
     }
 
     @Override
