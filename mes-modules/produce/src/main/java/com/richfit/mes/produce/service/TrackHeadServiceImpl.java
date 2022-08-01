@@ -83,19 +83,64 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     public TrackFlowMapper trackFlowMapper;
 
+    /**
+     * 功能描述: 工序资料下载指定位置
+     *
+     * @param flowId 跟单分流id
+     * @param path   保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    @Override
+    public void downloadTrackItem(String flowId, String path) throws Exception {
+        //工序资料下载指定位置
+        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+        queryWrapperTrackItem.eq("flow_id", flowId);
+        List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+        for (TrackItem trackItem : trackItemList) {
+            List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
+            for (Attachment sar : attachments) {
+                downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
+            }
+        }
+    }
 
     /**
-     * 描述: 其他资料列表
+     * 功能描述: 下载料单文件
      *
+     * @param id   料单id
+     * @param path 保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    @Override
+    public void downloadStoreFile(String id, String path) throws Exception {
+        QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
+        queryWrapperStoreAttachRel.eq("line_store_id", id);
+        List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
+        for (StoreAttachRel sar : storeAttachRels) {
+            downloads(sar.getAttachmentId(), path);
+        }
+    }
+
+    @Override
+    public List<TrackHead> selectTrackFlowList(Map<String, String> map) throws Exception {
+        return trackFlowMapper.selectTrackFlowList(map);
+    }
+
+    /**
+     * 描述: 其他资料列表查询
+     *
+     * @param flowId 分流id
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public List<LineStore> otherData(String id) throws Exception {
+    public List<LineStore> otherData(String flowId) throws Exception {
         try {
             List<LineStore> lineStores = new ArrayList<>();
             QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("th_id", id);
+            queryWrapper.eq("flow_id", flowId);
             queryWrapper.eq("type", "0");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapper);
             for (TrackHeadRelation thr : trackHeadRelations) {
@@ -124,40 +169,26 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public String completionData(String id) throws Exception {
+    public String completionData(String flowId) throws Exception {
         try {
             String path = "C:/temp";
             if (File.separator.equals("/")) {
                 path = "/temp";
             }
+            path = path + "/" + SecurityUtils.getCurrentUser().getUsername();
             FileUtil.del(path);
-            path = path + "/" + id;
-
-            //料单资料
+            //查询料单
             QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
-            queryWrapperTrackHeadRelation.eq("th_id", id);
+            queryWrapperTrackHeadRelation.eq("flow_id", flowId);
             queryWrapperTrackHeadRelation.eq("type", "0");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation thr : trackHeadRelations) {
-                System.out.println("---" + thr.getLsId());
                 LineStore lineStore = lineStoreMapper.selectById(thr.getLsId());
-                QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
-                queryWrapperStoreAttachRel.eq("line_store_id", thr.getLsId());
-                List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
-                for (StoreAttachRel sar : storeAttachRels) {
-                    downloads(sar.getAttachmentId(), path + "/" + lineStore.getDrawingNo() + " " + lineStore.getMaterialNo());
-                }
+                //料单资料下载
+                downloadStoreFile(thr.getLsId(), path + "/" + lineStore.getDrawingNo() + " " + lineStore.getMaterialNo());
             }
-            //工序资料
-            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
-            queryWrapperTrackItem.eq("track_head_id", id);
-            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
-            for (TrackItem trackItem : trackItemList) {
-                List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
-                for (Attachment sar : attachments) {
-                    downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
-                }
-            }
+            //工序资料下载
+            downloadTrackItem(flowId, path);
             File file = new File(path);
             if (!file.exists()) {
                 file.mkdirs();
@@ -169,6 +200,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             throw new Exception("下载出现异常，请联系管理员");
         }
     }
+
 
     public void downloads(String id, String path) throws Exception {
         try {
@@ -323,6 +355,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Transactional
     public boolean trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
+            String flowId = UUID.randomUUID().toString().replaceAll("-", "");
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
             //只有机加创建跟单时才会进行库存料单关联
             if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
@@ -334,8 +367,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //无库存料单，默认新增库存料单，然后出库
                     lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, productsNo);
                 }
+
+                //添加跟单-分流-料单的关联信息
                 TrackHeadRelation relation = new TrackHeadRelation();
                 relation.setThId(trackHead.getId());
+                relation.setFlowId(flowId);
                 relation.setLsId(lineStore.getId());
                 relation.setType("0");
                 relation.setNumber(number);
@@ -349,6 +385,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (lineStores != null && lineStores.size() > 0) {
                     throw new RuntimeException("产品编号已存在！");
                 } else {
+                    //新增一条半成品/成品信息
                     LineStore lineStoreCp = new LineStore();
                     lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
                     lineStoreCp.setTenantId(trackHead.getTenantId());
@@ -367,8 +404,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     lineStoreCp.setBranchCode(trackHead.getBranchCode());
                     lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     lineStoreMapper.insert(lineStoreCp);
+                    //添加跟单-分流-料单的关联信息
                     TrackHeadRelation relationCp = new TrackHeadRelation();
                     relationCp.setThId(trackHead.getId());
+                    relation.setFlowId(flowId);
                     relationCp.setLsId(lineStoreCp.getId());
                     relationCp.setType("1");
                     relationCp.setNumber(number);
@@ -377,7 +416,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
-            trackFlow.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            trackFlow.setId(flowId);
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             trackFlowMapper.insert(trackFlow);
@@ -386,6 +425,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 for (TrackItem item : trackItems) {
                     item.setId(UUID.randomUUID().toString().replace("-", ""));
                     item.setTrackHeadId(trackHead.getId());
+                    item.setFlowId(flowId);
                     item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
                     item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                     item.setCreateTime(new Date());
@@ -876,14 +916,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo) {
         QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("track_head_id",trackNo);
+        wrapper.eq("track_head_id", trackNo);
         List<TrackAssembly> list = trackAssemblyService.list(wrapper);
         List<TrackHead> trackHeads = new ArrayList<>();
-        list.forEach(i ->{
+        list.forEach(i -> {
             QueryWrapper<TrackHead> tWrapper = new QueryWrapper<>();
-            tWrapper.eq("product_no",i.getProductNo());
+            tWrapper.eq("product_no", i.getProductNo());
             TrackHead one = this.getOne(tWrapper);
-            if (ObjectUtils.isNotNull(one)){
+            if (ObjectUtils.isNotNull(one)) {
                 trackHeads.add(one);
             }
         });
@@ -896,7 +936,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         TrackHead trackHead = trackHeads.getParam();
         if (!StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
             List<TrackHead> trackHeadList = queryTrackAssemblyByTrackNo(trackHead.getTrackNo());
-            trackHeadMapper.queryBomList(new Page<>(trackHeads.getPage(), trackHeads.getSize()),trackHeadList);
+            trackHeadMapper.queryBomList(new Page<>(trackHeads.getPage(), trackHeads.getSize()), trackHeadList);
         }
         return null;
     }

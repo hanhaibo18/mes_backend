@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.produce.entity.AdditionalMaterialDto;
+import com.richfit.mes.produce.entity.ApplicationResult;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
 
 import java.util.List;
@@ -36,7 +38,7 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @Date: 2022/7/18 16:48
      * @return: Boolean
      **/
-    Boolean updateComplete(List<String> idList);
+    Boolean updateComplete(List<String> idList, String itemId);
 
     /**
      * 功能描述:解绑非关键件
@@ -60,4 +62,14 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
     List<AssembleKittingVo> kittingExamine(String trackHeadId, String branchCode);
 
     List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo);
+
+    /**
+     * 功能描述: 追加物料
+     *
+     * @param additionalMaterialDto
+     * @Author: xinYu.hou
+     * @Date: 2022/7/26 17:56
+     * @return: ApplicationResult
+     **/
+    ApplicationResult application(AdditionalMaterialDto additionalMaterialDto);
 }

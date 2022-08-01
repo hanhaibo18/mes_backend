@@ -142,7 +142,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Override
     public LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String workblankNo) {
-        //TODO 增加自动料单入库 再出库的逻辑
+        //自动料单入库 再出库的逻辑
         LineStore lineStore = new LineStore();
         lineStore.setBranchCode(trackHead.getBranchCode());
         lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -185,18 +185,10 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         certificateService.certPushComplete(certificate);
 
         //1 保存新合格证信息
-        //2 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
-        //2 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
-        certificate.setCertOrigin("1");
-        certificate.setBranchCode(certificate.getNextOptWork());
-        certificate.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        certificate.setCreateTime(new Date());
-        certificate.setModifyTime(new Date());
-        certificate.setId(null);
-        certificateService.savePushCert(certificate);
 
-        //3 合格证下包括多个物料信息，需要逐条处理
-        //3 如果对应物料产品编号在系统不存在 则新增料单入库
+
+        //2 合格证下包括多个物料信息，需要逐条处理
+        //2 如果对应物料产品编号在系统不存在 则新增料单入库
         for (TrackCertificate tc : certificate.getTrackCertificates()) {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("workblank_no", tc.getProductNo());
@@ -213,6 +205,15 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             }
         }
 
+        //3 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
+        //3 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
+        certificate.setCertOrigin("1");
+        certificate.setBranchCode(certificate.getNextOptWork());
+        certificate.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        certificate.setCreateTime(new Date());
+        certificate.setModifyTime(new Date());
+        certificate.setId(null);
+        certificateService.savePushCert(certificate);
 
         return true;
     }
@@ -299,9 +300,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (isAutoMatchProd) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
             }
-            if (isAutoMatchPur) {
-                lineStore.setPurchaseOrder(matchPur(lineStore.getMaterialNo(), lineStore.getNumber()));
-            }
+
+            //新业务要求：不匹配采购订单
+//            if (isAutoMatchPur) {
+//                lineStore.setPurchaseOrder(matchPur(lineStore.getMaterialNo(), lineStore.getNumber()));
+//            }
 
             bool = this.save(lineStore);
             //保存料单-附件关系

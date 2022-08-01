@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 王瑞
@@ -18,16 +19,45 @@ import java.util.List;
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
+
+    /**
+     * 功能描述: 工序资料下载指定位置
+     *
+     * @param flowId 跟单分流id
+     * @param path   保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    void downloadTrackItem(String flowId, String path) throws Exception;
+
+    /**
+     * 功能描述: 下载料单文件
+     *
+     * @param id   料单id
+     * @param path 保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    void downloadStoreFile(String id, String path) throws Exception;
+
+    /**
+     * 功能描述: 跟单分流信息查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    List<TrackHead> selectTrackFlowList(Map<String, String> map) throws Exception;
+
     /**
      * 描述: 其他资料列表
      *
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25
      **/
-    List<LineStore> otherData(String id) throws Exception;
+    List<LineStore> otherData(String flowId) throws Exception;
 
     /**
-     * 描述: 生成完工资料
+     * 描述: 通过跟单分流id生成完工资料并打包zip
      *
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25

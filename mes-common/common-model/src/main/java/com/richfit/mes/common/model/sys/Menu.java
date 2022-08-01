@@ -54,7 +54,8 @@ public class Menu extends BaseEntity<Menu> {
      */
     private String menuIcon;
 
-    private Integer menuOrder;
+
+    private Integer menuOrder = 1;
 
     private String parentId;
 

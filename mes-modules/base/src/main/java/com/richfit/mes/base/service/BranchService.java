@@ -36,4 +36,13 @@ public interface BranchService extends IService<Branch> {
      * @return: List<TenantUserVo>
      **/
     List<TenantUserVo> queryUserList(String branchCode);
+
+    /**
+     * 功能描述: 获取所有车间
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/7/28 16:30
+     * @return: List<Branch>
+     **/
+    List<Branch> queryAllCode();
 }

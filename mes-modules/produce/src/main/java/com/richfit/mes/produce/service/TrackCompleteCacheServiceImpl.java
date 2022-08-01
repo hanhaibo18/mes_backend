@@ -10,6 +10,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteCacheMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
     private TrackItemService trackItemService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveCompleteCache(CompleteDto completeDto) {
         TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
         //检验人
@@ -62,6 +64,7 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
             trackCompleteCache.setDetectionResult(trackComplete.getDetectionResult());
             trackCompleteCacheList.add(trackCompleteCache);
         }
+        trackItemService.updateById(trackItem);
         this.saveBatch(trackCompleteCacheList);
         return CommonResult.success(true);
     }

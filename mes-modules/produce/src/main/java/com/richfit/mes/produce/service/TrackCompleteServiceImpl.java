@@ -193,82 +193,94 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         return CommonResult.success(this.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
     }
 
+    /**
+     * @modifiedby mafeng02 2002-07-28 ,修改没有派工的外协和探伤下的处理
+     * @Description 报工回滚
+     */
     @Override
     public CommonResult<Boolean> rollBack(String id) {
         String msg = "";
         TrackComplete trackComplete = this.getById(id);
-        Assign assign = trackAssignService.getById(trackComplete.getAssignId());
+        Assign assign = new Assign();
+        if (null != trackComplete.getAssignId()) {
+            assign = trackAssignService.getById(trackComplete.getAssignId());
+        }
+        TrackItem trackItem = new TrackItem();
         if (null == assign) {
+            trackItem = trackItemService.getById(trackComplete.getTiId());
+        } else {
+            trackItem = trackItemService.getById(assign.getTiId());
+        }
+        if (null == trackItem) {
             removeComplete(trackComplete.getTiId());
         } else {
-            TrackItem trackItem = trackItemService.getById(assign.getTiId());
-            if (null == trackItem) {
-                removeComplete(trackComplete.getTiId());
+            QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+            if (!StringUtils.isNullOrEmpty(id)) {
+                queryWrapper.eq("track_id", id);
             } else {
-                QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
-                if (!StringUtils.isNullOrEmpty(id)) {
-                    queryWrapper.eq("track_id", id);
-                } else {
-                    queryWrapper.eq("track_id", "-1");
+                queryWrapper.eq("track_id", "-1");
+            }
+            queryWrapper.orderByAsc("modify_time");
+            List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
+            //判断跟单号已质检完成，报工无法取消
+            if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
+                msg += "跟单号已质检完成，报工无法取消！";
+            }
+            //判断跟单号已质检完成，报工无法取消
+            if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
+                msg += "跟单号已调度完成，报工无法取消！";
+            }
+            //判断后置工序是否已派工，否则不可回滚
+            QueryWrapper<Assign> queryWrapperAssign = new QueryWrapper<Assign>();
+            queryWrapperAssign.eq("ti_id", trackItem.getId());
+            List<Assign> assigns = trackAssignService.list(queryWrapperAssign);
+            for (int j = 0; j < assigns.size(); j++) {
+                TrackItem cstrackItem = trackItemService.getById(assigns.get(j).getTiId());
+                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                    return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已派工，需要先取消后序工序");
                 }
-                queryWrapper.orderByAsc("modify_time");
-                List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
-                //判断跟单号已质检完成，报工无法取消
-                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
-                    msg += assign.getTrackNo() + "跟单号已质检完成，报工无法取消！";
-                }
-                //判断跟单号已质检完成，报工无法取消
-                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                    msg += assign.getTrackNo() + "跟单号已调度完成，报工无法取消！";
-                }
-                //判断后置工序是否已派工，否则不可回滚
-                QueryWrapper<Assign> queryWrapperAssign = new QueryWrapper<Assign>();
-                queryWrapperAssign.eq("ti_id", trackItem.getId());
-                List<Assign> assigns = trackAssignService.list(queryWrapperAssign);
-                for (int j = 0; j < assigns.size(); j++) {
-                    TrackItem cstrackItem = trackItemService.getById(assigns.get(j).getTiId());
-                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                        return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已派工，需要先取消后序工序");
-                    }
-                }
-                //判断后置工序是否已报工，否则不可回滚
-                for (int j = 0; j < cs.size(); j++) {
-                    TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
-                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                        return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已报工，需要先取消后序工序");
-                    }
-                }
-
-                //将后置工序IS_CURRENT设置为否，状态为1
-                List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
-                for (TrackItem trackItems : items) {
-                    if (trackItems.getOptSequence() > trackItem.getOptSequence() && trackItems.getIsCurrent() == 1) {
-                        trackItems.setIsCurrent(0);
-                        trackItems.setIsDoing(0);
-//                        trackItems.setCompleteQty(0.0);
-                        trackItems.setIsFinalComplete("0");
-                        trackItemService.updateById(trackItems);
-                    }
-                }
-                //将当前工序设置为激活
-                if (msg.equals("")) {
-//                    trackItem.setCompleteQty(0.0);
-                    trackItem.setIsDoing(0);
-                    trackItem.setIsCurrent(1);
-                    trackItem.setIsFinalComplete("0");
-                    trackItem.setIsOperationComplete(0);
-                    trackItemService.updateById(trackItem);
-                    TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                    trackHead.setStatus("1");
-                    trackHeadService.updateById(trackHead);
-                    assign.setAvailQty(assign.getQty() + trackComplete.getCompletedQty().intValue());
-                    assign.setState(0);
-                    trackAssignService.updateById(assign);
-                    removeComplete(trackComplete.getTiId());
+            }
+            //判断后置工序是否已报工，否则不可回滚
+            for (int j = 0; j < cs.size(); j++) {
+                TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
+                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                    return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已报工，需要先取消后序工序");
                 }
             }
 
+            //将后置工序IS_CURRENT设置为否，状态为1
+            List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
+            for (TrackItem trackItems : items) {
+                if (trackItems.getOptSequence() > trackItem.getOptSequence() && trackItems.getIsCurrent() == 1) {
+                    trackItems.setIsCurrent(0);
+                    trackItems.setIsDoing(0);
+//                        trackItems.setCompleteQty(0.0);
+                    trackItems.setIsFinalComplete("0");
+                    trackItemService.updateById(trackItems);
+                }
+            }
+            //将当前工序设置为激活
+            if (msg.equals("")) {
+//                    trackItem.setCompleteQty(0.0);
+                trackItem.setIsDoing(0);
+                trackItem.setIsCurrent(1);
+                trackItem.setIsFinalComplete("0");
+                trackItem.setIsOperationComplete(0);
+                trackItem.setAssignableQty(trackItem.getAssignableQty().intValue() + trackComplete.getCompletedQty().intValue());
+                trackItemService.updateById(trackItem);
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                trackHead.setStatus("1");
+                trackHeadService.updateById(trackHead);
+                if (null != assign) {
+                    assign.setAvailQty(assign.getQty() + trackComplete.getCompletedQty().intValue());
+                    assign.setState(0);
+                    trackAssignService.updateById(assign);
+                }
+                removeComplete(trackComplete.getTiId());
+            }
         }
+
+
         if (msg.equals("")) {
             return CommonResult.success(null, "删除成功！");
         } else {

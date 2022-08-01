@@ -10,7 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @Author: GaoLiang
  * @Date: 2022/7/25 10:24
  */
-@SpringBootApplication(scanBasePackages = "com.kld.mes", exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = "com.kld.mes,com.richfit.mes", exclude = {DataSourceAutoConfiguration.class})
 @EnableDiscoveryClient
 @EnableFeignClients
 public class WmsIntegrationApplication {

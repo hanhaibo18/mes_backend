@@ -48,6 +48,7 @@ security:
     resource:
       loadBalanced: true
       token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
+
 #      jwt:
 #        key-value: test
 # Mybatis-plus

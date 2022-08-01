@@ -61,6 +61,9 @@ public class RouterCheckController extends BaseController {
             queryWrapper.eq("sequence_id", sequenceId);
             if (!StringUtils.isNullOrEmpty(type)) {
                 queryWrapper.eq("type", type);
+            } else {
+                queryWrapper.in("type", "0,1,2,3,4,5,检查内容".split(","));
+
             }
             if (!StringUtils.isNullOrEmpty(status)) {
                 queryWrapper.eq("status", status);
@@ -306,11 +309,11 @@ public class RouterCheckController extends BaseController {
 
                         QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                         queryWrapper2.eq("opt_name", checkList.get(j).getOptName().trim());
-                        queryWrapper2.eq("tenant_id", tenantId);
+                        //queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
                         queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                        if (sequences.size() > 1) {
+                        if (sequences.size() >= 1) {
                             step += sequences.get(0).getRouterId() + sequences.get(0).getId() + checkList.get(j).getOptName();
                             if (checkList.get(j).getRouterNo().equals(drawnos.split(",")[i])) {
                                 RouterCheck routerCheck = new RouterCheck();
@@ -363,6 +366,7 @@ public class RouterCheckController extends BaseController {
                     if (!StringUtils.isNullOrEmpty(qualityList.get(i).getRouterNo())) {
                         list3.add(qualityList.get(i));
                     }
+
                     if (!drawnos.contains(qualityList.get(i).getRouterNo() + ",")) {
                         drawnos += qualityList.get(i).getRouterNo() + ",";
                     }
@@ -387,12 +391,12 @@ public class RouterCheckController extends BaseController {
                     for (int j = 0; j < qualityList.size(); j++) {
                         QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                         queryWrapper2.eq("opt_name", qualityList.get(j).getOptName().trim());
-                        queryWrapper2.eq("tenant_id", tenantId);
+                        //queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
                         queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
 
                         List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                        if (sequences.size() > 1) {
+                        if (sequences.size() >= 1) {
                             step += sequences.get(0).getRouterId() + sequences.get(0).getId() + qualityList.get(j).getOptName();
                             RouterCheck routerCheck = new RouterCheck();
                             routerCheck.setCreateBy(user.getUsername());

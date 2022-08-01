@@ -182,7 +182,7 @@ public class TrackCompleteController extends BaseController {
                     }
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
             return CommonResult.success(completes);
         } catch (Exception e) {
@@ -371,14 +371,17 @@ public class TrackCompleteController extends BaseController {
             }
 
             //合计当前派工下的已报工数
-            Double sum = complete.getCompletedQty();
-            trackItem.setCompleteQty(sum);
+            int sum = complete.getCompletedQty().intValue();
+            trackItem.setCompleteQty(trackItem.getCompleteQty() + sum);
+            trackItem.setAssignableQty(trackItem.getAssignableQty() - sum);
             complete.setAssignId(complete.getTiId());
             complete.setModifyTime(new Date());
             complete.setCreateTime(new Date());
+            complete.setCompleteBy(complete.getUserId());
+            complete.setCompleteTime(new Date());
             trackItem.setOperationCompleteTime(new Date());
-            trackItem.setCompleteQty(sum);
             trackItem.setIsOperationComplete(1);
+            trackItem.setQualityCheckBy(complete.getQualityCheckBy());
             if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
                 trackItem.setIsFinalComplete(String.valueOf(1));
             }
