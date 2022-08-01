@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -112,4 +113,7 @@ public class Product extends BaseEntity<Product> {
 
     @TableField(exist = false)
     private String materialTypeName;
+
+    @TableField(exist = false)
+    private BigDecimal qty;
 }

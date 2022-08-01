@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WL5G3N2:definitions xmlns:WL5G3N1="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004" xmlns:WL5G3N0="http://schemas.xmlsoap.org/ws/2003/05/partner-link/" xmlns:WL5G3N4="urn:sap-com:document:sap:rfc:functions.response" xmlns:WL5G3N3="urn:sap-com:document:sap:rfc:functions" name="Z_PPFM0004" targetNamespace="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004" xmlns:WL5G3N2="http://schemas.xmlsoap.org/wsdl/">
+  <WL5G3N0:partnerLinkType name="Z_PPFM0004PartnerLinkType">
+    <WL5G3N0:role name="Z_PPFM0004Role">
+      <WL5G3N0:portType name="WL5G3N1:Z_PPFM0004PortType" />
+    </WL5G3N0:role>
+  </WL5G3N0:partnerLinkType>
+  <WL5G3N2:types>
+    <schema xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/" xmlns:iWayResponse="urn:sap-com:document:sap:rfc:functions.response" xmlns:iWayRequest="urn:sap-com:document:sap:rfc:functions" xmlns:Z_PPFM0004="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004" xmlns="http://www.w3.org/2001/XMLSchema">
+      <import schemaLocation="http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase?SCHEMA%2FZBZZ%2FERPPP%2FIS_MES_SAPMaterialBase%2Finterface%2FSAPAdapter%2FZ_PPFM0004_invoke_request" namespace="urn:sap-com:document:sap:rfc:functions" />
+    </schema>
+    <schema xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/" xmlns:iWayResponse="urn:sap-com:document:sap:rfc:functions.response" xmlns:iWayRequest="urn:sap-com:document:sap:rfc:functions" xmlns:Z_PPFM0004="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004" xmlns="http://www.w3.org/2001/XMLSchema">
+      <import schemaLocation="http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase?SCHEMA%2FZBZZ%2FERPPP%2FIS_MES_SAPMaterialBase%2Finterface%2FSAPAdapter%2FZ_PPFM0004_invoke_response" namespace="urn:sap-com:document:sap:rfc:functions.response" />
+    </schema>
+  </WL5G3N2:types>
+  <WL5G3N2:message name="request">
+    <WL5G3N2:part name="input_Z_PPFM0004" element="WL5G3N3:Z_PPFM0004" />
+  </WL5G3N2:message>
+  <WL5G3N2:message name="response">
+    <WL5G3N2:part name="output_Z_PPFM0004" element="WL5G3N4:Z_PPFM0004.Response" />
+  </WL5G3N2:message>
+  <WL5G3N2:portType name="Z_PPFM0004PortType">
+    <WL5G3N2:operation name="Z_PPFM0004">
+      <WL5G3N2:input name="Input_Z_PPFM0004" message="WL5G3N1:request" />
+      <WL5G3N2:output name="Output_Z_PPFM0004" message="WL5G3N1:response" />
+    </WL5G3N2:operation>
+  </WL5G3N2:portType>
+</WL5G3N2:definitions>
