@@ -6,6 +6,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * @ClassName: QualityInspectionRulesService.java
@@ -64,4 +65,14 @@ public interface QualityInspectionRulesService extends IService<QualityInspectio
      * @return: void
      **/
     void exportExcel(HttpServletResponse rsp);
+
+    /**
+     * 功能描述: 根据车间查询规则列表
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/8/1 17:17
+     * @return: List<QualityInspectionRules>
+     **/
+    List<QualityInspectionRules> queryQualityInspectionRulesList(String branchCode);
 }
