@@ -161,7 +161,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         }
         return list;
     }
-    
+
 
     @Override
     public ApplicationResult application(AdditionalMaterialDto additionalMaterialDto) {
@@ -239,7 +239,6 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     private ApplicationResult anApplicationForm(IngredientApplicationDto ingredientApplicationDto) throws Exception {
         String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
-//        String aes = AESUtil.decryptAES(jsonStr, "1234123412ABCDEF", "0102030405060708");
         String aes = AESUtil.encrypt(jsonStr, "123");
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", aes);

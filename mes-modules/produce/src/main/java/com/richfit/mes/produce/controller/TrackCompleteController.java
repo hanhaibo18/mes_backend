@@ -852,14 +852,14 @@ public class TrackCompleteController extends BaseController {
     //Todo:报工需要增加一个报工参数
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
     @PostMapping("/saveComplete")
-    public CommonResult<Boolean> saveComplete(@RequestBody CompleteDto completeDto) {
+    public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto) {
         return trackCompleteService.saveComplete(completeDto);
     }
 
     @ApiOperation(value = "保存报工(新)", notes = "保存报工(新)")
     @PostMapping("/saveCompleteCache")
-    public CommonResult<Boolean> saveCompleteCache(@RequestBody CompleteDto completeDto) {
-        return trackCompleteCacheService.saveCompleteCache(completeDto);
+    public CommonResult<Boolean> saveCompleteCache(@RequestBody List<CompleteDto> completeDtoList) {
+        return trackCompleteCacheService.saveCompleteCache(completeDtoList);
     }
 
     @ApiOperation(value = "修改报工(新)", notes = "修改报工(新)")

@@ -31,41 +31,43 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveCompleteCache(CompleteDto completeDto) {
-        TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
-        //检验人
-        trackItem.setQualityCheckBy(completeDto.getQcPersonId());
-        //根据工序Id先删除,在重新新增数据
-        QueryWrapper<TrackCompleteCache> removeCache = new QueryWrapper<>();
-        removeCache.eq("ti_id", completeDto.getTiId());
-        this.remove(removeCache);
+    public CommonResult<Boolean> saveCompleteCache(List<CompleteDto> completeDtoList) {
+        for (CompleteDto completeDto : completeDtoList) {
+            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            //检验人
+            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+            //根据工序Id先删除,在重新新增数据
+            QueryWrapper<TrackCompleteCache> removeCache = new QueryWrapper<>();
+            removeCache.eq("ti_id", completeDto.getTiId());
+            this.remove(removeCache);
 
-        List<TrackCompleteCache> trackCompleteCacheList = new ArrayList<>();
-        for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-            if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                return CommonResult.failed("报工工时不能大于额定工时");
+            List<TrackCompleteCache> trackCompleteCacheList = new ArrayList<>();
+            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
+                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
+                    return CommonResult.failed("报工工时不能大于额定工时");
+                }
+                TrackCompleteCache trackCompleteCache = new TrackCompleteCache();
+                trackCompleteCache.setAssignId(completeDto.getAssignId());
+                trackCompleteCache.setTiId(completeDto.getTiId());
+                trackCompleteCache.setTrackId(completeDto.getTrackId());
+                trackCompleteCache.setTrackNo(completeDto.getTrackNo());
+                trackCompleteCache.setProdNo(completeDto.getProdNo());
+                trackCompleteCache.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackCompleteCache.setCompleteTime(new Date());
+                trackCompleteCache.setUserId(trackComplete.getUserId());
+                trackCompleteCache.setDeviceId(trackComplete.getDeviceId());
+                trackCompleteCache.setCompletedHours(trackComplete.getCompletedHours());
+                trackCompleteCache.setActualHours(trackComplete.getActualHours());
+                trackCompleteCache.setReportHours(trackComplete.getReportHours());
+                trackCompleteCache.setStaticHours(trackComplete.getStaticHours());
+                trackCompleteCache.setCompletedQty(trackComplete.getCompletedQty());
+                trackCompleteCache.setRejectQty(trackComplete.getRejectQty());
+                trackCompleteCache.setDetectionResult(trackComplete.getDetectionResult());
+                trackCompleteCacheList.add(trackCompleteCache);
             }
-            TrackCompleteCache trackCompleteCache = new TrackCompleteCache();
-            trackCompleteCache.setAssignId(completeDto.getAssignId());
-            trackCompleteCache.setTiId(completeDto.getTiId());
-            trackCompleteCache.setTrackId(completeDto.getTrackId());
-            trackCompleteCache.setTrackNo(completeDto.getTrackNo());
-            trackCompleteCache.setProdNo(completeDto.getProdNo());
-            trackCompleteCache.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-            trackCompleteCache.setCompleteTime(new Date());
-            trackCompleteCache.setUserId(trackComplete.getUserId());
-            trackCompleteCache.setDeviceId(trackComplete.getDeviceId());
-            trackCompleteCache.setCompletedHours(trackComplete.getCompletedHours());
-            trackCompleteCache.setActualHours(trackComplete.getActualHours());
-            trackCompleteCache.setReportHours(trackComplete.getReportHours());
-            trackCompleteCache.setStaticHours(trackComplete.getStaticHours());
-            trackCompleteCache.setCompletedQty(trackComplete.getCompletedQty());
-            trackCompleteCache.setRejectQty(trackComplete.getRejectQty());
-            trackCompleteCache.setDetectionResult(trackComplete.getDetectionResult());
-            trackCompleteCacheList.add(trackCompleteCache);
+            trackItemService.updateById(trackItem);
+            this.saveBatch(trackCompleteCacheList);
         }
-        trackItemService.updateById(trackItem);
-        this.saveBatch(trackCompleteCacheList);
         return CommonResult.success(true);
     }
 }
