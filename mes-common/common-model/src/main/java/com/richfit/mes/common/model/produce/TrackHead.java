@@ -290,4 +290,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Date: 2022/7/26 10:25
      **/
     private int numberComplete;
+
+    @TableField(exist = false)
+    private String finalProductNo;
 }

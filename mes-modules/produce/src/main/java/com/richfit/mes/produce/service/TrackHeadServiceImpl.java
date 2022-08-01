@@ -900,4 +900,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         return null;
     }
+
+    @Override
+    public IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper) {
+        return trackHeadMapper.selectTrackHeadAndFlow(page, queryWrapper);
+    }
 }

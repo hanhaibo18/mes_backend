@@ -17,4 +17,23 @@
         on ti.id = pa.ti_id
         ${ew.customSqlSegment}
     </select>
+
+    <select id="selectNextItem" resultType="com.richfit.mes.common.model.produce.TrackItem">
+        SELECT * FROM produce_track_item T
+        INNER JOIN produce_track_item S ON T.next_opt_sequence = S.opt_sequence
+        AND T.track_head_id = S.track_head_id
+        where S.id = #{tiId}
+    </select>
+    
+    <update id="updateTrackItemIsCurrent">
+        UPDATE ti
+        SET ti.is_current = 0
+        FROM mes_produce.produce_track_item ti WHERE ti.is_final_complete = 0
+        AND EXISTS (SELECT 1 FROM
+        mes_produce.produce_track_item ti2 WHERE ti2.th_id = ti.th_id
+        AND ti2.id = #{tiId}
+        AND ti2.opt_sequence = ti.opt_sequence
+        AND ti2.quality_result = CASE ti2.is_exist_quality_check WHEN 1 THEN 0 ELSE -1 END
+        AND ti2.prod_No = ti.prod_No AND ti2.is_final_complete = 1)
+    </update>
 </mapper>

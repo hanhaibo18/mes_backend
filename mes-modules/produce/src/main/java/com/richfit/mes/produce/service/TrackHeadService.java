@@ -202,4 +202,6 @@ public interface TrackHeadService extends IService<TrackHead> {
     List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo);
 
     IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads);
+
+    IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper);
 }

@@ -221,4 +221,23 @@ public class TrackItemController extends BaseController {
         return CommonResult.success(trackItemService.queryTrackItemByTrackNo(trackNo));
     }
 
+
+    @ApiOperation(value = "重置跟单工序状态", notes = "重置跟单工序状态 （resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录）")
+    @GetMapping("/resetStatus")
+    public CommonResult<String> resetStatus(String tiId, Integer resetType) {
+        return CommonResult.success(trackItemService.resetStatus(tiId, resetType));
+    }
+
+    @ApiOperation(value = "更新至下工序", notes = "根据跟单ID更新至下工序")
+    @GetMapping("/nextSequence")
+    public CommonResult<String> nextSequence(String thId) {
+        return CommonResult.success(trackItemService.nextSequence(thId));
+    }
+
+    @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")
+    @GetMapping("/backSequence")
+    public CommonResult<String> backSequence(String thId) {
+        return CommonResult.success(trackItemService.backSequence(thId));
+    }
+
 }
