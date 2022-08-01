@@ -146,6 +146,45 @@ public class TrackItemController extends BaseController {
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "查询跟单分流合并工序", notes = "根据跟单ID查询跟单分流合并的工序")
+    @GetMapping("/track_flow_item_merge")
+    public CommonResult<List<TrackItem>> trackFlowItemMerge(String trackId) {
+        List<TrackItem> trackItemList = new ArrayList<>();
+        List<TrackItem> trackItemScheduleList = new ArrayList<>();
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        if (!StringUtils.isNullOrEmpty(trackId)) {
+            queryWrapper.eq("track_head_id", trackId);
+        }
+        queryWrapper.orderByAsc("sequence_order_by");
+        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
+        for (TrackItem trackItem : trackItems) {
+            boolean flag = true;
+            for (TrackItem ti : trackItemList) {
+                if (ti.getOptId().equals(trackItem.getOptId())) {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                trackItemList.add(trackItem);
+            }
+            if (trackItem.getIsSchedule() == 1) {
+                trackItemScheduleList.add(trackItem);
+            }
+        }
+        for (TrackItem ti : trackItemList) {
+            boolean flag = true;
+            for (TrackItem tsi : trackItemScheduleList) {
+                if (ti.getOptId().equals(tsi.getOptId())) {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                ti.setIsSchedule(1);
+            }
+        }
+        return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
+    }
+
     @ApiOperation(value = "激活工序", notes = "激活工序")
     @GetMapping("/active_trackitem")
     public CommonResult<List<TrackItem>> activeTrackItem(String trackHeadId, Boolean isGoNextOpt) {
@@ -236,6 +275,25 @@ public class TrackItemController extends BaseController {
     @GetMapping("/queryTrackItemByTrackNo/{trackNo}")
     public CommonResult<List<TrackItem>> queryTrackItemByTrackNo(@PathVariable String trackNo) {
         return CommonResult.success(trackItemService.queryTrackItemByTrackNo(trackNo));
+    }
+
+
+    @ApiOperation(value = "重置跟单工序状态", notes = "重置跟单工序状态 （resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录）")
+    @GetMapping("/resetStatus")
+    public CommonResult<String> resetStatus(String tiId, Integer resetType) {
+        return CommonResult.success(trackItemService.resetStatus(tiId, resetType));
+    }
+
+    @ApiOperation(value = "更新至下工序", notes = "根据跟单ID更新至下工序")
+    @GetMapping("/nextSequence")
+    public CommonResult<String> nextSequence(String thId) {
+        return CommonResult.success(trackItemService.nextSequence(thId));
+    }
+
+    @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")
+    @GetMapping("/backSequence")
+    public CommonResult<String> backSequence(String thId) {
+        return CommonResult.success(trackItemService.backSequence(thId));
     }
 
 }

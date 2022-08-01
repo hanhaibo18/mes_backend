@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -316,6 +318,11 @@ public class DeviceController extends BaseController {
             file.transferTo(excelFile);
             //将导入的excel数据生成证件实体类list
             List<Device> list = ExcelUtils.importExcel(excelFile, Device.class, fieldNames, 1, 0, 0, tempName.toString());
+            //获取设备组的map集合
+            QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
+            List<Device> deviceGroup = deviceService.list(deviceQueryWrapper.eq("type", 1).eq("branch_code",branchCode));
+            Map<String, Device> deviceGroupMap = deviceGroup.stream().collect(Collectors.toMap(Device::getName, v->v,(t1,t2)->t1));
+
             FileUtils.delete(excelFile);
             for (int i = 0; i < list.size(); i++) {
                 if (null != SecurityUtils.getCurrentUser()) {
@@ -323,16 +330,17 @@ public class DeviceController extends BaseController {
                 }
                 list.get(i).setTenantId(tenantId);
                 list.get(i).setBranchCode(branchCode);
-                List<Device> devices = deviceService.list(new QueryWrapper<Device>().eq("name", list.get(i).getParentId()).eq("type", "1").eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
-
-                if (devices.size() > 0) {
-                    list.get(i).setParentId(list.get(0).getId());
-                }
 
                 if ("设备".equals(list.get(i).getType())) {
                     list.get(i).setType("0");
+                    //绑定设备组id
+                    if(!ObjectUtils.isEmpty(deviceGroupMap.get(list.get(i).getParentId()).getId())){
+                        list.get(i).setParentId(deviceGroupMap.get(list.get(i).getParentId()).getId());
+                    }
                 } else if ("设备组".equals(list.get(i).getType())) {
                     list.get(i).setType("1");
+                    //设备组parent_id为空
+                    list.get(i).setParentId(null);
                 }
                 if ("是".equals(list.get(i).getRunStatus())) {
                     list.get(i).setRunStatus("1");

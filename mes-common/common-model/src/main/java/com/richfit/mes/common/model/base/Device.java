@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 public class Device extends BaseEntity<Device> {
 
-         /**
+    /**
      * 所属设备组
      */
     private String parentId;
@@ -25,7 +25,6 @@ public class Device extends BaseEntity<Device> {
      * 名称
      */
     private String name;
-   
     /**
      * 型号
      */
@@ -55,9 +54,7 @@ public class Device extends BaseEntity<Device> {
      * 运行状态
      */
     private String runStatus;
-    
-   
-       /**
+    /**
      * 租户ID
      */
     private String tenantId;
@@ -65,11 +62,11 @@ public class Device extends BaseEntity<Device> {
      * 机构编码
      */
     private String branchCode;
-     /**
+    /**
      * 图标
      */
     private String icon;
-        /**
+    /**
      * 制造商
      */
     private String manufacturers;
