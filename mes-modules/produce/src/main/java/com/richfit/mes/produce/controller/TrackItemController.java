@@ -172,14 +172,10 @@ public class TrackItemController extends BaseController {
             }
         }
         for (TrackItem ti : trackItemList) {
-            boolean flag = true;
             for (TrackItem tsi : trackItemScheduleList) {
                 if (ti.getOptId().equals(tsi.getOptId())) {
-                    flag = false;
+                    ti.setIsSchedule(1);
                 }
-            }
-            if (flag) {
-                ti.setIsSchedule(1);
             }
         }
         return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
