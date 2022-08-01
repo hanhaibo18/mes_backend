@@ -9,6 +9,8 @@ import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 
+import java.util.List;
+
 /**
  * @author 马峰
  * @Description 报工服务
@@ -19,12 +21,12 @@ public interface TrackCompleteService extends IService<TrackComplete> {
     /**
      * 功能描述: 新增报工
      *
-     * @param completeDto
+     * @param completeDtoList
      * @Author: xinYu.hou
      * @Date: 2022/7/12 14:08
      * @return: Boolean
      **/
-    CommonResult<Boolean> saveComplete(CompleteDto completeDto);
+    CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList);
 
 
     /**

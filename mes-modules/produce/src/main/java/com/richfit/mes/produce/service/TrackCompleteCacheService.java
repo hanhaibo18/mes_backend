@@ -5,6 +5,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackCompleteCache;
 import com.richfit.mes.produce.entity.CompleteDto;
 
+import java.util.List;
+
 /**
  * @ClassName: TrackCompleteCacheService.java
  * @Author: Hou XinYu
@@ -16,10 +18,10 @@ public interface TrackCompleteCacheService extends IService<TrackCompleteCache> 
     /**
      * 功能描述: 新增数据到报工缓存区
      *
-     * @param completeDto
+     * @param completeDtoList
      * @Author: xinYu.hou
      * @Date: 2022/7/14 14:11
      * @return: boolean
      **/
-    CommonResult<Boolean> saveCompleteCache(CompleteDto completeDto);
+    CommonResult<Boolean> saveCompleteCache(List<CompleteDto> completeDtoList);
 }

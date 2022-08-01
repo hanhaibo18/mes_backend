@@ -19,6 +19,27 @@ import java.util.Map;
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
+
+    /**
+     * 功能描述: 工序资料下载指定位置
+     *
+     * @param flowId 跟单分流id
+     * @param path   保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    void downloadTrackItem(String flowId, String path) throws Exception;
+
+    /**
+     * 功能描述: 下载料单文件
+     *
+     * @param id   料单id
+     * @param path 保存路径
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     **/
+    void downloadStoreFile(String id, String path) throws Exception;
+
     /**
      * 功能描述: 跟单分流信息查询
      *
@@ -211,4 +232,6 @@ public interface TrackHeadService extends IService<TrackHead> {
     List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo);
 
     IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads);
+
+    IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper);
 }

@@ -1,28 +1,158 @@
-<?xml version="1.0" encoding="utf-8"?>
-<WL5G3N2:definitions xmlns:WL5G3N1="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/ZC80_PPIF009" xmlns:WL5G3N0="http://schemas.xmlsoap.org/ws/2003/05/partner-link/" xmlns:WL5G3N4="urn:sap-com:document:sap:rfc:functions.response" xmlns:WL5G3N3="urn:sap-com:document:sap:rfc:functions" name="ZC80_PPIF009" targetNamespace="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/ZC80_PPIF009" xmlns:WL5G3N2="http://schemas.xmlsoap.org/wsdl/">
-  <WL5G3N0:partnerLinkType name="ZC80_PPIF009PartnerLinkType">
-    <WL5G3N0:role name="ZC80_PPIF009Role">
-      <WL5G3N0:portType name="WL5G3N1:ZC80_PPIF009PortType" />
-    </WL5G3N0:role>
-  </WL5G3N0:partnerLinkType>
-  <WL5G3N2:types>
-    <schema xmlns:ZC80_PPIF009="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/ZC80_PPIF009" xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/" xmlns:iWayResponse="urn:sap-com:document:sap:rfc:functions.response" xmlns:iWayRequest="urn:sap-com:document:sap:rfc:functions" xmlns="http://www.w3.org/2001/XMLSchema">
-      <import schemaLocation="http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC?SCHEMA%2FZBZZ%2FERPPP%2FIS_MES_SAPProductOrderBaseJNC%2Finterface%2FSAPAdapter%2FZC80_PPIF009_invoke_request" namespace="urn:sap-com:document:sap:rfc:functions" />
-    </schema>
-    <schema xmlns:ZC80_PPIF009="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/ZC80_PPIF009" xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/" xmlns:iWayResponse="urn:sap-com:document:sap:rfc:functions.response" xmlns:iWayRequest="urn:sap-com:document:sap:rfc:functions" xmlns="http://www.w3.org/2001/XMLSchema">
-      <import schemaLocation="http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC?SCHEMA%2FZBZZ%2FERPPP%2FIS_MES_SAPProductOrderBaseJNC%2Finterface%2FSAPAdapter%2FZC80_PPIF009_invoke_response" namespace="urn:sap-com:document:sap:rfc:functions.response" />
-    </schema>
-  </WL5G3N2:types>
-  <WL5G3N2:message name="request">
-    <WL5G3N2:part name="input_ZC80_PPIF009" element="WL5G3N3:ZC80_PPIF009" />
-  </WL5G3N2:message>
-  <WL5G3N2:message name="response">
-    <WL5G3N2:part name="output_ZC80_PPIF009" element="WL5G3N4:ZC80_PPIF009.Response" />
-  </WL5G3N2:message>
-  <WL5G3N2:portType name="ZC80_PPIF009PortType">
-    <WL5G3N2:operation name="ZC80_PPIF009">
-      <WL5G3N2:input name="Input_ZC80_PPIF009" message="WL5G3N1:request" />
-      <WL5G3N2:output name="Output_ZC80_PPIF009" message="WL5G3N1:response" />
-    </WL5G3N2:operation>
-  </WL5G3N2:portType>
-</WL5G3N2:definitions>
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="urn:sap-com:document:sap:rfc:functions" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:rfc="urn:sap-com:document:sap:rfc:functions">
+   <xsd:element name="ZC80_PPIF009">
+      <xsd:complexType>
+         <xsd:all>
+            <xsd:element name="ZDATUM">
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string">
+                     <xsd:pattern value="\d{4}-\d{2}-\d{2}"/>
+                  </xsd:restriction>
+               </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="ZWERKS" type="rfc:WERKS"/>
+            <xsd:element name="T_AUFK" minOccurs="0">
+               <xsd:complexType>
+                  <xsd:sequence>
+                     <xsd:element name="item" maxOccurs="unbounded" type="rfc:ZPPS0008" minOccurs="0"/>
+                  </xsd:sequence>
+               </xsd:complexType>
+            </xsd:element>
+         </xsd:all>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:complexType name="ZPPS0008">
+      <xsd:sequence>
+         <xsd:element name="AUFNR" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="12"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="MATNR" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="18"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="MAKTX" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="40"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="WERKS" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="4"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="PSDID" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="10"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="DISPO" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="3"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="GAMNG" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="20"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="GSTRP" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:pattern value="\d{4}-\d{2}-\d{2}"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="GLTRP" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:pattern value="\d{4}-\d{2}-\d{2}"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="KDAUF" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="10"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="BSTKD" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="35"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="VDATU" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:pattern value="\d{4}-\d{2}-\d{2}"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="ZYL1" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="100"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="ZYL2" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="100"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="ZYL3" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="100"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="ZYL4" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="100"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+         <xsd:element name="ZYL5" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="100"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="WERKS">
+      <xsd:sequence>
+         <xsd:element name="WERKS" minOccurs="0">
+            <xsd:simpleType>
+               <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="4"/>
+               </xsd:restriction>
+            </xsd:simpleType>
+         </xsd:element>
+      </xsd:sequence>
+   </xsd:complexType>
+</xsd:schema>

@@ -77,4 +77,33 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Author gaol
      */
     Boolean unLinkFromCert(String tiId);
+
+
+    /**
+     * 重置跟单工序状态
+     *
+     * @param tiId
+     * @param resetType
+     * @return
+     * @Author WangRui
+     */
+    String resetStatus(String tiId, Integer resetType);
+
+    /**
+     * 更新至下工序
+     *
+     * @param thId
+     * @return
+     * @Author WangRui
+     */
+    String nextSequence(String thId);
+
+    /**
+     * 回退工序
+     *
+     * @param thId
+     * @return
+     * @Author WangRui
+     */
+    String backSequence(String thId);
 }

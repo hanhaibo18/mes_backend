@@ -128,4 +128,6 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
 
     @Select("")
     IPage<TrackHead> queryBomList(Page<Object> objectPage, List<TrackHead> trackHeadList);
+
+    IPage<TrackHead> selectTrackHeadAndFlow(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
 }

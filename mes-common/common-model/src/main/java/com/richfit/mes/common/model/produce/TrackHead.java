@@ -291,6 +291,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
      **/
     private int numberComplete;
 
+    
+    @TableField(exist = false)
+    private String finalProductNo;
     /**
      * 描述: 分流id
      *

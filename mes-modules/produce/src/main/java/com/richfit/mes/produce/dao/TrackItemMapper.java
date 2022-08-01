@@ -20,4 +20,8 @@ public interface TrackItemMapper  extends BaseMapper<TrackItem> {
 
     List<TrackItem> selectTrackItemAssign(@Param(Constants.WRAPPER) Wrapper<TrackItem> query);
 
+    List<TrackItem> selectNextItem(@Param("tiId") String tiId);
+
+    int updateTrackItemIsCurrent(@Param("tiId") String tiId);
+
 }
