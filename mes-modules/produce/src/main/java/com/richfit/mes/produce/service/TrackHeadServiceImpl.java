@@ -585,11 +585,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
             int result = trackHeadMapper.deleteBatchIds(ids);
             if (result > 0) {
-                //删除工序垃圾数据，避免数据库垃圾数据，料单数据处理
+                //删除分流数据、工序垃圾数据等信息，避免数据库垃圾数据，料单数据处理
                 for (String id : ids) {
+                    //删除分流表数据
+                    QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+                    queryWrapperTrackFlow.eq("track_head_id", id);
+                    trackFlowMapper.delete(queryWrapperTrackFlow);
+                    //删除工序
                     Map<String, Object> map = new HashMap<>();
                     map.put("track_head_id", id);
                     trackItemService.removeByMap(map);
+                    //删除跟单物料关联表
                     List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
                     for (TrackHeadRelation relation : relations) {
                         if (relation.getType().equals("0")) { //输入物料
