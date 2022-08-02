@@ -21,7 +21,6 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.LineStoreService;
 import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.utils.FilesUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -603,13 +602,13 @@ public class LineStoreController extends BaseController {
     }
 
 
-    @ApiOperation(value = "下载质量资料", notes = "通过料单Id，下载质量资料")
-    @GetMapping("/download_quality_file/{id}")
-    public void downloadQualityFile(@ApiIgnore HttpServletResponse response, @ApiParam(value = "料单Id", required = true) @PathVariable String id) throws Exception {
+    @ApiOperation(value = "下载质量资料id", notes = "通过料单Id，查询质量资料Id")
+    @GetMapping("/query_quality_file_ids/{id}")
+    public CommonResult<List<String>> downloadQualityFile(@ApiIgnore HttpServletResponse response, @ApiParam(value = "料单Id", required = true) @PathVariable String id) throws Exception {
 
-        String filePath = lineStoreService.loadFileToFolder(id);
+        List<String> fileIdList = lineStoreService.qeuryStoreFileIdList(id);
 
-        FilesUtil.downloads(response, filePath);
+        return CommonResult.success(fileIdList);
 
     }
 

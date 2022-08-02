@@ -77,7 +77,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         String pNo = trackHead.getUserProductNo(); //毛坯编号
 
-
         UpdateWrapper<LineStore> update2 = new UpdateWrapper<LineStore>();
         update2.set("status", StoreItemStatusEnum.FINISH.getCode()); //将状态设置为完工
         update2.set("in_time", new Date());
@@ -86,10 +85,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         update2.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         int count = lineStoreMapper.update(null, update2);
-        if (count > 0) {
-            return true;
-        }
-        return false;
+        return count > 0;
     }
 
     // 料单投用
@@ -181,6 +177,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         changeStatus(lineStore);
         lineStore.setStockType("1"); //自动
         lineStore.setTrackType(trackHead.getTrackType());
+
+        lineStore.setInputType("2");
 
         //关联跟单号码
         lineStore.setTrackNo(trackHead.getTrackNo());
@@ -521,6 +519,23 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         ZipUtil.zip(path);
         return path + ".zip";
+    }
+
+    @Override
+    public List<String> qeuryStoreFileIdList(String id) {
+        //查询附件
+        QueryWrapper<StoreAttachRel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("line_store_id", id);
+
+        List<StoreAttachRel> storeAttachRels = storeAttachRelService.list(queryWrapper);
+
+        List<String> idList = new ArrayList<>();
+
+        for (StoreAttachRel storeAttachRel : storeAttachRels) {
+            idList.add(storeAttachRel.getAttachmentId());
+        }
+
+        return idList;
     }
 
 
