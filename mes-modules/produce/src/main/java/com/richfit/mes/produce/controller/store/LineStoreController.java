@@ -602,6 +602,16 @@ public class LineStoreController extends BaseController {
     }
 
 
+    @ApiOperation(value = "下载质量资料id", notes = "通过料单Id，查询质量资料Id")
+    @GetMapping("/query_quality_file_ids/{id}")
+    public CommonResult<List<String>> downloadQualityFile(@ApiIgnore HttpServletResponse response, @ApiParam(value = "料单Id", required = true) @PathVariable String id) throws Exception {
+
+        List<String> fileIdList = lineStoreService.qeuryStoreFileIdList(id);
+
+        return CommonResult.success(fileIdList);
+
+    }
+
     private boolean isStatusFinish(LineStore lineStore) {
         return lineStore.getStatus().equals(StoreItemStatusEnum.FINISH.getCode());
     }

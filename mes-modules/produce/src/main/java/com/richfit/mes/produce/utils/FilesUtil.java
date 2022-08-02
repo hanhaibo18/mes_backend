@@ -21,7 +21,7 @@ public class FilesUtil {
     public static String tempPath() throws Exception {
         String path = "C:/temp";
         if (File.separator.equals("/")) {
-            path = "/temp";
+            path = "/tmp";
         }
         return path;
     }

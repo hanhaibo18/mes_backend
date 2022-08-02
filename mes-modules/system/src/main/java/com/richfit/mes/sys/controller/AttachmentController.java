@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.net.HttpHeaders;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.FileUtils;
@@ -174,6 +175,50 @@ public class AttachmentController extends BaseController {
             response.setContentLength(inputStream.available());
             FileCopyUtils.copy(inputStream, outputStream);
             log.info("download {} success", attachment.getAttachName());
+        } catch (Exception e) {
+            log.error("Download attachment failed: {}", e.getMessage(), e);
+        }
+    }
+
+    @PostMapping("/download_zip")
+    @ApiOperation(value = "下载附件", notes = "根据ID列表下载ZIP附件")
+    @ApiImplicitParam(name = "ids", value = "附件ID", required = true, dataType = "List<String>")
+    public void downloadZip(HttpServletRequest request, HttpServletResponse response, @RequestBody List<String> ids, @RequestParam String fileName) throws GlobalException {
+
+        List<Attachment> list = new ArrayList<>();
+        for (String id : ids) {
+            Attachment attachment = null;
+            try {
+                attachment = attachmentService.get(id);
+                list.add(attachment);
+            } catch (GlobalException e) {
+                log.error(e.getMessage());
+            }
+        }
+        if (list.size() == 0) {
+            throw new GlobalException("attachment not found", ResultCode.ITEM_NOT_FOUND);
+        }
+
+        try {
+            InputStream inputStream = attachmentService.downloadZip(list, fileName);
+            if (inputStream == null) {
+                log.info("attachment is not exists");
+                return;
+            }
+            OutputStream outputStream = response.getOutputStream();
+            response.setContentType("application/zip");
+            response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=10");
+            // IE之外的浏览器使用编码输出名称
+            String contentDisposition = "";
+            String httpUserAgent = request.getHeader("User-Agent");
+            if (!StringUtils.isNullOrEmpty(httpUserAgent)) {
+                httpUserAgent = httpUserAgent.toLowerCase();
+                contentDisposition = httpUserAgent.contains("wps") ? "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") : ServletUtils.getDownName(request, fileName);
+            }
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+            response.setContentLength(inputStream.available());
+            FileCopyUtils.copy(inputStream, outputStream);
+            log.info("download {} success", fileName);
         } catch (Exception e) {
             log.error("Download attachment failed: {}", e.getMessage(), e);
         }
