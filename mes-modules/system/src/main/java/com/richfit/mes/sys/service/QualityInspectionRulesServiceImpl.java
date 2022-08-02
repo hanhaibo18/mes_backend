@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -29,14 +30,30 @@ import java.util.Date;
 public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspectionRulesMapper, QualityInspectionRules> implements QualityInspectionRulesService {
 
     @Override
-    public boolean saveQualityInspectionRules(QualityInspectionRules qualityInspectionRules) {
+    public CommonResult<Boolean> saveQualityInspectionRules(QualityInspectionRules qualityInspectionRules) {
         qualityInspectionRules.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        return this.save(qualityInspectionRules);
+        //增加判断 当前车间下状态码唯一
+        QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("branch_code", qualityInspectionRules.getBranchCode());
+        queryWrapper.eq("state", qualityInspectionRules.getState());
+        int count = this.count(queryWrapper);
+        if (0 < count) {
+            return CommonResult.failed("状态码重复");
+        }
+        return CommonResult.success(this.save(qualityInspectionRules));
     }
 
     @Override
-    public boolean updateQualityInspectionRules(QualityInspectionRules qualityInspectionRules) {
-        return this.updateById(qualityInspectionRules);
+    public CommonResult<Boolean> updateQualityInspectionRules(QualityInspectionRules qualityInspectionRules) {
+        //增加判断 当前车间下状态码唯一
+        QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("branch_code", qualityInspectionRules.getBranchCode());
+        queryWrapper.eq("state", qualityInspectionRules.getState());
+        QualityInspectionRules rules = this.getOne(queryWrapper);
+        if (!rules.getId().equals(qualityInspectionRules.getId()) && rules.getState().equals(qualityInspectionRules.getState())) {
+            return CommonResult.failed("状态码重复");
+        }
+        return CommonResult.success(this.updateById(qualityInspectionRules));
     }
 
     @Override
@@ -47,7 +64,9 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
     @Override
     public IPage<QualityInspectionRules> queryQualityInspectionRulesPage(String stateName, long page, long limit, String order, String orderCol) {
         QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("state_name", stateName);
+        if (!StringUtils.isNullOrEmpty(stateName)) {
+            queryWrapper.eq("state_name", stateName);
+        }
         queryWrapper.orderByDesc("branch_code");
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
@@ -60,7 +79,7 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
                 queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
             }
         } else {
-            queryWrapper.orderByDesc("order_no");
+            queryWrapper.orderByDesc("modify_time");
         }
         return this.page(new Page<>(page, limit), queryWrapper);
     }

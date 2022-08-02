@@ -57,62 +57,67 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveComplete(CompleteDto completeDto) {
-        if (StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
-            return CommonResult.failed("质检人员不能为空");
-        }
-        if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
-            return CommonResult.failed("报工人员不能为空");
-        }
-        if (StringUtils.isNullOrEmpty(completeDto.getTiId())) {
-            return CommonResult.failed("工序Id不能为空");
-        }
-        TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
-        //检验人
-        trackItem.setQualityCheckBy(completeDto.getQcPersonId());
-        //根据工序Id删除缓存表数据
-        QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("ti_id", completeDto.getTiId());
-        double numDouble = 0.00;
-        for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-            if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                return CommonResult.failed("报工工时不能大于额定工时");
+    public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
+        for (CompleteDto completeDto : completeDtoList) {
+            if (StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
+                return CommonResult.failed("质检人员不能为空");
             }
-            trackComplete.setAssignId(completeDto.getAssignId());
-            trackComplete.setTiId(completeDto.getTiId());
-            trackComplete.setTrackId(completeDto.getTrackId());
-            trackComplete.setTrackNo(completeDto.getTrackNo());
-            trackComplete.setProdNo(completeDto.getProdNo());
-            trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-            trackComplete.setCompleteTime(new Date());
-            trackComplete.setDetectionResult("-");
-            trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            numDouble += trackComplete.getCompletedQty();
+            if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
+                return CommonResult.failed("报工人员不能为空");
+            }
+            if (StringUtils.isNullOrEmpty(completeDto.getTiId())) {
+                return CommonResult.failed("工序Id不能为空");
+            }
+            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            //检验人
+            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+            //根据工序Id删除缓存表数据
+            QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("ti_id", completeDto.getTiId());
+            double numDouble = 0.00;
+            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
+                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
+                    return CommonResult.failed("报工工时不能大于额定工时");
+                }
+                trackComplete.setId(null);
+                trackComplete.setAssignId(completeDto.getAssignId());
+                trackComplete.setTiId(completeDto.getTiId());
+                trackComplete.setTrackId(completeDto.getTrackId());
+                trackComplete.setTrackNo(completeDto.getTrackNo());
+                trackComplete.setProdNo(completeDto.getProdNo());
+                trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackComplete.setCompleteTime(new Date());
+                trackComplete.setDetectionResult("-");
+                trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                numDouble += trackComplete.getCompletedQty();
+            }
+            Assign assign = trackAssignService.getById(completeDto.getAssignId());
+            //跟新工序完成数量
+            trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
+            double intervalNumber = assign.getQty() + 0.0;
+            if (numDouble > assign.getQty()) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
+            }
+            if (numDouble < intervalNumber - 0.1) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
+            }
+            if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
+                //TODO:调用方法
+                Map<String, String> map = new HashMap<>(3);
+                map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                //更改状态 标识当前工序完成
+                trackItem.setIsDoing(2);
+                trackItem.setIsOperationComplete(1);
+                trackItemService.updateById(trackItem);
+                trackCompleteCacheService.remove(queryWrapper);
+            }
+            log.error(completeDto.getTrackCompleteList().toString());
+            this.saveBatch(completeDto.getTrackCompleteList());
         }
-        Assign assign = trackAssignService.getById(completeDto.getAssignId());
-        //跟新工序完成数量
-        trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
-        double intervalNumber = assign.getQty() + 0.0;
-        if (numDouble > assign.getQty()) {
-            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
-        }
-        if (numDouble < intervalNumber - 0.1) {
-            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
-        }
-        if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
-            //TODO:调用方法
-            Map<String, String> map = new HashMap<>(3);
-            map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
-            map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
-            map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
-            publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
-            //更改状态 标识当前工序完成
-            trackItem.setIsDoing(2);
-            trackItem.setIsOperationComplete(1);
-            trackItemService.updateById(trackItem);
-            trackCompleteCacheService.remove(queryWrapper);
-        }
-        return CommonResult.success(this.saveBatch(completeDto.getTrackCompleteList()));
+        return CommonResult.success(true);
     }
 
     @Override
@@ -254,14 +259,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 if (trackItems.getOptSequence() > trackItem.getOptSequence() && trackItems.getIsCurrent() == 1) {
                     trackItems.setIsCurrent(0);
                     trackItems.setIsDoing(0);
-//                        trackItems.setCompleteQty(0.0);
                     trackItems.setIsFinalComplete("0");
                     trackItemService.updateById(trackItems);
                 }
             }
             //将当前工序设置为激活
             if (msg.equals("")) {
-//                    trackItem.setCompleteQty(0.0);
                 trackItem.setIsDoing(0);
                 trackItem.setIsCurrent(1);
                 trackItem.setIsFinalComplete("0");

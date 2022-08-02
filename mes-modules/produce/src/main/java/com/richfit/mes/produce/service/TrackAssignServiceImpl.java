@@ -5,11 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.model.base.ProjectBom;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.Plan;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.KittingVo;
@@ -43,6 +39,8 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     private BaseServiceClient baseServiceClient;
     @Resource
     private LineStoreService lineStoreService;
+    @Resource
+    private TrackAssemblyService trackAssembleService;
 
     public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw) {
         IPage<TrackItem> pageAssignsByStatus = trackAssignMapper.getPageAssignsByStatus(page, qw);
@@ -150,7 +148,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 assign.setRouterId(trackHead.getRouterId());
+                assign.setOptId(trackItem.getOptId());
                 assign.setWeight(trackHead.getWeight());
                 assign.setWorkNo(trackHead.getWorkNo());
                 assign.setProductName(trackHead.getProductName());
@@ -205,23 +205,25 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (!StringUtils.isNullOrEmpty(trackHeadId)) {
             TrackHead trackHead = trackHeadService.getById(trackHeadId);
             if (null != trackHead && !StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
-                List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHead.getProjectBomId());
-                for (ProjectBom projectBom : projectBomList) {
-                    if ("0".equals(projectBom.getIsKeyPart())) {
+                QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("track_head_id", trackHeadId);
+                List<TrackAssembly> list = trackAssembleService.list(queryWrapper);
+                for (TrackAssembly trackAssembly : list) {
+                    if ("0".equals(trackAssembly.getIsKeyPart())) {
                         continue;
                     }
                     Map<String, String> map = new HashMap<>(2);
-                    map.put("drawingNo", projectBom.getDrawingNo());
-                    map.put("materialNo", projectBom.getMaterialNo());
+                    map.put("drawingNo", trackAssembly.getDrawingNo());
+                    map.put("materialNo", trackAssembly.getMaterialNo());
                     Integer number = lineStoreService.queryLineStoreSumZpNumber(map);
                     KittingVo kitting = new KittingVo();
-                    kitting.setDrawingNo(projectBom.getDrawingNo());
-                    kitting.setMaterialName(projectBom.getProjectName());
-                    kitting.setUnitNumber(projectBom.getNumber());
+                    kitting.setDrawingNo(trackAssembly.getDrawingNo());
+                    kitting.setMaterialName(trackAssembly.getName());
+                    kitting.setUnitNumber(trackAssembly.getNumber());
                     kitting.setNeedUnitNumber(1);
                     kitting.setInventory(number);
-                    kitting.setSurplusNumber(number - projectBom.getNumber());
-                    if (number - projectBom.getNumber() >= 0) {
+                    kitting.setSurplusNumber(number - trackAssembly.getNumber());
+                    if (number - trackAssembly.getNumber() >= 0) {
                         kitting.setIsKitting(1);
                     } else {
                         kitting.setIsKitting(0);
