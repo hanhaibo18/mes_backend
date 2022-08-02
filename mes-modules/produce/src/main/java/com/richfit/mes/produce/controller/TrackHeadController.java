@@ -278,10 +278,12 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                           @ApiParam(value = "id") @RequestParam(required = false) String id,
                                                           @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+                                                          @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                           @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanId,
                                                           @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
                                                           @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
                                                           @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                          @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
                                                           @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
                                                           @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
                                                           @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
@@ -301,19 +303,25 @@ public class TrackHeadController extends BaseController {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("track_no", "%" + trackNo + "%");
+            queryWrapper.like("track_no", trackNo);
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.like("drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(workPlanId)) {
-            queryWrapper.like("work_plan_id", "%" + workPlanId + "%");
+            queryWrapper.like("work_plan_id", workPlanId);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
-            queryWrapper.like("product_no", "%" + productNo + "%");
+            queryWrapper.like("product_no", productNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
-            queryWrapper.like("material_no", "%" + materialNo + "%");
+            queryWrapper.like("material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("status", status);
+        }
+        if (!StringUtils.isNullOrEmpty(trackType)) {
+            queryWrapper.eq("track_type", trackType);
         }
         if (!StringUtils.isNullOrEmpty(approvalStatus)) {
             queryWrapper.eq("approval_status", approvalStatus);
@@ -362,6 +370,8 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                              @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
         Map<String, String> map = new HashMap<>();
+        map.put("startDate", startDate);
+        map.put("endDate", endDate);
         map.put("templateCode", templateCode);
         map.put("status", status);
         map.put("productNo", productNo);
@@ -376,6 +386,35 @@ public class TrackHeadController extends BaseController {
         List trackFlowList = trackHeadService.selectTrackFlowList(map);
         PageInfo<TrackHead> trackFlowPage = new PageInfo(trackFlowList);
         return CommonResult.success(trackFlowPage, TRACK_HEAD_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "分页查询跟单分流表", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单分流信息")
+    @GetMapping("/track_flow_List")
+    public CommonResult<List<TrackHead>> selectTrackFLowList(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                                                             @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+                                                             @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
+                                                             @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                             @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
+                                                             @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+                                                             @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                             @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                             @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
+                                                             @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
+                                                             @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("startDate", startDate);
+        map.put("endDate", endDate);
+        map.put("templateCode", templateCode);
+        map.put("status", status);
+        map.put("productNo", productNo);
+        map.put("trackNo", trackNo);
+        map.put("workNo", workNo);
+        map.put("drawingNo", drawingNo);
+        map.put("batchNo", batchNo);
+        map.put("productionOrder", productionOrder);
+        map.put("branchCode", branchCode);
+        map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
+        return CommonResult.success(trackHeadService.selectTrackFlowList(map), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "工艺跟踪", notes = "根据图号、工艺版本号分页查询跟单工艺信息")
