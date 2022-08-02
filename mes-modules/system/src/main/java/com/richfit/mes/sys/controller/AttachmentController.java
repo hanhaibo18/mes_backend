@@ -32,7 +32,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author sun
@@ -81,13 +83,13 @@ public class AttachmentController extends BaseController {
     @Transactional(rollbackFor = Exception.class)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "thId", value = "跟单ID", dataType = "String"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序Id", dataType = "String"),
+            @ApiImplicitParam(name = "tiIdList", value = "跟单工序Id", dataType = "String"),
             @ApiImplicitParam(name = "classify", value = "类型", dataType = "String"),
             @ApiImplicitParam(name = "branchCode", value = "车间", dataType = "String")
 
     })
-    @ApiOperation(value = "上传文件", notes = "上传文件")
-    public CommonResult<List<Attachment>> filesUpload(@ApiParam(value = "要上传的文件", required = true) @RequestParam("file") MultipartFile[] files, String thId, String tiId, String classify, String branchCode) {
+    @ApiOperation(value = "上传文件(质检)", notes = "上传文件(质检)")
+    public CommonResult<List<Attachment>> filesUpload(@ApiParam(value = "要上传的文件", required = true) @RequestParam("file") MultipartFile[] files, String thId, String tiIds, String classify, String branchCode) {
         List<Attachment> attachments = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -105,12 +107,15 @@ public class AttachmentController extends BaseController {
                     //关联文件
                     CheckAttachment checkAttachment = new CheckAttachment();
                     checkAttachment.setThId(thId);
-                    checkAttachment.setTiId(tiId);
                     checkAttachment.setClassify(classify);
                     checkAttachment.setBranchCode(branchCode);
                     checkAttachment.setTenantId(tenantId);
                     checkAttachment.setFileId(attachment.getId());
-                    produceService.saveCheckFile(checkAttachment);
+                    List<String> tiIdList = Arrays.stream(tiIds.split(",")).collect(Collectors.toList());
+                    for (String tiId : tiIdList) {
+                        checkAttachment.setTiId(tiId);
+                        produceService.saveCheckFile(checkAttachment);
+                    }
                 } catch (Exception e) {
                     log.error("upload attachment error: {}", e.getMessage(), e);
                     e.printStackTrace();

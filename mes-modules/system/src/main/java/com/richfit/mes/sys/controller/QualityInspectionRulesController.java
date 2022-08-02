@@ -33,13 +33,13 @@ public class QualityInspectionRulesController {
     @ApiOperation(value = "创建质量规则", notes = "创建质量规则")
     @PostMapping(value = "/saveQualityInspectionRules")
     public CommonResult<Boolean> saveQualityInspectionRules(@RequestBody QualityInspectionRules qualityInspectionRules) {
-        return CommonResult.success(qualityInspectionRulesService.saveQualityInspectionRules(qualityInspectionRules));
+        return qualityInspectionRulesService.saveQualityInspectionRules(qualityInspectionRules);
     }
 
     @ApiOperation(value = "修改质量规则", notes = "修改质量规则")
     @PutMapping(value = "/updateQualityInspectionRules")
     public CommonResult<Boolean> updateQualityInspectionRules(@RequestBody QualityInspectionRules qualityInspectionRules) {
-        return CommonResult.success(qualityInspectionRulesService.updateQualityInspectionRules(qualityInspectionRules));
+        return qualityInspectionRulesService.updateQualityInspectionRules(qualityInspectionRules);
     }
 
     @ApiOperation(value = "删除质量规则", notes = "删除质量规则")
@@ -54,14 +54,14 @@ public class QualityInspectionRulesController {
     }
 
     @ApiOperation(value = "分页查询质量规则", notes = "分页查询质量规则")
-    @ApiImplicitParam(name = "stateName", value = "状态名称", dataType = "String", paramType = "body")
+    @ApiImplicitParam(name = "stateName", value = "状态名称", dataType = "String", paramType = "query")
     @GetMapping("/queryQualityInspectionRulesPage")
     public CommonResult<IPage<QualityInspectionRules>> queryQualityInspectionRulesPage(String stateName, long page, long limit, String order, String orderCol) {
         return CommonResult.success(qualityInspectionRulesService.queryQualityInspectionRulesPage(stateName, page, limit, order, orderCol));
     }
 
     @ApiOperation(value = "导出质量规则", notes = "导出质量规则")
-    @ApiImplicitParam(name = "stateName", value = "状态名称", dataType = "String", paramType = "body")
+    @ApiImplicitParam(name = "stateName", value = "状态名称", dataType = "String", paramType = "query")
     @PostMapping("/exportExcel")
     public void exportExcel(HttpServletResponse rsp) {
         qualityInspectionRulesService.exportExcel(rsp);

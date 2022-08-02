@@ -134,6 +134,8 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     private Integer optType;
     @TableField(exist = false)
+    private String optId;
+    @TableField(exist = false)
     private Integer optSequence;
     @TableField(exist = false)
     private Integer technologySequence;

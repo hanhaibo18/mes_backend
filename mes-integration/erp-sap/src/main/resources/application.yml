@@ -32,3 +32,5 @@ interface:
     password: ZBZZOSBinterface1
     #工时推送
     work-hour-sync: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF024/service/PS/PS_ZC80_PPIF024
+    #查询生产订单
+    order-search: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC

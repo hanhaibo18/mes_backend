@@ -10,6 +10,8 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.produce.enmus.IdEnum;
+import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.service.*;
@@ -53,6 +55,8 @@ public class TrackAssignController extends BaseController {
     public PlanService planService;
     @Autowired
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
+    @Resource
+    private PublicService publicService;
 
 
     /**
@@ -248,19 +252,12 @@ public class TrackAssignController extends BaseController {
                         if (trackItem.getAssignableQty() < assign.getQty()) {
                             return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
                         }
-                        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                        assign.setTrackNo(trackHead.getTrackNo());
-                        if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
-                            //将跟单状态改为在制
-                            trackHead.setStatus("1");
-                            trackHeadService.updateById(trackHead);
-                        }
-                        //可派工数减去已派工数，当前工序为1，在制状态为0
-                        trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
-                        trackItem.setIsCurrent(1);
-                        trackItem.setIsDoing(0);
-                        trackItem.setIsSchedule(1);
-                        trackItemService.updateById(trackItem);
+                        //TODO:下工序激活
+                        Map<String, String> map = new HashMap<>(3);
+                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), assign.getTrackId());
+                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), assign.getTiId());
+                        map.put("number", String.valueOf(assign.getQty()));
+                        publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
                     }
                     assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                     if (null != SecurityUtils.getCurrentUser()) {

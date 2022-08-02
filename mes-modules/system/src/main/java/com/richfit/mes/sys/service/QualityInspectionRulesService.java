@@ -2,6 +2,7 @@ package com.richfit.mes.sys.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 
 import javax.servlet.http.HttpServletResponse;
@@ -22,7 +23,7 @@ public interface QualityInspectionRulesService extends IService<QualityInspectio
      * @Date: 2022/7/28 10:28
      * @return: boolean
      **/
-    boolean saveQualityInspectionRules(QualityInspectionRules qualityInspectionRules);
+    CommonResult<Boolean> saveQualityInspectionRules(QualityInspectionRules qualityInspectionRules);
 
     /**
      * 功能描述: 修改质检规则
@@ -32,7 +33,7 @@ public interface QualityInspectionRulesService extends IService<QualityInspectio
      * @Date: 2022/7/28 10:28
      * @return: boolean
      **/
-    boolean updateQualityInspectionRules(QualityInspectionRules qualityInspectionRules);
+    CommonResult<Boolean> updateQualityInspectionRules(QualityInspectionRules qualityInspectionRules);
 
     /**
      * 功能描述: 删除质检规则

@@ -21,6 +21,7 @@ import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.utils.FilesUtil;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     private TrackHeadMapper trackHeadMapper;
 
     @Autowired
-    private TrackItemMapper trackItemMapper;
+    private TrackItemService trackItemService;
 
     @Autowired
     private LineStoreService lineStoreService;
@@ -96,7 +97,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //工序资料下载指定位置
         QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
         queryWrapperTrackItem.eq("flow_id", flowId);
-        List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+        List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
         for (TrackItem trackItem : trackItemList) {
             List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
             for (Attachment sar : attachments) {
@@ -171,12 +172,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public String completionData(String flowId) throws Exception {
         try {
-            String path = "C:/temp";
-            if (File.separator.equals("/")) {
-                path = "/temp";
-            }
+            String path = FilesUtil.tempPath();
             path = path + "/" + SecurityUtils.getCurrentUser().getUsername();
             FileUtil.del(path);
+            File file = new File(path);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
             //查询料单
             QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
             queryWrapperTrackHeadRelation.eq("flow_id", flowId);
@@ -189,10 +191,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //工序资料下载
             downloadTrackItem(flowId, path);
-            File file = new File(path);
-            if (!file.exists()) {
-                file.mkdirs();
-            }
             ZipUtil.zip(path);
             return path + ".zip";
         } catch (Exception e) {
@@ -319,7 +317,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //添加跟单
             trackHeadMapper.insert(trackHead);
-
             //添加跟单分流
             if ("Y".equals(trackHead.getIsBatch())) {
                 trackHeadFlow(trackHead, trackItems, productsNo, number);
@@ -434,7 +431,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     //可分配数量
                     item.setAssignableQty(number);
-                    trackItemMapper.insert(item);
+                    trackItemService.save(item);
                 }
             }
         } catch (Exception e) {
@@ -490,18 +487,47 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHead.setModifyTime(new Date());
             int bool = trackHeadMapper.updateById(trackHead);
-            //删除所有跟单工序
-            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-            queryWrapper.eq("track_head_id", trackHead.getId());
-            trackItemMapper.delete(queryWrapper);
-            //跟单工序添加
-            if (trackItems != null && trackItems.size() > 0) {
-                for (TrackItem item : trackItems) {
-                    item.setTrackHeadId(trackHead.getId());
-                    item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    item.setModifyTime(new Date());
-                    item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    trackItemMapper.insert(item);
+
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getProductNo().indexOf(",") != -1) {
+                //分流情况的工序批量修改
+                //删除所有为派工的跟单工序
+                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+                queryWrapperTrackItem.eq("is_schedule", "0");
+                trackItemService.remove(queryWrapperTrackItem);
+                //跟单工序添加
+                if (trackItems != null && trackItems.size() > 0) {
+                    for (TrackItem item : trackItems) {
+                        //批量添加未派工的工序
+                        if (item.getIsSchedule() == 0) {
+                            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+                            queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
+                            List<TrackFlow> trackFlows = trackFlowMapper.selectList(queryWrapperTrackFlow);
+                            for (TrackFlow trackFlow : trackFlows) {
+                                item.setId(UUID.randomUUID().toString().replace("-", ""));
+                                item.setFlowId(trackFlow.getId());
+                                item.setTrackHeadId(trackHead.getId());
+                                item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                                item.setModifyTime(new Date());
+                                item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                                trackItemService.saveOrUpdate(item);
+                            }
+                        }
+                    }
+                }
+            } else {
+                //跟单工序添加
+                if (trackItems != null && trackItems.size() > 0) {
+                    for (TrackItem item : trackItems) {
+                        if (StringUtils.isNullOrEmpty(item.getId())) {
+                            item.setId(UUID.randomUUID().toString().replace("-", ""));
+                        }
+                        item.setTrackHeadId(trackHead.getId());
+                        item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                        item.setModifyTime(new Date());
+                        item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                        trackItemService.saveOrUpdate(item);
+                    }
                 }
             }
             return true;
@@ -559,11 +585,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
             int result = trackHeadMapper.deleteBatchIds(ids);
             if (result > 0) {
-                //删除工序垃圾数据，避免数据库垃圾数据，料单数据处理
+                //删除分流数据、工序垃圾数据等信息，避免数据库垃圾数据，料单数据处理
                 for (String id : ids) {
+                    //删除分流表数据
+                    QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+                    queryWrapperTrackFlow.eq("track_head_id", id);
+                    trackFlowMapper.delete(queryWrapperTrackFlow);
+                    //删除工序
                     Map<String, Object> map = new HashMap<>();
                     map.put("track_head_id", id);
-                    trackItemMapper.deleteByMap(map);
+                    trackItemService.removeByMap(map);
+                    //删除跟单物料关联表
                     List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
                     for (TrackHeadRelation relation : relations) {
                         if (relation.getType().equals("0")) { //输入物料
@@ -649,21 +681,33 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     /**
      * 功能描述: 跟单完成
      *
-     * @param id 跟单id
+     * @param flowId 跟单分流id
      * @Author: zhiqiang.lu
      * @Date: 2022/7/6 18:07
      * @return: void
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void trackHeadFinish(String id) throws Exception {
+    public void trackHeadFinish(String flowId) throws Exception {
         try {
-            TrackHead trackHead = trackHeadMapper.selectById(id);
-            trackHead.setStatus("2");
+            //跟单完成更新分流数据
+            TrackFlow trackFlow = trackFlowMapper.selectById(flowId);
+            trackFlow.setCompleteTime(new Date());
+            trackFlow.setStatus("2");
+            trackFlow.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            trackFlow.setModifyTime(new Date());
+            trackFlowMapper.updateById(trackFlow);
+
+            //跟单完成数量，状态更新
+            TrackHead trackHead = trackHeadMapper.selectById(trackFlow.getTrackHeadId());
+            trackHead.setNumberComplete(trackHead.getNumberComplete() + trackFlow.getNumber());
+            if (trackHead.getNumber() == trackHead.getNumberComplete()) {
+                trackHead.setStatus("2");
+            }
 
             //完成品料单数据更新
             QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
-            queryWrapperTrackHeadRelation.eq("th_id", id);
+            queryWrapperTrackHeadRelation.eq("flow_id", flowId);
             queryWrapperTrackHeadRelation.eq("type", "1");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation trackHeadRelation : trackHeadRelations) {
