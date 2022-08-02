@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.net.HttpHeaders;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.FileUtils;
@@ -186,8 +187,16 @@ public class AttachmentController extends BaseController {
 
         List<Attachment> list = new ArrayList<>();
         for (String id : ids) {
-            Attachment attachment = attachmentService.get(id);
-            list.add(attachment);
+            Attachment attachment = null;
+            try {
+                attachment = attachmentService.get(id);
+                list.add(attachment);
+            } catch (GlobalException e) {
+                log.error(e.getMessage());
+            }
+        }
+        if (list.size() == 0) {
+            throw new GlobalException("attachment not found", ResultCode.ITEM_NOT_FOUND);
         }
 
         try {

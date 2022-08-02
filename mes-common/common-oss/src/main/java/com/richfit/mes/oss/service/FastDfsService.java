@@ -303,7 +303,7 @@ public class FastDfsService {
                 // Get the file name
                 String filename = fileNames.get(i);
                 log.debug("Download file, the file path is: {}, filename: {}", filepath, filename);
-                InputStream fis = downloadStream(filepath, group);
+                InputStream fis = downloadStream(group, filepath);
                 //压缩文件内的文件名称
                 zos.putNextEntry(new ZipEntry(filename));
                 int length;

@@ -99,7 +99,11 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
 
         for (Attachment attachment : attachments) {
             filePaths.add(attachment.getFastFileId());
-            fileNames.add(attachment.getAttachName());
+            if (StringUtils.isEmpty(attachment.getAttachName())) {
+                fileNames.add(attachment.getId() + "." + attachment.getAttachType());
+            } else {
+                fileNames.add(attachment.getAttachName());
+            }
         }
 
         return fastDfsService.download(filePaths, fileNames, zipName, group);
