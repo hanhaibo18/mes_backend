@@ -2,19 +2,24 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.AESUtil;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
 import com.richfit.mes.produce.entity.*;
-import io.netty.util.internal.StringUtil;
+import com.richfit.mes.produce.entity.ApplicationResult;
+import com.richfit.mes.produce.entity.IngredientApplicationDto;
+import com.richfit.mes.produce.entity.LineList;
+import com.richfit.mes.produce.provider.WmsServiceClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +47,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private TrackItemService trackItemService;
     @Resource
     private TrackAssignService trackAssignService;
+    @Resource
+    private WmsServiceClient wmsServiceClient;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
@@ -209,9 +216,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         //单位
         lineLists.add(lineList);
         ingredient.setLineList(lineLists);
-        ApplicationResult applicationResult = null;
+        ApplicationResult applicationResult = new ApplicationResult();
         try {
-            applicationResult = anApplicationForm(ingredient);
+            applicationResult.setRetMsg(anApplicationForm(ingredient).toString());;
         } catch (Exception e) {
             ApplicationResult result = new ApplicationResult();
             result.setRetStatus("500");
@@ -223,29 +230,11 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     }
 
     private int queryMaterialCount(String materialNo) {
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("wstr", materialNo);
-        params.put("page", 1);
-        params.put("token", "66da1b74a0f22adadc4a865e00435e72");
-        String url = "http://10.134.100.21:908/getapi.php";
-        String number = HttpUtil.get(url, params);
-        if (StringUtil.isNullOrEmpty(number)) {
-            return 0;
-        }
-        String replaceAll = number.replaceAll("\\ufeff", "");
-        double value = Double.parseDouble(replaceAll);
-        return (int) value;
+        return wmsServiceClient.queryMaterialCount(materialNo).getData();
     }
 
-    private ApplicationResult anApplicationForm(IngredientApplicationDto ingredientApplicationDto) throws Exception {
-        String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
-        String aes = AESUtil.encrypt(jsonStr, "123");
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", aes);
-        String url = "http://11.11.136.204:9081/bsj/mes2barcode/scddUpload?i_data=" + aes;
-        String s = HttpUtil.get(url, params, 120000);
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
+    private Boolean anApplicationForm(IngredientApplicationDto ingredientApplicationDto){
+        return wmsServiceClient.anApplicationForm(ingredientApplicationDto).getData();
     }
 
     @Override
