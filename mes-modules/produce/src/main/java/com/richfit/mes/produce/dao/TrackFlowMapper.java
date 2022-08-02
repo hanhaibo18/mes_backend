@@ -23,6 +23,12 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
      **/
     @Select("<script>" +
             " select * from v_produce_track_head_flow where 1=1 " +
+            " <if test='startDate != null and startDate != \"\"'> " +
+            "  and create_time &gt;= #{startDate} " +
+            " </if> " +
+            " <if test='endDate != null and endDate != \"\"'> " +
+            "  and create_time &lt;= #{endDate} " +
+            " </if> " +
             " <if test='templateCode != null and templateCode != \"\"'> " +
             "  and template_code = #{templateCode} " +
             " </if> " +

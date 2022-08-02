@@ -1,23 +1,32 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ZipUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.code.StoreItemStatusEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
+import com.richfit.mes.common.model.produce.store.StoreAttachRel;
+import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
+import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.utils.FilesUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.io.File;
 import java.util.*;
 
 /**
@@ -44,6 +53,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Autowired
     CertificateService certificateService;
 
+    @Resource
+    private SystemServiceClient systemServiceClient;
+
     @Override
     public LineStore LineStoreById(String id) {
         return lineStoreMapper.selectById(id);
@@ -65,7 +77,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         String pNo = trackHead.getUserProductNo(); //毛坯编号
 
-
         UpdateWrapper<LineStore> update2 = new UpdateWrapper<LineStore>();
         update2.set("status", StoreItemStatusEnum.FINISH.getCode()); //将状态设置为完工
         update2.set("in_time", new Date());
@@ -74,10 +85,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         update2.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         int count = lineStoreMapper.update(null, update2);
-        if (count > 0) {
-            return true;
-        }
-        return false;
+        return count > 0;
     }
 
     // 料单投用
@@ -169,6 +177,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         changeStatus(lineStore);
         lineStore.setStockType("1"); //自动
         lineStore.setTrackType(trackHead.getTrackType());
+
+        lineStore.setInputType("2");
 
         //关联跟单号码
         lineStore.setTrackNo(trackHead.getTrackNo());
@@ -476,6 +486,56 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             }
             return this.updateById(lineStore);
         }
+    }
+
+    @Override
+    public String loadFileToFolder(String id) throws Exception {
+
+        //查询附件
+        QueryWrapper<StoreAttachRel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("lineStoreId", id);
+
+        List<StoreAttachRel> storeAttachRels = storeAttachRelService.list(queryWrapper);
+
+        String path = FilesUtil.tempPath();
+
+        for (StoreAttachRel storeAttachRel : storeAttachRels) {
+
+            CommonResult<Attachment> atta = systemServiceClient.attachment(storeAttachRel.getId());
+            CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(storeAttachRel.getId());
+
+            if (data.getStatus() == 200) {
+                File file = new File(path + "/" +
+                        (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." +
+                                atta.getData().getAttachType() : atta.getData().getAttachName()));
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                FileUtil.writeBytes(data.getData(), file);
+            } else {
+                throw new Exception("从文件服务器下载文件失败");
+            }
+        }
+
+        ZipUtil.zip(path);
+        return path + ".zip";
+    }
+
+    @Override
+    public List<String> qeuryStoreFileIdList(String id) {
+        //查询附件
+        QueryWrapper<StoreAttachRel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("line_store_id", id);
+
+        List<StoreAttachRel> storeAttachRels = storeAttachRelService.list(queryWrapper);
+
+        List<String> idList = new ArrayList<>();
+
+        for (StoreAttachRel storeAttachRel : storeAttachRels) {
+            idList.add(storeAttachRel.getAttachmentId());
+        }
+
+        return idList;
     }
 
 

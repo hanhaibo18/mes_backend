@@ -75,6 +75,14 @@ public interface AttachmentService {
      */
     InputStream download(Attachment attachment);
 
+    /**
+     * 下载zip包
+     *
+     * @param attachments zipName
+     * @return InputStream
+     */
+    InputStream downloadZip(List<Attachment> attachments, String zipName);
+
     byte[] downloadbyte(Attachment attachment);
 
     /**

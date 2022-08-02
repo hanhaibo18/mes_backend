@@ -102,4 +102,23 @@ public interface LineStoreService extends IService<LineStore> {
      **/
     Boolean zpExpend(String drawingNo, String materialNo, int number, int state);
 
+    /**
+     * 功能描述: 根据料单Id，查询附件并存储到临时目录，等待压缩下载
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/7/19 10:59
+     * @return: Boolean
+     **/
+    public String loadFileToFolder(String id) throws Exception;
+
+    /**
+     * 功能描述: 根据料单Id，查询附件id
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/7/19 10:59
+     * @return: Boolean
+     **/
+    List<String> qeuryStoreFileIdList(String id);
 }

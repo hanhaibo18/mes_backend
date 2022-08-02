@@ -2,16 +2,15 @@ package com.kld.mes.wms.controller;
 
 import com.kld.mes.wms.service.ProductToWmsService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
+import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @Author: GaoLiang
@@ -36,5 +35,17 @@ public class WmsController {
 
         return new CommonResult(b);
 
+    }
+
+    @ApiOperation(value = "查询仓储信息", notes = "根据物料编号参数查询仓储信息接口")
+    @GetMapping("/queryMaterialCount")
+    public CommonResult<Integer> queryMaterialCount(@RequestParam("materialNo") String materialNo) throws Exception{
+        return new CommonResult(productToWmsService.queryMaterialCount(materialNo));
+    }
+
+    @ApiOperation(value = "配料申请单上传", notes = "配料申请单上传接口")
+    @PostMapping("/anApplicationForm")
+    public CommonResult<Boolean> anApplicationForm(@RequestBody IngredientApplicationDto ingredientApplicationDto) throws Exception {
+        return new CommonResult(productToWmsService.anApplicationForm(ingredientApplicationDto));
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -87,6 +88,25 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
     @Override
     public InputStream download(Attachment attachment) {
         return fastDfsService.downloadStream(attachment.getGroupName(), attachment.getFastFileId());
+    }
+
+    public InputStream downloadZip(List<Attachment> attachments, String zipName) {
+
+        List<String> filePaths = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+
+        String group = attachments.get(0).getGroupName();
+
+        for (Attachment attachment : attachments) {
+            filePaths.add(attachment.getFastFileId());
+            if (StringUtils.isEmpty(attachment.getAttachName())) {
+                fileNames.add(attachment.getId() + "." + attachment.getAttachType());
+            } else {
+                fileNames.add(attachment.getAttachName());
+            }
+        }
+
+        return fastDfsService.download(filePaths, fileNames, zipName, group);
     }
 
     @Override
