@@ -61,4 +61,12 @@ public class ObjectFactory {
         return new ZPPS0008();
     }
 
+    /**
+     * Create an instance of {@link ZC80PPIF009Response }
+     * 
+     */
+    public ZC80PPIF009Response createZC80PPIF009Response() {
+        return new ZC80PPIF009Response();
+    }
+
 }
