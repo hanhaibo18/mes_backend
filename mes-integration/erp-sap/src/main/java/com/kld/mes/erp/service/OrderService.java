@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
 import com.kld.mes.erp.entity.order.ZPPS0008;
 
 import java.util.List;
@@ -11,6 +12,6 @@ import java.util.List;
  */
 public interface OrderService {
 
-    Object getErpCode(String erpCode, String selectDate, String controller, String orderNo);
+    ZC80PPIF009Response getErpCode(String erpCode, String selectDate, String controller, String orderNo);
 
 }

@@ -3,6 +3,7 @@ package com.kld.mes.erp.service;
 import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024;
 import com.kld.mes.erp.entity.order.WERKS;
 import com.kld.mes.erp.entity.order.ZC80PPIF009;
+import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
 import com.kld.mes.erp.entity.order.ZPPS0008;
 import com.kld.mes.erp.utils.WsTemplateFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -32,13 +33,13 @@ public class OrderServiceImpl implements OrderService {
     private final String packageName = "com.kld.mes.erp.entity.order";
 
     @Override
-    public Object getErpCode(String erpCode, String selectDate, String controller, String orderNo) {
+    public ZC80PPIF009Response getErpCode(String erpCode, String selectDate, String controller, String orderNo) {
         ZC80PPIF009 zc80PPIF009 = generateRequestBody(erpCode, selectDate);
 
         //获取调用服务接口类实例
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
-        Object object = webServiceTemplate.marshalSendAndReceive(URL, zc80PPIF009);
-        return object;
+        ZC80PPIF009Response response = (ZC80PPIF009Response)webServiceTemplate.marshalSendAndReceive(URL, zc80PPIF009);
+        return response;
     }
 
 
