@@ -174,6 +174,42 @@ public class AttachmentController extends BaseController {
         }
     }
 
+    @PostMapping("/download_zip")
+    @ApiOperation(value = "下载附件", notes = "根据ID列表下载ZIP附件")
+    @ApiImplicitParam(name = "ids", value = "附件ID", required = true, dataType = "List<String>")
+    public void downloadZip(HttpServletRequest request, HttpServletResponse response, @RequestBody List<String> ids, @RequestParam String fileName) throws GlobalException {
+
+        List<Attachment> list = new ArrayList<>();
+        for (String id : ids) {
+            Attachment attachment = attachmentService.get(id);
+            list.add(attachment);
+        }
+
+        try {
+            InputStream inputStream = attachmentService.downloadZip(list, fileName);
+            if (inputStream == null) {
+                log.info("attachment is not exists");
+                return;
+            }
+            OutputStream outputStream = response.getOutputStream();
+            response.setContentType("application/zip");
+            response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=10");
+            // IE之外的浏览器使用编码输出名称
+            String contentDisposition = "";
+            String httpUserAgent = request.getHeader("User-Agent");
+            if (!StringUtils.isNullOrEmpty(httpUserAgent)) {
+                httpUserAgent = httpUserAgent.toLowerCase();
+                contentDisposition = httpUserAgent.contains("wps") ? "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") : ServletUtils.getDownName(request, fileName);
+            }
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+            response.setContentLength(inputStream.available());
+            FileCopyUtils.copy(inputStream, outputStream);
+            log.info("download {} success", fileName);
+        } catch (Exception e) {
+            log.error("Download attachment failed: {}", e.getMessage(), e);
+        }
+    }
+
     @GetMapping("/preview")
     @ApiOperation(value = "预览附件", notes = "根据附件ID预览附件")
     @ApiImplicitParam(name = "id", value = "附件id", required = true, dataType = "String")

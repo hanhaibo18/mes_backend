@@ -17,11 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author sun
@@ -273,5 +277,73 @@ public class FastDfsService {
         }
 
         return fastDfsUrl + fileUrl + "?token=" + token + "&ts=" + ts;
+    }
+
+    /**
+     * 批量下载fastDFS文件
+     *
+     * @param filePaths
+     * @param zipFileName
+     */
+    public InputStream download(List<String> filePaths, List<String> fileNames, String zipFileName, String group) {
+
+        if (CollectionUtils.isEmpty(filePaths)) {
+//            throw new Exception();
+        }
+        try {
+            byte[] buffer = new byte[1024];
+            // 创建一个新的 byte 数组输出流，它具有指定大小的缓冲区容量
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            //创建一个新的缓冲输出流，以将数据写入指定的底层输出流
+            BufferedOutputStream fos = new BufferedOutputStream(baos);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            for (int i = 0; i < filePaths.size(); i++) {
+                //获取各个文件的数据流
+                String filepath = toLocal(filePaths.get(i).trim());
+                // Get the file name
+                String filename = fileNames.get(i);
+                log.debug("Download file, the file path is: {}, filename: {}", filepath, filename);
+                InputStream fis = downloadStream(filepath, group);
+                //压缩文件内的文件名称
+                zos.putNextEntry(new ZipEntry(filename));
+                int length;
+                while ((length = fis.read(buffer)) > 0) {
+                    //将文件读入压缩文件内
+                    zos.write(buffer, 0, length);
+                }
+                zos.closeEntry();
+                fis.close();
+            }
+            zos.close();
+            fos.flush();
+
+            InputStream is = new ByteArrayInputStream(baos.toByteArray());
+            return is;
+
+        } catch (Exception ioe) {
+            ioe.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Convert '\\\\' to '/' in the path, and convert the suffix name to lowercase
+     *
+     * @param path the file path
+     * @return The converted path
+     */
+    private static String toLocal(String path) {
+        if (StringUtils.isNotBlank(path)) {
+            path = path.replaceAll("\\\\", "/");
+
+            if (path.contains(".")) {
+                String pre = path.substring(0, path.lastIndexOf(".") + 1);
+                String suffix = path.substring(path.lastIndexOf(".") + 1).toLowerCase();
+                path = pre + suffix;
+            }
+        }
+        return path;
     }
 }
