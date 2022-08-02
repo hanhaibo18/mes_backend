@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WL5G3N0:definitions xmlns:WL5G3N2="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:WL5G3N1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:WL5G3N3="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/">
+  <WL5G3N0:documentation>
+  </WL5G3N0:documentation>
+  <wsp:UsingPolicy WL5G3N0:Required="true" />
+  <wsp:Policy WL5G3N1:Id="BN_BN_ZC80_MMIF015">
+    <saptrnbnd:OptimizedXMLTransfer uri="http://xml.sap.com/2006/11/esi/esp/binxml" wsp:Optional="true" xmlns:saptrnbnd="http://www.sap.com/webas/710/soap/features/transportbinding/" />
+    <wsoma:OptimizedMimeSerialization xmlns:wsoma="http://schemas.xmlsoap.org/ws/2004/09/policy/optimizedmimeserialization" />
+    <wsp:ExactlyOne />
+    <wsaw:UsingAddressing xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" />
+  </wsp:Policy>
+  <WL5G3N0:types>
+    <xsd:schema xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:WL5G3N4="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:WL5G3N1="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:WL5G3N5="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:n1="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:WL5G3N2="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:rfc:functions" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:simpleType name="char1">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="1" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char10">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="10" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char18">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="18" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char3">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="3" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char4">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="4" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="quantum13.3">
+        <xsd:restriction base="xsd:decimal">
+          <xsd:totalDigits value="13" />
+          <xsd:fractionDigits value="3" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:schema>
+    <xsd:schema xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:WL5G3N4="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:WL5G3N1="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:WL5G3N5="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:n1="urn:sap-com:document:sap:rfc:functions" xmlns:n0="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:WL5G3N2="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:import namespace="urn:sap-com:document:sap:rfc:functions" />
+      <xsd:complexType name="Zc80mmif015S2">
+        <xsd:sequence>
+          <xsd:element name="Werks" type="n0:char4" />
+          <xsd:element name="Lgort" type="n0:char4" />
+          <xsd:element name="Matnr" type="n0:char18" />
+          <xsd:element name="Labst" type="n0:quantum13.3" />
+          <xsd:element name="Meins" type="n0:char3" />
+          <xsd:element name="Charg" type="n0:char10" />
+          <xsd:element name="Sobkz" type="n0:char1" />
+          <xsd:element name="Zkcbm" type="n0:char18" />
+          <xsd:element name="Insme" type="n0:quantum13.3" />
+          <xsd:element name="Speme" type="n0:quantum13.3" />
+          <xsd:element name="Umlme" type="n0:quantum13.3" />
+          <xsd:element name="Zyuliu1" type="n0:char18" />
+          <xsd:element name="Zyuliu2" type="n0:char18" />
+          <xsd:element name="Zyuliu3" type="n0:char18" />
+          <xsd:element name="Zyuliu4" type="n0:char18" />
+          <xsd:element name="Zyuliu5" type="n0:char18" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="Zc80mmif015S1">
+        <xsd:sequence>
+          <xsd:element name="Matnr" type="n0:char18" />
+          <xsd:element name="Lgort" type="n0:char4" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TableOfZc80mmif015S2">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="tns:Zc80mmif015S2" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TableOfZc80mmif015S1">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="tns:Zc80mmif015S1" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="Zc80Mmif015">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="IWerks" type="n0:char4" />
+            <xsd:element minOccurs="0" name="TMg" type="tns:TableOfZc80mmif015S1" />
+            <xsd:element minOccurs="0" name="TTable" type="tns:TableOfZc80mmif015S2" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Zc80Mmif015Response">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="TMg" type="tns:TableOfZc80mmif015S1" />
+            <xsd:element minOccurs="0" name="TTable" type="tns:TableOfZc80mmif015S2" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </WL5G3N0:types>
+  <WL5G3N0:message name="Zc80Mmif015">
+    <WL5G3N0:part name="parameters" element="WL5G3N2:Zc80Mmif015" />
+  </WL5G3N0:message>
+  <WL5G3N0:message name="Zc80Mmif015Response">
+    <WL5G3N0:part name="parameter" element="WL5G3N2:Zc80Mmif015Response" />
+  </WL5G3N0:message>
+  <WL5G3N0:portType name="ZC80_MMIF015">
+    <WL5G3N0:operation name="Zc80Mmif015">
+      <WL5G3N0:input message="WL5G3N2:Zc80Mmif015" />
+      <WL5G3N0:output message="WL5G3N2:Zc80Mmif015Response" />
+    </WL5G3N0:operation>
+  </WL5G3N0:portType>
+  <WL5G3N0:binding name="ZC80_MMIF015" type="WL5G3N2:ZC80_MMIF015">
+    <wsp:Policy>
+      <wsp:PolicyReference URI="#BN_BN_ZC80_MMIF015" />
+    </wsp:Policy>
+    <WL5G3N3:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <WL5G3N0:operation name="Zc80Mmif015">
+      <WL5G3N3:operation soapAction="urn:sap-com:document:sap:soap:functions:mc-style:ZC80_MMIF015:Zc80Mmif015Request" style="document" />
+      <WL5G3N0:input>
+        <WL5G3N3:body use="literal" />
+      </WL5G3N0:input>
+      <WL5G3N0:output>
+        <WL5G3N3:body use="literal" />
+      </WL5G3N0:output>
+    </WL5G3N0:operation>
+  </WL5G3N0:binding>
+  <WL5G3N0:service name="ZC80_MMIF015">
+    <WL5G3N0:port name="ZC80_MMIF015" binding="WL5G3N2:ZC80_MMIF015">
+      <WL5G3N3:address location="http://10.30.47.134:8000/ZBZZ/MES/ZC80_MMIF015/service/PS/PS_ZC80_MMIF015" />
+    </WL5G3N0:port>
+  </WL5G3N0:service>
+</WL5G3N0:definitions>
