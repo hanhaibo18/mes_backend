@@ -251,7 +251,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if ("Y".equals(trackHead.getIsBatch())) {
                 if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
                     for (Map m : trackHead.getStoreList()) {
-                        trackHead.setProductNo(trackHead.getDrawingNo() + " " + (String) m.get("workblankNo"));
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
                 } else {
@@ -313,8 +312,21 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (trackHeads.size() > 0) {
                     throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
                 }
+                //机加产品编码处理
+                trackHead.setProductNoDesc(trackHead.getProductNo());
+                if (trackHead.getStoreList().size() == 1) {
+                    if ("0".equals(trackHead.getIsTestBar())) {
+                        trackHead.setProductNo(trackHead.getStoreList().get(0).get("workblankNo").toString());
+                    } else {
+                        trackHead.setProductNo(trackHead.getStoreList().get(0).get("workblankNo").toString() + "S");
+                        productsNo += "S";
+                    }
+                }
+                if (trackHead.getStoreList().size() > 1) {
+                    int size = trackHead.getStoreList().size();
+                    trackHead.setProductNo(trackHead.getStoreList().get(0).get("workblankNo").toString() + "-" + trackHead.getStoreList().get(size - 1).get("workblankNo").toString());
+                }
             }
-
             //添加跟单
             trackHeadMapper.insert(trackHead);
             //添加跟单分流
@@ -354,8 +366,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-            //只有机加创建跟单时才会进行库存料单关联
-            if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
+            //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
+            if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
                 Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
