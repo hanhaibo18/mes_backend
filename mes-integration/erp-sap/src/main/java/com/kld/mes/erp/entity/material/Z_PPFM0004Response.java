@@ -28,13 +28,13 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-        "tmara"
+
 })
-@XmlRootElement(name = "Z_PPFM0004.Response", namespace = "urn:sap-com:document:sap:rfc:functions.response")
+@XmlRootElement(name = "Z_PPFM0004.Response")
 public class Z_PPFM0004Response {
 
-    @XmlElement(name = "T_MARA", namespace = "urn:sap-com:document:sap:rfc:functions.response")
-    protected Z_PPFM0004.TMARA tmara;
+    @XmlElement(name = "T_MARA")
+    protected Object tmara;
 
     /**
      * 获取tmara属性的值。
@@ -42,7 +42,7 @@ public class Z_PPFM0004Response {
      * @return possible object is
      * {@link Object }
      */
-    public Z_PPFM0004.TMARA getTMARA() {
+    public Object getTMARA() {
         return tmara;
     }
 
@@ -52,7 +52,7 @@ public class Z_PPFM0004Response {
      * @param value allowed object is
      *              {@link Object }
      */
-    public void setTMARA(Z_PPFM0004.TMARA value) {
+    public void setTMARA(Object value) {
         this.tmara = value;
     }
 

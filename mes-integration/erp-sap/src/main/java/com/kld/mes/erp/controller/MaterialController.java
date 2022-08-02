@@ -30,7 +30,7 @@ public class MaterialController {
 
     @ApiOperation(value = "从ERP查询物料库存", notes = "从ERP查询物料库存")
     @GetMapping("/getMaterial")
-    public CommonResult<List<Product>> getMaterial(@ApiParam(value = "日期") @RequestBody String date,
+    public CommonResult<List<Product>> getMaterial(@ApiParam(value = "日期") @RequestParam String date,
                                                    @ApiParam(value = "erp代号") @RequestParam String erpCode) {
 
         List<Product> list = materialService.getMaterial(date, erpCode);
