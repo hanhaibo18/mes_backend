@@ -2,6 +2,7 @@ package com.kld.mes.erp.service;
 
 
 import com.kld.mes.erp.utils.WsTemplateFactory;
+import com.kld.mes.erp.entity.material.*;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiParam;
@@ -39,12 +40,24 @@ public class MaterialServiceImpl implements MaterialService {
     private final String packageName = "com.kld.mes.erp.entity.material";
 
     @Override
-    public List<Product> getMaterial(@ApiParam(value = "物料号") @RequestBody String[] materialNos,
+    public List<Product> getMaterial(@ApiParam(value = "日期") @RequestBody String date,
                                      @ApiParam(value = "erp代号") @RequestParam String erpCode) {
 
         try {
             //生成报文主体
+            Z_PPFM0004 z_PPFM0004 = new Z_PPFM0004();
+            WERKS w = new WERKS();
+            w.setWERKS("X092");
 
+            z_PPFM0004.setZWERKS(w);
+            z_PPFM0004.setZDATUM("2022-07-10");
+
+            //获取调用服务接口类实例
+            WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
+
+            //发起接口调用
+            Object o = webServiceTemplate
+                    .marshalSendAndReceive(URL, z_PPFM0004);
 
             List<Product> products = new ArrayList<>();
 
