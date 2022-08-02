@@ -585,11 +585,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
             int result = trackHeadMapper.deleteBatchIds(ids);
             if (result > 0) {
-                //删除工序垃圾数据，避免数据库垃圾数据，料单数据处理
+                //删除分流数据、工序垃圾数据等信息，避免数据库垃圾数据，料单数据处理
                 for (String id : ids) {
+                    //删除分流表数据
+                    QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+                    queryWrapperTrackFlow.eq("track_head_id", id);
+                    trackFlowMapper.delete(queryWrapperTrackFlow);
+                    //删除工序
                     Map<String, Object> map = new HashMap<>();
                     map.put("track_head_id", id);
                     trackItemService.removeByMap(map);
+                    //删除跟单物料关联表
                     List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
                     for (TrackHeadRelation relation : relations) {
                         if (relation.getType().equals("0")) { //输入物料
@@ -675,21 +681,33 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     /**
      * 功能描述: 跟单完成
      *
-     * @param id 跟单id
+     * @param flowId 跟单分流id
      * @Author: zhiqiang.lu
      * @Date: 2022/7/6 18:07
      * @return: void
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void trackHeadFinish(String id) throws Exception {
+    public void trackHeadFinish(String flowId) throws Exception {
         try {
-            TrackHead trackHead = trackHeadMapper.selectById(id);
-            trackHead.setStatus("2");
+            //跟单完成更新分流数据
+            TrackFlow trackFlow = trackFlowMapper.selectById(flowId);
+            trackFlow.setCompleteTime(new Date());
+            trackFlow.setStatus("2");
+            trackFlow.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            trackFlow.setModifyTime(new Date());
+            trackFlowMapper.updateById(trackFlow);
+
+            //跟单完成数量，状态更新
+            TrackHead trackHead = trackHeadMapper.selectById(trackFlow.getTrackHeadId());
+            trackHead.setNumberComplete(trackHead.getNumberComplete() + trackFlow.getNumber());
+            if (trackHead.getNumber() == trackHead.getNumberComplete()) {
+                trackHead.setStatus("2");
+            }
 
             //完成品料单数据更新
             QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
-            queryWrapperTrackHeadRelation.eq("th_id", id);
+            queryWrapperTrackHeadRelation.eq("flow_id", flowId);
             queryWrapperTrackHeadRelation.eq("type", "1");
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation trackHeadRelation : trackHeadRelations) {
