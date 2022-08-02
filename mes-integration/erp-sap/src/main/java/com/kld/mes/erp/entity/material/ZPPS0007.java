@@ -7,10 +7,12 @@ import javax.xml.bind.annotation.XmlType;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ZPPS0008", propOrder = {
+@XmlType(name = "ZPPS0007", propOrder = {
         "matnr",
         "maktx",
         "werks",
+        "zeinr",
+        "meins",
         "lvorm",
         "zyl1",
         "zyl2",
@@ -18,13 +20,17 @@ import javax.xml.bind.annotation.XmlType;
         "zyl4",
         "zyl5"
 })
-public class ZPPS0008 {
+public class ZPPS0007 {
 
 
     @XmlElement(name = "MATNR")
     protected String matnr;
     @XmlElement(name = "MAKTX")
     protected String maktx;
+    @XmlElement(name = "ZEINR")
+    protected String zeinr;
+    @XmlElement(name = "MEINS")
+    protected String meins;
     @XmlElement(name = "WERKS")
     protected String werks;
     @XmlElement(name = "LVORM")
@@ -79,6 +85,23 @@ public class ZPPS0008 {
      */
     public void setMAKTX(String value) {
         this.maktx = value;
+    }
+
+
+    public String getZEINR() {
+        return zeinr;
+    }
+
+    public void setZEINR(String value) {
+        this.zeinr = value;
+    }
+
+    public String getMEINS() {
+        return meins;
+    }
+
+    public void setMEINS(String value) {
+        this.meins = value;
     }
 
     /**

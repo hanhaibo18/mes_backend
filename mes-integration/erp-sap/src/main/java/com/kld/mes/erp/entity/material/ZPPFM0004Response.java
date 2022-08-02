@@ -5,8 +5,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -30,10 +28,10 @@ import java.util.List;
 @XmlType(name = "", propOrder = {
 
 })
-@XmlRootElement(name = "Z_PPFM0004.Response")
-public class Z_PPFM0004Response {
+@XmlRootElement(name = "Z_PPFM0004.Response", namespace = "urn:sap-com:document:sap:rfc:functions.response")
+public class ZPPFM0004Response {
 
-    @XmlElement(name = "T_MARA")
+    @XmlElement(name = "T_MARA", namespace = "urn:sap-com:document:sap:rfc:functions.response")
     protected Object tmara;
 
     /**

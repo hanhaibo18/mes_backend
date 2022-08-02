@@ -32,7 +32,7 @@
                     </xsd:all>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:complexType name="ZPPS0007">
+            <xsd:complexType name="ZPPS0008">
                 <xsd:sequence>
                     <xsd:element name="MATNR" minOccurs="0">
                         <xsd:simpleType>
@@ -141,7 +141,7 @@
                     </xsd:all>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:complexType name="ZPPS0007">
+            <xsd:complexType name="ZPPS0008">
                 <xsd:sequence>
                     <xsd:element name="MATNR" minOccurs="0">
                         <xsd:simpleType>

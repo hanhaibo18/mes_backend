@@ -45,19 +45,20 @@ public class MaterialServiceImpl implements MaterialService {
 
         try {
             //生成报文主体
-            Z_PPFM0004 z_PPFM0004 = new Z_PPFM0004();
+            ZPPFM0004 ZPPFM0004 = new ZPPFM0004();
             WERKS w = new WERKS();
             w.setWERKS("X092");
 
-            z_PPFM0004.setZWERKS(w);
-            z_PPFM0004.setZDATUM("2022-07-10");
+            ZPPFM0004.setZWERKS(w);
+            ZPPFM0004.setZDATUM("2022-07-10");
+            ZPPFM0004.setTMARA(new ZPPFM0004.TMARA());
 
             //获取调用服务接口类实例
             WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
 
             //发起接口调用
             Object o = webServiceTemplate
-                    .marshalSendAndReceive(URL, z_PPFM0004);
+                    .marshalSendAndReceive(URL, ZPPFM0004);
 
             List<Product> products = new ArrayList<>();
 

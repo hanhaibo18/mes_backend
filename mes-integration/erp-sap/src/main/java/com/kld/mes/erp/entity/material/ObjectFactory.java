@@ -27,10 +27,10 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Z_PPFM0004 }
+     * Create an instance of {@link ZPPFM0004 }
      */
-    public Z_PPFM0004 createZ_PPFM0004() {
-        return new Z_PPFM0004();
+    public ZPPFM0004 createZPPFM0004() {
+        return new ZPPFM0004();
     }
 
     /**
@@ -41,24 +41,28 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Z_PPFM0004 .TAUFK }
+     * Create an instance of {@link ZPPFM0004 .TMARA }
      */
-    public Z_PPFM0004.TMARA createZ_PPFM0004TAUFK() {
-        return new Z_PPFM0004.TMARA();
+    public ZPPFM0004.TMARA createZPPFM0004TMARA() {
+        return new ZPPFM0004.TMARA();
     }
 
     /**
-     * Create an instance of {@link ZPPS0008 }
+     * Create an instance of {@link ZPPS0007 }
      */
-    public ZPPS0008 createZPPS0008() {
-        return new ZPPS0008();
+    public ZPPS0007 createZPPS0007() {
+        return new ZPPS0007();
     }
 
     /**
-     * Create an instance of {@link Z_PPFM0004Response }
+     * Create an instance of {@link ZPPFM0004Response }
      */
-    public Z_PPFM0004Response createZ_PPFM0004Response() {
-        return new Z_PPFM0004Response();
+    public ZPPFM0004Response createZPPFM0004Response() {
+        return new ZPPFM0004Response();
+    }
+
+    public ZPPFM0004.TMARA createZPPFM0004ResponseTMARA() {
+        return new ZPPFM0004.TMARA();
     }
 
 

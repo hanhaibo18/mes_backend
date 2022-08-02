@@ -1,4 +1,3 @@
-
 package com.kld.mes.erp.entity.order;
 
 import java.util.ArrayList;
@@ -12,9 +11,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>anonymous complex type的 Java 类。
- * 
+ *
  * <p>以下模式片段指定包含在此类中的预期内容。
- * 
+ *
  * <pre>
  * &lt;complexType&gt;
  *   &lt;complexContent&gt;
@@ -44,8 +43,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
@@ -59,15 +56,13 @@ public class ZC80PPIF009 {
     @XmlElement(name = "ZWERKS", required = true)
     protected WERKS zwerks;
     @XmlElement(name = "T_AUFK")
-    protected ZC80PPIF009 .TAUFK taufk;
+    protected ZC80PPIF009.TAUFK taufk;
 
     /**
      * 获取zdatum属性的值。
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getZDATUM() {
         return zdatum;
@@ -75,11 +70,9 @@ public class ZC80PPIF009 {
 
     /**
      * 设置zdatum属性的值。
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setZDATUM(String value) {
         this.zdatum = value;
@@ -87,11 +80,9 @@ public class ZC80PPIF009 {
 
     /**
      * 获取zwerks属性的值。
-     * 
-     * @return
-     *     possible object is
-     *     {@link WERKS }
-     *     
+     *
+     * @return possible object is
+     * {@link WERKS }
      */
     public WERKS getZWERKS() {
         return zwerks;
@@ -99,11 +90,9 @@ public class ZC80PPIF009 {
 
     /**
      * 设置zwerks属性的值。
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link WERKS }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link WERKS }
      */
     public void setZWERKS(WERKS value) {
         this.zwerks = value;
@@ -111,34 +100,30 @@ public class ZC80PPIF009 {
 
     /**
      * 获取taufk属性的值。
-     * 
-     * @return
-     *     possible object is
-     *     {@link ZC80PPIF009 .TAUFK }
-     *     
+     *
+     * @return possible object is
+     * {@link ZC80PPIF009 .TAUFK }
      */
-    public ZC80PPIF009 .TAUFK getTAUFK() {
+    public ZC80PPIF009.TAUFK getTAUFK() {
         return taufk;
     }
 
     /**
      * 设置taufk属性的值。
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ZC80PPIF009 .TAUFK }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ZC80PPIF009 .TAUFK }
      */
-    public void setTAUFK(ZC80PPIF009 .TAUFK value) {
+    public void setTAUFK(ZC80PPIF009.TAUFK value) {
         this.taufk = value;
     }
 
 
     /**
      * <p>anonymous complex type的 Java 类。
-     * 
+     *
      * <p>以下模式片段指定包含在此类中的预期内容。
-     * 
+     *
      * <pre>
      * &lt;complexType&gt;
      *   &lt;complexContent&gt;
@@ -150,12 +135,10 @@ public class ZC80PPIF009 {
      *   &lt;/complexContent&gt;
      * &lt;/complexType&gt;
      * </pre>
-     * 
-     * 
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-        "item"
+            "item"
     })
     public static class TAUFK {
 
@@ -163,25 +146,23 @@ public class ZC80PPIF009 {
 
         /**
          * Gets the value of the item property.
-         * 
+         *
          * <p>
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
          * This is why there is not a <CODE>set</CODE> method for the item property.
-         * 
+         *
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
          *    getItem().add(newItem);
          * </pre>
-         * 
-         * 
+         *
+         *
          * <p>
          * Objects of the following type(s) are allowed in the list
          * {@link ZPPS0008 }
-         * 
-         * 
          */
         public List<ZPPS0008> getItem() {
             if (item == null) {

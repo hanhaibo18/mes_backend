@@ -1,7 +1,5 @@
 package com.kld.mes.erp.entity.material;
 
-import com.kld.mes.erp.entity.storage.Zc80Mmif015S2;
-
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -51,14 +49,14 @@ import javax.xml.bind.annotation.XmlType;
 
 })
 @XmlRootElement(name = "Z_PPFM0004")
-public class Z_PPFM0004 {
+public class ZPPFM0004 {
 
     @XmlElement(name = "ZDATUM", required = true)
     protected String zdatum;
     @XmlElement(name = "ZWERKS", required = true)
     protected WERKS zwerks;
     @XmlElement(name = "T_MARA")
-    protected Z_PPFM0004.TMARA tmara;
+    protected ZPPFM0004.TMARA tmara;
 
     /**
      * 获取zdatum属性的值。
@@ -101,22 +99,22 @@ public class Z_PPFM0004 {
     }
 
     /**
-     * 获取taufk属性的值。
+     * 获取TMARA属性的值。
      *
      * @return possible object is
-     * {@link Z_PPFM0004 .TAUFK }
+     * {@link ZPPFM0004 .TMARA }
      */
-    public Z_PPFM0004.TMARA getTAUFK() {
+    public ZPPFM0004.TMARA getTMARA() {
         return tmara;
     }
 
     /**
-     * 设置taufk属性的值。
+     * 设置TMARA属性的值。
      *
      * @param value allowed object is
-     *              {@link Z_PPFM0004 .TAUFK }
+     *              {@link ZPPFM0004 .TMARA }
      */
-    public void setTAUFK(Z_PPFM0004.TMARA value) {
+    public void setTMARA(ZPPFM0004.TMARA value) {
         this.tmara = value;
     }
 
@@ -144,7 +142,7 @@ public class Z_PPFM0004 {
     })
     public static class TMARA {
 
-        protected List<ZPPS0008> item;
+        protected List<ZPPS0007> item;
 
         /**
          * Gets the value of the item property.
@@ -164,16 +162,16 @@ public class Z_PPFM0004 {
          *
          * <p>
          * Objects of the following type(s) are allowed in the list
-         * {@link ZPPS0008 }
+         * {@link ZPPS0007 }
          */
-        public List<ZPPS0008> getItem() {
+        public List<ZPPS0007> getItem() {
             if (item == null) {
-                item = new ArrayList<ZPPS0008>();
+                item = new ArrayList<ZPPS0007>();
             }
             return this.item;
         }
 
-        public void setItem(List<ZPPS0008> items) {
+        public void setItem(List<ZPPS0007> items) {
             this.item = items;
         }
 
