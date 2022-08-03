@@ -22,6 +22,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.FilesUtil;
+import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -323,8 +324,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     }
                 }
                 if (trackHead.getStoreList().size() > 1) {
-                    int size = trackHead.getStoreList().size();
-                    trackHead.setProductNo(trackHead.getStoreList().get(0).get("workblankNo").toString() + "-" + trackHead.getStoreList().get(size - 1).get("workblankNo").toString());
+                    String productsNoStr = "";
+                    String productsNoTemp = "0";
+                    for (Map map : trackHead.getStoreList()) {
+                        String pn = map.get("workblankNo").toString();
+                        String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
+                        if (pn.equals(pnOld)) {
+                            productsNoStr = productsNoStr.replaceAll("[-]" + productsNoTemp, "");
+                            productsNoStr += "-" + pn;
+                        } else {
+                            productsNoStr += "," + pn;
+                        }
+                        productsNoTemp = pn;
+                    }
+                    trackHead.setProductNo(productsNoStr.replaceFirst("[,]", ""));
                 }
             }
             //添加跟单
