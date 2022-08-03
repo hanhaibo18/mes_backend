@@ -26,7 +26,6 @@ public class RequestNote extends BaseEntity<RequestNote> {
      */
     private String requestNoteNumber;
 
-
     /**
      * 所属机构
      */

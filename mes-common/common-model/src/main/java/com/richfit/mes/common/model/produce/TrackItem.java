@@ -342,4 +342,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private int isSchedule;
     @ApiModelProperty(value = "是否给予准结工时", dataType = "int")
     private int isPrepare;
+
+    @ApiModelProperty(value = "是否是确认工序", dataType = "int")
+    private int isNotarize;
 }

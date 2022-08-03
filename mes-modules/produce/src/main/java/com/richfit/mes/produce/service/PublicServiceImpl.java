@@ -40,17 +40,45 @@ public class PublicServiceImpl implements PublicService {
         if (PublicCodeEnum.COMPLETE.getCode() == code) {
             return updateComplete(map);
         }
+
         //质检
         if (PublicCodeEnum.QUALITY_TESTING.getCode() == code) {
-            return null;
+            return updateQualityTesting(map);
         }
         //调度
         if (PublicCodeEnum.DISPATCH.getCode() == code) {
             return null;
         }
-        return null;
+        return false;
     }
 
+    //派工
+    @Override
+    public Boolean updateDispatching(Map<String, String> map) {
+        String tiId = map.get("trackItemId");
+        TrackItem trackItem = trackItemService.getById(tiId);
+
+        boolean activation = false;
+        if (null == trackItem) {
+            return false;
+        } else {
+            trackItem.setIsCurrent(1);
+            trackItem.setIsDoing(0);
+            trackItem.setIsSchedule(1);
+            String number = map.get("number");
+            trackItem.setAssignableQty(trackItem.getAssignableQty() - Integer.parseInt(number));
+            trackItemService.updateById(trackItem);
+            if (0 == trackItem.getAssignableQty()) {
+                if (trackItem.getIsCurrent() == 1 && trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsExistQualityCheck() == 0) {
+                    //激活下工序
+                    activation = activation(trackItem);
+                }
+            }
+        }
+        return activation;
+    }
+
+    //报工
     @Override
     public Boolean updateComplete(Map<String, String> map) {
 
@@ -109,37 +137,24 @@ public class PublicServiceImpl implements PublicService {
         return activationProcess;
     }
 
+    //质检
     @Override
-    public Boolean updateDispatching(Map<String, String> map) {
+    public Boolean updateQualityTesting(Map<String, String> map) {
         String tiId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(tiId);
 
-        String trackHeadId = map.get("trackHeadId");
-        TrackHead trackHead = trackHeadService.getById(trackHeadId);
-        if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
-            //将跟单状态改为在制
-            trackHead.setStatus("1");
-            trackHeadService.updateById(trackHead);
-        }
-
-        boolean activation = false;
-        if (null == trackItem) {
-            return false;
-        } else {
-            trackItem.setIsCurrent(1);
-            trackItem.setIsDoing(0);
-            trackItem.setIsSchedule(1);
-            String number = map.get("number");
-            trackItem.setAssignableQty(trackItem.getAssignableQty() - Integer.parseInt(number));
+        //质检完成
+        trackItem.setIsQualityComplete(1);
+        trackItem.setQualityCompleteTime(new Date());
+        //如果不需要调度审核，则将工序设置为完成，并激活下个工序
+        if (trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsQualityComplete() == 1) {
+            trackItem.setIsFinalComplete("1");
+            trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
             trackItemService.updateById(trackItem);
-            if (0 == trackItem.getAssignableQty()) {
-                if (trackItem.getIsCurrent() == 1 && trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsExistQualityCheck() == 0) {
-                    //激活下工序
-                    activation = activation(trackItem);
-                }
-            }
+            return activationProcess(map.get("trackHeadId"));
         }
-        return activation;
+        trackItemService.updateById(trackItem);
+        return true;
     }
 
     @Override
@@ -221,7 +236,7 @@ public class PublicServiceImpl implements PublicService {
         //激活下工序
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackItem);
-        queryWrapper.eq("opt_sequence", trackItem.getNextOptSequence());
+        queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
         trackItemEntity.setIsCurrent(1);
         boolean update = trackItemService.updateById(trackItemEntity);
@@ -234,7 +249,7 @@ public class PublicServiceImpl implements PublicService {
     private void queryTrackItemList(TrackItem trackItems) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackItems.getTrackHeadId());
-        queryWrapper.eq("opt_sequence", trackItems.getNextOptSequence());
+        queryWrapper.eq("original_opt_sequence", trackItems.getNextOptSequence());
         TrackItem trackItem = trackItemService.getOne(queryWrapper);
         trackItem.setIsCurrent(1);
         trackItemService.updateById(trackItem);
