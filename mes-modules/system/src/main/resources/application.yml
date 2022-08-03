@@ -9,9 +9,10 @@ spring:
       password: nacos0
       discovery:
         enabled: ${DISCOVERY_ENABLED:true}
-        server-addr: ${DISCOVERY_HOST:11.11.62.3}:${DISCOVERY_PORT:8848}
+        server-addr: ${DISCOVERY_HOST:11.54.85.62}:${DISCOVERY_PORT:8848}
         group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
-        namespace: ${DISCOVERY_NAMESPACE:mes_dev_houxinyu}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
+
     loadbalancer:
       retry:
         enabled: true
@@ -21,29 +22,33 @@ spring:
     url: jdbc:${DATASOURCE_DBTYPE:mysql}://${DATASOURCE_HOST:11.54.85.62}:${DATASOURCE_PORT:3306}/${DB_SYSTEM:mes_system}?characterEncoding=UTF-8&useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=CTT
     username: ${DATASOURCE_USERNAME:mes_system}
     password: ${DATASOURCE_PASSWORD:Mes_system@mes}
+
   servlet:
     multipart:
       # 单个文件的大小
       max-file-size: 10MB
       # 单次请求的文件的总大小
       max-request-size: 100MB
+
 feign:
   sentinel:
     enabled: true
   okhttp:
     enabled: true
+
 security:
   oauth2:
     client:
       client-id: web_app
       client-secret: mes-web-secret
-      access-token-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/token
-      user-authorization-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/authorize
+      access-token-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/token
+      user-authorization-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/authorize
       grant-type: password
       scope: read
     resource:
       loadBalanced: true
-      token-info-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/check_token
+      token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
+
 #      jwt:
 #        key-value: test
 # Mybatis-plus
@@ -55,11 +60,8 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 # ===================================================================
-
 # 分布式文件系统FDFS配置
-
 # ===================================================================
-
 fdfs:
   so-timeout: 1501
   connect-timeout: 601
@@ -71,10 +73,12 @@ fdfs:
   web-server-url: ${FDFS_WEB_URL:http://11.11.62.2:8080/}
   http:
     secret_key: FastDFS12345678900
+
 feign.client.config:
   default:
     connect-timeout: 30000
     read-timeout: 30000
+
 secure:
   ignore:
     urls:
@@ -83,6 +87,7 @@ secure:
       - /api/sys/log/logs
       - /api/sys/item/item/param/list
       - /api/sys/attachment/selectAttachmentsList
+
 logging:
   level:
     root: DEBUG
