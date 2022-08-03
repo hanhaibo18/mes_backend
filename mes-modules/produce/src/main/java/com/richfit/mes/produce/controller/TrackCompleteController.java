@@ -379,8 +379,10 @@ public class TrackCompleteController extends BaseController {
             complete.setCreateTime(new Date());
             complete.setCompleteBy(complete.getUserId());
             complete.setCompleteTime(new Date());
+
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsOperationComplete(1);
+            trackItem.setIsDoing(2);
             trackItem.setQualityCheckBy(complete.getQualityCheckBy());
             if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
                 trackItem.setIsFinalComplete(String.valueOf(1));
