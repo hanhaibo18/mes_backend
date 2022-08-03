@@ -1,7 +1,6 @@
+
 package com.kld.mes.erp.entity.material;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -11,9 +10,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>anonymous complex type的 Java 类。
- *
+ * 
  * <p>以下模式片段指定包含在此类中的预期内容。
- *
+ * 
  * <pre>
  * &lt;complexType&gt;
  *   &lt;complexContent&gt;
@@ -27,42 +26,36 @@ import javax.xml.bind.annotation.XmlType;
  *           &lt;/simpleType&gt;
  *         &lt;/element&gt;
  *         &lt;element name="ZWERKS" type="{urn:sap-com:document:sap:rfc:functions}WERKS"/&gt;
- *         &lt;element name="T_AUFK" minOccurs="0"&gt;
- *           &lt;complexType&gt;
- *             &lt;complexContent&gt;
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
- *                 &lt;sequence&gt;
- *                   &lt;element name="item" type="{urn:sap-com:document:sap:rfc:functions}ZPPS0008" maxOccurs="unbounded" minOccurs="0"/&gt;
- *                 &lt;/sequence&gt;
- *               &lt;/restriction&gt;
- *             &lt;/complexContent&gt;
- *           &lt;/complexType&gt;
- *         &lt;/element&gt;
+ *         &lt;element name="T_MARA" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/&gt;
  *       &lt;/all&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
+ * 
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
 
 })
-@XmlRootElement(name = "Z_PPFM0004")
+@XmlRootElement(name = "Z_PPFM0004", namespace = "urn:sap-com:document:sap:rfc:functions")
 public class ZPPFM0004 {
 
-    @XmlElement(name = "ZDATUM", required = true)
+    @XmlElement(name = "ZDATUM", namespace = "urn:sap-com:document:sap:rfc:functions", required = true)
     protected String zdatum;
-    @XmlElement(name = "ZWERKS", required = true)
+    @XmlElement(name = "ZWERKS", namespace = "urn:sap-com:document:sap:rfc:functions", required = true)
     protected WERKS zwerks;
-    @XmlElement(name = "T_MARA")
-    protected ZPPFM0004.TMARA tmara;
+    @XmlElement(name = "T_MARA", namespace = "urn:sap-com:document:sap:rfc:functions")
+    protected Object tmara;
 
     /**
      * 获取zdatum属性的值。
-     *
-     * @return possible object is
-     * {@link String }
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getZDATUM() {
         return zdatum;
@@ -70,9 +63,11 @@ public class ZPPFM0004 {
 
     /**
      * 设置zdatum属性的值。
-     *
-     * @param value allowed object is
-     *              {@link String }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setZDATUM(String value) {
         this.zdatum = value;
@@ -80,9 +75,11 @@ public class ZPPFM0004 {
 
     /**
      * 获取zwerks属性的值。
-     *
-     * @return possible object is
-     * {@link WERKS }
+     * 
+     * @return
+     *     possible object is
+     *     {@link WERKS }
+     *     
      */
     public WERKS getZWERKS() {
         return zwerks;
@@ -90,92 +87,38 @@ public class ZPPFM0004 {
 
     /**
      * 设置zwerks属性的值。
-     *
-     * @param value allowed object is
-     *              {@link WERKS }
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link WERKS }
+     *     
      */
     public void setZWERKS(WERKS value) {
         this.zwerks = value;
     }
 
     /**
-     * 获取TMARA属性的值。
-     *
-     * @return possible object is
-     * {@link ZPPFM0004 .TMARA }
+     * 获取tmara属性的值。
+     * 
+     * @return
+     *     possible object is
+     *     {@link Object }
+     *     
      */
-    public ZPPFM0004.TMARA getTMARA() {
+    public Object getTMARA() {
         return tmara;
     }
 
     /**
-     * 设置TMARA属性的值。
-     *
-     * @param value allowed object is
-     *              {@link ZPPFM0004 .TMARA }
+     * 设置tmara属性的值。
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Object }
+     *     
      */
-    public void setTMARA(ZPPFM0004.TMARA value) {
+    public void setTMARA(Object value) {
         this.tmara = value;
-    }
-
-
-    /**
-     * <p>anonymous complex type的 Java 类。
-     *
-     * <p>以下模式片段指定包含在此类中的预期内容。
-     *
-     * <pre>
-     * &lt;complexType&gt;
-     *   &lt;complexContent&gt;
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
-     *       &lt;sequence&gt;
-     *         &lt;element name="item" type="{urn:sap-com:document:sap:rfc:functions}ZPPS0008" maxOccurs="unbounded" minOccurs="0"/&gt;
-     *       &lt;/sequence&gt;
-     *     &lt;/restriction&gt;
-     *   &lt;/complexContent&gt;
-     * &lt;/complexType&gt;
-     * </pre>
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-            "item"
-    })
-    public static class TMARA {
-
-        protected List<ZPPS0007> item;
-
-        /**
-         * Gets the value of the item property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the item property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getItem().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link ZPPS0007 }
-         */
-        public List<ZPPS0007> getItem() {
-            if (item == null) {
-                item = new ArrayList<ZPPS0007>();
-            }
-            return this.item;
-        }
-
-        public void setItem(List<ZPPS0007> items) {
-            this.item = items;
-        }
-
-
     }
 
 }

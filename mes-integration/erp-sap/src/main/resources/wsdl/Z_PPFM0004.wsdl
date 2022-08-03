@@ -1,16 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<WL5G3N0:definitions xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/"
-                     xmlns:WL5G3N1="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004"
-                     xmlns:WL5G3N2="http://schemas.xmlsoap.org/wsdl/soap/" name="Z_PPFM0004-concrete"
-                     targetNamespace="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004">
+<WL5G3N0:definitions xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/" xmlns:WL5G3N1="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004" xmlns:WL5G3N2="http://schemas.xmlsoap.org/wsdl/soap/" name="Z_PPFM0004-concrete" targetNamespace="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_EMD_110/Z_PPFM0004">
     <WL5G3N0:partnerLinkType name="Z_PPFM0004PartnerLinkType">
         <WL5G3N0:role name="Z_PPFM0004Role">
             <WL5G3N0:portType name="WL5G3N1:Z_PPFM0004PortType"/>
         </WL5G3N0:role>
     </WL5G3N0:partnerLinkType>
     <WL5G3N2:types>
-        <xsd:schema targetNamespace="urn:sap-com:document:sap:rfc:functions" elementFormDefault="qualified"
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:rfc="urn:sap-com:document:sap:rfc:functions">
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:rfc="urn:sap-com:document:sap:rfc:functions" targetNamespace="urn:sap-com:document:sap:rfc:functions" elementFormDefault="qualified">
             <xsd:element name="Z_PPFM0004">
                 <xsd:complexType>
                     <xsd:all>
@@ -23,96 +18,10 @@
                         </xsd:element>
                         <xsd:element name="ZWERKS" type="rfc:WERKS"/>
                         <xsd:element name="T_MARA" minOccurs="0">
-                            <xsd:complexType>
-                                <xsd:sequence>
-                                    <xsd:element name="item" maxOccurs="unbounded" type="rfc:ZPPS0007" minOccurs="0"/>
-                                </xsd:sequence>
-                            </xsd:complexType>
                         </xsd:element>
                     </xsd:all>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:complexType name="ZPPS0008">
-                <xsd:sequence>
-                    <xsd:element name="MATNR" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="18"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="MAKTX" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="40"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="ZEINR" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="22"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="MEINS" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="3"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="WERKS" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="4"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="LVORM" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="1"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="ZYL1" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="100"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="ZYL2" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="100"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="ZYL3" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="100"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="ZYL4" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="100"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                    <xsd:element name="ZYL5" minOccurs="0">
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:maxLength value="100"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:element>
-                </xsd:sequence>
-            </xsd:complexType>
             <xsd:complexType name="WERKS">
                 <xsd:sequence>
                     <xsd:element name="WERKS" minOccurs="0">
@@ -125,9 +34,7 @@
                 </xsd:sequence>
             </xsd:complexType>
         </xsd:schema>
-        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                    xmlns:rfc="urn:sap-com:document:sap:rfc:functions.response"
-                    targetNamespace="urn:sap-com:document:sap:rfc:functions.response" elementFormDefault="qualified">
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:rfc="urn:sap-com:document:sap:rfc:functions.response" targetNamespace="urn:sap-com:document:sap:rfc:functions.response" elementFormDefault="qualified">
             <xsd:element name="Z_PPFM0004.Response">
                 <xsd:complexType>
                     <xsd:all>
@@ -141,7 +48,7 @@
                     </xsd:all>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:complexType name="ZPPS0008">
+            <xsd:complexType name="ZPPS0007">
                 <xsd:sequence>
                     <xsd:element name="MATNR" minOccurs="0">
                         <xsd:simpleType>
