@@ -47,7 +47,7 @@ public class TenantController extends BaseController {
     @SysLog(type = "SYS_TENANT", title = "新建租户")
     @PostMapping("/save")
     public CommonResult<Boolean> saveTenant(@Valid @RequestBody Tenant tenant) throws GlobalException {
-        return CommonResult.success(tenantService.save(tenant));
+        return CommonResult.success(tenantService.addTenant(tenant));
     }
 
     /**
