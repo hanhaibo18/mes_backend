@@ -22,6 +22,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.FilesUtil;
+import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -248,10 +249,19 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
+            // 对添加多个产品时对产品编码进行排序
+            if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 1) {
+                Collections.sort(trackHead.getStoreList(), new Comparator<Map>() {
+                    @Override
+                    public int compare(Map o1, Map o2) {
+                        return o1.get("workblankNo").toString().compareTo(o2.get("workblankNo").toString());
+                    }
+                });
+            }
             if ("Y".equals(trackHead.getIsBatch())) {
                 if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
+
                     for (Map m : trackHead.getStoreList()) {
-                        trackHead.setProductNo(trackHead.getDrawingNo() + " " + (String) m.get("workblankNo"));
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
                 } else {
@@ -313,15 +323,42 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (trackHeads.size() > 0) {
                     throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
                 }
+                //机加产品编码处理
+                trackHead.setProductNoDesc(trackHead.getProductNo());
+                if (trackHead.getStoreList().size() == 1) {
+                    if ("0".equals(trackHead.getIsTestBar())) {
+                        trackHead.setProductNo(trackHead.getStoreList().get(0).get("workblankNo").toString());
+                    } else {
+                        trackHead.setProductNo(trackHead.getStoreList().get(0).get("workblankNo").toString() + "S");
+                        productsNo += "S";
+                    }
+                }
+                if (trackHead.getStoreList().size() > 1) {
+                    String productsNoStr = "";
+                    String productsNoTemp = "0";
+                    for (Map map : trackHead.getStoreList()) {
+                        String pn = map.get("workblankNo").toString();
+                        String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
+                        if (pn.equals(pnOld)) {
+                            productsNoStr = productsNoStr.replaceAll("[-]" + productsNoTemp, "");
+                            productsNoStr += "-" + pn;
+                        } else {
+                            productsNoStr += "," + pn;
+                        }
+                        productsNoTemp = pn;
+                    }
+                    trackHead.setProductNo(productsNoStr.replaceFirst("[,]", ""));
+                }
             }
-
             //添加跟单
             trackHeadMapper.insert(trackHead);
             //添加跟单分流
             if ("Y".equals(trackHead.getIsBatch())) {
+                //批量单件
                 trackHeadFlow(trackHead, trackItems, productsNo, number);
             } else {
                 if (trackHead != null && trackHead.getStoreList().size() > 0) {
+                    //普通跟单
                     for (Map m : trackHead.getStoreList()) {
                         trackHeadFlow(trackHead, trackItems, (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
@@ -351,18 +388,21 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     @Transactional
     public boolean trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+        System.out.println("---------------------------");
+        System.out.println(productsNo);
+        System.out.println(number);
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-            //只有机加创建跟单时才会进行库存料单关联
-            if ("0".equals(trackHead.getStatus()) && "1".equals(trackHead.getClasses())) {
+            //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
+            if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
                 Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
                 LineStore lineStore = (LineStore) retMap.get("lineStore");
                 if (lineStore == null) {
                     //无库存料单，默认新增库存料单，然后出库
-                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, productsNo);
+                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
                 }
 
                 //添加跟单-分流-料单的关联信息
@@ -389,7 +429,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
                     lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
                     lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
-                    lineStoreCp.setNumber(trackHead.getNumber());//添加单件多个产品
+                    lineStoreCp.setNumber(number);//添加单件多个产品
                     lineStoreCp.setUseNum(0);
                     lineStoreCp.setStatus("1");//在制状态
                     lineStoreCp.setTrackNo(trackHead.getTrackNo());
@@ -414,6 +454,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
             trackFlow.setId(flowId);
+            trackFlow.setNumber(number);
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             trackFlowMapper.insert(trackFlow);

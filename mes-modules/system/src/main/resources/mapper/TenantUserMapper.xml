@@ -43,4 +43,21 @@
         order by modify_time desc
     </select>
 
+    <select id="queryTenantAdmin" resultMap="baseResultMap">
+        select u.*
+        from sys_tenant_user u
+        WHERE tenant_id = #{param.tenantId} and id in (
+        select user_id from sys_user_role where role_id = (
+        select id from sys_role where role_code='role_tenant_admin' limit 1))
+        <trim suffixOverrides=",">
+            <if test="param.userAccount != null and param.userAccount != ''">
+                and user_account like '%${param.userAccount}%'
+            </if>
+            <if test="param.emplName != null and param.emplName != ''">
+                and empl_name like '%${param.emplName}%'
+            </if>
+        </trim>
+        order by modify_time desc
+    </select>
+
 </mapper>

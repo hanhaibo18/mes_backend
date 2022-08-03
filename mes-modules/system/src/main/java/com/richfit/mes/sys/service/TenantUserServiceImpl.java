@@ -126,6 +126,11 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         return fillBranchName(tenantUserMapper.queryTenantUser(page, tenantUserQueryParam, isAdmin));
     }
 
+    @Override
+    public IPage<TenantUserVo> queryAdmin(Page<TenantUser> page, TenantUserQueryParam tenantUserQueryParam) {
+        return tenantUserMapper.queryTenantAdmin(page, tenantUserQueryParam);
+    }
+
     /**
      * 拼接所属、所在组织机构
      */

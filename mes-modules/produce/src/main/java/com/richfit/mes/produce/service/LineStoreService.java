@@ -32,7 +32,7 @@ public interface LineStoreService extends IService<LineStore> {
 
     public boolean rollBackItem(int num, String id);
 
-    LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String product);
+    LineStore autoInAndOutStoreByTrackHead(int num, TrackHead trackHead, String product);
 
     /**
      * 功能描述: 根据推送合格证入库

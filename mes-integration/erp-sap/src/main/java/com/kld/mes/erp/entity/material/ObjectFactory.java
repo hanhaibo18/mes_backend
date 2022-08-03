@@ -1,5 +1,5 @@
 
-package com.kld.mes.erp.entity.order;
+package com.kld.mes.erp.entity.material;
 
 import javax.xml.bind.annotation.XmlRegistry;
 
@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlRegistry;
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
- * generated in the com.kld.mes.erp.entity.order package. 
+ * generated in the com.kld.mes.erp.entity.material package. 
  * <p>An ObjectFactory allows you to programatically 
  * construct new instances of the Java representation 
  * for XML content. The Java representation of XML 
@@ -23,26 +23,26 @@ public class ObjectFactory {
 
 
     /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: com.kld.mes.erp.entity.order
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: com.kld.mes.erp.entity.material
      * 
      */
     public ObjectFactory() {
     }
 
     /**
-     * Create an instance of {@link ZC80PPIF009Response }
+     * Create an instance of {@link ZPPFM0004Response }
      * 
      */
-    public ZC80PPIF009Response createZC80PPIF009Response() {
-        return new ZC80PPIF009Response();
+    public ZPPFM0004Response createZPPFM0004Response() {
+        return new ZPPFM0004Response();
     }
 
     /**
-     * Create an instance of {@link ZC80PPIF009 }
+     * Create an instance of {@link ZPPFM0004 }
      * 
      */
-    public ZC80PPIF009 createZC80PPIF009() {
-        return new ZC80PPIF009();
+    public ZPPFM0004 createZPPFM0004() {
+        return new ZPPFM0004();
     }
 
     /**
@@ -54,19 +54,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ZC80PPIF009Response.TAUFK }
+     * Create an instance of {@link ZPPFM0004Response.TMARA }
      * 
      */
-    public ZC80PPIF009Response.TAUFK createZC80PPIF009ResponseTAUFK() {
-        return new ZC80PPIF009Response.TAUFK();
+    public ZPPFM0004Response.TMARA createZPPFM0004ResponseTMARA() {
+        return new ZPPFM0004Response.TMARA();
     }
 
     /**
-     * Create an instance of {@link ZPPS0008 }
+     * Create an instance of {@link ZPPS0007 }
      * 
      */
-    public ZPPS0008 createZPPS0008() {
-        return new ZPPS0008();
+    public ZPPS0007 createZPPS0007() {
+        return new ZPPS0007();
     }
 
 }

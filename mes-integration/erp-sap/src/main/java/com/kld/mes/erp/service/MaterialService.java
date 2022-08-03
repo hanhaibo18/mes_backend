@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import com.kld.mes.erp.entity.material.ZPPS0007;
 import com.richfit.mes.common.model.base.Product;
 import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public interface MaterialService {
 
-    public List<Product> getMaterial(@ApiParam(value = "物料号") @RequestBody String[] materialNos,
+    public List<Product> getMaterial(@ApiParam(value = "日期") @RequestBody String dat,
                                      @ApiParam(value = "erp代号") @RequestParam String erpCode);
 
 }

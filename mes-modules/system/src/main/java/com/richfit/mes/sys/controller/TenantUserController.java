@@ -122,6 +122,27 @@ public class TenantUserController extends BaseController {
         return CommonResult.success(users);
     }
 
+    @ApiOperation(value = "查询租户管理员信息", notes = "根据查询条件返回租户管理员信息")
+    @GetMapping("/query/page/admin")
+    public CommonResult queryAdminByCondition(@RequestParam(value = "tenantId", required = false) String tenantId,
+                                              @RequestParam(value = "userAccount", required = false) String userAccount,
+                                              @RequestParam(value = "emplName", required = false) String emplName,
+                                              @RequestParam(value = CommonConstant.PAGE_SIZE, defaultValue = CommonConstant.PAGE_SIZE_DEFAULT) int limit,
+                                              @RequestParam(value = CommonConstant.PAGE_NUM, defaultValue = CommonConstant.PAGE_NUM_DEFAULT) int page) throws GlobalException {
+
+        if (!SecurityUtils.getCurrentUser().isSysAdmin()) {
+            return CommonResult.forbidden("无权访问该接口");
+        }
+
+        TenantUserQueryParam userQueryForm = new TenantUserQueryParam();
+        userQueryForm.setUserAccount(userAccount);
+        userQueryForm.setEmplName(emplName);
+        userQueryForm.setTenantId(tenantId);
+
+        IPage<TenantUserVo> users = tenantUserService.queryAdmin(new Page<TenantUser>(page, limit), userQueryForm);
+        return CommonResult.success(users);
+    }
+
     @ApiOperation(value = "查询用户信息", notes = "返回名称相同的用户信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = CommonConstant.PAGE_SIZE, value = "每页条数", defaultValue = CommonConstant.PAGE_SIZE_DEFAULT, required = true, paramType = "query", dataType = "int"),

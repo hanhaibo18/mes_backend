@@ -27,6 +27,8 @@ public interface TenantUserMapper extends BaseMapper<TenantUser> {
 
     IPage<TenantUserVo> queryTenantUser(Page page, @Param("param") TenantUserQueryParam tenantUserQueryParam, @Param("isAdmin") boolean isAdmin);
 
+    IPage<TenantUserVo> queryTenantAdmin(Page page, @Param("param") TenantUserQueryParam tenantUserQueryParam);
+
     /**
      * 功能描述: 根据条件查询人员(不返回密码)
      *

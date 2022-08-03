@@ -1,5 +1,5 @@
 
-package com.kld.mes.erp.entity.order;
+package com.kld.mes.erp.entity.material;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlType;
  *           &lt;/simpleType&gt;
  *         &lt;/element&gt;
  *         &lt;element name="ZWERKS" type="{urn:sap-com:document:sap:rfc:functions}WERKS"/&gt;
- *         &lt;element name="T_AUFK" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/&gt;
+ *         &lt;element name="T_MARA" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/&gt;
  *       &lt;/all&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -39,15 +39,15 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
 
 })
-@XmlRootElement(name = "ZC80_PPIF009", namespace = "urn:sap-com:document:sap:rfc:functions")
-public class ZC80PPIF009 {
+@XmlRootElement(name = "Z_PPFM0004", namespace = "urn:sap-com:document:sap:rfc:functions")
+public class ZPPFM0004 {
 
     @XmlElement(name = "ZDATUM", namespace = "urn:sap-com:document:sap:rfc:functions", required = true)
     protected String zdatum;
     @XmlElement(name = "ZWERKS", namespace = "urn:sap-com:document:sap:rfc:functions", required = true)
     protected WERKS zwerks;
-    @XmlElement(name = "T_AUFK", namespace = "urn:sap-com:document:sap:rfc:functions")
-    protected Object taufk;
+    @XmlElement(name = "T_MARA", namespace = "urn:sap-com:document:sap:rfc:functions")
+    protected Object tmara;
 
     /**
      * 获取zdatum属性的值。
@@ -98,27 +98,27 @@ public class ZC80PPIF009 {
     }
 
     /**
-     * 获取taufk属性的值。
+     * 获取tmara属性的值。
      * 
      * @return
      *     possible object is
      *     {@link Object }
      *     
      */
-    public Object getTAUFK() {
-        return taufk;
+    public Object getTMARA() {
+        return tmara;
     }
 
     /**
-     * 设置taufk属性的值。
+     * 设置tmara属性的值。
      * 
      * @param value
      *     allowed object is
      *     {@link Object }
      *     
      */
-    public void setTAUFK(Object value) {
-        this.taufk = value;
+    public void setTMARA(Object value) {
+        this.tmara = value;
     }
 
 }

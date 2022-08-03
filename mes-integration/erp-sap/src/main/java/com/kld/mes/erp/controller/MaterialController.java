@@ -9,10 +9,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import com.kld.mes.erp.entity.material.*;
 
 import java.util.List;
 
@@ -32,12 +30,12 @@ public class MaterialController {
     MaterialService materialService;
 
     @ApiOperation(value = "从ERP查询物料库存", notes = "从ERP查询物料库存")
-    @GetMapping("/getStorage")
-    public CommonResult<List<Product>> getMaterial(@ApiParam(value = "物料号") @RequestParam String materialNos,
+    @GetMapping("/getMaterial")
+    public CommonResult<List<Product>> getMaterial(@ApiParam(value = "日期") @RequestParam String date,
                                                    @ApiParam(value = "erp代号") @RequestParam String erpCode) {
 
-        List<Product> list = materialService.getMaterial(materialNos.split(","), erpCode);
-        return CommonResult.success(list);
+
+        return CommonResult.success(materialService.getMaterial(date, erpCode));
 
     }
 

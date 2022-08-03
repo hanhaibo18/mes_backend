@@ -51,6 +51,13 @@ public interface TenantUserService {
     IPage<TenantUserVo> query(Page<TenantUser> page, TenantUserQueryParam tenantUserQueryParam);
 
     /**
+     * 查询租户管理员
+     *
+     * @return
+     */
+    IPage<TenantUserVo> queryAdmin(Page<TenantUser> page, TenantUserQueryParam tenantUserQueryParam);
+
+    /**
      * 更新用户信息
      *
      * @param tenantUser

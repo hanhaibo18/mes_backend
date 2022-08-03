@@ -1,18 +1,14 @@
 package com.richfit.mes.produce.service;
 
+
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.AESUtil;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
 import com.richfit.mes.produce.entity.*;
@@ -26,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author 马峰
@@ -49,6 +43,10 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private TrackAssignService trackAssignService;
     @Resource
     private WmsServiceClient wmsServiceClient;
+    @Resource
+    private RequestNoteDetailService requestNoteDetailService;
+    @Resource
+    private RequestNoteService requestNoteService;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
@@ -216,6 +214,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         //单位
         lineLists.add(lineList);
         ingredient.setLineList(lineLists);
+        //保存信息到本地
+        saveNodeAndDetail(additionalMaterialDto,ingredient);
+
         ApplicationResult applicationResult = new ApplicationResult();
         try {
             applicationResult.setRetMsg(anApplicationForm(ingredient).toString());;
@@ -242,5 +243,52 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
         wrapper.eq("track_head_id", trackNo);
         return this.list(wrapper);
+    }
+
+    /**
+     * 保存申请单信息
+     * @param additionalMaterialDto
+     * @param ingredient
+     */
+    private void saveNodeAndDetail(AdditionalMaterialDto additionalMaterialDto,IngredientApplicationDto ingredient){
+        //要保存的申请单信息
+        RequestNote requestNote = new RequestNote();
+        //要保存的物料信息集合
+        List<RequestNoteDetail> requestNoteDetails = new ArrayList<>();
+        //所属机构
+        requestNote.setBranchCode(additionalMaterialDto.getBranchCode());
+        //所属租户
+        requestNote.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        //跟单id
+        requestNote.setTrackHeadId(additionalMaterialDto.getTrackHeadId());
+        //工序id
+        requestNote.setTrackItemId(ingredient.getGx());
+        //申请单号
+        requestNote.setBranchCode(ingredient.getSqd());
+        //物料信息
+        List<LineList> lineList = ingredient.getLineList();
+
+        for (LineList line : lineList) {
+            RequestNoteDetail requestNoteDetail = new RequestNoteDetail();
+            requestNoteDetail.setBranchCode(ingredient.getCj());
+            requestNoteDetail.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            //申请单号
+            requestNoteDetail.setNoteId(ingredient.getSqd());
+            //图号
+            requestNoteDetail.setDrawingNo(additionalMaterialDto.getDrawingNo());
+            //物料编码
+            requestNoteDetail.setMaterialNo(line.getMaterialNum());
+            //物料名称
+            requestNoteDetail.setMaterialName(line.getMaterialDesc());
+            //数量
+            requestNoteDetail.setNumber(Integer.parseInt(String.valueOf(line.getQuantity())));
+            requestNoteDetails.add(requestNoteDetail);
+        }
+
+        //保存申请单
+        requestNoteService.save(requestNote);
+        //保存物料信息
+        requestNoteDetailService.saveBatch(requestNoteDetails);
+
     }
 }

@@ -2,6 +2,7 @@ package com.kld.mes.erp.service;
 
 
 import com.kld.mes.erp.utils.WsTemplateFactory;
+import com.kld.mes.erp.entity.material.*;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiParam;
@@ -39,15 +40,34 @@ public class MaterialServiceImpl implements MaterialService {
     private final String packageName = "com.kld.mes.erp.entity.material";
 
     @Override
-    public List<Product> getMaterial(@ApiParam(value = "物料号") @RequestBody String[] materialNos,
+    public List<Product> getMaterial(@ApiParam(value = "日期") @RequestBody String date,
                                      @ApiParam(value = "erp代号") @RequestParam String erpCode) {
 
         try {
             //生成报文主体
+            ZPPFM0004 ZPPFM0004 = new ZPPFM0004();
+            WERKS w = new WERKS();
+            w.setWERKS(erpCode);
+            ZPPFM0004.setZWERKS(w);
+            ZPPFM0004.setZDATUM(date);
 
+            //获取调用服务接口类实例
+            WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
+
+            //发起接口调用
+            ZPPFM0004Response o = (ZPPFM0004Response) webServiceTemplate
+                    .marshalSendAndReceive(URL, ZPPFM0004);
 
             List<Product> products = new ArrayList<>();
-
+            for (int i = 0; i < o.getTMARA().getItem().size(); i++) {
+                Product p = new Product();
+                p.setMaterialDesc(o.getTMARA().getItem().get(i).getMAKTX());
+                p.setMaterialNo(o.getTMARA().getItem().get(i).getMATNR());
+                p.setBranchCode(o.getTMARA().getItem().get(i).getWERKS());
+                p.setUnit(o.getTMARA().getItem().get(i).getMEINS());
+                p.setMaterialDesc(o.getTMARA().getItem().get(i).getMAKTX());
+                products.add(p);
+            }
             return products;
         } catch (Exception e) {
             return null;

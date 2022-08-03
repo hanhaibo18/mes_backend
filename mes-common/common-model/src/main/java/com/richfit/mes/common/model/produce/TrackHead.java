@@ -43,6 +43,11 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String productNo;
 
     /**
+     * 产品编号描述
+     */
+    private String productNoDesc;
+
+    /**
      * 物料编号
      */
     private String materialNo;
@@ -291,7 +296,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      **/
     private int numberComplete;
 
-    
+
     @TableField(exist = false)
     private String finalProductNo;
     /**

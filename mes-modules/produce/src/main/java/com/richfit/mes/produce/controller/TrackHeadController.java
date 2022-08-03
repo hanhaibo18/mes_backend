@@ -291,8 +291,12 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                                           @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
                                                           @ApiParam(value = "页码") @RequestParam(required = false) int page,
-                                                          @ApiParam(value = "条数") @RequestParam(required = false) int limit) {
+                                                          @ApiParam(value = "条数") @RequestParam(required = false) int limit,
+                                                          @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+        if (!StringUtils.isNullOrEmpty(classes)) {
+            queryWrapper.ge("classes", classes);
+        }
         if (!StringUtils.isNullOrEmpty(startDate)) {
             queryWrapper.ge("create_time", startDate);
         }

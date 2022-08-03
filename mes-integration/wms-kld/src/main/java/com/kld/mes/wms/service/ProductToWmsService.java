@@ -122,7 +122,7 @@ public class ProductToWmsService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", ingredientApplicationDtoEncrpy);
         //调用上传接口
-        String s = HttpUtil.get(mesScddUploadApi, params, 1200000);
+        String s = HttpUtil.get(mesScddUploadApi, params, 120000);
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         //上传成功返回Y
         return "Y".equals(applicationResult.getRetStatus());

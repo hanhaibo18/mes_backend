@@ -1,9 +1,10 @@
 package com.kld.mes.erp.controller;
 
 import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
+import com.kld.mes.erp.entity.order.ZPPS0008;
 import com.kld.mes.erp.service.OrderService;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.Order;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -30,12 +31,12 @@ public class OrderController {
 
     @ApiOperation(value = "查询订单", notes = "查询ERP生产订单")
     @GetMapping("/get")
-    public CommonResult<ZC80PPIF009Response> getErpOrder(@ApiParam(value = "erp代号") @RequestParam String erpCode,
-                                                         @ApiParam(value = "订单日期") @RequestParam String selectDate,
-                                                         @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,
-                                                         @ApiParam(value = "控制者") @RequestParam(required = false) String controller) {
+    public CommonResult<List<Order>> getErpOrder(@ApiParam(value = "erp代号") @RequestParam String erpCode,
+                                                 @ApiParam(value = "订单日期") @RequestParam String selectDate,
+                                                 @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,
+                                                 @ApiParam(value = "控制者") @RequestParam(required = false) String controller) throws Exception {
 
-        return CommonResult.success(orderService.getErpCode(erpCode, selectDate,controller, orderNo ));
+        return CommonResult.success(orderService.getErpCode(erpCode, selectDate, controller, orderNo));
 
     }
 
