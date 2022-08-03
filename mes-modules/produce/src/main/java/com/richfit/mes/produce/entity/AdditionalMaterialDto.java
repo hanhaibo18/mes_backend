@@ -11,11 +11,17 @@ import lombok.Data;
  */
 @Data
 public class AdditionalMaterialDto {
+    @ApiModelProperty(value = "物料号", dataType = "String")
     private String materialNo;
+    @ApiModelProperty(value = "物料名称", dataType = "String")
     private String materialName;
+    @ApiModelProperty(value = "图号", dataType = "String")
     private String drawingNo;
+    @ApiModelProperty(value = "数量", dataType = "int")
     private int count;
+    @ApiModelProperty(value = "原因", dataType = "int")
     private String cause;
+    @ApiModelProperty(value = "说明", dataType = "int")
     private String explain;
     @ApiModelProperty(value = "是否关键件", dataType = "String")
     private String isKeyPart;
