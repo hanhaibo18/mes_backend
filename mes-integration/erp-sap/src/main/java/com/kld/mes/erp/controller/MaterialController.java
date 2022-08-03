@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.kld.mes.erp.entity.material.*;
 
 import java.util.List;
 
@@ -33,8 +34,8 @@ public class MaterialController {
     public CommonResult<List<Product>> getMaterial(@ApiParam(value = "日期") @RequestParam String date,
                                                    @ApiParam(value = "erp代号") @RequestParam String erpCode) {
 
-        List<Product> list = materialService.getMaterial(date, erpCode);
-        return CommonResult.success(list);
+
+        return CommonResult.success(materialService.getMaterial(date, erpCode));
 
     }
 

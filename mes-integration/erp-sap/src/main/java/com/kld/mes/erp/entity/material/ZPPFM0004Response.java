@@ -1,4 +1,3 @@
-
 package com.kld.mes.erp.entity.material;
 
 import java.util.ArrayList;
@@ -12,9 +11,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>anonymous complex type的 Java 类。
- * 
+ *
  * <p>以下模式片段指定包含在此类中的预期内容。
- * 
+ *
  * <pre>
  * &lt;complexType&gt;
  *   &lt;complexContent&gt;
@@ -36,8 +35,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
@@ -51,11 +48,9 @@ public class ZPPFM0004Response {
 
     /**
      * 获取tmara属性的值。
-     * 
-     * @return
-     *     possible object is
-     *     {@link ZPPFM0004Response.TMARA }
-     *     
+     *
+     * @return possible object is
+     * {@link ZPPFM0004Response.TMARA }
      */
     public ZPPFM0004Response.TMARA getTMARA() {
         return tmara;
@@ -63,11 +58,9 @@ public class ZPPFM0004Response {
 
     /**
      * 设置tmara属性的值。
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ZPPFM0004Response.TMARA }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ZPPFM0004Response.TMARA }
      */
     public void setTMARA(ZPPFM0004Response.TMARA value) {
         this.tmara = value;
@@ -76,9 +69,9 @@ public class ZPPFM0004Response {
 
     /**
      * <p>anonymous complex type的 Java 类。
-     * 
+     *
      * <p>以下模式片段指定包含在此类中的预期内容。
-     * 
+     *
      * <pre>
      * &lt;complexType&gt;
      *   &lt;complexContent&gt;
@@ -90,12 +83,10 @@ public class ZPPFM0004Response {
      *   &lt;/complexContent&gt;
      * &lt;/complexType&gt;
      * </pre>
-     * 
-     * 
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-        "item"
+            "item"
     })
     public static class TMARA {
 
@@ -103,25 +94,23 @@ public class ZPPFM0004Response {
 
         /**
          * Gets the value of the item property.
-         * 
+         *
          * <p>
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
          * This is why there is not a <CODE>set</CODE> method for the item property.
-         * 
+         *
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
          *    getItem().add(newItem);
          * </pre>
-         * 
-         * 
+         *
+         *
          * <p>
          * Objects of the following type(s) are allowed in the list
          * {@link ZPPS0007 }
-         * 
-         * 
          */
         public List<ZPPS0007> getItem() {
             if (item == null) {

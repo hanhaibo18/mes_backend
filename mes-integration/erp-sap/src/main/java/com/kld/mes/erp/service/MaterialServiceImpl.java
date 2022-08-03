@@ -47,21 +47,27 @@ public class MaterialServiceImpl implements MaterialService {
             //生成报文主体
             ZPPFM0004 ZPPFM0004 = new ZPPFM0004();
             WERKS w = new WERKS();
-            w.setWERKS("X092");
-
+            w.setWERKS(erpCode);
             ZPPFM0004.setZWERKS(w);
-            ZPPFM0004.setZDATUM("2022-07-10");
-            ZPPFM0004.setTMARA(new ZPPFM0004.TMARA());
+            ZPPFM0004.setZDATUM(date);
 
             //获取调用服务接口类实例
             WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
 
             //发起接口调用
-            Object o = webServiceTemplate
+            ZPPFM0004Response o = (ZPPFM0004Response) webServiceTemplate
                     .marshalSendAndReceive(URL, ZPPFM0004);
 
             List<Product> products = new ArrayList<>();
-
+            for (int i = 0; i < o.getTMARA().getItem().size(); i++) {
+                Product p = new Product();
+                p.setMaterialDesc(o.getTMARA().getItem().get(i).getMAKTX());
+                p.setMaterialNo(o.getTMARA().getItem().get(i).getMATNR());
+                p.setBranchCode(o.getTMARA().getItem().get(i).getWERKS());
+                p.setUnit(o.getTMARA().getItem().get(i).getMEINS());
+                p.setMaterialDesc(o.getTMARA().getItem().get(i).getMAKTX());
+                products.add(p);
+            }
             return products;
         } catch (Exception e) {
             return null;
