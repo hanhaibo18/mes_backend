@@ -149,7 +149,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
      */
 
     @Override
-    public LineStore autoInAndOutStoreByTrackHead(TrackHead trackHead, String workblankNo) {
+    public LineStore autoInAndOutStoreByTrackHead(int num, TrackHead trackHead, String workblankNo) {
         //自动料单入库 再出库的逻辑
         LineStore lineStore = new LineStore();
         lineStore.setBranchCode(trackHead.getBranchCode());
@@ -172,8 +172,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         lineStore.setInTime(new Date());
         lineStore.setOutTime(new Date());
-        lineStore.setNumber(trackHead.getNumber());
-        lineStore.setUseNum(trackHead.getNumber());
+        lineStore.setNumber(num);
+        lineStore.setUseNum(num);
         changeStatus(lineStore);
         lineStore.setStockType("1"); //自动
         lineStore.setTrackType(trackHead.getTrackType());

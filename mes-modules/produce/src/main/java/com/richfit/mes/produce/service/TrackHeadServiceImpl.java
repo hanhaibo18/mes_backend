@@ -344,9 +344,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.insert(trackHead);
             //添加跟单分流
             if ("Y".equals(trackHead.getIsBatch())) {
+                //批量单件
                 trackHeadFlow(trackHead, trackItems, productsNo, number);
             } else {
                 if (trackHead != null && trackHead.getStoreList().size() > 0) {
+                    //普通跟单
                     for (Map m : trackHead.getStoreList()) {
                         trackHeadFlow(trackHead, trackItems, (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
@@ -376,6 +378,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     @Transactional
     public boolean trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+        System.out.println("---------------------------");
+        System.out.println(productsNo);
+        System.out.println(number);
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
             //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
@@ -387,7 +392,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 LineStore lineStore = (LineStore) retMap.get("lineStore");
                 if (lineStore == null) {
                     //无库存料单，默认新增库存料单，然后出库
-                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(trackHead, productsNo);
+                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
                 }
 
                 //添加跟单-分流-料单的关联信息
@@ -414,7 +419,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
                     lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
                     lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
-                    lineStoreCp.setNumber(trackHead.getNumber());//添加单件多个产品
+                    lineStoreCp.setNumber(number);//添加单件多个产品
                     lineStoreCp.setUseNum(0);
                     lineStoreCp.setStatus("1");//在制状态
                     lineStoreCp.setTrackNo(trackHead.getTrackNo());
@@ -439,6 +444,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
             trackFlow.setId(flowId);
+            trackFlow.setNumber(number);
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             trackFlowMapper.insert(trackFlow);

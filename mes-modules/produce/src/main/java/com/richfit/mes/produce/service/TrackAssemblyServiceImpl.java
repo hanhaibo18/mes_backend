@@ -215,7 +215,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         lineLists.add(lineList);
         ingredient.setLineList(lineLists);
         //保存信息到本地
-        saveNodeAndDetail(ingredient);
+        saveNodeAndDetail(additionalMaterialDto,ingredient);
 
         ApplicationResult applicationResult = new ApplicationResult();
         try {
@@ -247,21 +247,22 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     /**
      * 保存申请单信息
+     * @param additionalMaterialDto
      * @param ingredient
      */
-    private void saveNodeAndDetail(IngredientApplicationDto ingredient){
+    private void saveNodeAndDetail(AdditionalMaterialDto additionalMaterialDto,IngredientApplicationDto ingredient){
         //要保存的申请单信息
         RequestNote requestNote = new RequestNote();
         //要保存的物料信息集合
         List<RequestNoteDetail> requestNoteDetails = new ArrayList<>();
         //所属机构
-        requestNote.setBranchCode(ingredient.getCj());
+        requestNote.setBranchCode(additionalMaterialDto.getBranchCode());
         //所属租户
         requestNote.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //跟单id
-        requestNote.setBranchCode(ingredient.getGd());
+        requestNote.setTrackHeadId(additionalMaterialDto.getTrackHeadId());
         //工序id
-        requestNote.setBranchCode(ingredient.getGx());
+        requestNote.setTrackItemId(ingredient.getGx());
         //申请单号
         requestNote.setBranchCode(ingredient.getSqd());
         //物料信息
@@ -273,6 +274,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             requestNoteDetail.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             //申请单号
             requestNoteDetail.setNoteId(ingredient.getSqd());
+            //图号
+            requestNoteDetail.setDrawingNo(additionalMaterialDto.getDrawingNo());
             //物料编码
             requestNoteDetail.setMaterialNo(line.getMaterialNum());
             //物料名称
