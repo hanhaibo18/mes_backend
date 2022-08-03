@@ -249,8 +249,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
+            // 对添加多个产品时对产品编码进行排序
+            if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 1) {
+                Collections.sort(trackHead.getStoreList(), new Comparator<Map>() {
+                    @Override
+                    public int compare(Map o1, Map o2) {
+                        return o1.get("workblankNo").toString().compareTo(o2.get("workblankNo").toString());
+                    }
+                });
+            }
             if ("Y".equals(trackHead.getIsBatch())) {
                 if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
+
                     for (Map m : trackHead.getStoreList()) {
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }

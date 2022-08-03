@@ -1,6 +1,9 @@
 package com.richfit.mes.produce.utils;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
 
 /**
  * 工具类
@@ -25,7 +28,20 @@ public class Utils {
         String test = ",33331-33332";
         String test1 = "33332";
         System.out.println(test.replaceAll("[-]" + test1, ""));
+        List<Map> storeList = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            Map m = new HashMap();
+            m.put("workblankNo", "asd" + i);
+            storeList.add(m);
+        }
 
+        Collections.sort(storeList, new Comparator<Map>() {
+            @Override
+            public int compare(Map o1, Map o2) {
+                return o1.get("workblankNo").toString().compareTo(o2.get("workblankNo").toString());
+            }
+        });
+        System.out.println(JSON.toJSONString(storeList));
     }
 
     /**
