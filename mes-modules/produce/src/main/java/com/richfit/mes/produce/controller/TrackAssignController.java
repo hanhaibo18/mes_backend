@@ -12,6 +12,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
+import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.service.*;
@@ -57,6 +58,8 @@ public class TrackAssignController extends BaseController {
     private com.richfit.mes.produce.provider.SystemServiceClient systemServiceClient;
     @Resource
     private PublicService publicService;
+    @Resource
+    private TrackAssemblyService trackAssemblyService;
 
 
     /**
@@ -252,7 +255,37 @@ public class TrackAssignController extends BaseController {
                         if (trackItem.getAssignableQty() < assign.getQty()) {
                             return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
                         }
-                        //TODO:下工序激活
+                        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                        assign.setTrackNo(trackHead.getTrackNo());
+                        if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
+                            //将跟单状态改为在制
+                            trackHead.setStatus("1");
+                            trackHeadService.updateById(trackHead);
+                        }
+                        //齐套性检查
+                        if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent()) {
+                            CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());
+                            for (KittingVo kitting : kittingExamine.getData()) {
+                                if (1 == kitting.getIsKitting()) {
+                                    continue;
+                                }
+                                AdditionalMaterialDto additionalMaterialDto = new AdditionalMaterialDto();
+                                additionalMaterialDto.setTiId(assign.getTiId());
+                                additionalMaterialDto.setTrackHeadId(assign.getTrackId());
+                                additionalMaterialDto.setMaterialName(kitting.getMaterialName());
+                                additionalMaterialDto.setMaterialNo(kitting.getMaterialNo());
+                                additionalMaterialDto.setDrawingNo(kitting.getDrawingNo());
+                                additionalMaterialDto.setCount(kitting.getSurplusNumber());
+                                additionalMaterialDto.setExplain("齐套性检查发送申请");
+                                additionalMaterialDto.setCause("3");
+                                additionalMaterialDto.setIsNeedPicking(kitting.getIsNeedPicking());
+                                additionalMaterialDto.setIsKeyPart(kitting.getIsKeyPart());
+                                additionalMaterialDto.setIsEdgeStore(kitting.getIsEdgeStore());
+                                additionalMaterialDto.setBranchCode(assign.getBranchCode());
+//                                trackAssemblyService.application(additionalMaterialDto);
+                            }
+                        }
+                        //下工序激活
                         Map<String, String> map = new HashMap<>(3);
                         map.put(IdEnum.TRACK_HEAD_ID.getMessage(), assign.getTrackId());
                         map.put(IdEnum.TRACK_ITEM_ID.getMessage(), assign.getTiId());
