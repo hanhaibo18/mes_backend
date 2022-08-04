@@ -260,6 +260,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     personQueryWrapper.eq("assign_id", assign.getId());
                     trackAssignPersonService.remove(personQueryWrapper);
                     trackAssignService.removeById(assign.getId());
+                } else {
+                    item.setAssignableQty(item.getBatchQty());
                 }
             }
 
