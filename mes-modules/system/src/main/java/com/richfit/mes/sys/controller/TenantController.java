@@ -12,6 +12,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.log.annotation.SysLog;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.TenantService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -47,6 +48,7 @@ public class TenantController extends BaseController {
     @SysLog(type = "SYS_TENANT", title = "新建租户")
     @PostMapping("/save")
     public CommonResult<Boolean> saveTenant(@Valid @RequestBody Tenant tenant) throws GlobalException {
+        checkIsSysAdmin();
         return CommonResult.success(tenantService.addTenant(tenant));
     }
 
@@ -57,8 +59,7 @@ public class TenantController extends BaseController {
     @ApiImplicitParam(name = "id", value = "租户ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/{id}")
     public CommonResult<Tenant> tenant(@PathVariable String id) throws GlobalException {
-        System.out.println("tenant");
-        System.out.println(id);
+        checkIsSysAdmin();
         checkTenantId(id);
         return CommonResult.success(tenantService.getById(id));
     }
@@ -71,6 +72,7 @@ public class TenantController extends BaseController {
     @SysLog(type = "SYS_TENANT", title = "更新租户")
     @PutMapping("/update")
     public CommonResult<Boolean> updateTenant(@RequestBody Tenant tenant) throws GlobalException {
+        checkIsSysAdmin();
         if (tenant.getTenantStatus() != null) {
             tenant.setTenantStatus(null);
         }
@@ -86,6 +88,7 @@ public class TenantController extends BaseController {
     @DeleteMapping("/delete/{id}")
     public CommonResult<Boolean> delTenantById(@PathVariable String id) throws GlobalException {
         //TODO 租户下有用户时，不能删除
+        checkIsSysAdmin();
         checkTenantId(id);
         return CommonResult.success(tenantService.removeById(id));
     }
@@ -103,6 +106,7 @@ public class TenantController extends BaseController {
     public CommonResult queryByCondition(@RequestParam(value = "tenantName", required = false) String tenantName,
                                          @RequestParam(value = "limit") int limit,
                                          @RequestParam(value = "page") int page) throws GlobalException {
+        checkIsSysAdmin();
         IPage<Tenant> tenants = tenantService.page(new Page<Tenant>(page, limit),
                 new QueryWrapper<Tenant>()
                         .like(StringUtils.hasText(tenantName), "tenant_name", tenantName)
@@ -122,7 +126,7 @@ public class TenantController extends BaseController {
     @SysLog(type = "SYS_TENANT", title = "停用/开启租户")
     @PutMapping("/status/{tenantId}/{flag}")
     public CommonResult<Boolean> setStatus(@PathVariable String tenantId, @PathVariable int flag) throws GlobalException {
-
+        checkIsSysAdmin();
         checkTenantId(tenantId);
         Tenant tenant = new Tenant();
         tenant.setTenantStatus(flag);
@@ -145,6 +149,7 @@ public class TenantController extends BaseController {
     @GetMapping("/addInfo/{tenantId}")
     public CommonResult getAdditionalInfo(@PathVariable String tenantId) {
         checkTenantId(tenantId);
+        checkIsSysAdmin();
         try {
             JsonNode jsonNode = tenantService.getAdditionalInfo(tenantId);
             return CommonResult.success(jsonNode);
@@ -166,18 +171,23 @@ public class TenantController extends BaseController {
     @PutMapping("/addInfo/{tenantId}")
     public CommonResult saveAdditionalInfo(@RequestBody JsonNode addInfo, @PathVariable String tenantId) {
 
-        //TODO 非系统管理员禁止操作
+        //非系统管理员禁止操作
+        checkIsSysAdmin();
         checkTenantId(tenantId);
         return tenantService.saveAdditionalInfo(addInfo, tenantId);
     }
 
 
     protected void checkTenantId(String tenantId) {
-
         if (StringUtils.isEmpty(tenantId)) {
             throw new GlobalException("租户Id不得为空", ResultCode.INVALID_ARGUMENTS);
         }
+    }
 
+    protected void checkIsSysAdmin() {
+        if (!SecurityUtils.getCurrentUser().isSysAdmin()) {
+            throw new GlobalException("您无权操作该功能", ResultCode.FORBIDDEN);
+        }
     }
 
 }
