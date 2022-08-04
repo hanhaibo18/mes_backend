@@ -11,6 +11,9 @@ import lombok.Data;
  */
 @Data
 public class KittingVo {
+
+    @ApiModelProperty(value = "物料号", dataType = "String")
+    private String materialNo;
     @ApiModelProperty(value = "物料图号", dataType = "String")
     private String drawingNo;
     @ApiModelProperty(value = "物料名称", dataType = "String")
@@ -25,4 +28,11 @@ public class KittingVo {
     private Integer surplusNumber;
     @ApiModelProperty(value = "是否齐套")
     private Integer isKitting;
+
+    @ApiModelProperty(value = "是否关键件", dataType = "String")
+    private String isKeyPart;
+    @ApiModelProperty(value = "是否仓储领料", dataType = "String")
+    private String isNeedPicking;
+    @ApiModelProperty(value = "实物配送区分", dataType = "String")
+    private String isEdgeStore;
 }

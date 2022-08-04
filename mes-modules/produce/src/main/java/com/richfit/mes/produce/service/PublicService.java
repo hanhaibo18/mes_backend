@@ -41,6 +41,16 @@ public interface PublicService {
     Boolean updateDispatching(Map<String, String> map);
 
     /**
+     * 功能描述: 更改质检状态
+     *
+     * @param map
+     * @Author: xinYu.hou
+     * @Date: 2022/8/3 14:37
+     * @return: Boolean
+     **/
+    Boolean updateQualityTesting(Map<String, String> map);
+
+    /**
      * 功能描述: 激活工序
      *
      * @param trackItemId

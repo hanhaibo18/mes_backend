@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @ClassName: QualityInspectionRulesService.java
@@ -99,6 +100,13 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    @Override
+    public List<QualityInspectionRules> queryQualityInspectionRulesList(String branchCode) {
+        QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        return this.list(queryWrapper);
     }
 
 

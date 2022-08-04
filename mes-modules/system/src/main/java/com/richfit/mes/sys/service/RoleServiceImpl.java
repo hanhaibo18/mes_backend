@@ -29,6 +29,8 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Autowired
     private UserRoleService userRoleService;
 
+    private final static String ADMIN_ROLE_CODE = "role_tenant_admin";
+
     @Override
     public boolean add(Role role) {
         boolean isSuccess = this.save(role);
@@ -38,6 +40,34 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     public boolean delete(String id) {
         return this.removeById(id);
+    }
+
+    @Override
+    public void addTenantAdminRole(String tenantId) {
+        Role adminRole = new Role();
+        adminRole.setTenantId(tenantId);
+        adminRole.setRoleCode(ADMIN_ROLE_CODE);
+        adminRole.setRoleType(ADMIN_ROLE_CODE);
+        adminRole.setRoleName("租户管理员");
+        adminRole.setRoleDesc("租户管理员");
+
+        this.save(adminRole);
+    }
+
+    @Override
+    public Role getAdminRole(String tenantId) {
+        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("role_code", ADMIN_ROLE_CODE);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        List<Role> roleList = this.list(queryWrapper);
+        //如果没有，则直接创建一个
+        if (roleList.size() == 0) {
+            this.addTenantAdminRole(tenantId);
+            return getAdminRole(tenantId);
+        }
+
+        return roleList.get(0);
     }
 
     @Override
