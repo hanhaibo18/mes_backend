@@ -83,15 +83,15 @@ public class RouterCheckController extends BaseController {
      **/
     @ApiOperation(value = "更新质量资料", notes = "更新质量资料")
     @PostMapping("/update_zlzl")
-    public void updateZlzl(@ApiParam(value = "质量资料列表", required = true) @RequestBody List<RouterCheck> routerChecks) throws Exception {
+    public void updateZlzl(@ApiParam(value = "质量资料列表", required = true) @RequestBody List<RouterCheck> routerChecks, String branchCode, String tenantId, String sequenceId) throws Exception {
         try {
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             RouterCheck rc = routerChecks.get(0);
             QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
-            queryWrapperRouterCheck.eq("sequence_id", rc.getSequenceId());
+            queryWrapperRouterCheck.eq("sequence_id", sequenceId);
             queryWrapperRouterCheck.eq("type", "质量资料");
-            queryWrapperRouterCheck.eq("branch_code", rc.getBranchCode());
-            queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
+            queryWrapperRouterCheck.eq("branch_code", branchCode);
+            queryWrapperRouterCheck.eq("tenant_id", tenantId);
             routerCheckService.remove(queryWrapperRouterCheck);
             for (RouterCheck routerCheck : routerChecks) {
                 routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
