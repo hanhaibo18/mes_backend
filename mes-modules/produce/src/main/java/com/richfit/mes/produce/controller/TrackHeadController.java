@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,16 +11,10 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.model.produce.Action;
-import com.richfit.mes.common.model.produce.LineStore;
-import com.richfit.mes.common.model.produce.TrackCertificate;
-import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
-import com.richfit.mes.produce.service.ActionService;
-import com.richfit.mes.produce.service.PlanService;
-import com.richfit.mes.produce.service.TrackCertificateService;
-import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -58,6 +53,9 @@ public class TrackHeadController extends BaseController {
 
     @Autowired
     private TrackHeadService trackHeadService;
+
+    @Autowired
+    private TrackHeadFlowService trackFlowService;
 
     @Autowired
     private TrackCertificateService trackCertificateService;
@@ -673,4 +671,31 @@ public class TrackHeadController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "查询跟单分流表List", notes = "根据跟单号查询跟单分流信息")
+    @GetMapping("/flow_list")
+    public CommonResult<List<TrackFlow>> selectFLowList(
+            @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackHeadId
+    ) throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("track_head_id", trackHeadId);
+        return CommonResult.success(trackFlowService.listByMap(map), TRACK_HEAD_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "跟单拆分", notes = "跟单拆分")
+    @PostMapping("/split")
+    public void trackHeadSplit(@ApiParam(value = "跟单拆分信息", required = true) @RequestBody Map<String, Object> map) throws
+            Exception {
+        try {
+            String id = map.get("id").toString();
+            String trackNoNew = map.get("trackNoNew").toString();
+            List<TrackFlow> trackFlow = JSON.parseArray(JSON.toJSONString(map.get("trackList")), TrackFlow.class);
+            List<TrackFlow> trackFlowNew = JSON.parseArray(JSON.toJSONString(map.get("trackListNew")), TrackFlow.class);
+            TrackHead trackHead = trackHeadService.getById(id);
+            trackHeadService.trackHeadSplit(trackHead, trackNoNew, trackFlow, trackFlowNew);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("跟单拆分出现异常");
+        }
+
+    }
 }

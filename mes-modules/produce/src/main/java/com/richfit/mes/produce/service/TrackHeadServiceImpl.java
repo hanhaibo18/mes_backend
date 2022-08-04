@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -1029,5 +1030,96 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper) {
         return trackHeadMapper.selectTrackHeadAndFlow(page, queryWrapper);
+    }
+
+    @Override
+    public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
+        //更新原跟单
+        trackHeadData(trackHead, trackFlow);
+        trackHeadMapper.updateById(trackHead);
+        //添加新的跟单
+        TrackHead trackHeadNew = trackHeadData(trackHead, trackFlow);
+        trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        trackHeadNew.setTrackNo(trackNoNew);
+        trackHeadNew.setOriginalTrackId(trackHead.getId());
+        trackHeadNew.setOriginalTrackNo(trackHead.getTrackNo());
+        trackHeadMapper.insert(trackHead);
+
+        //生产线迁移新跟单
+        for (TrackFlow t : TrackFlowNew) {
+            t.setTrackHeadId(trackHeadNew.getId());
+            trackFlowMapper.updateById(t);
+            //工序迁移
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("flow_id", t.getId());
+            updateWrapper.set("track_head_id", trackHeadNew.getId());
+            trackItemService.update(updateWrapper);
+        }
+
+
+        //计划数据更新
+        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+            planService.planData(trackHead.getWorkPlanId());
+        }
+    }
+
+    //产品编码拼接功能
+    public String productsNoStr(List<TrackFlow> trackFlows) {
+        //产品列表排序
+        trackFlowsOrder(trackFlows);
+        //机加产品编码处理
+        if (trackFlows.size() == 1) {
+            return trackFlows.get(0).getProductNo();
+        }
+        if (trackFlows.size() > 1) {
+            String productsNoStr = "";
+            String productsNoTemp = "0";
+            for (TrackFlow trackFlow : trackFlows) {
+                String pn = trackFlow.getProductNo();
+                String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
+                if (pn.equals(pnOld)) {
+                    productsNoStr = productsNoStr.replaceAll("[-]" + productsNoTemp, "");
+                    productsNoStr += "-" + pn;
+                } else {
+                    productsNoStr += "," + pn;
+                }
+                productsNoTemp = pn;
+            }
+            return productsNoStr.replaceFirst("[,]", "");
+        }
+        return null;
+    }
+
+    //跟单数量、完成数量、状态计算
+    public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlows) {
+        trackHead.setProductNo(productsNoStr(trackFlows));
+        trackHead.setNumber(trackFlows.size());
+        int numberComplete = 0;
+        //生产线迁移新跟单
+        for (TrackFlow t : trackFlows) {
+            if ("2".equals(t.getStatus())) {
+                numberComplete++;
+            }
+        }
+        trackHead.setNumberComplete(numberComplete);
+        if (numberComplete < trackFlows.size()) {
+            trackHead.setStatus("1");
+        } else {
+            trackHead.setStatus("2");
+        }
+        trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+        trackHead.setModifyTime(new Date());
+        trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        return trackHead;
+    }
+
+    //产品列表list排序
+    public void trackFlowsOrder(List<TrackFlow> trackFlows) {
+        Collections.sort(trackFlows, new Comparator<TrackFlow>() {
+            @Override
+            public int compare(TrackFlow o1, TrackFlow o2) {
+                return o1.getProductNo().compareTo(o2.getProductNo());
+            }
+        });
     }
 }
