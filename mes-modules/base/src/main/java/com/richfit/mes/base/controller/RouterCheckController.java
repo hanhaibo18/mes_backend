@@ -86,13 +86,14 @@ public class RouterCheckController extends BaseController {
     public void updateZlzl(@ApiParam(value = "质量资料列表", required = true) @RequestBody List<RouterCheck> routerChecks, String branchCode, String tenantId, String sequenceId) throws Exception {
         try {
             TenantUserDetails user = SecurityUtils.getCurrentUser();
-            RouterCheck rc = routerChecks.get(0);
+
             QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
             queryWrapperRouterCheck.eq("sequence_id", sequenceId);
             queryWrapperRouterCheck.eq("type", "质量资料");
             queryWrapperRouterCheck.eq("branch_code", branchCode);
             queryWrapperRouterCheck.eq("tenant_id", tenantId);
             routerCheckService.remove(queryWrapperRouterCheck);
+
             for (RouterCheck routerCheck : routerChecks) {
                 routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                 routerCheck.setType("质量资料");
