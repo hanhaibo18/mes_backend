@@ -307,4 +307,23 @@ public class TrackHead extends BaseEntity<TrackHead> {
      **/
     @TableField(exist = false)
     private String flowId;
+
+
+    /**
+     * 描述: 原跟单id
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/4 10:25
+     **/
+    @TableField(exist = false)
+    private String originalTrackId;
+
+    /**
+     * 描述: 原跟单编号
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/4 10:25
+     **/
+    @TableField(exist = false)
+    private String originalTrackNo;
 }
