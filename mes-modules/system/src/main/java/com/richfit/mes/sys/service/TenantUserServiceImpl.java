@@ -191,7 +191,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         return tenantUserMapper.selectPage(page,
                 new QueryWrapper()
                         .eq(StringUtils.isNotEmpty(userAccount), "user_account", userAccount)
-                        .eq(StringUtils.isNotEmpty(tenantId), "tenant_id", tenantId));
+//                用户名全局唯一，不应加租户限制
+//                        .eq(StringUtils.isNotEmpty(tenantId), "tenant_id", tenantId)
+        );
 
     }
 
@@ -224,4 +226,5 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         queryWrapper.eq("users.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return tenantUserMapper.queryByBranchCode(queryWrapper);
     }
+
 }

@@ -66,4 +66,11 @@ public class QualityInspectionRulesController {
     public void exportExcel(HttpServletResponse rsp) {
         qualityInspectionRulesService.exportExcel(rsp);
     }
+
+    @ApiOperation(value = "查询质量规则列表", notes = "根据车间编码查询")
+    @ApiImplicitParam(name = "branchCode", value = "车间", dataType = "String", paramType = "query")
+    @GetMapping("/queryQualityInspectionRulesList")
+    public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(String branchCode) {
+        return CommonResult.success(qualityInspectionRulesService.queryQualityInspectionRulesList(branchCode));
+    }
 }

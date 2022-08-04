@@ -120,4 +120,6 @@ public interface TenantUserService {
      * @return: List<TenantUserVo>
      **/
     List<TenantUserVo> queryByBranchCode(String BranchCode);
+
+    
 }

@@ -217,11 +217,15 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                     map.put("materialNo", trackAssembly.getMaterialNo());
                     Integer number = lineStoreService.queryLineStoreSumZpNumber(map);
                     KittingVo kitting = new KittingVo();
+                    kitting.setMaterialNo(trackAssembly.getMaterialNo());
                     kitting.setDrawingNo(trackAssembly.getDrawingNo());
                     kitting.setMaterialName(trackAssembly.getName());
                     kitting.setUnitNumber(trackAssembly.getNumber());
                     kitting.setNeedUnitNumber(1);
                     kitting.setInventory(number);
+                    kitting.setIsEdgeStore(trackAssembly.getIsEdgeStore());
+                    kitting.setIsKeyPart(trackAssembly.getIsKeyPart());
+                    kitting.setIsNeedPicking(trackAssembly.getIsNeedPicking());
                     kitting.setSurplusNumber(number - trackAssembly.getNumber());
                     if (number - trackAssembly.getNumber() >= 0) {
                         kitting.setIsKitting(1);

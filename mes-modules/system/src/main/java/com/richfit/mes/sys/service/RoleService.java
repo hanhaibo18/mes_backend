@@ -2,9 +2,7 @@ package com.richfit.mes.sys.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.sys.Role;
-import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.sys.entity.param.RoleQueryParam;
 
 import java.util.List;
@@ -25,6 +23,7 @@ public interface RoleService {
 
     /**
      * 新增角色
+     *
      * @param role
      * @return
      */
@@ -32,6 +31,7 @@ public interface RoleService {
 
     /**
      * 查询角色
+     *
      * @param page
      * @param roleQueryParam
      * @return
@@ -40,6 +40,7 @@ public interface RoleService {
 
     /**
      * 根据用户id查询用户拥有的角色
+     *
      * @param userId
      * @return
      */
@@ -47,6 +48,7 @@ public interface RoleService {
 
     /**
      * 更新角色信息
+     *
      * @param role
      * @param role
      * @return
@@ -55,9 +57,21 @@ public interface RoleService {
 
     /**
      * 根据id删除角色
+     *
      * @param
      * @param id
      * @return
      */
     boolean delete(String id);
+
+    /**
+     * 根据租户id 创建租户管理员角色
+     *
+     * @param
+     * @param tenantId
+     * @return
+     */
+    void addTenantAdminRole(String tenantId);
+
+    Role getAdminRole(String tenantId);
 }

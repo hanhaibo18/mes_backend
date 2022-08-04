@@ -7,12 +7,14 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.constant.CommonConstant;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.dto.TenantUserDto;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.entity.dto.TenantUpdateUserDto;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
+import com.richfit.mes.sys.service.RoleService;
 import com.richfit.mes.sys.service.TenantService;
 import com.richfit.mes.sys.service.TenantUserService;
 import io.swagger.annotations.*;
@@ -21,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -43,6 +47,9 @@ public class TenantUserController extends BaseController {
     @Autowired
     TenantService tenantService;
 
+    @Autowired
+    RoleService roleService;
+
     /**
      * 新增用户
      */
@@ -53,6 +60,22 @@ public class TenantUserController extends BaseController {
 
         //TODO 租户可创建用户数限制
         TenantUser tenantUser = tenantUserDto.toPo(TenantUser.class);
+        log.debug("save tenantUser:[{}]", tenantUser);
+        return CommonResult.success(tenantUserService.add(tenantUser));
+    }
+
+
+    @ApiOperation(value = "新增管理员信息", notes = "新增管理员信息")
+    @ApiImplicitParam(name = "tenantUserDto", value = "租户用户", required = true, dataType = "TenantUserDto")
+    @PostMapping("/save-admin")
+    public CommonResult<Boolean> saveTenantAdmin(@Valid @RequestBody TenantUserDto tenantUserDto) throws GlobalException {
+
+        TenantUser tenantUser = tenantUserDto.toPo(TenantUser.class);
+
+        //查询该租户下的 role_tenant_admin 角色
+        Role role = roleService.getAdminRole(tenantUser.getTenantId());
+        tenantUser.setRoleIds(new HashSet<>(Arrays.asList(role.getId())));
+
         log.debug("save tenantUser:[{}]", tenantUser);
         return CommonResult.success(tenantUserService.add(tenantUser));
     }
