@@ -59,10 +59,11 @@ public class TenantController extends BaseController {
     @ApiImplicitParam(name = "id", value = "租户ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/{id}")
     public CommonResult<Tenant> tenant(@PathVariable String id) throws GlobalException {
-        checkIsSysAdmin();
+        checkIsCurrentTenantId(id);
         checkTenantId(id);
         return CommonResult.success(tenantService.getById(id));
     }
+
 
     /**
      * 更新tenant
@@ -188,6 +189,14 @@ public class TenantController extends BaseController {
         if (!SecurityUtils.getCurrentUser().isSysAdmin()) {
             throw new GlobalException("您无权操作该功能", ResultCode.FORBIDDEN);
         }
+    }
+
+    protected void checkIsCurrentTenantId(String id) {
+
+        if (!SecurityUtils.getCurrentUser().getTenantId().equals(id)) {
+            throw new GlobalException("您无权查看其它租户信息", ResultCode.FORBIDDEN);
+        }
+
     }
 
 }
