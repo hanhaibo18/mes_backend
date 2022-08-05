@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -18,6 +20,7 @@ import java.util.Map;
  * @Description: TODO
  * @CreateTime: 2022年07月12日 16:34:00
  */
+@Slf4j
 @Service
 public class PublicServiceImpl implements PublicService {
 
@@ -29,6 +32,8 @@ public class PublicServiceImpl implements PublicService {
     private TrackAssignService trackAssignService;
     @Resource
     private PlanService planService;
+    @Resource
+    private LineStoreService lineStoreService;
 
     @Override
     public Boolean publicUpdateState(Map<String, String> map, int code) {
@@ -47,7 +52,7 @@ public class PublicServiceImpl implements PublicService {
         }
         //调度
         if (PublicCodeEnum.DISPATCH.getCode() == code) {
-            return null;
+            return updateDispatch(map);
         }
         return false;
     }
@@ -145,6 +150,7 @@ public class PublicServiceImpl implements PublicService {
 
         //质检完成
         trackItem.setIsQualityComplete(1);
+        trackItem.setQualityResult(1);
         trackItem.setQualityCompleteTime(new Date());
         //如果不需要调度审核，则将工序设置为完成，并激活下个工序
         if (trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsQualityComplete() == 1) {
@@ -154,6 +160,43 @@ public class PublicServiceImpl implements PublicService {
             return activationProcess(map.get("trackHeadId"));
         }
         trackItemService.updateById(trackItem);
+        return true;
+    }
+
+    @Override
+    public Boolean updateDispatch(Map<String, String> map) {
+        String tiId = map.get("trackItemId");
+        TrackItem trackItem = trackItemService.getById(tiId);
+
+        try {
+            if (0 == trackItem.getNextOptSequence()) {
+                trackHeadService.trackHeadFinish(trackItem.getFlowId());
+                TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
+                trackHead.setStatus("2");
+                trackHead.setCompleteTime(new Date());
+                trackHeadService.updateById(trackHead);
+
+                //设置产品完工
+                lineStoreService.changeStatus(trackHead);
+
+                //设置计划状态
+                planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+            } else {
+                trackItem.setIsFinalComplete("1");
+                trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+
+                if (null != SecurityUtils.getCurrentUser()) {
+                    trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                trackItem.setScheduleCompleteTime(new Date());
+                this.activationProcess(map.get("trackHeadId"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            return false;
+
+        }
         return true;
     }
 
