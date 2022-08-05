@@ -77,7 +77,18 @@ public class Router extends BaseEntity<Router> {
      */
     private String drawNo;
 
+    /**
+     * 是否推送ERP 1已推送
+     */
+    private Integer isSendErp;
+
     @ApiModelProperty(value = "该工艺历史版本")
     @TableField(exist = false)
     private List<Router> children;
+
+    @TableField(exist = false)
+    private String productMaterialNo;
+
+    @TableField(exist = false)
+    private String unit;
 }

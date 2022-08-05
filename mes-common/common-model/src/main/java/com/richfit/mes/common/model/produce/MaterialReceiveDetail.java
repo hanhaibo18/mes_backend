@@ -19,7 +19,7 @@ public class MaterialReceiveDetail extends BaseEntity<MaterialReceiveDetail> {
     /**
      * 配送单号
      */
-    private String delieveryNo;
+    private String deliveryNo;
 
     /**
      * 名称

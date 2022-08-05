@@ -65,6 +65,10 @@ fdfs:
 time:
   order: "0 30 23 * * ? "
   ourchase_order: "0 30 23 * * ? "
+  push_work_hour: "0 48 15 * * ? "
+task-date:
+  start_work_hour: "2022-01-01"
+
 
 feign.client.config:
   default:

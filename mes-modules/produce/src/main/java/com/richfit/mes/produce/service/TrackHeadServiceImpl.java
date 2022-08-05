@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -296,7 +297,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setNumberComplete(0);
             trackHead.setNumber(number);
-
+            if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 1) {
+                trackHead.setFlowNumber(trackHead.getStoreList().size());
+            } else {
+                trackHead.setFlowNumber(1);
+            }
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
@@ -529,8 +534,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setModifyTime(new Date());
             int bool = trackHeadMapper.updateById(trackHead);
 
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getProductNo().indexOf(",") != -1) {
-                //分流情况的工序批量修改
+            //工序批量修改
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber() > 1) {
+                //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
@@ -568,6 +574,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         item.setModifyTime(new Date());
                         item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                         trackItemService.saveOrUpdate(item);
+                    }
+                }
+                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                for (TrackItem trackItem : trackItemList) {
+                    boolean flag = true;
+                    for (TrackItem item : trackItems) {
+                        if (trackItem.getId().equals(item.getId())) {
+                            flag = false;
+                        }
+                    }
+                    if (flag) {
+                        trackItemService.removeById(trackItem);
                     }
                 }
             }
@@ -1029,5 +1049,129 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper) {
         return trackHeadMapper.selectTrackHeadAndFlow(page, queryWrapper);
+    }
+
+    @Override
+    public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
+        //更新原跟单
+        trackHeadData(trackHead, trackFlow);
+        trackHeadMapper.updateById(trackHead);
+        //添加新的跟单
+        TrackHead trackHeadNew = trackHeadData(trackHead, TrackFlowNew);
+        //优先赋值
+        trackHeadNew.setOriginalTrackId(trackHead.getId());
+        trackHeadNew.setOriginalTrackNo(trackHead.getTrackNo());
+        //更改为新值
+        trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        trackHeadNew.setTrackNo(trackNoNew);
+        trackHeadMapper.insert(trackHead);
+        codeRuleController.updateCode("track_no", "跟单编号", trackHeadNew.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHeadNew.getBranchCode());
+        //生产线迁移新跟单
+        trackFlowMigrations(trackHeadNew.getId(), TrackFlowNew);
+        //计划数据更新
+        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+            planService.planData(trackHead.getWorkPlanId());
+        }
+    }
+
+    @Override
+    public void trackHeadSplitBack(TrackHead trackHead) {
+        TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
+        List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
+        List<TrackFlow> trackFlowList = trackFlowList(trackHead.getId());
+        //生产线还原原跟单
+        trackFlowMigrations(originalTrackHead.getId(), trackFlowList);
+        //生产线合并
+        originalTrackFlowList.addAll(trackFlowList);
+        originalTrackHead = trackHeadData(originalTrackHead, originalTrackFlowList);
+        trackHeadMapper.updateById(originalTrackHead);
+        //删除回收的跟单
+        trackHeadMapper.deleteById(trackHead);
+    }
+
+    //生产线迁移新跟单
+    public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
+        for (TrackFlow t : trackFlowList) {
+            t.setTrackHeadId(id);
+            trackFlowMapper.updateById(t);
+            //工序迁移
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("flow_id", t.getId());
+            updateWrapper.set("track_head_id", id);
+            trackItemService.update(updateWrapper);
+        }
+    }
+
+    //产品编码拼接功能
+    public String productsNoStr(TrackHead trackHead, List<TrackFlow> trackFlows) {
+        //产品列表排序
+        trackFlowsOrder(trackFlows);
+        //机加产品编码处理
+        if (trackFlows.size() == 1) {
+            return trackFlows.get(0).getProductNo();
+        }
+        if (trackFlows.size() > 1) {
+            String productsNoStr = "";
+            String productsNoTemp = "0";
+            for (TrackFlow trackFlow : trackFlows) {
+                String pn = trackFlow.getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
+                String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
+                if (pn.equals(pnOld)) {
+                    productsNoStr = productsNoStr.replaceAll("[-]" + productsNoTemp, "");
+                    productsNoStr += "-" + pn;
+                } else {
+                    productsNoStr += "," + pn;
+                }
+                productsNoTemp = pn;
+            }
+            return productsNoStr.replaceFirst("[,]", "");
+        }
+        return null;
+    }
+
+    //跟单数量、完成数量、状态计算
+    public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlows) {
+        trackHead.setProductNo(productsNoStr(trackHead, trackFlows));
+        trackHead.setNumber(trackFlows.size());
+        trackHead.setFlowNumber(trackFlows.size());
+        int numberComplete = 0;
+        String productNoDesc = "";
+        //生产线迁移新跟单
+        for (TrackFlow t : trackFlows) {
+            if ("2".equals(t.getStatus())) {
+                numberComplete++;
+            }
+            productNoDesc += "," + t.getProductNo();
+        }
+        trackHead.setProductNoDesc(productNoDesc.replaceFirst(",", ""));
+        trackHead.setNumberComplete(numberComplete);
+        if (numberComplete < trackFlows.size()) {
+            trackHead.setStatus("1");
+        } else {
+            trackHead.setStatus("2");
+        }
+
+        trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+        trackHead.setModifyTime(new Date());
+        trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        return trackHead;
+    }
+
+    //产品列表list排序
+    public void trackFlowsOrder(List<TrackFlow> trackFlows) {
+        Collections.sort(trackFlows, new Comparator<TrackFlow>() {
+            @Override
+            public int compare(TrackFlow o1, TrackFlow o2) {
+                return o1.getProductNo().compareTo(o2.getProductNo());
+            }
+        });
+    }
+
+    //产品列表list排序
+    @Override
+    public List<TrackFlow> trackFlowList(String trackHeadId) {
+        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+        queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
+        return trackFlowMapper.selectList(queryWrapperTrackFlow);
     }
 }

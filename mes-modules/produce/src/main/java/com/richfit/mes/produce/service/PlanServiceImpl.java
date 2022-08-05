@@ -285,8 +285,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
-                //"L".equals(pb.getGrade()) &&  是否过滤H零件
-                if ("1".equals(pb.getIsCheck())) {
+                //是否过滤H零件
+                if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
                     if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                         if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                             ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
