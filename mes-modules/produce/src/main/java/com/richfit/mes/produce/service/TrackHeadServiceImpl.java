@@ -297,7 +297,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setNumberComplete(0);
             trackHead.setNumber(number);
-
+            if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 1) {
+                trackHead.setFlowNumber(trackHead.getStoreList().size());
+            } else {
+                trackHead.setFlowNumber(1);
+            }
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
@@ -530,8 +534,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setModifyTime(new Date());
             int bool = trackHeadMapper.updateById(trackHead);
 
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getProductNo().indexOf(",") != -1) {
-                //分流情况的工序批量修改
+            //工序批量修改
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber() > 1) {
+                //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
@@ -569,6 +574,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         item.setModifyTime(new Date());
                         item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                         trackItemService.saveOrUpdate(item);
+                    }
+                }
+                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                for (TrackItem trackItem : trackItemList) {
+                    boolean flag = true;
+                    for (TrackItem item : trackItems) {
+                        if (trackItem.getId().equals(item.getId())) {
+                            flag = false;
+                        }
+                    }
+                    if (flag) {
+                        trackItemService.removeById(trackItem);
                     }
                 }
             }
@@ -1114,6 +1133,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlows) {
         trackHead.setProductNo(productsNoStr(trackHead, trackFlows));
         trackHead.setNumber(trackFlows.size());
+        trackHead.setFlowNumber(trackFlows.size());
         int numberComplete = 0;
         String productNoDesc = "";
         //生产线迁移新跟单

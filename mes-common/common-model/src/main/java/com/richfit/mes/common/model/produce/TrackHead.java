@@ -324,4 +324,20 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Date: 2022/8/4 10:25
      **/
     private String originalTrackNo;
+
+    /**
+     * 描述: 分流（生产线数量）
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/5 10:25
+     **/
+    private int flowNumber;
+
+    /**
+     * 描述: 订单id
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/5 10:25
+     **/
+    private String productionOrderId;
 }
