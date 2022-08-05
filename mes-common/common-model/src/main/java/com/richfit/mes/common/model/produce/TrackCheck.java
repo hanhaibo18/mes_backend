@@ -139,8 +139,11 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @ApiModelProperty(value = "跟单号", dataType = "String")
     private String trackNo;
 
-    //    @TableField(exist = false)
-//    @ApiModelProperty(value = "下工序绑定", dataType = "NextProcess")
-    private NextProcess nextProcess;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "下工序绑定", dataType = "String")
+    private String nextProcess;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理方式", dataType = "String")
+    private String processMode;
 }
