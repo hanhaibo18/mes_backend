@@ -339,5 +339,5 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/5 10:25
      **/
-    private int productionOrderId;
+    private String productionOrderId;
 }
