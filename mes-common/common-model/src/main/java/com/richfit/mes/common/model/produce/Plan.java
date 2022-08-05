@@ -207,4 +207,19 @@ public class Plan extends BaseEntity<Plan> {
      * 材质
      */
     private String texture;
+
+    /**
+     * 原计划id
+     */
+    private String originalPlanId;
+    /**
+     * 原计划编号
+     */
+    private String originalProjCode;
+    /**
+     * 已拆分数量
+     */
+    @TableField(exist = false)
+    private int plannedNumber;
+
 }

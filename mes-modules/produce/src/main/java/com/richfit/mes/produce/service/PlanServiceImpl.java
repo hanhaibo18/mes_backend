@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -13,6 +14,8 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.DateUtils;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
@@ -589,5 +592,91 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             throw new GlobalException("计划数量须>0", ResultCode.INVALID_ARGUMENTS);
         }
 
+    }
+
+
+    /**
+     * 拆分计划
+     * @param plan
+     * @return
+     */
+    @Override
+    public CommonResult<Object> splitPlan(Plan plan) {
+        //校验计划
+        checkPlan(plan);
+
+        //拆分(此处id为父计划id)
+        if (StringUtils.hasText(plan.getId())) {
+            //根据id查询父计划
+            Plan  parentPlan = planMapper.selectById(plan.getId());
+
+            if (!ObjectUtil.isEmpty(parentPlan)) {
+                if (plan.getProjNum() > parentPlan.getProjNum()) {
+                    return CommonResult.failed("拆分计划数量超出未计划数量");
+                }
+            }
+
+            //构造拆分计划
+            plan.setOriginalPlanId(parentPlan.getId());
+            plan.setOriginalProjCode(parentPlan.getOriginalProjCode());
+            //数量清空
+            plan.setTrackHeadFinishNumber(0);
+            plan.setProcessNum(0);
+            plan.setDeliveryNum(0);
+            plan.setOptFinishNumber(0);
+            plan.setOptNumber(0);
+
+            //修改父计划的计划数量
+            UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
+            planUpdateWrapper
+                    .eq("id",parentPlan.getId())
+                    .set("projNum",parentPlan.getProjNum()-plan.getProjNum());
+            this.update(planUpdateWrapper);
+            //保存拆分计划
+            return CommonResult.success(planMapper.insert(plan));
+        }
+        return CommonResult.success(null);
+    }
+
+    /**
+     * 撤销拆分
+     * @param id
+     * @return
+     */
+    public CommonResult<Object> backoutPlan(String id) {
+        //校验
+        Plan  currPlan = planMapper.selectById(id);
+        if(!ObjectUtil.isEmpty(currPlan) && !ObjectUtil.isEmpty(currPlan.getOriginalPlanId())){
+            //合并到源计划
+            Plan plan = planMapper.selectById(currPlan.getOriginalPlanId());
+            UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
+            planUpdateWrapper.eq("id",currPlan.getOriginalPlanId())
+                    .set("projNum",currPlan.getProjNum()+plan.getProjNum());
+            this.update(planUpdateWrapper);
+            //删除该计划
+            this.removeById(id);
+        }
+        return CommonResult.success(null);
+    }
+
+    /**
+     * 计划跟单拆分
+     * @param id
+     * @return
+     */
+    public CommonResult<Object> planTrackHead(String id) {
+        //校验
+        Plan  currPlan = planMapper.selectById(id);
+        if(!ObjectUtil.isEmpty(currPlan) && !ObjectUtil.isEmpty(currPlan.getOriginalPlanId())){
+            //合并到源计划
+            Plan plan = planMapper.selectById(currPlan.getOriginalPlanId());
+            UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
+            planUpdateWrapper.eq("id",currPlan.getOriginalPlanId())
+                    .set("projNum",currPlan.getProjNum()+plan.getProjNum());
+            this.update(planUpdateWrapper);
+            //删除该计划
+            this.removeById(id);
+        }
+        return CommonResult.success(null);
     }
 }

@@ -95,4 +95,11 @@ public interface PlanService extends IService<Plan> {
      * @Date: 2022/7/8 11:37
      **/
     void planData(String planId);
+
+    /**
+     * 拆分计划
+     * @param plan
+     * @return
+     */
+    CommonResult<Object> splitPlan(Plan plan);
 }

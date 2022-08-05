@@ -23,4 +23,7 @@ public interface PlanMapper extends BaseMapper<Plan> {
     List<PlanTrackItemViewDto> queryPlanTrackItem(@Param("planId") String planId);
 
     Plan findPlan(@Param("code")String code,@Param("tenantId")String tenantId);
+
+    Plan findByPlanId(@Param("id")String id,@Param("tenantId")String tenantId);
+
 }
