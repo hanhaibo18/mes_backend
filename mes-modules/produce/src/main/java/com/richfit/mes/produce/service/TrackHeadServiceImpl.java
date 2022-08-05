@@ -1039,10 +1039,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadMapper.updateById(trackHead);
         //添加新的跟单
         TrackHead trackHeadNew = trackHeadData(trackHead, TrackFlowNew);
-        trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-        trackHeadNew.setTrackNo(trackNoNew);
+        //优先赋值
         trackHeadNew.setOriginalTrackId(trackHead.getId());
         trackHeadNew.setOriginalTrackNo(trackHead.getTrackNo());
+        //更改为新值
+        trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        trackHeadNew.setTrackNo(trackNoNew);
         trackHeadMapper.insert(trackHead);
         codeRuleController.updateCode("track_no", "跟单编号", trackHeadNew.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHeadNew.getBranchCode());
         //生产线迁移新跟单
