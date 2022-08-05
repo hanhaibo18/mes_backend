@@ -50,7 +50,7 @@ public class TaskUtils {
 
 
     // 添加定时任务
-    @Scheduled(cron = "0 0/1 * * * ?") // cron 表达式，每10分 执行
+    @Scheduled(cron = "0 0/10 * * * ?") // cron 表达式，每10分 执行
     @Inner
     public void doTask() throws SQLException, ClassNotFoundException {
         if (StringUtils.isEmpty(userName)){
