@@ -315,7 +315,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/4 10:25
      **/
-    @TableField(exist = false)
     private String originalTrackId;
 
     /**
@@ -324,6 +323,5 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/4 10:25
      **/
-    @TableField(exist = false)
     private String originalTrackNo;
 }
