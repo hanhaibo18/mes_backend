@@ -1048,20 +1048,38 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadMapper.insert(trackHead);
         codeRuleController.updateCode("track_no", "跟单编号", trackHeadNew.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHeadNew.getBranchCode());
         //生产线迁移新跟单
-        for (TrackFlow t : TrackFlowNew) {
-            t.setTrackHeadId(trackHeadNew.getId());
+        trackFlowMigrations(trackHeadNew.getId(), TrackFlowNew);
+        //计划数据更新
+        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+            planService.planData(trackHead.getWorkPlanId());
+        }
+    }
+
+    @Override
+    public void trackHeadSplitBack(TrackHead trackHead) {
+        TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
+        List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
+        List<TrackFlow> trackFlowList = trackFlowList(trackHead.getId());
+        //生产线还原原跟单
+        trackFlowMigrations(originalTrackHead.getId(), trackFlowList);
+        //生产线合并
+        originalTrackFlowList.addAll(trackFlowList);
+        originalTrackHead = trackHeadData(originalTrackHead, originalTrackFlowList);
+        trackHeadMapper.updateById(originalTrackHead);
+        //删除回收的跟单
+        trackHeadMapper.deleteById(trackHead);
+    }
+
+    //生产线迁移新跟单
+    public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
+        for (TrackFlow t : trackFlowList) {
+            t.setTrackHeadId(id);
             trackFlowMapper.updateById(t);
             //工序迁移
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
             updateWrapper.eq("flow_id", t.getId());
-            updateWrapper.set("track_head_id", trackHeadNew.getId());
+            updateWrapper.set("track_head_id", id);
             trackItemService.update(updateWrapper);
-        }
-
-
-        //计划数据更新
-        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-            planService.planData(trackHead.getWorkPlanId());
         }
     }
 
@@ -1123,5 +1141,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 return o1.getProductNo().compareTo(o2.getProductNo());
             }
         });
+    }
+
+    //产品列表list排序
+    @Override
+    public List<TrackFlow> trackFlowList(String trackHeadId) {
+        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+        queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
+        return trackFlowMapper.selectList(queryWrapperTrackFlow);
     }
 }

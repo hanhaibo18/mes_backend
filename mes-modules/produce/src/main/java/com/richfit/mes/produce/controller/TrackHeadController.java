@@ -697,6 +697,17 @@ public class TrackHeadController extends BaseController {
             e.printStackTrace();
             throw new Exception("跟单拆分出现异常");
         }
+    }
 
+    @ApiOperation(value = "跟单回收", notes = "跟单回收")
+    @PostMapping("/split_back")
+    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody TrackHead trackHead) throws
+            Exception {
+        try {
+            trackHeadService.trackHeadSplitBack(trackHead);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("跟单回收出现异常");
+        }
     }
 }
