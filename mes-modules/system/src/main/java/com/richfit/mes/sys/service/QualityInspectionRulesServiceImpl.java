@@ -109,5 +109,10 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
         return this.list(queryWrapper);
     }
 
+    @Override
+    public QualityInspectionRules queryQualityInspectionRulesById(String id) {
+        return this.getById(id);
+    }
+
 
 }
