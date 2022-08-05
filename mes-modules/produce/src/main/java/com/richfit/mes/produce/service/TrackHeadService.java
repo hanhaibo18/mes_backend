@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.LineStore;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.*;
@@ -234,4 +235,14 @@ public interface TrackHeadService extends IService<TrackHead> {
     IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads);
 
     IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper);
+
+    /**
+     * 功能描述: 跟单拆分
+     *
+     * @param trackHead    原跟单号信息
+     * @param trackNoNew   新跟单号
+     * @param trackFlow    原跟单产品列表
+     * @param trackFlowNew 新跟单产品列表
+     */
+    void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
 }
