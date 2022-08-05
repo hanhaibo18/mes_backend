@@ -534,8 +534,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setModifyTime(new Date());
             int bool = trackHeadMapper.updateById(trackHead);
 
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getProductNo().indexOf(",") != -1) {
-                //分流情况的工序批量修改
+            //工序批量修改
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber() > 1) {
+                //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
@@ -573,6 +574,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         item.setModifyTime(new Date());
                         item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                         trackItemService.saveOrUpdate(item);
+                    }
+                }
+                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                for (TrackItem trackItem : trackItemList) {
+                    boolean flag = true;
+                    for (TrackItem item : trackItems) {
+                        if (trackItem.getId().equals(item.getId())) {
+                            flag = false;
+                        }
+                    }
+                    if (flag) {
+                        trackItemService.removeById(trackItem);
                     }
                 }
             }
