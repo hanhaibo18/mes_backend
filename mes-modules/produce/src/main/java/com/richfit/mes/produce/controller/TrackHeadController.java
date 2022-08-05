@@ -701,10 +701,12 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "跟单回收", notes = "跟单回收")
     @PostMapping("/split_back")
-    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody TrackHead trackHead) throws
+    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHead> trackHeadList) throws
             Exception {
         try {
-            trackHeadService.trackHeadSplitBack(trackHead);
+            for (TrackHead trackHead : trackHeadList) {
+                trackHeadService.trackHeadSplitBack(trackHead);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("跟单回收出现异常");
