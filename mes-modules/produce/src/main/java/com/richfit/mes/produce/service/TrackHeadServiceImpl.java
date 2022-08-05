@@ -297,7 +297,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setNumberComplete(0);
             trackHead.setNumber(number);
-
+            if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 1) {
+                trackHead.setFlowNumber(trackHead.getStoreList().size());
+            } else {
+                trackHead.setFlowNumber(1);
+            }
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
@@ -1114,6 +1118,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlows) {
         trackHead.setProductNo(productsNoStr(trackHead, trackFlows));
         trackHead.setNumber(trackFlows.size());
+        trackHead.setFlowNumber(trackFlows.size());
         int numberComplete = 0;
         String productNoDesc = "";
         //生产线迁移新跟单
