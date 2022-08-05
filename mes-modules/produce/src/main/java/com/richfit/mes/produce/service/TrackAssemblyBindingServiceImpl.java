@@ -7,8 +7,10 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.dao.TrackAssemblyBindingMapper;
+import com.richfit.mes.produce.dao.TrackFlowMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,9 +35,12 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
     private TrackHeadService trackHeadService;
     @Resource
     private BaseServiceClient baseServiceClient;
+    @Resource
+    private TrackFlowMapper trackFlowMapper;
 
 
     @Override
+
     public CommonResult<Boolean> saveAssemblyBinding(TrackAssemblyBinding assembly) {
         return CommonResult.success(this.saveOrUpdate(assembly));
     }
@@ -51,11 +56,19 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         if (1 == isBinding) {
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() + 1);
             if (null != trackHead && StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
+                //生成产品编号
                 ProjectBom projectBom = baseServiceClient.queryBom(trackHead.getProjectBomWork(), trackAssembly.getBranchCode());
+                QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("track_head_id", trackHead.getId());
+                TrackFlow trackFlow = trackFlowMapper.selectOne(queryWrapper);
                 if (projectBom != null) {
-                    trackHead.setProductNo(projectBom.getDrawingNo() + " " + assemblyBinding.getNumber());
+                    String produceNo = projectBom.getDrawingNo() + " " + assemblyBinding.getNumber();
+                    trackHead.setProductNo(produceNo);
+                    trackFlow.setProductNo(produceNo);
                 } else {
+                    String produceNo = trackHead.getDrawingNo() + " " + assemblyBinding.getNumber();
                     trackHead.setProductNo(trackHead.getDrawingNo() + " " + assemblyBinding.getNumber());
+                    trackFlow.setProductNo(produceNo);
                 }
             }
         } else {
