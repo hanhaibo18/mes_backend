@@ -1044,7 +1044,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadNew.setOriginalTrackId(trackHead.getId());
         trackHeadNew.setOriginalTrackNo(trackHead.getTrackNo());
         trackHeadMapper.insert(trackHead);
-
+        codeRuleController.updateCode("track_no", "跟单编号", trackHeadNew.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHeadNew.getBranchCode());
         //生产线迁移新跟单
         for (TrackFlow t : TrackFlowNew) {
             t.setTrackHeadId(trackHeadNew.getId());
