@@ -676,9 +676,10 @@ public class TrackHeadController extends BaseController {
     public CommonResult<List<TrackFlow>> selectFLowList(
             @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackHeadId
     ) throws Exception {
-        Map<String, Object> map = new HashMap<>();
-        map.put("track_head_id", trackHeadId);
-        return CommonResult.success(trackFlowService.listByMap(map), TRACK_HEAD_SUCCESS_MESSAGE);
+        QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        queryWrapper.orderByAsc("product_no");
+        return CommonResult.success(trackFlowService.list(queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "跟单拆分", notes = "跟单拆分")

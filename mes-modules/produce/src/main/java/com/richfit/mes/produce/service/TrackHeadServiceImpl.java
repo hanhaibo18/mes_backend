@@ -1038,7 +1038,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadData(trackHead, trackFlow);
         trackHeadMapper.updateById(trackHead);
         //添加新的跟单
-        TrackHead trackHeadNew = trackHeadData(trackHead, trackFlow);
+        TrackHead trackHeadNew = trackHeadData(trackHead, TrackFlowNew);
         trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         trackHeadNew.setTrackNo(trackNoNew);
         trackHeadNew.setOriginalTrackId(trackHead.getId());
@@ -1064,7 +1064,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     //产品编码拼接功能
-    public String productsNoStr(List<TrackFlow> trackFlows) {
+    public String productsNoStr(TrackHead trackHead, List<TrackFlow> trackFlows) {
         //产品列表排序
         trackFlowsOrder(trackFlows);
         //机加产品编码处理
@@ -1075,7 +1075,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             String productsNoStr = "";
             String productsNoTemp = "0";
             for (TrackFlow trackFlow : trackFlows) {
-                String pn = trackFlow.getProductNo();
+                String pn = trackFlow.getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
                 String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
                 if (pn.equals(pnOld)) {
                     productsNoStr = productsNoStr.replaceAll("[-]" + productsNoTemp, "");
@@ -1092,7 +1092,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     //跟单数量、完成数量、状态计算
     public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlows) {
-        trackHead.setProductNo(productsNoStr(trackFlows));
+        trackHead.setProductNo(productsNoStr(trackHead, trackFlows));
         trackHead.setNumber(trackFlows.size());
         int numberComplete = 0;
         //生产线迁移新跟单
