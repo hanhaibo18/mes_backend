@@ -5,8 +5,6 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * @Author: zhiqiang.lu
  * @Date: 2020/8/8 9:59
@@ -29,6 +27,6 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
     @ApiModelProperty(value = "工序名称", dataType = "Integer")
     private Integer sequenceOrderBy;
 
-    @ApiModelProperty(value = "预警时间", dataType = "Date")
-    private Date dateWarning;
+    @ApiModelProperty(value = "预警时间", dataType = "String")
+    private String dateWarning;
 }
