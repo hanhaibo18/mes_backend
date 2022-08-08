@@ -326,7 +326,7 @@ public class RouterController extends BaseController {
      */
     @ApiOperation(value = "复制工艺", notes = "复制工艺")
     @PostMapping("/copy")
-    public CommonResult<Router> importExcel2(String routerId, String tenantId, String branchCode) {
+    public CommonResult<Router> copy(String routerId, String tenantId, String branchCode) {
 
 
         if (!StringUtils.isNullOrEmpty(routerId)) {
