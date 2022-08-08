@@ -75,4 +75,14 @@ public interface QualityInspectionRulesService extends IService<QualityInspectio
      * @return: List<QualityInspectionRules>
      **/
     List<QualityInspectionRules> queryQualityInspectionRulesList(String branchCode);
+
+    /**
+     * 功能描述: 根据Id查询质检规则
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/8/4 10:23
+     * @return: QualityInspectionRules
+     **/
+    QualityInspectionRules queryQualityInspectionRulesById(String id);
 }

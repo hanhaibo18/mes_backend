@@ -1,8 +1,14 @@
 package com.richfit.mes.produce.dao;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @className:MaterialReceiveDetailMapper
@@ -12,4 +18,7 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface MaterialReceiveDetailMapper extends BaseMapper<MaterialReceiveDetail> {
+
+    @Select("SELECT mrd.*, prnd.note_id,prnd.material_no FROM produce_material_receive_detail mrd LEFT JOIN produce_request_note_detail prnd ON mrd.aply_num = prnd.note_id AND mrd.material_num = prnd.material_no  ${ew.customSqlSegment}")
+    List<MaterialReceiveDetail> getReceiveDetail(@Param(Constants.WRAPPER) QueryWrapper<MaterialReceiveDetail> queryWrapper);
 }

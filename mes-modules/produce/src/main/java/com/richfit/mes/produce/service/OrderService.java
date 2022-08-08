@@ -25,5 +25,10 @@ public interface OrderService extends IService<Order> {
 
     Order findByOrderCode(String orderCode, String tenantId);
 
-
+    /**
+     * 功能描述: 通过订单id更新订单的交货数量方法
+     *
+     * @param orderId 订单id
+     */
+    void orderData(String orderId);
 }

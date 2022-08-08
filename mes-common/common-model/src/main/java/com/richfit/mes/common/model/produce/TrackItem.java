@@ -345,4 +345,11 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "是否是确认工序", dataType = "int")
     private int isNotarize;
+
+    @ApiModelProperty(value = "规则Id", dataType = "String")
+    private String ruleId;
+
+    @ApiModelProperty(value = "规则名称", dataType = "String")
+    private String ruleName;
+
 }

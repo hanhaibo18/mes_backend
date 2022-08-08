@@ -42,10 +42,10 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @ApiModelProperty(value = "质检类型 0-半检 1-全检 2-抽检", dataType = "int")
     private int type;
     /**
-     * 质检结果 0-不合格 1-合格
+     * 质检结果
      */
-    @ApiModelProperty(value = "质检结果 0-不合格 1-合格", dataType = "int")
-    private int result;
+    @ApiModelProperty(value = "质检结果(质检规则Id)", dataType = "int")
+    private String result;
     /**
      * 不合格原因
      */
@@ -140,6 +140,10 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     private String trackNo;
 
     @TableField(exist = false)
-    @ApiModelProperty(value = "下工序绑定", dataType = "NextProcess")
-    private NextProcess nextProcess;
+    @ApiModelProperty(value = "下工序绑定", dataType = "String")
+    private String nextProcess;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理方式", dataType = "String")
+    private String processMode;
 }

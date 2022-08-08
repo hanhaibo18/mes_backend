@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -10,6 +11,7 @@ import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
+import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
@@ -18,6 +20,7 @@ import com.richfit.mes.produce.entity.BatchAddScheduleDto;
 import com.richfit.mes.produce.entity.CountDto;
 import com.richfit.mes.produce.entity.QueryQualityTestingDetailsVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -64,6 +67,10 @@ public class TrackCheckController extends BaseController {
     private NextProcessService nextProcessService;
     @Resource
     private PublicService publicService;
+    @Resource
+    private SystemServiceClient systemServiceClient;
+    @Resource
+    private TrackCompleteService trackCompleteService;
 
     /**
      * ***
@@ -80,7 +87,7 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, boolean isRecheck) {
+    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -89,9 +96,10 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
             }
-            //TODO:复检=再次检查不合格产品
-            if (isRecheck) {
-                queryWrapper.eq("", "不合格状态码");
+            if (Boolean.TRUE.equals(isRecheck)) {
+                queryWrapper.isNotNull("rule_id");
+            } else {
+                queryWrapper.isNull("rule_id");
             }
 //            if (!StringUtils.isNullOrEmpty(isCurrent)) {
 //                queryWrapper.eq("is_current", Integer.parseInt(isCurrent));
@@ -250,79 +258,81 @@ public class TrackCheckController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "批量质检审核", notes = "批量质检审核")
-    @ApiImplicitParam(name = "trackItems", value = "跟单工序项", required = true, dataType = "TrackItem[]", paramType = "query")
-    @PostMapping("/batchAddQuality")
-    @Transactional(rollbackFor = Exception.class)
-    public CommonResult<TrackCheck[]> batchAddQuality(@RequestBody TrackCheck[] trackItems) {
-        boolean bool = true;
-        for (TrackCheck checkitem : trackItems) {
-            if (StringUtils.isNullOrEmpty(checkitem.getTiId())) {
-                return CommonResult.failed("关联工序ID编码不能为空！");
-            } else {
-                TrackItem item = trackItemService.getById(checkitem.getTiId());
-                item.setIsQualityComplete(1);
-                item.setQualityResult(checkitem.getResult());
-                item.setQualityCheckBy(SecurityUtils.getCurrentUser().getUsername());
-                item.setQualityCompleteTime(new Date());
-                item.setQualityQty(checkitem.getQualify());
-                item.setQualityUnqty(item.getBatchQty() - checkitem.getQualify());
-                //如果不需要调度审核，则将工序设置为完成，并激活下个工序
-                if (item.getIsExistScheduleCheck() == 0 && item.getIsQualityComplete() == 1) {
-                    item.setIsFinalComplete("1");
-                    item.setCompleteQty(item.getBatchQty().doubleValue());
-                    this.activeTrackItem(item);
-                }
-                trackItemService.updateById(item);
-                if (!StringUtils.isNullOrEmpty(checkitem.getId())) {
+//    @ApiOperation(value = "批量质检审核", notes = "批量质检审核")
+//    @ApiImplicitParam(name = "trackItems", value = "跟单工序项", required = true, dataType = "TrackItem[]", paramType = "query")
+//    @PostMapping("/batchAddQuality")
+//    @Deprecated
+//    @Transactional(rollbackFor = Exception.class)
+//    public CommonResult<TrackCheck[]> batchAddQuality(@RequestBody TrackCheck[] trackItems) {
+//        boolean bool = true;
+//        for (TrackCheck checkitem : trackItems) {
+//            if (StringUtils.isNullOrEmpty(checkitem.getTiId())) {
+//                return CommonResult.failed("关联工序ID编码不能为空！");
+//            } else {
+//                TrackItem item = trackItemService.getById(checkitem.getTiId());
+//                item.setIsQualityComplete(1);
+//                item.setQualityResult(checkitem.getResult());
+//                item.setQualityCheckBy(SecurityUtils.getCurrentUser().getUsername());
+//                item.setQualityCompleteTime(new Date());
+//                item.setQualityQty(checkitem.getQualify());
+//                item.setQualityUnqty(item.getBatchQty() - checkitem.getQualify());
+//                //如果不需要调度审核，则将工序设置为完成，并激活下个工序
+//                if (item.getIsExistScheduleCheck() == 0 && item.getIsQualityComplete() == 1) {
+//                    item.setIsFinalComplete("1");
+//                    item.setCompleteQty(item.getBatchQty().doubleValue());
+//                    this.activeTrackItem(item);
+//                }
+//                trackItemService.updateById(item);
+//                if (!StringUtils.isNullOrEmpty(checkitem.getId())) {
+//
+//                    checkitem.setModifyTime(new Date());
+//                    trackCheckService.updateById(checkitem);
+//                } else {
+//                    checkitem.setCreateTime(new Date());
+//                    checkitem.setModifyTime(new Date());
+//                    checkitem.setDealBy(SecurityUtils.getCurrentUser().getUserId());
+//                    trackCheckService.save(checkitem);
+//                }
+//
+//            }
+//
+//        }
+//        if (bool) {
+//            return CommonResult.success(trackItems, "操作成功！");
+//        } else {
+//            return CommonResult.failed("操作失败，请重试！");
+//        }
+//
+//    }
+//
+//    @ApiOperation(value = "批量质检审核", notes = "批量质检审核")
+//    @ApiImplicitParam(name = "trackCheckDetails", value = "跟单工序项", required = true, dataType = "TrackCheckDetail[]", paramType = "query")
+//    @PostMapping("/batchAddQualityDetail")
+//    @Deprecated
+//    @Transactional(rollbackFor = Exception.class)
+//    public CommonResult<TrackCheckDetail[]> batchAddQualityDetail(@RequestBody TrackCheckDetail[] trackCheckDetails) {
+//
+//        for (TrackCheckDetail trackCheckDetail : trackCheckDetails) {
+//            if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
+//
+//                List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
+//                if (list.size() > 0) {
+//
+//                    trackCheckDetailService.updateById(trackCheckDetail);
+//                } else {
+//                    trackCheckDetailService.save(trackCheckDetail);
+//                }
+//
+//            } else {
+//                trackCheckDetailService.updateById(trackCheckDetail);
+//            }
+//
+//        }
+//        return CommonResult.success(trackCheckDetails, "操作成功！");
+//
+//    }
 
-                    checkitem.setModifyTime(new Date());
-                    trackCheckService.updateById(checkitem);
-                } else {
-                    checkitem.setCreateTime(new Date());
-                    checkitem.setModifyTime(new Date());
-                    checkitem.setDealBy(SecurityUtils.getCurrentUser().getUserId());
-                    trackCheckService.save(checkitem);
-                }
-
-            }
-
-        }
-        if (bool) {
-            return CommonResult.success(trackItems, "操作成功！");
-        } else {
-            return CommonResult.failed("操作失败，请重试！");
-        }
-
-    }
-
-    @ApiOperation(value = "批量质检审核", notes = "批量质检审核")
-    @ApiImplicitParam(name = "trackCheckDetails", value = "跟单工序项", required = true, dataType = "TrackCheckDetail[]", paramType = "query")
-    @PostMapping("/batchAddQualityDetail")
-    @Transactional(rollbackFor = Exception.class)
-    public CommonResult<TrackCheckDetail[]> batchAddQualityDetail(@RequestBody TrackCheckDetail[] trackCheckDetails) {
-
-        for (TrackCheckDetail trackCheckDetail : trackCheckDetails) {
-            if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
-
-                List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
-                if (list.size() > 0) {
-
-                    trackCheckDetailService.updateById(trackCheckDetail);
-                } else {
-                    trackCheckDetailService.save(trackCheckDetail);
-                }
-
-            } else {
-                trackCheckDetailService.updateById(trackCheckDetail);
-            }
-
-        }
-        return CommonResult.success(trackCheckDetails, "操作成功！");
-
-    }
-
-    @ApiOperation(value = "批量调度审核", notes = "批量调度审核")
+    @ApiOperation(value = "批量调度审核(新)", notes = "批量调度审核")
     @PostMapping("/batchAddSchedule")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> batchAddSchedule(@RequestBody BatchAddScheduleDto batchAddScheduleDto) {
@@ -337,39 +347,47 @@ public class TrackCheckController extends BaseController {
             //正常调度审核业务
             TrackItem trackItem = trackItemService.getById(tiId);
             //如果不需要调度审核，则将工序设置为完成，并激活下个工序
-            if (trackItem.getIsScheduleComplete() == 1) {
-                trackItem.setIsFinalComplete("1");
-                trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
-
-                if (null != SecurityUtils.getCurrentUser()) {
-                    trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-                }
-                trackItem.setScheduleCompleteTime(new Date());
-                this.activeTrackItem(trackItem);
-            }
+//            if (trackItem.getIsScheduleComplete() == 1) {
+//                trackItem.setIsFinalComplete("1");
+//                trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+//
+//                if (null != SecurityUtils.getCurrentUser()) {
+//                    trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+//                }
+//                trackItem.setScheduleCompleteTime(new Date());
+//                this.activeTrackItem(trackItem);
+//            }
             trackItem.setModifyTime(new Date());
             trackItem.setScheduleCompleteTime(new Date());
             trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             trackItem.setScheduleCompleteResult(batchAddScheduleDto.getResult());
             trackItem.setIsPrepare(batchAddScheduleDto.getIsPrepare());
             trackItem.setIsScheduleComplete(1);
+            //查询质检规则
+            UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("ti_id", trackItem.getId()).set("is_prepare", batchAddScheduleDto.getIsPrepare());
+            trackCompleteService.update(updateWrapper);
             //判断工序是否是最后一道工序
-            try {
-                if (0 == trackItem.getNextOptSequence()) {
-                    trackHeadService.trackHeadFinish(trackItem.getFlowId());
-                } else {
-                    trackItem.setIsFinalComplete("1");
-                    trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
-
-                    if (null != SecurityUtils.getCurrentUser()) {
-                        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-                    }
-                    trackItem.setScheduleCompleteTime(new Date());
-                    this.activeTrackItem(trackItem);
-                }
-            } catch (Exception e) {
-                return CommonResult.failed("跟单结束异常");
-            }
+//            try {
+//                if (0 == trackItem.getNextOptSequence()) {
+//                    trackHeadService.trackHeadFinish(trackItem.getFlowId());
+//                } else {
+//                    trackItem.setIsFinalComplete("1");
+//                    trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+//
+//                    if (null != SecurityUtils.getCurrentUser()) {
+//                        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+//                    }
+//                    trackItem.setScheduleCompleteTime(new Date());
+//                    this.activeTrackItem(trackItem);
+//                }
+//            } catch (Exception e) {
+//                return CommonResult.failed("跟单结束异常");
+//            }
+            Map<String, String> map = new HashMap<>(3);
+            map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
+            map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackItem.getId());
+            publicService.publicUpdateState(map, PublicCodeEnum.QUALITY_TESTING.getCode());
             if (null != batchAddScheduleDto.getNextBranchCode()) {
                 trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
             }
@@ -700,23 +718,21 @@ public class TrackCheckController extends BaseController {
                 trackCheck.setTenantId(tenantId);
                 trackCheck.setDealTime(new Date());
                 TrackItem item = trackItemService.getById(trackCheck.getTiId());
-                if (null != trackCheck.getNextProcess() && StringUtils.isNullOrEmpty(trackCheck.getNextProcess().getNextProcessId())) {
-                    queryItem(trackCheck.getNextProcess());
-                    nextProcessService.save(trackCheck.getNextProcess());
+                //处理下工序
+                if (StringUtils.isNullOrEmpty(trackCheck.getNextProcess())) {
+                    saveNextProcess(trackCheck.getNextProcess(), trackCheck.getTiId(), trackCheck.getProcessMode());
                 }
                 item.setIsQualityComplete(1);
-                item.setQualityResult(trackCheck.getResult());
                 item.setQualityCheckBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setQualityCompleteTime(new Date());
                 item.setQualityQty(trackCheck.getQualify());
                 item.setQualityUnqty(item.getBatchQty() - trackCheck.getQualify());
-                //如果不需要调度审核，则将工序设置为完成，并激活下个工序
-                if (item.getIsExistScheduleCheck() == 0 && item.getIsQualityComplete() == 1) {
-                    item.setIsFinalComplete("1");
-                    item.setCompleteQty(item.getBatchQty().doubleValue());
-                    this.activeTrackItem(item);
-                }
-                trackItemService.updateById(item);
+//                //如果不需要调度审核，则将工序设置为完成，并激活下个工序
+//                if (item.getIsExistScheduleCheck() == 0 && item.getIsQualityComplete() == 1) {
+//                    item.setIsFinalComplete("1");
+//                    item.setCompleteQty(item.getBatchQty().doubleValue());
+//                    this.activeTrackItem(item);
+//                }
                 if (!StringUtils.isNullOrEmpty(trackCheck.getId())) {
                     trackCheck.setModifyTime(new Date());
                     trackCheckService.updateById(trackCheck);
@@ -724,10 +740,22 @@ public class TrackCheckController extends BaseController {
                     trackCheck.setCreateTime(new Date());
                     trackCheck.setModifyTime(new Date());
                     trackCheckService.save(trackCheck);
-                    Map<String, String> map = new HashMap<>(3);
-                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackCheck.getThId());
-                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackCheck.getTiId());
-                    publicService.publicUpdateState(map, PublicCodeEnum.QUALITY_TESTING.getCode());
+                    //查询质检规则
+                    CommonResult<QualityInspectionRules> rules = systemServiceClient.queryQualityInspectionRulesById(trackCheck.getResult());
+                    //控制是否下一步
+                    if (1 == rules.getData().getIsNext()) {
+                        Map<String, String> map = new HashMap<>(3);
+                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackCheck.getThId());
+                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackCheck.getTiId());
+                        publicService.publicUpdateState(map, PublicCodeEnum.QUALITY_TESTING.getCode());
+                    }
+                    item.setIsPrepare(rules.getData().getIsGiveTime());
+                    item.setRuleId(rules.getData().getId());
+                    item.setRuleName(rules.getData().getStateName());
+                    trackItemService.updateById(item);
+                    UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.eq("ti_id", item.getId()).set("is_prepare", rules.getData().getIsGiveTime());
+                    trackCompleteService.update(updateWrapper);
                 }
                 //处理审核详情信息
                 if (null != trackCheck.getCheckDetailsList()) {
@@ -753,15 +781,26 @@ public class TrackCheckController extends BaseController {
         return CommonResult.success(Boolean.TRUE);
     }
 
-    private void queryItem(NextProcess nextProcess) {
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_head_id", nextProcess.getTrackHeadId());
-        queryWrapper.eq("opt_sequence", nextProcess.getOptSequence());
-        TrackItem trackItem = trackItemService.getOne(queryWrapper);
+    //下工序保存数据
+    private boolean saveNextProcess(String nextProcessNumber, String tiId, String processMode) {
+        //获取当前工序
+        TrackItem trackItem = trackItemService.getById(tiId);
         trackItem.setIsNotarize(1);
         trackItem.setIsExistQualityCheck(1);
         trackItemService.updateById(trackItem);
+        //获取下工序
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
+        queryWrapper.eq("original_opt_sequence", nextProcessNumber);
+        TrackItem nextTrackItem = trackItemService.getOne(queryWrapper);
+
+        NextProcess nextProcess = new NextProcess();
+        nextProcess.setCurrentProcessId(tiId);
+        nextProcess.setProcessName(nextTrackItem.getOptName());
+        nextProcess.setNextProcessId(nextTrackItem.getId());
+        return nextProcessService.save(nextProcess);
     }
+
 
     @ApiOperation(value = "查询质检审核条件详情信息(新)", notes = "查询质检审核条件详情信息(新)")
     @ApiImplicitParams({
@@ -769,6 +808,7 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/queryQualityTestingDetails")
+
     public CommonResult<QueryQualityTestingDetailsVo> queryQualityTestingDetails(String optId, String branchCode) {
         //检查内容 质量资料
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
