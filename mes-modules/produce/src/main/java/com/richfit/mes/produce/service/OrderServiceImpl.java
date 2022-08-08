@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.produce.dao.OrderMapper;
+import com.richfit.mes.produce.dao.TrackFlowMapper;
 import com.richfit.mes.produce.entity.OrderDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -29,6 +33,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Autowired
     OrderMapper orderMapper;
+
+    @Autowired
+    TrackFlowMapper trackFlowMapper;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -87,6 +94,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         IPage<Order> planList = orderMapper.queryOrderList(orderPage, orderDto);
 
         return planList.getRecords().size() > 0 ? planList.getRecords().get(0) : null;
+    }
+
+    @Override
+    public void orderData(String orderId) {
+        Map map = new HashMap();
+        map.put("production_order_id", orderId);
+        List<TrackFlow> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
+        int numberComplete = 0;
+        for (TrackFlow trackFlow : trackFlowList) {
+            if ("2".equals(trackFlow.getStatus())) {
+                numberComplete++;
+            }
+        }
+        Order order = orderMapper.queryOrder(orderId);
+        order.setStoreNum(numberComplete);
+        if (order.getOrderNum() == order.getStoreNum()) {
+            //数量完成时，老mes没有关于这部分的状态管理，新mes根据后期业务是否加入
+        }
+        orderMapper.updateById(order);
     }
 
 
