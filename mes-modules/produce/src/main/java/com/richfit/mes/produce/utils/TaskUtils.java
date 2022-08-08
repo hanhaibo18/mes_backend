@@ -58,29 +58,15 @@ public class TaskUtils {
         if (StringUtils.isEmpty(userName)){
             init();
         }
-        Date date = materialReceiveService.getlastTime();
+        String date = materialReceiveService.getlastTime();
         List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, url , date);
         List<MaterialReceiveDetail> receiveDetails = jdbcQuickstart2(userName, password, url , date);
         materialReceiveService.saveBatch(materialReceiveList);
         materialReceiveDetailService.saveBatch(receiveDetails);
     }
 
-    public void test() throws SQLException, ClassNotFoundException {
-        if (StringUtils.isEmpty(userName)){
-            init();
-        }
-        Date date = materialReceiveService.getlastTime();
-        List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, url , date);
-        List<MaterialReceiveDetail> receiveDetails = new ArrayList<>();
-        materialReceiveList.forEach(i -> {
-            receiveDetails.addAll(i.getReceiveDetails());
-        });
-        materialReceiveService.saveBatch(materialReceiveList);
-        materialReceiveDetailService.saveBatch(receiveDetails);
-    }
 
-
-    public List<MaterialReceive> jdbcQuickstart(String userName, String password, String url, Date time) throws ClassNotFoundException, SQLException {
+    public List<MaterialReceive> jdbcQuickstart(String userName, String password, String url, String time) throws ClassNotFoundException, SQLException {
         List<MaterialReceive> materialReceiveList = new ArrayList<>();
         // 1、注册驱动
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -91,7 +77,7 @@ public class TaskUtils {
         if (StringUtils.isEmpty(time)){
             sql = "select * from v_mes_out_headers";
         } else {
-            sql = "select * from v_mes_out_headers where CREATE_TIME > "+time;
+            sql = "select * from v_mes_out_headers where CREATE_TIME >" +  "' "+ time + "'";
         }
         // 4、获取执行sql的对象
         Statement stmt = conn.createStatement();
@@ -118,7 +104,7 @@ public class TaskUtils {
         return  materialReceiveList;
     }
 
-    public List<MaterialReceiveDetail> jdbcQuickstart2(String userName, String password,String url, Date time) throws ClassNotFoundException, SQLException {
+    public List<MaterialReceiveDetail> jdbcQuickstart2(String userName, String password,String url, String time) throws ClassNotFoundException, SQLException {
         // 1、注册驱动
         Class.forName("com.mysql.cj.jdbc.Driver");
         // 2、获取数据库连接对象
@@ -128,7 +114,7 @@ public class TaskUtils {
         if (StringUtils.isEmpty(time)) {
             sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM";
         } else {
-            sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + time;
+            sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" +  "' "+ time + "'";
         }
         // 4、获取执行sql的对象
         Statement stmt = conn.createStatement();
