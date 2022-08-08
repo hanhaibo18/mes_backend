@@ -245,4 +245,18 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @param trackFlowNew 新跟单产品列表
      */
     void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
+
+    /**
+     * 功能描述: 跟单id查询分流（生产线）List
+     *
+     * @param trackHead 回收的跟单信息
+     */
+    void trackHeadSplitBack(TrackHead trackHead);
+
+    /**
+     * 功能描述: 跟单id查询分流（生产线）List
+     *
+     * @param trackHeadId 跟单id
+     */
+    List<TrackFlow> trackFlowList(String trackHeadId);
 }

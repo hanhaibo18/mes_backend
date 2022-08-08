@@ -1,8 +1,11 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.Update;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,6 +21,7 @@ import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.PlanDto;
+import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -26,10 +30,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author: GaoLiang
@@ -285,8 +291,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
-                //"L".equals(pb.getGrade()) &&  是否过滤H零件
-                if ("1".equals(pb.getIsCheck())) {
+                //是否过滤H零件
+                if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
                     if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                         if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                             ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
@@ -432,8 +438,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     /*
-    status 0:无关联跟单  1：有关联跟单，跟单中数量之和<计划数量  2：跟单中数量之和 = 计划数量
-     */
+        status 0:无关联跟单  1：有关联跟单，跟单中数量之和<计划数量  2：跟单中数量之和 = 计划数量
+         */
     @Override
     public boolean updatePlanStatus(String projCode, String tenantId) {
 
@@ -590,4 +596,105 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
 
     }
+
+
+    /**
+     * 拆分计划
+     * @param planSplitDto
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Object> splitPlan(PlanSplitDto planSplitDto) {
+        //原计划
+        Plan orldPlan = planSplitDto.getOrldPlan();
+        //拆分计划
+        Plan newPlan = planSplitDto.getNewPlan();
+
+        if (StringUtils.hasText(orldPlan.getId())) {
+            //根据id查询父计划
+            Plan  parentPlan = planMapper.selectById(orldPlan.getId());
+
+            if (!ObjectUtil.isEmpty(parentPlan)) {
+                if (newPlan.getProjNum() > parentPlan.getProjNum()) {
+                    return CommonResult.failed("拆分计划数量超出未计划数量");
+                }
+            }
+            //构造新拆分计划
+            Plan plan = new Plan();
+            BeanUtil.copyProperties(parentPlan,plan,new String[]{"id"});
+            //构造拆分计划
+            plan.setOriginalPlanId(parentPlan.getId());
+            plan.setOriginalProjCode(parentPlan.getOriginalProjCode());
+            //数量清空
+            plan.setTrackHeadFinishNumber(0);
+            plan.setTrackHeadNumber(0);
+            plan.setProcessNum(0);
+            plan.setDeliveryNum(0);
+            plan.setOptFinishNumber(0);
+            plan.setOptNumber(0);
+            plan.setProjNum(newPlan.getProjNum());
+            plan.setStartTime(newPlan.getStartTime());
+            plan.setEndTime(newPlan.getEndTime());
+            plan.setProjCode(newPlan.getProjCode());
+            if(ObjectUtil.isEmpty(newPlan.getTrackHeadIds())){
+                plan.setTrackHeadNumber(newPlan.getTrackHeadIds().size());
+            }
+
+            //修改父计划的计划数量
+            UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
+            planUpdateWrapper
+                    .eq("id",parentPlan.getId())
+                    .set("proj_num",orldPlan.getProjNum())
+                    .set("track_head_number",parentPlan.getTrackHeadNumber()-newPlan.getTrackHeadIds().size());
+            this.update(planUpdateWrapper);
+            //保存拆分计划
+            this.save(plan);
+
+            //保存跟单计划
+            if(!ObjectUtil.isEmpty(newPlan.getTrackHeadIds())){
+                //替换计划id
+                UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+                trackHeadUpdateWrapper.in("id",newPlan.getTrackHeadIds())
+                        .set("work_plan_id",plan.getId());
+                trackHeadService.update(trackHeadUpdateWrapper);
+            }
+        }
+        return CommonResult.success(null);
+    }
+
+    /**
+     * 撤销拆分
+     * @param id
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Object> backoutPlan(String id) {
+        //校验
+        Plan  currPlan = planMapper.selectById(id);
+        if(!ObjectUtil.isEmpty(currPlan) && !ObjectUtil.isEmpty(currPlan.getOriginalPlanId())){
+            //合并到源计划
+            Plan plan = planMapper.selectById(currPlan.getOriginalPlanId());
+            UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
+            planUpdateWrapper.eq("id",currPlan.getOriginalPlanId())
+                    .set("proj_num",currPlan.getProjNum()+plan.getProjNum())
+                    .set("track_head_number",currPlan.getTrackHeadNumber()+plan.getTrackHeadNumber());
+            this.update(planUpdateWrapper);
+            //查询要合并的跟单
+            QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
+            List<TrackHead> trackHeads = trackHeadService.list(trackHeadQueryWrapper.eq("work_plan_id", currPlan.getId()));
+            List<String> workPlanIds = new ArrayList<>(trackHeads.stream().collect(Collectors.toMap(TrackHead::getId, TrackHead::getId)).values());
+
+            //跟单合并
+            UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+            trackHeadUpdateWrapper.in("id",workPlanIds)
+                    .set("work_plan_id",plan.getId());
+            trackHeadService.update(trackHeadUpdateWrapper);
+            //删除该计划
+            this.removeById(id);
+        }
+        return CommonResult.success(null);
+    }
+
 }

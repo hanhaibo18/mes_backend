@@ -29,12 +29,17 @@ public class MaterialReceive extends BaseEntity<MaterialReceive> {
     /**
      * 配送单号
      */
-    private String delieveryNo;
+    private String deliveryNo;
 
     /**
      * 出库时间
      */
     private String outboundDate;
+
+    /**
+     * 状态 0待接收 1已接收 2已拒收
+     */
+    private String state;
 
 
 

@@ -27,14 +27,14 @@ public class QualityInspectionRules extends BaseEntity<QualityInspectionRules> {
     /**
      * 是否给予工时
      */
-    @ApiModelProperty(value = "是否给予工时", dataType = "String")
-    private String isGiveTime;
+    @ApiModelProperty(value = "是否给予工时", dataType = "int")
+    private int isGiveTime;
 
     /**
      * 是否下一步
      */
-    @ApiModelProperty(value = "是否下一步", dataType = "String")
-    private String isNext;
+    @ApiModelProperty(value = "是否下一步", dataType = "int")
+    private int isNext;
 
     private String tenantId;
 

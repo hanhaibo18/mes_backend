@@ -3,6 +3,7 @@ package com.richfit.mes.produce.provider.fallback;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Component;
@@ -71,6 +72,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
                                           String branchCode,
                                           String tenantId) {
         return null;
+    }
+
+    @Override
+    public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(String id) {
+        return CommonResult.success(null);
     }
 
 

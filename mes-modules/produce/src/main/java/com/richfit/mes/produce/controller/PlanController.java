@@ -12,12 +12,15 @@ import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Plan;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
+import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanService;
+import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -48,6 +51,9 @@ public class PlanController extends BaseController {
 
     @Autowired
     private ActionService actionService;
+
+    @Autowired
+    private TrackHeadService trackHeadService;
 
     /**
      * 分页查询plan
@@ -249,4 +255,35 @@ public class PlanController extends BaseController {
     public CommonResult<Object> completeness_list(@RequestBody List<Plan> planList) throws GlobalException {
         return CommonResult.success(planService.completeness_list(planList));
     }
+
+    /**
+     * 拆分计划
+     */
+    @ApiOperation(value = "拆分计划", notes = "拆分计划")
+    @ApiImplicitParam(name = "planSplitDto", value = "原计划", required = true, dataType = "PlanSplitDto", paramType = "body")
+    @PostMapping("/splitPlan")
+    public CommonResult<Object> splitPlan(@RequestBody PlanSplitDto planSplitDto) throws GlobalException {
+        return planService.splitPlan(planSplitDto);
+    }
+
+    /**
+     * 根据计划id查询所有的跟单信息
+     */
+    @ApiOperation(value = "根据计划id查询所有的跟单信息", notes = "根据计划id查询所有的跟单信息")
+    @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
+    @GetMapping("/queryTrackHeadListByPlanId/{id}")
+    public CommonResult<Object> queryTrackHeadListByPlanId(@PathVariable String id) throws GlobalException {
+        return CommonResult.success(trackHeadService.list(new QueryWrapper<TrackHead>().eq("work_plan_id",id)));
+    }
+
+    /**
+     * 撤销计划
+     */
+    @ApiOperation(value = "撤销计划", notes = "撤销计划")
+    @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
+    @GetMapping("/backoutPlan/{id}")
+    public CommonResult<Object> backoutPlan(@PathVariable String id) throws GlobalException {
+        return CommonResult.success(planService.backoutPlan(id));
+    }
+
 }

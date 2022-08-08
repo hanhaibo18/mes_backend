@@ -61,18 +61,26 @@ public class TemplatePrintController extends BaseController {
     @Autowired
     private TrackHeadService trackHeadService;
 
-    @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
+    /**
+     * 功能描述: 按跟单模板编码生成跟单模板EXCEL
+     *
+     * @Author: mafeng
+     * @Date: 2022-2-14
+     **/
+    @ApiOperation(value = "按跟单模板编码生成跟单模板EXCEL", notes = "按跟单模板编码生成跟单模板EXCEL")
     @GetMapping("/query")
     public void getByTemplateCode(@ApiParam(value = "跟单id", required = true) @RequestParam String id,
                                   @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                   @ApiIgnore HttpServletResponse rsp) throws IOException {
         try {
+            // 获取跟单
             TrackHead trackHead = trackHeadService.getById(id);
             QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
             queryWrapper.like("template_code", trackHead.getTemplateCode());
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.like("branch_code", branchCode);
             }
+            //获取跟单模板配置信息
             List<ProduceTrackHeadTemplate> trackHeadTemplates = produceTrackHeadTemplateService.list(queryWrapper);
             ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
             String sql1 = p.getSheet1();
@@ -85,7 +93,9 @@ public class TemplatePrintController extends BaseController {
             List<List<Map<String, Object>>> sheets = new ArrayList();
             List<Map<String, Object>> list = new ArrayList();
             List<Map<String, Object>> list2 = new ArrayList();
+            // 根据配置SQL，获取SHEET1表数据
             if (null != sql1 && sql1.contains("call")) {
+                // 如果包含CALL，则只需存储过程
                 list = (List) jdbcTemplate.execute(
                         new CallableStatementCreator() {
                             @Override
@@ -116,10 +126,12 @@ public class TemplatePrintController extends BaseController {
                             }
                         });
             } else if (null != sql1) {
+                // 如果不包含CALL，则执行SQL 查询
                 list = jdbcTemplate.queryForList(String.format(sql1, id));
             } else {
 
             }
+            // 根据配置SQL，获取SHEET2表数据
             if (null != sql2 && sql1.contains("call")) {
                 list = (List) jdbcTemplate.execute(
                         new CallableStatementCreator() {
@@ -157,6 +169,7 @@ public class TemplatePrintController extends BaseController {
             }
             sheets.add(list);
             sheets.add(list2);
+            // 生成EXCEL文件，并输出文件流
             try {
                 // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
                 //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);

@@ -3,6 +3,7 @@ package com.richfit.mes.produce.provider;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.SystemServiceClientFallbackImpl;
@@ -55,5 +56,6 @@ public interface SystemServiceClient {
                                           @RequestParam("branchCode") String branchCode,
                                           @RequestParam("tenantId") String tenantId);
 
-
+    @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesById")
+    public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(@RequestParam("id") String id);
 }
