@@ -31,6 +31,7 @@ public class TaskUtils {
 
     private String userName = "";
     private String password = "";
+    private String url = "";
 
     @Autowired
     MaterialReceiveService materialReceiveService;
@@ -44,8 +45,9 @@ public class TaskUtils {
 
     public void init(){
         List<ItemParam> list = systemServiceClient.selectItemClass(code,"",SecurityConstants.FROM_INNER).getData();
-        password = list.get(0).getLabel();
-        userName = list.get(1).getLabel();
+        url =  list.get(0).getLabel();
+        password = list.get(1).getLabel();
+        userName = list.get(2).getLabel();
     }
 
 
@@ -57,8 +59,8 @@ public class TaskUtils {
             init();
         }
         Date date = materialReceiveService.getlastTime();
-        List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, date);
-        List<MaterialReceiveDetail> receiveDetails = jdbcQuickstart2(userName, password, date);
+        List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, url , date);
+        List<MaterialReceiveDetail> receiveDetails = jdbcQuickstart2(userName, password, url , date);
         materialReceiveService.saveBatch(materialReceiveList);
         materialReceiveDetailService.saveBatch(receiveDetails);
     }
@@ -68,7 +70,7 @@ public class TaskUtils {
             init();
         }
         Date date = materialReceiveService.getlastTime();
-        List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, date);
+        List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, url , date);
         List<MaterialReceiveDetail> receiveDetails = new ArrayList<>();
         materialReceiveList.forEach(i -> {
             receiveDetails.addAll(i.getReceiveDetails());
@@ -78,12 +80,12 @@ public class TaskUtils {
     }
 
 
-    public List<MaterialReceive> jdbcQuickstart(String userName, String password, Date time) throws ClassNotFoundException, SQLException {
+    public List<MaterialReceive> jdbcQuickstart(String userName, String password, String url, Date time) throws ClassNotFoundException, SQLException {
         List<MaterialReceive> materialReceiveList = new ArrayList<>();
         // 1、注册驱动
         Class.forName("com.mysql.cj.jdbc.Driver");
         // 2、获取数据库连接对象
-        Connection conn = DriverManager.getConnection("jdbc:mysql://11.11.209.206:8001/bsj?serverTimezone=UTC&&user="+userName+"&&password="+password);
+        Connection conn = DriverManager.getConnection("jdbc:mysql://"+url+"/bsj?serverTimezone=UTC&&user="+userName+"&&password="+password);
         // 3、定义sql
         String sql = null;
         if (StringUtils.isEmpty(time)){
@@ -116,11 +118,11 @@ public class TaskUtils {
         return  materialReceiveList;
     }
 
-    public List<MaterialReceiveDetail> jdbcQuickstart2(String userName, String password, Date time) throws ClassNotFoundException, SQLException {
+    public List<MaterialReceiveDetail> jdbcQuickstart2(String userName, String password,String url, Date time) throws ClassNotFoundException, SQLException {
         // 1、注册驱动
         Class.forName("com.mysql.cj.jdbc.Driver");
         // 2、获取数据库连接对象
-        Connection conn = DriverManager.getConnection("jdbc:mysql://11.11.209.206:8001/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
+        Connection conn = DriverManager.getConnection("jdbc:mysql://"+url+"/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
         // 3、定义sql
         String sql = null;
         if (StringUtils.isEmpty(time)) {

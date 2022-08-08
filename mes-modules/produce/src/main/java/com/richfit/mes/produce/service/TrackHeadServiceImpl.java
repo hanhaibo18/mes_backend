@@ -68,6 +68,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     private PlanService planService;
 
     @Autowired
+    private OrderService orderService;
+
+    @Autowired
     private CodeRuleController codeRuleController;
 
     @Autowired
@@ -734,12 +737,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 lineStore.setStatus("0");
                 lineStoreService.updateById(lineStore);
             }
+            //更新跟单动作
+            trackHeadMapper.updateById(trackHead);
+
             //计划数据更新
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                 planService.planData(trackHead.getWorkPlanId());
             }
-            //更新跟单动作
-            trackHeadMapper.updateById(trackHead);
+            if (!StringUtils.isNullOrEmpty(trackHead.getProductionOrderId())) {
+                orderService.orderData(trackHead.getProductionOrderId());
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("跟单完成操作失败");

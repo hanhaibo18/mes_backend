@@ -320,6 +320,68 @@ public class RouterController extends BaseController {
 
     }
 
+    /**
+     * @author mafeng
+     * @date 2022-08-08 10:31:00
+     */
+    @ApiOperation(value = "复制工艺", notes = "复制工艺")
+    @PostMapping("/copy")
+    public CommonResult<Router> importExcel2(String routerId, String tenantId, String branchCode) {
+
+
+        if (!StringUtils.isNullOrEmpty(routerId)) {
+            // 查询工艺和工艺路径
+            QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+            queryWrapper.eq("id", routerId);
+            List<Router> routers = routerService.list(queryWrapper);
+
+            QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.eq("router_id", routerId);
+            List<Sequence> sequences = sequenceService.list(queryWrapper2);
+
+            // 复制工艺，名字加复制
+            Router r = routers.get(0);
+            r.setId("");
+            String copyName = r.getRouterName() + "复制";
+            r.setCreateTime(new Date());
+            r.setModifyTime(new Date());
+            r.setIsActive("1");
+
+            if (null != SecurityUtils.getCurrentUser()) {
+
+                r.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                r.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            }
+            r.setRouterName(copyName);
+            routerService.save(r);
+
+            //查询新工艺ID
+            QueryWrapper<Router> queryWrapper3 = new QueryWrapper<Router>();
+            queryWrapper3.eq("router_name", copyName);
+            queryWrapper3.eq("branch_code", routers.get(0).getBranchCode());
+            List<Router> copyRouters = routerService.list(queryWrapper3);
+            String copyRouterId = copyRouters.get(0).getId();
+
+            // 复制工艺路径
+            for (int i = 0; i < sequences.size(); i++) {
+                sequences.get(i).setRouterId(copyRouterId);
+                sequences.get(i).setId("");
+                sequences.get(i).setCreateTime(new Date());
+                sequences.get(i).setModifyTime(new Date());
+                if (null != SecurityUtils.getCurrentUser()) {
+                    sequences.get(i).setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    sequences.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+            }
+            sequenceService.saveBatch(sequences);
+            return CommonResult.success(r);
+
+        } else {
+            return CommonResult.failed("失败!找不到要复制的工艺");
+        }
+    }
+
+
     @ApiOperation(value = "导入工艺", notes = "根据Excel文档导入工艺")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "query")
     @PostMapping("/import_excel2")

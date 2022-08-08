@@ -32,7 +32,7 @@ import java.util.List;
 @Slf4j
 @Api(tags = "物料接收(装配)")
 @RestController
-@RequestMapping("/api/produce/material_recreive")
+@RequestMapping("/api/produce/material_receive")
 public class MaterialReceiveController extends BaseController {
 
     @Autowired
