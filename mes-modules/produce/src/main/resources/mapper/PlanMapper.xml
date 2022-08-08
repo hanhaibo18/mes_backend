@@ -92,4 +92,14 @@
         where plan_id = #{planId};
     </select>
 
+    <select id="findByPlanId" resultType="com.richfit.mes.common.model.produce.Plan">
+        SELECT child.planned_number,orgin.*
+        FROM produce_plan orgin
+        LEFT JOIN ( SELECT sum( proj_num ) as planned_number , original_plan_id FROM produce_plan GROUP BY original_plan_id ) child ON orgin.id = child.original_plan_id
+        WHERE
+	    orgin.id = #{id}
+	    AND orgin.tenant_id = #{tenantId}
+    </select>
+
+
 </mapper>
