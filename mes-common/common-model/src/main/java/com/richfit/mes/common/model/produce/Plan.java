@@ -223,6 +223,9 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     private int plannedNumber;
 
+    /**
+     * 跟单ids
+     */
     @TableField(exist = false)
     private List<String> trackHeadIds;
 

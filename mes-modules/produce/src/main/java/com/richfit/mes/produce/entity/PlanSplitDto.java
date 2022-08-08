@@ -14,7 +14,7 @@ import lombok.Data;
 @Data
 public class PlanSplitDto {
    //原计划
-   private Plan orldPlan;
+   private Plan oldPlan;
    //拆分计划
    private Plan newPlan;
 }
