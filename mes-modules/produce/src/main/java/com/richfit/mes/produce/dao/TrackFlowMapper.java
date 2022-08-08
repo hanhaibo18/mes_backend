@@ -32,6 +32,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " <if test='templateCode != null and templateCode != \"\"'> " +
             "  and template_code = #{templateCode} " +
             " </if> " +
+            " <if test='rollStatus != null and rollStatus != \"\"'> " +
+            "  and status > 0 " +
+            " </if> " +
             " <if test='status != null and status != \"\"'> " +
             "  and status = #{status} " +
             " </if> " +
