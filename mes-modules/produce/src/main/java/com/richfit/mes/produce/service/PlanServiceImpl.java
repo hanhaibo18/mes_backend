@@ -626,22 +626,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             //构造拆分计划
             plan.setOriginalPlanId(parentPlan.getId());
             plan.setOriginalProjCode(parentPlan.getOriginalProjCode());
-           /* //数量清空
-            plan.setTrackHeadFinishNumber(0);
-            plan.setTrackHeadNumber(0);
-            plan.setProcessNum(0);
-            plan.setDeliveryNum(0);
-            plan.setOptFinishNumber(0);
-            plan.setOptNumber(0);*/
             plan.setProjNum(newPlan.getProjNum());
             plan.setStartTime(newPlan.getStartTime());
             plan.setEndTime(newPlan.getEndTime());
             plan.setProjCode(newPlan.getProjCode());
-            /*if(!ObjectUtil.isEmpty(newPlan.getTrackHeadIds())){
-                plan.setTrackHeadNumber(newPlan.getTrackHeadIds().size());
-            }*/
 
-            //修改父计划的计划数量、跟单数量
+            //修改父计划的计划数量
             UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
             planUpdateWrapper
                     .eq("id",parentPlan.getId())

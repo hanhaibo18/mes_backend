@@ -283,7 +283,7 @@ public class PlanController extends BaseController {
     @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
     @GetMapping("/backoutPlan/{id}")
     public CommonResult<Object> backoutPlan(@PathVariable String id) throws GlobalException {
-        return CommonResult.success(planService.backoutPlan(id));
+        return planService.backoutPlan(id);
     }
 
 }
