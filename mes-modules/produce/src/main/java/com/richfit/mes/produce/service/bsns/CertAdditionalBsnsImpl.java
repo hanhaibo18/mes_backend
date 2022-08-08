@@ -5,6 +5,7 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.ErpServiceClient;
@@ -51,6 +52,13 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
             wmsServiceClient.sendJkInfo(certificate);
 
+            pushWorkHour(certificate);
+        }
+    }
+
+    @Override
+    public void pushWorkHour(Certificate certificate) {
+        if(certificate != null) {
             //erp工时推送
             String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
 
@@ -64,7 +72,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
                 TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
 
-                List trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
+                List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
 
                 CommonResult<Boolean> b = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), certificate.getNumber(), unit);
 

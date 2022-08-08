@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * <p>
  * 前端控制器
@@ -77,6 +79,15 @@ public class ProduceTrackHeadTemplateController {
         } else {
             return CommonResult.failed("操作失败，请重试！");
         }
+    }
+
+    /**
+     * 新增操作信息
+     */
+    @ApiOperation(value = "新增信息", notes = "新增信息")
+    @PostMapping("/batchSave")
+    public CommonResult<Boolean> batchSaveProduceTrackHeadTemplate(@RequestBody List<ProduceTrackHeadTemplate> templates) {
+        return CommonResult.success(produceTrackHeadTemplateService.saveBatch(templates), "操作成功！");
     }
 
 

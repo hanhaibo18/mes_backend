@@ -123,6 +123,18 @@ public class CodeRuleController extends BaseController {
         return CommonResult.success(codeRuleService.save(entity));
     }
 
+    @ApiOperation(value = "批量新增编码规则", notes = "批量新增编码规则")
+    @PostMapping("/batchSave")
+    public CommonResult<Boolean> batchSaveCodeRule(@RequestBody List<CodeRule> rules) throws GlobalException {
+        return CommonResult.success(codeRuleService.saveBatch(rules));
+    }
+
+    @ApiOperation(value = "批量新增编码规则项", notes = "批量新增编码规则项")
+    @PostMapping("/item/batchSave")
+    public CommonResult<Boolean> batchSaveCodeRuleItem(@RequestBody List<CodeRuleItem> items) throws GlobalException {
+        return CommonResult.success(codeRuleItemService.saveBatch(items));
+    }
+
     @ApiOperation(value = "修改编码规则", notes = "修改编码规则")
     @PostMapping("/update")
     public CommonResult<Boolean> updateCodeRule(@RequestBody CodeRule entity) throws GlobalException {

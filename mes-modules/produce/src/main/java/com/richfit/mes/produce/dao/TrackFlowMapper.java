@@ -23,6 +23,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
      **/
     @Select("<script>" +
             " select * from v_produce_track_head_flow where 1=1 " +
+            " <if test='id != null and id != \"\"'> " +
+            "  and id = #{id} " +
+            " </if> " +
             " <if test='startDate != null and startDate != \"\"'> " +
             "  and create_time &gt;= #{startDate} " +
             " </if> " +
@@ -31,6 +34,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " </if> " +
             " <if test='templateCode != null and templateCode != \"\"'> " +
             "  and template_code = #{templateCode} " +
+            " </if> " +
+            " <if test='rollStatus != null and rollStatus != \"\"'> " +
+            "  and status > 0 " +
             " </if> " +
             " <if test='status != null and status != \"\"'> " +
             "  and status = #{status} " +
@@ -52,6 +58,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " </if> " +
             " <if test='productionOrder != null and productionOrder != \"\"'> " +
             "  and production_order like concat('%',#{productionOrder},'%') " +
+            " </if> " +
+            " <if test='workPlanId != null and workPlanId != \"\"'> " +
+            "  and work_plan_id = #{workPlanId} " +
             " </if> " +
             " <if test='branchCode != null and branchCode != \"\"'> " +
             "  and branch_code = #{branchCode} " +

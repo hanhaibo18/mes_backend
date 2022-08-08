@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: GaoLiang
@@ -207,4 +208,22 @@ public class Plan extends BaseEntity<Plan> {
      * 材质
      */
     private String texture;
+
+    /**
+     * 原计划id
+     */
+    private String originalPlanId;
+    /**
+     * 原计划编号
+     */
+    private String originalProjCode;
+    /**
+     * 已拆分数量
+     */
+    @TableField(exist = false)
+    private int plannedNumber;
+
+    @TableField(exist = false)
+    private List<String> trackHeadIds;
+
 }

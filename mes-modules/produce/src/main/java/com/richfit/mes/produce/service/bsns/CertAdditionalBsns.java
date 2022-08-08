@@ -10,4 +10,6 @@ public interface CertAdditionalBsns {
 
     public void doAdditionalBsns(Certificate certificate);
 
+    void pushWorkHour(Certificate certificate);
+
 }
