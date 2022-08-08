@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.produce.entity.PlanDto;
+import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 
@@ -98,8 +99,15 @@ public interface PlanService extends IService<Plan> {
 
     /**
      * 拆分计划
-     * @param plan
+     * @param planSplitDto
      * @return
      */
-    CommonResult<Object> splitPlan(Plan plan);
+    CommonResult<Object> splitPlan(PlanSplitDto planSplitDto);
+
+    /**
+     * 拆分计划
+     * @param id
+     * @return
+     */
+    CommonResult<Object> backoutPlan(String id);
 }

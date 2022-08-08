@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: GaoLiang
@@ -221,5 +222,8 @@ public class Plan extends BaseEntity<Plan> {
      */
     @TableField(exist = false)
     private int plannedNumber;
+
+    @TableField(exist = false)
+    private List<String> trackHeadIds;
 
 }
