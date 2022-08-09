@@ -19,6 +19,7 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
@@ -44,7 +45,11 @@ import java.util.Map;
 public class PlanController extends BaseController {
 
     @Autowired
-    PlanService planService;
+    private PlanService planService;
+
+    @Autowired
+    private PlanOptWarningService planOptWarningService;
+
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -97,7 +102,7 @@ public class PlanController extends BaseController {
             @ApiImplicitParam(name = "queryDto", value = "计划属性", paramType = "BasePageDto")
     })
     @GetMapping("/page")
-    public CommonResult page(BasePageDto<String> queryDto) throws GlobalException {
+    public CommonResult page(BasePageDto<String> queryDto) throws Exception {
         PlanDto planDto = null;
         try {
             planDto = objectMapper.readValue(queryDto.getParam(), PlanDto.class);
@@ -138,9 +143,13 @@ public class PlanController extends BaseController {
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
+        for (Plan plan : planList.getRecords()) {
+            if (plan.getTrackHeadNumber() > 0) {
+                planOptWarningService.warning(plan);
+            }
+        }
         return CommonResult.success(planList);
     }
-
 
     /**
      * 新增计划
@@ -273,7 +282,7 @@ public class PlanController extends BaseController {
     @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
     @GetMapping("/queryTrackHeadListByPlanId/{id}")
     public CommonResult<Object> queryTrackHeadListByPlanId(@PathVariable String id) throws GlobalException {
-        return CommonResult.success(trackHeadService.list(new QueryWrapper<TrackHead>().eq("work_plan_id",id)));
+        return CommonResult.success(trackHeadService.list(new QueryWrapper<TrackHead>().eq("work_plan_id", id)));
     }
 
     /**

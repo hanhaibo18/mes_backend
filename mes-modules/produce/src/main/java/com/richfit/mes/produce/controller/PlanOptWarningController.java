@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @Author: zhiqiang.lu
@@ -39,11 +40,12 @@ public class PlanOptWarningController extends BaseController {
 
     @ApiOperation(value = "保存&更新", notes = "工序预警保存&更新")
     @PostMapping("/save_or_update")
-    public void saveOrUpdate(@ApiParam(value = "工序预警信息", required = true) @RequestParam List<PlanOptWarning> planOptWarningList) throws Exception {
+    public void saveOrUpdate(@ApiParam(value = "工序预警信息", required = true) @RequestBody List<PlanOptWarning> planOptWarningList) throws Exception {
         for (PlanOptWarning planOptWarning : planOptWarningList) {
-            if (!StringUtils.isNullOrEmpty(planOptWarning.getDateWarning())) {
-                planOptWarningService.saveOrUpdate(planOptWarning);
+            if (StringUtils.isNullOrEmpty(planOptWarning.getId())) {
+                planOptWarning.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             }
+            planOptWarningService.saveOrUpdate(planOptWarning);
         }
     }
 }
