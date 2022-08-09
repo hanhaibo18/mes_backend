@@ -60,6 +60,7 @@ interface:
 
 time:
   push_router: "0 12 10 * * ? "
+  push_router_enabled: false
 task-date:
   start_router: "2022-01-01"
 secure:
