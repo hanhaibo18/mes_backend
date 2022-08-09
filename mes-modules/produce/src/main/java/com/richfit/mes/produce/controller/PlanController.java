@@ -262,6 +262,7 @@ public class PlanController extends BaseController {
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
     @PostMapping("/completeness/list")
     public CommonResult<Object> completeness_list(@RequestBody List<Plan> planList) throws GlobalException {
+        System.out.println("-------------------------");
         return CommonResult.success(planService.completeness_list(planList));
     }
 
