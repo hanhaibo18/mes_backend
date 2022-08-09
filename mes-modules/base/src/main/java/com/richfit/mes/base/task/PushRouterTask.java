@@ -39,24 +39,29 @@ public class PushRouterTask {
     @Value("${task-date.start_router}")
     private String taskDate;
 
+    @Value("${time.push_router_enabled}")
+    private Boolean isEnabled;
+
 
     //添加定时任务
-    //@Scheduled(cron = "${time.push_router}")
+    @Scheduled(cron = "${time.push_router}")
     private void execTask() {
-        log.info("执行推送工艺给ERP定时任务时间: " + LocalDateTime.now());
-        // 查出没有推送给ERP的工艺
-        QueryWrapper<Router> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("r.status", 1);
-        queryWrapper.eq("r.is_active", 1);
-        queryWrapper.apply("(r.is_send_erp is null or r.is_send_erp != 1)");
-        queryWrapper.ge("r.create_time", taskDate);
-        queryWrapper.groupBy("p.drawing_no");
-        List<Router> routers = routerService.getList(queryWrapper);
-        CommonResult<Boolean> result = erpServiceClient.pushRouter(routers, SecurityConstants.FROM_INNER);
-        if (result != null && result.getData()) {
-            log.info("推送工艺给ERP成功, 共计{}条", routers.size());
-        } else {
-            log.info("推送工艺给ERP失败，{}", routers.stream().map(Router::getRouterNo).collect(Collectors.toList()));
+        if(isEnabled != null && isEnabled) {
+            log.info("执行推送工艺给ERP定时任务时间: " + LocalDateTime.now());
+            // 查出没有推送给ERP的工艺
+            QueryWrapper<Router> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("r.status", 1);
+            queryWrapper.eq("r.is_active", 1);
+            queryWrapper.apply("(r.is_send_erp is null or r.is_send_erp != 1)");
+            queryWrapper.ge("r.create_time", taskDate);
+            queryWrapper.groupBy("p.drawing_no");
+            List<Router> routers = routerService.getList(queryWrapper);
+            CommonResult<Boolean> result = erpServiceClient.pushRouter(routers, SecurityConstants.FROM_INNER);
+            if (result != null && result.getData()) {
+                log.info("推送工艺给ERP成功, 共计{}条", routers.size());
+            } else {
+                log.info("推送工艺给ERP失败，{}", routers.stream().map(Router::getRouterNo).collect(Collectors.toList()));
+            }
         }
     }
 
