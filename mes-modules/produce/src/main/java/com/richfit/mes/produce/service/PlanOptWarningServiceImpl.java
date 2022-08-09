@@ -54,10 +54,7 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             throw new Exception("当前计划没有匹配跟单，不能进行工序的预警查看！");
         }
         //查询产品工序
-        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-        queryWrapperTrackItem.eq("flow_id", trackHeadList.get(0).getFlowId());
-        queryWrapperTrackItem.orderByAsc("sequence_order_by");
-        List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+        List<TrackItem> trackItemList = queryOptState(trackHeadList);
 
         //根据工序列表封装计划工序预警数据
         List<PlanOptWarning> planOptWarningList = new ArrayList<>();
@@ -67,6 +64,8 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             planOptWarning.setOptNo(trackItem.getOptNo());
             planOptWarning.setOptName(trackItem.getOptName());
             planOptWarning.setSequenceOrderBy(trackItem.getSequenceOrderBy());
+            planOptWarning.setIsOperationComplete(trackItem.getIsOperationComplete());
+            planOptWarning.setOperationCompleteTime(trackItem.getOperationCompleteTime());
             planOptWarningList.add(planOptWarning);
         }
 
@@ -86,5 +85,40 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             }
         }
         return planOptWarningList;
+    }
+
+    /**
+     * 功能描述: 通过跟单列表返回最后一个工序的完工状态
+     *
+     * @param trackHeadList 跟单列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/8 15:06
+     **/
+    public List<TrackItem> queryOptState(List<TrackHead> trackHeadList) throws Exception {
+        List<TrackItem> trackItemList = new ArrayList<>();
+        for (TrackHead trackHead : trackHeadList) {
+            //查询产品工序
+            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+            queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+            queryWrapperTrackItem.orderByAsc("sequence_order_by");
+            List<TrackItem> trackItems = trackItemMapper.selectList(queryWrapperTrackItem);
+            if (trackItemList.size() < trackItems.size()) {
+                trackItemList.addAll(trackItems);
+            } else {
+                //通过最后完成时间删除重复的工序
+                for (int i = 0; i < trackItems.size(); i++) {
+                    if (trackItems.get(i).getOperationCompleteTime() != null) {
+                        if (trackItemList.get(i).getOperationCompleteTime() == null) {
+                            trackItemList.set(i, trackItems.get(i));
+                        } else {
+                            if (trackItemList.get(i).getOperationCompleteTime().getTime() < trackItems.get(i).getOperationCompleteTime().getTime()) {
+                                trackItemList.set(i, trackItems.get(i));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return trackItemList;
     }
 }

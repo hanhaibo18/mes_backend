@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.PlanOptWarning;
@@ -11,6 +12,8 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @Author: zhiqiang.lu
@@ -36,7 +39,11 @@ public class PlanOptWarningController extends BaseController {
 
     @ApiOperation(value = "保存&更新", notes = "工序预警保存&更新")
     @PostMapping("/save_or_update")
-    public CommonResult saveOrUpdate(@ApiParam(value = "工序预警信息", required = true) @RequestParam PlanOptWarning planOptWarning) throws Exception {
-        return CommonResult.success(planOptWarningService.saveOrUpdate(planOptWarning));
+    public void saveOrUpdate(@ApiParam(value = "工序预警信息", required = true) @RequestParam List<PlanOptWarning> planOptWarningList) throws Exception {
+        for (PlanOptWarning planOptWarning : planOptWarningList) {
+            if (!StringUtils.isNullOrEmpty(planOptWarning.getDateWarning())) {
+                planOptWarningService.saveOrUpdate(planOptWarning);
+            }
+        }
     }
 }

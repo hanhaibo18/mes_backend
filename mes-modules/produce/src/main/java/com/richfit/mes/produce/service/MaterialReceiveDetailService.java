@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 
@@ -13,5 +14,5 @@ import java.util.List;
  * @date:2022/8/2 9:19
  */
 public interface MaterialReceiveDetailService extends IService<MaterialReceiveDetail> {
-    List<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper);
+    Page<MaterialReceiveDetail> getReceiveDetail(Page<MaterialReceiveDetail> materialReceiveDetailPage, QueryWrapper<MaterialReceiveDetail> queryWrapper);
 }

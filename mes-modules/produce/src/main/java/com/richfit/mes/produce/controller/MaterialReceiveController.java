@@ -56,23 +56,25 @@ public class MaterialReceiveController extends BaseController {
                                                                 @ApiParam(value = "状态") @RequestParam(required = false) List<String> states) {
         QueryWrapper<MaterialReceive> queryWrapper = new QueryWrapper<MaterialReceive>();
         if (ObjectUtils.isNotNull(states)) {
-            queryWrapper.in("state", states);
+            queryWrapper.in("mr.state", states);
         }
         if (!StringUtils.isNullOrEmpty(deliveryNo)) {
-            queryWrapper.eq("delivery_no", deliveryNo);
+            queryWrapper.eq("mr.delivery_no", deliveryNo);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("track_no", trackNo);
+            queryWrapper.eq("prn.track_head_id", trackNo);
         }
-        return CommonResult.success(materialReceiveService.getPage(new Page<MaterialReceive>(page, limit), queryWrapper));
+        return CommonResult.success( materialReceiveService.getPage(new Page<MaterialReceive>(page, limit),queryWrapper));
     }
 
-    @ApiOperation(value = "查询本次配送明细信息", notes = "根据跟单号、查询本次配送明细信息")
+    @ApiOperation(value = "查询本次配送明细信息", notes = "根据跟单号、分页查询本次配送明细信息")
     @GetMapping("/getReceiveDetail")
-    public CommonResult<List<MaterialReceiveDetail>> selectTrackHead(String deliveryNo ) {
+    public CommonResult<IPage<MaterialReceiveDetail>> selectTrackHead(@ApiParam(value = "页码") @RequestParam(required = false) Integer page,
+                                                                     @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
+                                                                     @ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
         QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper<MaterialReceiveDetail>();
         queryWrapper.eq("delivery_no", deliveryNo);
-        return CommonResult.success(materialReceiveDetailService.getReceiveDetail(queryWrapper));
+        return CommonResult.success(materialReceiveDetailService.getReceiveDetail(new Page<MaterialReceiveDetail>(page, limit),queryWrapper));
     }
 
 }

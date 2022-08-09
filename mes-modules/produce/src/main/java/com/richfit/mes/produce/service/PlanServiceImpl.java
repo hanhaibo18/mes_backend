@@ -607,17 +607,17 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Object> splitPlan(PlanSplitDto planSplitDto) {
         //原计划
-        Plan orldPlan = planSplitDto.getOrldPlan();
+        Plan oldPlan = planSplitDto.getOldPlan();
         //拆分计划
         Plan newPlan = planSplitDto.getNewPlan();
 
-        if (StringUtils.hasText(orldPlan.getId())) {
+        if (StringUtils.hasText(oldPlan.getId())) {
             //根据id查询父计划
-            Plan  parentPlan = planMapper.selectById(orldPlan.getId());
+            Plan  parentPlan = planMapper.selectById(oldPlan.getId());
 
             if (!ObjectUtil.isEmpty(parentPlan)) {
                 if (newPlan.getProjNum() > parentPlan.getProjNum()) {
-                    return CommonResult.failed("拆分计划数量超出未计划数量");
+                    return CommonResult.failed("拆分计划数量超出原计划数量");
                 }
             }
             //构造新拆分计划
@@ -626,27 +626,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             //构造拆分计划
             plan.setOriginalPlanId(parentPlan.getId());
             plan.setOriginalProjCode(parentPlan.getOriginalProjCode());
-            //数量清空
-            plan.setTrackHeadFinishNumber(0);
-            plan.setTrackHeadNumber(0);
-            plan.setProcessNum(0);
-            plan.setDeliveryNum(0);
-            plan.setOptFinishNumber(0);
-            plan.setOptNumber(0);
             plan.setProjNum(newPlan.getProjNum());
             plan.setStartTime(newPlan.getStartTime());
             plan.setEndTime(newPlan.getEndTime());
             plan.setProjCode(newPlan.getProjCode());
-            if(ObjectUtil.isEmpty(newPlan.getTrackHeadIds())){
-                plan.setTrackHeadNumber(newPlan.getTrackHeadIds().size());
-            }
 
             //修改父计划的计划数量
             UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
             planUpdateWrapper
                     .eq("id",parentPlan.getId())
-                    .set("proj_num",orldPlan.getProjNum())
-                    .set("track_head_number",parentPlan.getTrackHeadNumber()-newPlan.getTrackHeadIds().size());
+                    .set("proj_num",oldPlan.getProjNum());
             this.update(planUpdateWrapper);
             //保存拆分计划
             this.save(plan);
@@ -659,6 +648,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         .set("work_plan_id",plan.getId());
                 trackHeadService.update(trackHeadUpdateWrapper);
             }
+
+            //拆分完旧计划数据自动计算
+            planData(parentPlan.getId());
+            //拆分完新计划数据自动计算
+            planData(plan.getId());
         }
         return CommonResult.success(null);
     }
@@ -678,8 +672,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             Plan plan = planMapper.selectById(currPlan.getOriginalPlanId());
             UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
             planUpdateWrapper.eq("id",currPlan.getOriginalPlanId())
-                    .set("proj_num",currPlan.getProjNum()+plan.getProjNum())
-                    .set("track_head_number",currPlan.getTrackHeadNumber()+plan.getTrackHeadNumber());
+                    .set("proj_num",currPlan.getProjNum()+plan.getProjNum());
             this.update(planUpdateWrapper);
             //查询要合并的跟单
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
@@ -687,12 +680,18 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             List<String> workPlanIds = new ArrayList<>(trackHeads.stream().collect(Collectors.toMap(TrackHead::getId, TrackHead::getId)).values());
 
             //跟单合并
-            UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
-            trackHeadUpdateWrapper.in("id",workPlanIds)
-                    .set("work_plan_id",plan.getId());
-            trackHeadService.update(trackHeadUpdateWrapper);
+            if(workPlanIds.size()>0){
+                UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+                trackHeadUpdateWrapper.in("id",workPlanIds)
+                        .set("work_plan_id",plan.getId());
+                trackHeadService.update(trackHeadUpdateWrapper);
+            }
+
             //删除该计划
             this.removeById(id);
+
+            //合并后计划数据自动计算
+            planData(plan.getId());
         }
         return CommonResult.success(null);
     }
