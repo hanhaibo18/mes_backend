@@ -64,4 +64,8 @@ public class Zc80Ppif026T1 {
         return this.item;
     }
 
+    public void setItem(List<Zc80Ppif026S1> item) {
+        this.item = item;
+    }
+
 }

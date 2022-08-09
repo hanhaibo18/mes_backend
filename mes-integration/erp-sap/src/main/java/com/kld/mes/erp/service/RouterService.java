@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiParam;
@@ -16,8 +17,6 @@ import java.util.List;
  */
 public interface RouterService {
 
-    public boolean push(@ApiParam(value = "工序列表") @RequestBody List<Sequence> sequences,
-                        @ApiParam(value = "erp代号") @RequestParam String erpCode,
-                        @ApiParam(value = "图号") @RequestParam String routeNo);
+    public boolean push(List<Router> routers);
 
 }
