@@ -380,7 +380,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 //                        }
 //                    }
                     //在制
-                    System.out.println("---------------在制");
                     processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
                         if (trackItem.getIsOperationComplete() == 0) {
@@ -389,13 +388,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     }
                 } else if ("1".equals(trackHead.getStatus())) {
                     //在制
-                    System.out.println("---------------在制");
                     processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
                         if (trackItem.getIsOperationComplete() == 0) {
                             optProcessNumber++;
                         }
                     }
+                } else if ("4".equals(trackHead.getStatus())) {
+                    //打印跟单
+                } else if ("5".equals(trackHead.getStatus())) {
+                    //作废跟单
                 } else {
                     //其余都算完工
                     trackHeadFinish++;
