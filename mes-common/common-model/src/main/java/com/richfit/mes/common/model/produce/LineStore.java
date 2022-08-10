@@ -259,7 +259,9 @@ public class LineStore extends BaseEntity<LineStore> {
         this.testBarType = null;
         this.productionOrder = null;
 
-        this.productName = materialReceiveDetail.getName();
+        this.productName = null;
+        this.materialName = materialReceiveDetail.getName();
+        this.materialDesc = materialReceiveDetail.getName();
         this.texture = null;
         this.weight = null;
 
