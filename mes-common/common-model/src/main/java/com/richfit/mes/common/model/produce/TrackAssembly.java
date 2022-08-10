@@ -155,4 +155,6 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
      */
     @ApiModelProperty(value = "实物配送区分", dataType = "String")
     private String isEdgeStore;
+
+    private String unit;
 }
