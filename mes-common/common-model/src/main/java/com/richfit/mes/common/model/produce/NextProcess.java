@@ -34,7 +34,6 @@ public class NextProcess extends BaseEntity<NextProcess> {
     /**
      * 工序号
      */
-    @TableField(exist = false)
     @ApiModelProperty(value = "工序号", dataType = "String")
     private String optSequence;
     @TableField(exist = false)
