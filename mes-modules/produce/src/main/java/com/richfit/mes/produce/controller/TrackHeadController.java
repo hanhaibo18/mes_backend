@@ -31,7 +31,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -359,6 +362,7 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                              @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
                                                              @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                             @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
                                                              @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
                                                              @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
                                                              @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
@@ -373,6 +377,7 @@ public class TrackHeadController extends BaseController {
         map.put("endDate", endDate);
         map.put("templateCode", templateCode);
         map.put("status", status);
+        map.put("isCompletionData", isCompletionData);
         map.put("productNo", productNo);
         map.put("trackNo", trackNo);
         map.put("workNo", workNo);
@@ -387,12 +392,13 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackFlowPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
-    @ApiOperation(value = "分页查询跟单分流表", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单分流信息")
+    @ApiOperation(value = "查询跟单分流表List", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态查询跟单分流表List信息")
     @GetMapping("/track_flow_List")
     public CommonResult<List<TrackHead>> selectTrackFLowList(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
                                                              @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                              @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
                                                              @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                             @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
                                                              @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
                                                              @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
                                                              @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
@@ -405,6 +411,7 @@ public class TrackHeadController extends BaseController {
         map.put("endDate", endDate);
         map.put("templateCode", templateCode);
         map.put("status", status);
+        map.put("isCompletionData", isCompletionData);
         map.put("productNo", productNo);
         map.put("trackNo", trackNo);
         map.put("workNo", workNo);
