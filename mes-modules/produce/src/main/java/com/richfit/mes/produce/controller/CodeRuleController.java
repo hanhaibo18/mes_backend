@@ -70,6 +70,9 @@ public class CodeRuleController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
+        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
         return CommonResult.success(codeRuleService.page(new Page<CodeRule>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
 

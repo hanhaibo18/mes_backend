@@ -199,4 +199,17 @@ public class TenantController extends BaseController {
 
     }
 
+    /**
+     * 为租户初始化数据
+     */
+    @ApiOperation(value = "为租户初始化数据", notes = "为租户初始化数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "tenantId", value = "租户Id", required = true, dataType = "String", paramType = "path")
+    })
+    @GetMapping("/initData/{tenantId}")
+    public CommonResult<String> initData(@PathVariable String tenantId) {
+        checkTenantId(tenantId);
+        return CommonResult.success(tenantService.initData(tenantId));
+    }
+
 }

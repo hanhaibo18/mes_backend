@@ -30,6 +30,14 @@ public interface RoleService {
     boolean add(Role role);
 
     /**
+     * 批量新增角色
+     *
+     * @param roles
+     * @return
+     */
+    boolean batchAdd(List<Role> roles);
+
+    /**
      * 查询角色
      *
      * @param page

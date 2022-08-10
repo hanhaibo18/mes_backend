@@ -152,6 +152,9 @@ public class ItemController extends BaseController {
                 queryWrapper.inSql("class_id", "select id from sys_item_class where label ='" + label + "'");
             }
         }
+        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("order_num");
         return CommonResult.success(itemParamService.page(new Page<ItemParam>(page, limit), queryWrapper), ITEM_SUCCESS_MESSAGE);
@@ -172,6 +175,9 @@ public class ItemController extends BaseController {
             wrapper.eq("class_id", iClasses.get(0).getId());
             if (!StringUtils.isNullOrEmpty(label)) {
                 wrapper.like("label", label);
+            }
+            if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             }
 //            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             wrapper.orderByAsc("order_num");
@@ -201,6 +207,9 @@ public class ItemController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
+        }
+        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(itemClassService.list(queryWrapper), ITEM_SUCCESS_MESSAGE);

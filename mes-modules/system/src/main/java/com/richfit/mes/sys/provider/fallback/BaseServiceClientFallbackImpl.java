@@ -30,4 +30,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     public CommonResult<List<Branch>> queryCode(String branchCode) {
         return CommonResult.success(null);
     }
+
+    @Override
+    public CommonResult<Branch> initBranch(String tenantId, String branchCode, String branchName) {
+        return CommonResult.success(null);
+    }
+
 }

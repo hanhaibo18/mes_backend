@@ -8,6 +8,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.ProduceTrackHeadTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,6 +58,9 @@ public class ProduceTrackHeadTemplateController {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.like("branch_code", branchCode);
             }
+            if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            }
             IPage<ProduceTrackHeadTemplate> trackHeadTemplate = produceTrackHeadTemplateService.page(new Page<ProduceTrackHeadTemplate>(page, limit), queryWrapper);
             return CommonResult.success(trackHeadTemplate);
         } catch (Exception e) {
@@ -71,8 +75,9 @@ public class ProduceTrackHeadTemplateController {
     @PostMapping("/save")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<ProduceTrackHeadTemplate> saveProduceTrackHeadTemplate(@RequestBody ProduceTrackHeadTemplate produceTrackHeadTemplate) {
-
-
+        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            produceTrackHeadTemplate.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        }
         boolean bool = produceTrackHeadTemplateService.save(produceTrackHeadTemplate);
         if (bool) {
             return CommonResult.success(produceTrackHeadTemplate, "操作成功！");

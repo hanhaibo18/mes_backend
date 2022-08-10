@@ -1,10 +1,16 @@
 package com.richfit.mes.sys.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.produce.CodeRule;
+import com.richfit.mes.common.model.produce.CodeRuleItem;
 import com.richfit.mes.sys.provider.fallback.BaseServiceClientFallbackImpl;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -25,5 +31,8 @@ public interface BaseServiceClient {
     @GetMapping(value = "/api/base/branch/queryCodeList")
     public CommonResult<List<Branch>> queryCode(@RequestParam("branchCode") String branchCode);
 
+
+    @GetMapping(value = "/api/base/branch/initBranch")
+    public CommonResult<Branch> initBranch(@RequestParam("tenantId") String tenantId, @RequestParam("branchCode") String branchCode, @RequestParam("branchName") String branchName);
 
 }

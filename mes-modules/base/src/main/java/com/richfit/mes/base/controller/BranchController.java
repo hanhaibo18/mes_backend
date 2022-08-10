@@ -177,7 +177,6 @@ public class BranchController extends BaseController {
         if (!isAdmin) {
             // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             if (isFindTop != null && isFindTop) {
-                String orgId = SecurityUtils.getCurrentUser().getOrgId();
                 String belongOrgId = SecurityUtils.getCurrentUser().getBelongOrgId();
                 queryWrapper.eq("branch_code", belongOrgId);
             } else {
