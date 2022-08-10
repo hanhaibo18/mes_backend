@@ -217,11 +217,14 @@ public class Plan extends BaseEntity<Plan> {
      * 原计划编号
      */
     private String originalProjCode;
-
     /**
      * 单机数量
      */
-    private String singleNumber;
+    private int singleNumber;
+    /**
+     * 库存数量
+     */
+    private int storeNumber;
     /**
      * 已拆分数量
      */
