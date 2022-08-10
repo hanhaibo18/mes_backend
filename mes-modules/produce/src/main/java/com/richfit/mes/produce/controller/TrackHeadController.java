@@ -363,12 +363,14 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
                                                              @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
                                                              @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
+                                                             @ApiParam(value = "合格证生成/Y以生产 N未生成") @RequestParam(required = false) String isCertificate,
                                                              @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
                                                              @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
                                                              @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                                              @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                              @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
                                                              @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
+                                                             @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
                                                              @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                                              @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                              @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
@@ -378,12 +380,14 @@ public class TrackHeadController extends BaseController {
         map.put("templateCode", templateCode);
         map.put("status", status);
         map.put("isCompletionData", isCompletionData);
+        map.put("isCertificate", isCertificate);
         map.put("productNo", productNo);
         map.put("trackNo", trackNo);
         map.put("workNo", workNo);
         map.put("drawingNo", drawingNo);
         map.put("batchNo", batchNo);
         map.put("productionOrder", productionOrder);
+        map.put("workPlanId", workPlanId);
         map.put("branchCode", branchCode);
         map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
         PageHelper.startPage(page, limit);
@@ -399,12 +403,14 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
                                                              @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
                                                              @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
+                                                             @ApiParam(value = "合格证生成/Y以生产 N未生成") @RequestParam(required = false) String isCertificate,
                                                              @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
                                                              @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
                                                              @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                                              @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                              @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
                                                              @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
+                                                             @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
                                                              @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("startDate", startDate);
@@ -412,12 +418,14 @@ public class TrackHeadController extends BaseController {
         map.put("templateCode", templateCode);
         map.put("status", status);
         map.put("isCompletionData", isCompletionData);
+        map.put("isCertificate", isCertificate);
         map.put("productNo", productNo);
         map.put("trackNo", trackNo);
         map.put("workNo", workNo);
         map.put("drawingNo", drawingNo);
         map.put("batchNo", batchNo);
         map.put("productionOrder", productionOrder);
+        map.put("workPlanId", workPlanId);
         map.put("branchCode", branchCode);
         map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(trackHeadService.selectTrackFlowList(map), TRACK_HEAD_SUCCESS_MESSAGE);
