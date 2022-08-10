@@ -1145,4 +1145,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
         return trackFlowMapper.selectList(queryWrapperTrackFlow);
     }
+
+    @Override
+    public List<Map> selectTrackStoreCount(String drawingNos) {
+        return trackHeadMapper.selectTrackStoreCount(drawingNos);
+    }
 }

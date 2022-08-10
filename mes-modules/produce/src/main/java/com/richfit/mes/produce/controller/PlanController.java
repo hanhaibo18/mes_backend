@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -149,6 +150,28 @@ public class PlanController extends BaseController {
         for (Plan plan : planList) {
             if (plan.getTrackHeadNumber() > 0) {
                 planOptWarningService.warning(plan);
+            }
+        }
+        return CommonResult.success(planList);
+    }
+
+    @ApiOperation(value = "入库品数量统计", notes = "入库品数量统计")
+    @PostMapping("/select_track_store_count")
+    public CommonResult selectTrackStoreCount(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) {
+        String drawingNos = "";
+        for (Plan plan : planList) {
+            drawingNos += ",'" + plan.getDrawNo() + "'";
+        }
+        drawingNos = drawingNos.substring(1);
+        System.out.println("-------------------");
+        System.out.println(drawingNos);
+        List<Map> mapList = trackHeadService.selectTrackStoreCount(drawingNos);
+        System.out.println(JSON.toJSONString(mapList));
+        for (Plan plan : planList) {
+            for (Map map : mapList) {
+                if (map.get("drawing_no").toString().equals(plan.getDrawNo())) {
+                    plan.setStoreNum(Integer.parseInt(map.get("number").toString()));
+                }
             }
         }
         return CommonResult.success(planList);
