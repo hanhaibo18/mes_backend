@@ -246,7 +246,7 @@ public class LineStore extends BaseEntity<LineStore> {
         this.materialSource = branchCode;
         this.status = "0";
         this.batchNo = null;
-        this.number = Integer.parseInt(materialReceiveDetail.getQuantity());
+        this.number = materialReceiveDetail.getQuantity();
         this.workblankNo = null;
 
         //半成品 成品
