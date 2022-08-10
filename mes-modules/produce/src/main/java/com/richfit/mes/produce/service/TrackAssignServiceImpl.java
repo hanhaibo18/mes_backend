@@ -149,7 +149,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             for (Assign assign : queryPage.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
-                assign.setRouterId(trackHead.getRouterId());
+                if (!StringUtils.isNullOrEmpty(trackHead.getRouterId())) {
+                    assign.setRouterId(trackHead.getRouterId());
+                }
                 assign.setOptId(trackItem.getOptId());
                 assign.setWeight(trackHead.getWeight());
                 assign.setWorkNo(trackHead.getWorkNo());
