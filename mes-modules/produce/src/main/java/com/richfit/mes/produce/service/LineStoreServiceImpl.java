@@ -538,6 +538,18 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return idList;
     }
 
+    @Override
+    public boolean addStoreByWmsSend(List<MaterialReceiveDetail> materialReceiveDetails, String branchCode) {
+
+        for (MaterialReceiveDetail materialReceiveDetail : materialReceiveDetails) {
+            LineStore lineStore = new LineStore(materialReceiveDetail, branchCode);
+            lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            this.save(lineStore);
+        }
+
+        return true;
+    }
+
 
     @Override
     public List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception {

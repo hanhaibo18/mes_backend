@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.LineStore;
+import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
@@ -106,7 +107,7 @@ public interface LineStoreService extends IService<LineStore> {
      * 功能描述: 根据料单Id，查询附件并存储到临时目录，等待压缩下载
      *
      * @param id
-     * @Author: xinYu.hou
+     * @Author: Gaol
      * @Date: 2022/7/19 10:59
      * @return: Boolean
      **/
@@ -116,9 +117,19 @@ public interface LineStoreService extends IService<LineStore> {
      * 功能描述: 根据料单Id，查询附件id
      *
      * @param id
-     * @Author: xinYu.hou
+     * @Author: Gaol
      * @Date: 2022/7/19 10:59
      * @return: Boolean
      **/
     List<String> qeuryStoreFileIdList(String id);
+
+    /**
+     * 功能描述: 仓储配送，物料接收入库
+     *
+     * @param materialReceiveDetails
+     * @Author: Gaol
+     * @Date: 2022/7/19 10:59
+     * @return: Boolean
+     **/
+    boolean addStoreByWmsSend(List<MaterialReceiveDetail> materialReceiveDetails, String branchCode);
 }
