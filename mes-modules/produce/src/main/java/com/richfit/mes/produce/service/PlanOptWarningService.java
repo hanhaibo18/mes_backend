@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.PlanOptWarning;
 
 import java.util.List;
@@ -19,4 +20,14 @@ public interface PlanOptWarningService extends IService<PlanOptWarning> {
      * @Date: 2022/8/8 15:06
      **/
     List<PlanOptWarning> queryList(String planId) throws Exception;
+
+
+    /**
+     * 功能描述: 工序预警天数
+     *
+     * @param planId 计划id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/8 15:06
+     **/
+    void warning(Plan planId) throws Exception;
 }

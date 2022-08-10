@@ -85,7 +85,7 @@ public class TemplatePrintController extends BaseController {
             ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
             String sql1 = p.getSheet1();
             String sql2 = p.getSheet2();
-            String sql3 = p.getSheet1();
+            String sql3 = p.getSheet3();
             String sql4 = p.getSheet1();
             String templateFileId = p.getFileId();
 //        Attachment attach = systemServiceClient.attachment(templateFileId).getData();
@@ -93,6 +93,8 @@ public class TemplatePrintController extends BaseController {
             List<List<Map<String, Object>>> sheets = new ArrayList();
             List<Map<String, Object>> list = new ArrayList();
             List<Map<String, Object>> list2 = new ArrayList();
+            List<Map<String, Object>> list3 = new ArrayList();
+
             // 根据配置SQL，获取SHEET1表数据
             if (null != sql1 && sql1.contains("call")) {
                 // 如果包含CALL，则只需存储过程
@@ -167,8 +169,47 @@ public class TemplatePrintController extends BaseController {
             } else {
 
             }
+
+            // 根据配置SQL，获取SHEET3表数据
+            if (null != sql3 && sql1.contains("call")) {
+                list = (List) jdbcTemplate.execute(
+                        new CallableStatementCreator() {
+                            @Override
+                            public CallableStatement createCallableStatement(Connection con) throws SQLException {
+                                // String storedProc = "{call sp_list_table(?,?)}";// 调用的sql
+                                String storedProc = String.format(sql3, id);// 调用的sql
+                                CallableStatement cs = con.prepareCall(storedProc);
+                                cs.setString(1, id);// 设置输入参数的值
+                                return cs;
+                            }
+                        }, new CallableStatementCallback() {
+                            @Override
+                            public Object doInCallableStatement(CallableStatement cs) throws SQLException, DataAccessException {
+                                List resultsMap = new ArrayList();
+                                cs.execute();
+                                ResultSet rs = (ResultSet) cs.getObject(2);// 获取游标一行的值
+                                ResultSetMetaData md = rs.getMetaData();
+                                int columnCount = md.getColumnCount();
+                                while (rs.next()) {// 转换每行的返回值到Map中
+                                    Map rowData = new HashMap();
+                                    for (int i = 1; i <= columnCount; i++) {
+                                        rowData.put(md.getColumnName(i), rs.getObject(i));
+                                    }
+                                    resultsMap.add(rowData);
+                                }
+                                rs.close();
+                                return resultsMap;
+                            }
+                        });
+            } else if (null != sql3) {
+                list3 = jdbcTemplate.queryForList(String.format(sql3, id));
+            } else {
+
+            }
             sheets.add(list);
             sheets.add(list2);
+            sheets.add(list3);
+
             // 生成EXCEL文件，并输出文件流
             try {
                 // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());

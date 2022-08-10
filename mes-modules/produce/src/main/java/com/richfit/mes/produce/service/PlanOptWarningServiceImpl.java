@@ -1,7 +1,11 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.PlanOptWarning;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -12,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author: GaoLiang
@@ -46,14 +47,54 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
      **/
     @Override
     public List<PlanOptWarning> queryList(String planId) throws Exception {
-        Map<String, String> map = new HashMap<>();
-        map.put("workPlanId", planId);
-        //查询跟单产品分流视图
-        List<TrackHead> trackHeadList = trackHeadService.selectTrackFlowList(map);
-        if (trackHeadList.size() < 1) {
-            throw new Exception("当前计划没有匹配跟单，不能进行工序的预警查看！");
+        return queryPlanOptWarningList(planId);
+    }
+
+    @Override
+    public void warning(Plan plan) throws Exception {
+        //查询计划预警的数据
+        List<PlanOptWarning> planOptWarningList = queryPlanOptWarningList(plan.getId());
+        if (planOptWarningList.size() < 1) {
+            //不进行预警
+            plan.setAlarmStatus(0);
         }
-        //查询产品工序
+        long betweenDay = 101;
+        Date date = new Date();
+        for (PlanOptWarning planOptWarning : planOptWarningList) {
+            if (!StringUtils.isNullOrEmpty(planOptWarning.getDateWarning())) {
+                Date dateWarnning = DateUtil.parse(planOptWarning.getDateWarning());
+                long d = DateUtil.between(dateWarnning, date, DateUnit.DAY);
+                if (dateWarnning.getTime() < date.getTime()) {
+                    d = -d;
+                }
+                if (betweenDay > d) {
+                    betweenDay = d;
+                }
+
+                if (d >= 3) {
+                    plan.setAlarmStatus(1);
+                } else if (d >= 0 && d < 3) {
+                    plan.setAlarmStatus(2);
+                } else {
+                    plan.setAlarmStatus(3);
+                }
+            }
+        }
+    }
+
+    /**
+     * 功能描述: 通过计划id查询工序预警列表
+     *
+     * @param planId 计划id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/8 15:06
+     **/
+    public List<PlanOptWarning> queryPlanOptWarningList(String planId) throws Exception {
+        List<TrackHead> trackHeadList = queryTrackHeadList(planId);
+        if (trackHeadList.size() < 1) {
+            return new ArrayList<PlanOptWarning>();
+        }
+        //通过跟单列表查询合并后的产品工序
         List<TrackItem> trackItemList = queryOptState(trackHeadList);
 
         //根据工序列表封装计划工序预警数据
@@ -85,6 +126,19 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             }
         }
         return planOptWarningList;
+    }
+
+    /**
+     * 功能描述: 通过计划id查询跟单列表
+     *
+     * @param planId 计划id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/8 15:06
+     **/
+    public List<TrackHead> queryTrackHeadList(String planId) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("workPlanId", planId);
+        return trackHeadService.selectTrackFlowList(map);
     }
 
     /**

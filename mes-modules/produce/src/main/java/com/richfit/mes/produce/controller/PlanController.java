@@ -19,12 +19,10 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackHeadService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -44,7 +42,11 @@ import java.util.Map;
 public class PlanController extends BaseController {
 
     @Autowired
-    PlanService planService;
+    private PlanService planService;
+
+    @Autowired
+    private PlanOptWarningService planOptWarningService;
+
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -97,7 +99,7 @@ public class PlanController extends BaseController {
             @ApiImplicitParam(name = "queryDto", value = "计划属性", paramType = "BasePageDto")
     })
     @GetMapping("/page")
-    public CommonResult page(BasePageDto<String> queryDto) throws GlobalException {
+    public CommonResult page(BasePageDto<String> queryDto) throws Exception {
         PlanDto planDto = null;
         try {
             planDto = objectMapper.readValue(queryDto.getParam(), PlanDto.class);
@@ -141,6 +143,16 @@ public class PlanController extends BaseController {
         return CommonResult.success(planList);
     }
 
+    @ApiOperation(value = "封装计划信息工序预警状态", notes = "封装计划信息工序预警状态")
+    @PostMapping("/warning")
+    public CommonResult warning(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) throws Exception {
+        for (Plan plan : planList) {
+            if (plan.getTrackHeadNumber() > 0) {
+                planOptWarningService.warning(plan);
+            }
+        }
+        return CommonResult.success(planList);
+    }
 
     /**
      * 新增计划
@@ -253,6 +265,7 @@ public class PlanController extends BaseController {
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
     @PostMapping("/completeness/list")
     public CommonResult<Object> completeness_list(@RequestBody List<Plan> planList) throws GlobalException {
+        System.out.println("-------------------------");
         return CommonResult.success(planService.completeness_list(planList));
     }
 
@@ -273,7 +286,7 @@ public class PlanController extends BaseController {
     @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
     @GetMapping("/queryTrackHeadListByPlanId/{id}")
     public CommonResult<Object> queryTrackHeadListByPlanId(@PathVariable String id) throws GlobalException {
-        return CommonResult.success(trackHeadService.list(new QueryWrapper<TrackHead>().eq("work_plan_id",id)));
+        return CommonResult.success(trackHeadService.list(new QueryWrapper<TrackHead>().eq("work_plan_id", id)));
     }
 
     /**

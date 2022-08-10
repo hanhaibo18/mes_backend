@@ -41,6 +41,23 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " <if test='status != null and status != \"\"'> " +
             "  and status = #{status} " +
             " </if> " +
+            " <if test='statusStart != null and statusStart != \"\"'> " +
+            "  and status &gt;= #{statusStart} " +
+            " </if> " +
+            " <if test='statusEnd != null and statusEnd != \"\"'> " +
+            "  and status &lt;= #{statusEnd} " +
+            " </if> " +
+            " <if test='isCompletionData != null and isCompletionData != \"\"'> " +
+            "  and is_completion_data = #{isCompletionData} " +
+            " </if> " +
+            " <if test='isCertificate != null and isCertificate != \"\"'> " +
+            "   <if test='isCertificate == \"Y\"'> " +
+            "       and certificate_no is not NULL " +
+            "   </if>" +
+            "   <if test='isCertificate == \"N\"'> " +
+            "       and (certificate_no is null or certificate_no = '') " +
+            "   </if>" +
+            " </if> " +
             " <if test='productNo != null and productNo != \"\"'> " +
             "  and product_no like concat('%',#{productNo},'%') " +
             " </if> " +

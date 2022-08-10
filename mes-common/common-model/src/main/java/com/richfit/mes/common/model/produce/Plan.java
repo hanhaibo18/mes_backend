@@ -218,6 +218,14 @@ public class Plan extends BaseEntity<Plan> {
      */
     private String originalProjCode;
     /**
+     * 单机数量
+     */
+    private int singleNumber;
+    /**
+     * 库存数量
+     */
+    private int storeNumber;
+    /**
      * 已拆分数量
      */
     @TableField(exist = false)
