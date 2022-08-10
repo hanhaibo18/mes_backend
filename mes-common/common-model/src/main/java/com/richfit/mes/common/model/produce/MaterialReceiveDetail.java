@@ -40,12 +40,12 @@ public class MaterialReceiveDetail extends BaseEntity<MaterialReceiveDetail> {
     /**
      * 配送数量
      */
-    private String quantity;
+    private int quantity;
 
     /**
      * 申请数量
      */
-    private String orderQuantity;
+    private int orderQuantity;
 
     /**
      * 批次号
