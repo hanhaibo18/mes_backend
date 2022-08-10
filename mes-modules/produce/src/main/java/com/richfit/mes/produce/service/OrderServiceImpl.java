@@ -104,6 +104,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         int numberComplete = 0;
         for (TrackFlow trackFlow : trackFlowList) {
             if ("2".equals(trackFlow.getStatus())) {
+                //完成
+                numberComplete++;
+            } else if ("9".equals(trackFlow.getStatus())) {
+                //交付
                 numberComplete++;
             }
         }
