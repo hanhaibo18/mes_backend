@@ -22,10 +22,7 @@ import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackHeadService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -143,7 +140,13 @@ public class PlanController extends BaseController {
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
-        for (Plan plan : planList.getRecords()) {
+        return CommonResult.success(planList);
+    }
+
+    @ApiOperation(value = "封装计划信息工序预警状态", notes = "封装计划信息工序预警状态")
+    @PostMapping("/warning")
+    public CommonResult warning(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) throws Exception {
+        for (Plan plan : planList) {
             if (plan.getTrackHeadNumber() > 0) {
                 planOptWarningService.warning(plan);
             }
