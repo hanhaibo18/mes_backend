@@ -413,6 +413,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             plan.setStoreNum(storeNum);//库存数量
             plan.setProcessNum(processNum);//在制数量
             plan.setDeliveryNum(deliveryNum);//交付数量
+            plan.setMissingNum(plan.getProjNum() - storeNum - processNum - deliveryNum);
             plan.setTrackHeadNumber(trackHeadList.size());//跟单数量
             plan.setTrackHeadFinishNumber(trackHeadFinish);//跟单完成数量
             plan.setOptNumber(optNumber);//工序数量
