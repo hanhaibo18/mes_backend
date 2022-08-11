@@ -170,7 +170,7 @@ public class PlanController extends BaseController {
         for (Plan plan : planList) {
             for (Map map : mapList) {
                 if (map.get("drawing_no").toString().equals(plan.getDrawNo())) {
-                    plan.setStoreNum(Integer.parseInt(map.get("number").toString()));
+                    plan.setStoreNumber(Integer.parseInt(map.get("number").toString()));
                 }
             }
         }
