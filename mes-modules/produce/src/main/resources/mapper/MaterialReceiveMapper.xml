@@ -2,7 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.produce.dao.MaterialReceiveMapper">
     <select id="getPage" resultType="com.richfit.mes.common.model.produce.MaterialReceive">
-        SELECT mr.*,prn.track_head_id as trackNo FROM produce_material_receive mr
-            LEFT JOIN produce_request_note prn ON mr.aply_num = prn.request_note_number  ${ew.customSqlSegment}
+        SELECT mr.*,pth.track_no,prn.track_head_id FROM produce_material_receive mr
+            LEFT JOIN produce_request_note prn ON mr.aply_num = prn.request_note_number
+            LEFT JOIN produce_track_head pth ON prn.track_head_id = pth.id  ${ew.customSqlSegment}
     </select>
 </mapper>

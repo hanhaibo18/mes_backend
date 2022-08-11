@@ -95,8 +95,8 @@ public class MaterialReceiveController extends BaseController {
     @GetMapping("/getDeliveredDetail")
     public CommonResult<IPage<TrackAssembly>> getDeliveredDetail(@ApiParam(value = "页码") @RequestParam(required = false) Integer page,
                                                                  @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
-                                                                 @ApiParam(value = "跟单id") @RequestParam(required = false) String id ) {
-        return CommonResult.success(trackAssemblyService.getDeliveredDetail(new Page<TrackAssembly>(page, limit),id));
+                                                                 @ApiParam(value = "跟单id") @RequestParam(required = false) String trackHeadId ) {
+        return CommonResult.success(trackAssemblyService.getDeliveredDetail(new Page<TrackAssembly>(page, limit),trackHeadId));
     }
 
     @ApiOperation(value = "物料接收", notes = "物料接收")
@@ -112,6 +112,10 @@ public class MaterialReceiveController extends BaseController {
             updateWrapper.set("state",1);
             updateWrapper.eq("delivery_no",deliveryNo);
             materialReceiveService.update(updateWrapper);
+            UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
+            detailWrapper.set("state",1);
+            updateWrapper.eq("delivery_no",deliveryNo);
+            materialReceiveDetailService.update(detailWrapper);
         }
         return CommonResult.success(b);
     }
