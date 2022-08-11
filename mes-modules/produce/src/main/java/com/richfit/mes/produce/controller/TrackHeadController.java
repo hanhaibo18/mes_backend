@@ -363,8 +363,6 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                              @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
                                                              @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
-                                                             @ApiParam(value = "跟单状态起") @RequestParam(required = false) String statusStart,
-                                                             @ApiParam(value = "跟单状态止") @RequestParam(required = false) String statusEnd,
                                                              @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
                                                              @ApiParam(value = "合格证生成/Y以生产 N未生成") @RequestParam(required = false) String isCertificate,
                                                              @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
@@ -381,9 +379,17 @@ public class TrackHeadController extends BaseController {
         map.put("startDate", startDate);
         map.put("endDate", endDate);
         map.put("templateCode", templateCode);
+//        if (!StringUtils.isNullOrEmpty(status)) {
+//            String zt = "";
+//            for (String s : status.split("[,]")) {
+//                zt += ",'" + s + "'";
+//            }
+//            zt = zt.substring(1);
+//            System.out.println("-----------------------");
+//            System.out.println(zt);
+//            map.put("status", zt);
+//        }
         map.put("status", status);
-        map.put("statusStart", statusStart);
-        map.put("statusEnd", statusEnd);
         map.put("isCompletionData", isCompletionData);
         map.put("isCertificate", isCertificate);
         map.put("productNo", productNo);
@@ -407,8 +413,6 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                              @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
                                                              @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
-                                                             @ApiParam(value = "跟单状态起") @RequestParam(required = false) String statusStart,
-                                                             @ApiParam(value = "跟单状态止") @RequestParam(required = false) String statusEnd,
                                                              @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
                                                              @ApiParam(value = "合格证生成/Y以生产 N未生成") @RequestParam(required = false) String isCertificate,
                                                              @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
@@ -423,9 +427,17 @@ public class TrackHeadController extends BaseController {
         map.put("startDate", startDate);
         map.put("endDate", endDate);
         map.put("templateCode", templateCode);
+//        if (!StringUtils.isNullOrEmpty(status)) {
+//            String zt = "";
+//            for (String s : status.split("[,]")) {
+//                zt += ",'" + s + "'";
+//            }
+//            zt = zt.substring(1);
+//            System.out.println("-----------------------");
+//            System.out.println(zt);
+//            map.put("status", zt);
+//        }
         map.put("status", status);
-        map.put("statusStart", statusStart);
-        map.put("statusEnd", statusEnd);
         map.put("isCompletionData", isCompletionData);
         map.put("isCertificate", isCertificate);
         map.put("productNo", productNo);

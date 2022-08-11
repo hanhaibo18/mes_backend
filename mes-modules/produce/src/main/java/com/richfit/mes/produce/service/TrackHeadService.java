@@ -259,4 +259,12 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @param trackHeadId 跟单id
      */
     List<TrackFlow> trackFlowList(String trackHeadId);
+
+    /**
+     * 功能描述: 跟单入库品总计查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/10 15:06
+     **/
+    List<Map> selectTrackStoreCount(String drawingNos);
 }

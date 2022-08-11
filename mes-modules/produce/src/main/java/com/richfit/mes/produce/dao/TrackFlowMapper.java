@@ -39,13 +39,7 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             "  and status > 0 " +
             " </if> " +
             " <if test='status != null and status != \"\"'> " +
-            "  and status = #{status} " +
-            " </if> " +
-            " <if test='statusStart != null and statusStart != \"\"'> " +
-            "  and status &gt;= #{statusStart} " +
-            " </if> " +
-            " <if test='statusEnd != null and statusEnd != \"\"'> " +
-            "  and status &lt;= #{statusEnd} " +
+            "  and status in (${status}) " +
             " </if> " +
             " <if test='isCompletionData != null and isCompletionData != \"\"'> " +
             "  and is_completion_data = #{isCompletionData} " +
