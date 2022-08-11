@@ -72,6 +72,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Autowired
     private LineStoreMapper lineStoreMapper;
 
+    @Autowired
+    private TrackAssemblyService trackAssemblyService;
 
     @Value("${interface.wms.material-remaining-number}")
     private String urlStoreRemainingNumber;
@@ -254,16 +256,43 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      **/
     @Override
     public List<ProjectBomComplete> completeness(String planId) {
+        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         Plan plan = planMapper.selectById(planId);
-        List<ProjectBomComplete> projectBomCompleteList = poject_bom_complete_list(plan);
-        return poject_bom_complete_store_list(projectBomCompleteList);
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+        queryWrapper.eq("work_plan_id", plan.getId());
+        List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
+        if (trackHeadList == null && trackHeadList.size() == 0) {
+            //计划未匹配跟单
+            projectBomCompleteList = projectBomCompleteList(plan);
+        } else {
+            //计划已匹配跟单
+            projectBomCompleteList = projectBomCompleteList(plan);
+        }
+        return pojectBomCompleteStoreList(projectBomCompleteList);
     }
 
+    /**
+     * 功能描述: 齐套物料查询（跟单下的装配bom装配信息合并后的列表）
+     *
+     * @param planList 计划信息列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
     @Override
     public List<ProjectBomComplete> completeness_list(List<Plan> planList) {
         List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         for (Plan plan : planList) {
-            List<ProjectBomComplete> projectBomCompleteListNew = poject_bom_complete_list(plan);
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+            queryWrapper.eq("work_plan_id", plan.getId());
+            List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
+            List<ProjectBomComplete> projectBomCompleteListNew = new ArrayList<>();
+            if (trackHeadList == null && trackHeadList.size() == 0) {
+                //计划未匹配跟单
+                projectBomCompleteListNew = projectBomCompleteList(plan);
+            } else {
+                //计划已匹配跟单
+                projectBomCompleteListNew = projectBomCompleteList(plan);
+            }
             for (ProjectBomComplete pbcn : projectBomCompleteListNew) {
                 boolean flag = true;
                 for (ProjectBomComplete pbc : projectBomCompleteList) {
@@ -278,10 +307,17 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 }
             }
         }
-        return poject_bom_complete_store_list(projectBomCompleteList);
+        return pojectBomCompleteStoreList(projectBomCompleteList);
     }
 
-    List<ProjectBomComplete> poject_bom_complete_list(Plan plan) {
+    /**
+     * 功能描述: 齐套物料BOM数据封装（跟单下的装配bom装配信息合并后的列表）
+     *
+     * @param plan 计划信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
+    List<ProjectBomComplete> projectBomCompleteList(Plan plan) {
         List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         if (!StringUtil.isNullOrEmpty(plan.getProjectBom())) {
             List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
@@ -290,9 +326,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
-                //是否过滤H零件
+                //过滤H零件
                 if ("L".equals(pb.getGrade())) {
+                    //过滤关键件
                     if ("1".equals(pb.getIsCheck())) {
+                        //处理分组信息
                         if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                             if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                                 ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
@@ -313,7 +351,51 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return projectBomCompleteList;
     }
 
-    List<ProjectBomComplete> poject_bom_complete_store_list(List<ProjectBomComplete> projectBomCompleteList) {
+
+    /**
+     * 功能描述: 齐套物料数据合并封装（跟单下的装配bom装配信息合并后的列表）
+     *
+     * @param plan          计划信息
+     * @param trackHeadList 计划匹配的跟单列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
+    List<ProjectBomComplete> projectBomCompleteListByTrackHead(Plan plan, List<TrackHead> trackHeadList) {
+        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
+        for (TrackHead trackHead : trackHeadList) {
+            QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("track_head_id", trackHead.getId());
+            List<TrackAssembly> trackAssemblies = trackAssemblyService.list(queryWrapper);
+            for (TrackAssembly trackAssembly : trackAssemblies) {
+                boolean flag = true;
+                for (ProjectBomComplete projectBomComplete : projectBomCompleteList) {
+                    if (trackAssembly.getMaterialNo().equals(projectBomComplete.getMaterialNo())) {
+                        flag = false;
+                        projectBomComplete.setNumber(trackAssembly.getNumber() + projectBomComplete.getNumber());
+                        projectBomComplete.setInstallNumber(trackAssembly.getNumber() + projectBomComplete.getInstallNumber());
+                    }
+                }
+                if (flag) {
+                    ProjectBomComplete projectBomComplete = new ProjectBomComplete();
+                    projectBomComplete.setPlanNumber(plan.getProjNum());
+                    projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
+                    projectBomComplete.setNumber(trackAssembly.getNumber());
+                    projectBomComplete.setInstallNumber(trackAssembly.getNumber());
+                    projectBomCompleteList.add(projectBomComplete);
+                }
+            }
+        }
+        return projectBomCompleteList;
+    }
+
+    /**
+     * 功能描述: wms接口库存数量获取
+     *
+     * @param projectBomCompleteList 齐套数据列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
+    List<ProjectBomComplete> pojectBomCompleteStoreList(List<ProjectBomComplete> projectBomCompleteList) {
         for (ProjectBomComplete pbc : projectBomCompleteList) {
             int totalErp = Double.valueOf(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()).replaceAll("\uFEFF", "")).intValue();
             int totalStore = 0;
