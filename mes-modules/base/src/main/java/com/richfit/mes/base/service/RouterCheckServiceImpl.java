@@ -31,7 +31,6 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
         queryWrapper.eq("sequence_id", optId)
                 .eq("type", type)
                 .eq("branch_code", branchCode)
-                .eq("tenant_id", tenantId)
                 .orderByDesc("modify_time");
         return this.list(queryWrapper);
     }

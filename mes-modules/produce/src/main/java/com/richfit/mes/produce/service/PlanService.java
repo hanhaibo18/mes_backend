@@ -95,10 +95,11 @@ public interface PlanService extends IService<Plan> {
      * @Author: zhiqiang.lu
      * @Date: 2022/7/8 11:37
      **/
-    void planData(String planId);
+    void planData(String planId) throws Exception;
 
     /**
      * 拆分计划
+     *
      * @param planSplitDto
      * @return
      */
@@ -106,8 +107,27 @@ public interface PlanService extends IService<Plan> {
 
     /**
      * 撤销拆分计划
+     *
      * @param id
      * @return
      */
     CommonResult<Object> backoutPlan(String id);
+
+    /**
+     * 计划列表动态数据封装（工艺状态）
+     *
+     * @param planList 计划列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 15:06
+     */
+    void planPackageRouter(List<Plan> planList);
+
+    /**
+     * 计划列表动态数据封装（库存数量）
+     *
+     * @param planList 计划列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 15:06
+     */
+    void planPackageStore(List<Plan> planList);
 }

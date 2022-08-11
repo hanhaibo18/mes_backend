@@ -359,27 +359,22 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
             queryWrapper.eq("work_plan_id", planId);
             List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-            int trackHeadFinish = 0;
+//            Map<String, String> map = new HashMap();
+//            map.put("workPlanId", planId);
+//            List<TrackHead> trackHeadList = trackHeadService.selectTrackFlowList(map);
+            int storeNum = 0;
             int processNum = 0;
             int deliveryNum = 0;
             int optNumber = 0;
             int optProcessNumber = 0;
+            int trackHeadFinish = 0;
             for (TrackHead trackHead : trackHeadList) {
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                 List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                 optNumber += trackItemList.size();
-                if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
-                    trackHeadFinish++;
-                    deliveryNum += trackHead.getNumber();
-                } else if ("0".equals(trackHead.getStatus())) {
-                    //未派工
-//                    for (TrackItem trackItem : trackItemList) {
-//                        if (trackItem.getIsOperationComplete() == 0) {
-//                            optProcessNumber++;
-//                        }
-//                    }
-                    //在制
+                if ("0".equals(trackHead.getStatus())) {
+                    //未派工算在制
                     processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
                         if (trackItem.getIsOperationComplete() == 0) {
@@ -394,23 +389,32 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                             optProcessNumber++;
                         }
                     }
+                } else if ("2".equals(trackHead.getStatus())) {
+                    //完工
+                    storeNum += trackHead.getNumber();
                 } else if ("4".equals(trackHead.getStatus())) {
                     //打印跟单
                 } else if ("5".equals(trackHead.getStatus())) {
                     //作废跟单
+                } else if ("8".equals(trackHead.getStatus())) {
+                    //生成完工资料
+                    storeNum += trackHead.getNumber();
+                } else if ("9".equals(trackHead.getStatus())) {
+                    //已交
                 } else {
                     //其余都算完工
                     trackHeadFinish++;
                     deliveryNum += trackHead.getNumber();
                 }
             }
-
-            plan.setProcessNum(processNum);
-            plan.setDeliveryNum(deliveryNum);
-            plan.setTrackHeadNumber(trackHeadList.size());
-            plan.setTrackHeadFinishNumber(trackHeadFinish);
-            plan.setOptNumber(optNumber);
-            plan.setOptFinishNumber(optNumber - optProcessNumber);
+            plan.setStoreNum(storeNum);//库存数量
+            plan.setProcessNum(processNum);//在制数量
+            plan.setDeliveryNum(deliveryNum);//交付数量
+            plan.setMissingNum(plan.getProjNum() - storeNum - processNum - deliveryNum);//缺件数量
+            plan.setTrackHeadNumber(trackHeadList.size());//跟单数量
+            plan.setTrackHeadFinishNumber(trackHeadFinish);//跟单完成数量
+            plan.setOptNumber(optNumber);//工序数量
+            plan.setOptFinishNumber(optNumber - optProcessNumber);//工序完成数量
             if (plan.getProjNum() <= plan.getDeliveryNum()) {
                 plan.setStatus(3);
             } else {
@@ -701,4 +705,32 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return CommonResult.success(null);
     }
 
+    @Override
+    public void planPackageRouter(List<Plan> planList) {
+        for (Plan plan : planList) {
+            CommonResult<Router> result = baseServiceClient.getRouterByNo(plan.getDrawNo(), plan.getBranchCode());
+            if (result.getData() != null && "1".equals(result.getData().getStatus())) {
+                plan.setProcessStatus(1);
+            } else {
+                plan.setProcessStatus(0);
+            }
+        }
+    }
+
+    @Override
+    public void planPackageStore(List<Plan> planList) {
+        String drawingNos = "";
+        for (Plan plan : planList) {
+            drawingNos += ",'" + plan.getDrawNo() + "'";
+        }
+        drawingNos = drawingNos.substring(1);
+        List<Map> mapList = trackHeadService.selectTrackStoreCount(drawingNos);
+        for (Plan plan : planList) {
+            for (Map map : mapList) {
+                if (map.get("drawing_no").toString().equals(plan.getDrawNo())) {
+                    plan.setStoreNumber(Integer.parseInt(map.get("number").toString()));
+                }
+            }
+        }
+    }
 }
