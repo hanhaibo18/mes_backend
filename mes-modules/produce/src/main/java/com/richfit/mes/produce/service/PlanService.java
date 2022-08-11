@@ -95,7 +95,7 @@ public interface PlanService extends IService<Plan> {
      * @Author: zhiqiang.lu
      * @Date: 2022/7/8 11:37
      **/
-    void planData(String planId);
+    void planData(String planId) throws Exception;
 
     /**
      * 拆分计划
