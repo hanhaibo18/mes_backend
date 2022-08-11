@@ -156,21 +156,5 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     @ApiModelProperty(value = "实物配送区分", dataType = "String")
     private String isEdgeStore;
 
-
-    /**
-     * 配送数量
-     */
-    @TableField(exist = false)
-    private int quantity;
-
-    /**
-     * 申请数量
-     */
-    @TableField(exist = false)
-    private int orderQuantity;
-
-    /**
-     * 单位
-     */
     private String unit;
 }

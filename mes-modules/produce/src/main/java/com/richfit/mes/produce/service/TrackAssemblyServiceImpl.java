@@ -265,7 +265,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         //工序id
         requestNote.setTrackItemId(ingredient.getGx());
         //申请单号
-        requestNote.setBranchCode(ingredient.getSqd());
+        requestNote.setRequestNoteNumber(ingredient.getSqd());
         //物料信息
         List<LineList> lineList = ingredient.getLineList();
 
@@ -282,7 +282,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             //物料名称
             requestNoteDetail.setMaterialName(line.getMaterialDesc());
             //数量
-            requestNoteDetail.setNumber(Integer.parseInt(String.valueOf(line.getQuantity())));
+            requestNoteDetail.setNumber((int) line.getQuantity());
             requestNoteDetails.add(requestNoteDetail);
         }
 

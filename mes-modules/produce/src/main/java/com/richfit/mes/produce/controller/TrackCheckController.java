@@ -816,12 +816,16 @@ public class TrackCheckController extends BaseController {
         queryWrapper.eq("next_process_id", tiId);
         queryWrapper.orderByAsc("create_time");
         List<NextProcess> nextProcessList = nextProcessService.list(queryWrapper);
-        TrackItem trackItem = trackItemService.getById(tiId);
-        NextProcess nextProcess = new NextProcess();
-        nextProcess.setCurrentProcessId(tiId);
-        nextProcess.setProcessName(trackItem.getOptName());
-        nextProcess.setOptSequence(trackItem.getSequenceOrderBy().toString());
-        nextProcessList.add(nextProcess);
+        NextProcess process = new NextProcess();
+        process.setCurrentProcessId(tiId);
+        nextProcessList.add(process);
+        for (NextProcess nextProcess : nextProcessList) {
+            TrackItem trackItem = trackItemService.getById(nextProcess.getCurrentProcessId());
+            nextProcess.setProcessName(trackItem.getOptName());
+            nextProcess.setOptSequence(trackItem.getSequenceOrderBy().toString());
+            nextProcess.setOptId(trackItem.getOptId());
+            nextProcess.setOptType(trackItem.getOptType());
+        }
         return CommonResult.success(nextProcessList);
     }
 
