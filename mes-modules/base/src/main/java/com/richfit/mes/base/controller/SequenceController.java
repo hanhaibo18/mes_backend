@@ -546,7 +546,7 @@ public class SequenceController extends BaseController {
 
         QueryWrapper<Router> queryWrapper2 = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(routerId)) {
-            queryWrapper2.eq("id", routerId);
+            queryWrapper2.eq("router_id", routerId);
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
             queryWrapper2.eq("router_no", routerNo);

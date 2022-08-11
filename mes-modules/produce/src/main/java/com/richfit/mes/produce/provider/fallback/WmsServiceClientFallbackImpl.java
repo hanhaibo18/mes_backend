@@ -2,7 +2,7 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Certificate;
-import com.richfit.mes.produce.entity.IngredientApplicationDto;
+import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 
 /**

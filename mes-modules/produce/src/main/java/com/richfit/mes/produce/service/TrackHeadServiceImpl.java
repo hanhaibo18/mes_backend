@@ -584,6 +584,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackAssembly.setIsCheck(pb.getIsCheck());
                 trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
                 trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
+                trackAssembly.setUnit(pb.getUnit());
                 if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                     if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                         trackAssemblyList.add(trackAssembly);

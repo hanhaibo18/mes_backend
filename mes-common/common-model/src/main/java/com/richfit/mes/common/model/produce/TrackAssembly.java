@@ -171,6 +171,5 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     /**
      * 单位
      */
-    @TableField(exist = false)
     private String unit;
 }

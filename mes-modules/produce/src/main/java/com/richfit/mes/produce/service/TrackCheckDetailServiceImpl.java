@@ -58,7 +58,9 @@ public class TrackCheckDetailServiceImpl extends ServiceImpl<TrackCheckDetailMap
         queryWrapperDetail.eq("ti_id", tiId);
         queryWrapper.orderByDesc("modify_time");
         List<TrackCheckDetail> trackCheckDetails = this.list(queryWrapperDetail);
-        trackCheck.setCheckDetailsList(trackCheckDetails);
+        if (!trackCheckDetails.isEmpty()) {
+            trackCheck.setCheckDetailsList(trackCheckDetails);
+        }
         return trackCheck;
     }
 

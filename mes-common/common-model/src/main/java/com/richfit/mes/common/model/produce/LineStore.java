@@ -207,7 +207,7 @@ public class LineStore extends BaseEntity<LineStore> {
     }
 
     public LineStore(Certificate certificate, TrackCertificate tc) {
-
+        
         this.materialNo = certificate.getMaterialNo();
         this.drawingNo = certificate.getDrawingNo();
         this.certificateNo = certificate.getCertificateNo();
@@ -238,38 +238,4 @@ public class LineStore extends BaseEntity<LineStore> {
         this.inputType = StoreInputTypeEnum.CERT_ACCEPT.getCode();
     }
 
-    public LineStore(MaterialReceiveDetail materialReceiveDetail, String branchCode) {
-
-        this.materialNo = materialReceiveDetail.getMaterialNum();
-        this.drawingNo = materialReceiveDetail.getDrawingNo();
-        this.certificateNo = null;
-        this.materialSource = branchCode;
-        this.status = "0";
-        this.batchNo = null;
-        this.number = materialReceiveDetail.getQuantity();
-        this.workblankNo = null;
-
-        //半成品 成品
-        this.materialType = "1";
-        this.trackType = "0";
-        this.useNum = 0;
-        this.inTime = new Date();
-
-        this.testBarNumber = null;
-        this.testBarType = null;
-        this.productionOrder = null;
-
-        this.productName = null;
-        this.materialName = materialReceiveDetail.getName();
-        this.materialDesc = materialReceiveDetail.getName();
-        this.texture = null;
-        this.weight = null;
-
-        this.isSendErp = "0";
-        this.isFeedErp = "0";
-        this.stockType = "0";
-        this.branchCode = branchCode;
-        this.inputType = StoreInputTypeEnum.WMS_SEND.getCode();
-
-    }
 }

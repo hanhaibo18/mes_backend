@@ -1,11 +1,13 @@
-package com.kld.mes.wms.utils;
+package com.richfit.mes.produce.utils;
 
-import com.kld.mes.wms.provider.SystemServiceClient;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.constant.SecurityConstants;
+import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.MaterialReceiveDetailService;
+import com.richfit.mes.produce.service.MaterialReceiveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -31,8 +33,15 @@ public class TaskUtils {
     private String password = "";
     private String url = "";
 
+    @Autowired
+    MaterialReceiveService materialReceiveService;
+
     @Resource
     SystemServiceClient systemServiceClient;
+
+
+    @Resource
+    MaterialReceiveDetailService materialReceiveDetailService;
 
     public void init(){
         List<ItemParam> list = systemServiceClient.selectItemClass(code,"",SecurityConstants.FROM_INNER).getData();
@@ -49,7 +58,7 @@ public class TaskUtils {
         if (StringUtils.isEmpty(userName)){
             init();
         }
-        String date = systemServiceClient.getlastTime();
+        String date = materialReceiveService.getlastTime();
         jdbcMaterialOutView(userName, password, url , date);
     }
 
@@ -84,7 +93,7 @@ public class TaskUtils {
             materialReceive.setState("0");
             materialReceiveList.add(materialReceive);
         }
-        systemServiceClient.materialReceiveSaveBatch(materialReceiveList);
+        materialReceiveService.saveBatch(materialReceiveList);
         rs.close();
 
         // 3、定义sql2
@@ -106,8 +115,8 @@ public class TaskUtils {
             String materialNum = rs2.getString("MATERIAL_NUM");
             String name = rs2.getString("MATERIAL_DESC");
             String batchNum = rs2.getString("BATCH_NUM");
-            int orderQuantity = rs2.getInt("ORDER_QUANTITY");
-            int quantity = rs2.getInt("QUANTITY");
+            String orderQuantity = rs2.getString("ORDER_QUANTITY");
+            String quantity = rs2.getString("QUANTITY");
             String unit = rs2.getString("UNIT");
 
             MaterialReceiveDetail materialReceiveDetail = new MaterialReceiveDetail();
@@ -121,7 +130,7 @@ public class TaskUtils {
             materialReceiveDetail.setUnit(unit);
             detailList.add(materialReceiveDetail);
         }
-        systemServiceClient.detailSaveBatch(detailList);
+        materialReceiveDetailService.saveBatch(detailList);
         rs2.close();
 
         stmt.close();
