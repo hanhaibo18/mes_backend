@@ -56,6 +56,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Resource
     private SystemServiceClient systemServiceClient;
 
+    @Resource
+    private RequestNoteService requestNoteService;
+
+    @Resource
+    private TrackHeadService trackHeadService;
+
     @Override
     public LineStore LineStoreById(String id) {
         return lineStoreMapper.selectById(id);
@@ -536,6 +542,34 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         }
 
         return idList;
+    }
+
+    @Override
+    public boolean addStoreByWmsSend(List<MaterialReceiveDetail> materialReceiveDetails, String branchCode) {
+
+        //取一条中的的申请单号
+        String aplyNum = materialReceiveDetails.get(0).getAplyNum();
+
+        //根据申请单号，获取关联的跟单id
+        QueryWrapper<RequestNote> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("request_note_number", aplyNum);
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        RequestNote requestNote = requestNoteService.getOne(queryWrapper);
+
+        //根据跟单Id，获取跟单，拿到其中的订单号
+        TrackHead trackHead = trackHeadService.getById(requestNote.getTrackHeadId());
+        String orderNo = trackHead.getProductionOrder();
+
+        //把收料信息转换成料单信息，入库
+        for (MaterialReceiveDetail materialReceiveDetail : materialReceiveDetails) {
+            LineStore lineStore = new LineStore(materialReceiveDetail, branchCode);
+            lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            lineStore.setProductionOrder(orderNo);
+            this.save(lineStore);
+        }
+
+        return true;
     }
 
 
