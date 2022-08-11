@@ -10,4 +10,15 @@ import lombok.Data;
 public class PLanCommonVO {
     private String objectKey;
     private String objectValue;
+
+    public String getObjectValue(){
+        if("计划类型：".equals(objectKey)){
+            if("生产计划".equals(objectValue)){
+                return "1";
+            }else{
+                return "0";
+            }
+        }
+        return objectValue;
+    }
 }

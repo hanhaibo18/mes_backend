@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
@@ -40,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -709,52 +711,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return CommonResult.success(null);
     }
 
-    @Override
-    public void exportPlan(MultipartFile file){
-        //读第一个sheet上半部分
-        String[] fieldNames1 = {"objectKey", "objectValue"};
-        //读第一个sheet下班部分
-        String[] fieldNames2 = {"sortNo","drawingNo", "materialName", "texture", "singleNumber", "projNum","materialProductionUnit"
-                ,"rivetingWeldingUnit","assemblyContractorUnit","","finalAssemblyContractorUnit","remark"};
-
-        //读第二个sheet
-        String[] fieldNames3 = {"isExport", "", "", "", "", "", "", "", "totalNumber"
-                , "blank","","prepareBy","approvalBy","auditBy","branchCode","inchargeOrg","storeNumber","processNum",""
-                ,"","","","missingNum","","","","endTime","projectNo"};
-
-        File excelFile = null;
-
-        //给导入的excel一个临时的文件名
-        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
-        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
-        try {
-            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
-            file.transferTo(excelFile);
-
-            List<PLanCommonVO> list1 = ExcelUtils.importExcel(excelFile, PLanCommonVO.class, fieldNames1, 0, 3,0, 0, tempName.toString());
-
-            List<Plan> list2 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames2, 6, 0, 0, tempName.toString());
-
-            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 1, tempName.toString());
-            FileUtils.delete(excelFile);
-            //过滤要导入的数据
-            List<Plan> exportList = list2.stream().filter(t -> {
-                return t.getIsExport().equals("是")
-                        && StringUtils.isEmpty(t.getBranchCode())   //部门必填
-                        && StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
-                        && StringUtils.isEmpty(t.getEndTime())      //交货期必填
-                        && StringUtils.isEmpty(t.getProjectNo());   //项目号必填
-            }).collect(Collectors.toList());
-
-            exportList.forEach(item -> {
-                item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                item.setCreateTime(new Date());
-            });
-
-
-        } catch (Exception e) {
-        }
-    }
 
     @Override
     public void planPackageRouter(List<Plan> planList) {
@@ -782,6 +738,81 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     plan.setStoreNumber(Integer.parseInt(map.get("number").toString()));
                 }
             }
+        }
+    }
+
+    @Override
+    public void exportPlan(MultipartFile file){
+        //总图计划总属性
+        String[] fieldNames1 = {"objectKey", "objectValue"};
+        //总图计划列表
+        String[] fieldNames2 = {"sortNo","drawingNo", "materialName", "texture", "singleNumber", "projNum","materialProductionUnit"
+                ,"rivetingWeldingUnit","assemblyContractorUnit","","finalAssemblyContractorUnit","remark"};
+
+        //sheet计划列表
+        String[] fieldNames3 = {"isExport", "", "", "", "", "", "", "", "totalNumber"
+                , "blank","","prepareBy","approvalBy","auditBy","branchCode","inchargeOrg","storeNumber","processNum",""
+                ,"","","","missingNum","","","","endTime","projectNo"};
+
+        File excelFile = null;
+
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+
+            List<PLanCommonVO> list1 = ExcelUtils.importExcel(excelFile, PLanCommonVO.class, fieldNames1, 0, 3,0, 0, tempName.toString());
+
+            List<Plan> list2 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames2, 6, 0, 0, tempName.toString())
+                    .stream().filter(t->!ObjectUtil.isEmpty(t.getSortNo())).collect(Collectors.toList());
+
+            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 1, tempName.toString());
+            FileUtils.delete(excelFile);
+
+            //sheet1过滤要导入的数据
+            List<Plan> sheetList = list3.stream().filter(t -> {
+                return t.getIsExport().equals("是")
+                        && !StringUtils.isEmpty(t.getBranchCode())   //部门必填
+                        && !StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
+                        && !StringUtils.isEmpty(t.getEndTime())      //交货期必填
+                        && !StringUtils.isEmpty(t.getProjectNo());   //项目号必填
+            }).collect(Collectors.toList());
+            //sheet计划列表->赋值总图计划总属性
+            sheetList.forEach(item -> {
+                item.setWorkNo(list1.get(0).getObjectValue());
+                item.setProjCode(list1.get(1).getObjectValue());
+                //月份时间转换有问题
+                //item.setStartTime(DateUtil.parse(list1.get(2).getObjectValue()));
+                item.setProjType(Integer.parseInt(list1.get(3).getObjectValue()));
+            });
+
+            //根据序号分map
+            Map<Integer, Plan> sheetListMap = sheetList.stream().collect(Collectors.toMap(Plan::getSortNo, Function.identity()));
+
+            //根据序号合并
+            for (Plan plan : list2) {
+                Plan sheetPlan = sheetListMap.get(plan.getSortNo());
+                plan.setTotalNumber(sheetPlan.getTotalNumber());
+                plan.setBlank(sheetPlan.getBlank());
+               /* plan.setPrepareBy(sheetPlan.getPrepareBy());
+                plan.setApprovalBy(sheetPlan.getApprovalBy());
+                plan.setAuditBy(sheetPlan.getAuditBy());*/
+                plan.setBranchCode(sheetPlan.getBranchCode());
+                plan.setInchargeOrg(sheetPlan.getInchargeOrg());
+                plan.setStoreNumber(sheetPlan.getStoreNumber());
+                plan.setProcessNum(sheetPlan.getProcessNum());
+                plan.setMissingNum(sheetPlan.getMissingNum());
+                plan.setEndTime(sheetPlan.getEndTime());
+                plan.setProjectNo(sheetPlan.getProjectNo());
+            }
+            //保存计划列表
+            this.saveBatch(list2);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
