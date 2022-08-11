@@ -89,7 +89,7 @@ public class ExcelUtils {
      * @return 集合
      * @throws IOException IO异常
      */
-    private static <T> List<T> importExcel(File file, Class<T> type, String[] fieldNames,
+    public static <T> List<T> importExcel(File file, Class<T> type, String[] fieldNames,
                                            int beginRow, int endRow, int beginColumn,
                                            int sheetIndex, String fileName) throws IOException {
         // 创建文件输入流

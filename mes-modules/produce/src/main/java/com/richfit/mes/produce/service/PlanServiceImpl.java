@@ -13,8 +13,11 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.DateUtils;
+import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
@@ -23,6 +26,7 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
+import com.richfit.mes.produce.entity.planExportVo.PLanCommonVO;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +35,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -256,43 +262,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      **/
     @Override
     public List<ProjectBomComplete> completeness(String planId) {
-        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         Plan plan = planMapper.selectById(planId);
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        queryWrapper.eq("work_plan_id", plan.getId());
-        List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-        if (trackHeadList == null && trackHeadList.size() == 0) {
-            //计划未匹配跟单
-            projectBomCompleteList = projectBomCompleteList(plan);
-        } else {
-            //计划已匹配跟单
-            projectBomCompleteList = projectBomCompleteList(plan);
-        }
-        return pojectBomCompleteStoreList(projectBomCompleteList);
+        List<ProjectBomComplete> projectBomCompleteList = poject_bom_complete_list(plan);
+        return poject_bom_complete_store_list(projectBomCompleteList);
     }
 
-    /**
-     * 功能描述: 齐套物料查询（跟单下的装配bom装配信息合并后的列表）
-     *
-     * @param planList 计划信息列表
-     * @Author: zhiqiang.lu
-     * @Date: 2022/8/11 11:37
-     **/
     @Override
     public List<ProjectBomComplete> completeness_list(List<Plan> planList) {
         List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         for (Plan plan : planList) {
-            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-            queryWrapper.eq("work_plan_id", plan.getId());
-            List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-            List<ProjectBomComplete> projectBomCompleteListNew = new ArrayList<>();
-            if (trackHeadList == null && trackHeadList.size() == 0) {
-                //计划未匹配跟单
-                projectBomCompleteListNew = projectBomCompleteList(plan);
-            } else {
-                //计划已匹配跟单
-                projectBomCompleteListNew = projectBomCompleteList(plan);
-            }
+            List<ProjectBomComplete> projectBomCompleteListNew = poject_bom_complete_list(plan);
             for (ProjectBomComplete pbcn : projectBomCompleteListNew) {
                 boolean flag = true;
                 for (ProjectBomComplete pbc : projectBomCompleteList) {
@@ -307,17 +286,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 }
             }
         }
-        return pojectBomCompleteStoreList(projectBomCompleteList);
+        return poject_bom_complete_store_list(projectBomCompleteList);
     }
 
-    /**
-     * 功能描述: 齐套物料BOM数据封装（跟单下的装配bom装配信息合并后的列表）
-     *
-     * @param plan 计划信息
-     * @Author: zhiqiang.lu
-     * @Date: 2022/8/11 11:37
-     **/
-    List<ProjectBomComplete> projectBomCompleteList(Plan plan) {
+    List<ProjectBomComplete> poject_bom_complete_list(Plan plan) {
         List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         if (!StringUtil.isNullOrEmpty(plan.getProjectBom())) {
             List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
@@ -326,11 +298,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
-                //过滤H零件
+                //是否过滤H零件
                 if ("L".equals(pb.getGrade())) {
-                    //过滤关键件
                     if ("1".equals(pb.getIsCheck())) {
-                        //处理分组信息
                         if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                             if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                                 ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
@@ -351,51 +321,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return projectBomCompleteList;
     }
 
-
-    /**
-     * 功能描述: 齐套物料数据合并封装（跟单下的装配bom装配信息合并后的列表）
-     *
-     * @param plan          计划信息
-     * @param trackHeadList 计划匹配的跟单列表
-     * @Author: zhiqiang.lu
-     * @Date: 2022/8/11 11:37
-     **/
-    List<ProjectBomComplete> projectBomCompleteListByTrackHead(Plan plan, List<TrackHead> trackHeadList) {
-        List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
-        for (TrackHead trackHead : trackHeadList) {
-            QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("track_head_id", trackHead.getId());
-            List<TrackAssembly> trackAssemblies = trackAssemblyService.list(queryWrapper);
-            for (TrackAssembly trackAssembly : trackAssemblies) {
-                boolean flag = true;
-                for (ProjectBomComplete projectBomComplete : projectBomCompleteList) {
-                    if (trackAssembly.getMaterialNo().equals(projectBomComplete.getMaterialNo())) {
-                        flag = false;
-                        projectBomComplete.setNumber(trackAssembly.getNumber() + projectBomComplete.getNumber());
-                        projectBomComplete.setInstallNumber(trackAssembly.getNumber() + projectBomComplete.getInstallNumber());
-                    }
-                }
-                if (flag) {
-                    ProjectBomComplete projectBomComplete = new ProjectBomComplete();
-                    projectBomComplete.setPlanNumber(plan.getProjNum());
-                    projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
-                    projectBomComplete.setNumber(trackAssembly.getNumber());
-                    projectBomComplete.setInstallNumber(trackAssembly.getNumber());
-                    projectBomCompleteList.add(projectBomComplete);
-                }
-            }
-        }
-        return projectBomCompleteList;
-    }
-
-    /**
-     * 功能描述: wms接口库存数量获取
-     *
-     * @param projectBomCompleteList 齐套数据列表
-     * @Author: zhiqiang.lu
-     * @Date: 2022/8/11 11:37
-     **/
-    List<ProjectBomComplete> pojectBomCompleteStoreList(List<ProjectBomComplete> projectBomCompleteList) {
+    List<ProjectBomComplete> poject_bom_complete_store_list(List<ProjectBomComplete> projectBomCompleteList) {
         for (ProjectBomComplete pbc : projectBomCompleteList) {
             int totalErp = Double.valueOf(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()).replaceAll("\uFEFF", "")).intValue();
             int totalStore = 0;
@@ -441,22 +367,27 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
             queryWrapper.eq("work_plan_id", planId);
             List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-//            Map<String, String> map = new HashMap();
-//            map.put("workPlanId", planId);
-//            List<TrackHead> trackHeadList = trackHeadService.selectTrackFlowList(map);
-            int storeNum = 0;
+            int trackHeadFinish = 0;
             int processNum = 0;
             int deliveryNum = 0;
             int optNumber = 0;
             int optProcessNumber = 0;
-            int trackHeadFinish = 0;
             for (TrackHead trackHead : trackHeadList) {
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                 List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                 optNumber += trackItemList.size();
-                if ("0".equals(trackHead.getStatus())) {
-                    //未派工算在制
+                if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
+                    trackHeadFinish++;
+                    deliveryNum += trackHead.getNumber();
+                } else if ("0".equals(trackHead.getStatus())) {
+                    //未派工
+//                    for (TrackItem trackItem : trackItemList) {
+//                        if (trackItem.getIsOperationComplete() == 0) {
+//                            optProcessNumber++;
+//                        }
+//                    }
+                    //在制
                     processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
                         if (trackItem.getIsOperationComplete() == 0) {
@@ -471,32 +402,23 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                             optProcessNumber++;
                         }
                     }
-                } else if ("2".equals(trackHead.getStatus())) {
-                    //完工
-                    storeNum += trackHead.getNumber();
                 } else if ("4".equals(trackHead.getStatus())) {
                     //打印跟单
                 } else if ("5".equals(trackHead.getStatus())) {
                     //作废跟单
-                } else if ("8".equals(trackHead.getStatus())) {
-                    //生成完工资料
-                    storeNum += trackHead.getNumber();
-                } else if ("9".equals(trackHead.getStatus())) {
-                    //已交
                 } else {
                     //其余都算完工
                     trackHeadFinish++;
                     deliveryNum += trackHead.getNumber();
                 }
             }
-            plan.setStoreNum(storeNum);//库存数量
-            plan.setProcessNum(processNum);//在制数量
-            plan.setDeliveryNum(deliveryNum);//交付数量
-            plan.setMissingNum(plan.getProjNum() - storeNum - processNum - deliveryNum);//缺件数量
-            plan.setTrackHeadNumber(trackHeadList.size());//跟单数量
-            plan.setTrackHeadFinishNumber(trackHeadFinish);//跟单完成数量
-            plan.setOptNumber(optNumber);//工序数量
-            plan.setOptFinishNumber(optNumber - optProcessNumber);//工序完成数量
+
+            plan.setProcessNum(processNum);
+            plan.setDeliveryNum(deliveryNum);
+            plan.setTrackHeadNumber(trackHeadList.size());
+            plan.setTrackHeadFinishNumber(trackHeadFinish);
+            plan.setOptNumber(optNumber);
+            plan.setOptFinishNumber(optNumber - optProcessNumber);
             if (plan.getProjNum() <= plan.getDeliveryNum()) {
                 plan.setStatus(3);
             } else {
@@ -785,6 +707,53 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             planData(plan.getId());
         }
         return CommonResult.success(null);
+    }
+
+    @Override
+    public void exportPlan(MultipartFile file){
+        //读第一个sheet上半部分
+        String[] fieldNames1 = {"objectKey", "objectValue"};
+        //读第一个sheet下班部分
+        String[] fieldNames2 = {"sortNo","drawingNo", "materialName", "texture", "singleNumber", "projNum","materialProductionUnit"
+                ,"rivetingWeldingUnit","assemblyContractorUnit","","finalAssemblyContractorUnit","remark"};
+
+        //读第二个sheet
+        String[] fieldNames3 = {"isExport", "", "", "", "", "", "", "", "totalNumber"
+                , "blank","","prepareBy","approvalBy","auditBy","branchCode","inchargeOrg","storeNumber","processNum",""
+                ,"","","","missingNum","","","","endTime","projectNo"};
+
+        File excelFile = null;
+
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+
+            List<PLanCommonVO> list1 = ExcelUtils.importExcel(excelFile, PLanCommonVO.class, fieldNames1, 0, 3,0, 0, tempName.toString());
+
+            List<Plan> list2 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames2, 6, 0, 0, tempName.toString());
+
+            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 1, tempName.toString());
+            FileUtils.delete(excelFile);
+            //过滤要导入的数据
+            List<Plan> exportList = list2.stream().filter(t -> {
+                return t.getIsExport().equals("是")
+                        && StringUtils.isEmpty(t.getBranchCode())   //部门必填
+                        && StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
+                        && StringUtils.isEmpty(t.getEndTime())      //交货期必填
+                        && StringUtils.isEmpty(t.getProjectNo());   //项目号必填
+            }).collect(Collectors.toList());
+
+            exportList.forEach(item -> {
+                item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                item.setCreateTime(new Date());
+            });
+
+
+        } catch (Exception e) {
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,6 +20,7 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.entity.planExportVo.PLanCommonVO;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
@@ -28,9 +30,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @Author: GaoLiang
@@ -310,6 +318,14 @@ public class PlanController extends BaseController {
     @GetMapping("/backoutPlan/{id}")
     public CommonResult<Object> backoutPlan(@PathVariable String id) throws GlobalException {
         return planService.backoutPlan(id);
+    }
+
+    @ApiOperation(value = "导入计划", notes = "根据Excel文档导入计划")
+    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
+    @PostMapping("/import_excel")
+    public CommonResult importExcel(@RequestParam("file") MultipartFile file) {
+        planService.exportPlan(file);
+        return null;
     }
 
 }
