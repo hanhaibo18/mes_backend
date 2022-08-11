@@ -701,4 +701,32 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return CommonResult.success(null);
     }
 
+    @Override
+    public void planPackageRouter(List<Plan> planList) {
+        for (Plan plan : planList) {
+            CommonResult<Router> result = baseServiceClient.getRouterByNo(plan.getDrawNo(), plan.getBranchCode());
+            if (result.getData() != null && "1".equals(result.getData().getStatus())) {
+                plan.setProcessStatus(1);
+            } else {
+                plan.setProcessStatus(0);
+            }
+        }
+    }
+
+    @Override
+    public void planPackageStore(List<Plan> planList) {
+        String drawingNos = "";
+        for (Plan plan : planList) {
+            drawingNos += ",'" + plan.getDrawNo() + "'";
+        }
+        drawingNos = drawingNos.substring(1);
+        List<Map> mapList = trackHeadService.selectTrackStoreCount(drawingNos);
+        for (Plan plan : planList) {
+            for (Map map : mapList) {
+                if (map.get("drawing_no").toString().equals(plan.getDrawNo())) {
+                    plan.setStoreNumber(Integer.parseInt(map.get("number").toString()));
+                }
+            }
+        }
+    }
 }
