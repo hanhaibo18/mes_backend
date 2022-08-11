@@ -105,7 +105,7 @@ public interface PlanService extends IService<Plan> {
     CommonResult<Object> splitPlan(PlanSplitDto planSplitDto);
 
     /**
-     * 拆分计划
+     * 撤销拆分计划
      * @param id
      * @return
      */

@@ -3,6 +3,9 @@ package com.richfit.mes.sys.provider.fallback;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.CheckAttachment;
+import com.richfit.mes.common.model.produce.CodeRule;
+import com.richfit.mes.common.model.produce.CodeRuleItem;
+import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
 import com.richfit.mes.sys.provider.ProduceServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,14 +19,24 @@ import java.util.List;
 @Component
 @Slf4j
 public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
+
     @Override
-    public CommonResult<List<Branch>> selectBranchChildByCode(String branchCode) {
-        log.error("feign 查询机构信息失败:{}", branchCode);
+    public CommonResult<Boolean> saveCheckFile(CheckAttachment checkAttachment) {
         return CommonResult.success(null);
     }
 
     @Override
-    public CommonResult<Boolean> saveCheckFile(CheckAttachment checkAttachment) {
+    public CommonResult<Boolean> batchSaveCodeRule(List<CodeRule> rules) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<Boolean> batchSaveCodeRuleItem(List<CodeRuleItem> items) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<Boolean> batchSaveTrackHeadTemplate(List<ProduceTrackHeadTemplate> templates) {
         return CommonResult.success(null);
     }
 

@@ -22,4 +22,6 @@ public interface TenantService extends IService<Tenant> {
      * @return
      */
     Boolean addTenant(Tenant tenant);
+
+    String initData(String tenantId);
 }

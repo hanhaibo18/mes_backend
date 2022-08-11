@@ -1,13 +1,11 @@
-package com.richfit.mes.produce.utils;
+package com.kld.mes.wms.utils;
 
+import com.kld.mes.wms.provider.SystemServiceClient;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.constant.SecurityConstants;
-import com.richfit.mes.produce.provider.SystemServiceClient;
-import com.richfit.mes.produce.service.MaterialReceiveDetailService;
-import com.richfit.mes.produce.service.MaterialReceiveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -33,15 +31,8 @@ public class TaskUtils {
     private String password = "";
     private String url = "";
 
-    @Autowired
-    MaterialReceiveService materialReceiveService;
-
     @Resource
     SystemServiceClient systemServiceClient;
-
-
-    @Resource
-    MaterialReceiveDetailService materialReceiveDetailService;
 
     public void init(){
         List<ItemParam> list = systemServiceClient.selectItemClass(code,"",SecurityConstants.FROM_INNER).getData();
@@ -58,29 +49,12 @@ public class TaskUtils {
         if (StringUtils.isEmpty(userName)){
             init();
         }
-        Date date = materialReceiveService.getlastTime();
-        List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, url , date);
-        List<MaterialReceiveDetail> receiveDetails = jdbcQuickstart2(userName, password, url , date);
-        materialReceiveService.saveBatch(materialReceiveList);
-        materialReceiveDetailService.saveBatch(receiveDetails);
-    }
-
-    public void test() throws SQLException, ClassNotFoundException {
-        if (StringUtils.isEmpty(userName)){
-            init();
-        }
-        Date date = materialReceiveService.getlastTime();
-        List<MaterialReceive> materialReceiveList = jdbcQuickstart(userName, password, url , date);
-        List<MaterialReceiveDetail> receiveDetails = new ArrayList<>();
-        materialReceiveList.forEach(i -> {
-            receiveDetails.addAll(i.getReceiveDetails());
-        });
-        materialReceiveService.saveBatch(materialReceiveList);
-        materialReceiveDetailService.saveBatch(receiveDetails);
+        String date = systemServiceClient.getlastTime();
+        jdbcMaterialOutView(userName, password, url , date);
     }
 
 
-    public List<MaterialReceive> jdbcQuickstart(String userName, String password, String url, Date time) throws ClassNotFoundException, SQLException {
+    public void jdbcMaterialOutView(String userName, String password, String url, String time) throws ClassNotFoundException, SQLException {
         List<MaterialReceive> materialReceiveList = new ArrayList<>();
         // 1、注册驱动
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -91,7 +65,7 @@ public class TaskUtils {
         if (StringUtils.isEmpty(time)){
             sql = "select * from v_mes_out_headers";
         } else {
-            sql = "select * from v_mes_out_headers where CREATE_TIME > "+time;
+            sql = "select * from v_mes_out_headers where CREATE_TIME >" +  "' "+ time + "'";
         }
         // 4、获取执行sql的对象
         Statement stmt = conn.createStatement();
@@ -110,28 +84,18 @@ public class TaskUtils {
             materialReceive.setState("0");
             materialReceiveList.add(materialReceive);
         }
-        // 7、关闭资源
+        systemServiceClient.materialReceiveSaveBatch(materialReceiveList);
         rs.close();
-        stmt.close();
-        conn.close();
 
-        return  materialReceiveList;
-    }
-
-    public List<MaterialReceiveDetail> jdbcQuickstart2(String userName, String password,String url, Date time) throws ClassNotFoundException, SQLException {
-        // 1、注册驱动
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        // 2、获取数据库连接对象
-        Connection conn = DriverManager.getConnection("jdbc:mysql://"+url+"/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
-        // 3、定义sql
-        String sql = null;
+        // 3、定义sql2
+        String sql2 = null;
         if (StringUtils.isEmpty(time)) {
-            sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM";
+            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM";
         } else {
-            sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + time;
+            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" +  "' "+ time + "'";
         }
         // 4、获取执行sql的对象
-        Statement stmt = conn.createStatement();
+        Statement stmt2 = conn.createStatement();
         ResultSet rs2;
         rs2 = stmt.executeQuery(sql);
         List<MaterialReceiveDetail> detailList = new ArrayList<>();
@@ -142,8 +106,8 @@ public class TaskUtils {
             String materialNum = rs2.getString("MATERIAL_NUM");
             String name = rs2.getString("MATERIAL_DESC");
             String batchNum = rs2.getString("BATCH_NUM");
-            String orderQuantity = rs2.getString("ORDER_QUANTITY");
-            String quantity = rs2.getString("QUANTITY");
+            int orderQuantity = rs2.getInt("ORDER_QUANTITY");
+            int quantity = rs2.getInt("QUANTITY");
             String unit = rs2.getString("UNIT");
 
             MaterialReceiveDetail materialReceiveDetail = new MaterialReceiveDetail();
@@ -157,11 +121,11 @@ public class TaskUtils {
             materialReceiveDetail.setUnit(unit);
             detailList.add(materialReceiveDetail);
         }
-        // 7、关闭资源
+        systemServiceClient.detailSaveBatch(detailList);
         rs2.close();
+
         stmt.close();
         conn.close();
-
-        return detailList;
     }
+
 }

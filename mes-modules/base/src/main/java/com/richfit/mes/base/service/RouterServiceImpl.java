@@ -56,6 +56,11 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
     }
 
     @Override
+    public List<Router> getList(QueryWrapper<Router> qw) {
+        return routerMapper.selectRouter(qw);
+    }
+
+    @Override
     public QueryIsHistory queryIsHistory(String routerId) {
         Router router = this.getById(routerId);
         QueryIsHistory queryIsHistory = new QueryIsHistory();

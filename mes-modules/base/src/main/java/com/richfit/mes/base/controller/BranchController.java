@@ -39,6 +39,36 @@ public class BranchController extends BaseController {
     public static String BRANCH_SUCCESS_MESSAGE = "操作成功！";
     public static String BRANCH_FAILED_MESSAGE = "操作失败，请重试！";
 
+    @ApiOperation(value = "初始化租户组织机构", notes = "初始化租户组织机构")
+    @GetMapping("/initBranch")
+    public CommonResult<Branch> initBranch(String tenantId, String branchCode, String branchName) {
+        if (StringUtils.isNullOrEmpty(branchCode)) {
+            return CommonResult.failed(BRANCH_CODE_NULL_MESSAGE);
+        } else {
+            QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
+            queryWrapper.eq("branch_code", branchCode);
+            queryWrapper.eq("tenant_id", tenantId);
+            Branch oldBranch = branchService.getOne(queryWrapper);
+            if (oldBranch != null && !StringUtils.isNullOrEmpty(oldBranch.getBranchCode())) {
+                return CommonResult.success(oldBranch, "组织结构编号已存在！");
+            } else {
+                Branch branch = new Branch();
+                branch.setBranchCode(branchCode);
+                branch.setBranchName(branchName);
+                branch.setTenantId(tenantId);
+                branch.setBranchType("0");
+                branch.setOrderNo(0);
+                branch.setIsUse("1");
+                boolean bool = branchService.save(branch);
+                if (bool) {
+                    return CommonResult.success(branch, BRANCH_SUCCESS_MESSAGE);
+                } else {
+                    return CommonResult.failed(BRANCH_FAILED_MESSAGE);
+                }
+            }
+        }
+    }
+
     @ApiOperation(value = "新增组织机构", notes = "新增组织机构")
     @ApiImplicitParam(name = "branch", value = "组织机构", required = true, dataType = "Branch", paramType = "path")
     @PostMapping("/branch")
@@ -147,7 +177,6 @@ public class BranchController extends BaseController {
         if (!isAdmin) {
             // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             if (isFindTop != null && isFindTop) {
-                String orgId = SecurityUtils.getCurrentUser().getOrgId();
                 String belongOrgId = SecurityUtils.getCurrentUser().getBelongOrgId();
                 queryWrapper.eq("branch_code", belongOrgId);
             } else {

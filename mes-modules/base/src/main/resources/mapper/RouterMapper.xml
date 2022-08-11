@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.base.dao.RouterMapper">
+    <select id="selectRouter" resultType="com.richfit.mes.common.model.base.Router">
+        SELECT any_value(p.material_no) product_material_no, any_value(p.unit) unit,
+        any_value(r.id) id, any_value(r.router_no) router_no, any_value(r.router_name) router_name,
+        any_value(r.branch_code) branch_code, any_value(r.tenant_id) tenant_id
+        FROM mes_base.base_router r
+        INNER JOIN mes_base.base_product p
+        ON REPLACE (r.router_no, '-', '') = REPLACE (p.drawing_no, '-', '')
+        ${ew.customSqlSegment}
+    </select>
+</mapper>

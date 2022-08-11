@@ -388,6 +388,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (lineStores != null && lineStores.size() > 0) {
                     throw new RuntimeException("产品编号已存在！");
                 } else {
+                    //TODO 这块代码应该放到linestoreService中去
                     //新增一条半成品/成品信息
                     LineStore lineStoreCp = new LineStore();
                     lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
@@ -406,6 +407,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     lineStoreCp.setInTime(new Date());
                     lineStoreCp.setBranchCode(trackHead.getBranchCode());
                     lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    lineStoreCp.setInputType("2");  //录入类型 系统自动生成
                     lineStoreMapper.insert(lineStoreCp);
                     //添加跟单-分流-料单的关联信息
                     TrackHeadRelation relationCp = new TrackHeadRelation();
@@ -1142,5 +1144,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
         queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
         return trackFlowMapper.selectList(queryWrapperTrackFlow);
+    }
+
+    @Override
+    public List<Map> selectTrackStoreCount(String drawingNos) {
+        return trackHeadMapper.selectTrackStoreCount(drawingNos);
     }
 }

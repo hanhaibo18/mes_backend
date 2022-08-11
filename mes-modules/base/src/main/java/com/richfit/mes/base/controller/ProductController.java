@@ -337,7 +337,9 @@ public class ProductController extends BaseController {
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.eq("drawing_no", drawingNo);
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
         queryWrapper.orderByDesc("create_time");
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
     }

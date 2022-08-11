@@ -16,6 +16,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 王瑞
@@ -130,4 +131,14 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
     IPage<TrackHead> queryBomList(Page<Object> objectPage, List<TrackHead> trackHeadList);
 
     IPage<TrackHead> selectTrackHeadAndFlow(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
+
+
+    /**
+     * 功能描述: 跟单入库品总计查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/10 15:06
+     **/
+    @Select("select drawing_no, count(*),sum(number-use_num) as number FROM v_produce_track_store where type = '1' and drawing_no in (${drawingNos}) GROUP BY drawing_no;")
+    List<Map> selectTrackStoreCount(String drawingNos);
 }

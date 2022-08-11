@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
@@ -39,17 +40,28 @@ public class MaterialReceiveDetail extends BaseEntity<MaterialReceiveDetail> {
     /**
      * 配送数量
      */
-    private String quantity;
+    private int quantity;
 
     /**
      * 申请数量
      */
-    private String orderQuantity;
+    private int orderQuantity;
 
     /**
      * 批次号
      */
     private String batchNum;
+
+    /**
+     * 接收时间
+     */
+    private String receiveDate;
+
+    /**
+     * 图号
+     */
+    @TableField(exist = false)
+    private String drawingNo;
 
 
 }

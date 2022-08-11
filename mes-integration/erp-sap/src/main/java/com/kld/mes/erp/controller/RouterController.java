@@ -2,6 +2,7 @@ package com.kld.mes.erp.controller;
 
 import com.kld.mes.erp.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import io.micrometer.shaded.org.pcollections.PSequence;
 import io.swagger.annotations.Api;
@@ -22,7 +23,7 @@ import java.util.List;
 @Slf4j
 @Api(value = "ERP接口封装", tags = {"工艺推送接口"})
 @RestController
-@RequestMapping("/api/integration/erp/router/push")
+@RequestMapping("/api/integration/erp/router")
 public class RouterController {
 
     @Autowired
@@ -30,11 +31,9 @@ public class RouterController {
 
     @ApiOperation(value = "工艺推送接口", notes = "根据工艺向ERP推送")
     @PostMapping("/push")
-    public CommonResult<Boolean> routerPush(@ApiParam(value = "工序列表") @RequestBody List<Sequence> sequences,
-                                            @ApiParam(value = "erp代号") @RequestParam String erpCode,
-                                            @ApiParam(value = "图号") @RequestParam String routeNo) {
+    public CommonResult<Boolean> routerPush(@ApiParam(value = "工艺列表") @RequestBody List<Router> routers) {
 
-        boolean b = routerService.push(sequences, erpCode, routeNo);
+        boolean b = routerService.push(routers);
 
         if (b) {
             return CommonResult.success(b);

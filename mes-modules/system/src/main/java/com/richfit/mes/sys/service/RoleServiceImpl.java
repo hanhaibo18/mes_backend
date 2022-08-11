@@ -38,6 +38,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
     @Override
+    public boolean batchAdd(List<Role> roles) {
+        return this.saveBatch(roles);
+    }
+
+    @Override
     public boolean delete(String id) {
         return this.removeById(id);
     }

@@ -8,7 +8,7 @@ spring:
       username: nacos
       password: nacos0
       discovery:
-        enabled: ${DISCOVERY_ENABLED:false}
+        enabled: ${DISCOVERY_ENABLED:true}
         server-addr: ${DISCOVERY_HOST:11.54.85.62}:${DISCOVERY_PORT:8848}
         group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
         namespace: ${DISCOVERY_NAMESPACE:mes_dev}
@@ -37,6 +37,15 @@ interface:
     # 查询物料
     material: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase
     # 向ERP推送工艺
-    router: http://10.30.47.134:8000/ZBZZ/MES/ZC80_PPIF026/service/PS/PS_ZC80_PPIF026
+    router: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF026/service/PS/PS_ZC80_PPIF026
     # 查询ERP库存
     storage: http://10.30.47.134:8000/ZBZZ/MES/ZC80_MMIF015/service/PS/PS_ZC80_MMIF015
+secure:
+  ignore:
+    urls:
+      - /api/integration/erp/router/push
+
+feign.client.config:
+  default:
+    connect-timeout: 100000
+    read-timeout: 300000

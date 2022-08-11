@@ -69,4 +69,8 @@ public class ProduceTrackHeadTemplate extends BaseEntity<ProduceTrackHeadTemplat
     @TableField("file_id")
     private String fileId;
 
+    @ApiModelProperty(value = "", required = false)
+    @TableField("tenant_id")
+    private String tenantId;
+
 }

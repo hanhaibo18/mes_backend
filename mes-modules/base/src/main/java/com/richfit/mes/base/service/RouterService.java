@@ -8,6 +8,8 @@ import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
 import com.richfit.mes.common.model.base.Router;
 
+import java.util.List;
+
 /**
  * @author 马峰
  * @Description 工艺服务
@@ -17,6 +19,8 @@ public interface RouterService extends IService<Router> {
     public IPage<Router> selectPage(Page page, QueryWrapper<Router> qw);
 
     public IPage<Router> selectPageAndChild(Page page, QueryWrapper<Router> qw);
+
+    List<Router> getList(QueryWrapper<Router> qw);
 
     /**
      * 功能描述: 查询当前工艺是否为历史工艺
