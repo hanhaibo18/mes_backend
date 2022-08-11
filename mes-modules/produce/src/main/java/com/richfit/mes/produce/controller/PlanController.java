@@ -1,7 +1,6 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,6 +18,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
@@ -57,6 +57,10 @@ public class PlanController extends BaseController {
 
     @Autowired
     private TrackHeadService trackHeadService;
+
+    @Autowired
+    private BaseServiceClient baseServiceClient;
+
 
     /**
      * 分页查询plan
@@ -141,6 +145,7 @@ public class PlanController extends BaseController {
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
+        planService.planPackageRouter(planList.getRecords());
         return CommonResult.success(planList);
     }
 
@@ -158,22 +163,7 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "入库品数量统计", notes = "入库品数量统计")
     @PostMapping("/select_track_store_count")
     public CommonResult selectTrackStoreCount(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) {
-        String drawingNos = "";
-        for (Plan plan : planList) {
-            drawingNos += ",'" + plan.getDrawNo() + "'";
-        }
-        drawingNos = drawingNos.substring(1);
-        System.out.println("-------------------");
-        System.out.println(drawingNos);
-        List<Map> mapList = trackHeadService.selectTrackStoreCount(drawingNos);
-        System.out.println(JSON.toJSONString(mapList));
-        for (Plan plan : planList) {
-            for (Map map : mapList) {
-                if (map.get("drawing_no").toString().equals(plan.getDrawNo())) {
-                    plan.setStoreNumber(Integer.parseInt(map.get("number").toString()));
-                }
-            }
-        }
+        planService.planPackageStore(planList);
         return CommonResult.success(planList);
     }
 
