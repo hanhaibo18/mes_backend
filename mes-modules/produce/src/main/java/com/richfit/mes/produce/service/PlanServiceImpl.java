@@ -373,10 +373,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                 List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                 optNumber += trackItemList.size();
-                if ("2".equals(trackHead.getStatus()) || "9".equals(trackHead.getStatus())) {
-                    trackHeadFinish++;
-                    deliveryNum += trackHead.getNumber();
-                } else if ("0".equals(trackHead.getStatus())) {
+                if ("0".equals(trackHead.getStatus())) {
                     //未派工算在制
                     processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
@@ -413,7 +410,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             plan.setStoreNum(storeNum);//库存数量
             plan.setProcessNum(processNum);//在制数量
             plan.setDeliveryNum(deliveryNum);//交付数量
-            plan.setMissingNum(plan.getProjNum() - storeNum - processNum - deliveryNum);
+            plan.setMissingNum(plan.getProjNum() - storeNum - processNum - deliveryNum);//缺件数量
             plan.setTrackHeadNumber(trackHeadList.size());//跟单数量
             plan.setTrackHeadFinishNumber(trackHeadFinish);//跟单完成数量
             plan.setOptNumber(optNumber);//工序数量
