@@ -169,6 +169,12 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     private int orderQuantity;
 
     /**
+     * 缺件
+     */
+    @TableField(exist = false)
+    private int lackQuantity;
+
+    /**
      * 单位
      */
     private String unit;

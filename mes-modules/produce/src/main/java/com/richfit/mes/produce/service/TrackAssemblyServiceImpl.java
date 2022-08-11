@@ -46,6 +46,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private RequestNoteDetailService requestNoteDetailService;
     @Resource
     private RequestNoteService requestNoteService;
+    @Resource
+    private  TrackAssemblyMapper trackAssemblyMapper;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
@@ -228,6 +230,14 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             return result;
         }
         return applicationResult;
+    }
+
+    @Override
+    public Page<TrackAssembly> getDeliveredDetail(Page<TrackAssembly> trackAssemblyPage, String id) {
+        trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id).getRecords().forEach(i ->{
+            i.setLackQuantity(i.getOrderQuantity() - i.getQuantity());
+        });
+        return trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id);
     }
 
     private int queryMaterialCount(String materialNo) {
