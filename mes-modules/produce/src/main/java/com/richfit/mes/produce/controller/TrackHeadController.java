@@ -671,25 +671,6 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(queryBom(trackNo));
     }
 
-
-    @ApiOperation(value = "导出生成BOM跟单", notes = "通过Excel文档导出信息")
-    @GetMapping("/export_excel/bom")
-    public void exportExcelBom(String trackNo, HttpServletResponse rsp) {
-        List<TrackHead> listCommonResult = queryBom(trackNo);
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
-        String fileName = "BOM跟单_" + format.format(new Date()) + ".xlsx";
-
-        String[] columnHeaders = {"跟踪类型", "跟踪状态", "跟单号", "产品编号", "工作号", "图号", "填发日期", "模板编号", "材质", "物料编号", "订单"};
-        String[] fieldNames = {"trackType", "status", "trackNo", "productNo", "workNo", "drawingNo", "issueTime", "templateCode", "texture", "materialNo", "production_order"};
-        //export
-        try {
-            ExcelUtils.exportExcel(fileName, listCommonResult, columnHeaders, fieldNames, rsp);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     @ApiOperation(value = "查询跟单分流表List", notes = "根据跟单号查询跟单分流信息")
     @GetMapping("/flow_list")
     public CommonResult<List<TrackFlow>> selectFLowList(

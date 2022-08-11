@@ -111,7 +111,7 @@ public class MaterialReceiveController extends BaseController {
             UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
             updateWrapper.set("state",1);
             updateWrapper.eq("delivery_no",deliveryNo);
-            boolean update = materialReceiveService.update(updateWrapper);
+            materialReceiveService.update(updateWrapper);
         }
         return CommonResult.success(b);
     }
