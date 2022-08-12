@@ -133,7 +133,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
 //                .notIn("grade", "H")
                 .eq("tenant_id", bom.getTenantId())
                 .eq("branch_code", bom.getBranchCode())
-                .orderByAsc("orderNo");
+                .orderByAsc("order_no");
         List<ProjectBom> list = this.list(queryWrapper);
         List<ProjectBom> projectBomList = new ArrayList<>();
         for (ProjectBom project : list) {

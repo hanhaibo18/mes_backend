@@ -352,4 +352,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "规则名称", dataType = "String")
     private String ruleName;
 
+    @ApiModelProperty(value = "是否复检", dataType = "String")
+    private String isRecheck;
 }

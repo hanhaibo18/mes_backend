@@ -87,7 +87,7 @@ public interface PlanService extends IService<Plan> {
      * @Author: zhiqiang.lu
      * @Date: 2022/7/11 11:37
      **/
-    List<ProjectBomComplete> completeness_list(List<Plan> planList);
+    List<ProjectBomComplete> completenessList(List<Plan> planList);
 
     /**
      * 功能描述: 计划数据自动计算

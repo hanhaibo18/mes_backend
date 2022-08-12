@@ -32,6 +32,14 @@ spring:
           uri: lb://produce-service
           predicates:
             - Path=/api/produce/**
+        - id: integration-erp-route
+          uri: lb://erp-service
+          predicates:
+            - Path=/api/integration/erp/**
+        - id: integration-wms-route
+          uri: lb://wms-service
+          predicates:
+            - Path=/api/integration/wms/**
 secure:
   ignore:
     urls: #安全路径白名单

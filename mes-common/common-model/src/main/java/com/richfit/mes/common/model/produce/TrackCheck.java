@@ -146,4 +146,15 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @TableField(exist = false)
     @ApiModelProperty(value = "处理方式", dataType = "String")
     private String processMode;
+
+    @ApiModelProperty(value = "合格数量", dataType = "int")
+    private int qualifiedNumber;
+
+    @ApiModelProperty(value = "不合格数量", dataType = "int")
+    private int disqualificationNumber;
+
+    /**
+     * 是否显示
+     */
+    private String isShow;
 }
