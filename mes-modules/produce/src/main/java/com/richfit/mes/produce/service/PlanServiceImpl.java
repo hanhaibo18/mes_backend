@@ -342,24 +342,21 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
-                //过滤H零件
-                if ("L".equals(pb.getGrade())) {
-                    //过滤关键件
-                    if ("1".equals(pb.getIsCheck())) {
-                        //处理分组信息
-                        if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                            if (pb.getId().equals(group.get(pb.getGroupBy()))) {
-                                ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
-                                pbc.setPlanNumber(plan.getProjNum());
-                                pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
-                                projectBomCompleteList.add(pbc);
-                            }
-                        } else {
+                //过滤H零件、齐套检查
+                if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
+                    //处理分组信息
+                    if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                        if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                             ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
                             pbc.setPlanNumber(plan.getProjNum());
                             pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
                             projectBomCompleteList.add(pbc);
                         }
+                    } else {
+                        ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
+                        pbc.setPlanNumber(plan.getProjNum());
+                        pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
+                        projectBomCompleteList.add(pbc);
                     }
                 }
             }
@@ -383,8 +380,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             queryWrapper.eq("track_head_id", trackHead.getId());
             List<TrackAssembly> trackAssemblies = trackAssemblyService.list(queryWrapper);
             for (TrackAssembly trackAssembly : trackAssemblies) {
-                //过滤H零件
-                if ("L".equals(trackAssembly.getGrade())) {
+                //过滤H零件、齐套检查
+                if ("L".equals(trackAssembly.getGrade()) && "1".equals(trackAssembly.getIsCheck())) {
                     boolean flag = true;
                     for (ProjectBomComplete projectBomComplete : projectBomCompleteList) {
                         if (trackAssembly.getMaterialNo().equals(projectBomComplete.getMaterialNo())) {
