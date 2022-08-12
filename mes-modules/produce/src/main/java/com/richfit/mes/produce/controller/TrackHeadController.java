@@ -287,6 +287,7 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                           @ApiParam(value = "id") @RequestParam(required = false) String id,
                                                           @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+
                                                           @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                           @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanId,
                                                           @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,

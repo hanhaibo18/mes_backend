@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -291,7 +292,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 projectBomCompleteListNew = projectBomCompleteList(plan);
             } else {
                 //计划已匹配跟单
-                projectBomCompleteListNew = projectBomCompleteList(plan);
+                projectBomCompleteListNew = projectBomCompleteListByTrackHead(plan, trackHeadList);
             }
             for (ProjectBomComplete pbcn : projectBomCompleteListNew) {
                 boolean flag = true;
@@ -785,6 +786,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             planData(plan.getId());
         }
         return CommonResult.success(null);
+    }
+
+    @Override
+    public void exportPlan(MultipartFile file) {
+        
     }
 
     @Override
