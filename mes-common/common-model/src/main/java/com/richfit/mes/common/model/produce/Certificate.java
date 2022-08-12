@@ -59,13 +59,12 @@ public class Certificate extends BaseEntity<Certificate> {
     @TableField(exist = false)
     private Integer number;
 
+    @ApiModelProperty(value = "本工序")
+    private String optName;
+
     @ApiModelProperty(value = "工序Id from跟单工序")
     @TableField(exist = false)
     private String optId;
-
-    @ApiModelProperty(value = "工序名称 from跟单工序")
-    @TableField(exist = false)
-    private String optName;
 
     @ApiModelProperty(value = "工序版本 from跟单工序")
     @TableField(exist = false)
