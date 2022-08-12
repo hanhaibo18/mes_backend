@@ -46,21 +46,6 @@ public class MaterialReceiveController extends BaseController {
     @Autowired
     LineStoreService lineStoreService;
 
-    @GetMapping(value = "/api/produce/material_receive/getlastTime")
-    public String getlastTime(){
-       return materialReceiveService.getlastTime();
-    };
-
-    @GetMapping(value = "/api/produce/material_receive/materialReceive/saveBatch")
-    public Boolean materialReceiveSaveBatch(List<MaterialReceive> materialReceiveList){
-        return materialReceiveService.saveBatch(materialReceiveList);
-    };
-
-    @GetMapping(value = "/api/produce/material_receive/detail/saveBatch")
-    public Boolean detailSaveBatch(List<MaterialReceiveDetail> detailList){
-        return materialReceiveDetailService.saveBatch(detailList);
-    };
-
     @ApiOperation(value = "分页查询物料接收", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询物料接收")
     @GetMapping("/query/page")
     public CommonResult<IPage<MaterialReceive>> selectTrackHead(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
@@ -83,12 +68,10 @@ public class MaterialReceiveController extends BaseController {
 
     @ApiOperation(value = "查询本次配送明细信息", notes = "根据跟单号、分页查询本次配送明细信息")
     @GetMapping("/getThisDeliveryDetail")
-    public CommonResult<IPage<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "页码") @RequestParam(required = false) Integer page,
-                                                                     @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
-                                                                     @ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
+    public CommonResult<IPage<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
         QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper<MaterialReceiveDetail>();
         queryWrapper.eq("delivery_no", deliveryNo);
-        return CommonResult.success(materialReceiveDetailService.getReceiveDetail(new Page<MaterialReceiveDetail>(page, limit),queryWrapper));
+        return CommonResult.success(materialReceiveDetailService.getReceiveDetail(queryWrapper));
     }
 
     @ApiOperation(value = "查询已配送明细信息", notes = "根据跟单号、分页查询已配送明细信息")
@@ -105,20 +88,24 @@ public class MaterialReceiveController extends BaseController {
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
         wrapper.eq("delivery_no",deliveryNo);
         List<MaterialReceiveDetail> list = materialReceiveDetailService.list(wrapper);
-        boolean b = lineStoreService.addStoreByWmsSend(list,branchCode);
-        if (b){
-            //已配料情况
-            UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.set("state",1);
-            updateWrapper.eq("delivery_no",deliveryNo);
-            materialReceiveService.update(updateWrapper);
-            UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
-            detailWrapper.set("state",1);
-            detailWrapper.eq("delivery_no",deliveryNo);
-            materialReceiveDetailService.update(detailWrapper);
-        }
-        return CommonResult.success(b);
+        return CommonResult.success(lineStoreService.addStoreByWmsSend(list,branchCode));
     }
 
+    @ApiOperation(value = "查询定时任务上一次保存最后一条的时间", notes = "最后一条创建时间")
+    @GetMapping(value = "/api/produce/material_receive/getlastTime")
+    public String getlastTime(){
+        return materialReceiveService.getlastTime();
+    };
 
+    @ApiOperation(value = "批量接收wms视图物料物料接收", notes = "批量接收物料")
+    @GetMapping(value = "/api/produce/material_receive/materialReceive/saveBatch")
+    public Boolean materialReceiveSaveBatch(List<MaterialReceive> materialReceiveList){
+        return materialReceiveService.saveBatch(materialReceiveList);
+    };
+
+    @ApiOperation(value = "批量接收wms视图配送明细", notes = "批量接收物料配送明细")
+    @GetMapping(value = "/api/produce/material_receive/detail/saveBatch")
+    public Boolean detailSaveBatch(List<MaterialReceiveDetail> detailList){
+        return materialReceiveDetailService.saveBatch(detailList);
+    };
 }

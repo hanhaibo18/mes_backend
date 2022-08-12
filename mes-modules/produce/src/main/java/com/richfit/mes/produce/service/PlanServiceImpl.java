@@ -301,7 +301,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             queryWrapper.eq("work_plan_id", plan.getId());
             List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
             List<ProjectBomComplete> projectBomCompleteListNew = new ArrayList<>();
-            System.out.println(trackHeadList);
             if (trackHeadList == null || trackHeadList.size() == 0) {
                 //计划未匹配跟单
                 projectBomCompleteListNew = projectBomCompleteList(plan);
