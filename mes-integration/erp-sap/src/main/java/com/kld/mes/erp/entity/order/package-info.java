@@ -1,6 +1,7 @@
 @javax.xml.bind.annotation.XmlSchema(
-        namespace = "urn:sap-com:document:sap:soap:functions:mc-style",
-        xmlns = {@XmlNs(prefix = "urn", namespaceURI = "urn:sap-com:document:sap:soap:functions:mc-style")}
-)package com.kld.mes.erp.entity.order;
+        namespace = "urn:sap-com:document:sap:rfc:functions.response",
+        elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED
+)
 
-import javax.xml.bind.annotation.XmlNs;
+package com.kld.mes.erp.entity.order;
+

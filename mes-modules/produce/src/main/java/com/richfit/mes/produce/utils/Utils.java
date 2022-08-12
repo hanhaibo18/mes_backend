@@ -81,4 +81,21 @@ public class Utils {
         }
         return charStr + codeAfter;
     }
+
+    /**
+     * 将oldNumber字符串后面的数字加addNumber的数字
+     *
+     * @param oldNumber 字符串
+     * @param addNumber 递增
+     * @return 递增后字符串
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/2 10:25
+     */
+    public static int unit(String unitStr) {
+        int unit = 1;
+        if (unitStr.contains("百")) {
+            unit = 100;
+        }
+        return unit;
+    }
 }
