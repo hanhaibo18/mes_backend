@@ -9,7 +9,7 @@
         product_no,max(th.material_name) material_name,
         th.material_no,max(th.test_bar_number) test_Bar_Number,max(th.test_bar_type) test_Bar_Type,
         max(th.batch_no) batch_no,max(th.texture) texture,max(th.weight) weight,
-        ti.opt_id, ti.opt_name, ti.opt_ver, max(ti.sequence_order_by) sequence_order_by from
+        ti.opt_id,ti.opt_ver, max(ti.sequence_order_by) sequence_order_by from
         produce_track_certificate tc
         left join produce_track_head th on tc.th_id = th.id
         left join produce_track_item ti on tc.ti_id = ti.id

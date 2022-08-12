@@ -2,7 +2,6 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -27,6 +26,9 @@ import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.ErpServiceClient;
+import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,6 +62,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Resource
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private ErpServiceClient erpServiceClient;
+
+    @Resource
+    private WmsServiceClient wmsServiceClient;
 
     @Autowired
     private TrackHeadService trackHeadService;
@@ -333,24 +342,21 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
-                //过滤H零件
-                if ("L".equals(pb.getGrade())) {
-                    //过滤关键件
-                    if ("1".equals(pb.getIsCheck())) {
-                        //处理分组信息
-                        if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                            if (pb.getId().equals(group.get(pb.getGroupBy()))) {
-                                ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
-                                pbc.setPlanNumber(plan.getProjNum());
-                                pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
-                                projectBomCompleteList.add(pbc);
-                            }
-                        } else {
+                //过滤H零件、齐套检查
+                if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
+                    //处理分组信息
+                    if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                        if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                             ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
                             pbc.setPlanNumber(plan.getProjNum());
                             pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
                             projectBomCompleteList.add(pbc);
                         }
+                    } else {
+                        ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
+                        pbc.setPlanNumber(plan.getProjNum());
+                        pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
+                        projectBomCompleteList.add(pbc);
                     }
                 }
             }
@@ -374,8 +380,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             queryWrapper.eq("track_head_id", trackHead.getId());
             List<TrackAssembly> trackAssemblies = trackAssemblyService.list(queryWrapper);
             for (TrackAssembly trackAssembly : trackAssemblies) {
-                //过滤H零件
-                if ("L".equals(trackAssembly.getGrade())) {
+                //过滤H零件、齐套检查
+                if ("L".equals(trackAssembly.getGrade()) && "1".equals(trackAssembly.getIsCheck())) {
                     boolean flag = true;
                     for (ProjectBomComplete projectBomComplete : projectBomCompleteList) {
                         if (trackAssembly.getMaterialNo().equals(projectBomComplete.getMaterialNo())) {
@@ -411,32 +417,34 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @Date: 2022/8/11 11:37
      **/
     List<ProjectBomComplete> pojectBomCompleteStoreList(List<ProjectBomComplete> projectBomCompleteList) {
+        String materialNos = "";
         for (ProjectBomComplete pbc : projectBomCompleteList) {
-            String num = HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()).replaceAll("\uFEFF", "");
-            double totalErp = Double.valueOf(com.mysql.cj.util.StringUtils.isNullOrEmpty(num) ? 0 + "" : num).intValue();
+            materialNos += "," + pbc.getMaterialNo();
+        }
+        CommonResult<List<Product>> commonResult = erpServiceClient.getStorage(materialNos.substring(1), SecurityUtils.getCurrentUser().getTenantErpCode());
+        List<Product> productList = commonResult.getData();
+        for (ProjectBomComplete pbc : projectBomCompleteList) {
+            int num = wmsServiceClient.queryMaterialCount(pbc.getMaterialNo()).getData();
+            int totalErp = 0;
+            if (productList != null) {
+                for (Product product : productList) {
+                    if (product.getMaterialNo().equals(pbc.getMaterialNo())) {
+                        totalErp = product.getQty().multiply(new BigDecimal(Utils.unit(product.getUnit()))).intValue();
+                    }
+                }
+            }
+            double totalWms = Double.valueOf(num).intValue();
             double totalStore = 0;
             double totalMiss = 0;
-//            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
-//            if ("0".equals(result.getString("code"))) {
-//                JSONArray resultList = JSON.parseArray(result.getString("data"));
-//                for (Object o : resultList) {
-//                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-//                    if (!StringUtil.isNullOrEmpty(jsonObject.getString("QUANTITY"))) {
-//                        totalErp += Double.parseDouble(jsonObject.getString("QUANTITY"));
-//                    }
-//                }
-//            }
-            int unit = 1;
-            if (pbc.getUnit().contains("百")) {
-                unit = 100;
-            }
+            int unit = Utils.unit(pbc.getUnit());
             pbc.setErpNumber(totalErp / unit);
+            pbc.setWmsNumber(totalWms / unit);
             Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
             if (totalMaterial != null) {
                 totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
                 pbc.setStoreNumber(totalStore / unit);
             }
-            totalMiss = pbc.getPlanNeedNumber() * unit + pbc.getInstallNumber() * unit - totalErp - totalStore;
+            totalMiss = pbc.getPlanNeedNumber() * unit + pbc.getInstallNumber() * unit - totalErp - totalWms - totalStore;
             if (totalMiss > 0) {
                 pbc.setMissingNumber(totalMiss / unit);
             } else {
@@ -811,8 +819,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public void exportPlan(MultipartFile file) throws IOException {
         //sheet计划列表
         String[] fieldNames3 = {"isExport", "sortNo", "workNo", "drawNo", "drawNoName", "texture", "singleNumber", "projNum", "totalNumber"
-                , "blank","remark","prepareBy","approvalBy","auditBy","branchCode","inchargeOrg","storeNumber","processNum","materialProductionUnit"
-                ,"rivetingWeldingUnit","assemblyContractorUnit","finalAssemblyContractorUnit","missingNum","startTime","projType","projCode","endTime","projectNo"};
+                , "blank", "remark", "prepareBy", "approvalBy", "auditBy", "branchCode", "inchargeOrg", "storeNumber", "processNum", "materialProductionUnit"
+                , "rivetingWeldingUnit", "assemblyContractorUnit", "finalAssemblyContractorUnit", "missingNum", "startTime", "projType", "projCode", "endTime", "projectNo"};
 
         File excelFile = null;
 
@@ -830,7 +838,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             //sheet1过滤要导入的数据
             List<Plan> sheetList = list3.stream().filter(t -> {
                 return !StringUtils.isEmpty(t.getIsExport())
-                        &&!StringUtils.isEmpty(t.getBranchCode())   //部门必填
+                        && !StringUtils.isEmpty(t.getBranchCode())   //部门必填
                         && !StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
                         && !StringUtils.isEmpty(t.getEndTime())      //交货期必填
                         && !StringUtils.isEmpty(t.getProjectNo());   //项目号必填
@@ -838,28 +846,28 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
             for (Plan plan : sheetList) {
                 plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                if(!ObjectUtil.isEmpty(plan.getDrawNo()) && plan.getDrawNo().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getDrawNo()) && plan.getDrawNo().equals("0")) {
                     plan.setDrawNo(null);
                 }
-                if(!ObjectUtil.isEmpty(plan.getDrawNoName()) && plan.getDrawNoName().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getDrawNoName()) && plan.getDrawNoName().equals("0")) {
                     plan.setDrawNoName(null);
                 }
-                if(!ObjectUtil.isEmpty(plan.getTexture()) && plan.getTexture().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getTexture()) && plan.getTexture().equals("0")) {
                     plan.setTexture(null);
                 }
-                if(!ObjectUtil.isEmpty(plan.getRemark()) && plan.getRemark().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getRemark()) && plan.getRemark().equals("0")) {
                     plan.setRemark(null);
                 }
-                if(!ObjectUtil.isEmpty(plan.getMaterialProductionUnit()) && plan.getMaterialProductionUnit().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getMaterialProductionUnit()) && plan.getMaterialProductionUnit().equals("0")) {
                     plan.setMaterialProductionUnit(null);
                 }
-                if(!ObjectUtil.isEmpty(plan.getRivetingWeldingUnit()) && plan.getRivetingWeldingUnit().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getRivetingWeldingUnit()) && plan.getRivetingWeldingUnit().equals("0")) {
                     plan.setRivetingWeldingUnit(null);
                 }
-                if(!ObjectUtil.isEmpty(plan.getAssemblyContractorUnit()) && plan.getAssemblyContractorUnit().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getAssemblyContractorUnit()) && plan.getAssemblyContractorUnit().equals("0")) {
                     plan.setAssemblyContractorUnit(null);
                 }
-                if(!ObjectUtil.isEmpty(plan.getFinalAssemblyContractorUnit()) && plan.getFinalAssemblyContractorUnit().equals("0")){
+                if (!ObjectUtil.isEmpty(plan.getFinalAssemblyContractorUnit()) && plan.getFinalAssemblyContractorUnit().equals("0")) {
                     plan.setFinalAssemblyContractorUnit(null);
                 }
             }
