@@ -584,6 +584,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackAssembly.setIsCheck(pb.getIsCheck());
                 trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
                 trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
+                trackAssembly.setUnit(pb.getUnit());
                 if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                     if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                         trackAssemblyList.add(trackAssembly);
@@ -1056,7 +1057,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadMapper.deleteById(trackHead);
     }
 
-    //生产线迁移新跟单
+    /**
+     * 功能描述: 生产线迁移新跟单
+     *
+     * @param id            跟单id
+     * @param trackFlowList 生产线列表信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
     public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
         for (TrackFlow t : trackFlowList) {
             t.setTrackHeadId(id);
@@ -1069,22 +1077,29 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
-    //产品编码拼接功能
-    public String productsNoStr(TrackHead trackHead, List<TrackFlow> trackFlows) {
+    /**
+     * 功能描述: 产品编码拼接功能
+     *
+     * @param trackHead     跟单信息
+     * @param trackFlowList 生产线列表信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
+    public String productsNoStr(TrackHead trackHead, List<TrackFlow> trackFlowList) {
         //产品列表排序
-        trackFlowsOrder(trackFlows);
+        trackFlowsOrder(trackFlowList);
         //机加产品编码处理
-        if (trackFlows.size() == 1) {
+        if (trackFlowList.size() == 1) {
             if ("0".equals(trackHead.getIsTestBar())) {
-                return trackFlows.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
+                return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
             } else {
-                return trackFlows.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "") + "S";
+                return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "") + "S";
             }
         }
-        if (trackFlows.size() > 1) {
+        if (trackFlowList.size() > 1) {
             String productsNoStr = "";
             String productsNoTemp = "0";
-            for (TrackFlow trackFlow : trackFlows) {
+            for (TrackFlow trackFlow : trackFlowList) {
                 String pn = trackFlow.getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
                 String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
                 if (pn.equals(pnOld)) {
@@ -1100,15 +1115,22 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return null;
     }
 
-    //跟单数量、完成数量、状态计算
-    public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlows) {
-        trackHead.setProductNo(productsNoStr(trackHead, trackFlows));
-        trackHead.setNumber(trackFlows.size());
-        trackHead.setFlowNumber(trackFlows.size());
+    /**
+     * 功能描述: 跟单数量、完成数量、状态计算
+     *
+     * @param trackHead     跟单信息
+     * @param trackFlowList 生产线列表信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
+    public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlowList) {
+        trackHead.setProductNo(productsNoStr(trackHead, trackFlowList));
+        trackHead.setNumber(trackFlowList.size());
+        trackHead.setFlowNumber(trackFlowList.size());
         int numberComplete = 0;
         String productNoDesc = "";
         //生产线迁移新跟单
-        for (TrackFlow t : trackFlows) {
+        for (TrackFlow t : trackFlowList) {
             if ("2".equals(t.getStatus())) {
                 numberComplete++;
             }
@@ -1116,7 +1138,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         trackHead.setProductNoDesc(productNoDesc.replaceFirst(",", ""));
         trackHead.setNumberComplete(numberComplete);
-        if (numberComplete < trackFlows.size()) {
+        if (numberComplete < trackFlowList.size()) {
             //未完工
         } else {
             trackHead.setStatus("2");
@@ -1128,17 +1150,22 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return trackHead;
     }
 
-    //产品列表list排序
-    public void trackFlowsOrder(List<TrackFlow> trackFlows) {
-        Collections.sort(trackFlows, new Comparator<TrackFlow>() {
+    /**
+     * 功能描述: 产品列表list排序
+     *
+     * @param trackFlowList 生产线列表信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 11:37
+     **/
+    public void trackFlowsOrder(List<TrackFlow> trackFlowList) {
+        Collections.sort(trackFlowList, new Comparator<TrackFlow>() {
             @Override
             public int compare(TrackFlow o1, TrackFlow o2) {
                 return o1.getProductNo().compareTo(o2.getProductNo());
             }
         });
     }
-
-    //产品列表list排序
+    
     @Override
     public List<TrackFlow> trackFlowList(String trackHeadId) {
         QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();

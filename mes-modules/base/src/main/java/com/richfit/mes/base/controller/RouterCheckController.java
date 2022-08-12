@@ -62,7 +62,7 @@ public class RouterCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(type)) {
                 queryWrapper.eq("type", type);
             } else {
-                queryWrapper.in("type", "0,1,2,3,4,5,检查内容".split(","));
+                queryWrapper.in("type", "检查内容".split(","));
 
             }
             if (!StringUtils.isNullOrEmpty(status)) {

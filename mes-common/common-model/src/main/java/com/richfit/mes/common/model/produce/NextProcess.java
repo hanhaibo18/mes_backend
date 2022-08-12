@@ -34,7 +34,6 @@ public class NextProcess extends BaseEntity<NextProcess> {
     /**
      * 工序号
      */
-    @TableField(exist = false)
     @ApiModelProperty(value = "工序号", dataType = "String")
     private String optSequence;
     @TableField(exist = false)
@@ -51,5 +50,13 @@ public class NextProcess extends BaseEntity<NextProcess> {
 
     private String branchCode;
 
-    private static final long serialVersionUID = 1L;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理方式", dataType = "String")
+    private String drawingNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序类型", dataType = "String")
+    private String optType;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "opt工序Id", dataType = "String")
+    private String optId;
 }

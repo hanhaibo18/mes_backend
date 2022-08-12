@@ -11,10 +11,9 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
-import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.ApplicationResult;
-import com.richfit.mes.produce.entity.IngredientApplicationDto;
-import com.richfit.mes.produce.entity.LineList;
+import com.richfit.mes.produce.entity.AssembleKittingVo;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +46,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private RequestNoteDetailService requestNoteDetailService;
     @Resource
     private RequestNoteService requestNoteService;
+    @Resource
+    private  TrackAssemblyMapper trackAssemblyMapper;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
@@ -211,15 +212,16 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         lineList.setMaterialNum(additionalMaterialDto.getMaterialNo());
         lineList.setSwFlag(additionalMaterialDto.getIsEdgeStore());
         lineList.setQuantity(additionalMaterialDto.getCount());
-        //单位
+        //单位 从哪获取
         lineLists.add(lineList);
         ingredient.setLineList(lineLists);
         //保存信息到本地
-        saveNodeAndDetail(additionalMaterialDto,ingredient);
+        saveNodeAndDetail(additionalMaterialDto, ingredient);
 
         ApplicationResult applicationResult = new ApplicationResult();
         try {
-            applicationResult.setRetMsg(anApplicationForm(ingredient).toString());;
+            applicationResult.setRetMsg(anApplicationForm(ingredient).toString());
+            ;
         } catch (Exception e) {
             ApplicationResult result = new ApplicationResult();
             result.setRetStatus("500");
@@ -230,11 +232,19 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         return applicationResult;
     }
 
+    @Override
+    public Page<TrackAssembly> getDeliveredDetail(Page<TrackAssembly> trackAssemblyPage, String id) {
+        trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id).getRecords().forEach(i ->{
+            i.setLackQuantity(i.getOrderQuantity() - i.getQuantity());
+        });
+        return trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id);
+    }
+
     private int queryMaterialCount(String materialNo) {
         return wmsServiceClient.queryMaterialCount(materialNo).getData();
     }
 
-    private Boolean anApplicationForm(IngredientApplicationDto ingredientApplicationDto){
+    private Boolean anApplicationForm(IngredientApplicationDto ingredientApplicationDto) {
         return wmsServiceClient.anApplicationForm(ingredientApplicationDto).getData();
     }
 
@@ -247,10 +257,11 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     /**
      * 保存申请单信息
+     *
      * @param additionalMaterialDto
      * @param ingredient
      */
-    private void saveNodeAndDetail(AdditionalMaterialDto additionalMaterialDto,IngredientApplicationDto ingredient){
+    private void saveNodeAndDetail(AdditionalMaterialDto additionalMaterialDto, IngredientApplicationDto ingredient) {
         //要保存的申请单信息
         RequestNote requestNote = new RequestNote();
         //要保存的物料信息集合
@@ -264,7 +275,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         //工序id
         requestNote.setTrackItemId(ingredient.getGx());
         //申请单号
-        requestNote.setBranchCode(ingredient.getSqd());
+        requestNote.setRequestNoteNumber(ingredient.getSqd());
         //物料信息
         List<LineList> lineList = ingredient.getLineList();
 
@@ -281,7 +292,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             //物料名称
             requestNoteDetail.setMaterialName(line.getMaterialDesc());
             //数量
-            requestNoteDetail.setNumber(Integer.parseInt(String.valueOf(line.getQuantity())));
+            requestNoteDetail.setNumber((int) line.getQuantity());
             requestNoteDetails.add(requestNoteDetail);
         }
 

@@ -272,4 +272,5 @@ public class LineStore extends BaseEntity<LineStore> {
         this.inputType = StoreInputTypeEnum.WMS_SEND.getCode();
 
     }
+
 }

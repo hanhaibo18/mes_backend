@@ -572,7 +572,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return true;
     }
 
-
     @Override
     public List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception {
 

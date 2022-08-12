@@ -91,15 +91,13 @@ public class MaterialReceiveController extends BaseController {
         return CommonResult.success(materialReceiveDetailService.getReceiveDetail(new Page<MaterialReceiveDetail>(page, limit),queryWrapper));
     }
 
-//    @ApiOperation(value = "查询已配送明细信息", notes = "根据跟单号、分页查询已配送明细信息")
-//    @GetMapping("/getDeliveredDetail")
-//    public CommonResult<IPage<TrackAssembly>> getDeliveredDetail(@ApiParam(value = "页码") @RequestParam(required = false) Integer page,
-//                                                                 @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
-//                                                                 @ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo ) {
-//        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<TrackAssembly>();
-//        queryWrapper.eq("track_no", trackNo);
-//        return CommonResult.success(trackAssemblyService.getDeliveredDetail(new Page<TrackAssembly>(page, limit),queryWrapper));
-//    }
+    @ApiOperation(value = "查询已配送明细信息", notes = "根据跟单号、分页查询已配送明细信息")
+    @GetMapping("/getDeliveredDetail")
+    public CommonResult<IPage<TrackAssembly>> getDeliveredDetail(@ApiParam(value = "页码") @RequestParam(required = false) Integer page,
+                                                                 @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
+                                                                 @ApiParam(value = "跟单id") @RequestParam(required = false) String trackHeadId ) {
+        return CommonResult.success(trackAssemblyService.getDeliveredDetail(new Page<TrackAssembly>(page, limit),trackHeadId));
+    }
 
     @ApiOperation(value = "物料接收", notes = "物料接收")
     @GetMapping("/material_receive")
@@ -113,7 +111,11 @@ public class MaterialReceiveController extends BaseController {
             UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
             updateWrapper.set("state",1);
             updateWrapper.eq("delivery_no",deliveryNo);
-            boolean update = materialReceiveService.update(updateWrapper);
+            materialReceiveService.update(updateWrapper);
+            UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
+            detailWrapper.set("state",1);
+            updateWrapper.eq("delivery_no",deliveryNo);
+            materialReceiveDetailService.update(detailWrapper);
         }
         return CommonResult.success(b);
     }

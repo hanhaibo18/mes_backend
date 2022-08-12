@@ -58,6 +58,11 @@ public class MaterialReceiveDetail extends BaseEntity<MaterialReceiveDetail> {
     private String receiveDate;
 
     /**
+     * 状态
+     */
+    private String state;
+
+    /**
      * 图号
      */
     @TableField(exist = false)

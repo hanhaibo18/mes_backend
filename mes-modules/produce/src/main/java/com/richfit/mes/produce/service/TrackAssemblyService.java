@@ -72,4 +72,6 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @return: ApplicationResult
      **/
     ApplicationResult application(AdditionalMaterialDto additionalMaterialDto);
+
+    Page<TrackAssembly> getDeliveredDetail(Page<TrackAssembly> trackAssemblyPage,String id);
 }

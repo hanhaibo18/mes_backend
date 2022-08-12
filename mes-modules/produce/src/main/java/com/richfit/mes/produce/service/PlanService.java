@@ -9,6 +9,7 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
@@ -99,6 +100,7 @@ public interface PlanService extends IService<Plan> {
 
     /**
      * 拆分计划
+     *
      * @param planSplitDto
      * @return
      */
@@ -106,8 +108,30 @@ public interface PlanService extends IService<Plan> {
 
     /**
      * 撤销拆分计划
+     *
      * @param id
      * @return
      */
     CommonResult<Object> backoutPlan(String id);
+
+    void exportPlan(MultipartFile file);
+
+
+    /**
+     * 计划列表动态数据封装（工艺状态）
+     *
+     * @param planList 计划列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 15:06
+     */
+    void planPackageRouter(List<Plan> planList);
+
+    /**
+     * 计划列表动态数据封装（库存数量）
+     *
+     * @param planList 计划列表
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/11 15:06
+     */
+    void planPackageStore(List<Plan> planList);
 }

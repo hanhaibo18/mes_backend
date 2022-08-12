@@ -237,4 +237,27 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     private List<String> trackHeadIds;
 
+    /**
+     * 是否导入
+     */
+    @TableField(exist = false)
+    private String isExport;
+
+    /**
+     * 零件名称
+     */
+    private String materialName;
+    /**
+     * 总台数
+     */
+    private int totalNumber;
+
+    /**
+     * 毛坯
+     */
+    private String blank;
+
+
+
+
 }

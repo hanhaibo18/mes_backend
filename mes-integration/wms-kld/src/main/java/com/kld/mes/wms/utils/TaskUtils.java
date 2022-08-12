@@ -6,7 +6,6 @@ import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.constant.SecurityConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -31,8 +30,10 @@ public class TaskUtils {
     private String password = "";
     private String url = "";
 
+
     @Resource
     SystemServiceClient systemServiceClient;
+
 
     public void init(){
         List<ItemParam> list = systemServiceClient.selectItemClass(code,"",SecurityConstants.FROM_INNER).getData();

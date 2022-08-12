@@ -48,7 +48,7 @@ public enum OptTypeEnum {
 
     public static OptTypeEnum getSenderEnum(int stateId) {
         for (OptTypeEnum recipientsEnum : OptTypeEnum.values()) {
-            if (recipientsEnum.code == stateId) {
+            if (recipientsEnum.ordinal() == stateId) {
                 return recipientsEnum;
             }
         }
@@ -56,8 +56,9 @@ public enum OptTypeEnum {
     }
 
     public static String getMessage(int stateId) {
+
         for (OptTypeEnum recipientsEnum : OptTypeEnum.values()) {
-            if (recipientsEnum.code == stateId) {
+            if (recipientsEnum.ordinal() == stateId) {
                 return recipientsEnum.getMessage();
             }
         }

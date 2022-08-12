@@ -19,6 +19,8 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.entity.planExportVo.PLanCommonVO;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
@@ -28,9 +30,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @Author: GaoLiang
@@ -57,6 +65,10 @@ public class PlanController extends BaseController {
 
     @Autowired
     private TrackHeadService trackHeadService;
+
+    @Autowired
+    private BaseServiceClient baseServiceClient;
+
 
     /**
      * 分页查询plan
@@ -141,6 +153,7 @@ public class PlanController extends BaseController {
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
+        planService.planPackageRouter(planList.getRecords());
         return CommonResult.success(planList);
     }
 
@@ -158,22 +171,7 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "入库品数量统计", notes = "入库品数量统计")
     @PostMapping("/select_track_store_count")
     public CommonResult selectTrackStoreCount(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) {
-        String drawingNos = "";
-        for (Plan plan : planList) {
-            drawingNos += ",'" + plan.getDrawNo() + "'";
-        }
-        drawingNos = drawingNos.substring(1);
-        System.out.println("-------------------");
-        System.out.println(drawingNos);
-        List<Map> mapList = trackHeadService.selectTrackStoreCount(drawingNos);
-        System.out.println(JSON.toJSONString(mapList));
-        for (Plan plan : planList) {
-            for (Map map : mapList) {
-                if (map.get("drawing_no").toString().equals(plan.getDrawNo())) {
-                    plan.setStoreNumber(Integer.parseInt(map.get("number").toString()));
-                }
-            }
-        }
+        planService.planPackageStore(planList);
         return CommonResult.success(planList);
     }
 
@@ -320,6 +318,14 @@ public class PlanController extends BaseController {
     @GetMapping("/backoutPlan/{id}")
     public CommonResult<Object> backoutPlan(@PathVariable String id) throws GlobalException {
         return planService.backoutPlan(id);
+    }
+
+    @ApiOperation(value = "导入计划", notes = "根据Excel文档导入计划")
+    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
+    @PostMapping("/import_excel")
+    public CommonResult importExcel(@RequestParam("file") MultipartFile file) {
+        planService.exportPlan(file);
+        return null;
     }
 
 }
