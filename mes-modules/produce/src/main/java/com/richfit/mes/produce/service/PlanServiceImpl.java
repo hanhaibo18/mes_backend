@@ -262,7 +262,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         queryWrapper.eq("work_plan_id", plan.getId());
         List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-        if (trackHeadList == null && trackHeadList.size() == 0) {
+        if (trackHeadList == null || trackHeadList.size() == 0) {
             //计划未匹配跟单
             projectBomCompleteList = projectBomCompleteList(plan);
         } else {
@@ -287,7 +287,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             queryWrapper.eq("work_plan_id", plan.getId());
             List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
             List<ProjectBomComplete> projectBomCompleteListNew = new ArrayList<>();
-            if (trackHeadList == null && trackHeadList.size() == 0) {
+            System.out.println(trackHeadList);
+            if (trackHeadList == null || trackHeadList.size() == 0) {
                 //计划未匹配跟单
                 projectBomCompleteListNew = projectBomCompleteList(plan);
             } else {
@@ -321,14 +322,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     List<ProjectBomComplete> projectBomCompleteList(Plan plan) {
         List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         if (!StringUtil.isNullOrEmpty(plan.getProjectBom())) {
-            System.out.println("--------------------");
-            System.out.println(plan.getProjectBom());
             List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
             Map<String, String> group = new HashMap<>();
             if (!StringUtil.isNullOrEmpty(plan.getProjectBomGroup())) {
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
-            System.out.println(projectBomList.size());
             for (ProjectBom pb : projectBomList) {
                 //过滤H零件
                 if ("L".equals(pb.getGrade())) {
@@ -390,6 +388,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         projectBomComplete.setProdDesc(trackAssembly.getName());
                         projectBomComplete.setMaterialNo(trackAssembly.getMaterialNo());
                         projectBomComplete.setDrawingNo(trackAssembly.getDrawingNo());
+                        projectBomComplete.setSourceType(trackAssembly.getSourceType());
+                        projectBomComplete.setUnit(trackAssembly.getUnit());
                         projectBomCompleteList.add(projectBomComplete);
                     }
                 }
@@ -408,9 +408,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     List<ProjectBomComplete> pojectBomCompleteStoreList(List<ProjectBomComplete> projectBomCompleteList) {
         for (ProjectBomComplete pbc : projectBomCompleteList) {
             String num = HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()).replaceAll("\uFEFF", "");
-            int totalErp = Double.valueOf(com.mysql.cj.util.StringUtils.isNullOrEmpty(num) ? 0 + "" : num).intValue();
-            int totalStore = 0;
-            int totalMiss = 0;
+            double totalErp = Double.valueOf(com.mysql.cj.util.StringUtils.isNullOrEmpty(num) ? 0 + "" : num).intValue();
+            double totalStore = 0;
+            double totalMiss = 0;
 //            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
 //            if ("0".equals(result.getString("code"))) {
 //                JSONArray resultList = JSON.parseArray(result.getString("data"));
@@ -421,15 +421,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 //                    }
 //                }
 //            }
-            pbc.setErpNumber(totalErp);
+            int unit = 1;
+            if (pbc.getUnit().contains("百")) {
+                unit = 100;
+            }
+            pbc.setErpNumber(totalErp / unit);
             Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
             if (totalMaterial != null) {
                 totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
-                pbc.setStoreNumber(totalStore);
+                pbc.setStoreNumber(totalStore / unit);
             }
-            totalMiss = pbc.getPlanNeedNumber() + pbc.getInstallNumber() - totalErp - totalStore;
+            totalMiss = (pbc.getPlanNeedNumber() + pbc.getInstallNumber() - totalErp - totalStore) / unit;
             if (totalMiss > 0) {
-                pbc.setMissingNumber(totalMiss);
+                pbc.setMissingNumber(totalMiss / unit);
             } else {
                 pbc.setMissingNumber(0);
             }
