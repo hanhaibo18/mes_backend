@@ -21,5 +21,5 @@ import java.util.List;
 public interface MaterialReceiveDetailMapper extends BaseMapper<MaterialReceiveDetail> {
 
     @Select("SELECT mrd.*, prnd.note_id,prnd.drawing_no FROM produce_material_receive_detail mrd LEFT JOIN produce_request_note_detail prnd ON mrd.aply_num = prnd.note_id AND mrd.material_num = prnd.material_no  ${ew.customSqlSegment}")
-    Page<MaterialReceiveDetail> getReceiveDetail(Page<MaterialReceiveDetail> materialReceivePage, @Param(Constants.WRAPPER) QueryWrapper<MaterialReceiveDetail> queryWrapper);
+    Page<MaterialReceiveDetail> getReceiveDetail(@Param(Constants.WRAPPER) QueryWrapper<MaterialReceiveDetail> queryWrapper);
 }
