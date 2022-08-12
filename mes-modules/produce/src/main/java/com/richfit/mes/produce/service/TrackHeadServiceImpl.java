@@ -585,6 +585,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
                 trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
                 trackAssembly.setUnit(pb.getUnit());
+                trackAssembly.setSourceType(pb.getSourceType());
                 if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
                     if (pb.getId().equals(group.get(pb.getGroupBy()))) {
                         trackAssemblyList.add(trackAssembly);
@@ -1165,7 +1166,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
         });
     }
-    
+
     @Override
     public List<TrackFlow> trackFlowList(String trackHeadId) {
         QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();

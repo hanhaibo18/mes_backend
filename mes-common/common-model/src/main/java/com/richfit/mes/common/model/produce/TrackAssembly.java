@@ -178,4 +178,9 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
      * 单位
      */
     private String unit;
+
+    /**
+     *产品类型
+     */
+    private String sourceType;
 }
