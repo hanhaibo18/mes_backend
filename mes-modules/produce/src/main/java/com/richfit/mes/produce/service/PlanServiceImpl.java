@@ -13,8 +13,11 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.DateUtils;
+import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
@@ -34,6 +37,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -803,8 +808,69 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     @Override
-    public void exportPlan(MultipartFile file) {
+    public void exportPlan(MultipartFile file) throws IOException {
+        //sheet计划列表
+        String[] fieldNames3 = {"isExport", "sortNo", "workNo", "drawNo", "drawNoName", "texture", "singleNumber", "projNum", "totalNumber"
+                , "blank","remark","prepareBy","approvalBy","auditBy","branchCode","inchargeOrg","storeNumber","processNum","materialProductionUnit"
+                ,"rivetingWeldingUnit","assemblyContractorUnit","finalAssemblyContractorUnit","missingNum","startTime","projType","projCode","endTime","projectNo"};
 
+        File excelFile = null;
+
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+
+            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 1, tempName.toString());
+
+
+            FileUtils.delete(excelFile);
+            //sheet1过滤要导入的数据
+            List<Plan> sheetList = list3.stream().filter(t -> {
+                return !StringUtils.isEmpty(t.getIsExport())
+                        &&!StringUtils.isEmpty(t.getBranchCode())   //部门必填
+                        && !StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
+                        && !StringUtils.isEmpty(t.getEndTime())      //交货期必填
+                        && !StringUtils.isEmpty(t.getProjectNo());   //项目号必填
+            }).collect(Collectors.toList());
+
+            for (Plan plan : sheetList) {
+                plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                if(!ObjectUtil.isEmpty(plan.getDrawNo()) && plan.getDrawNo().equals("0")){
+                    plan.setDrawNo(null);
+                }
+                if(!ObjectUtil.isEmpty(plan.getDrawNoName()) && plan.getDrawNoName().equals("0")){
+                    plan.setDrawNoName(null);
+                }
+                if(!ObjectUtil.isEmpty(plan.getTexture()) && plan.getTexture().equals("0")){
+                    plan.setTexture(null);
+                }
+                if(!ObjectUtil.isEmpty(plan.getRemark()) && plan.getRemark().equals("0")){
+                    plan.setRemark(null);
+                }
+                if(!ObjectUtil.isEmpty(plan.getMaterialProductionUnit()) && plan.getMaterialProductionUnit().equals("0")){
+                    plan.setMaterialProductionUnit(null);
+                }
+                if(!ObjectUtil.isEmpty(plan.getRivetingWeldingUnit()) && plan.getRivetingWeldingUnit().equals("0")){
+                    plan.setRivetingWeldingUnit(null);
+                }
+                if(!ObjectUtil.isEmpty(plan.getAssemblyContractorUnit()) && plan.getAssemblyContractorUnit().equals("0")){
+                    plan.setAssemblyContractorUnit(null);
+                }
+                if(!ObjectUtil.isEmpty(plan.getFinalAssemblyContractorUnit()) && plan.getFinalAssemblyContractorUnit().equals("0")){
+                    plan.setFinalAssemblyContractorUnit(null);
+                }
+            }
+
+
+            //保存计划列表
+            this.saveBatch(sheetList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
