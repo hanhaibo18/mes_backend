@@ -1,6 +1,7 @@
 package com.kld.mes.erp.service;
 
 
+import com.kld.mes.erp.entity.dto.MaterialTypeDto;
 import com.kld.mes.erp.utils.WsTemplateFactory;
 import com.kld.mes.erp.entity.material.*;
 import com.richfit.mes.common.model.base.Product;
@@ -17,7 +18,9 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 从ERP查询物料
@@ -59,13 +62,26 @@ public class MaterialServiceImpl implements MaterialService {
                     .marshalSendAndReceive(URL, ZPPFM0004);
 
             List<Product> products = new ArrayList<>();
+            char zero = 48;
             for (int i = 0; i < o.getTMARA().getItem().size(); i++) {
                 Product p = new Product();
-                p.setMaterialDesc(o.getTMARA().getItem().get(i).getMAKTX());
-                p.setMaterialNo(o.getTMARA().getItem().get(i).getMATNR());
+                String name = o.getTMARA().getItem().get(i).getMAKTX();
+                String[] data = name.split("\\s+");
+                if (data.length > 3) {
+                    p.setProductName(data[1] + " " + data[2]);
+                } else {
+                    p.setProductName(data[1]);
+                }
+                if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
+                    MaterialTypeDto type = materialType().get(data[data.length - 1]);
+                    p.setMaterialType(type.getNewCode());
+                    p.setMaterialTypeName(type.getDesc());
+                }
+                p.setMaterialDesc(name);
+                p.setDrawingNo(o.getTMARA().getItem().get(i).getZEINR());
+                p.setMaterialNo(trimStringWith(o.getTMARA().getItem().get(i).getMATNR(), zero));
                 p.setBranchCode(o.getTMARA().getItem().get(i).getWERKS());
                 p.setUnit(o.getTMARA().getItem().get(i).getMEINS());
-                p.setMaterialDesc(o.getTMARA().getItem().get(i).getMAKTX());
                 products.add(p);
             }
             return products;
@@ -73,6 +89,27 @@ public class MaterialServiceImpl implements MaterialService {
             return null;
 
         }
+    }
+
+    private String trimStringWith(String str, char beTrim) {
+        int st = 0;
+        int len = str.length();
+        char[] val = str.toCharArray();
+        char sbeTrim = beTrim;
+        while ((st < len) && (val[st] <= sbeTrim)) {
+            st++;
+        }
+        return st > 0 ? str.substring(st, len) : str;
+    }
+
+
+    public static Map<String, MaterialTypeDto> materialType() {
+        Map<String, MaterialTypeDto> map = new HashMap<>(4);
+        map.put("Z", new MaterialTypeDto("Z", "0", "铸件"));
+        map.put("D", new MaterialTypeDto("D", "1", "锻件"));
+        map.put("JZ", new MaterialTypeDto("JZ", "2", "精铸件"));
+        map.put("/", new MaterialTypeDto("/", "3", "成品/半成品"));
+        return map;
     }
 
 

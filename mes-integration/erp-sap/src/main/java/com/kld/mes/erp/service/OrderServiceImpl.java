@@ -46,20 +46,32 @@ public class OrderServiceImpl implements OrderService {
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
         ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL, zc80PPIF009);
         List<Order> orders = new ArrayList<>();
-        for (int i = 0; i < o.getTAUFK().getItem().size(); i++) {
+        List<ZPPS0008> list = o.getTAUFK().getItem();
+        char zero = 48;
+        for (int i = 0; i < list.size(); i++) {
             Order p = new Order();
-            p.setMaterialDesc(o.getTAUFK().getItem().get(i).getMAKTX());
-            p.setMaterialCode(o.getTAUFK().getItem().get(i).getMATNR());
-            p.setBranchCode(o.getTAUFK().getItem().get(i).getWERKS());
-            p.setOrderSn(o.getTAUFK().getItem().get(i).getAUFNR());
-            p.setOrderNum((int) Double.parseDouble(o.getTAUFK().getItem().get(i).getGAMNG().trim()));
-            p.setController(o.getTAUFK().getItem().get(i).getDISPO());
-            p.setStartTime(sdf.parse(o.getTAUFK().getItem().get(i).getGSTRP()));
-            p.setEndTime(sdf.parse(o.getTAUFK().getItem().get(i).getGLTRP()));
-            p.setMaterialDesc(o.getTAUFK().getItem().get(i).getMAKTX());
+            p.setInChargeOrg(list.get(i).getWERKS());
+            p.setMaterialCode(trimStringWith(list.get(i).getMATNR(), zero));
+            p.setOrderSn(trimStringWith(list.get(i).getAUFNR(), zero));
+            p.setOrderNum((int) Double.parseDouble(list.get(i).getGAMNG().trim()));
+            p.setController(list.get(i).getDISPO());
+            p.setStartTime(sdf.parse(list.get(i).getGSTRP()));
+            p.setEndTime(sdf.parse(list.get(i).getGLTRP()));
+            p.setMaterialDesc(list.get(i).getMAKTX());
             orders.add(p);
         }
         return orders;
+    }
+
+    private String trimStringWith(String str, char beTrim) {
+        int st = 0;
+        int len = str.length();
+        char[] val = str.toCharArray();
+        char sbeTrim = beTrim;
+        while ((st < len) && (val[st] <= sbeTrim)) {
+            st++;
+        }
+        return st > 0 ? str.substring(st, len) : str;
     }
 
 
