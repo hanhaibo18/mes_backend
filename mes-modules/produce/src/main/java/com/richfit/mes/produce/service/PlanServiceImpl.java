@@ -41,7 +41,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -416,22 +415,22 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @Date: 2022/8/11 11:37
      **/
     List<ProjectBomComplete> pojectBomCompleteStoreList(List<ProjectBomComplete> projectBomCompleteList) {
-        String materialNos = "";
-        for (ProjectBomComplete pbc : projectBomCompleteList) {
-            materialNos += "," + pbc.getMaterialNo();
-        }
-        CommonResult<List<Product>> commonResult = erpServiceClient.getStorage(materialNos.substring(1), SecurityUtils.getCurrentUser().getTenantErpCode());
-        List<Product> productList = commonResult.getData();
+//        String materialNos = "";
+//        for (ProjectBomComplete pbc : projectBomCompleteList) {
+//            materialNos += "," + pbc.getMaterialNo();
+//        }
+//        CommonResult<List<Product>> commonResult = erpServiceClient.getStorage(materialNos.substring(1), SecurityUtils.getCurrentUser().getTenantErpCode());
+//        List<Product> productList = commonResult.getData();
         for (ProjectBomComplete pbc : projectBomCompleteList) {
             int num = wmsServiceClient.queryMaterialCount(pbc.getMaterialNo()).getData();
             int totalErp = 0;
-            if (productList != null) {
-                for (Product product : productList) {
-                    if (product.getMaterialNo().equals(pbc.getMaterialNo())) {
-                        totalErp = product.getQty().multiply(new BigDecimal(Utils.unit(product.getUnit()))).intValue();
-                    }
-                }
-            }
+//            if (productList != null) {
+//                for (Product product : productList) {
+//                    if (product.getMaterialNo().equals(pbc.getMaterialNo())) {
+//                        totalErp = product.getQty().multiply(new BigDecimal(Utils.unit(product.getUnit()))).intValue();
+//                    }
+//                }
+//            }
             double totalWms = Double.valueOf(num).intValue();
             double totalStore = 0;
             double totalMiss = 0;

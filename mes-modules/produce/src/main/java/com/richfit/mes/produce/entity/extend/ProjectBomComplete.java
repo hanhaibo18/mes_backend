@@ -51,5 +51,5 @@ public class ProjectBomComplete extends ProjectBom {
     /**
      * 部件绑定信息
      */
-    private List<TrackAssemblyBinding> trackAssemblyList;
+    private List<TrackAssemblyBinding> trackAssemblyBindingList;
 }
