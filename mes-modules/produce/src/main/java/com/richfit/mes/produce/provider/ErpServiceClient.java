@@ -2,6 +2,7 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.provider.fallback.ErpServiceClientFallbackImpl;
 import io.swagger.annotations.ApiParam;
@@ -27,6 +28,12 @@ public interface ErpServiceClient {
                                                   @RequestParam(value = "订单号") String orderNo,
                                                   @RequestParam(value = "数量") int qty,
                                                   @RequestParam(value = "单位") String unit);
+
+    @GetMapping("/api/integration/erp/order/get")
+    public CommonResult<List<Order>> getErpOrder(@RequestParam String erpCode,
+                                                 @RequestParam String selectDate,
+                                                 @RequestParam(required = false) String orderNo,
+                                                 @RequestParam(required = false) String controller);
 
     /**
      * 功能描述: ERP库存查询
