@@ -267,7 +267,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             projectBomCompleteList = projectBomCompleteList(plan);
         } else {
             //计划已匹配跟单
-            projectBomCompleteList = projectBomCompleteList(plan);
+            projectBomCompleteList = projectBomCompleteListByTrackHead(plan, trackHeadList);
         }
         return pojectBomCompleteStoreList(projectBomCompleteList);
     }
@@ -280,7 +280,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @Date: 2022/8/11 11:37
      **/
     @Override
-    public List<ProjectBomComplete> completeness_list(List<Plan> planList) {
+    public List<ProjectBomComplete> completenessList(List<Plan> planList) {
         List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         for (Plan plan : planList) {
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
@@ -321,11 +321,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     List<ProjectBomComplete> projectBomCompleteList(Plan plan) {
         List<ProjectBomComplete> projectBomCompleteList = new ArrayList<>();
         if (!StringUtil.isNullOrEmpty(plan.getProjectBom())) {
+            System.out.println("--------------------");
+            System.out.println(plan.getProjectBom());
             List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(plan.getProjectBom());
             Map<String, String> group = new HashMap<>();
             if (!StringUtil.isNullOrEmpty(plan.getProjectBomGroup())) {
                 group = JSON.parseObject(plan.getProjectBomGroup(), Map.class);
             }
+            System.out.println(projectBomList.size());
             for (ProjectBom pb : projectBomList) {
                 //过滤H零件
                 if ("L".equals(pb.getGrade())) {
@@ -368,21 +371,27 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             queryWrapper.eq("track_head_id", trackHead.getId());
             List<TrackAssembly> trackAssemblies = trackAssemblyService.list(queryWrapper);
             for (TrackAssembly trackAssembly : trackAssemblies) {
-                boolean flag = true;
-                for (ProjectBomComplete projectBomComplete : projectBomCompleteList) {
-                    if (trackAssembly.getMaterialNo().equals(projectBomComplete.getMaterialNo())) {
-                        flag = false;
-                        projectBomComplete.setNumber(trackAssembly.getNumber() + projectBomComplete.getNumber());
-                        projectBomComplete.setInstallNumber(trackAssembly.getNumber() + projectBomComplete.getInstallNumber());
+                //过滤H零件
+                if ("L".equals(trackAssembly.getGrade())) {
+                    boolean flag = true;
+                    for (ProjectBomComplete projectBomComplete : projectBomCompleteList) {
+                        if (trackAssembly.getMaterialNo().equals(projectBomComplete.getMaterialNo())) {
+                            flag = false;
+                            projectBomComplete.setNumber(trackAssembly.getNumber() + projectBomComplete.getNumber());
+                            projectBomComplete.setInstallNumber(trackAssembly.getNumber() + projectBomComplete.getInstallNumber());
+                        }
                     }
-                }
-                if (flag) {
-                    ProjectBomComplete projectBomComplete = new ProjectBomComplete();
-                    projectBomComplete.setPlanNumber(plan.getProjNum());
-                    projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
-                    projectBomComplete.setNumber(trackAssembly.getNumber());
-                    projectBomComplete.setInstallNumber(trackAssembly.getNumber());
-                    projectBomCompleteList.add(projectBomComplete);
+                    if (flag) {
+                        ProjectBomComplete projectBomComplete = new ProjectBomComplete();
+                        projectBomComplete.setPlanNumber(plan.getProjNum());
+                        projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
+                        projectBomComplete.setNumber(trackAssembly.getNumber());
+                        projectBomComplete.setInstallNumber(trackAssembly.getNumber());
+                        projectBomComplete.setProdDesc(trackAssembly.getName());
+                        projectBomComplete.setMaterialNo(trackAssembly.getMaterialNo());
+                        projectBomComplete.setDrawingNo(trackAssembly.getDrawingNo());
+                        projectBomCompleteList.add(projectBomComplete);
+                    }
                 }
             }
         }
@@ -398,7 +407,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      **/
     List<ProjectBomComplete> pojectBomCompleteStoreList(List<ProjectBomComplete> projectBomCompleteList) {
         for (ProjectBomComplete pbc : projectBomCompleteList) {
-            int totalErp = Double.valueOf(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()).replaceAll("\uFEFF", "")).intValue();
+            String num = HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()).replaceAll("\uFEFF", "");
+            int totalErp = Double.valueOf(com.mysql.cj.util.StringUtils.isNullOrEmpty(num) ? 0 + "" : num).intValue();
             int totalStore = 0;
             int totalMiss = 0;
 //            JSONObject result = JSON.parseObject(HttpUtil.get(urlStoreRemainingNumber + "&page=1&wstr=" + pbc.getMaterialNo()));
@@ -790,7 +800,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Override
     public void exportPlan(MultipartFile file) {
-        
+
     }
 
     @Override
