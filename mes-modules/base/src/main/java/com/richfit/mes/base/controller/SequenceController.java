@@ -54,6 +54,9 @@ public class SequenceController extends BaseController {
     @Autowired
     private RouterCheckService routerCheckService;
 
+    @Autowired
+    private OperationAssignService operationAssignService;
+
 
     /**
      * 功能描述: 工序查询
@@ -601,4 +604,41 @@ public class SequenceController extends BaseController {
             e.printStackTrace();
         }
     }
+
+    @ApiOperation(value = "新增工序派工", notes = "新增工序派工")
+    @ApiImplicitParam(name = "assign", value = "工序派工", required = true, dataType = "SequenceAssign", paramType = "path")
+    @PostMapping("/assign/save")
+    public CommonResult<Boolean> assignSave(@RequestBody OperationAssign assign) {
+        return CommonResult.success(operationAssignService.save(assign), "操作成功！");
+    }
+
+    @ApiOperation(value = "修改工序派工", notes = "修改工序派工")
+    @ApiImplicitParam(name = "assign", value = "工序派工", required = true, dataType = "SequenceAssign", paramType = "path")
+    @PutMapping("/assign/update")
+    public CommonResult<Boolean> assignUpdate(@RequestBody OperationAssign assign) {
+        return CommonResult.success(operationAssignService.updateById(assign), "操作成功！");
+    }
+
+    @ApiOperation(value = "删除工序派工", notes = "删除工序派工")
+    @DeleteMapping("/assign/delete")
+    public CommonResult<Boolean> assignDelete(String sequenceId) {
+        QueryWrapper<OperationAssign> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("operation_id", sequenceId);
+        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
+        return CommonResult.success(operationAssignService.remove(queryWrapper), "操作成功！");
+    }
+
+    @ApiOperation(value = "查询工序派工", notes = "根据工艺ID查询工序派工")
+    @GetMapping("/assign/get")
+    public CommonResult<OperationAssign> assignGet(String sequenceId) {
+        QueryWrapper<OperationAssign> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("operation_id", sequenceId);
+        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
+        return CommonResult.success(operationAssignService.getOne(queryWrapper), "操作成功！");
+    }
+
 }
