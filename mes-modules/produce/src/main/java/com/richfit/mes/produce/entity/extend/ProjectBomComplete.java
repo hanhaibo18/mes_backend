@@ -29,9 +29,14 @@ public class ProjectBomComplete extends ProjectBom {
      */
     private double installNumber;
     /**
-     * 第三方仓储数量
+     * ERP仓储数量
      */
     private double erpNumber;
+
+    /**
+     * WMS仓储数量
+     */
+    private double wmsNumber;
     /**
      * 本地仓储数量
      */

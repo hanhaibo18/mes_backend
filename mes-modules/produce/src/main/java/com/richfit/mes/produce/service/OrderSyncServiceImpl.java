@@ -10,6 +10,7 @@ import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
+import com.richfit.mes.produce.provider.ErpServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -53,38 +55,13 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
 
     @Value("${interface.erp.orders-synchronization}")
     private String url;
+    
+    @Autowired
+    private ErpServiceClient erpServiceClient;
 
     @Override
     public List<Order> queryOrderSynchronization(OrdersSynchronizationDto orderSynchronizationDto) {
-        String soapRequestData = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">" +
-                "   <soapenv:Header/>" +
-                "   <soapenv:Body>" +
-                "      <urn:ZC80_PPIF009>" +
-                "         <!--You may enter the following 3 items in any order-->" +
-                "         <urn:ZDATUM>" + orderSynchronizationDto.getDate() + "</urn:ZDATUM>" +
-                "         <urn:ZWERKS>" +
-                "            <urn:WERKS>" + orderSynchronizationDto.getCode() + "</urn:WERKS>" +
-                "         </urn:ZWERKS>" +
-                "      </urn:ZC80_PPIF009>" +
-                "   </soapenv:Body>" +
-                "</soapenv:Envelope>";
-        System.out.println("订单同步");
-        System.out.println(soapRequestData);
-        //构造http请求头
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
-        headers.setContentType(type);
-        HttpEntity<String> formEntity = new HttpEntity<>(soapRequestData, headers);
-        RestTemplateBuilder builder = new RestTemplateBuilder();
-        RestTemplate restTemplate = builder.build();
-        //返回结果
-        String resultStr = restTemplate.postForObject(url, formEntity, String.class);
-        System.out.println(resultStr);
-        //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
-        String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
-        System.out.println(tmpStr);
-        //获取工厂ID
-        return xmlAnalysis(tmpStr, orderSynchronizationDto);
+        return erpServiceClient.getErpOrder(orderSynchronizationDto.getCode(), orderSynchronizationDto.getDate(), orderSynchronizationDto.getOrderSn(), orderSynchronizationDto.getController()).getData();
     }
 
     /**
@@ -172,92 +149,5 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             e.printStackTrace();
         }
         return CommonResult.success(saveData);
-    }
-
-
-    private List<Order> xmlAnalysis(String xml, OrdersSynchronizationDto orderSynchronizationDto) {
-        Document doc = null;
-        int size = 0;
-        List<Order> list = new ArrayList<>();
-        char zero = 48;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            doc = DocumentHelper.parseText(xml);
-            Element rootElt = doc.getRootElement();
-            log.info(rootElt.getName());
-            Iterator<Element> body = rootElt.elementIterator("Body");
-            while (body.hasNext()) {
-                Element bodyNext = body.next();
-                Iterator<Element> response = bodyNext.elementIterator("ZC80_PPIF009.Response");
-                while (response.hasNext()) {
-                    Element responseNext = response.next();
-                    Iterator<Element> tAUFK = responseNext.elementIterator("T_AUFK");
-                    while (tAUFK.hasNext()) {
-                        Element tAUFKNext = tAUFK.next();
-                        Iterator<Element> item = tAUFKNext.elementIterator("item");
-                        while (item.hasNext()) {
-                            Element itemNext = item.next();
-                            Order order = new Order();
-                            order.setOrderSn(trimStringWith(itemNext.elementTextTrim("AUFNR"), zero));
-                            order.setMaterialCode(trimStringWith(itemNext.elementTextTrim("MATNR"), zero));
-                            order.setMaterialDesc(itemNext.elementTextTrim("MAKTX"));
-                            //TODO: 从xml获取的参数还需再去查询在存储
-//                            order.setBranchCode();
-                            order.setOrderNum((int) Float.parseFloat(itemNext.elementTextTrim("GAMNG").trim()));
-                            order.setStartTime(format.parse(itemNext.elementTextTrim("GSTRP")));
-                            order.setEndTime(format.parse(itemNext.elementTextTrim("GLTRP")));
-//                            order.setInChargeOrg(itemNext.elementTextTrim("DISPO"));
-                            order.setInChargeOrg(itemNext.elementTextTrim("WERKS"));
-                            order.setController(itemNext.elementTextTrim("DISPO"));
-                            boolean orderJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getOrderSn());
-                            boolean controllerJudge = StringUtil.isNullOrEmpty(orderSynchronizationDto.getController());
-                            if (!orderJudge || !controllerJudge) {
-                                boolean orderSnData = !orderJudge && orderSynchronizationDto.getOrderSn().equals(order.getOrderSn());
-                                boolean inChargeOrgData = !controllerJudge && (orderSynchronizationDto.getController().equals(order.getController()));
-                                if (orderSnData && inChargeOrgData) {
-                                    list.add(order);
-                                    continue;
-                                }
-                                if (orderSnData && controllerJudge) {
-                                    list.add(order);
-                                    continue;
-                                }
-                                if (inChargeOrgData && orderJudge) {
-                                    list.add(order);
-                                }
-                            } else {
-                                list.add(order);
-                            }
-                        }
-                    }
-                }
-            }
-            log.info(Integer.toString(size));
-        } catch (DocumentException | ParseException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
-        log.info("orderServiceImplEnd");
-        return list;
-    }
-
-    /**
-     * 功能描述:字符串截取
-     *
-     * @param str
-     * @param beTrim
-     * @Author: xinYu.hou
-     * @Date: 2022/1/13 9:31
-     * @return: String
-     **/
-    private String trimStringWith(String str, char beTrim) {
-        int st = 0;
-        int len = str.length();
-        char[] val = str.toCharArray();
-        char sbeTrim = beTrim;
-        while ((st < len) && (val[st] <= sbeTrim)) {
-            st++;
-        }
-        return st > 0 ? str.substring(st, len) : str;
     }
 }
