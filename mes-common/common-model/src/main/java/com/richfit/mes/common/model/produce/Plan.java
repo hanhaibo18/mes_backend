@@ -243,19 +243,27 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     private String isExport;
 
-    /**
-     * 零件名称
-     */
-    private String materialName;
-    /**
-     * 总台数
-     */
-    private int totalNumber;
+    private int totalNumber;  //总台数
 
-    /**
-     * 毛坯
-     */
-    private String blank;
+    private String blank;  //总台数
+
+    private String prepareBy; //编制人员
+
+    private String approvalBy; //批准人
+
+    private String auditBy;   //审核人
+
+    private String materialProductionUnit;  //物料承制单位
+
+    private String rivetingWeldingUnit;    //铆焊承制单位
+
+    private String assemblyContractorUnit;  //装配承制单位
+
+    private String finalAssemblyContractorUnit;  //总装承制单位
+
+
+
+
 
 
 

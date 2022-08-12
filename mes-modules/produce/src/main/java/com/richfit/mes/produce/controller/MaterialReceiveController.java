@@ -114,7 +114,7 @@ public class MaterialReceiveController extends BaseController {
             materialReceiveService.update(updateWrapper);
             UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
             detailWrapper.set("state",1);
-            updateWrapper.eq("delivery_no",deliveryNo);
+            detailWrapper.eq("delivery_no",deliveryNo);
             materialReceiveDetailService.update(detailWrapper);
         }
         return CommonResult.success(b);
