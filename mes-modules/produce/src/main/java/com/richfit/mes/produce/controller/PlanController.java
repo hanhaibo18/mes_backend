@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -315,7 +316,7 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "导入计划", notes = "根据Excel文档导入计划")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
-    public CommonResult importExcel(@RequestParam("file") MultipartFile file) {
+    public CommonResult importExcel(@RequestParam("file") MultipartFile file) throws IOException {
         planService.exportPlan(file);
         return null;
     }

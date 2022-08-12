@@ -11,6 +11,7 @@ import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,7 @@ public interface PlanService extends IService<Plan> {
      */
     CommonResult<Object> backoutPlan(String id);
 
-    void exportPlan(MultipartFile file);
+    void exportPlan(MultipartFile file) throws IOException;
 
 
     /**

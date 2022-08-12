@@ -1,5 +1,6 @@
 package com.richfit.mes.common.core.utils;
 
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -89,7 +90,7 @@ public class ExcelUtils {
         Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(fileName), in);
         // 根据下标获取Excel工作表
         Sheet sheet = workbook.getSheetAt(sheetIndex);
-        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet);
+        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet,workbook);
     }
 
     /**
@@ -146,7 +147,7 @@ public class ExcelUtils {
         Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(fileName), inputStream);
         // 根据下标获取Excel工作表
         Sheet sheet = workbook.getSheetAt(sheetIndex);
-        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet);
+        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet,workbook);
     }
 
     /**
@@ -183,7 +184,7 @@ public class ExcelUtils {
      * @return 集合
      */
     private static <T> List<T> importExcel(Class<T> type, String[] fieldNames, int beginRow,
-                                           int endRow, int beginColumn, int endColumn, Sheet sheet) {
+                                           int endRow, int beginColumn, int endColumn, Sheet sheet,Workbook workbook) {
         // 验证起始行是否符合标准
         if (0 > beginRow) {
             beginRow = sheet.getFirstRowNum();
@@ -234,7 +235,7 @@ public class ExcelUtils {
                 }
                 String propertyName = fieldNames[index];
                 try {
-                    Object value = getCellValue(cell, getPropertyType(t, propertyName));
+                    Object value = getCellValue(cell, getPropertyType(t, propertyName),workbook);
                     if (value != null) {
                         setPropertyValue(t, propertyName, value);
                     }
@@ -258,13 +259,13 @@ public class ExcelUtils {
      * @param type 属性的返回类型Class
      * @return obj
      */
-    private static Object getCellValue(Cell cell, Class<?> type) {
+    private static Object getCellValue(Cell cell, Class<?> type,Workbook workbook) {
         Object value;
         try {
             if (type == Date.class) {
                 value = cell.getDateCellValue();
             } else {
-                value = getCellValue(cell, cell.getCellTypeEnum());
+                value = getCellValue(cell, cell.getCellTypeEnum(),workbook);
 
                 if (null == value) {
                     return null;
@@ -315,14 +316,30 @@ public class ExcelUtils {
      * @param cellType excel单元格类型
      * @return obj
      */
-    private static Object getCellValue(Cell cell, CellType cellType) {
+    private static Object getCellValue(Cell cell, CellType cellType,Workbook workbook) {
         Object value = null;
         switch (cellType) {
             case BLANK:
                 return null;
             case FORMULA:
-                value = String.valueOf(cell.getCellFormula());
-                break;
+                CellType cacheCellType = cell.getCachedFormulaResultTypeEnum();{
+                switch (cacheCellType) {
+                    case STRING:
+                        value = cell.getStringCellValue();
+                        break;
+                    case NUMERIC:
+                        value = String.valueOf(cell.getNumericCellValue());
+                        break;
+                    case BOOLEAN:
+                        value = String.valueOf(cell.getBooleanCellValue());
+                        break;
+                    default:
+                        HSSFFormulaEvaluator formulaEvaluator = new HSSFFormulaEvaluator((HSSFWorkbook) workbook);
+                        CellValue evaluate = formulaEvaluator.evaluate(cell);
+                        value = evaluate.formatAsString();
+                        break;
+                }
+            }
             case NUMERIC:
                 cell.setCellType(CellType.STRING);
                 String temp = cell.getStringCellValue();
