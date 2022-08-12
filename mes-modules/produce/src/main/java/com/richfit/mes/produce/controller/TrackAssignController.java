@@ -59,11 +59,11 @@ public class TrackAssignController extends BaseController {
     @Resource
     private PublicService publicService;
     @Resource
-    private TrackAssemblyService trackAssemblyService;
-    @Resource
     private WmsServiceClient wmsServiceClient;
     @Resource
     private TrackHeadFlowService trackHeadFlowService;
+    @Resource
+    private RequestNoteService requestNoteService;
 
     /**
      * ***
@@ -321,6 +321,7 @@ public class TrackAssignController extends BaseController {
                                 lineLists.add(lineList);
                             }
                             ingredient.setLineList(lineLists);
+                            requestNoteService.saveRequestNote(ingredient,lineLists);
                             wmsServiceClient.anApplicationForm(ingredient);
                         }
                         //下工序激活

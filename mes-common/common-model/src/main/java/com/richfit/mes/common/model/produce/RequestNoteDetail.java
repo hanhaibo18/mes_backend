@@ -29,11 +29,15 @@ public class RequestNoteDetail extends BaseEntity<RequestNoteDetail> {
      * 图号
      */
     private String drawingNo;
+    /**
+     * 单位
+     */
+    private String unit;
 
     /**
      * 数量
      */
-    private Integer number;
+    private double number;
 
     /**
      * 原因
@@ -44,7 +48,7 @@ public class RequestNoteDetail extends BaseEntity<RequestNoteDetail> {
      * 说明
      */
     private String explain;
-    
+
     /**
      * 是否需要领料
      */
