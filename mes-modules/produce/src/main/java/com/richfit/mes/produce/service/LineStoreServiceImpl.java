@@ -5,6 +5,7 @@ import cn.hutool.core.util.ZipUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
@@ -558,18 +559,23 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         RequestNote requestNote = requestNoteService.getOne(queryWrapper);
 
         //根据跟单Id，获取跟单，拿到其中的订单号
-        TrackHead trackHead = trackHeadService.getById(requestNote.getTrackHeadId());
-        String orderNo = trackHead.getProductionOrder();
+        if (ObjectUtils.isNotNull(requestNote)){
+            TrackHead trackHead = trackHeadService.getById(requestNote.getTrackHeadId());
+            String orderNo = trackHead.getProductionOrder();
 
-        //把收料信息转换成料单信息，入库
-        for (MaterialReceiveDetail materialReceiveDetail : materialReceiveDetails) {
-            LineStore lineStore = new LineStore(materialReceiveDetail, branchCode);
-            lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            lineStore.setProductionOrder(orderNo);
-            this.save(lineStore);
+            //把收料信息转换成料单信息，入库
+            for (MaterialReceiveDetail materialReceiveDetail : materialReceiveDetails) {
+                LineStore lineStore = new LineStore(materialReceiveDetail, branchCode);
+                lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                lineStore.setProductionOrder(orderNo);
+                this.save(lineStore);
+            }
+            return true;
+        } else {
+            return false;
         }
 
-        return true;
+
     }
 
     @Override
