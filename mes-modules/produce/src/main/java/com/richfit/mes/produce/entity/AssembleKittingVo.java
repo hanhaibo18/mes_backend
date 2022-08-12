@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -73,7 +72,5 @@ public class AssembleKittingVo {
     @ApiModelProperty(value = "关键件", dataType = "String")
     private String isKeyPart;
 
-    @TableField(exist = false)
-    @ApiModelProperty(value = "是否生成部件级别跟单")
-    private String isTrackHead;
+
 }

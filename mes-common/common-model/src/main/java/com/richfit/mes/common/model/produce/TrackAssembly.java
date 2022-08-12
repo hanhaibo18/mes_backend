@@ -180,7 +180,11 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     private String unit;
 
     /**
-     *产品类型
+     * 产品类型
      */
     private String sourceType;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否生成部件级别跟单")
+    private String isTrackHead;
 }

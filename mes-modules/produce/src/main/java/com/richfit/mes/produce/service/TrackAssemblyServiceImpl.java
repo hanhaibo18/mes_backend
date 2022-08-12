@@ -22,6 +22,7 @@ import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -169,21 +170,46 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     }
 
     @Override
-    public List<AssembleKittingVo> planKittingExamine(String trackHeadId, String branchCode) {
-        List<AssembleKittingVo> kittingExamine = this.kittingExamine(trackHeadId, branchCode);
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-        for (AssembleKittingVo kitting : kittingExamine) {
-            queryWrapper.eq("material_no", kitting.getMaterialNo())
-                    .or()
-                    .eq("drawing_no", kitting.getDrawingNo());
-            List<TrackHead> list = trackHeadService.list(queryWrapper);
-            if (!list.isEmpty()) {
-                kitting.setIsTrackHead("1");
+    public List<TrackAssembly> planKittingExamine(String trackHeadId, String branchCode, Boolean isComplete) {
+        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<TrackAssembly> trackAssemblyList = this.list(queryWrapper);
+        QueryWrapper<TrackHead> queryWrapperHead = new QueryWrapper<>();
+        for (TrackAssembly trackAssembly : trackAssemblyList) {
+
+            Integer zpNumber = lineStoreMapper.selectTotalNum(trackAssembly.getMaterialNo(), branchCode, SecurityUtils.getCurrentUser().getTenantId());
+            if (zpNumber != null) {
+                trackAssembly.setNumberInventory(zpNumber);
             } else {
-                kitting.setIsTrackHead("0");
+                trackAssembly.setNumberInventory(0);
+            }
+            trackAssembly.setNumberRemaining(trackAssembly.getNumber() - trackAssembly.getNumberInstall());
+            if (trackAssembly.getNumber() == trackAssembly.getNumberInstall()) {
+                trackAssembly.setIsComplete(1);
+            } else {
+                trackAssembly.setIsComplete(0);
+            }
+            QueryWrapper<TrackAssemblyBinding> queryWrapperBinding = new QueryWrapper<>();
+            queryWrapperBinding.eq("assembly_id", trackAssembly.getId());
+            queryWrapperBinding.eq("is_binding", 1);
+            trackAssembly.setAssemblyBinding(assemblyBindingService.list(queryWrapperBinding));
+
+            queryWrapper.eq("material_no", trackAssembly.getMaterialNo())
+                    .or()
+                    .eq("drawing_no", trackAssembly.getDrawingNo());
+            List<TrackHead> list = trackHeadService.list(queryWrapperHead);
+            if (!list.isEmpty()) {
+                trackAssembly.setIsTrackHead("1");
+            } else {
+                trackAssembly.setIsTrackHead("0");
             }
         }
-        return kittingExamine;
+        //控制是否部件级跟单
+        if (Boolean.TRUE.equals(isComplete)) {
+            trackAssemblyList = trackAssemblyList.stream().filter(trackAssembly -> "1".equals(trackAssembly.getIsTrackHead())).collect(Collectors.toList());
+        }
+        return trackAssemblyList;
     }
 
 

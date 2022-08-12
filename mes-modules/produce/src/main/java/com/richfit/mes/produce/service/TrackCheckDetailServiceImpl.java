@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.model.produce.NextProcess;
 import com.richfit.mes.common.model.produce.TrackCheck;
 import com.richfit.mes.common.model.produce.TrackCheckDetail;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -34,6 +35,9 @@ public class TrackCheckDetailServiceImpl extends ServiceImpl<TrackCheckDetailMap
     @Resource
     private TrackCheckService trackCheckService;
 
+    @Resource
+    private NextProcessService nextProcessService;
+
     /**
      * 描述: 根据工序id查询质检的工序项目列表
      *
@@ -58,6 +62,13 @@ public class TrackCheckDetailServiceImpl extends ServiceImpl<TrackCheckDetailMap
         queryWrapperDetail.eq("ti_id", tiId);
         queryWrapper.orderByDesc("modify_time");
         List<TrackCheckDetail> trackCheckDetails = this.list(queryWrapperDetail);
+        QueryWrapper<NextProcess> nextProcess = new QueryWrapper<>();
+        nextProcess.eq("current_process_id", tiId);
+        NextProcess process = nextProcessService.getOne(nextProcess);
+        if (null != process) {
+            trackCheck.setNextProcess(process.getNextProcessId());
+            trackCheck.setProcessMode(process.getProcessMode());
+        }
         if (!trackCheckDetails.isEmpty()) {
             trackCheck.setCheckDetailsList(trackCheckDetails);
         }

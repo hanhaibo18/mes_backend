@@ -62,15 +62,16 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
     List<AssembleKittingVo> kittingExamine(String trackHeadId, String branchCode);
 
     /**
-     * 功能描述: 齐套性检查(计划用)
+     * 功能描述: 齐套性检查(计划)
      *
      * @param trackHeadId
      * @param branchCode
+     * @param isComplete
      * @Author: xinYu.hou
-     * @Date: 2022/7/22 16:59
-     * @return: List<AssembleKittingVo>
+     * @Date: 2022/8/12 16:30
+     * @return: List<TrackAssembly>
      **/
-    List<AssembleKittingVo> planKittingExamine(String trackHeadId, String branchCode);
+    List<TrackAssembly> planKittingExamine(String trackHeadId, String branchCode, Boolean isComplete);
 
     List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo);
 
@@ -84,5 +85,5 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      **/
     ApplicationResult application(AdditionalMaterialDto additionalMaterialDto);
 
-    Page<TrackAssembly> getDeliveredDetail(Page<TrackAssembly> trackAssemblyPage,String id);
+    Page<TrackAssembly> getDeliveredDetail(Page<TrackAssembly> trackAssemblyPage, String id);
 }

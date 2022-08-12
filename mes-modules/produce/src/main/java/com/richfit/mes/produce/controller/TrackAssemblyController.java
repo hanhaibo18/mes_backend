@@ -258,10 +258,11 @@ public class TrackAssemblyController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "branchCode", value = "车间", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "isComponent", value = "是否是部件", required = true, dataType = "String", paramType = "query"),
     })
     @GetMapping("/planKittingExamine")
-    public CommonResult<List<AssembleKittingVo>> planKittingExamine(String trackHeadId, String branchCode) {
-        return CommonResult.success(trackAssemblyService.planKittingExamine(trackHeadId, branchCode));
+    public CommonResult<List<TrackAssembly>> planKittingExamine(String trackHeadId, String branchCode, Boolean isComponent) {
+        return CommonResult.success(trackAssemblyService.planKittingExamine(trackHeadId, branchCode, isComponent));
     }
 
 
