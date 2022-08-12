@@ -43,6 +43,7 @@ public class TrackAssemblyBinding extends BaseEntity<TrackAssemblyBinding> {
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String itemId;
 
+    private String trackNo;
 
     /**
      * 所属机构
