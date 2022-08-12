@@ -14,6 +14,6 @@ import java.util.List;
 public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     @Override
     public CommonResult<Boolean> pushRouter(List<Router> routers, String header) {
-        return null;
+        return CommonResult.success(null);
     }
 }
