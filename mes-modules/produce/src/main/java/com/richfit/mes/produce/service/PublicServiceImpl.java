@@ -210,6 +210,7 @@ public class PublicServiceImpl implements PublicService {
         List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
         for (TrackItem trackItem : currentTrackItemList) {
             trackItem.setIsCurrent(0);
+            trackItemService.updateById(trackItem);
         }
         //判断还有没有下工序
         if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
