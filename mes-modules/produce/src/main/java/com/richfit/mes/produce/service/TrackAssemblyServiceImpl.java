@@ -47,7 +47,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     @Resource
     private RequestNoteService requestNoteService;
     @Resource
-    private  TrackAssemblyMapper trackAssemblyMapper;
+    private TrackAssemblyMapper trackAssemblyMapper;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
@@ -168,6 +168,24 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         return list;
     }
 
+    @Override
+    public List<AssembleKittingVo> planKittingExamine(String trackHeadId, String branchCode) {
+        List<AssembleKittingVo> kittingExamine = this.kittingExamine(trackHeadId, branchCode);
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        for (AssembleKittingVo kitting : kittingExamine) {
+            queryWrapper.eq("material_no", kitting.getMaterialNo())
+                    .or()
+                    .eq("drawing_no", kitting.getDrawingNo());
+            List<TrackHead> list = trackHeadService.list(queryWrapper);
+            if (!list.isEmpty()) {
+                kitting.setIsTrackHead("1");
+            } else {
+                kitting.setIsTrackHead("0");
+            }
+        }
+        return kittingExamine;
+    }
+
 
     @Override
     public ApplicationResult application(AdditionalMaterialDto additionalMaterialDto) {
@@ -234,7 +252,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     @Override
     public Page<TrackAssembly> getDeliveredDetail(Page<TrackAssembly> trackAssemblyPage, String id) {
-        trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id).getRecords().forEach(i ->{
+        trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id).getRecords().forEach(i -> {
             i.setLackQuantity(i.getOrderQuantity() - i.getQuantity());
         });
         return trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id);

@@ -61,6 +61,17 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      **/
     List<AssembleKittingVo> kittingExamine(String trackHeadId, String branchCode);
 
+    /**
+     * 功能描述: 齐套性检查(计划用)
+     *
+     * @param trackHeadId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/7/22 16:59
+     * @return: List<AssembleKittingVo>
+     **/
+    List<AssembleKittingVo> planKittingExamine(String trackHeadId, String branchCode);
+
     List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo);
 
     /**
