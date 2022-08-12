@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -8,6 +9,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -72,6 +74,7 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setIsSchedule(1);
             String number = map.get("number");
             trackItem.setAssignableQty(trackItem.getAssignableQty() - Integer.parseInt(number));
+            trackItem.setIsCurrent(0);
             trackItemService.updateById(trackItem);
             if (0 == trackItem.getAssignableQty()) {
                 if (trackItem.getIsCurrent() == 1 && trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsExistQualityCheck() == 0) {
@@ -85,6 +88,7 @@ public class PublicServiceImpl implements PublicService {
 
     //报工
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateComplete(Map<String, String> map) {
 
         String tiId = map.get("trackItemId");
@@ -135,8 +139,7 @@ public class PublicServiceImpl implements PublicService {
             }
             if (isNext) {
                 //TODO:下工序激活
-                String trackHeadId = map.get("trackHeadId");
-                activationProcess = this.activationProcess(trackHeadId);
+                activationProcess = this.activationProcess(map);
             }
         }
         return activationProcess;
@@ -144,10 +147,10 @@ public class PublicServiceImpl implements PublicService {
 
     //质检
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateQualityTesting(Map<String, String> map) {
         String tiId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(tiId);
-
         //质检完成
         trackItem.setIsQualityComplete(1);
         trackItem.setQualityResult(1);
@@ -157,13 +160,14 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setIsFinalComplete("1");
             trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
             trackItemService.updateById(trackItem);
-            return activationProcess(map.get("trackHeadId"));
+            return activationProcess(map);
         }
         trackItemService.updateById(trackItem);
         return true;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateDispatch(Map<String, String> map) {
         String tiId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(tiId);
@@ -184,13 +188,13 @@ public class PublicServiceImpl implements PublicService {
             } else {
                 trackItem.setIsFinalComplete("1");
                 trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
-
                 if (null != SecurityUtils.getCurrentUser()) {
                     trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
                 }
                 trackItem.setScheduleCompleteTime(new Date());
-                this.activationProcess(map.get("trackHeadId"));
+                this.activationProcess(map);
             }
+            trackItemService.updateById(trackItem);
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
@@ -201,21 +205,22 @@ public class PublicServiceImpl implements PublicService {
     }
 
     @Override
-    public Boolean activationProcess(String trackHeadId) {
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean activationProcess(Map<String, String> map) {
         //倒序获取工序列表
         QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
-        currentTrackItem.eq("track_head_id", trackHeadId);
+        currentTrackItem.eq("flow_id", map.get("flowId"));
         currentTrackItem.eq("is_current", 1);
         currentTrackItem.orderByDesc("sequence_order_by");
         List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
-        for (TrackItem trackItem : currentTrackItemList) {
-            trackItem.setIsCurrent(0);
-            trackItemService.updateById(trackItem);
-        }
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("flow_id", map.get("flowId"));
+        updateWrapper.set("is_current", 0);
+        trackItemService.update(updateWrapper);
         //判断还有没有下工序
         if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
             try {
-                trackHeadService.trackHeadFinish(trackHeadId);
+                trackHeadService.trackHeadFinish(map.get("trackHeadId"));
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -279,7 +284,7 @@ public class PublicServiceImpl implements PublicService {
     private boolean activation(TrackItem trackItem) {
         //激活下工序
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_head_id", trackItem);
+        queryWrapper.eq("flow_id", trackItem.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
         trackItemEntity.setIsCurrent(1);
@@ -292,7 +297,7 @@ public class PublicServiceImpl implements PublicService {
 
     private void queryTrackItemList(TrackItem trackItems) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_head_id", trackItems.getTrackHeadId());
+        queryWrapper.eq("flow_id", trackItems.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItems.getNextOptSequence());
         TrackItem trackItem = trackItemService.getOne(queryWrapper);
         trackItem.setIsCurrent(1);
