@@ -59,7 +59,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
             wmsServiceClient.sendJkInfo(certificate);
 
-            if (sendEnaled()) {
+            if (sendEnabled()) {
                 pushWorkHour(certificate);
             }
         }
@@ -95,7 +95,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     }
 
 
-    private boolean sendEnaled() {
+    private boolean sendEnabled() {
         boolean enable = true;
         //增加逻辑  每月固定日期之间的日期才推送工时
         //日期范围通过字典保存：erpUrl中的  ErpStartDay：开始日期  ErpEndDay：结束日期
