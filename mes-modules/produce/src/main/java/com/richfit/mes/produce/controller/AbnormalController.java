@@ -45,7 +45,7 @@ public class AbnormalController extends BaseController {
 
     @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
     @GetMapping("/page")
-    public CommonResult<IPage<Abnormal>> pageAbnormal(String siteId, String orgId, String type, String name, String startTime, String endTime, String status, String isAndon, int page, int limitString, int limit, String branchCode, String tenantId) {
+    public CommonResult<IPage<Abnormal>> pageAbnormal(String siteId, String orgId, String type, String name, String startTime, String endTime, String status, String isAndon, int page, int limit, String branchCode, String tenantId) {
         QueryWrapper<Abnormal> queryWrapper = new QueryWrapper<Abnormal>();
         if (!StringUtils.isNullOrEmpty(siteId)) {
             queryWrapper.eq("site_id", siteId);
