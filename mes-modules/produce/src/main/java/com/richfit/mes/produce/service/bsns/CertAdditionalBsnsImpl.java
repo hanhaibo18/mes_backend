@@ -1,14 +1,17 @@
 package com.richfit.mes.produce.service.bsns;
 
+import cn.hutool.core.date.DateUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.ErpServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
@@ -17,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -45,6 +49,9 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     @Autowired
     CertificateService certificateService;
 
+    @Autowired
+    SystemServiceClient systemServiceClient;
+
     @Override
     public void doAdditionalBsns(Certificate certificate) {
 
@@ -52,13 +59,15 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
             wmsServiceClient.sendJkInfo(certificate);
 
-            pushWorkHour(certificate);
+            if (sendEnaled()) {
+                pushWorkHour(certificate);
+            }
         }
     }
 
     @Override
     public void pushWorkHour(Certificate certificate) {
-        if(certificate != null) {
+        if (certificate != null) {
             //erp工时推送
             String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
 
@@ -85,5 +94,27 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
         }
     }
 
+
+    private boolean sendEnaled() {
+        boolean enable = true;
+        //增加逻辑  每月固定日期之间的日期才推送工时
+        //日期范围通过字典保存：erpUrl中的  ErpStartDay：开始日期  ErpEndDay：结束日期
+        CommonResult<ItemParam> startDay = systemServiceClient.findItemParamByCode("ErpStartDay");
+        CommonResult<ItemParam> endDay = systemServiceClient.findItemParamByCode("ErpEndDay");
+
+        int nowDay = DateUtil.dayOfMonth(new Date());
+        if (startDay != null && startDay.getData() != null && endDay != null && endDay.getData() != null) {
+            if (Integer.parseInt(startDay.getData().getLabel()) <= nowDay && nowDay <= Integer.parseInt(endDay.getData().getLabel())) {
+
+            } else {
+                enable = false;
+                log.debug("当前日期[{}]在同步工时接口允许日期范围外[{}]-[{}]，不进行工时推送", nowDay, startDay.getData().getLabel(), endDay.getData().getLabel());
+            }
+        } else {
+            log.debug("本租户未配置工时推送有效日期，任何日期均可推送");
+        }
+
+        return enable;
+    }
 
 }
