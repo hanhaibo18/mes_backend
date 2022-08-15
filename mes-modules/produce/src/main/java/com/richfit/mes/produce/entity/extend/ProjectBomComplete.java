@@ -1,7 +1,10 @@
 package com.richfit.mes.produce.entity.extend;
 
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * 功能描述: 物料齐套性检查数据
@@ -27,17 +30,26 @@ public class ProjectBomComplete extends ProjectBom {
     /**
      * 已安装数量
      */
-    private int installNumber;
+    private double installNumber;
     /**
-     * 第三方仓储数量
+     * ERP仓储数量
      */
-    private int erpNumber;
+    private double erpNumber;
+
+    /**
+     * WMS仓储数量
+     */
+    private double wmsNumber;
     /**
      * 本地仓储数量
      */
-    private int storeNumber;
+    private double storeNumber;
     /**
      * 缺件数量
      */
-    private int missingNumber;
+    private double missingNumber;
+    /**
+     * 部件绑定信息
+     */
+    private List<TrackAssemblyBinding> trackAssemblyBindingList;
 }

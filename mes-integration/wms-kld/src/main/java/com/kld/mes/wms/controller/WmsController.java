@@ -2,7 +2,6 @@ package com.kld.mes.wms.controller;
 
 import com.kld.mes.wms.service.ProductToWmsService;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import io.swagger.annotations.Api;

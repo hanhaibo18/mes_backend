@@ -1,29 +1,21 @@
 package com.richfit.mes.common.core.utils;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.net.URLEncoder;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.StringUtils;
-import org.apache.poi.xssf.usermodel.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.net.URLEncoder;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Excel工具类
@@ -89,7 +81,7 @@ public class ExcelUtils {
      * @return 集合
      * @throws IOException IO异常
      */
-    private static <T> List<T> importExcel(File file, Class<T> type, String[] fieldNames,
+    public static <T> List<T> importExcel(File file, Class<T> type, String[] fieldNames,
                                            int beginRow, int endRow, int beginColumn,
                                            int sheetIndex, String fileName) throws IOException {
         // 创建文件输入流
@@ -98,7 +90,7 @@ public class ExcelUtils {
         Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(fileName), in);
         // 根据下标获取Excel工作表
         Sheet sheet = workbook.getSheetAt(sheetIndex);
-        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet);
+        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet,workbook);
     }
 
     /**
@@ -155,7 +147,7 @@ public class ExcelUtils {
         Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(fileName), inputStream);
         // 根据下标获取Excel工作表
         Sheet sheet = workbook.getSheetAt(sheetIndex);
-        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet);
+        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet,workbook);
     }
 
     /**
@@ -192,7 +184,7 @@ public class ExcelUtils {
      * @return 集合
      */
     private static <T> List<T> importExcel(Class<T> type, String[] fieldNames, int beginRow,
-                                           int endRow, int beginColumn, int endColumn, Sheet sheet) {
+                                           int endRow, int beginColumn, int endColumn, Sheet sheet,Workbook workbook) {
         // 验证起始行是否符合标准
         if (0 > beginRow) {
             beginRow = sheet.getFirstRowNum();
@@ -243,8 +235,8 @@ public class ExcelUtils {
                 }
                 String propertyName = fieldNames[index];
                 try {
-                    Object value = getCellValue(cell, getPropertyType(t, propertyName));
-                    if(value != null){
+                    Object value = getCellValue(cell, getPropertyType(t, propertyName),workbook);
+                    if (value != null) {
                         setPropertyValue(t, propertyName, value);
                     }
                 } catch (Exception e) {
@@ -267,13 +259,13 @@ public class ExcelUtils {
      * @param type 属性的返回类型Class
      * @return obj
      */
-    private static Object getCellValue(Cell cell, Class<?> type) {
+    private static Object getCellValue(Cell cell, Class<?> type,Workbook workbook) {
         Object value;
         try {
             if (type == Date.class) {
                 value = cell.getDateCellValue();
             } else {
-                value = getCellValue(cell, cell.getCellTypeEnum());
+                value = getCellValue(cell, cell.getCellTypeEnum(),workbook);
 
                 if (null == value) {
                     return null;
@@ -281,33 +273,33 @@ public class ExcelUtils {
                 if (int.class == type || Integer.class == type) {
                     if (value instanceof String) {
                         value = !StringUtils.isEmpty(value) ?
-                                Integer.valueOf((String)value) : Integer.valueOf(0);
+                                Integer.valueOf((String) value) : Integer.valueOf(0);
                     } else if (value instanceof Double) {
-                        value = ((Double)value).intValue();
+                        value = ((Double) value).intValue();
                     }
                 } else if (double.class == type || Double.class == type) {
                     if (value instanceof String) {
                         value = !StringUtils.isEmpty(value) ?
-                                Double.parseDouble((String)value) : 0;
+                                Double.parseDouble((String) value) : 0;
                     } else if (value instanceof Integer) {
-                        value = Double.valueOf((Integer)value);
+                        value = Double.valueOf((Integer) value);
                     }
                 } else if (float.class == type || Float.class == type) {
                     if (value instanceof String) {
                         value = !StringUtils.isEmpty(value) ?
-                                Float.parseFloat((String)value) : 0;
+                                Float.parseFloat((String) value) : 0;
                     } else if (value instanceof Integer) {
-                        value = Float.valueOf((Integer)value);
+                        value = Float.valueOf((Integer) value);
                     }
-                }else if (boolean.class == type) {
+                } else if (boolean.class == type) {
                     if (double.class == value.getClass() || int.class == value.getClass()) {
-                        value = 1 == (int)value;
+                        value = 1 == (int) value;
                     } else if (value instanceof String) {
-                        value = ((String)value).trim();
+                        value = ((String) value).trim();
                         value = "1".equals(value)
-                                || "y".equalsIgnoreCase((String)value)
-                                || "yes".equalsIgnoreCase((String)value)
-                                || "true".equalsIgnoreCase((String)value);
+                                || "y".equalsIgnoreCase((String) value)
+                                || "yes".equalsIgnoreCase((String) value)
+                                || "true".equalsIgnoreCase((String) value);
                     }
                 }
             }
@@ -324,14 +316,30 @@ public class ExcelUtils {
      * @param cellType excel单元格类型
      * @return obj
      */
-    private static Object getCellValue(Cell cell, CellType cellType) {
+    private static Object getCellValue(Cell cell, CellType cellType,Workbook workbook) {
         Object value = null;
         switch (cellType) {
             case BLANK:
                 return null;
             case FORMULA:
-                value = String.valueOf(cell.getCellFormula());
-                break;
+                CellType cacheCellType = cell.getCachedFormulaResultTypeEnum();{
+                switch (cacheCellType) {
+                    case STRING:
+                        value = cell.getStringCellValue();
+                        break;
+                    case NUMERIC:
+                        value = String.valueOf(cell.getNumericCellValue());
+                        break;
+                    case BOOLEAN:
+                        value = String.valueOf(cell.getBooleanCellValue());
+                        break;
+                    default:
+                        HSSFFormulaEvaluator formulaEvaluator = new HSSFFormulaEvaluator((HSSFWorkbook) workbook);
+                        CellValue evaluate = formulaEvaluator.evaluate(cell);
+                        value = evaluate.formatAsString();
+                        break;
+                }
+            }
             case NUMERIC:
                 cell.setCellType(CellType.STRING);
                 String temp = cell.getStringCellValue();
@@ -428,8 +436,7 @@ public class ExcelUtils {
     }
 
 
-
-    public static void exportExcelOnSheetsData(String fileName,InputStream inputStream,List<List<Map<String, Object>>> sheets, HttpServletResponse response) throws IOException {
+    public static void exportExcelOnSheetsData(String fileName, InputStream inputStream, List<List<Map<String, Object>>> sheets, HttpServletResponse response) throws IOException {
 
         Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(".xls"), inputStream);
         for (int j = 0; j < sheets.size(); j++) {
@@ -457,24 +464,70 @@ public class ExcelUtils {
                                 Row rows = sheet.createRow(i + 2);
                                 //给该行数据赋值
                                 for (int ii = 0; ii < headList.size(); ii++) {
-                                    if(null!=sheets.get(j).get(i).get(headList.get(ii))) {
+                                    if (null != sheets.get(j).get(i).get(headList.get(ii))) {
                                         String value = sheets.get(j).get(i).get(headList.get(ii)).toString();
 
-                                    Cell cells = rows.createCell(ii);
-                                    cells.setCellValue(value);
+                                        Cell cells = rows.createCell(ii);
+                                        cells.setCellValue(value);
                                     }
                                 }
                             }
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
 
                 }
 
             }
         }
-        write(response,workbook,"跟单模板.xls");
+        write(response, workbook, "跟单模板.xls");
+
+    }
+
+
+    public static void exportExcelToFile(String fileName, InputStream inputStream, List<List<Map<String, Object>>> sheets) throws IOException {
+
+        Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(".xls"), inputStream);
+        for (int j = 0; j < sheets.size(); j++) {
+            for (int jj = 0; jj < workbook.getNumberOfSheets(); jj++) {//获取每个Sheet表
+                try {
+                    Sheet sheet = workbook.getSheetAt(jj);
+                    String sheetName = sheet.getSheetName();
+                    if (sheetName.equals("Sheet" + (j + 1))) {
+                        if (sheets.size() > 0) {
+                            Map<String, Object> map = sheets.get(j).get(0);
+                            ArrayList<String> headList = new ArrayList<>(map.keySet());
+                            //获得表格第二行
+                            Row row = sheet.createRow(1);
+                            //根据数据源信息给第二行每一列设置标题
+                            for (int i = 0; i < headList.size(); i++) {
+                                Cell cell = row.createCell(i);
+                                cell.setCellValue(headList.get(i));
+                            }
+
+
+                            for (int i = 0; i < sheets.get(j).size(); i++) {
+                                //在这个sheet页里创建一行
+                                Row rows = sheet.createRow(i + 2);
+                                //给该行数据赋值
+                                for (int ii = 0; ii < headList.size(); ii++) {
+                                    if (null != sheets.get(j).get(i).get(headList.get(ii))) {
+                                        String value = sheets.get(j).get(i).get(headList.get(ii)).toString();
+
+                                        Cell cells = rows.createCell(ii);
+                                        cells.setCellValue(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+
+                }
+
+            }
+        }
+        writeFile(fileName + ".xls", workbook);
 
     }
 
@@ -567,17 +620,17 @@ public class ExcelUtils {
                 }
                 Cell cell = row.createCell(columnIndex);
                 if (Boolean.class == propertyType) {
-                    cell.setCellValue((Boolean)value ? "true" : "false");
+                    cell.setCellValue((Boolean) value ? "true" : "false");
                 } else if (Date.class == propertyType) {
                     if (null == dateCellStyle) {
                         dateCellStyle = createCellStyle(workbook);
                     }
-                    cell.setCellValue((Date)value);
+                    cell.setCellValue((Date) value);
                     cell.setCellStyle(dateCellStyle);
                 } else if (double.class == propertyType || Double.class == propertyType) {
                     cell.setCellValue(new DecimalFormat("0.00#").format(value));
                 } else if (int.class == propertyType || Integer.class == propertyType) {
-                    cell.setCellValue((Integer)value);
+                    cell.setCellValue((Integer) value);
                 } else {
                     cell.setCellValue(value.toString());
                 }
@@ -671,7 +724,7 @@ public class ExcelUtils {
         }
         if (obj instanceof Map) {
             @SuppressWarnings("rawtypes")
-            Map m = (Map)obj;
+            Map m = (Map) obj;
             return m.get(propertyName);
         } else {
             try {

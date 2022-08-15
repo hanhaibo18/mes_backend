@@ -254,6 +254,17 @@ public class TrackAssemblyController extends BaseController {
         return CommonResult.success(trackAssemblyService.kittingExamine(trackHeadId, branchCode));
     }
 
+    @ApiOperation(value = "齐套性检查(计划)", notes = "齐套性检查(计划)")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "isComponent", value = "是否是部件", required = true, dataType = "String", paramType = "query"),
+    })
+    @GetMapping("/planKittingExamine")
+    public CommonResult<List<TrackAssembly>> planKittingExamine(String trackHeadId, String branchCode, Boolean isComponent) {
+        return CommonResult.success(trackAssemblyService.planKittingExamine(trackHeadId, branchCode, isComponent));
+    }
+
 
     @ApiOperation(value = "查询装配信息", notes = "根据跟单ID查询装配信息")
     @GetMapping("/queryTrackAssemblyByTrackNo/{trackNo}")

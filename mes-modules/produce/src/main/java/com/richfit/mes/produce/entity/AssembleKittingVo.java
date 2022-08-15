@@ -71,4 +71,6 @@ public class AssembleKittingVo {
      **/
     @ApiModelProperty(value = "关键件", dataType = "String")
     private String isKeyPart;
+
+
 }

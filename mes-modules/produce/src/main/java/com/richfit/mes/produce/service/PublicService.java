@@ -68,7 +68,7 @@ public interface PublicService {
      * @Date: 2022/7/13 14:43
      * @return: Boolean
      **/
-    Boolean activationProcess(String trackItemId);
+    Boolean activationProcess(Map<String, String> map);
 
     /**
      * 功能描述: 第三方下工序激活

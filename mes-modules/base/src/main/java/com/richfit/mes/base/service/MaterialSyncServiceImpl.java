@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.ProductMapper;
 import com.richfit.mes.base.entity.MaterialSyncDto;
 import com.richfit.mes.base.entity.MaterialTypeDto;
+import com.richfit.mes.base.provider.ErpServiceClient;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
@@ -16,6 +17,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -51,124 +53,12 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
     @Resource
     private SystemServiceClient systemServiceClient;
 
+    @Autowired
+    private ErpServiceClient erpServiceClient;
+
     @Override
     public List<Product> queryProductSync(MaterialSyncDto materialSyncDto) {
-        String soapRequestData = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">\n" +
-                "   <soapenv:Header/>\n" +
-                "   <soapenv:Body>\n" +
-                "      <urn:Z_PPFM0004>\n" +
-                "         <urn:ZDATUM>" + materialSyncDto.getDate() + "</urn:ZDATUM>\n" +
-                "         <urn:ZWERKS>\n" +
-                "         <urn:WERKS>" + materialSyncDto.getCode() + "</urn:WERKS>\n" +
-                "         </urn:ZWERKS>\n" +
-                "     \n" +
-                "      </urn:Z_PPFM0004>\n" +
-                "   </soapenv:Body>\n" +
-                "</soapenv:Envelope>";
-        System.out.println("物料同步");
-        System.out.println(soapRequestData);
-        //构造http请求头
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
-        headers.setContentType(type);
-        HttpEntity<String> formEntity = new HttpEntity<>(soapRequestData, headers);
-        RestTemplateBuilder builder = new RestTemplateBuilder();
-        RestTemplate restTemplate = builder.build();
-        //返回结果
-        String resultStr = restTemplate.postForObject(url, formEntity, String.class);
-        System.out.println(resultStr);
-        //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
-        String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
-        System.out.println(tmpStr);
-        //获取工厂ID
-        return xmlAnalysis(tmpStr, materialSyncDto);
-    }
-
-    private List<Product> xmlAnalysis(String xml, MaterialSyncDto materialSyncDto) {
-        System.out.println("------------------------");
-        System.out.println(materialSyncDto.getCode());
-        Document doc = null;
-        char zero = 48;
-        List<Product> list = new ArrayList<>();
-//        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
-//        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass(materialSyncDto.getCode(), "", SecurityConstants.FROM_INNER);
-//        Map<String, ItemParam> maps = listCommonResult.getData().stream().collect(Collectors.toMap(ItemParam::getCode, Function.identity(), (key1, key2) -> key2));
-        try {
-            doc = DocumentHelper.parseText(xml);
-            Element rootElt = doc.getRootElement();
-            Iterator<Element> body = rootElt.elementIterator("Body");
-            while (body.hasNext()) {
-                Element bodyNext = body.next();
-                Iterator<Element> response = bodyNext.elementIterator("Z_PPFM0004.Response");
-                while (response.hasNext()) {
-                    Element responseNext = response.next();
-                    Iterator<Element> tMARA = responseNext.elementIterator("T_MARA");
-                    while (tMARA.hasNext()) {
-                        Element tMARANext = tMARA.next();
-                        Iterator<Element> item = tMARANext.elementIterator("item");
-                        while (item.hasNext()) {
-                            Element itemNext = item.next();
-                            String drawingNo = itemNext.elementTextTrim("ZEINR");
-                            if (!StringUtils.isEmpty(drawingNo)) {
-                                Product product = new Product();
-                                product.setMaterialNo(trimStringWith(itemNext.elementTextTrim("MATNR"), zero));
-                                String name = itemNext.elementTextTrim("MAKTX");
-                                String[] data = name.split("\\s+");
-                                if (data.length > 3) {
-                                    product.setProductName(data[1] + " " + data[2]);
-                                } else {
-                                    product.setProductName(data[1]);
-                                }
-                                if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
-                                    MaterialTypeDto type = materialType().get(data[data.length - 1]);
-                                    product.setMaterialType(type.getNewCode());
-                                    product.setMaterialTypeName(type.getDesc());
-                                }
-                                product.setMaterialDesc(name);
-                                product.setDrawingNo(drawingNo);
-                                product.setUnit(itemNext.elementTextTrim("ZYL1"));
-//                                String branchCode = maps.get(itemNext.elementTextTrim("WERKS")).getLabel();
-                                product.setBranchCode(materialSyncDto.getCode());
-                                list.add(product);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (DocumentException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    /**
-     * 功能描述:字符串截取
-     *
-     * @param str
-     * @param beTrim
-     * @Author: xinYu.hou
-     * @Date: 2022/1/13 9:31
-     * @return: String
-     **/
-    private String trimStringWith(String str, char beTrim) {
-        int st = 0;
-        int len = str.length();
-        char[] val = str.toCharArray();
-        char sbeTrim = beTrim;
-        while ((st < len) && (val[st] <= sbeTrim)) {
-            st++;
-        }
-        return st > 0 ? str.substring(st, len) : str;
-    }
-
-    public static Map<String, MaterialTypeDto> materialType() {
-        Map<String, MaterialTypeDto> map = new HashMap<>(4);
-        map.put("Z", new MaterialTypeDto("Z", "0", "铸件"));
-        map.put("D", new MaterialTypeDto("D", "1", "锻件"));
-        map.put("JZ", new MaterialTypeDto("JZ", "2", "精铸件"));
-        map.put("/", new MaterialTypeDto("/", "3", "成品/半成品"));
-        return map;
+        return erpServiceClient.getMaterial(materialSyncDto.getDate(), materialSyncDto.getCode()).getData();
     }
 
     /**

@@ -7,13 +7,11 @@ package com.richfit.mes.produce.enmus;
  * @CreateTime: 2022年07月13日 11:07:00
  */
 public enum IdEnum {
-    //派工
     TRACK_HEAD_ID(1, "trackHeadId"),
-    //报工
     TRACK_ITEM_ID(2, "trackItemId"),
-    //质检
     ASSIGN_ID(3, "assignId"),
-    ;
+    //分流Id
+    FLOW_ID(4, "flowId");
     /**
      * ID
      */

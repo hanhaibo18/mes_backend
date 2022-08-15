@@ -9,7 +9,9 @@ import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +88,7 @@ public interface PlanService extends IService<Plan> {
      * @Author: zhiqiang.lu
      * @Date: 2022/7/11 11:37
      **/
-    List<ProjectBomComplete> completeness_list(List<Plan> planList);
+    List<ProjectBomComplete> completenessList(List<Plan> planList);
 
     /**
      * 功能描述: 计划数据自动计算
@@ -112,6 +114,9 @@ public interface PlanService extends IService<Plan> {
      * @return
      */
     CommonResult<Object> backoutPlan(String id);
+
+    void exportPlan(MultipartFile file) throws IOException;
+
 
     /**
      * 计划列表动态数据封装（工艺状态）

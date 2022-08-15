@@ -394,9 +394,9 @@ public class ProductionBomController extends BaseController {
                     item.setTrackType("1");
                 }
                 if ("否".equals(item.getIsNumFrom())) {
-                    item.setIsCheck("0");
+                    item.setIsNumFrom("0");
                 } else if ("是".equals(item.getIsNumFrom())) {
-                    item.setIsCheck("1");
+                    item.setIsNumFrom("1");
                 }
                 if ("否".equals(item.getIsCheck())) {
                     item.setIsCheck("0");
@@ -414,9 +414,9 @@ public class ProductionBomController extends BaseController {
                     item.setIsNeedPicking("1");
                 }
                 if ("否".equals(item.getIsKeyPart())) {
-                    item.setIsNeedPicking("0");
+                    item.setIsKeyPart("0");
                 } else if ("是".equals(item.getIsKeyPart())) {
-                    item.setIsNeedPicking("1");
+                    item.setIsKeyPart("1");
                 }
             });
             if (!StringUtils.isNullOrEmpty(list.get(0).getMainDrawingNo())) {
