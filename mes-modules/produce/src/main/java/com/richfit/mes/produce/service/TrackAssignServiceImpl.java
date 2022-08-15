@@ -181,7 +181,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 if (0 == state) {
                     stringBuffer.append("未开工");
                 } else {
-                    stringBuffer.append("以开工");
+                    stringBuffer.append("已开工");
                 }
                 //判断是否是本工序
                 if (1 == queryProcess.getIsCurrent()) {
@@ -249,6 +249,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
      * @Date: 2022/7/26 09:00
      * @return: IPage<TrackHead>
      **/
+    @Override
     public IPage<TrackHead> getPageTrackHeadByType(Page page, QueryWrapper<TrackHead> qw) {
         IPage<TrackHead> list = trackAssignMapper.getPageTrackHeadByType(page, qw);
         return list;
