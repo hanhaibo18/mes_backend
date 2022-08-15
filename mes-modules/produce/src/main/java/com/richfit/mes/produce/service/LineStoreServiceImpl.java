@@ -576,17 +576,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 lineStore.setProductionOrder(orderNo);
                 this.save(lineStore);
             }
-            materialReceiveDetails.forEach(i ->{
-                //已配料情况
-                UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.set("state",1);
-                updateWrapper.eq("delivery_no",i.getDeliveryNo());
-                materialReceiveService.update(updateWrapper);
-                UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
-                detailWrapper.set("state",1);
-                detailWrapper.eq("delivery_no",i.getDeliveryNo());
-                materialReceiveDetailService.update(detailWrapper);
-            });
             return true;
         } else {
             return false;

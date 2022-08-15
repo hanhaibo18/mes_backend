@@ -1,13 +1,17 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.produce.dao.MaterialReceiveDetailMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -16,13 +20,33 @@ import java.util.List;
  * @Date 2022/8/2 9:20
  */
 @Service
+@Transactional
 public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiveDetailMapper, MaterialReceiveDetail> implements MaterialReceiveDetailService{
 
-    @Autowired
+    @Resource
     MaterialReceiveDetailMapper materialReceiveDetailMapper;
+
+    @Resource
+    MaterialReceiveService materialReceiveService;
 
     @Override
     public Page<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper) {
         return materialReceiveDetailMapper.getReceiveDetail(queryWrapper);
+    }
+
+    @Override
+    public Boolean updateState(List<MaterialReceiveDetail> list) {
+        list.forEach(i -> {
+            //已配料情况
+            UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.set("state",1);
+            updateWrapper.eq("delivery_no",i.getDeliveryNo());
+            materialReceiveService.update(updateWrapper);
+            UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
+            detailWrapper.set("state",1);
+            detailWrapper.eq("delivery_no",i.getDeliveryNo());
+            this.update(detailWrapper);
+        });
+        return true;
     }
 }
