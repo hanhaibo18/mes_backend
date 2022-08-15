@@ -356,5 +356,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String isRecheck;
 
     @ApiModelProperty(value = "工艺版本", dataType = "String")
+    @TableField(exist = false)
     private String routerVer;
 }
