@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Device;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author 马峰
@@ -16,4 +18,6 @@ public interface DeviceService extends IService<Device> {
 
 
     Boolean delete(String id, QueryWrapper<Device> queryWrapper);
+
+    CommonResult importExcel(MultipartFile file, String branchCode, String tenantId);
 }
