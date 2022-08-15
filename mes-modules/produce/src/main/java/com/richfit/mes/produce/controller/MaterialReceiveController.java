@@ -68,7 +68,7 @@ public class MaterialReceiveController extends BaseController {
 
     @ApiOperation(value = "查询本次配送明细信息", notes = "根据跟单号、分页查询本次配送明细信息")
     @GetMapping("/get_the_delivery_detail")
-    public CommonResult<IPage<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
+    public CommonResult<List<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
         QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper<MaterialReceiveDetail>();
         queryWrapper.eq("delivery_no", deliveryNo);
         return CommonResult.success(materialReceiveDetailService.getReceiveDetail(queryWrapper));

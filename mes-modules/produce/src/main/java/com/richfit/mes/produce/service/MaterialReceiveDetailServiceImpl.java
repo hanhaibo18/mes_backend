@@ -30,7 +30,7 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
     MaterialReceiveService materialReceiveService;
 
     @Override
-    public Page<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper) {
+    public List<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper) {
         return materialReceiveDetailMapper.getReceiveDetail(queryWrapper);
     }
 
