@@ -494,7 +494,15 @@ public class TrackAssignController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         queryWrapper.eq("is_schedule", 0);
-        if (!StringUtils.isNullOrEmpty(orderCol)) {
+
+        //过滤排序（list中的字段不在此处排序，后边步骤再排序）
+        List<String> excludeOrderCols = new ArrayList<>();
+        excludeOrderCols.add("workNo");
+        excludeOrderCols.add("routerVer");
+        excludeOrderCols.add("totalQuantity");
+        excludeOrderCols.add("dispatchingNumber");
+
+        if (!StringUtils.isNullOrEmpty(orderCol) && !excludeOrderCols.contains(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
                 if (order.equals("desc")) {
                     queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
@@ -508,11 +516,11 @@ public class TrackAssignController extends BaseController {
             queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper,orderCol,order,excludeOrderCols), "操作成功！");
         } else if (!StringUtils.isNullOrEmpty(routerNo)) {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper,orderCol,order,excludeOrderCols), "操作成功！");
         } else {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatus(new Page<TrackItem>(page, limit), queryWrapper), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatus(new Page<TrackItem>(page, limit), queryWrapper,orderCol,order,excludeOrderCols), "操作成功！");
         }
     }
 

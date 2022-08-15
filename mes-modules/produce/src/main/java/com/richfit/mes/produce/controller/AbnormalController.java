@@ -45,7 +45,7 @@ public class AbnormalController extends BaseController {
 
     @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
     @GetMapping("/page")
-    public CommonResult<IPage<Abnormal>> pageAbnormal(String siteId, String orgId, String type, String name, String startTime, String endTime, String status, String isAndon, int page, int limit) {
+    public CommonResult<IPage<Abnormal>> pageAbnormal(String siteId, String orgId, String type, String name, String startTime, String endTime, String status, String isAndon, int page, int limit, String branchCode, String tenantId) {
         QueryWrapper<Abnormal> queryWrapper = new QueryWrapper<Abnormal>();
         if (!StringUtils.isNullOrEmpty(siteId)) {
             queryWrapper.eq("site_id", siteId);
@@ -72,7 +72,12 @@ public class AbnormalController extends BaseController {
             queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
         }
 
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
         queryWrapper.orderByDesc(new String[]{"status", "modify_time"});
         return CommonResult.success(abnormalMapper.selectPage(new Page<Abnormal>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
@@ -123,7 +128,7 @@ public class AbnormalController extends BaseController {
 
     @ApiOperation(value = "分页查询异常报告", notes = "根据分页查询异常报告")
     @GetMapping("/config/page")
-    public CommonResult<IPage<AbnormalConfig>> pageAbnormalConfig(String siteId, String orgId, int page, int limit) {
+    public CommonResult<IPage<AbnormalConfig>> pageAbnormalConfig(String siteId, String orgId, int page, int limit, String branchCode, String tenantId) {
         QueryWrapper<AbnormalConfig> queryWrapper = new QueryWrapper<AbnormalConfig>();
         if (!StringUtils.isNullOrEmpty(siteId)) {
             queryWrapper.eq("site_id", siteId);

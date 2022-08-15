@@ -42,28 +42,38 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     @Resource
     private TrackAssemblyService trackAssembleService;
 
-    public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw) {
+    @Override
+    public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order,List<String> excludeOrderCols) {
         IPage<TrackItem> pageAssignsByStatus = trackAssignMapper.getPageAssignsByStatus(page, qw);
         if (null != pageAssignsByStatus.getRecords()) {
             for (TrackItem trackItem : pageAssignsByStatus.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 trackItem.setRouterId(trackHead.getRouterId());
                 trackItem.setWeight(trackHead.getWeight());
+                //工作号
                 trackItem.setWorkNo(trackHead.getWorkNo());
                 trackItem.setProductName(trackHead.getProductName());
                 trackItem.setPartsName(trackHead.getMaterialName());
+                //工艺版本
+                trackItem.setRouterVer(trackHead.getRouterVer());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
                     Plan plan = planService.getById(trackHead.getWorkPlanId());
+                    //总数量
                     trackItem.setTotalQuantity(plan.getProjNum());
+                    //可派工数量
                     trackItem.setDispatchingNumber(plan.getTrackNum());
                 }
             }
+            //排序
+            orderByCol(orderCol, order, excludeOrderCols, pageAssignsByStatus);
         }
         return pageAssignsByStatus;
     }
 
-    public IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw) {
+
+    @Override
+    public IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
         IPage<TrackItem> trackItemList = trackAssignMapper.getPageAssignsByStatusAndTrack(page, name, qw);
         if (null != trackItemList.getRecords()) {
             for (TrackItem trackItem : trackItemList.getRecords()) {
@@ -73,6 +83,8 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setWorkNo(trackHead.getWorkNo());
                 trackItem.setProductName(trackHead.getProductName());
                 trackItem.setPartsName(trackHead.getMaterialName());
+                //工艺版本
+                trackItem.setRouterVer(trackHead.getRouterVer());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
                     Plan plan = planService.getById(trackHead.getWorkPlanId());
@@ -80,11 +92,14 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                     trackItem.setDispatchingNumber(plan.getTrackNum());
                 }
             }
+            //排序
+            orderByCol(orderCol, order, excludeOrderCols, trackItemList);
         }
         return trackItemList;
     }
 
-    public IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw) {
+    @Override
+    public IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order,List<String> excludeOrderCols) {
         IPage<TrackItem> trackItemList = trackAssignMapper.getPageAssignsByStatusAndRouter(page, name, qw);
         if (null != trackItemList.getRecords()) {
             for (TrackItem trackItem : trackItemList.getRecords()) {
@@ -101,8 +116,51 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                     trackItem.setDispatchingNumber(plan.getTrackNum());
                 }
             }
+            //排序
+            orderByCol(orderCol, order, excludeOrderCols, trackItemList);
         }
         return trackItemList;
+    }
+
+    /**
+     * 跟单派工排序
+     * @param orderCol 排序字段
+     * @param order   排序类型
+     * @param excludeOrderCols 排序的字段
+     * @param pageAssignsByStatus 排序的集合
+     */
+    private void orderByCol(String orderCol, String order, List<String> excludeOrderCols, IPage<TrackItem> pageAssignsByStatus) {
+        if(!StringUtils.isNullOrEmpty(orderCol) && excludeOrderCols.contains(orderCol)){
+            if("workNo".equals(orderCol)){
+                if("desc".equals(order)){
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo,Comparator.nullsLast(String::compareTo))).reversed());
+                }else{
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo,Comparator.nullsLast(String::compareTo))));
+                }
+            }
+            if("routerVer".equals(orderCol)){
+                if("desc".equals(order)){
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer,Comparator.nullsLast(String::compareTo))).reversed());
+                }else{
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer,Comparator.nullsLast(String::compareTo))));
+                }
+            }
+            if("totalQuantity".equals(orderCol)){
+                if("desc".equals(order)){
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getTotalQuantity,Comparator.nullsLast(Integer::compareTo))).reversed());
+                }else{
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getTotalQuantity,Comparator.nullsLast(Integer::compareTo))));
+                }
+            }
+            if("dispatchingNumber".equals(orderCol)){
+                if("desc".equals(order)){
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getDispatchingNumber,Comparator.nullsLast(Integer::compareTo))).reversed());
+                }else{
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getDispatchingNumber,Comparator.nullsLast(Integer::compareTo))));
+                }
+            }
+
+        }
     }
 
 
@@ -181,7 +239,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 if (0 == state) {
                     stringBuffer.append("未开工");
                 } else {
-                    stringBuffer.append("以开工");
+                    stringBuffer.append("已开工");
                 }
                 //判断是否是本工序
                 if (1 == queryProcess.getIsCurrent()) {
@@ -249,6 +307,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
      * @Date: 2022/7/26 09:00
      * @return: IPage<TrackHead>
      **/
+    @Override
     public IPage<TrackHead> getPageTrackHeadByType(Page page, QueryWrapper<TrackHead> qw) {
         IPage<TrackHead> list = trackAssignMapper.getPageTrackHeadByType(page, qw);
         return list;
