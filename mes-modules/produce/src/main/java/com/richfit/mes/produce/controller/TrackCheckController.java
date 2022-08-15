@@ -123,14 +123,14 @@ public class TrackCheckController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no ='" + trackNo + "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%'+ "')");
 
                 } else {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no ='" + trackNo + "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no LIKE '"+ trackNo + '%'+ "')");
                 }
             }
             if (!StringUtils.isNullOrEmpty(productNo)) {
-                queryWrapper.inSql("product_no", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where product_no ='" + productNo + "')");
+                queryWrapper.eq("product_no", productNo);
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
