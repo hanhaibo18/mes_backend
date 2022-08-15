@@ -301,71 +301,7 @@ public class DeviceController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode, String tenantId) {
-        CommonResult result = null;
-        //封装证件信息实体类
-        java.lang.reflect.Field[] fields = Device.class.getDeclaredFields();
-        //封装证件信息实体类
-        String[] fieldNames = new String[fields.length];
-        for (int i = 0; i < fields.length; i++) {
-            fieldNames[i] = fields[i].getName();
-        }
-        File excelFile = null;
-        //给导入的excel一个临时的文件名
-        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
-        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
-        try {
-            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
-            file.transferTo(excelFile);
-            //将导入的excel数据生成证件实体类list
-            List<Device> list = ExcelUtils.importExcel(excelFile, Device.class, fieldNames, 1, 0, 0, tempName.toString());
-            //获取设备组的map集合
-            QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
-            List<Device> deviceGroup = deviceService.list(deviceQueryWrapper.eq("type", 1).eq("branch_code",branchCode));
-            Map<String, Device> deviceGroupMap = deviceGroup.stream().collect(Collectors.toMap(Device::getName, v->v,(t1,t2)->t1));
-
-            FileUtils.delete(excelFile);
-            for (int i = 0; i < list.size(); i++) {
-                if (null != SecurityUtils.getCurrentUser()) {
-                    list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                }
-                list.get(i).setTenantId(tenantId);
-                list.get(i).setBranchCode(branchCode);
-
-                if ("设备".equals(list.get(i).getType())) {
-                    list.get(i).setType("0");
-                    //绑定设备组id
-                    if(!ObjectUtils.isEmpty(deviceGroupMap.get(list.get(i).getParentId()).getId())){
-                        list.get(i).setParentId(deviceGroupMap.get(list.get(i).getParentId()).getId());
-                    }
-                } else if ("设备组".equals(list.get(i).getType())) {
-                    list.get(i).setType("1");
-                    //设备组parent_id为空
-                    list.get(i).setParentId(null);
-                }
-                if ("是".equals(list.get(i).getRunStatus())) {
-                    list.get(i).setRunStatus("1");
-                } else if ("否".equals(list.get(i).getRunStatus())) {
-                    list.get(i).setRunStatus("0");
-                }
-                if ("是".equals(list.get(i).getStatus())) {
-                    list.get(i).setStatus("1");
-                } else if ("否".equals(list.get(i).getStatus())) {
-                    list.get(i).setStatus("0");
-                }
-
-            }
-
-//            list = list.stream().filter(item -> item.getMaterialNo() != null).collect(Collectors.toList());
-
-            boolean bool = deviceService.saveBatch(list);
-            if (bool) {
-                return CommonResult.success(null);
-            } else {
-                return CommonResult.failed();
-            }
-        } catch (Exception e) {
-            return CommonResult.failed();
-        }
+        return  deviceService.importExcel(file,branchCode,tenantId);
     }
 
     @ApiOperation(value = "导出设备", notes = "通过Excel文档导出设备信息")

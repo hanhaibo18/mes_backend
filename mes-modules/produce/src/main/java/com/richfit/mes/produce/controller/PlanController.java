@@ -318,7 +318,7 @@ public class PlanController extends BaseController {
     @PostMapping("/import_excel")
     public CommonResult importExcel(@RequestParam("file") MultipartFile file) throws IOException {
         planService.exportPlan(file);
-        return null;
+        return CommonResult.success(null);
     }
 
 }
