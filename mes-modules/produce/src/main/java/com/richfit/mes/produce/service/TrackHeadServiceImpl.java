@@ -312,6 +312,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
                 for (TrackAssembly trackAssembly : trackAssemblyList) {
                     trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    trackAssembly.setFlowId(trackFlowList.get(0).getId());
                     trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                     trackAssembly.setCreateTime(new Date());
                     trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
