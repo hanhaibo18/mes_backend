@@ -230,7 +230,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      */
     Boolean unLinkFromCert(String thId);
 
-    List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo);
+    List<TrackHead> queryTrackAssemblyByTrackNo(String flowId);
 
     IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads);
 

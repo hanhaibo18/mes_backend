@@ -293,9 +293,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     }
 
     @Override
-    public List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo) {
+    public List<TrackAssembly> queryTrackAssemblyByTrackNo(String flowId) {
         QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("track_head_id", trackNo);
+        wrapper.eq("flow_id", flowId);
         return this.list(wrapper);
     }
 

@@ -73,7 +73,7 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      **/
     List<TrackAssembly> planKittingExamine(String trackHeadId, String branchCode, Boolean isComplete);
 
-    List<TrackAssembly> queryTrackAssemblyByTrackNo(String trackNo);
+    List<TrackAssembly> queryTrackAssemblyByTrackNo(String flowId);
 
     /**
      * 功能描述: 追加物料

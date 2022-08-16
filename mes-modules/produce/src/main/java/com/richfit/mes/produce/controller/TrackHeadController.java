@@ -662,14 +662,10 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackFlowPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
-    public List<TrackHead> queryBom(String trackNo) {
-        return trackHeadService.queryTrackAssemblyByTrackNo(trackNo);
-    }
-
     @ApiOperation(value = "查询BOM信息", notes = "根据装配信息查询BOM信息")
-    @GetMapping("/queryBomByTrackAssembly/{trackNo}")
-    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@PathVariable String trackNo) {
-        return CommonResult.success(queryBom(trackNo));
+    @GetMapping("/query_bom/{flowId}")
+    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@PathVariable String flowId) {
+        return CommonResult.success(trackHeadService.queryTrackAssemblyByTrackNo(flowId));
     }
 
     @ApiOperation(value = "查询跟单分流表List", notes = "根据跟单号查询跟单分流信息")

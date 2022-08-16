@@ -1003,9 +1003,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public List<TrackHead> queryTrackAssemblyByTrackNo(String trackNo) {
+    public List<TrackHead> queryTrackAssemblyByTrackNo(String flowId) {
         QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("track_head_id", trackNo);
+        wrapper.eq("flow_Id", flowId);
         List<TrackAssembly> list = trackAssemblyService.list(wrapper);
         List<TrackHead> trackHeads = new ArrayList<>();
         list.forEach(i -> {

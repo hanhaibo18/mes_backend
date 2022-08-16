@@ -267,9 +267,9 @@ public class TrackAssemblyController extends BaseController {
 
 
     @ApiOperation(value = "查询装配信息", notes = "根据跟单ID查询装配信息")
-    @GetMapping("/queryTrackAssemblyByTrackNo/{trackNo}")
-    public CommonResult<Map> queryTrackAssemblyByTrackNo(@PathVariable String trackNo) {
-        Map<String, List<TrackAssembly>> collect = trackAssemblyService.queryTrackAssemblyByTrackNo(trackNo).stream().collect(Collectors.groupingBy(t -> t.getDrawingNo().split("-")[0]));
+    @GetMapping("/query_track_assembly/{flowId}")
+    public CommonResult<Map> queryTrackAssemblyByTrackNo(@PathVariable String flowId) {
+        Map<String, List<TrackAssembly>> collect = trackAssemblyService.queryTrackAssemblyByTrackNo(flowId).stream().collect(Collectors.groupingBy(t -> t.getDrawingNo().split("-")[0]));
         return CommonResult.success(collect);
     }
 
