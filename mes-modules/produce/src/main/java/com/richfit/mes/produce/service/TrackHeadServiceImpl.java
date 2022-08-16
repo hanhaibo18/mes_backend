@@ -89,6 +89,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     public TrackFlowMapper trackFlowMapper;
 
+    @Resource
+    private PublicService publicService;
+
     /**
      * 功能描述: 工序资料下载指定位置
      *
@@ -441,6 +444,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //可分配数量
                     item.setAssignableQty(number);
                     trackItemService.save(item);
+                    if (1 == item.getIsAutoSchedule()) {
+                        Map<String, String> map = new HashMap<>(2);
+                        map.put("trackHeadId", item.getTrackHeadId());
+                        map.put("trackItemId", item.getId());
+                        publicService.automaticProcess(map);
+                    }
                 }
             }
             return trackFlow;

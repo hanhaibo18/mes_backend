@@ -388,6 +388,7 @@ public class TrackCheckController extends BaseController {
             Map<String, String> map = new HashMap<>(3);
             map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
             map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackItem.getId());
+            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
             publicService.publicUpdateState(map, PublicCodeEnum.DISPATCH.getCode());
             if (null != batchAddScheduleDto.getNextBranchCode()) {
                 trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());

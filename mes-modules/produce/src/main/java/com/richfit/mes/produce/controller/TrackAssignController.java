@@ -257,6 +257,11 @@ public class TrackAssignController extends BaseController {
                         if (trackItem.getAssignableQty() < assign.getQty()) {
                             return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
                         }
+                        trackItem.setIsCurrent(1);
+                        trackItem.setIsDoing(0);
+                        trackItem.setIsSchedule(1);
+                        trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
+                        trackItemService.updateById(trackItem);
                         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                         assign.setTrackNo(trackHead.getTrackNo());
                         if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
@@ -321,15 +326,18 @@ public class TrackAssignController extends BaseController {
                                 lineLists.add(lineList);
                             }
                             ingredient.setLineList(lineLists);
-                            requestNoteService.saveRequestNote(ingredient,lineLists);
+                            requestNoteService.saveRequestNote(ingredient, lineLists);
                             wmsServiceClient.anApplicationForm(ingredient);
                         }
-                        //下工序激活
-                        Map<String, String> map = new HashMap<>(3);
-                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), assign.getTrackId());
-                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), assign.getTiId());
-                        map.put("number", String.valueOf(assign.getQty()));
-                        publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
+                        if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+                            //下工序激活
+                            Map<String, String> map = new HashMap<>(3);
+                            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                            map.put(IdEnum.TRACK_HEAD_ID.getMessage(), assign.getTrackId());
+                            map.put(IdEnum.TRACK_ITEM_ID.getMessage(), assign.getTiId());
+                            map.put("number", String.valueOf(assign.getQty()));
+                            publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
+                        }
                     }
                     assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                     if (null != SecurityUtils.getCurrentUser()) {
@@ -361,6 +369,7 @@ public class TrackAssignController extends BaseController {
             }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {
+            e.printStackTrace();
             return CommonResult.failed("操作失败，请重试！" + e.getMessage());
         }
 
