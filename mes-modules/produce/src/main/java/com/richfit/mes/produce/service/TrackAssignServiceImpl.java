@@ -170,10 +170,10 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.like("u.track_no2", trackNo);
         }
-        if (!StringUtils.isNullOrEmpty(trackNo)) {
+        if (!StringUtils.isNullOrEmpty(routerNo)) {
             queryWrapper.like("u.drawing_no", routerNo);
         }
-        if (!StringUtils.isNullOrEmpty(trackNo)) {
+        if (!StringUtils.isNullOrEmpty(siteId)) {
             queryWrapper.like("u.assign_by", siteId);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
