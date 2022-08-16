@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.log.annotation.SysLog;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.RoleMenu;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.entity.param.RoleQueryPageParam;
 import com.richfit.mes.sys.entity.param.RoleQueryParam;
@@ -99,6 +100,7 @@ public class RoleController extends BaseController {
 
     @ApiOperation(value = "查询用户已分配角色", notes = "")
     @GetMapping(value = "/user/{userId}")
+    @Inner
     public CommonResult query(@PathVariable String userId) {
         log.debug("query with userId:{}", userId);
         return CommonResult.success(roleService.query(userId));

@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.dto.TenantUserDto;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.entity.dto.TenantUpdateUserDto;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
@@ -220,6 +221,7 @@ public class TenantUserController extends BaseController {
     @ApiImplicitParam(paramType = "query", name = "uniqueId", value = "用户唯一标识", required = true, dataType = "string")
     @ApiResponses(@ApiResponse(code = 200, message = "处理成功", response = CommonResult.class))
     @GetMapping
+    @Inner
     public CommonResult query(@RequestParam String uniqueId) throws GlobalException {
         log.debug("query with username {}", uniqueId);
         return CommonResult.success(tenantUserService.getByUniqueId(uniqueId));
