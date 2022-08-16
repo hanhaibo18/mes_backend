@@ -123,10 +123,10 @@ public class TrackCheckController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%'+ "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
 
                 } else {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no LIKE '"+ trackNo + '%'+ "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
                 }
             }
             if (!StringUtils.isNullOrEmpty(productNo)) {
@@ -347,17 +347,6 @@ public class TrackCheckController extends BaseController {
         for (String tiId : batchAddScheduleDto.getTiId()) {
             //正常调度审核业务
             TrackItem trackItem = trackItemService.getById(tiId);
-            //如果不需要调度审核，则将工序设置为完成，并激活下个工序
-//            if (trackItem.getIsScheduleComplete() == 1) {
-//                trackItem.setIsFinalComplete("1");
-//                trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
-//
-//                if (null != SecurityUtils.getCurrentUser()) {
-//                    trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-//                }
-//                trackItem.setScheduleCompleteTime(new Date());
-//                this.activeTrackItem(trackItem);
-//            }
             trackItem.setModifyTime(new Date());
             trackItem.setScheduleCompleteTime(new Date());
             trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
@@ -368,32 +357,15 @@ public class TrackCheckController extends BaseController {
             UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
             updateWrapper.eq("ti_id", trackItem.getId()).set("is_prepare", batchAddScheduleDto.getIsPrepare());
             trackCompleteService.update(updateWrapper);
-            //判断工序是否是最后一道工序
-//            try {
-//                if (0 == trackItem.getNextOptSequence()) {
-//                    trackHeadService.trackHeadFinish(trackItem.getFlowId());
-//                } else {
-//                    trackItem.setIsFinalComplete("1");
-//                    trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
-//
-//                    if (null != SecurityUtils.getCurrentUser()) {
-//                        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-//                    }
-//                    trackItem.setScheduleCompleteTime(new Date());
-//                    this.activeTrackItem(trackItem);
-//                }
-//            } catch (Exception e) {
-//                return CommonResult.failed("跟单结束异常");
-//            }
+            if (null != batchAddScheduleDto.getNextBranchCode()) {
+                trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
+            }
+            bool = trackItemService.updateById(trackItem);
             Map<String, String> map = new HashMap<>(3);
             map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
             map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackItem.getId());
             map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
             publicService.publicUpdateState(map, PublicCodeEnum.DISPATCH.getCode());
-            if (null != batchAddScheduleDto.getNextBranchCode()) {
-                trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
-            }
-            bool = trackItemService.updateById(trackItem);
         }
         if (bool) {
             return CommonResult.success(true, "操作成功！");

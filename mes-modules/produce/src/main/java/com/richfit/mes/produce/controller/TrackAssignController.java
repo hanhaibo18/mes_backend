@@ -2,6 +2,7 @@ package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -263,16 +264,17 @@ public class TrackAssignController extends BaseController {
                         trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
                         trackItemService.updateById(trackItem);
                         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                        assign.setTrackNo(trackHead.getTrackNo());
-                        if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
+                        if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
+                            assign.setTrackNo(trackHead.getTrackNo());
+                        }
+                        if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
                             //将跟单状态改为在制
                             trackHead.setStatus("1");
                             trackHeadService.updateById(trackHead);
-                            QueryWrapper<TrackFlow> query = new QueryWrapper<>();
-                            query.eq("track_head_id", trackHead);
-                            TrackFlow trackFlow = trackHeadFlowService.getOne(query);
-                            trackFlow.setStatus("1");
-                            trackHeadFlowService.updateById(trackFlow);
+                            UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                            update.set("status", "1");
+                            update.eq("id", trackItem.getFlowId());
+                            trackHeadFlowService.update(update);
                         }
                         //齐套性检查
                         if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent()) {
@@ -525,11 +527,11 @@ public class TrackAssignController extends BaseController {
             queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper,orderCol,order,excludeOrderCols), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper, orderCol, order, excludeOrderCols), "操作成功！");
         } else if (!StringUtils.isNullOrEmpty(routerNo)) {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper,orderCol,order,excludeOrderCols), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper, orderCol, order, excludeOrderCols), "操作成功！");
         } else {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatus(new Page<TrackItem>(page, limit), queryWrapper,orderCol,order,excludeOrderCols), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatus(new Page<TrackItem>(page, limit), queryWrapper, orderCol, order, excludeOrderCols), "操作成功！");
         }
     }
 

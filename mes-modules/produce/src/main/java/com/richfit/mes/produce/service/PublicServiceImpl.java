@@ -132,15 +132,15 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setCompleteQty(sum);
             //当前工序是否完成
             trackItem.setIsOperationComplete(isComplete);
+            trackItem.setOperationCompleteTime(new Date());
             trackItemService.updateById(trackItem);
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (null != trackHead.getWorkPlanId()) {
                 planService.planData(trackHead.getWorkPlanId());
             }
-            if (isNext) {
-                //TODO:下工序激活
-                activationProcess = this.activationProcess(map);
-            }
+        }
+        if (isNext) {
+            activationProcess = this.activationProcess(map);
         }
         return activationProcess;
     }
@@ -157,6 +157,8 @@ public class PublicServiceImpl implements PublicService {
         trackItem.setQualityCompleteTime(new Date());
         //如果不需要调度审核，则将工序设置为完成，并激活下个工序
         if (trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsQualityComplete() == 1) {
+            trackItem.setIsOperationComplete(1);
+            trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsFinalComplete("1");
             trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
             trackItemService.updateById(trackItem);
@@ -179,10 +181,8 @@ public class PublicServiceImpl implements PublicService {
                 trackHead.setStatus("2");
                 trackHead.setCompleteTime(new Date());
                 trackHeadService.updateById(trackHead);
-
                 //设置产品完工
                 lineStoreService.changeStatus(trackHead);
-
                 //设置计划状态
                 planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
             } else {
@@ -194,6 +194,9 @@ public class PublicServiceImpl implements PublicService {
                 trackItem.setScheduleCompleteTime(new Date());
                 this.activationProcess(map);
             }
+            trackItem.setIsOperationComplete(1);
+            trackItem.setOperationCompleteTime(new Date());
+            trackItem.setIsFinalComplete("1");
             trackItemService.updateById(trackItem);
         } catch (Exception e) {
             e.printStackTrace();
@@ -288,12 +291,14 @@ public class PublicServiceImpl implements PublicService {
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
         CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptId());
         CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptId());
+        if (null == assignGet.getData()) {
+            return false;
+        }
         Assign assign = new Assign();
         assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         assign.setBranchCode(trackItem.getBranchCode());
         assign.setTiId(trackItem.getId());
         assign.setTrackId(trackItem.getTrackHeadId());
-        assign.setTrackNo(trackHead.getTrackNo());
         assign.setUserId(assignGet.getData().getUserId());
         assign.setEmplName(assignGet.getData().getUserName());
         assign.setSiteId(assignGet.getData().getSiteId());
@@ -306,7 +311,13 @@ public class PublicServiceImpl implements PublicService {
         assign.setState(0);
         assign.setAssignBy(assignGet.getData().getCreateBy());
         assign.setAssignTime(new Date());
+//        if (null != trackHead) {
+        assign.setTrackNo(trackHead.getTrackNo());
         assign.setClasses(trackHead.getClasses());
+//        } else {
+//            assign.setTrackNo(map.get("trackNo"));
+//            assign.setClasses(map.get("classes"));
+//        }
         List<AssignPerson> list = new ArrayList<>();
         AssignPerson assignPerson = new AssignPerson();
         assignPerson.setUserId(assignGet.getData().getUserId());
@@ -334,11 +345,13 @@ public class PublicServiceImpl implements PublicService {
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
         trackItemEntity.setIsCurrent(1);
+        trackItemEntity.setModifyTime(new Date());
         if (1 == trackItemEntity.getIsAutoSchedule()) {
             Map<String, String> map = new HashMap<>(2);
             map.put("trackItemId", trackItemEntity.getId());
             map.put("trackHeadId", trackItemEntity.getTrackHeadId());
             automaticProcess(map);
+            trackItemEntity.setIsSchedule(1);
         }
         boolean update = trackItemService.updateById(trackItemEntity);
         if (trackItemEntity.getOptParallelType() == 1 && trackItemEntity.getNextOptSequence() != 0) {
@@ -353,13 +366,15 @@ public class PublicServiceImpl implements PublicService {
         queryWrapper.eq("original_opt_sequence", trackItems.getNextOptSequence());
         TrackItem trackItem = trackItemService.getOne(queryWrapper);
         trackItem.setIsCurrent(1);
-        trackItemService.updateById(trackItem);
+        trackItem.setModifyTime(new Date());
         if (1 == trackItem.getIsAutoSchedule()) {
             Map<String, String> map = new HashMap<>(2);
             map.put("trackItemId", trackItem.getId());
             map.put("trackHeadId", trackItem.getTrackHeadId());
             automaticProcess(map);
+            trackItem.setIsSchedule(1);
         }
+        trackItemService.updateById(trackItem);
         if (trackItem.getOptParallelType() == 1 && trackItem.getNextOptSequence() != 0) {
             queryTrackItemList(trackItems);
         }

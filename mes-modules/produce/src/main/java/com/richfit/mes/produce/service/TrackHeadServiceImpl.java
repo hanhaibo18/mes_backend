@@ -337,7 +337,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //添加跟单
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
-
+            //跟单创建完成 在执行
+            for (TrackItem trackItem : trackItems) {
+                if (1 == trackItem.getIsAutoSchedule()) {
+                    Map<String, String> map = new HashMap<>(4);
+                    map.put("trackItemId", trackItem.getId());
+                    map.put("trackHeadId", trackHead.getId());
+                    map.put("trackNo", trackHead.getTrackNo());
+                    map.put("classes", trackHead.getClasses());
+                    publicService.automaticProcess(map);
+                    break;
+                }
+            }
             //添加日志
             Action action = new Action();
             action.setActionType("0");
@@ -444,12 +455,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //可分配数量
                     item.setAssignableQty(number);
                     trackItemService.save(item);
-                    if (1 == item.getIsAutoSchedule()) {
-                        Map<String, String> map = new HashMap<>(2);
-                        map.put("trackHeadId", item.getTrackHeadId());
-                        map.put("trackItemId", item.getId());
-                        publicService.automaticProcess(map);
-                    }
                 }
             }
             return trackFlow;
