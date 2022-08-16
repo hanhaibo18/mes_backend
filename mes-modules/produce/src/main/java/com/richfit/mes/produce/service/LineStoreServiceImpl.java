@@ -446,7 +446,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
-    public void reSetCertNoByTrackHead(String certificateNo) {
+    public void reSetCertNoByCertNo(String certificateNo) {
         UpdateWrapper<LineStore> update = new UpdateWrapper<LineStore>();
 
         //将状态设置为在制 合格证号清空
@@ -565,7 +565,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         RequestNote requestNote = requestNoteService.getOne(queryWrapper);
 
         //根据跟单Id，获取跟单，拿到其中的订单号
-        if (ObjectUtils.isNotNull(requestNote)){
+        if (ObjectUtils.isNotNull(requestNote)) {
             TrackHead trackHead = trackHeadService.getById(requestNote.getTrackHeadId());
             String orderNo = trackHead.getProductionOrder();
 
