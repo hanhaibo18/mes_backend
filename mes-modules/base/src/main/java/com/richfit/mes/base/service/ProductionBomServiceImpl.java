@@ -205,7 +205,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
         File file = null;
         try {
-            ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + "产品BOM导出模板.xls");
             file = classPathResource.getFile();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -291,9 +291,9 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 }
                 sheetNum++;
             }
-            ServletOutputStream outputStream = rsp.getOutputStream();
             rsp.setContentType("application/octet-stream");
             rsp.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("产品BOM", "UTF-8"));
+            ServletOutputStream outputStream = rsp.getOutputStream();
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
         } catch (Exception e) {
