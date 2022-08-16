@@ -13,6 +13,7 @@ import com.richfit.mes.base.dao.ProjectBomMapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -20,6 +21,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -221,8 +223,11 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
         File file = null;
         try {
-            file = ResourceUtils.getFile("classpath:excel/" + "ProductBomExportTemp.xls");
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
+            file = classPathResource.getFile();
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         int sheetNum = 0;

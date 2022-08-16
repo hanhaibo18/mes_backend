@@ -27,6 +27,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ResourceUtils;
@@ -204,8 +205,11 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
         File file = null;
         try {
-            file = ResourceUtils.getFile("classpath:excel/" + "ProductBomExportTemp.xls");
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
+            file = classPathResource.getFile();
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         int sheetNum = 0;
