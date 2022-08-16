@@ -25,6 +25,8 @@ public interface LineStoreMapper extends BaseMapper<LineStore> {
 
     IPage<LineStore> selectLineStoreByProduce(IPage<LineStore> page, @Param(Constants.WRAPPER) Wrapper<LineStore> query);
 
+    IPage<LineStoreSumZp> selectStoreNumForAssembly(IPage<LineStoreSumZp> page, @Param("param") Map parMap);
+
     List<LineStoreSumZp> selectStoreNumForAssembly(@Param("param") Map parMap);
 
     List<LineStoreSumZp> selectDeliveryNumber(@Param("param") Map parMap);

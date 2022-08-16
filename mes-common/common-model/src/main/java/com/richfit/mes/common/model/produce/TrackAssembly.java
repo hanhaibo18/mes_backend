@@ -16,6 +16,7 @@ import java.util.List;
 @Data
 public class TrackAssembly extends BaseEntity<TrackAssembly> {
 
+    private static final long serialVersionUID = 7458828222863575388L;
     /**
      * 零部件名称
      */
@@ -187,4 +188,7 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否生成部件级别跟单")
     private String isTrackHead;
+
+    @ApiModelProperty(value = "生产线id")
+    private String flowId;
 }

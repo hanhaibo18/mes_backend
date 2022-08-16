@@ -51,7 +51,7 @@ public interface LineStoreService extends IService<LineStore> {
      * @return
      * @Author Gaol
      */
-    List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception;
+    IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) throws Exception;
 
     /**
      * 功能描述: 装配库存数量查询

@@ -265,9 +265,11 @@ public class LineStoreController extends BaseController {
 
     @ApiOperation(value = "装配库存总览", notes = "根据物料号查询装配库存总览")
     @GetMapping("/sum/zp")
-    public CommonResult<List<LineStoreSumZp>> selectLineStoreSumZp(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
-                                                                   @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
-                                                                   @ApiParam(value = "当前分公司") @RequestParam String branchCode) throws Exception {
+    public CommonResult<IPage<LineStoreSumZp>> selectLineStoreSumZp(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                                    @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
+                                                                    @ApiParam(value = "页码") @RequestParam int page,
+                                                                    @ApiParam(value = "每页数") @RequestParam int limit,
+                                                                    @ApiParam(value = "当前分公司") @RequestParam String branchCode) throws Exception {
 
         Map parMap = new HashMap();
         parMap.put("branchCode", branchCode);
@@ -275,9 +277,9 @@ public class LineStoreController extends BaseController {
         parMap.put("drawingNo", drawingNo);
         parMap.put("materialNo", materialNo);
 
-        List list = lineStoreService.queryLineStoreSumZp(parMap);
+        IPage<LineStoreSumZp> ipage = lineStoreService.queryLineStoreSumZp(new Page<LineStoreSumZp>(page, limit), parMap);
 
-        return CommonResult.success(list);
+        return CommonResult.success(ipage);
     }
 
     @ApiOperation(value = "装配当前库数量", notes = "根据物料号查询装配库存数量")

@@ -38,6 +38,7 @@ public class LogController {
         QueryWrapper<SystemLog> queryWrapper = systemLogParam.build().eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq(StringUtils.isNotBlank(systemLogParam.getType()),"type",systemLogParam.getType());
         queryWrapper.eq(StringUtils.isNotBlank(systemLogParam.getResult()),"result",systemLogParam.getResult());
+        queryWrapper.orderByDesc("modify_time");
         return CommonResult.success(logService.page(systemLogPageParam.toPage(), queryWrapper));
     }
 
