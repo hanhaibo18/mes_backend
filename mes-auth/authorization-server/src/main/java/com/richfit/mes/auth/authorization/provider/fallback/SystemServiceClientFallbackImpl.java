@@ -23,13 +23,13 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     private Throwable cause;
 
     @Override
-    public CommonResult<TenantUser> getUserByUniqueId(String uniqueId) {
+    public CommonResult<TenantUser> getUserByUniqueId(String uniqueId,String from) {
         log.error("feign 查询用户信息失败:{}", uniqueId, cause);
         return null;
     }
 
     @Override
-    public CommonResult<Set<Role>> queryRolesByUserId(String userId) {
+    public CommonResult<Set<Role>> queryRolesByUserId(String userId,String from) {
         return CommonResult.success(new HashSet<Role>());
     }
 }

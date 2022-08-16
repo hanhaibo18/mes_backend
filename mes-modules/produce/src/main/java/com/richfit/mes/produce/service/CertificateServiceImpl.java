@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
@@ -194,10 +196,21 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     @Override
     public void delCertificate(List<String> ids) throws Exception {
+
+        //校验：接收的合格证，不能删除（没有必要删除）
+        for (String id : ids) {
+            Certificate cert = this.getById(id);
+            if ("1".equals(cert.getCertOrigin())) {
+                throw new GlobalException("接收合格证不能删除", ResultCode.FAILED);
+            }
+        }
+
+        //处理合格证关联跟单
         QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<TrackCertificate>();
         queryWrapper.in("certificate_id", ids);
         List<TrackCertificate> list = trackCertificateService.list(queryWrapper);
         list.stream().forEach(track -> {
+
             //对应跟单工序-合格证字段置空
             if (CertTypeEnum.ITEM_CERT.getCode().equals(track.getCertificateType())) {
                 trackItemService.unLinkFromCert(track.getTiId());
@@ -207,7 +220,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                 trackHeadService.unLinkFromCert(track.getThId());
 
                 //清空所有该合格证号对应的成品入库信息中的合格证号
-                lineStoreService.reSetCertNoByTrackHead(this.getById(track.getCertificateId()).getCertificateNo());
+                lineStoreService.reSetCertNoByCertNo(this.getById(track.getCertificateId()).getCertificateNo());
             }
 
             //删除关系表

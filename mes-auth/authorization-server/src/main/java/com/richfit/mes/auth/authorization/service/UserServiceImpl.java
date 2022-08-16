@@ -3,6 +3,7 @@ package com.richfit.mes.auth.authorization.service;
 import com.richfit.mes.auth.authorization.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.TenantUser;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public TenantUser getByUniqueId(String uniqueId) {
-        CommonResult<TenantUser> result =  systemServiceClient.getUserByUniqueId(uniqueId);
+        CommonResult<TenantUser> result =  systemServiceClient.getUserByUniqueId(uniqueId, SecurityConstants.FROM_INNER);
         if (result == null || result.getData() == null) {
             throw new UsernameNotFoundException("User " + uniqueId + " not found");
         }

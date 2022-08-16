@@ -325,7 +325,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     /**
-     * 功能描述: 齐套物料BOM数据封装（跟单下的装配bom装配信息合并后的列表）
+     * 功能描述: 齐套物料BOM数据封装（计划未匹配跟单）
      *
      * @param plan 计划信息
      * @Author: zhiqiang.lu
@@ -364,7 +364,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
 
     /**
-     * 功能描述: 齐套物料数据合并封装（跟单下的装配bom装配信息合并后的列表）
+     * 功能描述: 齐套物料数据合并封装（计划已匹配跟单）
      *
      * @param plan          计划信息
      * @param trackHeadList 计划匹配的跟单列表
@@ -393,7 +393,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         projectBomComplete.setPlanNumber(plan.getProjNum());
                         projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
                         projectBomComplete.setNumber(trackAssembly.getNumber());
-                        projectBomComplete.setInstallNumber(trackAssembly.getNumber());
+                        projectBomComplete.setInstallNumber(trackAssembly.getNumberInstall());
                         projectBomComplete.setProdDesc(trackAssembly.getName());
                         projectBomComplete.setMaterialNo(trackAssembly.getMaterialNo());
                         projectBomComplete.setDrawingNo(trackAssembly.getDrawingNo());

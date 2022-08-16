@@ -446,7 +446,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
-    public void reSetCertNoByTrackHead(String certificateNo) {
+    public void reSetCertNoByCertNo(String certificateNo) {
         UpdateWrapper<LineStore> update = new UpdateWrapper<LineStore>();
 
         //将状态设置为在制 合格证号清空
@@ -565,7 +565,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         RequestNote requestNote = requestNoteService.getOne(queryWrapper);
 
         //根据跟单Id，获取跟单，拿到其中的订单号
-        if (ObjectUtils.isNotNull(requestNote)){
+        if (ObjectUtils.isNotNull(requestNote)) {
             TrackHead trackHead = trackHeadService.getById(requestNote.getTrackHeadId());
             String orderNo = trackHead.getProductionOrder();
 
@@ -585,11 +585,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
-    public List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception {
+    public IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) throws Exception {
 
         //1 当前库存量
-        List<LineStoreSumZp> storeList = this.lineStoreMapper.selectStoreNumForAssembly(parMap);
-        log.debug("库存记录条数 [{}]", storeList.size());
+        IPage<LineStoreSumZp> storeList = this.lineStoreMapper.selectStoreNumForAssembly(page, parMap);
+        log.debug("库存记录条数 [{}]", storeList.getRecords().size());
         //2 当前配送量
         List<LineStoreSumZp> deliveryList = this.lineStoreMapper.selectDeliveryNumber(parMap);
         log.debug("配送记录条数 [{}]", deliveryList.size());
@@ -601,7 +601,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         log.debug("跟单已装条数 [{}]", assemblyList.size());
 
         //根据图号  把 2 、3 、4 的数据 更新到 1 中
-        for (LineStoreSumZp store : storeList) {
+        for (LineStoreSumZp store : storeList.getRecords()) {
 
             for (LineStoreSumZp delivery : deliveryList) {
                 if (store.getDrawingNo().equals(delivery.getDrawingNo())) {
