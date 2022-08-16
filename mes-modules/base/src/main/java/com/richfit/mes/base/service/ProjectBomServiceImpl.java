@@ -221,7 +221,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
         File file = null;
         try {
-            file = ResourceUtils.getFile("classpath:excel/" + "产品BOM导出模板.xls");
+            file = ResourceUtils.getFile("classpath:excel/" + "ProductBomExportTemp.xls");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -306,7 +306,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
             }
             ServletOutputStream outputStream = rsp.getOutputStream();
             rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
-            rsp.setHeader("Content-disposition", "attachment; filename=" + new String("产品BOM".getBytes("utf-8"), "ISO-8859-1") + ".xls");
+            rsp.setHeader("Content-disposition", "attachment; filename=" + new String("项目BOM".getBytes("utf-8"), "ISO-8859-1") + ".xls");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
         } catch (Exception e) {

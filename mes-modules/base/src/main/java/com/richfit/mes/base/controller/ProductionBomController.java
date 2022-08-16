@@ -33,12 +33,11 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -365,74 +364,8 @@ public class ProductionBomController extends BaseController {
     @ApiOperation(value = "导入产品Bom", notes = "根据Excel文档导入产品Bom")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
-    public CommonResult newImportExcel(@ApiIgnore HttpServletRequest request, @RequestParam("file") MultipartFile file) {
-        //封装证件信息实体类
-        String[] fieldNames = {"isImport", "orderNo", "branchCode", "grade", "mainDrawingNo", "drawingNo",
-                "materialNo", "prodDesc", "sourceType", "weight", "texture", "number", "unit", "optName",
-                "trackType", "isNumFrom", "isNeedPicking", "isKeyPart", "isEdgeStore", "isCheck", "remark"};
-        File excelFile = null;
-        //给导入的excel一个临时的文件名
-        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
-        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
-        try {
-            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
-            file.transferTo(excelFile);
-            //将导入的excel数据生成产品BOM实体类list
-            List<ProductionBom> list = ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 4, 0, 0, tempName.toString());
-            FileUtils.delete(excelFile);
-
-            list = list.stream().filter(item -> !StringUtils.isNullOrEmpty(item.getDrawingNo()) &&
-                    !StringUtils.isNullOrEmpty(item.getMaterialNo())).collect(Collectors.toList());
-            String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-            list.forEach(item -> {
-                item.setTenantId(tenantId);
-                item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                item.setCreateTime(new Date());
-                if ("单件".equals(item.getTrackType())) {
-                    item.setTrackType("0");
-                } else if ("批次".equals(item.getTrackType())) {
-                    item.setTrackType("1");
-                }
-                if ("否".equals(item.getIsNumFrom())) {
-                    item.setIsNumFrom("0");
-                } else if ("是".equals(item.getIsNumFrom())) {
-                    item.setIsNumFrom("1");
-                }
-                if ("否".equals(item.getIsCheck())) {
-                    item.setIsCheck("0");
-                } else if ("是".equals(item.getIsCheck())) {
-                    item.setIsCheck("1");
-                }
-                if ("否".equals(item.getIsEdgeStore())) {
-                    item.setIsEdgeStore("0");
-                } else if ("是".equals(item.getIsEdgeStore())) {
-                    item.setIsEdgeStore("1");
-                }
-                if ("否".equals(item.getIsNeedPicking())) {
-                    item.setIsNeedPicking("0");
-                } else if ("是".equals(item.getIsNeedPicking())) {
-                    item.setIsNeedPicking("1");
-                }
-                if ("否".equals(item.getIsKeyPart())) {
-                    item.setIsKeyPart("0");
-                } else if ("是".equals(item.getIsKeyPart())) {
-                    item.setIsKeyPart("1");
-                }
-            });
-            if (!StringUtils.isNullOrEmpty(list.get(0).getMainDrawingNo())) {
-                productionBomService.deleteBom(list.get(0).getMainDrawingNo(), tenantId, list.get(0).getBranchCode());
-            } else if (!StringUtils.isNullOrEmpty(list.get(0).getDrawingNo())) {
-                productionBomService.deleteBom(list.get(0).getDrawingNo(), tenantId, list.get(0).getBranchCode());
-            }
-            boolean bool = productionBomService.saveBatch(list);
-            if (bool) {
-                return CommonResult.success(null, BOM_IMPORT_EXCEL_SUCCESS_MESSAGE);
-            } else {
-                return CommonResult.failed(BOM_FAILED_MESSAGE);
-            }
-        } catch (Exception e) {
-            return CommonResult.failed(BOM_IMPORT_EXCEL_EXCEPTION_MESSAGE + e.getMessage());
-        }
+    public CommonResult newImportExcel(@ApiIgnore HttpServletRequest request, @RequestParam("file") MultipartFile file) throws IOException {
+       return  productionBomService.newImportExcel(file);
     }
 
 

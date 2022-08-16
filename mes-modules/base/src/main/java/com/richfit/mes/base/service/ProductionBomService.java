@@ -9,8 +9,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProductionBom;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -101,4 +104,6 @@ public interface ProductionBomService extends IService<ProductionBom> {
      * @return: void
      **/
     void exportExcel(List<String> idList, HttpServletResponse rsp);
+
+    CommonResult newImportExcel(@RequestParam("file") MultipartFile file) throws IOException;
 }
