@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.core.Ordered;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @Aspect
 @AllArgsConstructor
-public class CustomSecurityInnerAspect {
+public class CustomSecurityInnerAspect implements Ordered {
     private final HttpServletRequest request;
 
     @SneakyThrows
@@ -34,5 +35,10 @@ public class CustomSecurityInnerAspect {
             throw new AccessDeniedException("Access is denied");
         }
         return point.proceed();
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE + 1;
     }
 }
