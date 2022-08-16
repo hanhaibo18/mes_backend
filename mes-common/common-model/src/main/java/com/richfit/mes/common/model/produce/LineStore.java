@@ -214,7 +214,7 @@ public class LineStore extends BaseEntity<LineStore> {
         this.materialSource = certificate.getBranchCode();
 
         this.batchNo = certificate.getBatchNo();
-        this.number = certificate.getNumber();
+        this.number = tc.getNumber();
         this.workblankNo = tc.getProductNo();
 
         //半成品 成品
