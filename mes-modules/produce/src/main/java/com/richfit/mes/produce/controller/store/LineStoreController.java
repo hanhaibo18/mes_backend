@@ -11,6 +11,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.code.StoreInputTypeEnum;
 import com.richfit.mes.common.model.code.StoreItemStatusEnum;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.LineStore;
@@ -106,8 +107,6 @@ public class LineStoreController extends BaseController {
     public CommonResult<Boolean> addLineStoreByCert(@ApiParam(value = "合格证信息") @RequestBody Certificate cert) throws Exception {
 
         //TODO 逻辑验证
-
-
         Boolean b = lineStoreService.addStoreByCertTransfer(cert);
 
         return CommonResult.success(b);
@@ -144,6 +143,9 @@ public class LineStoreController extends BaseController {
         //增加check逻辑  状态不是原始入库的，不能删除
         for (String id : ids) {
             LineStore lineStore = lineStoreService.getById(id);
+            if (lineStore.getInputType().equals(StoreInputTypeEnum.CERT_ACCEPT.getCode())) {
+                return CommonResult.failed("来料接收料单不能删除,编号:" + lineStore.getWorkblankNo());
+            }
             if (!isStatusFinish(lineStore)) {
                 return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT + ",编号:" + lineStore.getWorkblankNo());
             }
