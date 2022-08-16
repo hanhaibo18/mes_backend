@@ -58,10 +58,10 @@ public class MaterialReceiveController extends BaseController {
             queryWrapper.in("mr.state", states);
         }
         if (!StringUtils.isNullOrEmpty(deliveryNo)) {
-            queryWrapper.eq("mr.delivery_no", deliveryNo);
+            queryWrapper.like("mr.delivery_no", deliveryNo);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("prn.track_head_id", trackNo);
+            queryWrapper.like("prn.track_head_id", trackNo);
         }
         return CommonResult.success( materialReceiveService.getPage(new Page<MaterialReceive>(page, limit),queryWrapper));
     }
