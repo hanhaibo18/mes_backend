@@ -107,6 +107,8 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             planOptWarning.setSequenceOrderBy(trackItem.getSequenceOrderBy());
             planOptWarning.setIsOperationComplete(trackItem.getIsOperationComplete());
             planOptWarning.setOperationCompleteTime(trackItem.getOperationCompleteTime());
+            planOptWarning.setAssignableQty(trackItem.getAssignableQty());
+            planOptWarning.setCompleteQty(trackItem.getCompleteQty());
             planOptWarningList.add(planOptWarning);
         }
 
