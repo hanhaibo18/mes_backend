@@ -20,11 +20,9 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.error.DefaultWebResponseExceptionTranslator;
 import org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
-import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
-import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
+import org.springframework.security.oauth2.provider.token.*;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
@@ -50,6 +48,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Qualifier("userDetailsService")
     UserDetailsService userDetailsService;
 
+    @Autowired
+    private TokenStore tokenStore;
+
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         // 配置客户端信息，从数据库中读取，对应oauth_client_details表
@@ -74,8 +75,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST)
                 .authenticationManager(authenticationManager)
                 .userDetailsService(userDetailsService)
-                // TODO 将token存储到redis
-                //.tokenStore(tokenStore())
+                .tokenStore(tokenStore)
                 // token增强
                 .tokenEnhancer(tokenEnhancerChain())
                 //异常转换
@@ -94,7 +94,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(new CustomTokenEnhancer(), accessTokenConverter()));
         return tokenEnhancerChain;
     }
-
+    @Bean
+    public TokenStore tokenStore() {
+        // TODO 将token存储到redis
+        return new JwtTokenStore(accessTokenConverter());
+    }
     /**
      * jwt token的生成配置
      *
