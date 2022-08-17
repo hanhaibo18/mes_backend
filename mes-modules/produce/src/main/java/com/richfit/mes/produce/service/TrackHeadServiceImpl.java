@@ -784,7 +784,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     /**
      * 功能描述: 跟单报废
      *
-     * @param id 跟单分流id
+     * @param id 跟单id
      * @Author: zhiqiang.lu
      * @Date: 2022/7/6 18:07
      * @return: void
