@@ -58,24 +58,24 @@ public class MaterialReceiveController extends BaseController {
             queryWrapper.in("mr.state", states);
         }
         if (!StringUtils.isNullOrEmpty(deliveryNo)) {
-            queryWrapper.eq("mr.delivery_no", deliveryNo);
+            queryWrapper.like("mr.delivery_no", deliveryNo);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("prn.track_head_id", trackNo);
+            queryWrapper.like("prn.track_head_id", trackNo);
         }
         return CommonResult.success( materialReceiveService.getPage(new Page<MaterialReceive>(page, limit),queryWrapper));
     }
 
     @ApiOperation(value = "查询本次配送明细信息", notes = "根据跟单号、分页查询本次配送明细信息")
-    @GetMapping("/getThisDeliveryDetail")
-    public CommonResult<IPage<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
+    @GetMapping("/get_the_delivery_detail")
+    public CommonResult<List<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
         QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper<MaterialReceiveDetail>();
         queryWrapper.eq("delivery_no", deliveryNo);
         return CommonResult.success(materialReceiveDetailService.getReceiveDetail(queryWrapper));
     }
 
     @ApiOperation(value = "查询已配送明细信息", notes = "根据跟单号、分页查询已配送明细信息")
-    @GetMapping("/getDeliveredDetail")
+    @GetMapping("/get_delivered_detail")
     public CommonResult<IPage<TrackAssembly>> getDeliveredDetail(@ApiParam(value = "页码") @RequestParam(required = false) Integer page,
                                                                  @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
                                                                  @ApiParam(value = "跟单id") @RequestParam(required = false) String trackHeadId ) {
@@ -88,23 +88,29 @@ public class MaterialReceiveController extends BaseController {
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
         wrapper.eq("delivery_no",deliveryNo);
         List<MaterialReceiveDetail> list = materialReceiveDetailService.list(wrapper);
-        return CommonResult.success(lineStoreService.addStoreByWmsSend(list,branchCode));
+        boolean b = lineStoreService.addStoreByWmsSend(list, branchCode);
+        if (b){
+            boolean update = materialReceiveDetailService.updateState(list);
+            return CommonResult.success(update);
+        } else {
+            return CommonResult.success(false);
+        }
     }
 
     @ApiOperation(value = "查询定时任务上一次保存最后一条的时间", notes = "最后一条创建时间")
-    @GetMapping(value = "/api/produce/material_receive/getlastTime")
+    @GetMapping(value = "/get_last_time")
     public String getlastTime(){
         return materialReceiveService.getlastTime();
     };
 
     @ApiOperation(value = "批量接收wms视图物料物料接收", notes = "批量接收物料")
-    @GetMapping(value = "/api/produce/material_receive/materialReceive/saveBatch")
+    @GetMapping(value = "/material_receive/save_batch")
     public Boolean materialReceiveSaveBatch(List<MaterialReceive> materialReceiveList){
         return materialReceiveService.saveBatch(materialReceiveList);
     };
 
     @ApiOperation(value = "批量接收wms视图配送明细", notes = "批量接收物料配送明细")
-    @GetMapping(value = "/api/produce/material_receive/detail/saveBatch")
+    @GetMapping(value = "/detail/save_batch")
     public Boolean detailSaveBatch(List<MaterialReceiveDetail> detailList){
         return materialReceiveDetailService.saveBatch(detailList);
     };

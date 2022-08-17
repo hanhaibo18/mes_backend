@@ -1,6 +1,7 @@
 package com.richfit.mes.base.service;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -12,7 +13,9 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProjectBomMapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -20,6 +23,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +31,7 @@ import java.util.stream.Collectors;
  * @author 侯欣雨
  * @Description 项目BOM服务
  */
+@Slf4j
 @Service
 public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, ProjectBom> implements ProjectBomService {
 
@@ -219,16 +224,10 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
 
     @Override
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
-        File file = null;
-        try {
-            file = ResourceUtils.getFile("classpath:excel/" + "产品BOM导出模板.xls");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
         int sheetNum = 0;
         try {
-            assert file != null;
-            ExcelWriter writer = ExcelUtil.getReader(file).getWriter();
+            ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
             HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
             for (String id : idList) {
                 if (sheetNum > 0) {
@@ -306,7 +305,8 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
             }
             ServletOutputStream outputStream = rsp.getOutputStream();
             rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
-            rsp.setHeader("Content-disposition", "attachment; filename=" + new String("产品BOM".getBytes("utf-8"), "ISO-8859-1") + ".xls");
+            rsp.setHeader("Content-disposition", "attachment; filename=" + new String("项目BOM".getBytes("utf-8"),
+                    "ISO-8859-1") + ".xls");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
         } catch (Exception e) {

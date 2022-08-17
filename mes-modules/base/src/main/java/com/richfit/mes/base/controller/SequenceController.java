@@ -624,7 +624,7 @@ public class SequenceController extends BaseController {
     public CommonResult<Boolean> assignDelete(String sequenceId) {
         QueryWrapper<OperationAssign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("operation_id", sequenceId);
-        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         return CommonResult.success(operationAssignService.remove(queryWrapper), "操作成功！");
@@ -635,10 +635,16 @@ public class SequenceController extends BaseController {
     public CommonResult<OperationAssign> assignGet(String sequenceId) {
         QueryWrapper<OperationAssign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("operation_id", sequenceId);
-        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         return CommonResult.success(operationAssignService.getOne(queryWrapper), "操作成功！");
+    }
+
+    @GetMapping("/querySequenceById")
+    public CommonResult<Sequence> querySequenceById(String id) {
+        Sequence sequence = sequenceService.getById(id);
+        return CommonResult.success(sequence);
     }
 
 }

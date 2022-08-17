@@ -51,7 +51,7 @@ public interface LineStoreService extends IService<LineStore> {
      * @return
      * @Author Gaol
      */
-    List<LineStoreSumZp> queryLineStoreSumZp(Map parMap) throws Exception;
+    IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) throws Exception;
 
     /**
      * 功能描述: 装配库存数量查询
@@ -79,7 +79,7 @@ public interface LineStoreService extends IService<LineStore> {
      * @return
      * @Author Gaol
      */
-    void reSetCertNoByTrackHead(String certificateNo);
+    void reSetCertNoByCertNo(String certificateNo);
 
     /**
      * 功能描述: 跟单与合格证解绑 根据合跟单号更新半成品/成品料单状态为在制，清空合格证号

@@ -26,11 +26,11 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     IPage<TrackItem> getPageAssignsByStatus(@Param("page") Page page, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
 
-    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where track_no=#{name})) a  ${ew.customSqlSegment}")
+    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where track_no LIKE CONCAT(CONCAT(#{name},'%')))) a  ${ew.customSqlSegment}")
     IPage<TrackItem> getPageAssignsByStatusAndTrack(@Param("page") Page page, @Param("name") String name, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
     //@Select("select * from (SELECT * FROM produce_track_item where  (Is_Current =1 or id in(select id from produce_track_item a,  (select track_head_id,min(opt_sequence) as opt_sequence from produce_track_item  where track_head_id in (select id from produce_track_head where status ='0' or status is null or status='')   group by track_head_id)  b where  a.track_head_id=b.track_head_id and a.opt_sequence =b.opt_sequence)) and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where drawing_no=#{name})) a  ${ew.customSqlSegment}")
-    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where drawing_no=#{name})) a  ${ew.customSqlSegment}")
+    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where drawing_no LIKE CONCAT(CONCAT(#{name},'%')))) a  ${ew.customSqlSegment}")
     IPage<TrackItem> getPageAssignsByStatusAndRouter(@Param("page") Page page, @Param("name") String name, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
     //       @Select("select * from v_produce_assign")
@@ -53,12 +53,12 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     /**
      * 功能描述: 根据跟单号查询
      *
-     * @param trackNo
+     * @param flowId
      * @Author: xinYu.hou
      * @return: List<QueryProcessVo>
      **/
-    @Select("SELECT item.id,item.track_head_id,item.opt_id,item.opt_name,item.opt_ver,item.prepare_end_hours,item.single_piece_hours,item.opt_parallel_type,item.is_current FROM v_produce_track_item item WHERE item.track_head_id = #{trackNo} ORDER BY item.opt_sequence ASC")
-    List<QueryProcessVo> queryProcessList(@Param("trackNo") String trackNo);
+    @Select("SELECT item.id,item.track_head_id,item.opt_id,item.opt_name,item.opt_ver,item.prepare_end_hours,item.single_piece_hours,item.opt_parallel_type,item.is_current FROM v_produce_track_item item WHERE item.flow_id = #{flowId} ORDER BY item.opt_sequence ASC")
+    List<QueryProcessVo> queryProcessList(@Param("flowId") String flowId);
 
     /**
      * 功能描述: 查询当前工序是否派工

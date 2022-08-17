@@ -9,7 +9,9 @@ import java.util.Date;
 
 /**
  * @author 马峰
- * @Description 派工表
+ * @Description 报工实体类
+ * @CreateTime: 2022年02月02日 08:08:00
+ * @ModifyTime: 2022年08月15日 12:08:00
  */
 @Data
 public class TrackComplete extends BaseEntity<TrackComplete> {
@@ -152,4 +154,12 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
 
     @ApiModelProperty(value = "是否给予准结工时", dataType = "int")
     private int isPrepare;
+
+    @ApiModelProperty(value = "质检结果", dataType = "String")
+    @TableField(exist = false)
+    private String qualityResult;
+
+    @ApiModelProperty(value = "是否给予准结工时", dataType = "String")
+    @TableField(exist = false)
+    private String productionOrder;
 }

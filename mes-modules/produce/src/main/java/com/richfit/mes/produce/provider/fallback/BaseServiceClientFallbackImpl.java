@@ -90,5 +90,15 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public CommonResult<OperationAssign> assignGet(String sequenceId) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<Sequence> querySequenceById(String id) {
+        return CommonResult.success(null);
+    }
+
 
 }

@@ -43,21 +43,12 @@
     <!-- 查询装配库存 库存量-->
     <select id="selectStoreNumForAssembly" resultType="com.richfit.mes.common.model.produce.store.LineStoreSumZp">
         select c.drawing_no,
-        (select s.product_name from
-        mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
-        c.branch_code limit 1) product_name,
-        (select s.material_no from
-        mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
-        c.branch_code limit 1) material_no,
-        (
-        select sum(number - ifnull(use_num,0)) from mes_produce.produce_line_store
-        where drawing_no = c.drawing_no and tenant_id = c.tenant_id and
-        branch_code = c.branch_code and material_Type = '1' and status='0'
-        ) store_number
-
+        max(c.product_name) product_name,
+        max(c.material_no) material_no,
+        sum(c.number - ifnull(c.use_num,0))store_number
         from (
-        select distinct(drawing_no) drawing_no, tenant_id, branch_code FROM mes_produce.produce_line_store
-        where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
+        select * from mes_produce.produce_line_store
+        where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode} and material_type='1'
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
                 and drawing_no like CONCAT('%',#{param.drawingNo},'%')
@@ -67,6 +58,7 @@
             </if>
         </trim>
         ) c
+        group by c.drawing_no
     </select>
 
     <!-- 查询装配库存  配送接收量-->

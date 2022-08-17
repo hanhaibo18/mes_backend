@@ -325,7 +325,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     /**
-     * 功能描述: 齐套物料BOM数据封装（跟单下的装配bom装配信息合并后的列表）
+     * 功能描述: 齐套物料BOM数据封装（计划未匹配跟单）
      *
      * @param plan 计划信息
      * @Author: zhiqiang.lu
@@ -364,7 +364,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
 
     /**
-     * 功能描述: 齐套物料数据合并封装（跟单下的装配bom装配信息合并后的列表）
+     * 功能描述: 齐套物料数据合并封装（计划已匹配跟单）
      *
      * @param plan          计划信息
      * @param trackHeadList 计划匹配的跟单列表
@@ -393,7 +393,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         projectBomComplete.setPlanNumber(plan.getProjNum());
                         projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
                         projectBomComplete.setNumber(trackAssembly.getNumber());
-                        projectBomComplete.setInstallNumber(trackAssembly.getNumber());
+                        projectBomComplete.setInstallNumber(trackAssembly.getNumberInstall());
                         projectBomComplete.setProdDesc(trackAssembly.getName());
                         projectBomComplete.setMaterialNo(trackAssembly.getMaterialNo());
                         projectBomComplete.setDrawingNo(trackAssembly.getDrawingNo());
@@ -500,19 +500,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 } else if ("2".equals(trackHead.getStatus())) {
                     //完工
                     storeNum += trackHead.getNumber();
+                    trackHeadFinish++;
                 } else if ("4".equals(trackHead.getStatus())) {
                     //打印跟单
                 } else if ("5".equals(trackHead.getStatus())) {
                     //作废跟单
                 } else if ("8".equals(trackHead.getStatus())) {
                     //生成完工资料
-                    storeNum += trackHead.getNumber();
+                    deliveryNum += trackHead.getNumber();
                 } else if ("9".equals(trackHead.getStatus())) {
                     //已交
-                } else {
-                    //其余都算完工
-                    trackHeadFinish++;
                     deliveryNum += trackHead.getNumber();
+                } else {
+                    //其余
                 }
             }
             plan.setStoreNum(storeNum);//库存数量
@@ -844,6 +844,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
             for (Plan plan : sheetList) {
                 plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                //设置优先级 默认为1
+                plan.setPriority("1");
                 if (!ObjectUtil.isEmpty(plan.getDrawNo()) && plan.getDrawNo().equals("0")) {
                     plan.setDrawNo(null);
                 }

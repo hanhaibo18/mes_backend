@@ -2,6 +2,7 @@ package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -257,17 +258,23 @@ public class TrackAssignController extends BaseController {
                         if (trackItem.getAssignableQty() < assign.getQty()) {
                             return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
                         }
+                        trackItem.setIsCurrent(1);
+                        trackItem.setIsDoing(0);
+                        trackItem.setIsSchedule(1);
+                        trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
+                        trackItemService.updateById(trackItem);
                         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                        assign.setTrackNo(trackHead.getTrackNo());
-                        if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
+                        if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
+                            assign.setTrackNo(trackHead.getTrackNo());
+                        }
+                        if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
                             //将跟单状态改为在制
                             trackHead.setStatus("1");
                             trackHeadService.updateById(trackHead);
-                            QueryWrapper<TrackFlow> query = new QueryWrapper<>();
-                            query.eq("track_head_id", trackHead);
-                            TrackFlow trackFlow = trackHeadFlowService.getOne(query);
-                            trackFlow.setStatus("1");
-                            trackHeadFlowService.updateById(trackFlow);
+                            UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                            update.set("status", "1");
+                            update.eq("id", trackItem.getFlowId());
+                            trackHeadFlowService.update(update);
                         }
                         //齐套性检查
                         if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent()) {
@@ -321,15 +328,18 @@ public class TrackAssignController extends BaseController {
                                 lineLists.add(lineList);
                             }
                             ingredient.setLineList(lineLists);
-                            requestNoteService.saveRequestNote(ingredient,lineLists);
+                            requestNoteService.saveRequestNote(ingredient, lineLists);
                             wmsServiceClient.anApplicationForm(ingredient);
                         }
-                        //下工序激活
-                        Map<String, String> map = new HashMap<>(3);
-                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), assign.getTrackId());
-                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), assign.getTiId());
-                        map.put("number", String.valueOf(assign.getQty()));
-                        publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
+                        if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+                            //下工序激活
+                            Map<String, String> map = new HashMap<>(3);
+                            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                            map.put(IdEnum.TRACK_HEAD_ID.getMessage(), assign.getTrackId());
+                            map.put(IdEnum.TRACK_ITEM_ID.getMessage(), assign.getTiId());
+                            map.put("number", String.valueOf(assign.getQty()));
+                            publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
+                        }
                     }
                     assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                     if (null != SecurityUtils.getCurrentUser()) {
@@ -361,6 +371,7 @@ public class TrackAssignController extends BaseController {
             }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {
+            e.printStackTrace();
             return CommonResult.failed("操作失败，请重试！" + e.getMessage());
         }
 
@@ -494,7 +505,15 @@ public class TrackAssignController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         queryWrapper.eq("is_schedule", 0);
-        if (!StringUtils.isNullOrEmpty(orderCol)) {
+
+        //过滤排序（list中的字段不在此处排序，后边步骤再排序）
+        List<String> excludeOrderCols = new ArrayList<>();
+        excludeOrderCols.add("workNo");
+        excludeOrderCols.add("routerVer");
+        excludeOrderCols.add("totalQuantity");
+        excludeOrderCols.add("dispatchingNumber");
+
+        if (!StringUtils.isNullOrEmpty(orderCol) && !excludeOrderCols.contains(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
                 if (order.equals("desc")) {
                     queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
@@ -508,11 +527,11 @@ public class TrackAssignController extends BaseController {
             queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndTrack(new Page<TrackItem>(page, limit), trackNo, queryWrapper, orderCol, order, excludeOrderCols), "操作成功！");
         } else if (!StringUtils.isNullOrEmpty(routerNo)) {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatusAndRouter(new Page<TrackItem>(page, limit), routerNo, queryWrapper, orderCol, order, excludeOrderCols), "操作成功！");
         } else {
-            return CommonResult.success(trackAssignService.getPageAssignsByStatus(new Page<TrackItem>(page, limit), queryWrapper), "操作成功！");
+            return CommonResult.success(trackAssignService.getPageAssignsByStatus(new Page<TrackItem>(page, limit), queryWrapper, orderCol, order, excludeOrderCols), "操作成功！");
         }
     }
 
@@ -621,7 +640,8 @@ public class TrackAssignController extends BaseController {
                 }
                 trackItem.setIsCurrent(1);
                 trackItem.setIsDoing(0);
-                trackItem.setAssignableQty(trackItem.getAssignableQty() + assign.getQty());
+                trackItem.setIsSchedule(0);
+//                trackItem.setAssignableQty(trackItem.getAssignableQty() + assign.getQty());
                 trackItemService.updateById(trackItem);
                 trackAssignService.removeById(ids[i]);
             }
@@ -631,11 +651,11 @@ public class TrackAssignController extends BaseController {
 
     @GetMapping("/queryProcessList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "flowId", value = "分流Id", required = true, paramType = "query", dataType = "String"),
     })
     @ApiOperation(value = "根据跟单Id查询工序列表")
-    public CommonResult<List<QueryProcessVo>> queryProcessList(String trackHeadId) {
-        return CommonResult.success(trackAssignService.queryProcessList(trackHeadId));
+    public CommonResult<List<QueryProcessVo>> queryProcessList(String flowId) {
+        return CommonResult.success(trackAssignService.queryProcessList(flowId));
     }
 
     @GetMapping("/updateProcess")
