@@ -59,21 +59,14 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             plan.setAlarmStatus(0);
         }
         long betweenDay = 101;
-        Date date = new Date();
         for (PlanOptWarning planOptWarning : planOptWarningList) {
             if (!StringUtils.isNullOrEmpty(planOptWarning.getDateWarning())) {
-                Date dateWarnning = DateUtil.parse(planOptWarning.getDateWarning());
-                long d = DateUtil.between(dateWarnning, date, DateUnit.DAY);
-                if (dateWarnning.getTime() < date.getTime()) {
-                    d = -d;
+                if (betweenDay > planOptWarning.getDays()) {
+                    betweenDay = planOptWarning.getDays();
                 }
-                if (betweenDay > d) {
-                    betweenDay = d;
-                }
-
-                if (d >= 3) {
+                if (betweenDay >= 3) {
                     plan.setAlarmStatus(1);
-                } else if (d >= 0 && d < 3) {
+                } else if (betweenDay >= 0 && betweenDay < 3) {
                     plan.setAlarmStatus(2);
                 } else {
                     plan.setAlarmStatus(3);
@@ -119,11 +112,21 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
         List<PlanOptWarning> planOptWarnings = planOptWarningMapper.selectList(queryWrapperPlanOptWarning);
 
         //计划预警数据匹配
+        Date date = new Date();
         for (PlanOptWarning planOptWarning : planOptWarningList) {
             for (PlanOptWarning pow : planOptWarnings) {
                 if (planOptWarning.getSequenceOrderBy() == pow.getSequenceOrderBy()) {
                     planOptWarning.setId(pow.getId());
                     planOptWarning.setDateWarning(pow.getDateWarning());
+                    if (!StringUtils.isNullOrEmpty(planOptWarning.getDateWarning())) {
+                        Date dateWarnning = DateUtil.parse(planOptWarning.getDateWarning());
+                        long d = DateUtil.between(dateWarnning, date, DateUnit.DAY);
+                        if (dateWarnning.getTime() < date.getTime()) {
+                            planOptWarning.setDays(-d);
+                        } else {
+                            planOptWarning.setDays(d);
+                        }
+                    }
                 }
             }
         }

@@ -49,4 +49,8 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
     @ApiModelProperty(value = "完成数量", dataType = "Double")
     private Double completeQty;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "剩余天数", dataType = "Long")
+    private Long days;
+
 }
