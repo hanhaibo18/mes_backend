@@ -75,8 +75,9 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         if (!branchList.isEmpty()) {
             //不为空查询人员信 并进行递归查询
             for (Branch branch : branchList) {
-                tenantUserVo.addAll(systemServiceClient.queryByBranchCode(branchCode));
+                tenantUserVo.addAll(systemServiceClient.queryByBranchCode(branch.getBranchCode()));
             }
+            //TODO:检查查询
             queryByBranchCode(branchList, tenantUserVo);
         }
         return tenantUserVo;
