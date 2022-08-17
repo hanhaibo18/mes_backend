@@ -106,6 +106,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             if ("2".equals(trackFlow.getStatus())) {
                 //完成
                 numberComplete++;
+            } else if ("8".equals(trackFlow.getStatus())) {
+                //完工质量资料
+                numberComplete++;
             } else if ("9".equals(trackFlow.getStatus())) {
                 //交付
                 numberComplete++;

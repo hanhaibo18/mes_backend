@@ -74,6 +74,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     public List<TrackItem> queryTrackItemByTrackNo(String trackNo) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackNo);
+        queryWrapper.orderByAsc("sequence_order_by");
         return this.list(queryWrapper);
     }
 

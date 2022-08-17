@@ -92,12 +92,22 @@ public interface TrackHeadService extends IService<TrackHead> {
     /**
      * 功能描述: 跟单完成
      *
-     * @param id 跟单id
+     * @param flowId 跟单分流id
      * @Author: zhiqiang.lu
      * @Date: 2022/7/6 18:07
      * @return: void
      **/
-    void trackHeadFinish(String id) throws Exception;
+    void trackHeadFinish(String flowId) throws Exception;
+
+    /**
+     * 功能描述: 跟单报废
+     *
+     * @param id 跟单id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/17 18:07
+     * @return: void
+     **/
+    void trackHeadUseless(String id) throws Exception;
 
     boolean deleteTrackHead(List<TrackHead> trackHeads);
 

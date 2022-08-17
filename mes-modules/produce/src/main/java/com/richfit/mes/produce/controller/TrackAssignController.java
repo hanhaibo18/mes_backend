@@ -640,7 +640,8 @@ public class TrackAssignController extends BaseController {
                 }
                 trackItem.setIsCurrent(1);
                 trackItem.setIsDoing(0);
-                trackItem.setAssignableQty(trackItem.getAssignableQty() + assign.getQty());
+                trackItem.setIsSchedule(0);
+//                trackItem.setAssignableQty(trackItem.getAssignableQty() + assign.getQty());
                 trackItemService.updateById(trackItem);
                 trackAssignService.removeById(ids[i]);
             }
@@ -650,11 +651,11 @@ public class TrackAssignController extends BaseController {
 
     @GetMapping("/queryProcessList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "flowId", value = "分流Id", required = true, paramType = "query", dataType = "String"),
     })
     @ApiOperation(value = "根据跟单Id查询工序列表")
-    public CommonResult<List<QueryProcessVo>> queryProcessList(String trackHeadId) {
-        return CommonResult.success(trackAssignService.queryProcessList(trackHeadId));
+    public CommonResult<List<QueryProcessVo>> queryProcessList(String flowId) {
+        return CommonResult.success(trackAssignService.queryProcessList(flowId));
     }
 
     @GetMapping("/updateProcess")
