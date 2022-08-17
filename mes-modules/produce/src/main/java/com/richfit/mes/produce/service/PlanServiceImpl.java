@@ -844,6 +844,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
             for (Plan plan : sheetList) {
                 plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                //设置优先级 默认为1
+                plan.setPriority("1");
                 if (!ObjectUtil.isEmpty(plan.getDrawNo()) && plan.getDrawNo().equals("0")) {
                     plan.setDrawNo(null);
                 }

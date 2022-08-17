@@ -224,24 +224,10 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
 
     @Override
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
-        File file = null;
-        try {
-            ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
-            file = classPathResource.getFile();
-            if(ObjectUtil.isEmpty(file)){
-                log.info("项目BOM导出没有读取到模板");
-            }else{
-                log.info("项目BOM导出读取到了模板："+file.getPath());
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
         int sheetNum = 0;
         try {
-            assert file != null;
-            ExcelWriter writer = ExcelUtil.getReader(file).getWriter();
+            ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
             HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
             for (String id : idList) {
                 if (sheetNum > 0) {
@@ -317,15 +303,12 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 }
                 sheetNum++;
             }
-            log.info("-----项目BOM导出开始赋值响应头");
             ServletOutputStream outputStream = rsp.getOutputStream();
             rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
             rsp.setHeader("Content-disposition", "attachment; filename=" + new String("项目BOM".getBytes("utf-8"),
                     "ISO-8859-1") + ".xls");
-            log.info("-----项目BOM导出开始");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
-            log.info("-----项目BOM导出结束");
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();

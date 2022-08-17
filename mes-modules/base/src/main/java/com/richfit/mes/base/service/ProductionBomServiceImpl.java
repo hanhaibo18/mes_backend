@@ -206,24 +206,10 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
     @Override
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
-        File file = null;
-        try {
-            ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
-            file = classPathResource.getFile();
-            if(ObjectUtil.isEmpty(file)){
-                log.info("没有读取到模板");
-            }else{
-                log.info("读取到了模板："+file.getPath());
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
         int sheetNum = 0;
         try {
-            ExcelWriter writer = ExcelUtil.getReader(file).getWriter();
+            ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
             HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
             for (String id : idList) {
                 if (sheetNum > 0) {
@@ -299,14 +285,11 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 }
                 sheetNum++;
             }
-            log.info("-----开始赋值响应头");
             rsp.setContentType("application/octet-stream");
             rsp.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("产品BOM", "UTF-8"));
             ServletOutputStream outputStream = rsp.getOutputStream();
-            log.info("-----导出开始");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
-            log.info("-----导出结束");
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
