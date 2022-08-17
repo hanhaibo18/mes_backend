@@ -87,7 +87,8 @@ secure:
       - /api/sys/log/logs
       - /api/sys/item/item/param/list
       - /api/sys/attachment/selectAttachmentsList
-
+      - /api/sys/item/param/find_by_code/inner
+      - /api/sys/item/item/param/list/inner
 logging:
   level:
-    root: DEBUG
+    root: INFO
