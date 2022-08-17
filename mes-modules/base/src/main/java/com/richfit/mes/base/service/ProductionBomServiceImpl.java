@@ -1,6 +1,7 @@
 package com.richfit.mes.base.service;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -20,6 +21,7 @@ import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -49,6 +51,7 @@ import java.util.stream.Collectors;
  * @author sun
  * @Description 产品BOM服务
  */
+@Slf4j
 @Service
 public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, ProductionBom> implements ProductionBomService {
 
@@ -205,8 +208,14 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     public void exportExcel(List<String> idList, HttpServletResponse rsp) {
         File file = null;
         try {
-            ClassPathResource classPathResource = new ClassPathResource("excel/" + "产品BOM导出模板.xls");
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
             file = classPathResource.getFile();
+            if(ObjectUtil.isEmpty(file)){
+                log.info("没有读取到模板");
+            }else{
+                log.info("读取到了模板："+file.getPath());
+            }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -214,7 +223,6 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         }
         int sheetNum = 0;
         try {
-            assert file != null;
             ExcelWriter writer = ExcelUtil.getReader(file).getWriter();
             HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
             for (String id : idList) {
@@ -291,11 +299,14 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 }
                 sheetNum++;
             }
+            log.info("-----开始赋值响应头");
             rsp.setContentType("application/octet-stream");
             rsp.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("产品BOM", "UTF-8"));
             ServletOutputStream outputStream = rsp.getOutputStream();
+            log.info("-----导出开始");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
+            log.info("-----导出结束");
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();

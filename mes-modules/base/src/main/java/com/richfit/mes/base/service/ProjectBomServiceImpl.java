@@ -1,6 +1,7 @@
 package com.richfit.mes.base.service;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -12,6 +13,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProjectBomMapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
  * @author 侯欣雨
  * @Description 项目BOM服务
  */
+@Slf4j
 @Service
 public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, ProjectBom> implements ProjectBomService {
 
@@ -225,6 +228,11 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         try {
             ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductBomExportTemp.xls");
             file = classPathResource.getFile();
+            if(ObjectUtil.isEmpty(file)){
+                log.info("项目BOM导出没有读取到模板");
+            }else{
+                log.info("项目BOM导出读取到了模板："+file.getPath());
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -309,11 +317,15 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 }
                 sheetNum++;
             }
+            log.info("-----项目BOM导出开始赋值响应头");
             ServletOutputStream outputStream = rsp.getOutputStream();
             rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
-            rsp.setHeader("Content-disposition", "attachment; filename=" + new String("项目BOM".getBytes("utf-8"), "ISO-8859-1") + ".xls");
+            rsp.setHeader("Content-disposition", "attachment; filename=" + new String("项目BOM".getBytes("utf-8"),
+                    "ISO-8859-1") + ".xls");
+            log.info("-----项目BOM导出开始");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
+            log.info("-----项目BOM导出结束");
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
