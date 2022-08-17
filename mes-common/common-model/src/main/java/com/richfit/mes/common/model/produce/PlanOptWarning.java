@@ -43,7 +43,7 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "生产数量", dataType = "Integer")
-    private int assignableQty;
+    private Integer assignableQty;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "完成数量", dataType = "Double")

@@ -536,6 +536,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                                 item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                                 item.setModifyTime(new Date());
                                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                                //可分配数量
+                                item.setAssignableQty(trackFlow.getNumber());
+                                item.setNumber(trackFlow.getNumber());
                                 trackItemService.saveOrUpdate(item);
                             }
                         }
@@ -547,6 +550,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     for (TrackItem item : trackItems) {
                         if (StringUtils.isNullOrEmpty(item.getId())) {
                             item.setId(UUID.randomUUID().toString().replace("-", ""));
+                            item.setAssignableQty(trackHead.getNumber());
+                            item.setNumber(trackHead.getNumber());
                         }
                         item.setTrackHeadId(trackHead.getId());
                         item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
