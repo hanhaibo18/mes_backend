@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.ItemClass;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.ItemClassService;
 import com.richfit.mes.sys.service.ItemParamService;
@@ -152,7 +153,7 @@ public class ItemController extends BaseController {
                 queryWrapper.inSql("class_id", "select id from sys_item_class where label ='" + label + "'");
             }
         }
-        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -176,7 +177,7 @@ public class ItemController extends BaseController {
             if (!StringUtils.isNullOrEmpty(label)) {
                 wrapper.like("label", label);
             }
-            if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             }
 //            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -208,7 +209,7 @@ public class ItemController extends BaseController {
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
         }
-        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -222,6 +223,18 @@ public class ItemController extends BaseController {
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("code", code);
         wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        return CommonResult.success(itemParamService.getOne(wrapper));
+    }
+
+    @ApiOperation(value = "根据Code查询指定字典项", notes = "查询字典项,仅限定时任务微服务直接调用使用,前端调用无效")
+    @GetMapping("/param/find_by_code/inner")
+    @Inner
+    public CommonResult<ItemParam> findItemParamByCodeInner(String code, String tenantId) {
+
+        QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+        wrapper.eq("code", code);
+        wrapper.eq("tenant_id", tenantId);
 
         return CommonResult.success(itemParamService.getOne(wrapper));
     }
