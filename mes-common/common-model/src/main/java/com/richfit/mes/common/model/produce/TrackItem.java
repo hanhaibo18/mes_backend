@@ -358,4 +358,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "工艺版本", dataType = "String")
     @TableField(exist = false)
     private String routerVer;
+    
+    @ApiModelProperty(value = "数量")
+    private int number;
 }

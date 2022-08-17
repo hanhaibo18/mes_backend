@@ -455,6 +455,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     //可分配数量
                     item.setAssignableQty(number);
+                    item.setNumber(number);
                     trackItemService.save(item);
                 }
             }
