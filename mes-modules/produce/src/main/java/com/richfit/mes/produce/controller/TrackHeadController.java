@@ -514,8 +514,9 @@ public class TrackHeadController extends BaseController {
             queryWrapper.like("th.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
-            queryWrapper.eq("th.product_no", productNo);
+            queryWrapper.like("th.product_no", productNo);
         }
+        queryWrapper.eq("ti.is_current", "1");
         //增加逻辑判断，只查询合格证号为空的记录
         if (noCertNo) {
             queryWrapper.and(wapper -> wapper.eq("th.certificate_No", "").or().isNull("th.certificate_No"));

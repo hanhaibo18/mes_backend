@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
@@ -213,9 +214,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private Double heatTemperature;
 
     /**
-     * 合格证编号
+     * 合格证编号 忽略非空判断
      */
     @ApiModelProperty(value = "合格证编号", dataType = "Integer")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String certificateNo;
 
     @ApiModelProperty(value = "是有效的", dataType = "Integer")
@@ -339,12 +341,12 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String texture;
 
     @ApiModelProperty(value = "是否派工(未派工=0,已派工=1)", dataType = "int")
-    private int isSchedule;
+    private Integer isSchedule;
     @ApiModelProperty(value = "是否给予准结工时", dataType = "int")
-    private int isPrepare;
+    private Integer isPrepare;
 
     @ApiModelProperty(value = "是否是确认工序", dataType = "int")
-    private int isNotarize;
+    private Integer isNotarize;
 
     @ApiModelProperty(value = "规则Id", dataType = "String")
     private String ruleId;
@@ -358,7 +360,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "工艺版本", dataType = "String")
     @TableField(exist = false)
     private String routerVer;
-    
+
     @ApiModelProperty(value = "数量")
-    private int number;
+    private Integer number;
 }
