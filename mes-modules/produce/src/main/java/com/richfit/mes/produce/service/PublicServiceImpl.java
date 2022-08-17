@@ -192,17 +192,16 @@ public class PublicServiceImpl implements PublicService {
                     trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
                 }
                 trackItem.setScheduleCompleteTime(new Date());
-                this.activationProcess(map);
+                trackItem.setIsOperationComplete(1);
+                trackItem.setOperationCompleteTime(new Date());
+                trackItem.setIsFinalComplete("1");
+                trackItemService.updateById(trackItem);
             }
-            trackItem.setIsOperationComplete(1);
-            trackItem.setOperationCompleteTime(new Date());
-            trackItem.setIsFinalComplete("1");
-            trackItemService.updateById(trackItem);
+            this.activationProcess(map);
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
             return false;
-
         }
         return true;
     }

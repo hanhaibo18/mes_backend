@@ -43,7 +43,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     private TrackAssemblyService trackAssembleService;
 
     @Override
-    public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order,List<String> excludeOrderCols) {
+    public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
         IPage<TrackItem> pageAssignsByStatus = trackAssignMapper.getPageAssignsByStatus(page, qw);
         if (null != pageAssignsByStatus.getRecords()) {
             for (TrackItem trackItem : pageAssignsByStatus.getRecords()) {
@@ -99,7 +99,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     }
 
     @Override
-    public IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order,List<String> excludeOrderCols) {
+    public IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
         IPage<TrackItem> trackItemList = trackAssignMapper.getPageAssignsByStatusAndRouter(page, name, qw);
         if (null != trackItemList.getRecords()) {
             for (TrackItem trackItem : trackItemList.getRecords()) {
@@ -124,39 +124,40 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
 
     /**
      * 跟单派工排序
-     * @param orderCol 排序字段
-     * @param order   排序类型
-     * @param excludeOrderCols 排序的字段
+     *
+     * @param orderCol            排序字段
+     * @param order               排序类型
+     * @param excludeOrderCols    排序的字段
      * @param pageAssignsByStatus 排序的集合
      */
     private void orderByCol(String orderCol, String order, List<String> excludeOrderCols, IPage<TrackItem> pageAssignsByStatus) {
-        if(!StringUtils.isNullOrEmpty(orderCol) && excludeOrderCols.contains(orderCol)){
-            if("workNo".equals(orderCol)){
-                if("desc".equals(order)){
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo,Comparator.nullsLast(String::compareTo))).reversed());
-                }else{
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo,Comparator.nullsLast(String::compareTo))));
+        if (!StringUtils.isNullOrEmpty(orderCol) && excludeOrderCols.contains(orderCol)) {
+            if ("workNo".equals(orderCol)) {
+                if ("desc".equals(order)) {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo, Comparator.nullsLast(String::compareTo))).reversed());
+                } else {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo, Comparator.nullsLast(String::compareTo))));
                 }
             }
-            if("routerVer".equals(orderCol)){
-                if("desc".equals(order)){
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer,Comparator.nullsLast(String::compareTo))).reversed());
-                }else{
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer,Comparator.nullsLast(String::compareTo))));
+            if ("routerVer".equals(orderCol)) {
+                if ("desc".equals(order)) {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer, Comparator.nullsLast(String::compareTo))).reversed());
+                } else {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer, Comparator.nullsLast(String::compareTo))));
                 }
             }
-            if("totalQuantity".equals(orderCol)){
-                if("desc".equals(order)){
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getTotalQuantity,Comparator.nullsLast(Integer::compareTo))).reversed());
-                }else{
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getTotalQuantity,Comparator.nullsLast(Integer::compareTo))));
+            if ("totalQuantity".equals(orderCol)) {
+                if ("desc".equals(order)) {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getTotalQuantity, Comparator.nullsLast(Integer::compareTo))).reversed());
+                } else {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getTotalQuantity, Comparator.nullsLast(Integer::compareTo))));
                 }
             }
-            if("dispatchingNumber".equals(orderCol)){
-                if("desc".equals(order)){
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getDispatchingNumber,Comparator.nullsLast(Integer::compareTo))).reversed());
-                }else{
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getDispatchingNumber,Comparator.nullsLast(Integer::compareTo))));
+            if ("dispatchingNumber".equals(orderCol)) {
+                if ("desc".equals(order)) {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getDispatchingNumber, Comparator.nullsLast(Integer::compareTo))).reversed());
+                } else {
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getDispatchingNumber, Comparator.nullsLast(Integer::compareTo))));
                 }
             }
 
@@ -226,8 +227,8 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     }
 
     @Override
-    public List<QueryProcessVo> queryProcessList(String trackHeadId) {
-        List<QueryProcessVo> processList = trackAssignMapper.queryProcessList(trackHeadId);
+    public List<QueryProcessVo> queryProcessList(String flowId) {
+        List<QueryProcessVo> processList = trackAssignMapper.queryProcessList(flowId);
         if (processList == null || processList.isEmpty()) {
             return Collections.emptyList();
         }
