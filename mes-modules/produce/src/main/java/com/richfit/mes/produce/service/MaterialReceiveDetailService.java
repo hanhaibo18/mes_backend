@@ -17,4 +17,6 @@ public interface MaterialReceiveDetailService extends IService<MaterialReceiveDe
     List<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper);
 
     Boolean updateState(List<MaterialReceiveDetail> list);
+
+    Boolean saveDetailList(List<MaterialReceiveDetail> detailList);
 }

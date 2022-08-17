@@ -41,6 +41,16 @@ public class MaterialReceive extends BaseEntity<MaterialReceive> {
      */
     private String state;
 
+    /**
+     * 所属机构
+     */
+    private String branchCode;
+
+    /**
+     * 所属租户
+     */
+    private String tenantId;
+
 
 
     @TableField(exist = false)

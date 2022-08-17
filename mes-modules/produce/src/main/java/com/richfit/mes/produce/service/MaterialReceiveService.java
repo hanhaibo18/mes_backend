@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 
 import java.sql.Date;
+import java.util.List;
 
 /**
  * @className:MaterialReceiveService
@@ -18,4 +19,6 @@ public interface MaterialReceiveService extends IService<MaterialReceive> {
     String getlastTime();
 
     Page<MaterialReceive> getPage(Page<MaterialReceive> materialReceivePage, QueryWrapper<MaterialReceive> queryWrapper);
+
+    Boolean saveMaterialReceiveList(List<MaterialReceive> materialReceiveList);
 }

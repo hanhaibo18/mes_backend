@@ -146,7 +146,7 @@ public class TemplatePrintController extends BaseController {
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
             // 根据配置SQL，获取SHEET1、2、3表数据
-            sheets.add(getList(id, p.getSheet1()));
+            sheets.add(getList(trackHead.getId(), p.getSheet1()));
             sheets.add(getList(id, p.getSheet2()));
             sheets.add(getList(id, p.getSheet3()));
 
@@ -166,9 +166,9 @@ public class TemplatePrintController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "批量导出bom跟单excel", notes = "按跟单id集合生成bom跟单EXCEL,按压缩包下载")
+    @ApiOperation(value = "批量导出bom跟单excel", notes = "按flowId集合生成bom跟单EXCEL,按压缩包下载")
     @PostMapping("/batch")
-    public void printBatch(@ApiParam(value = "跟单ids", required = true) @RequestBody List<String> ids,
+    public void printBatch(@ApiParam(value = "flowIds", required = true) @RequestBody List<String> ids,
                           @ApiParam(value = "工厂代码") @RequestParam(required = true) String branchCode,
                           @ApiIgnore HttpServletResponse rsp) throws IOException {
 
@@ -189,13 +189,13 @@ public class TemplatePrintController extends BaseController {
         File file = FilesUtil.createRandomTempDirectory();
 
         for (String id : ids) {
-
-            TrackHead trackHead = trackHeadService.getById(id);
+            TrackFlow byId = trackHeadFlowService.getById(id);
+            TrackHead trackHead = trackHeadService.getById(byId.getTrackHeadId());
 
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
             // 根据配置SQL，获取SHEET1、2、3表数据
-            sheets.add(getList(id, p.getSheet1()));
+            sheets.add(getList(trackHead.getId(), p.getSheet1()));
             sheets.add(getList(id, p.getSheet2()));
             sheets.add(getList(id, p.getSheet3()));
             // 生成EXCEL文件，并输出文件流
