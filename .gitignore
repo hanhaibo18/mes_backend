@@ -17,7 +17,19 @@ target/
 *.iws
 *.iml
 *.ipr
+
+### logs ###
+/logs/
 *.log
+
+### temp ignore ###
+*.cache
+*.diff
+*.patch
+*.tmp
+*.java~
+*.properties~
+*.xml~
 
 ### NetBeans ###
 /nbproject/private/

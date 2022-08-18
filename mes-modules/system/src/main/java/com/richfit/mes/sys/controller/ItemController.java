@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.ItemClass;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.ItemClassService;
 import com.richfit.mes.sys.service.ItemParamService;
@@ -152,7 +153,7 @@ public class ItemController extends BaseController {
                 queryWrapper.inSql("class_id", "select id from sys_item_class where label ='" + label + "'");
             }
         }
-        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -164,7 +165,6 @@ public class ItemController extends BaseController {
     @GetMapping("/item/param/list")
     public CommonResult<List<ItemParam>> selectItemParamByCode(String code, String label) throws Exception {
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
-        System.out.println(code);
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
 //            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -176,7 +176,7 @@ public class ItemController extends BaseController {
             if (!StringUtils.isNullOrEmpty(label)) {
                 wrapper.like("label", label);
             }
-            if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             }
 //            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -208,7 +208,7 @@ public class ItemController extends BaseController {
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
         }
-        if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -222,6 +222,43 @@ public class ItemController extends BaseController {
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("code", code);
         wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+
+        return CommonResult.success(itemParamService.getOne(wrapper));
+    }
+
+
+    @ApiOperation(value = "查询字典参数", notes = "根据参数类别和参数名称查询字典参数")
+    @GetMapping("/item/param/list/inner")
+    @Inner
+    public CommonResult<List<ItemParam>> selectItemParamByCodeInner(String code, String label, String tenantId) throws Exception {
+        QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
+        if (!StringUtils.isNullOrEmpty(code)) {
+            queryWrapper.eq("code", code);
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        List<ItemClass> iClasses = itemClassService.list(queryWrapper);
+        if (iClasses.size() > 0) {
+            QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+            wrapper.eq("class_id", iClasses.get(0).getId());
+            if (!StringUtils.isNullOrEmpty(label)) {
+                wrapper.like("label", label);
+            }
+            queryWrapper.eq("tenant_id", tenantId);
+            wrapper.orderByAsc("order_num");
+            return CommonResult.success(itemParamService.list(wrapper), ITEM_SUCCESS_MESSAGE);
+        } else {
+            throw new Exception("没有找到key=" + code + "的字典！");
+        }
+    }
+
+    @ApiOperation(value = "根据Code查询指定字典项", notes = "查询字典项,仅限定时任务微服务直接调用使用,前端调用无效")
+    @GetMapping("/param/find_by_code/inner")
+    @Inner
+    public CommonResult<ItemParam> findItemParamByCodeInner(String code, String tenantId) {
+
+        QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+        wrapper.eq("code", code);
+        wrapper.eq("tenant_id", tenantId);
 
         return CommonResult.success(itemParamService.getOne(wrapper));
     }

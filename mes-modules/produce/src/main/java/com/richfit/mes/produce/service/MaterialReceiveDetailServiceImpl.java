@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.model.produce.RequestNote;
 import com.richfit.mes.produce.dao.MaterialReceiveDetailMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
     MaterialReceiveService materialReceiveService;
 
     @Override
-    public Page<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper) {
+    public List<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper) {
         return materialReceiveDetailMapper.getReceiveDetail(queryWrapper);
     }
 
@@ -48,5 +49,18 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
             this.update(detailWrapper);
         });
         return true;
+    }
+
+    @Override
+    public Boolean saveDetailList(List<MaterialReceiveDetail> detailList) {
+        for (MaterialReceiveDetail materialReceiveDetail : detailList) {
+            QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper();
+            queryWrapper.eq("delivery_no", materialReceiveDetail);
+            List<MaterialReceiveDetail> list = this.list(queryWrapper);
+            if (list.size()>0){
+                detailList.remove(materialReceiveDetail);
+            }
+        }
+        return this.saveBatch(detailList);
     }
 }

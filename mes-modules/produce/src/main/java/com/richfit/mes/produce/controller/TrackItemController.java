@@ -157,23 +157,26 @@ public class TrackItemController extends BaseController {
         }
         queryWrapper.orderByAsc("sequence_order_by");
         List<TrackItem> trackItems = trackItemService.list(queryWrapper);
+        //将相同的工序进行合并
         for (TrackItem trackItem : trackItems) {
             boolean flag = true;
             for (TrackItem ti : trackItemList) {
-                if (ti.getOptId().equals(trackItem.getOptId())) {
+                if (ti.getOptSequence() == trackItem.getOptSequence()) {
                     flag = false;
                 }
             }
             if (flag) {
                 trackItemList.add(trackItem);
             }
-            if (trackItem.getIsSchedule() == 1) {
+            if (trackItem.getIsSchedule() != null && trackItem.getIsSchedule() == 1) {
                 trackItemScheduleList.add(trackItem);
             }
         }
+        //找出派工工序进行状态修改
         for (TrackItem ti : trackItemList) {
+            ti.setIsSchedule(0);
             for (TrackItem tsi : trackItemScheduleList) {
-                if (ti.getOptId().equals(tsi.getOptId())) {
+                if (ti.getOptSequence() == tsi.getOptSequence()) {
                     ti.setIsSchedule(1);
                 }
             }

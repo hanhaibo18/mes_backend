@@ -34,11 +34,23 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
     private String dateWarning;
 
     @TableField(exist = false)
-    @ApiModelProperty(value = "工序是否完工", dataType = "String")
+    @ApiModelProperty(value = "工序是否完工", dataType = "Integer")
     private Integer isOperationComplete;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "工序完成时间", dataType = "Date")
     private Date operationCompleteTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "生产数量", dataType = "Integer")
+    private Integer assignableQty;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "完成数量", dataType = "Double")
+    private Double completeQty;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "剩余天数", dataType = "Long")
+    private Long days;
 
 }

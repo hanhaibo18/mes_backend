@@ -9,10 +9,12 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.ProduceTrackHeadTemplateService;
+import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.utils.FilesUtil;
 import io.swagger.annotations.Api;
@@ -65,6 +67,9 @@ public class TemplatePrintController extends BaseController {
     private TrackHeadService trackHeadService;
 
     @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
+
+    @Autowired
     private CertificateService certificateService;
 
     /**
@@ -111,6 +116,111 @@ public class TemplatePrintController extends BaseController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     *
+     * @param id
+     * @param branchCode
+     * @param rsp
+     * @throws IOException
+     */
+    @ApiOperation(value = "根据flowId生成跟单模板EXCEL", notes = "按跟单模板编码生成跟单模板EXCEL")
+    @GetMapping("/query/by_flow_id")
+    public void getByFlowId(@ApiParam(value = "flowId", required = true) @RequestParam String id,
+                                  @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                  @ApiIgnore HttpServletResponse rsp) throws IOException {
+        try {
+            // 获取跟单
+            TrackFlow byId = trackHeadFlowService.getById(id);
+            TrackHead trackHead = trackHeadService.getById(byId.getTrackHeadId());
+            QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
+            queryWrapper.like("template_code", trackHead.getTemplateCode());
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.like("branch_code", branchCode);
+            }
+            //获取跟单模板配置信息
+            List<ProduceTrackHeadTemplate> trackHeadTemplates = produceTrackHeadTemplateService.list(queryWrapper);
+            ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
+
+            List<List<Map<String, Object>>> sheets = new ArrayList();
+
+            // 根据配置SQL，获取SHEET1、2、3表数据
+            sheets.add(getList(trackHead.getId(), p.getSheet1()));
+            sheets.add(getList(id, p.getSheet2()));
+            sheets.add(getList(id, p.getSheet3()));
+
+            // 生成EXCEL文件，并输出文件流
+            try {
+                // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
+                //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
+                String templateFileId = p.getFileId();
+                CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
+                InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
+                ExcelUtils.exportExcelOnSheetsData("跟单", inputStream, sheets, rsp);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ApiOperation(value = "批量导出bom跟单excel", notes = "按flowId集合生成bom跟单EXCEL,按压缩包下载")
+    @PostMapping("/batch")
+    public void printBatch(@ApiParam(value = "flowIds", required = true) @RequestBody List<String> ids,
+                          @ApiParam(value = "工厂代码") @RequestParam(required = true) String branchCode,
+                          @ApiIgnore HttpServletResponse rsp) throws IOException {
+
+        QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
+        queryWrapper.eq("type", "0");
+        queryWrapper.eq("branch_code", branchCode);
+
+        //获取跟单模板配置信息
+        List<ProduceTrackHeadTemplate> trackHeadTemplates = produceTrackHeadTemplateService.list(queryWrapper);
+        if (trackHeadTemplates.isEmpty()) {
+            throw new GlobalException("当前机构未配置跟单模板", ResultCode.FAILED);
+        }
+        ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
+
+        String templateFileId = p.getFileId();
+        CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
+
+        File file = FilesUtil.createRandomTempDirectory();
+
+        for (String id : ids) {
+            TrackFlow byId = trackHeadFlowService.getById(id);
+            TrackHead trackHead = trackHeadService.getById(byId.getTrackHeadId());
+
+            List<List<Map<String, Object>>> sheets = new ArrayList();
+
+            // 根据配置SQL，获取SHEET1、2、3表数据
+            sheets.add(getList(trackHead.getId(), p.getSheet1()));
+            sheets.add(getList(id, p.getSheet2()));
+            sheets.add(getList(id, p.getSheet3()));
+            // 生成EXCEL文件，并输出文件流
+            try {
+                // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
+                //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
+
+                InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
+                ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo() + "_跟单", inputStream, sheets);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+
+        //打包压缩包，下载输出
+        try {
+            FilesUtil.zip(file.getAbsolutePath());
+            FilesUtil.downloads(rsp, file.getAbsolutePath() + ".zip");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            file.delete();
+            new File(file.getAbsolutePath() + ".zip").delete();
+        }
+
     }
 
 

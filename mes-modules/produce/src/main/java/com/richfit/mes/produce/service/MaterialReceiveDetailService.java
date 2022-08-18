@@ -14,7 +14,9 @@ import java.util.List;
  * @date:2022/8/2 9:19
  */
 public interface MaterialReceiveDetailService extends IService<MaterialReceiveDetail> {
-    Page<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper);
+    List<MaterialReceiveDetail> getReceiveDetail(QueryWrapper<MaterialReceiveDetail> queryWrapper);
 
     Boolean updateState(List<MaterialReceiveDetail> list);
+
+    Boolean saveDetailList(List<MaterialReceiveDetail> detailList);
 }

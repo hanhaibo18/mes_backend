@@ -166,16 +166,9 @@ public class BranchController extends BaseController {
             queryWrapper.like("branch_name", branchName);
         }
         List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
-        boolean isAdmin = false;
-        for (GrantedAuthority authority : authorities) {
-            //超级管理员 ROLE_12345678901234567890000000000000
-            if ("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
-                isAdmin = true;
-                break;
-            }
-        }
-        if (!isAdmin) {
-            // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        boolean isSysAdmin = SecurityUtils.getCurrentUser().isSysAdmin();
+        if (!isSysAdmin) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             if (isFindTop != null && isFindTop) {
                 String belongOrgId = SecurityUtils.getCurrentUser().getBelongOrgId();
                 queryWrapper.eq("branch_code", belongOrgId);
@@ -191,8 +184,12 @@ public class BranchController extends BaseController {
         }
         queryWrapper.orderByAsc("order_no");
         List<Branch> result = branchService.list(queryWrapper);
-        for (Branch b : result) {
-            branchService.branchErpCode(b);
+
+        //非平台管理员才查询
+        if (!isSysAdmin) {
+            for (Branch b : result) {
+                branchService.branchErpCode(b);
+            }
         }
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
     }

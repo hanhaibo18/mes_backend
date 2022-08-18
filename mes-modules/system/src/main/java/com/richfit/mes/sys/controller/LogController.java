@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.SystemLog;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.entity.param.SystemLogPageParam;
 import com.richfit.mes.sys.entity.param.SystemLogParam;
@@ -37,6 +38,7 @@ public class LogController {
         QueryWrapper<SystemLog> queryWrapper = systemLogParam.build().eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq(StringUtils.isNotBlank(systemLogParam.getType()),"type",systemLogParam.getType());
         queryWrapper.eq(StringUtils.isNotBlank(systemLogParam.getResult()),"result",systemLogParam.getResult());
+        queryWrapper.orderByDesc("modify_time");
         return CommonResult.success(logService.page(systemLogPageParam.toPage(), queryWrapper));
     }
 
@@ -50,6 +52,7 @@ public class LogController {
     @ApiOperation(value = "新增日志", notes = "新增日志")
     @ApiImplicitParam(name = "systemLog", value = "日志", required = true, dataType = "SystemLog", paramType = "body")
     @PostMapping("/save")
+    @Inner
     public CommonResult save(@Valid @RequestBody SystemLog systemLog) {
         return CommonResult.success(logService.save(systemLog));
     }
@@ -63,6 +66,7 @@ public class LogController {
     @ApiOperation(value = "批量插入日志", notes = "批量插入日志")
     @ApiImplicitParam(name = "logs", value = "日志列表", required = true, dataType = "SystemLog", allowMultiple = true, paramType = "body")
     @PostMapping("/logs")
+    @Inner
     public CommonResult saveBatchRequestBody(List<SystemLog> logs) {
         //TODO 统一处理tenantId
         logs.forEach(systemLog -> {

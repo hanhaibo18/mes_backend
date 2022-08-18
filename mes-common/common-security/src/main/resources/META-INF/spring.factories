@@ -1,3 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.richfit.mes.common.security.component.CustomSecurityInnerAspect,\
   com.richfit.mes.common.security.listener.AuthenticationFailureEventListener,\
   com.richfit.mes.common.security.listener.AuthenticationSuccessEventListener

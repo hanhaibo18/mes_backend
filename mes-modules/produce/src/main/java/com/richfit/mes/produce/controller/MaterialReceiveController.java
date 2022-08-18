@@ -9,6 +9,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,30 +53,37 @@ public class MaterialReceiveController extends BaseController {
                                                                 @ApiParam(value = "页码") @RequestParam(required = false) Integer page,
                                                                 @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
                                                                 @ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo,
-                                                                @ApiParam(value = "状态") @RequestParam(required = false) List<String> states) {
+                                                                @ApiParam(value = "状态") @RequestParam(required = false) List<String> states,
+                                                                @ApiParam(value = "分公司") @RequestParam String branchCode) {
         QueryWrapper<MaterialReceive> queryWrapper = new QueryWrapper<MaterialReceive>();
         if (ObjectUtils.isNotNull(states)) {
             queryWrapper.in("mr.state", states);
         }
         if (!StringUtils.isNullOrEmpty(deliveryNo)) {
-            queryWrapper.eq("mr.delivery_no", deliveryNo);
+            queryWrapper.like("mr.delivery_no", deliveryNo);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("prn.track_head_id", trackNo);
+            queryWrapper.like("prn.track_head_id", trackNo);
         }
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.eq("mr.track_head_id", branchCode);
+        }
+        queryWrapper.eq("mr.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.orderByDesc("outbound_date");
         return CommonResult.success( materialReceiveService.getPage(new Page<MaterialReceive>(page, limit),queryWrapper));
     }
 
     @ApiOperation(value = "查询本次配送明细信息", notes = "根据跟单号、分页查询本次配送明细信息")
-    @GetMapping("/get_the_delivery_detail")
-    public CommonResult<IPage<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
+    @GetMapping("/delivery_detail")
+    public CommonResult<List<MaterialReceiveDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo ) {
         QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper<MaterialReceiveDetail>();
         queryWrapper.eq("delivery_no", deliveryNo);
+        queryWrapper.orderByDesc("material_num");
         return CommonResult.success(materialReceiveDetailService.getReceiveDetail(queryWrapper));
     }
 
     @ApiOperation(value = "查询已配送明细信息", notes = "根据跟单号、分页查询已配送明细信息")
-    @GetMapping("/get_delivered_detail")
+    @GetMapping("/delivered_detail")
     public CommonResult<IPage<TrackAssembly>> getDeliveredDetail(@ApiParam(value = "页码") @RequestParam(required = false) Integer page,
                                                                  @ApiParam(value = "条数") @RequestParam(required = false) Integer limit,
                                                                  @ApiParam(value = "跟单id") @RequestParam(required = false) String trackHeadId ) {
@@ -106,12 +114,12 @@ public class MaterialReceiveController extends BaseController {
     @ApiOperation(value = "批量接收wms视图物料物料接收", notes = "批量接收物料")
     @GetMapping(value = "/material_receive/save_batch")
     public Boolean materialReceiveSaveBatch(List<MaterialReceive> materialReceiveList){
-        return materialReceiveService.saveBatch(materialReceiveList);
+        return materialReceiveService.saveMaterialReceiveList(materialReceiveList);
     };
 
     @ApiOperation(value = "批量接收wms视图配送明细", notes = "批量接收物料配送明细")
     @GetMapping(value = "/detail/save_batch")
     public Boolean detailSaveBatch(List<MaterialReceiveDetail> detailList){
-        return materialReceiveDetailService.saveBatch(detailList);
+        return materialReceiveDetailService.saveDetailList(detailList);
     };
 }

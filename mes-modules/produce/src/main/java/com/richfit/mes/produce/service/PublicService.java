@@ -63,7 +63,7 @@ public interface PublicService {
     /**
      * 功能描述: 激活工序
      *
-     * @param trackItemId
+     * @param map
      * @Author: xinYu.hou
      * @Date: 2022/7/13 14:43
      * @return: Boolean
@@ -80,5 +80,14 @@ public interface PublicService {
      **/
     Boolean thirdPartyAction(String trackHeadId);
 
+    /**
+     * 功能描述: 自动派工
+     *
+     * @param map
+     * @Author: xinYu.hou
+     * @Date: 2022/8/15 2:45
+     * @return: Boolean
+     **/
+    Boolean automaticProcess(Map<String, String> map);
 
 }

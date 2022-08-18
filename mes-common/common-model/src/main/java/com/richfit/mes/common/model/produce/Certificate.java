@@ -39,24 +39,19 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "检测日期")
     private Date checkTime;
 
-    @ApiModelProperty(value = "图号 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "图号")
     private String drawingNo;
 
-    @ApiModelProperty(value = "产品编号 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "产品编号")
     private String productNo;
 
-    @ApiModelProperty(value = "产品名称 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "产品名称")
     private String productName;
 
-    @ApiModelProperty(value = "物料号 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "物料号")
     private String materialNo;
 
     @ApiModelProperty(value = "数量")
-    @TableField(exist = false)
     private Integer number;
 
     @ApiModelProperty(value = "本工序")
@@ -89,31 +84,27 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "是否推送工时给ERP  0：未推送  1：已推送")
     private String isSendWorkHour;
 
-    @ApiModelProperty(value = "试棒数量 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "试棒数量")
     private Integer testBarNumber;
 
-    @ApiModelProperty(value = "试棒类型 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "试棒类型")
     private String testBarType;
 
-    @ApiModelProperty(value = "炉批号 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "炉批号")
     private String batchNo;
 
-    @ApiModelProperty(value = "材质 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "材质")
     private String texture;
 
-    @ApiModelProperty(value = "单重 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "单重")
     private Float weight;
 
-    @ApiModelProperty(value = "零件名称 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "零件名称")
     private String materialName;
 
-    @ApiModelProperty(value = "订单号 from跟单")
-    @TableField(exist = false)
+    @ApiModelProperty(value = "订单号")
     private String productionOrder;
+
+    @ApiModelProperty(value = "工作号")
+    private String workNo;
 }

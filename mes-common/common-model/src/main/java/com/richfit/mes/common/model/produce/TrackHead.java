@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
@@ -135,6 +136,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
     /**
      * 合格证号
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String certificateNo;
 
     /**
@@ -294,7 +296,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/7/26 10:25
      **/
-    private int numberComplete;
+    private Integer numberComplete;
 
 
     @TableField(exist = false)
@@ -331,7 +333,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/5 10:25
      **/
-    private int flowNumber;
+    private Integer flowNumber;
 
     /**
      * 描述: 订单id
