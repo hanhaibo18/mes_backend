@@ -137,7 +137,7 @@ public class PlanController extends BaseController {
         plan.setStoreNumber(0);
         plan.setProcessNum(0);
         plan.setDeliveryNum(0);
-        plan.setMissingNum(0);
+        plan.setMissingNum(plan.getProjNum());
         plan.setTrackHeadNumber(0);
         plan.setTrackHeadFinishNumber(0);
         plan.setOptNumber(0);
