@@ -59,10 +59,10 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
                     Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    //总数量
-                    trackItem.setTotalQuantity(plan.getProjNum());
-                    //可派工数量
-                    trackItem.setDispatchingNumber(plan.getTrackNum());
+//                    //总数量
+//                    trackItem.setTotalQuantity(plan.getProjNum());
+//                    //可派工数量
+//                    trackItem.setDispatchingNumber(plan.getTrackNum());
                 }
             }
             //排序
@@ -87,9 +87,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setRouterVer(trackHead.getRouterVer());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
-                    Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    trackItem.setTotalQuantity(plan.getProjNum());
-                    trackItem.setDispatchingNumber(plan.getTrackNum());
+//                    Plan plan = planService.getById(trackHead.getWorkPlanId());
+//                    trackItem.setTotalQuantity(plan.getProjNum());
+//                    trackItem.setDispatchingNumber(plan.getTrackNum());
                 }
             }
             //排序
@@ -111,9 +111,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setPartsName(trackHead.getMaterialName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     trackItem.setWorkPlanNo(trackHead.getWorkPlanId());
-                    Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    trackItem.setTotalQuantity(plan.getProjNum());
-                    trackItem.setDispatchingNumber(plan.getTrackNum());
+//                    Plan plan = planService.getById(trackHead.getWorkPlanId());
+//                    trackItem.setTotalQuantity(plan.getProjNum());
+//                    trackItem.setDispatchingNumber(plan.getTrackNum());
                 }
             }
             //排序
@@ -217,9 +217,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 assign.setProductName(trackHead.getProductName());
                 if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                     assign.setWorkPlanNo(trackHead.getWorkPlanId());
-                    Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    assign.setTotalQuantity(plan.getProjNum());
-                    assign.setDispatchingNumber(plan.getTrackNum());
+//                    Plan plan = planService.getById(trackHead.getWorkPlanId());
+//                    assign.setTotalQuantity(plan.getProjNum());
+//                    assign.setDispatchingNumber(plan.getTrackNum());
                 }
             }
         }

@@ -177,8 +177,8 @@ public class TrackAssignController extends BaseController {
                     if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                         assign.setWorkPlanNo(trackHead.getWorkPlanId());
                         Plan plan = planService.getById(trackHead.getWorkPlanId());
-                        assign.setTotalQuantity(plan.getProjNum());
-                        assign.setDispatchingNumber(plan.getTrackNum());
+//                        assign.setTotalQuantity(plan.getProjNum());
+//                        assign.setDispatchingNumber(trackHead.getNumber());
                     }
                 }
             }
