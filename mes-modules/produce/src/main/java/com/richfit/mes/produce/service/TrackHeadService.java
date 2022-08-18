@@ -62,7 +62,15 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25
      **/
-    String completionData(String id) throws Exception;
+    String completionDataZip(String flowId) throws Exception;
+
+    /**
+     * 描述: 完工资料生成
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/22 10:25
+     **/
+    void completionData(String flowId) throws Exception;
 
     /**
      * 描述: 根据跟单编码查询唯一跟单

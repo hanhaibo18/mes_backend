@@ -180,7 +180,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public String completionData(String flowId) throws Exception {
+    public String completionDataZip(String flowId) throws Exception {
         try {
             String path = FilesUtil.tempPath();
             path = path + "/" + SecurityUtils.getCurrentUser().getUsername();
@@ -207,6 +207,32 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             e.printStackTrace();
             throw new Exception("下载出现异常，请联系管理员");
         }
+    }
+
+    @Override
+    public void completionData(String flowId) throws Exception {
+        TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+        TrackHead trackHead = this.getById(trackFlow.getTrackHeadId());
+        if (StringUtils.isNullOrEmpty(trackHead.getCertificateNo())) {
+            throw new Exception("需要生成合格证后才能生成完工资料");
+        }
+        trackFlow.setStatus("8");
+        trackFlow.setIsCompletionData("Y");
+        trackHeadFlowService.updateById(trackFlow);
+        QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ge("track_head_id", trackHead.getId());
+        List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
+        boolean flag = true;
+        for (TrackFlow tf : trackFlowList) {
+            if (!"Y".equals(tf.getIsCompletionData())) {
+                flag = false;
+            }
+        }
+        if (flag) {
+            trackHead.setStatus("8");
+            trackHead.setIsCompletionData("Y");
+        }
+        this.updateById(trackHead);
     }
 
 
