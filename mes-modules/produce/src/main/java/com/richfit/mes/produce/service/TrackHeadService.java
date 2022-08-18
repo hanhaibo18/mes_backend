@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -192,26 +191,6 @@ public interface TrackHeadService extends IService<TrackHead> {
     IPage<TailAfterVo> queryTailAfterList(QueryDto<QueryTailAfterDto> afterDto);
 
     /**
-     * 功能描述: 跟单拆分列表查询
-     *
-     * @param queryDto
-     * @Author: xinYu.hou
-     * @Date: 2022/5/13 8:04
-     * @return: IPage<TrackHead>
-     **/
-    IPage<TrackHead> querySplitPage(QueryDto<QuerySplitDto> queryDto);
-
-    /**
-     * 功能描述: 跟单拆分
-     *
-     * @param saveTrackHeadDto
-     * @Author: xinYu.hou
-     * @Date: 2022/5/16 6:34
-     * @return: Boolean
-     **/
-    CommonResult<Boolean> saveTrackHeader(SaveTrackHeadDto saveTrackHeadDto);
-
-    /**
      * 功能描述: 根据合格证号查询跟单
      *
      * @param certificateId
@@ -241,10 +220,6 @@ public interface TrackHeadService extends IService<TrackHead> {
     Boolean unLinkFromCert(String thId);
 
     List<TrackHead> queryTrackAssemblyByTrackNo(String flowId);
-
-    IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads);
-
-    IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper);
 
     /**
      * 功能描述: 跟单拆分
