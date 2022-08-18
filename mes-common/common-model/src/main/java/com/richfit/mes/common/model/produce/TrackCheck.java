@@ -147,11 +147,11 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @ApiModelProperty(value = "处理方式", dataType = "String")
     private String processMode;
 
-    @ApiModelProperty(value = "合格数量", dataType = "int")
-    private int qualifiedNumber;
+    @ApiModelProperty(value = "首检合格数量", dataType = "int")
+    private int firstQualifiedCount;
 
-    @ApiModelProperty(value = "不合格数量", dataType = "int")
-    private int disqualificationNumber;
+    @ApiModelProperty(value = "首检不合格数量", dataType = "int")
+    private int firstUnqualifiedCount;
 
     /**
      * 是否显示

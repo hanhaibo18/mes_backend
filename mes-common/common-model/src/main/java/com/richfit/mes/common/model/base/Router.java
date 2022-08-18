@@ -54,7 +54,7 @@ public class Router extends BaseEntity<Router> {
     private String status;
 
     /**
-     * 2==历史
+     * 是否是当前工艺
      */
     private String isActive;
 
