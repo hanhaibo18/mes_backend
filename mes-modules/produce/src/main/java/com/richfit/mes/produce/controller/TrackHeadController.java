@@ -84,11 +84,10 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "其他资料", notes = "通过跟单分流id、查看其他资料")
-    @GetMapping("/other_data/{id}")
+    @GetMapping("/other_data/{flowId}")
     public CommonResult<List<LineStore>> otherData(
-            @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
-        List<LineStore> l = trackHeadService.otherData(id);
-        return CommonResult.success(l);
+            @ApiParam(value = "分流id", required = true) @PathVariable String flowId) throws Exception {
+        return CommonResult.success(trackHeadService.otherData(flowId));
     }
 
     @ApiOperation(value = "下载完工资料", notes = "通过跟单id、下载完工资料")
