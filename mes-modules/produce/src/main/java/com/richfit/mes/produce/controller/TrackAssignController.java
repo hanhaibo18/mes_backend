@@ -170,15 +170,16 @@ public class TrackAssignController extends BaseController {
             if (null != assigns.getRecords()) {
                 for (Assign assign : assigns.getRecords()) {
                     TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                    TrackItem trackItem = trackItemService.getById(assign.getTiId());
                     assign.setWeight(trackHead.getWeight());
                     assign.setWorkNo(trackHead.getWorkNo());
                     assign.setProductName(trackHead.getProductName());
                     assign.setPartsName(trackHead.getMaterialName());
+                    assign.setTotalQuantity(trackItem.getNumber());
+                    assign.setDispatchingNumber(trackItem.getAssignableQty());
                     if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                        assign.setWorkPlanNo(trackHead.getWorkPlanId());
                         Plan plan = planService.getById(trackHead.getWorkPlanId());
-//                        assign.setTotalQuantity(plan.getProjNum());
-//                        assign.setDispatchingNumber(trackHead.getNumber());
+                        assign.setWorkPlanNo(plan.getProjCode());
                     }
                 }
             }
@@ -218,7 +219,6 @@ public class TrackAssignController extends BaseController {
                 }
 
                 if (null != SecurityUtils.getCurrentUser()) {
-
                     assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                     assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
                 }
@@ -306,7 +306,7 @@ public class TrackAssignController extends BaseController {
                             ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
                             //派工时间
                             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmSS");
-                            ingredient.setPgsj(format.format(assign.getAssignTime()));
+                            ingredient.setPgsj(format.format(new Date()));
                             //追加物料
                             List<LineList> lineLists = new ArrayList<LineList>();
                             for (KittingVo kitting : kittingExamine.getData()) {
@@ -329,7 +329,7 @@ public class TrackAssignController extends BaseController {
                             }
                             ingredient.setLineList(lineLists);
                             requestNoteService.saveRequestNote(ingredient, lineLists);
-                            wmsServiceClient.anApplicationForm(ingredient);
+//                            CommonResult<Boolean> booleanCommonResult = wmsServiceClient.anApplicationForm(ingredient);
                         }
                         if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
                             //下工序激活

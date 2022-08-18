@@ -100,5 +100,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return CommonResult.success(null);
     }
 
+    @Override
+    public String queryCraft(String id) {
+        return null;
+    }
+
 
 }

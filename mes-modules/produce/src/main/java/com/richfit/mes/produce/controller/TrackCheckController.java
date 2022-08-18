@@ -713,6 +713,10 @@ public class TrackCheckController extends BaseController {
                     trackCheck.setIsShow("0");
                     item.setIsRecheck("1");
                 }
+                if (1 == rules.getData().getIsCancellation()) {
+                    //调用报废流程
+                    trackHeadService.trackHeadUseless(item.getTrackHeadId());
+                }
                 trackItemService.updateById(item);
                 if (!StringUtils.isNullOrEmpty(trackCheck.getId())) {
                     trackCheck.setModifyTime(new Date());

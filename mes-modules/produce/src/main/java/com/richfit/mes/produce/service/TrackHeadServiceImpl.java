@@ -484,6 +484,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //可分配数量
                     item.setAssignableQty(number);
                     item.setNumber(number);
+                    item.setIsSchedule(0);
+                    item.setIsPrepare(0);
+                    item.setIsNotarize(0);
                     trackItemService.save(item);
                 }
             }

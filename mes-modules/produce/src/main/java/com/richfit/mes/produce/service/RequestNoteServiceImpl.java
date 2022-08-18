@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -24,8 +25,10 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveRequestNote(IngredientApplicationDto ingredient, List<LineList> lineLists) {
         RequestNote requestNote = new RequestNote();
+        requestNote.setId(UUID.randomUUID().toString().replace("-", ""));
         //跟单Id
         requestNote.setTrackHeadId(ingredient.getGd());
         //工序Id
@@ -37,16 +40,16 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
         //所属租户
         requestNote.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         boolean save = this.save(requestNote);
-        if (save){
+        if (save) {
             lineLists.forEach(i -> {
                 RequestNoteDetail requestNoteDetail = new RequestNoteDetail();
                 //申请单id
-                requestNoteDetail.setNoteId(requestNoteDetail.getId());
+                requestNoteDetail.setNoteId(requestNote.getId());
                 requestNoteDetail.setMaterialNo(i.getMaterialNum());
                 requestNoteDetail.setMaterialName(i.getMaterialDesc());
                 QueryWrapper<TrackAssembly> wrapper = new QueryWrapper<>();
-                wrapper.eq("material_no",requestNoteDetail.getMaterialNo());
-                wrapper.eq("track_head_id",requestNote.getTrackHeadId());
+                wrapper.eq("material_no", requestNoteDetail.getMaterialNo());
+                wrapper.eq("track_head_id", requestNote.getTrackHeadId());
                 TrackAssembly one = trackAssemblyService.getOne(wrapper);
                 requestNoteDetail.setDrawingNo(one.getDrawingNo());
                 requestNoteDetail.setUnit(one.getUnit());

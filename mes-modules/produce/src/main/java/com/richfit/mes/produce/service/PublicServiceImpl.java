@@ -68,6 +68,7 @@ public class PublicServiceImpl implements PublicService {
 
     //派工
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateDispatching(Map<String, String> map) {
         String tiId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(tiId);
