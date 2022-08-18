@@ -172,12 +172,12 @@ public class TrackItemController extends BaseController {
                 trackItemScheduleList.add(trackItem);
             }
         }
+        //找出派工工序进行状态修改
         for (TrackItem ti : trackItemList) {
+            ti.setIsSchedule(0);
             for (TrackItem tsi : trackItemScheduleList) {
                 if (ti.getOptSequence() == tsi.getOptSequence()) {
                     ti.setIsSchedule(1);
-                } else {
-                    ti.setIsSchedule(0);
                 }
             }
         }
