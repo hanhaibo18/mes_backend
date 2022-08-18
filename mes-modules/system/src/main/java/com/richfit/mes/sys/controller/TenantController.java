@@ -193,7 +193,7 @@ public class TenantController extends BaseController {
 
     protected void checkIsCurrentTenantId(String id) {
 
-        if (!SecurityUtils.getCurrentUser().getTenantId().equals(id)) {
+        if (!SecurityUtils.getCurrentUser().isSysAdmin() && !SecurityUtils.getCurrentUser().getTenantId().equals(id)) {
             throw new GlobalException("您无权查看其它租户信息", ResultCode.FORBIDDEN);
         }
 
