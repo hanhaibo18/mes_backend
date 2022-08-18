@@ -16,7 +16,9 @@ import java.util.List;
  */
 public interface TenantMenuService extends IService<TenantMenu> {
 
-    List<Menu> queryTenantMenuByPId(String tenantId,String pId);
+    List<Menu> queryTenantMenuByPId(String tenantId, String pId);
 
     Boolean saveTenantMenu(List<TenantMenu> menus, String tenantId);
+
+
 }

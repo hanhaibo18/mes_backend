@@ -18,12 +18,15 @@ import java.util.Set;
 public interface MenuService extends IService<Menu> {
     /**
      * 通过角色编号查询URL 权限
+     *
      * @param roleId 角色ID
      * @return 菜单列表
      */
-    List<Menu> findMenuByRoleId(String roleId);
+    List<Menu> findMenuByRoleId(String roleId, String tenantId);
+
     /**
      * 查询菜单
+     *
      * @param menuSet
      * @param parentId
      * @return

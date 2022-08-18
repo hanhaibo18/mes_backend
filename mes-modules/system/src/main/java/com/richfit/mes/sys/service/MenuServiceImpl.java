@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
     @Override
-    public List<Menu> findMenuByRoleId(String roleId) {
-        return baseMapper.listMenusByRoleId(roleId);
+    public List<Menu> findMenuByRoleId(String roleId, String tenantId) {
+        return baseMapper.listMenusByRoleId(roleId, tenantId);
     }
 
     @Override
