@@ -11,7 +11,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.core.api.IErrorCode;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
@@ -181,7 +180,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public String completionData(String flowId) throws Exception {
+    public String completionDataZip(String flowId) throws Exception {
         try {
             String path = FilesUtil.tempPath();
             path = path + "/" + SecurityUtils.getCurrentUser().getUsername();
@@ -208,6 +207,32 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             e.printStackTrace();
             throw new Exception("下载出现异常，请联系管理员");
         }
+    }
+
+    @Override
+    public void completionData(String flowId) throws Exception {
+        TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+        TrackHead trackHead = this.getById(trackFlow.getTrackHeadId());
+        if (StringUtils.isNullOrEmpty(trackHead.getCertificateNo())) {
+            throw new Exception("需要生成合格证后才能生成完工资料");
+        }
+        trackFlow.setStatus("8");
+        trackFlow.setIsCompletionData("Y");
+        trackHeadFlowService.updateById(trackFlow);
+        QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ge("track_head_id", trackHead.getId());
+        List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
+        boolean flag = true;
+        for (TrackFlow tf : trackFlowList) {
+            if (!"Y".equals(tf.getIsCompletionData())) {
+                flag = false;
+            }
+        }
+        if (flag) {
+            trackHead.setStatus("8");
+            trackHead.setIsCompletionData("Y");
+        }
+        this.updateById(trackHead);
     }
 
 
@@ -978,70 +1003,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public IPage<TrackHead> querySplitPage(QueryDto<QuerySplitDto> queryDto) {
-        QuerySplitDto querySplitDto = queryDto.getParam();
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-        if (null != querySplitDto.getEndTime() && null != querySplitDto.getStartTime()) {
-            queryWrapper.ge("create_time", querySplitDto.getStartTime());
-            //处理结束时间
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(querySplitDto.getEndTime());
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-            queryWrapper.le("create_time", calendar.getTime());
-        }
-        if (null != querySplitDto.getStatus()) {
-            queryWrapper.eq("status", querySplitDto.getStatus());
-        }
-        if (!StringUtils.isNullOrEmpty(querySplitDto.getTrackNo())) {
-            queryWrapper.like("track_no", querySplitDto.getTrackNo());
-        }
-        if (!StringUtils.isNullOrEmpty(querySplitDto.getDrawingNo())) {
-            queryWrapper.like("drawing_no", querySplitDto.getDrawingNo());
-        }
-        if (!StringUtils.isNullOrEmpty(querySplitDto.getProductNo())) {
-            queryWrapper.like("product_no", querySplitDto.getProductNo());
-        }
-        if (!StringUtils.isNullOrEmpty(querySplitDto.getTemplateCode())) {
-            queryWrapper.eq("template_code", querySplitDto.getTemplateCode());
-        }
-        if (!StringUtils.isNullOrEmpty(querySplitDto.getWorkPlanId())) {
-            queryWrapper.eq("work_plan_id", querySplitDto.getWorkPlanId());
-        }
-        if (!StringUtils.isNullOrEmpty(querySplitDto.getBatchNo())) {
-            queryWrapper.eq("batch_no", querySplitDto.getBatchNo());
-        }
-        if (!StringUtils.isNullOrEmpty(querySplitDto.getProductionOrder())) {
-            queryWrapper.eq("production_order", querySplitDto.getProductionOrder());
-        }
-        return this.page(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
-    }
-
-    @Override
-    public CommonResult<Boolean> saveTrackHeader(SaveTrackHeadDto saveTrackHeadDto) {
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_no", saveTrackHeadDto.getTrackHead());
-        TrackHead trackHead = this.getOne(queryWrapper);
-        if (trackHead.getNumber() < saveTrackHeadDto.getNumber()) {
-            return CommonResult.failed(new IErrorCode() {
-                @Override
-                public long getCode() {
-                    return 500;
-                }
-
-                @Override
-                public String getMessage() {
-                    return "请输入正确拆分数量";
-                }
-            });
-        }
-        trackHead.setNumber(trackHead.getNumber() - saveTrackHeadDto.getNumber());
-        this.updateById(trackHead);
-        trackHead.setTrackNo(saveTrackHeadDto.getNewTrackHead());
-        trackHead.setNumber(saveTrackHeadDto.getNumber());
-        return CommonResult.success(this.save(trackHead));
-    }
-
-    @Override
     public List<TrackHead> queryListByCertId(String certificateId) {
         return trackHeadMapper.queryListByCertId(certificateId);
     }
@@ -1078,21 +1039,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         });
         Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
         return new ArrayList<>(collect.values());
-    }
-
-    @Override
-    public IPage<TrackHead> queryBomList(QueryDto<TrackHead> trackHeads) {
-        TrackHead trackHead = trackHeads.getParam();
-        if (!StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
-            List<TrackHead> trackHeadList = queryTrackAssemblyByTrackNo(trackHead.getTrackNo());
-            trackHeadMapper.queryBomList(new Page<>(trackHeads.getPage(), trackHeads.getSize()), trackHeadList);
-        }
-        return null;
-    }
-
-    @Override
-    public IPage<TrackHead> selectTrackHeadAndFlow(Page<TrackHead> page, QueryWrapper<TrackHead> queryWrapper) {
-        return trackHeadMapper.selectTrackHeadAndFlow(page, queryWrapper);
     }
 
     @Override

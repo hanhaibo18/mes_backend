@@ -159,7 +159,11 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private String qualityResult;
 
-    @ApiModelProperty(value = "是否给予准结工时", dataType = "String")
+    @ApiModelProperty(value = "订单编号", dataType = "String")
     @TableField(exist = false)
     private String productionOrder;
+
+    @ApiModelProperty(value = "optId", dataType = "String")
+    @TableField(exist = false)
+    private String optId;
 }

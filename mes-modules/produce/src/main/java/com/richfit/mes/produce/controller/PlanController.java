@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,9 +15,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.PlanDto;
-import com.richfit.mes.produce.entity.PlanQueryDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
-import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
@@ -26,13 +23,11 @@ import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -50,7 +45,6 @@ public class PlanController extends BaseController {
     @Autowired
     private PlanOptWarningService planOptWarningService;
 
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -59,44 +53,6 @@ public class PlanController extends BaseController {
 
     @Autowired
     private TrackHeadService trackHeadService;
-
-    @Autowired
-    private BaseServiceClient baseServiceClient;
-
-
-    /**
-     * 分页查询plan
-     */
-    @ApiOperation(value = "查询计划信息", notes = "根据查询条件返回计划信息")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "queryDto", value = "计划属性", paramType = "BasePageDto")
-    })
-    @GetMapping("/query/page")
-    public CommonResult queryByCondition(BasePageDto<String> queryDto) throws GlobalException {
-
-        PlanDto planDto = null;
-        try {
-            planDto = objectMapper.readValue(queryDto.getParam(), PlanDto.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        if (null == planDto) {
-            planDto = new PlanDto();
-        }
-        if (StringUtils.hasText(planDto.getOrderCol())) {
-            planDto.setOrderCol(StrUtil.toUnderlineCase(planDto.getOrderCol()));
-        } else {
-            planDto.setOrderCol("status");
-            planDto.setOrder("desc");
-        }
-
-
-        IPage<Plan> planList = planService.queryPage(new Page<Plan>(queryDto.getPage(), queryDto.getLimit()), planDto);
-
-        return CommonResult.success(planList);
-    }
-
 
     /**
      * 分页查询plan
@@ -155,7 +111,7 @@ public class PlanController extends BaseController {
     @PostMapping("/warning")
     public CommonResult warning(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) throws Exception {
         for (Plan plan : planList) {
-            if (plan.getTrackHeadNumber() > 0) {
+            if (plan.getTrackHeadNumber() != null && plan.getTrackHeadNumber() > 0) {
                 planOptWarningService.warning(plan);
             }
         }
@@ -178,6 +134,14 @@ public class PlanController extends BaseController {
     public CommonResult<Object> savePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         plan.setTenantId(user.getTenantId());
+        plan.setStoreNumber(0);
+        plan.setProcessNum(0);
+        plan.setDeliveryNum(0);
+        plan.setMissingNum(plan.getProjNum());
+        plan.setTrackHeadNumber(0);
+        plan.setTrackHeadFinishNumber(0);
+        plan.setOptNumber(0);
+        plan.setOptFinishNumber(0);
         return planService.addPlan(plan);
     }
 
@@ -189,7 +153,6 @@ public class PlanController extends BaseController {
     @GetMapping("/{id}")
     public CommonResult<Plan> getPlan(@PathVariable String id) throws GlobalException {
         Plan plan = planService.getById(id);
-        planService.findBranchName(plan);
         return CommonResult.success(plan);
     }
 
@@ -225,42 +188,6 @@ public class PlanController extends BaseController {
         actionService.saveAction(action);
 
         return CommonResult.success(planService.delPlan(plan));
-    }
-
-
-    public CommonResult<Boolean> updatePlanStatus(@PathVariable String id) throws GlobalException {
-
-        boolean flag = planService.updatePlanStatus(id, "");
-
-        return CommonResult.success(flag);
-
-    }
-
-    /**
-     * 获取计划进展评估数据
-     */
-    @ApiOperation(value = "计划进展评估数据", notes = "计划进展评估数据")
-    @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
-    @GetMapping("/getPlanNeedHour/{id}")
-    public CommonResult<Map> getPlanNeedHour(@PathVariable String id) throws GlobalException {
-
-        Plan plan = planService.getById(id);
-
-        return CommonResult.success(planService.computePlanNeedHour(plan));
-
-    }
-
-    /**
-     * 功能描述: 根据时间区间 和 图号批量获取计划
-     *
-     * @param planQueryDto 查询对象
-     * @Author: xinYu.hou
-     * @Date: 2022/4/20 15:27
-     * @return: List<Map < String, String>>
-     **/
-    @PostMapping("/queryPlan")
-    public List<Map<String, String>> getPlanList(@RequestBody PlanQueryDto planQueryDto) {
-        return planService.getPlanList(planQueryDto.getStartTime(), planQueryDto.getEndTime(), planQueryDto.getDrawingNo(), planQueryDto.getTenantId(), planQueryDto.getBranchCode());
     }
 
     /**
@@ -320,5 +247,4 @@ public class PlanController extends BaseController {
         planService.exportPlan(file);
         return CommonResult.success(null);
     }
-
 }
