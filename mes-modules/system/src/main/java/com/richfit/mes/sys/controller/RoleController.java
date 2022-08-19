@@ -69,6 +69,12 @@ public class RoleController extends BaseController {
         if (SecurityUtils.getCurrentUser().isSysAdmin()) {
             return CommonResult.forbidden("超级管理员不能更新角色，请使用租户管理员操作");
         }
+
+        //非系统管理员 不能修改租户管理员角色
+        if (!SecurityUtils.getCurrentUser().isSysAdmin() && "role_tenant_admin".equals(role.getRoleCode())) {
+            return CommonResult.forbidden("租户管理员角色为系统默认,请勿修改");
+        }
+
         return CommonResult.success(roleService.update(role));
     }
 
@@ -81,6 +87,11 @@ public class RoleController extends BaseController {
         //如果是系统管理员，那其不能创建新角色
         if (SecurityUtils.getCurrentUser().isSysAdmin()) {
             return CommonResult.forbidden("超级管理员不能删除角色，请使用租户管理员登录");
+        }
+        //非系统管理员 不能修改租户管理员角色
+        Role role = roleService.get(id);
+        if (!SecurityUtils.getCurrentUser().isSysAdmin() && "role_tenant_admin".equals(role.getRoleCode())) {
+            return CommonResult.forbidden("租户管理员角色为系统默认,请勿删除");
         }
 
         return CommonResult.success(roleService.delete(id));

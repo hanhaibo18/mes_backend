@@ -647,4 +647,8 @@ public class SequenceController extends BaseController {
         return CommonResult.success(sequence);
     }
 
+    @GetMapping("/queryCraft")
+    public String queryCraft(String id) {
+        return sequenceService.queryCraft(id);
+    }
 }

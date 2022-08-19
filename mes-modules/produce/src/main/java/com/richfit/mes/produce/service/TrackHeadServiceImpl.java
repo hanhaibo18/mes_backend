@@ -11,6 +11,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
@@ -147,7 +149,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public List<LineStore> otherData(String flowId) throws Exception {
+    public List<LineStore> otherData(String flowId) {
         try {
             List<LineStore> lineStores = new ArrayList<>();
             QueryWrapper<TrackHeadRelation> queryWrapper = new QueryWrapper<>();
@@ -169,7 +171,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             return lineStores;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("下载出现异常，请联系管理员");
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
@@ -180,7 +182,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/22 10:25
      **/
     @Override
-    public String completionData(String flowId) throws Exception {
+    public String completionDataZip(String flowId) {
         try {
             String path = FilesUtil.tempPath();
             path = path + "/" + SecurityUtils.getCurrentUser().getUsername();
@@ -205,12 +207,58 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             return path + ".zip";
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("下载出现异常，请联系管理员");
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void completionData(String flowId) {
+        try {
+            //判断完工资料是否符合生产条件
+            TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+            if ("Y".equals(trackFlow.getIsCompletionData())) {
+                throw new Exception("已经生成过完工资料，不能重复生成");
+            }
+            TrackHead trackHead = this.getById(trackFlow.getTrackHeadId());
+            if (StringUtils.isNullOrEmpty(trackHead.getCertificateNo())) {
+                throw new Exception("需要生成合格证后才能生成完工资料");
+            }
+            //完工资料zip保存文件服务器
+            String filePath = completionDataZip(flowId);
+            CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(filePath);
+            if (commonResult.getStatus() != 200) {
+                throw new Exception("上传文件入库失败");
+            }
+            trackFlow.setStatus("8");
+            trackFlow.setIsCompletionData("Y");
+            trackFlow.setCompletionData(commonResult.getData().getId());
+            trackFlow.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            trackFlow.setModifyTime(new Date());
+            trackHeadFlowService.updateById(trackFlow);
+            QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+            queryWrapper.ge("track_head_id", trackHead.getId());
+            List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
+            //跟单多生产线判断，当全部生成后跟新跟单状态
+            boolean flag = true;
+            for (TrackFlow tf : trackFlowList) {
+                if (!"Y".equals(tf.getIsCompletionData())) {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                trackHead.setStatus("8");
+                trackHead.setIsCompletionData("Y");
+            }
+            this.updateById(trackHead);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
 
-    public void downloads(String id, String path) throws Exception {
+    public void downloads(String id, String path) {
         try {
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
@@ -225,7 +273,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("下载出现异常，请联系管理员");
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
@@ -253,8 +301,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
@@ -275,7 +323,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
         return true;
     }
@@ -361,7 +409,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
         return true;
     }
@@ -458,13 +506,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //可分配数量
                     item.setAssignableQty(number);
                     item.setNumber(number);
+                    item.setIsSchedule(0);
+                    item.setIsPrepare(0);
+                    item.setIsNotarize(0);
                     trackItemService.save(item);
                 }
             }
             return trackFlow;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
@@ -479,17 +530,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
-            //更新跟单时处理关联计划
-//            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo()) && !trackHead.getWorkPlanNo().equals(trackHeadOld.getWorkPlanNo())) {
-//                //原计划跟单还原
-//                if (!StringUtils.isNullOrEmpty(trackHeadOld.getWorkPlanNo())) {
-//                    planService.setPlanStatusNew(trackHeadOld.getWorkPlanNo(), trackHead.getTenantId());
-//                }
-//                //新计划跟单关联
-//                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanNo())) {
-//                    planService.setPlanStatusStart(trackHead.getWorkPlanNo(), trackHead.getTenantId());
-//                }
-//            }
 
             //当跟单中存在bom
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId()) && !trackHead.getProjectBomId().equals(trackHeadOld.getProjectBomId())) {
@@ -580,7 +620,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
@@ -681,7 +721,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             return false;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
@@ -721,7 +761,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
         return true;
     }
@@ -737,7 +777,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void trackHeadFinish(String flowId) throws Exception {
+    public void trackHeadFinish(String flowId) {
         try {
             //跟单完成更新分流数据
             TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
@@ -776,7 +816,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单完成操作失败");
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
@@ -790,7 +830,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void trackHeadUseless(String id) throws Exception {
+    public void trackHeadUseless(String id) {
         try {
             //跟单作废分流数据作废
             UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
@@ -827,7 +867,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单完成操作失败");
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 

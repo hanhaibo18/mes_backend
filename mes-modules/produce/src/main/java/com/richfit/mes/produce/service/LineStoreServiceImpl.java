@@ -481,6 +481,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         queryWrapper.eq("drawing_no", drawingNo);
         queryWrapper.eq("prod_no", prodNo);
         LineStore lineStore = this.getOne(queryWrapper);
+        if (lineStore == null) {
+            return false;
+        }
         if (1 == state) {
             if ("3".equals(lineStore.getStatus())) {
                 return false;

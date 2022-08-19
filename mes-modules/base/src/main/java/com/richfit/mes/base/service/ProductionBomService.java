@@ -106,4 +106,14 @@ public interface ProductionBomService extends IService<ProductionBom> {
     void exportExcel(List<String> idList, HttpServletResponse rsp);
 
     CommonResult newImportExcel(@RequestParam("file") MultipartFile file) throws IOException;
+
+    /**
+     * 功能描述: ERP导出BOM
+     * @param id
+     * @param rsp
+     * @Author: renzewen
+     * @Date: 2022/8/18 10:39
+     * @return: void
+     **/
+    void exportExcelERP(String id, HttpServletResponse rsp);
 }

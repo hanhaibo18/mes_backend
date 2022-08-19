@@ -74,4 +74,15 @@ public interface BaseServiceClient {
 
     @GetMapping("/api/base/sequence/querySequenceById")
     public CommonResult<Sequence> querySequenceById(@RequestParam("id") String id);
+
+    /**
+     * 功能描述:查询工艺版本
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/8/18 16:41
+     * @return: String
+     **/
+    @GetMapping("/api/base/sequence/queryCraft")
+    public String queryCraft(@RequestParam("id") String id);
 }

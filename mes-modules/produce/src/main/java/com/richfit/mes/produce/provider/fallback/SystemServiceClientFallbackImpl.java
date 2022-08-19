@@ -79,5 +79,10 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
         return CommonResult.success(null);
     }
 
+    @Override
+    public CommonResult<Attachment> uploadFile(String filePath) {
+        return null;
+    }
+
 
 }

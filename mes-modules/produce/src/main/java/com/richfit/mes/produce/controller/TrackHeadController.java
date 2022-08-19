@@ -3,7 +3,6 @@ package com.richfit.mes.produce.controller;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
@@ -84,18 +83,17 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "其他资料", notes = "通过跟单分流id、查看其他资料")
-    @GetMapping("/other_data/{id}")
+    @GetMapping("/other_data/{flowId}")
     public CommonResult<List<LineStore>> otherData(
-            @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
-        List<LineStore> l = trackHeadService.otherData(id);
-        return CommonResult.success(l);
+            @ApiParam(value = "分流id", required = true) @PathVariable String flowId) throws Exception {
+        return CommonResult.success(trackHeadService.otherData(flowId));
     }
 
     @ApiOperation(value = "下载完工资料", notes = "通过跟单id、下载完工资料")
     @GetMapping("/downloads_completion_data/{id}")
     public void downloadsCompletionData(@ApiIgnore HttpServletResponse response,
                                         @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
-        String path = trackHeadService.completionData(id);
+        String path = trackHeadService.completionDataZip(id);
         File file = new File(path);
         InputStream inputStream = new FileInputStream(file);
         response.reset();
@@ -112,23 +110,10 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "生成完工资料", notes = "通过跟单id、生成完工资料")
-    @GetMapping("/completion_data/{id}")
-    public void completionData(@ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
-        TrackHead trackHead = trackHeadService.getById(id);
-        if (StringUtils.isNullOrEmpty(trackHead.getCertificateNo())) {
-            throw new Exception("需要生成合格证后才能生成完工资料");
-        }
-        trackHead.setIsCompletionData("Y");
-        trackHead.setStatus("8");
-        trackHeadService.updateById(trackHead);
-
-        UpdateWrapper<TrackFlow> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.ge("track_head_id", id);
-        updateWrapper.set("is_completion_data", "Y");
-        updateWrapper.set("status", "8");
-        trackFlowService.update();
+    @GetMapping("/completion_data/{flowId}")
+    public void completionData(@ApiParam(value = "跟单号", required = true) @PathVariable String flowId) {
+        trackHeadService.completionData(flowId);
     }
-
 
     @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回对应跟单信息")
     @GetMapping("/select_by_track_no")

@@ -172,10 +172,10 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     @Override
     public List<TrackAssembly> planKittingExamine(String trackHeadId, String branchCode, Boolean isComplete) {
         QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         List<TrackAssembly> trackAssemblyList = this.list(queryWrapper);
-        QueryWrapper<TrackHead> queryWrapperHead = new QueryWrapper<>();
         for (TrackAssembly trackAssembly : trackAssemblyList) {
 
             Integer zpNumber = lineStoreMapper.selectTotalNum(trackAssembly.getMaterialNo(), branchCode, SecurityUtils.getCurrentUser().getTenantId());
@@ -193,16 +193,19 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             QueryWrapper<TrackAssemblyBinding> queryWrapperBinding = new QueryWrapper<>();
             queryWrapperBinding.eq("assembly_id", trackAssembly.getId());
             queryWrapperBinding.eq("is_binding", 1);
-            trackAssembly.setAssemblyBinding(assemblyBindingService.list(queryWrapperBinding));
+            List<TrackAssemblyBinding> assemblyBindingList = assemblyBindingService.list(queryWrapperBinding);
+            trackAssembly.setAssemblyBinding(assemblyBindingList);
 
-            queryWrapper.eq("material_no", trackAssembly.getMaterialNo())
-                    .or()
-                    .eq("drawing_no", trackAssembly.getDrawingNo());
-            List<TrackHead> list = trackHeadService.list(queryWrapperHead);
-            if (!list.isEmpty()) {
-                trackAssembly.setIsTrackHead("1");
-            } else {
-                trackAssembly.setIsTrackHead("0");
+            for (TrackAssemblyBinding assemblyBinding : assemblyBindingList) {
+                QueryWrapper<TrackHead> queryWrapperHead = new QueryWrapper<>();
+                queryWrapperHead.eq("product_no", assemblyBinding.getNumber());
+                List<TrackHead> list = trackHeadService.list(queryWrapperHead);
+                if (!list.isEmpty()) {
+                    trackAssembly.setIsTrackHead("1");
+                    break;
+                } else {
+                    trackAssembly.setIsTrackHead("0");
+                }
             }
         }
         //控制是否部件级跟单

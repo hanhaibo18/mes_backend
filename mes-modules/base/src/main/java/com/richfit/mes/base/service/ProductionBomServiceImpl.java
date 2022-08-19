@@ -296,6 +296,73 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         }
     }
 
+    /**
+     * 根据erp模板导出产品bom
+     * @param id
+     * @param rsp
+     */
+    @Override
+    public void exportExcelERP(String id, HttpServletResponse rsp) {
+        ClassPathResource classPathResource = new ClassPathResource("excel/" + "ProductErpBomExportTemp.xls");
+        int sheetNum = 0;
+        try {
+            ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
+            HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
+            if (sheetNum > 0) {
+                writer.setSheet(wk.cloneSheet(0));
+            }
+            //根节点
+            ProductionBom productionBom = this.getById(id);
+            //sheet名称
+            //writer.renameSheet(productionBom.getDrawingNo());
+            writer.resetRow();
+            //从第三行开始
+            writer.passRows(2);
+            QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("drawing_no", productionBom.getDrawingNo());
+            queryWrapper.or();
+            queryWrapper.eq("main_drawing_no", productionBom.getDrawingNo());
+            queryWrapper.eq("branch_code", productionBom.getBranchCode());
+            queryWrapper.orderByAsc("order_no");
+            //所以子节点
+            List<ProductionBom> productionBomList = this.list(queryWrapper);
+            //排除根节点
+            productionBomList = productionBomList.stream().filter(t->t.getOrderNo()!=0).collect(Collectors.toList());
+
+            int currentRow = writer.getCurrentRow();
+            for (ProductionBom bom : productionBomList) {
+                writer.writeCellValue(0, currentRow, productionBom.getMaterialNo());
+                writer.writeCellValue(1, currentRow, "");
+                writer.writeCellValue(2, currentRow, "");
+                //数量
+                writer.writeCellValue(3, currentRow, productionBom.getNumber());
+                //停用发布
+                writer.writeCellValue(4, currentRow, "");
+                writer.writeCellValue(5, currentRow, productionBom.getTexture());
+                writer.writeCellValue(6, currentRow, productionBom.getUnit());
+                writer.writeCellValue(7, currentRow, bom.getOrderNo());
+                writer.writeCellValue(8, currentRow, bom.getGrade());
+                writer.writeCellValue(9, currentRow, bom.getMaterialNo());
+                writer.writeCellValue(10, currentRow, bom.getNumber());
+                writer.writeCellValue(11, currentRow, bom.getUnit());
+                writer.writeCellValue(12, currentRow, "");
+                writer.writeCellValue(13, currentRow, "");
+                writer.writeCellValue(14, currentRow, "");
+                writer.writeCellValue(15, currentRow, "");
+                currentRow++;
+            }
+            rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
+            rsp.setHeader("Content-disposition", "attachment; filename=" + new String(productionBom.getDrawingNo().getBytes("utf-8"),
+                    "ISO-8859-1") + ".xls");
+            ServletOutputStream outputStream = rsp.getOutputStream();
+            writer.flush(outputStream, true);
+            IoUtil.close(outputStream);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private ProjectBom projectBomEntity(ProductionBom productionBom) {
         ProjectBom projectBom = new ProjectBom();
         projectBom.setDrawingNo(productionBom.getDrawingNo()).setMaterialNo(productionBom.getMaterialNo()).setTexture(productionBom.getTexture()).setWeight(productionBom.getWeight()).setUnit(productionBom.getUnit()).setIsNumFrom(productionBom.getIsNumFrom()).setIsKeyPart(productionBom.getIsKeyPart()).setIsNeedPicking(productionBom.getIsNeedPicking()).setIsEdgeStore(productionBom.getIsEdgeStore()).setIsCheck(productionBom.getIsCheck()).setOptName(productionBom.getOptName()).setGrade(productionBom.getGrade()).setTrackType(productionBom.getTrackType()).setNumber(productionBom.getNumber()).setBomKey(productionBom.getBomKey()).setSourceType(productionBom.getSourceType()).setOrderNo(productionBom.getOrderNo()).setProdDesc(productionBom.getProdDesc());

@@ -2,61 +2,48 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.Date;
 
 /**
- * @author 王瑞
- * @Description 跟单
+ * @author zhiqiang.lu
  */
 @Data
 @Accessors(chain = true)
 @TableName("produce_track_head_flow")
+@ApiModel(value = "跟单分流（生产线）")
 public class TrackFlow extends BaseEntity<TrackFlow> {
 
     private static final long serialVersionUID = -1044825101675722165L;
-    /**
-     * 租户ID
-     */
+
+    @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
-    /**
-     * 产品编号
-     */
+    @ApiModelProperty(value = "产品编号")
     private String productNo;
 
-    /**
-     * 数量
-     */
+    @ApiModelProperty(value = "数量")
     private Integer number;
 
-    /**
-     * 状态 0已生成待派工 1在制 2完工 3作废 4删除
-     */
+    @ApiModelProperty(value = "状态")
     private String status;
 
-    /**
-     * 跟单完工时间
-     */
+    @ApiModelProperty(value = "跟单完工时间")
     private Date completeTime;
 
-    /**
-     * 描述: 完工资料：Y是
-     *
-     * @Author: zhiqiang.lu
-     * @Date: 2022/7/21 10:25
-     **/
+    @ApiModelProperty(value = "完工资料：Y是")
     private String isCompletionData;
 
-    /**
-     * 组织机构编号
-     */
+    @ApiModelProperty(value = "完工资料附件")
+    private String completionData;
+
+    @ApiModelProperty(value = "组织机构编号")
     private String branchCode;
 
-    /**
-     * 跟单id
-     */
+    @ApiModelProperty(value = "跟单id")
     private String trackHeadId;
 }

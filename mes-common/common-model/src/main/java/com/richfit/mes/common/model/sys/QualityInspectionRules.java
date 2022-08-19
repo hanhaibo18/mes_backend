@@ -44,4 +44,6 @@ public class QualityInspectionRules extends BaseEntity<QualityInspectionRules> {
     @ApiModelProperty(value = "机构代码", dataType = "String")
     private String branchCode;
 
+    @ApiModelProperty(value = "是否作废")
+    private int isCancellation;
 }
