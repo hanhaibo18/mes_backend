@@ -311,13 +311,8 @@ public class PublicServiceImpl implements PublicService {
         assign.setState(0);
         assign.setAssignBy(assignGet.getData().getCreateBy());
         assign.setAssignTime(new Date());
-//        if (null != trackHead) {
         assign.setTrackNo(trackHead.getTrackNo());
         assign.setClasses(trackHead.getClasses());
-//        } else {
-//            assign.setTrackNo(map.get("trackNo"));
-//            assign.setClasses(map.get("classes"));
-//        }
         List<AssignPerson> list = new ArrayList<>();
         AssignPerson assignPerson = new AssignPerson();
         assignPerson.setUserId(assignGet.getData().getUserId());

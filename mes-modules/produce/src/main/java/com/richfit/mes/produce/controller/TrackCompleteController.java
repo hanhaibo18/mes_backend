@@ -220,6 +220,8 @@ public class TrackCompleteController extends BaseController {
                 try {
                     this.activeTrackItem(trackItem);
                 } catch (Exception e) {
+                    log.error(e.getMessage());
+                    e.printStackTrace();
                 }
 
             }

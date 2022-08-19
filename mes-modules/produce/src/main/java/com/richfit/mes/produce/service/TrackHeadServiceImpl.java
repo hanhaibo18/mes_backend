@@ -509,6 +509,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     item.setIsSchedule(0);
                     item.setIsPrepare(0);
                     item.setIsNotarize(0);
+                    //需要调度审核时展示
+                    if (1 == item.getIsExistScheduleCheck()) {
+                        item.setIsScheduleCompleteShow(1);
+                    } else {
+                        item.setIsScheduleCompleteShow(0);
+                    }
                     trackItemService.save(item);
                 }
             }
