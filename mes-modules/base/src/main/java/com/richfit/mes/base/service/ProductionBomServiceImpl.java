@@ -1,7 +1,6 @@
 package com.richfit.mes.base.service;
 
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -24,22 +23,18 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -298,6 +293,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
     /**
      * 根据erp模板导出产品bom
+     *
      * @param id
      * @param rsp
      */
@@ -327,7 +323,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             //所以子节点
             List<ProductionBom> productionBomList = this.list(queryWrapper);
             //排除根节点
-            productionBomList = productionBomList.stream().filter(t->t.getOrderNo()!=0).collect(Collectors.toList());
+            productionBomList = productionBomList.stream().filter(t -> t.getOrderNo() != 0).collect(Collectors.toList());
 
             int currentRow = writer.getCurrentRow();
             for (ProductionBom bom : productionBomList) {
@@ -365,7 +361,25 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
     private ProjectBom projectBomEntity(ProductionBom productionBom) {
         ProjectBom projectBom = new ProjectBom();
-        projectBom.setDrawingNo(productionBom.getDrawingNo()).setMaterialNo(productionBom.getMaterialNo()).setTexture(productionBom.getTexture()).setWeight(productionBom.getWeight()).setUnit(productionBom.getUnit()).setIsNumFrom(productionBom.getIsNumFrom()).setIsKeyPart(productionBom.getIsKeyPart()).setIsNeedPicking(productionBom.getIsNeedPicking()).setIsEdgeStore(productionBom.getIsEdgeStore()).setIsCheck(productionBom.getIsCheck()).setOptName(productionBom.getOptName()).setGrade(productionBom.getGrade()).setTrackType(productionBom.getTrackType()).setNumber(productionBom.getNumber()).setBomKey(productionBom.getBomKey()).setSourceType(productionBom.getSourceType()).setOrderNo(productionBom.getOrderNo()).setProdDesc(productionBom.getProdDesc());
+        projectBom.setDrawingNo(productionBom.getDrawingNo())
+                .setMaterialNo(productionBom.getMaterialNo())
+                .setTexture(productionBom.getTexture())
+                .setWeight(productionBom.getWeight())
+                .setMainDrawingNo(productionBom.getMainDrawingNo())
+                .setUnit(productionBom.getUnit())
+                .setIsNumFrom(productionBom.getIsNumFrom())
+                .setIsKeyPart(productionBom.getIsKeyPart())
+                .setIsNeedPicking(productionBom.getIsNeedPicking())
+                .setIsEdgeStore(productionBom.getIsEdgeStore())
+                .setIsCheck(productionBom.getIsCheck())
+                .setOptName(productionBom.getOptName())
+                .setGrade(productionBom.getGrade())
+                .setTrackType(productionBom.getTrackType())
+                .setNumber(productionBom.getNumber())
+                .setBomKey(productionBom.getBomKey())
+                .setSourceType(productionBom.getSourceType())
+                .setOrderNo(productionBom.getOrderNo())
+                .setProdDesc(productionBom.getProdDesc());
         return projectBom;
     }
 
