@@ -23,16 +23,7 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/item/param/find_by_code")
     public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code);
 
-    @GetMapping(value = "/api/sys/item/item/param/list")
-    public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name, @RequestHeader(value = SecurityConstants.FROM) String header);
-
-    @GetMapping(value = "/api/produce/material_receive/get_last_time")
-    public String getlastTime();
-
-    @GetMapping(value = "/api/produce/material_receive/material_receive/save_batch")
-    public Boolean materialReceiveSaveBatch(List<MaterialReceive> materialReceiveList);
-
-    @GetMapping(value = "/api/produce/material_receive/detail/save_batch")
-    public Boolean detailSaveBatch(List<MaterialReceiveDetail> detailList);
+    @GetMapping(value = "/api/sys/item/item/param/list/inner")
+    public CommonResult<List<ItemParam>> selectItemParamByCodeInner(@RequestParam("code") String code, @RequestParam("label") String label, @RequestParam("tenantId") String tenantId,  @RequestHeader(value = SecurityConstants.FROM) String header);
 
 }

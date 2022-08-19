@@ -74,3 +74,10 @@ feign.client.config:
   default:
     connect-timeout: 10000
     read-timeout: 30000
+
+secure:
+  ignore:
+    urls:
+      - /api/produce/material_receive/get_last_time
+      - /api/produce/material_receive/material_receive/save_batch
+      - /api/produce/material_receive/detail/save_batch

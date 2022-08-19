@@ -1,13 +1,16 @@
 package com.kld.mes.wms.utils;
 
+import com.kld.mes.wms.provider.ProduceServiceClient;
 import com.kld.mes.wms.provider.SystemServiceClient;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.sys.ItemParam;
-import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.constant.SecurityConstants;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -16,14 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Description TODO
+ * @Description TODOA
  * @Author ang
  * @Date 2022/8/2 10:51
  */
 @Component
+@Slf4j
 public class TaskUtils {
 
     private final String code = "MaterialOutView";
+
+    @Value("${tenant.tenantIds}")
+    private List<String> tenantIds;
 
 
     private String userName = "";
@@ -34,25 +41,27 @@ public class TaskUtils {
     @Resource
     SystemServiceClient systemServiceClient;
 
-
-    public void init(){
-        List<ItemParam> list = systemServiceClient.selectItemClass(code,"",SecurityConstants.FROM_INNER).getData();
-        url =  list.get(0).getLabel();
-        password = list.get(1).getLabel();
-        userName = list.get(2).getLabel();
-    }
+    @Resource
+    ProduceServiceClient produceServiceClient;
 
 
     // 添加定时任务
-    @Scheduled(cron = "0 0/10 * * * ?") // cron 表达式，每10分 执行
-    @Inner
+    @Scheduled(fixedDelay = 1000 * 10)//  执行完上次十秒后再次执行
     public void doTask() throws SQLException, ClassNotFoundException {
         if (StringUtils.isEmpty(userName)){
-            init();
+            for (String tenantId : tenantIds) {
+                List<ItemParam> list = systemServiceClient.selectItemParamByCodeInner(code,"",tenantId,SecurityConstants.FROM_INNER).getData();
+                url =  list.get(0).getLabel();
+                password = list.get(1).getLabel();
+                userName = list.get(2).getLabel();
+                String date = produceServiceClient.getlastTime(SecurityConstants.FROM_INNER);
+                jdbcMaterialOutView(userName, password, url , date);
+            }
         }
-        String date = systemServiceClient.getlastTime();
-        jdbcMaterialOutView(userName, password, url , date);
+        userName = "";
     }
+
+
 
 
     public void jdbcMaterialOutView(String userName, String password, String url, String time) throws ClassNotFoundException, SQLException {
@@ -85,8 +94,9 @@ public class TaskUtils {
             materialReceive.setState("0");
             materialReceiveList.add(materialReceive);
         }
-        systemServiceClient.materialReceiveSaveBatch(materialReceiveList);
-        rs.close();
+        if (!ObjectUtils.isEmpty(materialReceiveList)){
+            produceServiceClient.materialReceiveSaveBatch(materialReceiveList, SecurityConstants.FROM_INNER);
+        }
 
         // 3、定义sql2
         String sql2 = null;
@@ -120,9 +130,14 @@ public class TaskUtils {
             materialReceiveDetail.setOrderQuantity(orderQuantity);
             materialReceiveDetail.setQuantity(quantity);
             materialReceiveDetail.setUnit(unit);
+            materialReceiveDetail.setState("0");
             detailList.add(materialReceiveDetail);
         }
-        systemServiceClient.detailSaveBatch(detailList);
+        if (!ObjectUtils.isEmpty(detailList)){
+            produceServiceClient.detailSaveBatch(detailList, SecurityConstants.FROM_INNER);
+        }
+
+        rs.close();
         rs2.close();
 
         stmt.close();

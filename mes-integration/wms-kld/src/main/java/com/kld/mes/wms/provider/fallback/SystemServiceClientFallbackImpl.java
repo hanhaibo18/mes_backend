@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.sys.ItemParam;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -22,22 +23,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
-    public CommonResult<List<ItemParam>> selectItemClass(String name, String code, String header) {
-        return CommonResult.success(null);
-    }
-
-    @Override
-    public String getlastTime() {
-        return null;
-    }
-
-    @Override
-    public Boolean materialReceiveSaveBatch(List<MaterialReceive> materialReceiveList) {
-        return null;
-    }
-
-    @Override
-    public Boolean detailSaveBatch(List<MaterialReceiveDetail> detailList) {
+    public CommonResult<List<ItemParam>> selectItemParamByCodeInner(String code, String label, String tenantId, String header) {
         return null;
     }
 

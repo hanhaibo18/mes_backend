@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.ProduceTrackHeadTemplateService;
@@ -170,7 +171,7 @@ public class TemplatePrintController extends BaseController {
     @PostMapping("/batch")
     public void printBatch(@ApiParam(value = "flowIds", required = true) @RequestBody List<String> ids,
                           @ApiParam(value = "工厂代码") @RequestParam(required = true) String branchCode,
-                          @ApiIgnore HttpServletResponse rsp) throws IOException {
+                          @ApiIgnore HttpServletResponse rsp) throws Exception {
 
         QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
         queryWrapper.eq("type", "0");
@@ -188,16 +189,22 @@ public class TemplatePrintController extends BaseController {
 
         File file = FilesUtil.createRandomTempDirectory();
 
+        List<TrackHead> list = new ArrayList<>();
         for (String id : ids) {
-            TrackFlow byId = trackHeadFlowService.getById(id);
-            TrackHead trackHead = trackHeadService.getById(byId.getTrackHeadId());
-
+            Map<String, String> map = new HashMap<>();
+            map.put("id",id);
+            map.put("branchCode", branchCode);
+            map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
+            List<TrackHead> tractkHeads = trackHeadService.selectTrackFlowList(map);
+            list.addAll(tractkHeads);
+        }
+        for (TrackHead trackHead : list) {
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
             // 根据配置SQL，获取SHEET1、2、3表数据
             sheets.add(getList(trackHead.getId(), p.getSheet1()));
-            sheets.add(getList(id, p.getSheet2()));
-            sheets.add(getList(id, p.getSheet3()));
+            sheets.add(getList(trackHead.getFlowId(), p.getSheet2()));
+            sheets.add(getList(trackHead.getFlowId(), p.getSheet3()));
             // 生成EXCEL文件，并输出文件流
             try {
                 // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());

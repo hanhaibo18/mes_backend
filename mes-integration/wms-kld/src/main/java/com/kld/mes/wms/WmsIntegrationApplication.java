@@ -5,6 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @Author: GaoLiang
@@ -13,6 +15,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication(scanBasePackages = "com.kld.mes,com.richfit.mes", exclude = {DataSourceAutoConfiguration.class})
 @EnableDiscoveryClient
 @EnableFeignClients
+@EnableScheduling
 public class WmsIntegrationApplication {
 
     public static void main(String[] args) {

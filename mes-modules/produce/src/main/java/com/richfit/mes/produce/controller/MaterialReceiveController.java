@@ -9,18 +9,17 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -107,19 +106,24 @@ public class MaterialReceiveController extends BaseController {
 
     @ApiOperation(value = "查询定时任务上一次保存最后一条的时间", notes = "最后一条创建时间")
     @GetMapping(value = "/get_last_time")
+    @Inner
     public String getlastTime(){
         return materialReceiveService.getlastTime();
     };
 
     @ApiOperation(value = "批量接收wms视图物料物料接收", notes = "批量接收物料")
-    @GetMapping(value = "/material_receive/save_batch")
-    public Boolean materialReceiveSaveBatch(List<MaterialReceive> materialReceiveList){
+    @ApiImplicitParam(name = "materialReceiveList", value = "materialReceiveList", paramType = "query", allowMultiple = true, dataType = "List<MaterialReceive>")
+    @PostMapping(value = "/material_receive/save_batch")
+    @Inner
+    public Boolean materialReceiveSaveBatch(@RequestBody List<MaterialReceive> materialReceiveList){
         return materialReceiveService.saveMaterialReceiveList(materialReceiveList);
     };
 
     @ApiOperation(value = "批量接收wms视图配送明细", notes = "批量接收物料配送明细")
-    @GetMapping(value = "/detail/save_batch")
-    public Boolean detailSaveBatch(List<MaterialReceiveDetail> detailList){
+    @ApiImplicitParam(name = "detailList", value = "detailList", paramType = "query", allowMultiple = true, dataType = "List<MaterialReceiveDetail>")
+    @PostMapping(value = "/detail/save_batch")
+    @Inner
+    public Boolean detailSaveBatch(@RequestBody List<MaterialReceiveDetail> detailList){
         return materialReceiveDetailService.saveDetailList(detailList);
     };
 }
