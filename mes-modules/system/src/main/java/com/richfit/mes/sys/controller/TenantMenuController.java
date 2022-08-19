@@ -3,6 +3,7 @@ package com.richfit.mes.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.sys.Menu;
 import com.richfit.mes.common.model.sys.TenantMenu;
 import com.richfit.mes.sys.service.TenantMenuService;
@@ -11,8 +12,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import com.richfit.mes.common.core.base.BaseController;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,11 +49,11 @@ public class TenantMenuController extends BaseController {
      * 为某租户首次分配菜单
      */
     @ApiOperation(value = "批量保存租户菜单", notes = "批量保存租户菜单")
-    @ApiImplicitParam(name = "menus", value = "租户菜单JSON", required = true, dataType = "TenantMenu",allowMultiple = true, paramType = "body")
+    @ApiImplicitParam(name = "menus", value = "租户菜单JSON", required = true, dataType = "TenantMenu", allowMultiple = true, paramType = "body")
     @PostMapping("/batch/save")
     public CommonResult<Boolean> batchSaveTenantMenu(@RequestBody List<TenantMenu> menus) {
 
-        return CommonResult.success(tenantMenuService.saveBatch(menus));
+        return CommonResult.success(tenantMenuService.saveTenantMenu(menus, menus.get(0).getTenantId()));
 
     }
 
@@ -62,7 +61,7 @@ public class TenantMenuController extends BaseController {
      * 收回某租户的已分配菜单  租户下用户的该菜单也要收回
      */
     @ApiOperation(value = "批量删除租户菜单", notes = "批量删除租户菜单")
-    @ApiImplicitParam(name = "menus", value = "租户菜单JSON", required = true, dataType = "TenantMenu",allowMultiple = true, paramType = "body")
+    @ApiImplicitParam(name = "menus", value = "租户菜单JSON", required = true, dataType = "TenantMenu", allowMultiple = true, paramType = "body")
     @PostMapping("/batch/del")
     public CommonResult<Boolean> batchDelTenantMenu(@RequestBody List<TenantMenu> menus) {
 
