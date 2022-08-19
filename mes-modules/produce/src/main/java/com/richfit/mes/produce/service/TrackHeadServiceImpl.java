@@ -663,6 +663,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
+    @Transactional
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
             List<String> ids = trackHeads.stream().filter(trackHead -> {
@@ -1101,15 +1102,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/8/11 11:37
      **/
+    @Transactional
     public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
-        for (TrackFlow t : trackFlowList) {
-            t.setTrackHeadId(id);
-            trackHeadFlowService.updateById(t);
-            //工序迁移
-            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("flow_id", t.getId());
-            updateWrapper.set("track_head_id", id);
-            trackItemService.update(updateWrapper);
+        try {
+            for (TrackFlow t : trackFlowList) {
+                t.setTrackHeadId(id);
+                trackHeadFlowService.updateById(t);
+                //工序迁移
+                UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("flow_id", t.getId());
+                updateWrapper.set("track_head_id", id);
+                trackItemService.update(updateWrapper);
+            }
+        } catch (Exception e) {
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
