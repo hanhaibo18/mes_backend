@@ -364,7 +364,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
         Plan plan = planMapper.findPlan(projCode, tenantId);
 
-        if (plan.getProjNum() == plan.getStoreNumber() && plan.getStatus() != 2) {
+        if (plan.getProjNum().equals(plan.getStoreNumber()) && plan.getStatus() != 2) {
             //已完成
             plan.setStatus(3);
             this.updateById(plan);
@@ -395,7 +395,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             if (order != null) {
                 if (order.getProjNum() + plan.getProjNum() > order.getOrderNum()) {
                     return CommonResult.failed("计划数量超出订单未计划数量");
-                } else if (order.getProjNum() + plan.getProjNum() == order.getOrderNum()) {
+                } else if (order.getOrderNum().equals(order.getProjNum() + plan.getProjNum())) {
                     orderService.setOrderStatusClose(order.getId());   //订单全部安排计划
                 } else {
                     orderService.setOrderStatusStart(order.getId());   //订单部分安排计划

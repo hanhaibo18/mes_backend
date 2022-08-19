@@ -790,7 +790,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //跟单完成数量，状态更新
             TrackHead trackHead = trackHeadMapper.selectById(trackFlow.getTrackHeadId());
             trackHead.setNumberComplete(trackHead.getNumberComplete() + trackFlow.getNumber());
-            if (trackHead.getNumber() == trackHead.getNumberComplete()) {
+            if (trackHead.getNumber().equals(trackHead.getNumberComplete())) {
                 trackHead.setStatus("2");
             }
 
