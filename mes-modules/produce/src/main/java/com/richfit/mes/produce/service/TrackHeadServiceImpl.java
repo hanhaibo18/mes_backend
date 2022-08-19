@@ -390,7 +390,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.insert(trackHead);
             //跟单创建完成 在执行
             for (TrackItem trackItem : trackItems) {
-                if (1 == trackItem.getIsAutoSchedule()) {
+                if (1 == trackItem.getIsAutoSchedule().intValue()) {
                     Map<String, String> map = new HashMap<>(4);
                     map.put("trackItemId", trackItem.getId());
                     map.put("trackHeadId", trackHead.getId());
@@ -556,7 +556,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             int bool = trackHeadMapper.updateById(trackHead);
 
             //工序批量修改
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber() > 1) {
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().intValue() > 1) {
                 //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
@@ -567,7 +567,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (trackItems != null && trackItems.size() > 0) {
                     for (TrackItem item : trackItems) {
                         //批量添加未派工的工序
-                        if (item.getIsSchedule() == 0) {
+                        if (item.getIsSchedule().intValue() == 0) {
                             QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
                             queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
                             List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);

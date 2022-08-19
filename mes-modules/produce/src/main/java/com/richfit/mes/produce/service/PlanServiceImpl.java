@@ -289,7 +289,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     //未派工算在制
                     processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
-                        if (trackItem.getIsOperationComplete() == 0) {
+                        if (trackItem.getIsOperationComplete().intValue() == 0) {
                             optProcessNumber++;
                         }
                     }
@@ -297,7 +297,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     //在制
                     processNum += trackHead.getNumber();
                     for (TrackItem trackItem : trackItemList) {
-                        if (trackItem.getIsOperationComplete() == 0) {
+                        if (trackItem.getIsOperationComplete().intValue() == 0) {
                             optProcessNumber++;
                         }
                     }
@@ -327,7 +327,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             plan.setTrackHeadFinishNumber(trackHeadFinish);//跟单完成数量
             plan.setOptNumber(optNumber);//工序数量
             plan.setOptFinishNumber(optNumber - optProcessNumber);//工序完成数量
-            if (plan.getProjNum() <= plan.getDeliveryNum()) {
+            if (plan.getProjNum().intValue() <= plan.getDeliveryNum().intValue()) {
                 plan.setStatus(3);
             } else {
                 if (plan.getTrackHeadNumber() > 0) {
@@ -345,7 +345,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         for (Plan plan : planList) {
             Map<String, String> planMap = new HashMap<>();
             Integer integer = trackHeadService.queryTrackHeadList(plan.getId());
-            if (plan.getProjNum() <= integer) {
+            if (plan.getProjNum().intValue() <= integer.intValue()) {
                 continue;
             }
             planMap.put("id", plan.getId());
@@ -364,12 +364,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
         Plan plan = planMapper.findPlan(projCode, tenantId);
 
-        if (plan.getProjNum().equals(plan.getStoreNumber()) && plan.getStatus() != 2) {
+        if (plan.getProjNum().equals(plan.getStoreNumber()) && plan.getStatus().intValue() != 2) {
             //已完成
             plan.setStatus(3);
             this.updateById(plan);
         }
-        if (plan.getProjNum() > plan.getStoreNumber() && plan.getStatus() == 2) {
+        if (plan.getProjNum().intValue() > plan.getStoreNumber().intValue() && plan.getStatus().intValue() == 2) {
             plan.setStatus(1);
             this.updateById(plan);
         }
@@ -393,7 +393,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         if (StringUtils.hasText(plan.getOrderNo())) {
             Order order = orderService.findByOrderCode(plan.getOrderNo(), plan.getTenantId());
             if (order != null) {
-                if (order.getProjNum() + plan.getProjNum() > order.getOrderNum()) {
+                if (order.getProjNum().intValue() + plan.getProjNum().intValue() > order.getOrderNum().intValue()) {
                     return CommonResult.failed("计划数量超出订单未计划数量");
                 } else if (order.getOrderNum().equals(order.getProjNum() + plan.getProjNum())) {
                     orderService.setOrderStatusClose(order.getId());   //订单全部安排计划
@@ -428,7 +428,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         if (StringUtils.hasText(plan.getOrderNo())) {
             Order order = orderService.findByOrderCode(plan.getOrderNo(), plan.getTenantId());
             if (order != null) {
-                if (order.getProjNum() == 0) {
+                if (order.getProjNum().intValue() == 0) {
                     orderService.setOrderStatusNew(order.getId());   //订单全部未安排计划
                 } else {
                     orderService.setOrderStatusStart(order.getId());   //订单部分安排计划
@@ -470,7 +470,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     protected void checkPlan(Plan plan) {
-        if (plan.getProjNum() <= 0) {
+        if (plan.getProjNum().intValue() <= 0) {
             throw new GlobalException("计划数量须>0", ResultCode.INVALID_ARGUMENTS);
         }
     }
@@ -495,7 +495,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             Plan parentPlan = planMapper.selectById(oldPlan.getId());
 
             if (!ObjectUtil.isEmpty(parentPlan)) {
-                if (newPlan.getProjNum() > parentPlan.getProjNum()) {
+                if (newPlan.getProjNum().intValue() > parentPlan.getProjNum().intValue()) {
                     return CommonResult.failed("拆分计划数量超出原计划数量");
                 }
             }
