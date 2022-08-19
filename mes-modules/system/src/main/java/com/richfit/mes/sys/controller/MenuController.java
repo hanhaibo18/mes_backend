@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -203,7 +204,7 @@ public class MenuController extends BaseController {
         SecurityUtils.getRoles().forEach(roleId -> {
 
             //判断该角色是否是该组织机构的，如果是，才把相关菜单加入
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
+            if (!StringUtils.isNullOrEmpty(branchCode) && !isTenantAdmin()) {
                 Role role = roleService.get(roleId);
                 if (branchCode.equals(role.getOrgId())) {
                     all.addAll(menuService.findMenuByRoleId(roleId, SecurityUtils.getCurrentUser().getTenantId()));
@@ -213,6 +214,17 @@ public class MenuController extends BaseController {
             }
         });
         return CommonResult.success(menuService.filterMenu(all, parentId));
+    }
+
+
+    private boolean isTenantAdmin() {
+        AtomicBoolean isAdmin = new AtomicBoolean(false);
+        SecurityUtils.getRoles().forEach(roleId -> {
+            if (!isAdmin.get() && roleService.isTenantAdminRole(roleId)) {
+                isAdmin.set(true);
+            }
+        });
+        return isAdmin.get();
     }
 }
 

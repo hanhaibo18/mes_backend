@@ -76,6 +76,14 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
     @Override
+    public boolean isTenantAdminRole(String roleId) {
+        if (StringUtils.isBlank(roleId)) {
+            return false;
+        }
+        return this.get(roleId).getRoleCode().equals(ADMIN_ROLE_CODE);
+    }
+
+    @Override
     public boolean update(Role role) {
         boolean isSuccess = this.updateById(role);
         return isSuccess;

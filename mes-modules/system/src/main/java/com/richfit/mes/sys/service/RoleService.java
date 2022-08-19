@@ -82,4 +82,6 @@ public interface RoleService {
     void addTenantAdminRole(String tenantId);
 
     Role getAdminRole(String tenantId);
+
+    boolean isTenantAdminRole(String roleId);
 }
