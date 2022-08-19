@@ -49,6 +49,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         for (Order order : planList.getRecords()) {
             findBranchName(order, branchList);
+            if (order.getProjNum() == null) {
+                order.setProjNum(0);
+            }
+            if (order.getStoreNum() == null) {
+                order.setStoreNum(0);
+            }
         }
 
         return planList;
