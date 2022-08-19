@@ -198,6 +198,7 @@ public class TemplatePrintController extends BaseController {
             List<TrackHead> tractkHeads = trackHeadService.selectTrackFlowList(map);
             list.addAll(tractkHeads);
         }
+        int i=1;
         for (TrackHead trackHead : list) {
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
@@ -211,7 +212,8 @@ public class TemplatePrintController extends BaseController {
                 //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
 
                 InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
-                ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo() + "_跟单", inputStream, sheets);
+                ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo() + "_跟单("+i+")", inputStream, sheets);
+                i++;
             } catch (Exception e) {
                 log.error(e.getMessage());
             }

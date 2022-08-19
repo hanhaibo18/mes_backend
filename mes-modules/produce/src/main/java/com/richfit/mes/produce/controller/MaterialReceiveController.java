@@ -92,16 +92,10 @@ public class MaterialReceiveController extends BaseController {
     @ApiOperation(value = "物料接收", notes = "物料接收")
     @GetMapping("/material_receive")
     public CommonResult<Boolean> materialReceive(@ApiParam(value = "配送单号") @RequestParam(required = false) String deliveryNo, String branchCode ) {
-        QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
-        wrapper.eq("delivery_no",deliveryNo);
-        List<MaterialReceiveDetail> list = materialReceiveDetailService.list(wrapper);
-        boolean b = lineStoreService.addStoreByWmsSend(list, branchCode);
-        if (b){
-            boolean update = materialReceiveDetailService.updateState(list);
-            return CommonResult.success(update);
-        } else {
-            return CommonResult.success(false);
-        }
+
+        Boolean aBoolean = materialReceiveDetailService.updateState(deliveryNo, branchCode);
+
+        return CommonResult.success(aBoolean);
     }
 
     @ApiOperation(value = "查询定时任务上一次保存最后一条的时间", notes = "最后一条创建时间")
