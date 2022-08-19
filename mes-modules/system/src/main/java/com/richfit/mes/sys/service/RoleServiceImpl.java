@@ -63,7 +63,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     public Role getAdminRole(String tenantId) {
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("role_code", ADMIN_ROLE_CODE);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id", tenantId);
 
         List<Role> roleList = this.list(queryWrapper);
         //如果没有，则直接创建一个
