@@ -29,12 +29,15 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +55,31 @@ public class AttachmentController extends BaseController {
     private AttachmentService attachmentService;
     @Resource
     private ProduceServiceClient produceService;
+
+
+    @PostMapping("upload_file")
+    @ApiOperation(value = "通过文件路径上传文件", notes = "通过文件路径上传文件")
+    public CommonResult<Attachment> uploadFile(@ApiParam(value = "文件路径", required = true) @RequestParam String filePath) {
+        try {
+            Attachment attachment = new Attachment();
+            File file = new File(filePath);
+            FileInputStream fis = new FileInputStream(file);
+            byte[] fileBytes = new byte[(int) file.length()];
+            fis.read(fileBytes);
+            fis.close();
+            attachment.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            attachment.setAttachType(FileUtils.getFilenameExtension(file.getName()));
+            attachment.setAttachSize(String.valueOf(file.length()));
+            attachment.setAttachName(file.getName());
+            attachment = attachmentService.upload(attachment, fileBytes);
+            return CommonResult.success(attachment);
+        } catch (Exception e) {
+            log.error("upload attachment error: {}", e.getMessage(), e);
+            e.printStackTrace();
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 
     @PostMapping("upload")
     @ApiOperation(value = "上传文件", notes = "上传文件")

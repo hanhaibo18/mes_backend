@@ -111,10 +111,9 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "生成完工资料", notes = "通过跟单id、生成完工资料")
     @GetMapping("/completion_data/{flowId}")
-    public void completionData(@ApiParam(value = "跟单号", required = true) @PathVariable String flowId) throws Exception {
+    public void completionData(@ApiParam(value = "跟单号", required = true) @PathVariable String flowId) {
         trackHeadService.completionData(flowId);
     }
-
 
     @ApiOperation(value = "跟单号查询跟单", notes = "跟单号查询跟单、返回对应跟单信息")
     @GetMapping("/select_by_track_no")

@@ -62,7 +62,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25
      **/
-    String completionDataZip(String flowId) throws Exception;
+    String completionDataZip(String flowId);
 
     /**
      * 描述: 完工资料生成
@@ -70,7 +70,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/22 10:25
      **/
-    void completionData(String flowId) throws Exception;
+    void completionData(String flowId);
 
     /**
      * 描述: 根据跟单编码查询唯一跟单
@@ -104,7 +104,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Date: 2022/7/6 18:07
      * @return: void
      **/
-    void trackHeadFinish(String flowId) throws Exception;
+    void trackHeadFinish(String flowId);
 
     /**
      * 功能描述: 跟单报废
@@ -114,7 +114,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Date: 2022/8/17 18:07
      * @return: void
      **/
-    void trackHeadUseless(String id) throws Exception;
+    void trackHeadUseless(String id);
 
     boolean deleteTrackHead(List<TrackHead> trackHeads);
 

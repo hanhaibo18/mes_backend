@@ -58,4 +58,7 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesById")
     public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(@RequestParam("id") String id);
+
+    @PostMapping(value = "/api/sys/attachment/upload_file")
+    public CommonResult<Attachment> uploadFile(@RequestParam String filePath);
 }
