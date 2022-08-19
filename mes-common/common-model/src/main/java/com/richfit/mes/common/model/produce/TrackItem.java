@@ -368,4 +368,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "数量")
     private Integer number;
 
+    @ApiModelProperty(value = "调度是否显示")
+    private Integer isScheduleCompleteShow;
+
 }
