@@ -7,10 +7,12 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Menu;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.RoleMenu;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.MenuService;
 import com.richfit.mes.sys.service.RoleMenuService;
+import com.richfit.mes.sys.service.RoleService;
 import com.richfit.mes.sys.service.TenantMenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -44,6 +46,9 @@ public class MenuController extends BaseController {
 
     @Autowired
     private TenantMenuService tenantMenuService;
+
+    @Autowired
+    private RoleService roleService;
 
     //TODO 权限控制  条件约束验证   userToken补充
 
@@ -181,13 +186,32 @@ public class MenuController extends BaseController {
     @ApiOperation(value = "获取当前用户菜单", notes = "获取当前用户菜单")
     @ApiImplicitParam(name = "parentId", value = "父菜单id", dataType = "String", paramType = "query")
     @GetMapping
-    public CommonResult getUserMenu(String parentId) throws GlobalException {
+    public CommonResult getUserMenu(String parentId, String branchCode) throws GlobalException {
 
         Set<Menu> all = new HashSet<>();
 
+        //系统管理员 返回所有菜单
+        if (SecurityUtils.getCurrentUser().isSysAdmin()) {
+            List<Menu> menus = menuService.list(new QueryWrapper<Menu>()
+                    .orderByAsc("menu_order"));
+            all.addAll(menus);
+            return CommonResult.success(menuService.filterMenu(all, parentId));
+        }
+
         //TODO 租户管理员及以下需要增加分配给这个租户里面查询
 
-        SecurityUtils.getRoles().forEach(roleId -> all.addAll(menuService.findMenuByRoleId(roleId, SecurityUtils.getCurrentUser().getTenantId())));
+        SecurityUtils.getRoles().forEach(roleId -> {
+
+            //判断该角色是否是该组织机构的，如果是，才把相关菜单加入
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                Role role = roleService.get(roleId);
+                if (branchCode.equals(role.getOrgId())) {
+                    all.addAll(menuService.findMenuByRoleId(roleId, SecurityUtils.getCurrentUser().getTenantId()));
+                }
+            } else {
+                all.addAll(menuService.findMenuByRoleId(roleId, SecurityUtils.getCurrentUser().getTenantId()));
+            }
+        });
         return CommonResult.success(menuService.filterMenu(all, parentId));
     }
 }
