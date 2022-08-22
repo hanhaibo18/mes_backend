@@ -303,7 +303,7 @@ public class TrackHeadController extends BaseController {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("track_no", trackNo);
+            queryWrapper.like("track_no", trackNo).or().like("original_track_no", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("drawing_no", drawingNo);

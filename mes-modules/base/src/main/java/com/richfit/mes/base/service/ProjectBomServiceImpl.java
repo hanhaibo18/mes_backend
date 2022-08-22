@@ -1,7 +1,6 @@
 package com.richfit.mes.base.service;
 
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -17,13 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -78,7 +73,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
             }
         } else {
-            queryWrapper.orderByDesc("order_no");
+            queryWrapper.orderByDesc("modify_time");
         }
         return this.page(new Page<>(page, limit), queryWrapper);
     }

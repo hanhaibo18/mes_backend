@@ -97,6 +97,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         if (StringUtils.isNotBlank(tenantUser.getPasswd())) {
             tenantUser.setPasswd(passwordEncoder.encode(tenantUser.getPasswd()));
         }
+        //设备默认的belongOrgId为租户的tenantCode
+        tenantUser.setBelongOrgId(tenantService.getById(tenantUser.getTenantId()).getTenantCode());
+
         boolean inserts = this.save(tenantUser);
         userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds());
         return inserts;

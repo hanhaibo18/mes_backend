@@ -97,12 +97,8 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("tenant_id", tenantId);
             }
             if (Boolean.TRUE.equals(isRecheck)) {
-//                queryWrapper.isNotNull("rule_id");
-//                //已质检
-//                queryWrapper.eq("is_quality_complete", 1);
                 queryWrapper.eq("is_recheck", 1);
             } else if (Boolean.FALSE.equals(isRecheck)) {
-//                queryWrapper.isNull("rule_id");
                 //未质检
                 queryWrapper.eq("is_quality_complete", 0);
                 queryWrapper.and(wrapper -> wrapper.isNull("is_recheck").or().eq("is_recheck", 0));
@@ -111,12 +107,9 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
             if (!StringUtils.isNullOrEmpty(isExistScheduleCheck)) {
-                queryWrapper.eq("is_exist_schedule_check", Integer.parseInt(isExistScheduleCheck));
-
+                queryWrapper.eq("is_exist_schedule_check", Integer.parseInt(isExistScheduleCheck))
+                        .eq("is_schedule_complete_show", 1);
             }
-//            if (!StringUtils.isNullOrEmpty(isQualityComplete)) {
-//                queryWrapper.eq("is_quality_complete", Integer.parseInt(isQualityComplete));
-//            }
             if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
                 queryWrapper.eq("is_schedule_complete", Integer.parseInt(isScheduleComplete));
 
@@ -709,9 +702,11 @@ public class TrackCheckController extends BaseController {
                 if (1 == rules.getData().getIsNext()) {
                     trackCheck.setIsShow("1");
                     item.setIsRecheck("0");
+                    item.setIsScheduleCompleteShow(1);
                 } else {
                     trackCheck.setIsShow("0");
                     item.setIsRecheck("1");
+                    item.setIsScheduleCompleteShow(0);
                 }
                 if (1 == rules.getData().getIsCancellation()) {
                     //调用报废流程
@@ -725,19 +720,19 @@ public class TrackCheckController extends BaseController {
                     trackCheck.setCreateTime(new Date());
                     trackCheck.setModifyTime(new Date());
                     trackCheckService.save(trackCheck);
-                    //控制是否下一步
-                    if (1 == rules.getData().getIsNext() && 1 == item.getIsCurrent()) {
-                        Map<String, String> map = new HashMap<>(3);
-                        map.put(IdEnum.FLOW_ID.getMessage(), item.getFlowId());
-                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackCheck.getTiId());
-                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackCheck.getThId());
-                        publicService.publicUpdateState(map, PublicCodeEnum.QUALITY_TESTING.getCode());
-                    }
-                    item.setIsPrepare(rules.getData().getIsGiveTime());
-                    UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
-                    updateWrapper.eq("ti_id", item.getId()).set("is_prepare", rules.getData().getIsGiveTime());
-                    trackCompleteService.update(updateWrapper);
                 }
+                //控制是否下一步
+                if (1 == rules.getData().getIsNext() && 1 == item.getIsCurrent()) {
+                    Map<String, String> map = new HashMap<>(3);
+                    map.put(IdEnum.FLOW_ID.getMessage(), item.getFlowId());
+                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackCheck.getTiId());
+                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackCheck.getThId());
+                    publicService.publicUpdateState(map, PublicCodeEnum.QUALITY_TESTING.getCode());
+                }
+                item.setIsPrepare(rules.getData().getIsGiveTime());
+                UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("ti_id", item.getId()).set("is_prepare", rules.getData().getIsGiveTime());
+                trackCompleteService.update(updateWrapper);
                 //处理审核详情信息
                 if (null != trackCheck.getCheckDetailsList()) {
                     for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
@@ -778,6 +773,11 @@ public class TrackCheckController extends BaseController {
             queryWrapper.eq("original_opt_sequence", nextItem.getOriginalOptSequence());
             TrackItem nextTrackItem = trackItemService.getOne(queryWrapper);
 
+            //先删除
+            QueryWrapper<NextProcess> removeWrapper = new QueryWrapper<>();
+            removeWrapper.eq("current_process_id", tiId);
+            nextProcessService.remove(removeWrapper);
+            //在新增
             NextProcess nextProcess = new NextProcess();
             nextProcess.setCurrentProcessId(tiId);
             nextProcess.setProcessName(nextTrackItem.getOptName());

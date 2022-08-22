@@ -302,7 +302,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
@@ -390,7 +390,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.insert(trackHead);
             //跟单创建完成 在执行
             for (TrackItem trackItem : trackItems) {
-                if (1 == trackItem.getIsAutoSchedule()) {
+                if (1 == trackItem.getIsAutoSchedule().intValue()) {
                     Map<String, String> map = new HashMap<>(4);
                     map.put("trackItemId", trackItem.getId());
                     map.put("trackHeadId", trackHead.getId());
@@ -509,6 +509,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     item.setIsSchedule(0);
                     item.setIsPrepare(0);
                     item.setIsNotarize(0);
+                    //需要调度审核时展示
+                    if (1 == item.getIsExistScheduleCheck()) {
+                        item.setIsScheduleCompleteShow(1);
+                    } else {
+                        item.setIsScheduleCompleteShow(0);
+                    }
                     trackItemService.save(item);
                 }
             }
@@ -556,7 +562,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             int bool = trackHeadMapper.updateById(trackHead);
 
             //工序批量修改
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber() > 1) {
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().intValue() > 1) {
                 //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
@@ -567,7 +573,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (trackItems != null && trackItems.size() > 0) {
                     for (TrackItem item : trackItems) {
                         //批量添加未派工的工序
-                        if (item.getIsSchedule() == 0) {
+                        if (item.getIsSchedule().intValue() == 0) {
                             QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
                             queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
                             List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
@@ -663,6 +669,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
+    @Transactional
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
             List<String> ids = trackHeads.stream().filter(trackHead -> {
@@ -776,7 +783,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void trackHeadFinish(String flowId) {
         try {
             //跟单完成更新分流数据
@@ -790,7 +797,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //跟单完成数量，状态更新
             TrackHead trackHead = trackHeadMapper.selectById(trackFlow.getTrackHeadId());
             trackHead.setNumberComplete(trackHead.getNumberComplete() + trackFlow.getNumber());
-            if (trackHead.getNumber() == trackHead.getNumberComplete()) {
+            if (trackHead.getNumber().equals(trackHead.getNumberComplete())) {
                 trackHead.setStatus("2");
             }
 
@@ -829,7 +836,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void trackHeadUseless(String id) {
         try {
             //跟单作废分流数据作废
@@ -1056,6 +1063,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
+    @Transactional
     public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
@@ -1079,6 +1087,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
+    @Transactional
     public void trackHeadSplitBack(TrackHead trackHead) {
         TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
         List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
@@ -1101,15 +1110,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/8/11 11:37
      **/
+    @Transactional
     public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
-        for (TrackFlow t : trackFlowList) {
-            t.setTrackHeadId(id);
-            trackHeadFlowService.updateById(t);
-            //工序迁移
-            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("flow_id", t.getId());
-            updateWrapper.set("track_head_id", id);
-            trackItemService.update(updateWrapper);
+        try {
+            for (TrackFlow t : trackFlowList) {
+                t.setTrackHeadId(id);
+                trackHeadFlowService.updateById(t);
+                //工序迁移
+                UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("flow_id", t.getId());
+                updateWrapper.set("track_head_id", id);
+                trackItemService.update(updateWrapper);
+            }
+        } catch (Exception e) {
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
