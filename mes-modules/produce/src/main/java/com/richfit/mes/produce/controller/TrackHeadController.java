@@ -682,17 +682,18 @@ public class TrackHeadController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "跟单回收", notes = "跟单回收")
-    @PostMapping("/split_back")
-    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHead> trackHeadList) throws
-            Exception {
-        try {
-            for (TrackHead trackHead : trackHeadList) {
-                trackHeadService.trackHeadSplitBack(trackHead);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception("跟单回收出现异常");
+    @ApiOperation(value = "跟单拆分跟单号", notes = "跟单拆分跟单号")
+    @GetMapping("/split_track_no")
+    public CommonResult<String> splitTrackNo(@ApiParam(value = "跟单编号") @RequestParam(required = false) String trackNo,
+                                             @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.eq("original_track_no", trackNo);
         }
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
+        int index = trackHeadList.size() + 1;
+        return CommonResult.success(trackNo + "-" + index);
     }
 }
