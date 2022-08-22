@@ -219,6 +219,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         projectBomComplete.setDrawingNo(trackAssembly.getDrawingNo());
                         projectBomComplete.setSourceType(trackAssembly.getSourceType());
                         projectBomComplete.setUnit(trackAssembly.getUnit());
+                        projectBomComplete.setIsKeyPart(trackAssembly.getIsKeyPart());
                         projectBomCompleteList.add(projectBomComplete);
                     }
                 }
