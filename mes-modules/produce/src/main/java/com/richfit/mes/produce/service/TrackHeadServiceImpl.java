@@ -302,7 +302,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
@@ -783,7 +783,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void trackHeadFinish(String flowId) {
         try {
             //跟单完成更新分流数据
@@ -836,7 +836,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void trackHeadUseless(String id) {
         try {
             //跟单作废分流数据作废
@@ -1063,6 +1063,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
+    @Transactional
     public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
@@ -1086,6 +1087,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
+    @Transactional
     public void trackHeadSplitBack(TrackHead trackHead) {
         TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
         List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
