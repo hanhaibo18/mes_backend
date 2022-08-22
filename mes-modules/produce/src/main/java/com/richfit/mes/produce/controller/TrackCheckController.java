@@ -769,7 +769,7 @@ public class TrackCheckController extends BaseController {
             //用传入下工序获取 下工序位置
             TrackItem nextItem = trackItemService.getById(nextProcessNumber);
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
+            queryWrapper.eq("flow_id", trackItem.getFlowId());
             queryWrapper.eq("original_opt_sequence", nextItem.getOriginalOptSequence());
             TrackItem nextTrackItem = trackItemService.getOne(queryWrapper);
 

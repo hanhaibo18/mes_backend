@@ -5,7 +5,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.KittingVo;
@@ -57,11 +60,8 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 //工艺版本
                 trackItem.setRouterVer(trackHead.getRouterVer());
                 trackItem.setTotalQuantity(trackItem.getNumber());
+                trackItem.setWorkPlanNo(trackHead.getWorkPlanNo());
                 trackItem.setDispatchingNumber(trackItem.getAssignableQty());
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                    Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    trackItem.setWorkPlanNo(plan.getProjCode());
-                }
                 String version = baseServiceClient.queryCraft(trackItem.getOptId());
                 if (!StringUtils.isNullOrEmpty(version)) {
                     trackItem.setVersions(version);
@@ -89,10 +89,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setRouterVer(trackHead.getRouterVer());
                 trackItem.setTotalQuantity(trackItem.getNumber());
                 trackItem.setDispatchingNumber(trackItem.getAssignableQty());
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                    Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    trackItem.setWorkPlanNo(plan.getProjCode());
-                }
+                trackItem.setWorkPlanNo(trackHead.getWorkPlanNo());
                 String version = baseServiceClient.queryCraft(trackItem.getOptId());
                 if (!StringUtils.isNullOrEmpty(version)) {
                     trackItem.setVersions(version);
@@ -117,10 +114,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 trackItem.setPartsName(trackHead.getMaterialName());
                 trackItem.setTotalQuantity(trackItem.getNumber());
                 trackItem.setDispatchingNumber(trackItem.getAssignableQty());
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                    Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    trackItem.setWorkPlanNo(plan.getProjCode());
-                }
+                trackItem.setWorkPlanNo(trackHead.getWorkPlanNo());
                 String version = baseServiceClient.queryCraft(trackItem.getOptId());
                 if (!StringUtils.isNullOrEmpty(version)) {
                     trackItem.setVersions(version);
@@ -227,10 +221,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                 assign.setProductName(trackHead.getProductName());
                 assign.setTotalQuantity(trackItem.getNumber());
                 assign.setDispatchingNumber(trackItem.getAssignableQty());
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                    Plan plan = planService.getById(trackHead.getWorkPlanId());
-                    assign.setWorkPlanNo(plan.getProjCode());
-                }
+                assign.setWorkPlanNo(trackHead.getWorkPlanNo());
             }
         }
         return queryPage;

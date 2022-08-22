@@ -177,10 +177,7 @@ public class TrackAssignController extends BaseController {
                     assign.setPartsName(trackHead.getMaterialName());
                     assign.setTotalQuantity(trackItem.getNumber());
                     assign.setDispatchingNumber(trackItem.getAssignableQty());
-                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                        Plan plan = planService.getById(trackHead.getWorkPlanId());
-                        assign.setWorkPlanNo(plan.getProjCode());
-                    }
+                    assign.setWorkPlanNo(trackHead.getWorkPlanNo());
                 }
             }
             return CommonResult.success(assigns);
@@ -329,7 +326,7 @@ public class TrackAssignController extends BaseController {
                             }
                             ingredient.setLineList(lineLists);
                             requestNoteService.saveRequestNote(ingredient, lineLists);
-                            CommonResult<Boolean> booleanCommonResult = wmsServiceClient.anApplicationForm(ingredient);
+//                            CommonResult<Boolean> booleanCommonResult = wmsServiceClient.anApplicationForm(ingredient);
                         }
                         if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
                             //下工序激活

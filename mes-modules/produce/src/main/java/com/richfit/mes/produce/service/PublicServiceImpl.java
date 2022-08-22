@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.OperationAssign;
 import com.richfit.mes.common.model.base.Sequence;
@@ -45,6 +46,7 @@ public class PublicServiceImpl implements PublicService {
     private TrackAssignController trackAssignController;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean publicUpdateState(Map<String, String> map, int code) {
         //派工
         if (PublicCodeEnum.DISPATCHING.getCode() == code) {
@@ -80,6 +82,10 @@ public class PublicServiceImpl implements PublicService {
             if (0 == trackItem.getAssignableQty()) {
                 if (trackItem.getIsCurrent() == 1 && trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsExistQualityCheck() == 0) {
                     //激活下工序
+                    TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        planService.planData(trackHead.getWorkPlanId());
+                    }
                     activation = activation(trackItem);
                 }
             }
@@ -135,12 +141,12 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setIsOperationComplete(isComplete);
             trackItem.setOperationCompleteTime(new Date());
             trackItemService.updateById(trackItem);
+        }
+        if (isNext) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (null != trackHead.getWorkPlanId()) {
                 planService.planData(trackHead.getWorkPlanId());
             }
-        }
-        if (isNext) {
             activationProcess = this.activationProcess(map);
         }
         return activationProcess;
@@ -163,6 +169,10 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setIsFinalComplete("1");
             trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
             trackItemService.updateById(trackItem);
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                planService.planData(trackHead.getWorkPlanId());
+            }
             return activationProcess(map);
         }
         trackItemService.updateById(trackItem);
@@ -174,11 +184,11 @@ public class PublicServiceImpl implements PublicService {
     public Boolean updateDispatch(Map<String, String> map) {
         String tiId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(tiId);
+        TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
 
         try {
             if (0 == trackItem.getNextOptSequence()) {
                 trackHeadService.trackHeadFinish(trackItem.getFlowId());
-                TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
                 trackHead.setStatus("2");
                 trackHead.setCompleteTime(new Date());
                 trackHeadService.updateById(trackHead);
@@ -197,6 +207,9 @@ public class PublicServiceImpl implements PublicService {
                 trackItem.setOperationCompleteTime(new Date());
                 trackItem.setIsFinalComplete("1");
                 trackItemService.updateById(trackItem);
+            }
+            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                planService.planData(trackHead.getWorkPlanId());
             }
             this.activationProcess(map);
         } catch (Exception e) {
