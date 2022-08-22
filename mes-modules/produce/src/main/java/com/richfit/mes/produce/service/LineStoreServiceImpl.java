@@ -476,10 +476,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
+    @Transactional
     public Boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         queryWrapper.eq("drawing_no", drawingNo);
-        queryWrapper.eq("prod_no", prodNo);
+        queryWrapper.eq("workblank_no", prodNo);
         LineStore lineStore = this.getOne(queryWrapper);
         if (lineStore == null) {
             return false;

@@ -38,7 +38,7 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
     public List<TrackItem> getItemList(String tiId) {
         TrackItem trackItem = trackItemService.getById(tiId);
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
+        queryWrapper.eq("flow_id", trackItem.getFlowId());
         queryWrapper.gt("opt_sequence", trackItem.getOptSequence());
         queryWrapper.orderByAsc("opt_sequence");
         return trackItemService.list(queryWrapper);
