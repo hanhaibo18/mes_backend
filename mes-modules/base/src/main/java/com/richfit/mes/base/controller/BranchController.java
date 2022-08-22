@@ -11,6 +11,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -241,5 +242,17 @@ public class BranchController extends BaseController {
     @GetMapping("/queryAllCode")
     public CommonResult<List<Branch>> queryAllCode() {
         return CommonResult.success(branchService.queryAllCode());
+    }
+
+    @ApiOperation(value = "查询组织机构列表", notes = "通过条件查询组织机构列表")
+    @GetMapping("/list")
+    public CommonResult<List<Branch>> list(@ApiParam(value = "机构类型") @RequestParam String branchType) {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(branchType)) {
+            queryWrapper.eq("branch_type", branchType);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<Branch> result = branchService.list(queryWrapper);
+        return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
     }
 }
