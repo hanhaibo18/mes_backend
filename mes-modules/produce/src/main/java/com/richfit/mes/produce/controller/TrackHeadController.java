@@ -141,55 +141,6 @@ public class TrackHeadController extends BaseController {
                 trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 trackHead.setCreateTime(new Date());
 
-                /*if(trackHead.getTrackType().equals("0")){ //单件
-                    QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
-                    queryWrapper.eq("workblank_no", trackHead.getProductNo());
-                    queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                    List<LineStore> lineStores = lineStoreService.list(queryWrapper);
-
-                    if(lineStores != null && lineStores.size() > 0){
-                        return CommonResult.failed("产品编号已存在！");
-                    } else {
-                        LineStore lineStore = new LineStore();
-                        lineStore.setTenantId(trackHead.getTenantId());
-                        lineStore.setDrawingNo(trackHead.getDrawingNo());
-                        lineStore.setMaterialNo(trackHead.getMaterialNo());
-                        lineStore.setWorkblankNo(trackHead.getProductNo());
-                        lineStore.setNumber(trackHead.getNumber());
-                        lineStore.setUserNum(0);
-                        lineStore.setStatus("0");
-                        lineStore.setTrackNo(trackHead.getTrackNo());
-                        lineStore.setMaterialType("1");
-                        lineStore.setTrackType(trackHead.getTrackType());
-                        lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                        lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                        lineStore.setCreateTime(new Date());
-                        list.add(lineStore);
-                    }
-                } else if (trackHead.getTrackType().equals("1")){ //批次
-                    for(int i = trackHead.getStartNo(); i <= trackHead.getEndNo(); i++){
-                        LineStore lineStore = new LineStore();
-                        lineStore.setTenantId(trackHead.getTenantId());
-                        lineStore.setDrawingNo(trackHead.getDrawingNo());
-                        lineStore.setMaterialNo(trackHead.getMaterialNo());
-
-                        String productNo = trackHead.getProductNo() + " " + i;
-                        if(!StringUtils.isNullOrEmpty(trackHead.getSuffixNo())){
-                            productNo += " " + trackHead.getSuffixNo();
-                        }
-                        lineStore.setWorkblankNo(productNo);
-                        lineStore.setNumber(1);
-                        lineStore.setUserNum(0);
-                        lineStore.setStatus("0");
-                        lineStore.setTrackNo(trackHead.getTrackNo());
-                        lineStore.setMaterialType("1");
-                        lineStore.setTrackType("0");
-                        lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                        lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                        lineStore.setCreateTime(new Date());
-                        list.add(lineStore);
-                    }
-                }*/
                 bool = trackHeadService.saveTrackHead(trackHead);
                 if (bool) {
 
@@ -232,7 +183,7 @@ public class TrackHeadController extends BaseController {
     public CommonResult changeTrackHeadStatus(@ApiParam(value = "0修改审批状态  1修改跟单状态", required = true) @RequestParam String type,
                                               @ApiParam(value = "状态代码", required = true) @RequestParam String status,
                                               @ApiParam(value = "跟新信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
-        if (type.equals("0")) { //修改审批状态
+        if ("0".equals(type)) { //修改审批状态
             trackHeads.stream().forEach(trackHead -> {
                 trackHead.setApprovalStatus(status);
                 trackHead.setApprovalTime(new Date());
@@ -679,6 +630,20 @@ public class TrackHeadController extends BaseController {
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("跟单拆分出现异常");
+        }
+    }
+
+    @ApiOperation(value = "跟单回收", notes = "跟单回收")
+    @PostMapping("/split_back")
+    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHead> trackHeadList) throws
+            Exception {
+        try {
+            for (TrackHead trackHead : trackHeadList) {
+                trackHeadService.trackHeadSplitBack(trackHead);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("跟单回收出现异常");
         }
     }
 
