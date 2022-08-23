@@ -7,6 +7,7 @@ import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -38,15 +39,15 @@ public class TaskUtils {
     private String url = "";
 
 
-    @Resource
+    @Autowired
     SystemServiceClient systemServiceClient;
 
-    @Resource
+    @Autowired
     ProduceServiceClient produceServiceClient;
 
 
     // 添加定时任务
-    @Scheduled(fixedDelay = 1000 * 10)//  执行完上次十秒后再次执行
+    @Scheduled(fixedDelayString ="${timer.time-interval}")//  执行完上次十秒后再次执行
     public void doTask() throws SQLException, ClassNotFoundException {
         if (StringUtils.isEmpty(userName)){
             for (String tenantId : tenantIds) {
@@ -54,7 +55,7 @@ public class TaskUtils {
                 url =  list.get(0).getLabel();
                 password = list.get(1).getLabel();
                 userName = list.get(2).getLabel();
-                String date = produceServiceClient.getlastTime(SecurityConstants.FROM_INNER);
+                String date = produceServiceClient.getlastTime(tenantId ,SecurityConstants.FROM_INNER);
                 jdbcMaterialOutView(userName, password, url , date);
             }
         }
@@ -65,25 +66,26 @@ public class TaskUtils {
 
 
     public void jdbcMaterialOutView(String userName, String password, String url, String time) throws ClassNotFoundException, SQLException {
-        List<MaterialReceive> materialReceiveList = new ArrayList<>();
-        // 1、注册驱动
         Class.forName("com.mysql.cj.jdbc.Driver");
-        // 2、获取数据库连接对象
         Connection conn = DriverManager.getConnection("jdbc:mysql://"+url+"/bsj?serverTimezone=UTC&&user="+userName+"&&password="+password);
-        // 3、定义sql
+        saveMaterialReceive(time,conn);
+        saveMaterialReceiveDetail(time,conn);
+        conn.close();
+    }
+
+    public void saveMaterialReceive(String time, Connection conn) throws SQLException {
+        List<MaterialReceive> materialReceiveList = new ArrayList<>();
         String sql = null;
         if (StringUtils.isEmpty(time)){
+            //查所有
             sql = "select * from v_mes_out_headers";
         } else {
+            //查上次最后一条时间之后所有
             sql = "select * from v_mes_out_headers where CREATE_TIME >" +  "' "+ time + "'";
         }
-        // 4、获取执行sql的对象
         Statement stmt = conn.createStatement();
-        // 5、执行sql
         ResultSet rs = stmt.executeQuery(sql);
-        // 6、处理结果
         while (rs.next()){
-            // 获取数据 两种方式 根据列的索引获取 根据列名获取
             String outNum = rs.getString("OUT_NUM");
             String aplyNum = rs.getString("APLY_NUM");
             String createTime = rs.getString("CREATE_TIME");
@@ -95,23 +97,27 @@ public class TaskUtils {
             materialReceiveList.add(materialReceive);
         }
         if (!ObjectUtils.isEmpty(materialReceiveList)){
+            //保存物料接收
             produceServiceClient.materialReceiveSaveBatch(materialReceiveList, SecurityConstants.FROM_INNER);
         }
+        rs.close();
+        stmt.close();
+    }
 
-        // 3、定义sql2
+    public void saveMaterialReceiveDetail(String time, Connection conn) throws SQLException {
         String sql2 = null;
         if (StringUtils.isEmpty(time)) {
+            //查所有
             sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM";
         } else {
+            //查上次最后一条时间之后所有
             sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" +  "' "+ time + "'";
         }
-        // 4、获取执行sql的对象
         Statement stmt2 = conn.createStatement();
         ResultSet rs2;
-        rs2 = stmt.executeQuery(sql);
+        rs2 = stmt2.executeQuery(sql2);
         List<MaterialReceiveDetail> detailList = new ArrayList<>();
         while (rs2.next()) {
-            // 获取数据 两种方式 根据列的索引获取 根据列名获取
             String outNum = rs2.getString("OUT_NUM");
             String aplyNum = rs2.getString("APLY_NUM");
             String materialNum = rs2.getString("MATERIAL_NUM");
@@ -134,14 +140,11 @@ public class TaskUtils {
             detailList.add(materialReceiveDetail);
         }
         if (!ObjectUtils.isEmpty(detailList)){
+            //保存物料接收详情
             produceServiceClient.detailSaveBatch(detailList, SecurityConstants.FROM_INNER);
         }
-
-        rs.close();
         rs2.close();
-
-        stmt.close();
-        conn.close();
+        stmt2.close();
     }
 
 }

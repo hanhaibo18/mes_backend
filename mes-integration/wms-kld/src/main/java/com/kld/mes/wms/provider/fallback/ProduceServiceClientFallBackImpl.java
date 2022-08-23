@@ -16,7 +16,7 @@ public class ProduceServiceClientFallBackImpl implements ProduceServiceClient {
 
     @GetMapping("/api/produce/material_receive/get_last_time")
     @Override
-    public String getlastTime(String header) {
+    public String getlastTime(String tenantId, String header) {
         return null;
     }
 

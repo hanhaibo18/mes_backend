@@ -20,7 +20,7 @@ import java.util.List;
 public interface ProduceServiceClient {
 
     @GetMapping(value = "/api/produce/material_receive/get_last_time")
-    public String getlastTime( @RequestHeader(value = SecurityConstants.FROM) String header);
+    public String getlastTime(@RequestParam("tenantId") String tenantId, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @PostMapping(value = "/api/produce/material_receive/material_receive/save_batch")
     public Boolean materialReceiveSaveBatch(@RequestBody List<MaterialReceive> materialReceiveList, @RequestHeader(value = SecurityConstants.FROM) String header);

@@ -23,8 +23,8 @@ import java.util.List;
 @Mapper
 public interface MaterialReceiveMapper extends BaseMapper<MaterialReceive> {
 
-    @Select("SELECT CREATE_TIME FROM produce_material_receive ORDER BY CREATE_TIME DESC LIMIT 1")
-    String getlastTime();
+    @Select("SELECT CREATE_TIME FROM produce_material_receive  WHERE tenant_id = #{tenantId} ORDER BY CREATE_TIME DESC LIMIT 1")
+    String getlastTime(String tenantId);
 
     Page<MaterialReceive> getPage(Page<MaterialReceive> materialReceivePage, @Param(Constants.WRAPPER) QueryWrapper<MaterialReceive> queryWrapper);
 }
