@@ -1055,16 +1055,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     public TrackHead trackHeadData(TrackHead trackHead, List<TrackFlow> trackFlowList) {
         trackHead.setProductNo(productsNoStr(trackHead, trackFlowList));
-        trackHead.setNumber(trackFlowList.size());
+        trackHead.setNumber(0);
         trackHead.setFlowNumber(trackFlowList.size());
         int numberComplete = 0;
         String productNoDesc = "";
         //生产线迁移新跟单
         for (TrackFlow t : trackFlowList) {
-            if ("2".equals(t.getStatus())) {
+            if ("2".equals(t.getStatus()) || "8".equals(t.getStatus()) || "9".equals(t.getStatus())) {
                 numberComplete++;
             }
             productNoDesc += "," + t.getProductNo();
+            trackHead.setNumber(trackHead.getNumber() + t.getNumber());
         }
         trackHead.setProductNoDesc(productNoDesc.replaceFirst(",", ""));
         trackHead.setNumberComplete(numberComplete);
