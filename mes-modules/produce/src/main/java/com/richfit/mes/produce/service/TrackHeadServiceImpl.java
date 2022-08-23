@@ -611,13 +611,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         planService.planData(trackHead.getWorkPlanId());
                     }
                     //取消跟单关联
-                    QueryWrapper<LineStore> queryWrapperLineStore = new QueryWrapper<>();
-                    queryWrapperLineStore.eq("track_no", trackHead.getTrackNo());
-                    queryWrapperLineStore.eq("branch_code", trackHead.getBranchCode());
-                    queryWrapperLineStore.eq("tenant_id", trackHead.getTenantId());
-                    LineStore lineStore = new LineStore();
-                    lineStore.setTrackNo("");
-                    lineStoreService.update(lineStore, queryWrapperLineStore);
+                    UpdateWrapper<LineStore> lineStoreUpdateWrapper = new UpdateWrapper<>();
+                    lineStoreUpdateWrapper.eq("track_no", trackHead.getTrackNo());
+                    lineStoreUpdateWrapper.eq("branch_code", trackHead.getBranchCode());
+                    lineStoreUpdateWrapper.eq("tenant_id", trackHead.getTenantId());
+                    lineStoreUpdateWrapper.set("track_no", "");
+                    lineStoreService.update(lineStoreUpdateWrapper);
                 }
                 return true;
             }
