@@ -343,9 +343,11 @@ public class RouterController extends BaseController {
             Router r = routers.get(0);
             r.setId("");
             String copyName = r.getRouterName() + "复制";
+            String copyNo = r.getRouterNo() + "复制";
             r.setCreateTime(new Date());
             r.setModifyTime(new Date());
             r.setIsActive("1");
+            r.setStatus("1");
 
             if (null != SecurityUtils.getCurrentUser()) {
 
@@ -353,11 +355,12 @@ public class RouterController extends BaseController {
                 r.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             }
             r.setRouterName(copyName);
+            r.setRouterNo(copyNo);
             routerService.save(r);
 
             //查询新工艺ID
             QueryWrapper<Router> queryWrapper3 = new QueryWrapper<Router>();
-            queryWrapper3.eq("router_name", copyName);
+            queryWrapper3.eq("router_no", copyNo);
             queryWrapper3.eq("branch_code", routers.get(0).getBranchCode());
             List<Router> copyRouters = routerService.list(queryWrapper3);
             String copyRouterId = copyRouters.get(0).getId();
