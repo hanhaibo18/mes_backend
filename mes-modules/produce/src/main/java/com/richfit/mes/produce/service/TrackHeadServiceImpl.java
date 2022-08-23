@@ -36,11 +36,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author sun
+ * @author zhiqiang.lu
  * @Description 跟单服务
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = GlobalException.class)
 public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead> implements TrackHeadService {
 
     @Resource
@@ -98,9 +98,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/7/29 15:06
      **/
     @Override
-    public void downloadTrackItem(String flowId, String path) throws Exception {
+    public void downloadTrackItem(String flowId, String path) {
         //工序资料下载指定位置
-        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
         queryWrapperTrackItem.eq("flow_id", flowId);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
         for (TrackItem trackItem : trackItemList) {
@@ -120,7 +120,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/7/29 15:06
      **/
     @Override
-    public void downloadStoreFile(String id, String path) throws Exception {
+    public void downloadStoreFile(String id, String path) {
         QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
         queryWrapperStoreAttachRel.eq("line_store_id", id);
         List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
@@ -205,23 +205,23 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void completionData(String flowId) {
         try {
             //判断完工资料是否符合生产条件
             TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
             if ("Y".equals(trackFlow.getIsCompletionData())) {
-                throw new Exception("已经生成过完工资料，不能重复生成");
+                throw new GlobalException("已经生成过完工资料，不能重复生成", ResultCode.FAILED);
             }
             TrackHead trackHead = this.getById(trackFlow.getTrackHeadId());
             if (StringUtils.isNullOrEmpty(trackHead.getCertificateNo())) {
-                throw new Exception("需要生成合格证后才能生成完工资料");
+                throw new GlobalException("需要生成合格证后才能生成完工资料", ResultCode.FAILED);
             }
             //完工资料zip保存文件服务器
             String filePath = completionDataZip(flowId);
             CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(filePath);
             if (commonResult.getStatus() != 200) {
-                throw new Exception("上传文件入库失败");
+                throw new GlobalException("上传文件入库失败", ResultCode.FAILED);
             }
             trackFlow.setStatus("8");
             trackFlow.setIsCompletionData("Y");
@@ -244,7 +244,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackHead.setIsCompletionData("Y");
             }
             this.updateById(trackHead);
-        } catch (Exception e) {
+        } catch (GlobalException e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
@@ -262,7 +262,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
                 FileUtil.writeBytes(data.getData(), file);
             } else {
-                throw new Exception("从文件服务器下载文件失败");
+                throw new GlobalException("从文件服务器下载文件失败", ResultCode.FAILED);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -295,7 +295,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
@@ -330,7 +330,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             //流水号获取
@@ -411,7 +411,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
@@ -472,8 +472,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional
     @Override
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
@@ -564,7 +564,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
             List<String> ids = trackHeads.stream().filter(trackHead -> {
@@ -589,10 +589,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //删除跟单物料关联表
                     List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
                     for (TrackHeadRelation relation : relations) {
-                        if (relation.getType().equals("0")) { //输入物料
+                        if ("0".equals(relation.getType())) { //输入物料
                             //回滚数量
                             lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
-                        } else if (relation.getType().equals("1")) { //输出物料
+                        } else if ("1".equals(relation.getType())) { //输出物料
                             lineStoreService.removeById(relation.getLsId());
                         }
                         trackHeadRelationMapper.deleteById(relation.getId());
@@ -637,7 +637,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: boolean
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean updateTrackHeadPlan(List<TrackHead> trackHeads) {
         try {
             for (TrackHead t : trackHeads) {
@@ -678,7 +678,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadFinish(String flowId) {
         try {
             //跟单完成更新分流数据
@@ -731,7 +731,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadUseless(String id) {
         try {
             //跟单作废分流数据作废
@@ -958,7 +958,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
@@ -982,7 +982,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplitBack(TrackHead trackHead) {
         TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
         List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
@@ -1005,7 +1005,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/8/11 11:37
      **/
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
         try {
             for (TrackFlow t : trackFlowList) {
