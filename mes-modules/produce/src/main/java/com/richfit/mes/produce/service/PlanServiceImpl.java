@@ -275,12 +275,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
             queryWrapper.eq("work_plan_id", planId);
             List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
-            int storeNum = 0;
-            int processNum = 0;
-            int deliveryNum = 0;
-            int optNumber = 0;
-            int optProcessNumber = 0;
-            int trackHeadFinish = 0;
+            int storeNum = 0;//库存数量
+            int processNum = 0;//在制数量
+            int deliveryNum = 0;//已交数量
+            int optNumber = 0;//工序数量
+            int optProcessNumber = 0;//工序在制数量
+            int trackHeadFinish = 0;//跟单完成数量
             for (TrackHead trackHead : trackHeadList) {
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
