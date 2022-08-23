@@ -477,7 +477,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
-
             //当跟单中存在bom
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId()) && !trackHead.getProjectBomId().equals(trackHeadOld.getProjectBomId())) {
                 //删除历史数据
@@ -491,9 +490,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHead.setModifyTime(new Date());
-            int bool = trackHeadMapper.updateById(trackHead);
+            trackHeadMapper.updateById(trackHead);
 
-            //工序批量修改
+            //工序批量修改（单件跟单多生产线、普通跟单判断）
             if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().intValue() > 1) {
                 //多生产线工序修改
                 //删除所有为派工的跟单工序
@@ -525,7 +524,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     }
                 }
             } else {
-                //跟单工序添加
+                //普通跟单工序添加与修改
                 if (trackItems != null && trackItems.size() > 0) {
                     for (TrackItem item : trackItems) {
                         if (StringUtils.isNullOrEmpty(item.getId())) {
@@ -540,6 +539,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         trackItemService.saveOrUpdate(item);
                     }
                 }
+                //删除为匹配的工序（跟单中删除该工序）
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                 List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
@@ -607,6 +607,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     trackAssemblyService.remove(queryWrapperTrackAssembly);
                     //处理计划细节状态等
                     if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        //计划通用计算方法
                         planService.planData(trackHead.getWorkPlanId());
                     }
                     //取消跟单关联
