@@ -294,38 +294,35 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 optNumber += trackItemList.size();
                 switch (trackHead.getStatus()) {
                     case "0":
-                        //未派工算在制
-                        processNum += trackHead.getNumber();
-                        for (TrackItem trackItem : trackItemList) {
-                            //工序未完工
-                            if (trackItem.getIsOperationComplete().intValue() == 0) {
-                                optProcessNumber++;
-                            }
-                        }
                     case "1":
-                        //在制
+                        //0在制
+                        //1未派工算在制
                         processNum += trackHead.getNumber();
                         for (TrackItem trackItem : trackItemList) {
                             //工序未完工
-                            if (trackItem.getIsOperationComplete().intValue() == 0) {
+                            if (trackItem.getIsOperationComplete() == 0) {
                                 optProcessNumber++;
                             }
                         }
+                        break;
                     case "2":
                         //完工
                         storeNum += trackHead.getNumber();
                         trackHeadFinish++;
+                        break;
                     case "4":
                         //打印跟单
+                        break;
                     case "5":
                         //作废跟单
+                        break;
                     case "8":
-                        //生成完工资料
-                        deliveryNum += trackHead.getNumber();
                     case "9":
                         //已交
+                        //生成完工资料
                         deliveryNum += trackHead.getNumber();
                         break;
+                    default:
                 }
             }
             //库存数量
