@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.ApplicationResult;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
@@ -86,4 +87,12 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
     ApplicationResult application(AdditionalMaterialDto additionalMaterialDto);
 
     Page<TrackAssembly> getDeliveredDetail(Page<TrackAssembly> trackAssemblyPage, String id);
+
+    /**
+     * 功能描述: 添加跟单 装配信息添加
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/23 10:59
+     **/
+    void addTrackAssemblyByTrackHead(TrackHead trackHead);
 }

@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface MaterialReceiveService extends IService<MaterialReceive> {
 
-    String getlastTime();
+    String getlastTime(String tenantId);
 
     Page<MaterialReceive> getPage(Page<MaterialReceive> materialReceivePage, QueryWrapper<MaterialReceive> queryWrapper);
 

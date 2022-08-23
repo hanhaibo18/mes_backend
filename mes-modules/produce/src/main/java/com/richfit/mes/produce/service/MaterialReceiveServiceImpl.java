@@ -29,8 +29,8 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
     RequestNoteService requestNoteService;
 
     @Override
-    public String getlastTime() {
-       return materialReceiveMapper.getlastTime();
+    public String getlastTime(String tenantId) {
+       return materialReceiveMapper.getlastTime(tenantId);
     }
 
     @Override
@@ -40,21 +40,25 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
 
     @Override
     public Boolean saveMaterialReceiveList(List<MaterialReceive> materialReceiveList) {
-        materialReceiveList.forEach(i ->{
-            QueryWrapper<MaterialReceive> queryWrapper = new QueryWrapper();
-            queryWrapper.eq("delivery_no", i.getDeliveryNo());
-            List<MaterialReceive> list1 = this.list(queryWrapper);
-            if (list1.size()>0){
-                materialReceiveList.remove(i);
-            }
+        String deliveryNo = materialReceiveList.get(0).getDeliveryNo();
+        String aplyNum = materialReceiveList.get(0).getAplyNum();
+
+        QueryWrapper<MaterialReceive> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("delivery_no", deliveryNo);
+        List<MaterialReceive> list = this.list(queryWrapper);
+        if (list.size()>0){
+            materialReceiveList = null;
+        } else {
             QueryWrapper<RequestNote> wrapper = new QueryWrapper();
-            wrapper.eq("request_note_number",i.getAplyNum());
-            List<RequestNote> list = requestNoteService.list(wrapper);
-            if (!list.isEmpty()){
-                i.setBranchCode(list.get(0).getBranchCode());
-                i.setTenantId(list.get(0).getTenantId());
+            wrapper.eq("request_note_number",aplyNum);
+            List<RequestNote> requestNotes = requestNoteService.list(wrapper);
+            if (!requestNotes.isEmpty()){
+                for (MaterialReceive materialReceive : list) {
+                    materialReceive.setBranchCode(requestNotes.get(0).getBranchCode());
+                    materialReceive.setTenantId(requestNotes.get(0).getTenantId());
+                }
             }
-        });
+        }
         return this.saveBatch(materialReceiveList);
     }
 }

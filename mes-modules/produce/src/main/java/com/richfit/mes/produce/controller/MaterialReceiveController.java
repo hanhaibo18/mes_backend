@@ -101,8 +101,8 @@ public class MaterialReceiveController extends BaseController {
     @ApiOperation(value = "查询定时任务上一次保存最后一条的时间", notes = "最后一条创建时间")
     @GetMapping(value = "/get_last_time")
     @Inner
-    public String getlastTime(){
-        return materialReceiveService.getlastTime();
+    public String getlastTime(String tenantId){
+        return materialReceiveService.getlastTime(tenantId);
     };
 
     @ApiOperation(value = "批量接收wms视图物料物料接收", notes = "批量接收物料")

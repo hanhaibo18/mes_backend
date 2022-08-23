@@ -7,20 +7,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.sys.Attachment;
-import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author 王瑞
@@ -230,7 +227,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     trackAssignService.update(updateWrapper);
 
                     // 装配跟单删除相关数据
-                    if(StringUtils.isNullOrEmpty(trackHead.getClasses()) && trackHead.getClasses().equals("2")) {
+                    if (StringUtils.isNullOrEmpty(trackHead.getClasses()) && trackHead.getClasses().equals("2")) {
                         QueryWrapper<TrackAssemblyBinding> bindingQueryWrapper = new QueryWrapper<>();
                         bindingQueryWrapper.in("item_id", item.getId());
                         trackAssemblyBindingService.remove(bindingQueryWrapper);
@@ -255,7 +252,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
                 assignQueryWrapper.eq("ti_id", tiId);
                 Assign assign = trackAssignService.getOne(assignQueryWrapper);
-                if(assign != null && !StringUtils.isNullOrEmpty(assign.getId())) {
+                if (assign != null && !StringUtils.isNullOrEmpty(assign.getId())) {
                     item.setAssignableQty(item.getAssignableQty() + assign.getQty());
                     QueryWrapper<AssignPerson> personQueryWrapper = new QueryWrapper<>();
                     personQueryWrapper.eq("assign_id", assign.getId());
@@ -288,9 +285,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
         }
 
-        if(!isComplete){
+        if (!isComplete) {
             return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
-        } else if (items.size() > 0){
+        } else if (items.size() > 0) {
             TrackItem item = items.get(0);
             // 若同一个跟单下的同一个步序中的所有产品都已完成,更新跟单工艺步序至下一步
 
@@ -307,7 +304,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     updateItems.add(trackItem);
                 } else if (item.getNextOptSequence() > 0) {
                     //下道激活工序
-                    if(trackItem.getOptSequence().equals(item.getNextOptSequence())) {
+                    if (trackItem.getOptSequence().equals(item.getNextOptSequence())) {
                         trackItem.setIsCurrent(1);
                         updateItems.add(trackItem);
                     }
@@ -343,13 +340,13 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
         }
 
-        if(!isComplete){
+        if (!isComplete) {
             return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
         } else {
             TrackItem item = items.get(0);
 
             // 若是并行工序且不合格,将该产品的并行工序中的未完成工序当前标识设为0
-            if(item.getOptParallelType() == 1
+            if (item.getOptParallelType() == 1
                     && (item.getIsExistQualityCheck() != null && item.getIsExistQualityCheck() != 0)
                     && item.getQualityResult() == 0) {
                 trackItemMapper.updateTrackItemIsCurrent(item.getId());
@@ -361,10 +358,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             itemQueryWrapper.eq("is_final_complete", 0);
             itemQueryWrapper.eq("is_current", 1);
             List<TrackItem> list = this.list(itemQueryWrapper);
-            if(list == null || list.size() == 0) {
+            if (list == null || list.size() == 0) {
                 UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
                 // 更新本工序,并行工序暂不更新is_current
-                if(item.getOptParallelType() == 0) {
+                if (item.getOptParallelType() == 0) {
                     updateWrapper.set("is_current", 0);
                 }
                 updateWrapper.set("is_track_sequence_complete", 1);
@@ -375,14 +372,14 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
 
                 // 非并行工序,或者并行工序且所有并行工序都完成
-                if(item.getOptParallelType() == 1) {
+                if (item.getOptParallelType() == 1) {
                     QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
                     wrapper.eq("track_head_id", item.getTrackHeadId());
                     wrapper.eq("is_trackSequence_complete", 0);
                     wrapper.eq("opt_sequence", item.getOptSequence());
                     wrapper.eq("is_current", 1);
                     List<TrackItem> optItems = this.list(wrapper);
-                    if(optItems == null || optItems.size() == 0) {
+                    if (optItems == null || optItems.size() == 0) {
                         UpdateWrapper<TrackItem> updateWrapper2 = new UpdateWrapper<>();
                         updateWrapper2.set("is_current", 0);
                         updateWrapper2.eq("th_id", item.getTrackHeadId());
@@ -408,8 +405,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         wrapper.eq("track_head_id", thId);
         List<TrackItem> items = this.list(wrapper);
         TrackItem item = new TrackItem();
-        if(items.size() > 0) {
-            for (TrackItem ti: items) {
+        if (items.size() > 0) {
+            for (TrackItem ti : items) {
                 if (ti.getIsCurrent() != null && ti.getIsCurrent() == 1) {
                     item = ti;
                     break;
@@ -417,12 +414,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
         }
 
-        if(item.getId() == null) {
+        if (item.getId() == null) {
             return "该跟单没有当前工序！";
         }
 
         List<TrackItem> nextItems = trackItemMapper.selectNextItem(item.getId());
-        if(nextItems == null || nextItems.size() == 0) {
+        if (nextItems == null || nextItems.size() == 0) {
             return "当前工序已是跟单第一步有效工序,不可回退！";
         }
 
@@ -442,6 +439,36 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         this.update(updateWrapper);
 
         return "success";
+    }
+
+    @Override
+    public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId) {
+        if (trackItems != null && trackItems.size() > 0) {
+            for (TrackItem item : trackItems) {
+                item.setId(UUID.randomUUID().toString().replace("-", ""));
+                item.setTrackHeadId(trackHead.getId());
+                item.setFlowId(flowId);
+                item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+                item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                item.setCreateTime(new Date());
+                item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                item.setModifyTime(new Date());
+                item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                //可分配数量
+                item.setAssignableQty(number);
+                item.setNumber(number);
+                item.setIsSchedule(0);
+                item.setIsPrepare(0);
+                item.setIsNotarize(0);
+                //需要调度审核时展示
+                if (1 == item.getIsExistScheduleCheck()) {
+                    item.setIsScheduleCompleteShow(1);
+                } else {
+                    item.setIsScheduleCompleteShow(0);
+                }
+                this.save(item);
+            }
+        }
     }
 
 }

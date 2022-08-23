@@ -132,4 +132,12 @@ public interface LineStoreService extends IService<LineStore> {
      * @return: Boolean
      **/
     boolean addStoreByWmsSend(List<MaterialReceiveDetail> materialReceiveDetails, String branchCode);
+
+    /**
+     * 功能描述: 机加添加跟单时 添加成品信息
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/23 10:59
+     **/
+    LineStore addCpStoreByTrackHead(TrackHead trackHead, String productsNo, Integer number);
 }

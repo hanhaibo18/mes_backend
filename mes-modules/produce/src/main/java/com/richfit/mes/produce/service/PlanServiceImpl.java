@@ -275,60 +275,74 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
             queryWrapper.eq("work_plan_id", planId);
             List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
+            //库存数量
             int storeNum = 0;
+            //在制数量
             int processNum = 0;
+            //已交数量
             int deliveryNum = 0;
+            //工序数量
             int optNumber = 0;
+            //工序在制数量
             int optProcessNumber = 0;
+            //跟单完成数量
             int trackHeadFinish = 0;
             for (TrackHead trackHead : trackHeadList) {
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                 List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                 optNumber += trackItemList.size();
-                if ("0".equals(trackHead.getStatus())) {
-                    //未派工算在制
-                    processNum += trackHead.getNumber();
-                    for (TrackItem trackItem : trackItemList) {
-                        if (trackItem.getIsOperationComplete().intValue() == 0) {
-                            optProcessNumber++;
+                switch (trackHead.getStatus()) {
+                    case "0":
+                    case "1":
+                        //0在制
+                        //1未派工算在制
+                        processNum += trackHead.getNumber();
+                        for (TrackItem trackItem : trackItemList) {
+                            //工序未完工
+                            if (trackItem.getIsOperationComplete().intValue() == 0) {
+                                optProcessNumber++;
+                            }
                         }
-                    }
-                } else if ("1".equals(trackHead.getStatus())) {
-                    //在制
-                    processNum += trackHead.getNumber();
-                    for (TrackItem trackItem : trackItemList) {
-                        if (trackItem.getIsOperationComplete().intValue() == 0) {
-                            optProcessNumber++;
-                        }
-                    }
-                } else if ("2".equals(trackHead.getStatus())) {
-                    //完工
-                    storeNum += trackHead.getNumber();
-                    trackHeadFinish++;
-                } else if ("4".equals(trackHead.getStatus())) {
-                    //打印跟单
-                } else if ("5".equals(trackHead.getStatus())) {
-                    //作废跟单
-                } else if ("8".equals(trackHead.getStatus())) {
-                    //生成完工资料
-                    deliveryNum += trackHead.getNumber();
-                } else if ("9".equals(trackHead.getStatus())) {
-                    //已交
-                    deliveryNum += trackHead.getNumber();
-                } else {
-                    //其余
+                        break;
+                    case "2":
+                        //完工
+                        storeNum += trackHead.getNumber();
+                        trackHeadFinish++;
+                        break;
+                    case "4":
+                        //打印跟单
+                        break;
+                    case "5":
+                        //作废跟单
+                        break;
+                    case "8":
+                    case "9":
+                        //已交
+                        //生成完工资料
+                        deliveryNum += trackHead.getNumber();
+                        break;
+                    default:
                 }
             }
-            plan.setStoreNumber(storeNum);//库存数量
-            plan.setProcessNum(processNum);//在制数量
-            plan.setDeliveryNum(deliveryNum);//交付数量
-            plan.setMissingNum(plan.getProjNum() - storeNum - processNum - deliveryNum);//缺件数量
-            plan.setTrackHeadNumber(trackHeadList.size());//跟单数量
-            plan.setTrackHeadFinishNumber(trackHeadFinish);//跟单完成数量
-            plan.setOptNumber(optNumber);//工序数量
-            plan.setOptFinishNumber(optNumber - optProcessNumber);//工序完成数量
-            if (plan.getProjNum().intValue() <= plan.getDeliveryNum().intValue()) {
+            //库存数量
+            plan.setStoreNumber(storeNum);
+            //在制数量
+            plan.setProcessNum(processNum);
+            //交付数量
+            plan.setDeliveryNum(deliveryNum);
+            //缺件数量
+            plan.setMissingNum(plan.getProjNum() - storeNum - processNum - deliveryNum);
+            //跟单数量
+            plan.setTrackHeadNumber(trackHeadList.size());
+            //跟单完成数量
+            plan.setTrackHeadFinishNumber(trackHeadFinish);
+            //工序数量
+            plan.setOptNumber(optNumber);
+            //工序完成数量
+            plan.setOptFinishNumber(optNumber - optProcessNumber);
+            //计划数量、已交数量判断用来处理计划状态
+            if (plan.getProjNum() <= plan.getDeliveryNum()) {
                 plan.setStatus(3);
             } else {
                 if (plan.getTrackHeadNumber() > 0) {

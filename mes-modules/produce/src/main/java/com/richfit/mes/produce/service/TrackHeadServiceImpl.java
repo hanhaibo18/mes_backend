@@ -13,7 +13,6 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -24,11 +23,9 @@ import com.richfit.mes.produce.dao.StoreAttachRelMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.entity.*;
-import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.FilesUtil;
 import com.richfit.mes.produce.utils.Utils;
-import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,16 +36,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author sun
+ * @author zhiqiang.lu
  * @Description 跟单服务
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = GlobalException.class)
 public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead> implements TrackHeadService {
-
-
-    @Resource
-    private BaseServiceClient baseServiceClient;
 
     @Resource
     private TrackAssemblyService trackAssemblyService;
@@ -105,9 +98,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/7/29 15:06
      **/
     @Override
-    public void downloadTrackItem(String flowId, String path) throws Exception {
+    public void downloadTrackItem(String flowId, String path) {
         //工序资料下载指定位置
-        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
         queryWrapperTrackItem.eq("flow_id", flowId);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
         for (TrackItem trackItem : trackItemList) {
@@ -127,7 +120,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/7/29 15:06
      **/
     @Override
-    public void downloadStoreFile(String id, String path) throws Exception {
+    public void downloadStoreFile(String id, String path) {
         QueryWrapper<StoreAttachRel> queryWrapperStoreAttachRel = new QueryWrapper<>();
         queryWrapperStoreAttachRel.eq("line_store_id", id);
         List<StoreAttachRel> storeAttachRels = storeAttachRelMapper.selectList(queryWrapperStoreAttachRel);
@@ -212,23 +205,23 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void completionData(String flowId) {
         try {
             //判断完工资料是否符合生产条件
             TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
             if ("Y".equals(trackFlow.getIsCompletionData())) {
-                throw new Exception("已经生成过完工资料，不能重复生成");
+                throw new GlobalException("已经生成过完工资料，不能重复生成", ResultCode.FAILED);
             }
             TrackHead trackHead = this.getById(trackFlow.getTrackHeadId());
             if (StringUtils.isNullOrEmpty(trackHead.getCertificateNo())) {
-                throw new Exception("需要生成合格证后才能生成完工资料");
+                throw new GlobalException("需要生成合格证后才能生成完工资料", ResultCode.FAILED);
             }
             //完工资料zip保存文件服务器
             String filePath = completionDataZip(flowId);
             CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(filePath);
             if (commonResult.getStatus() != 200) {
-                throw new Exception("上传文件入库失败");
+                throw new GlobalException("上传文件入库失败", ResultCode.FAILED);
             }
             trackFlow.setStatus("8");
             trackFlow.setIsCompletionData("Y");
@@ -251,7 +244,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackHead.setIsCompletionData("Y");
             }
             this.updateById(trackHead);
-        } catch (Exception e) {
+        } catch (GlobalException e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
@@ -269,7 +262,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
                 FileUtil.writeBytes(data.getData(), file);
             } else {
-                throw new Exception("从文件服务器下载文件失败");
+                throw new GlobalException("从文件服务器下载文件失败", ResultCode.FAILED);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -302,19 +295,22 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
+            //判断是否单件批量跟单
             if ("Y".equals(trackHead.getIsBatch())) {
+                //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
                 if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
                     for (Map m : trackHead.getStoreList()) {
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
                 } else {
-                    throw new Exception("请添加产品编码");
+                    throw new GlobalException("请添加产品编码", ResultCode.FAILED);
                 }
             } else {
+                //其他类型的跟单
                 trackHeadAdd(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
             }
             //当匹配计划时更新计划状态
@@ -334,17 +330,31 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
+            //流水号获取
             CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"跟单编号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+
             //封装跟单信息数据
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
             trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setNumberComplete(0);
             trackHead.setNumber(number);
+            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
+            //查询跟单号码是否存在
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("track_no", trackHead.getTrackNo());
+            queryWrapper.eq("branch_code", trackHead.getBranchCode());
+            queryWrapper.eq("tenant_id", trackHead.getTenantId());
+            List trackHeads = trackHeadMapper.selectList(queryWrapper);
+            if (trackHeads.size() > 0) {
+                throw new GlobalException("跟单号码已存在！请联系管理员处理流程码问题！", ResultCode.FAILED);
+            }
+
+            //添加跟单分流（生产线）
             List<TrackFlow> trackFlowList = new ArrayList<>();
-            //添加跟单分流
             if ("N".equals(trackHead.getIsBatch()) && trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
                 //多生产线
                 for (Map m : trackHead.getStoreList()) {
@@ -359,36 +369,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
-                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
-                for (TrackAssembly trackAssembly : trackAssemblyList) {
-                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    trackAssembly.setFlowId(trackFlowList.get(0).getId());
-                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setCreateTime(new Date());
-                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setModifyTime(new Date());
-                    trackAssembly.setBranchCode(trackHead.getBranchCode());
-                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    trackAssemblyService.save(trackAssembly);
-                }
+                trackAssemblyService.addTrackAssemblyByTrackHead(trackHead);
             }
 
-            //只有机加进行跟单编码校验
-            if ("1".equals(trackHead.getClasses())) {
-                //查询跟单号码是否存在
-                QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("track_no", trackHead.getTrackNo());
-                queryWrapper.eq("branch_code", trackHead.getBranchCode());
-                queryWrapper.eq("tenant_id", trackHead.getTenantId());
-                List trackHeads = trackHeadMapper.selectList(queryWrapper);
-                if (trackHeads.size() > 0) {
-                    throw new RuntimeException("跟单号码已存在！请联系管理员处理流程码问题！");
-                }
-            }
             //添加跟单
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
-            //跟单创建完成 在执行
+
+            //跟单创建完成 在执行（侯欣雨、自动派工）
             for (TrackItem trackItem : trackItems) {
                 if (1 == trackItem.getIsAutoSchedule().intValue()) {
                     Map<String, String> map = new HashMap<>(4);
@@ -400,12 +388,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     break;
                 }
             }
+
             //添加日志
             Action action = new Action();
             action.setActionType("0");
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
+
+            //流水号更新
             codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
@@ -420,7 +411,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
@@ -445,45 +436,19 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 relation.setNumber(number);
                 trackHeadRelationMapper.insert(relation);
 
-                //新增一条半成品/成品信息
-                QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<>();
-                queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + productsNo);
-                queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
-                if (lineStores != null && lineStores.size() > 0) {
-                    throw new RuntimeException("产品编号已存在！");
-                } else {
-                    //TODO 这块代码应该放到linestoreService中去
-                    //新增一条半成品/成品信息
-                    LineStore lineStoreCp = new LineStore();
-                    lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
-                    lineStoreCp.setTenantId(trackHead.getTenantId());
-                    lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
-                    lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
-                    lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
-                    lineStoreCp.setNumber(number);//添加单件多个产品
-                    lineStoreCp.setUseNum(0);
-                    lineStoreCp.setStatus("1");//在制状态
-                    lineStoreCp.setTrackNo(trackHead.getTrackNo());
-                    lineStoreCp.setMaterialType("1");
-                    lineStoreCp.setTrackType(trackHead.getTrackType());
-                    lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    lineStoreCp.setCreateTime(new Date());
-                    lineStoreCp.setInTime(new Date());
-                    lineStoreCp.setBranchCode(trackHead.getBranchCode());
-                    lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    lineStoreCp.setInputType("2");  //录入类型 系统自动生成
-                    lineStoreMapper.insert(lineStoreCp);
-                    //添加跟单-分流-料单的关联信息
-                    TrackHeadRelation relationCp = new TrackHeadRelation();
-                    relationCp.setThId(trackHead.getId());
-                    relation.setFlowId(flowId);
-                    relationCp.setLsId(lineStoreCp.getId());
-                    relationCp.setType("1");
-                    relationCp.setNumber(number);
-                    trackHeadRelationMapper.insert(relationCp);
-                }
+                //料单添加成品信息
+                LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
+
+                //添加跟单-分流-料单的关联信息
+                TrackHeadRelation relationCp = new TrackHeadRelation();
+                relationCp.setThId(trackHead.getId());
+                relation.setFlowId(flowId);
+                relationCp.setLsId(lineStoreCp.getId());
+                relationCp.setType("1");
+                relationCp.setNumber(number);
+                trackHeadRelationMapper.insert(relationCp);
             }
+
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
             trackFlow.setId(flowId);
@@ -491,33 +456,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             trackHeadFlowService.save(trackFlow);
+
             //跟单工序添加
-            if (trackItems != null && trackItems.size() > 0) {
-                for (TrackItem item : trackItems) {
-                    item.setId(UUID.randomUUID().toString().replace("-", ""));
-                    item.setTrackHeadId(trackHead.getId());
-                    item.setFlowId(flowId);
-                    item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
-                    item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    item.setCreateTime(new Date());
-                    item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    item.setModifyTime(new Date());
-                    item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    //可分配数量
-                    item.setAssignableQty(number);
-                    item.setNumber(number);
-                    item.setIsSchedule(0);
-                    item.setIsPrepare(0);
-                    item.setIsNotarize(0);
-                    //需要调度审核时展示
-                    if (1 == item.getIsExistScheduleCheck()) {
-                        item.setIsScheduleCompleteShow(1);
-                    } else {
-                        item.setIsScheduleCompleteShow(0);
-                    }
-                    trackItemService.save(item);
-                }
-            }
+            trackItemService.addItemByTrackHead(trackHead, trackItems, productsNo, number, flowId);
             return trackFlow;
         } catch (Exception e) {
             e.printStackTrace();
@@ -531,12 +472,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional
     @Override
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
-
             //当跟单中存在bom
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId()) && !trackHead.getProjectBomId().equals(trackHeadOld.getProjectBomId())) {
                 //删除历史数据
@@ -546,22 +486,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 queryWrapper.eq("tenant_id", trackHead.getTenantId());
                 trackAssemblyService.remove(queryWrapper);
                 //添加新的bom
-                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
-                for (TrackAssembly trackAssembly : trackAssemblyList) {
-                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setCreateTime(new Date());
-                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setModifyTime(new Date());
-                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    trackAssemblyService.save(trackAssembly);
-                }
+                trackAssemblyService.addTrackAssemblyByTrackHead(trackHead);
             }
             trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHead.setModifyTime(new Date());
-            int bool = trackHeadMapper.updateById(trackHead);
+            trackHeadMapper.updateById(trackHead);
 
-            //工序批量修改
+            //工序批量修改（单件跟单多生产线、普通跟单判断）
             if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().intValue() > 1) {
                 //多生产线工序修改
                 //删除所有为派工的跟单工序
@@ -593,7 +524,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     }
                 }
             } else {
-                //跟单工序添加
+                //普通跟单工序添加与修改
                 if (trackItems != null && trackItems.size() > 0) {
                     for (TrackItem item : trackItems) {
                         if (StringUtils.isNullOrEmpty(item.getId())) {
@@ -608,6 +539,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         trackItemService.saveOrUpdate(item);
                     }
                 }
+                //删除为匹配的工序（跟单中删除该工序）
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                 List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
@@ -631,45 +563,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
 
-    List<TrackAssembly> pojectBomList(TrackHead trackHead) {
-        List<TrackAssembly> trackAssemblyList = new ArrayList<>();
-        if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomId())) {
-            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHead.getProjectBomId());
-            Map<String, String> group = new HashMap<>();
-            if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomGroup())) {
-                group = JSON.parseObject(trackHead.getProjectBomGroup(), Map.class);
-            }
-            for (ProjectBom pb : projectBomList) {
-                TrackAssembly trackAssembly = new TrackAssembly();
-                trackAssembly.setGrade(pb.getGrade());
-                trackAssembly.setName(pb.getProdDesc());
-                trackAssembly.setDrawingNo(pb.getDrawingNo());
-                trackAssembly.setMaterialNo(pb.getMaterialNo());
-                trackAssembly.setTrackHeadId(trackHead.getId());
-                trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
-                trackAssembly.setIsKeyPart(pb.getIsKeyPart());
-                trackAssembly.setTrackType(pb.getTrackType());
-                trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
-                trackAssembly.setIsCheck(pb.getIsCheck());
-                trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
-                trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
-                trackAssembly.setUnit(pb.getUnit());
-                trackAssembly.setSourceType(pb.getSourceType());
-                if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                    if (pb.getId().equals(group.get(pb.getGroupBy()))) {
-                        trackAssemblyList.add(trackAssembly);
-                    }
-                } else {
-                    trackAssemblyList.add(trackAssembly);
-                }
-
-            }
-        }
-        return trackAssemblyList;
-    }
-
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
             List<String> ids = trackHeads.stream().filter(trackHead -> {
@@ -694,10 +589,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //删除跟单物料关联表
                     List<TrackHeadRelation> relations = trackHeadRelationMapper.selectList(new QueryWrapper<TrackHeadRelation>().eq("th_id", id));
                     for (TrackHeadRelation relation : relations) {
-                        if (relation.getType().equals("0")) { //输入物料
+                        if ("0".equals(relation.getType())) { //输入物料
                             //回滚数量
                             lineStoreService.rollBackItem(relation.getNumber(), relation.getLsId());
-                        } else if (relation.getType().equals("1")) { //输出物料
+                        } else if ("1".equals(relation.getType())) { //输出物料
                             lineStoreService.removeById(relation.getLsId());
                         }
                         trackHeadRelationMapper.deleteById(relation.getId());
@@ -712,16 +607,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     trackAssemblyService.remove(queryWrapperTrackAssembly);
                     //处理计划细节状态等
                     if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        //计划通用计算方法
                         planService.planData(trackHead.getWorkPlanId());
                     }
                     //取消跟单关联
-                    QueryWrapper<LineStore> queryWrapperLineStore = new QueryWrapper<>();
-                    queryWrapperLineStore.eq("track_no", trackHead.getTrackNo());
-                    queryWrapperLineStore.eq("branch_code", trackHead.getBranchCode());
-                    queryWrapperLineStore.eq("tenant_id", trackHead.getTenantId());
-                    LineStore lineStore = new LineStore();
-                    lineStore.setTrackNo("");
-                    lineStoreService.update(lineStore, queryWrapperLineStore);
+                    UpdateWrapper<LineStore> lineStoreUpdateWrapper = new UpdateWrapper<>();
+                    lineStoreUpdateWrapper.eq("track_no", trackHead.getTrackNo());
+                    lineStoreUpdateWrapper.eq("branch_code", trackHead.getBranchCode());
+                    lineStoreUpdateWrapper.eq("tenant_id", trackHead.getTenantId());
+                    lineStoreUpdateWrapper.set("track_no", "");
+                    lineStoreService.update(lineStoreUpdateWrapper);
                 }
                 return true;
             }
@@ -742,7 +637,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: boolean
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public boolean updateTrackHeadPlan(List<TrackHead> trackHeads) {
         try {
             for (TrackHead t : trackHeads) {
@@ -783,7 +678,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadFinish(String flowId) {
         try {
             //跟单完成更新分流数据
@@ -836,7 +731,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadUseless(String id) {
         try {
             //跟单作废分流数据作废
@@ -1063,7 +958,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
@@ -1087,7 +982,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplitBack(TrackHead trackHead) {
         TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
         List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
@@ -1110,7 +1005,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/8/11 11:37
      **/
-    @Transactional
+    @Transactional(rollbackFor = GlobalException.class)
     public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
         try {
             for (TrackFlow t : trackFlowList) {
