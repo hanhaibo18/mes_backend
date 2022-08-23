@@ -1065,6 +1065,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 numberComplete++;
             }
             productNoDesc += "," + t.getProductNo();
+            //跟单总数量计算
             trackHead.setNumber(trackHead.getNumber() + t.getNumber());
         }
         trackHead.setProductNoDesc(productNoDesc.replaceFirst(",", ""));
