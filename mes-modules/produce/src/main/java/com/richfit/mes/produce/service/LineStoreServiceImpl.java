@@ -588,6 +588,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     }
 
+
     @Override
     public IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) throws Exception {
 
@@ -645,4 +646,39 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return storeList.size();
     }
 
+
+    @Override
+    public LineStore addCpStoreByTrackHead(TrackHead trackHead, String productsNo, Integer number) {
+        //新增一条半成品/成品信息
+        QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<>();
+        queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + productsNo);
+        queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<LineStore> lineStores = this.list(queryWrapperStore);
+        if (lineStores != null && lineStores.size() > 0) {
+            //校验是否存在重复的产品编码
+            throw new RuntimeException("产品编号已存在！");
+        } else {
+            //新增一条半成品/成品信息
+            LineStore lineStoreCp = new LineStore();
+            lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
+            lineStoreCp.setTenantId(trackHead.getTenantId());
+            lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
+            lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
+            lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
+            lineStoreCp.setNumber(number);//添加单件多个产品
+            lineStoreCp.setUseNum(0);
+            lineStoreCp.setStatus("1");//在制状态
+            lineStoreCp.setTrackNo(trackHead.getTrackNo());
+            lineStoreCp.setMaterialType("1");
+            lineStoreCp.setTrackType(trackHead.getTrackType());
+            lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+            lineStoreCp.setCreateTime(new Date());
+            lineStoreCp.setInTime(new Date());
+            lineStoreCp.setBranchCode(trackHead.getBranchCode());
+            lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            lineStoreCp.setInputType("2");  //录入类型 系统自动生成
+            lineStoreMapper.insert(lineStoreCp);
+            return lineStoreCp;
+        }
+    }
 }
