@@ -13,7 +13,6 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -24,11 +23,9 @@ import com.richfit.mes.produce.dao.StoreAttachRelMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.entity.*;
-import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.FilesUtil;
 import com.richfit.mes.produce.utils.Utils;
-import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,10 +42,6 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead> implements TrackHeadService {
-
-
-    @Resource
-    private BaseServiceClient baseServiceClient;
 
     @Resource
     private TrackAssemblyService trackAssemblyService;
@@ -376,18 +369,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
-                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
-                for (TrackAssembly trackAssembly : trackAssemblyList) {
-                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    trackAssembly.setFlowId(trackFlowList.get(0).getId());
-                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setCreateTime(new Date());
-                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setModifyTime(new Date());
-                    trackAssembly.setBranchCode(trackHead.getBranchCode());
-                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    trackAssemblyService.save(trackAssembly);
-                }
+                trackAssemblyService.addTrackAssemblyByTrackHead(trackHead);
             }
 
             //添加跟单
@@ -474,7 +456,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             trackHeadFlowService.save(trackFlow);
-            
+
             //跟单工序添加
             trackItemService.addItemByTrackHead(trackHead, trackItems, productsNo, number, flowId);
             return trackFlow;
@@ -505,16 +487,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 queryWrapper.eq("tenant_id", trackHead.getTenantId());
                 trackAssemblyService.remove(queryWrapper);
                 //添加新的bom
-                List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
-                for (TrackAssembly trackAssembly : trackAssemblyList) {
-                    trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setCreateTime(new Date());
-                    trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    trackAssembly.setModifyTime(new Date());
-                    trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    trackAssemblyService.save(trackAssembly);
-                }
+                trackAssemblyService.addTrackAssemblyByTrackHead(trackHead);
             }
             trackHead.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHead.setModifyTime(new Date());
@@ -589,43 +562,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
-
-    List<TrackAssembly> pojectBomList(TrackHead trackHead) {
-        List<TrackAssembly> trackAssemblyList = new ArrayList<>();
-        if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomId())) {
-            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHead.getProjectBomId());
-            Map<String, String> group = new HashMap<>();
-            if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomGroup())) {
-                group = JSON.parseObject(trackHead.getProjectBomGroup(), Map.class);
-            }
-            for (ProjectBom pb : projectBomList) {
-                TrackAssembly trackAssembly = new TrackAssembly();
-                trackAssembly.setGrade(pb.getGrade());
-                trackAssembly.setName(pb.getProdDesc());
-                trackAssembly.setDrawingNo(pb.getDrawingNo());
-                trackAssembly.setMaterialNo(pb.getMaterialNo());
-                trackAssembly.setTrackHeadId(trackHead.getId());
-                trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
-                trackAssembly.setIsKeyPart(pb.getIsKeyPart());
-                trackAssembly.setTrackType(pb.getTrackType());
-                trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
-                trackAssembly.setIsCheck(pb.getIsCheck());
-                trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
-                trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
-                trackAssembly.setUnit(pb.getUnit());
-                trackAssembly.setSourceType(pb.getSourceType());
-                if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                    if (pb.getId().equals(group.get(pb.getGroupBy()))) {
-                        trackAssemblyList.add(trackAssembly);
-                    }
-                } else {
-                    trackAssemblyList.add(trackAssembly);
-                }
-
-            }
-        }
-        return trackAssemblyList;
-    }
 
     @Override
     @Transactional

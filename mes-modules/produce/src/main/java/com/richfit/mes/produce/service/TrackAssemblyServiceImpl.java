@@ -2,11 +2,13 @@ package com.richfit.mes.produce.service;
 
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
@@ -14,14 +16,15 @@ import com.richfit.mes.produce.dao.TrackAssemblyMapper;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.ApplicationResult;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
+import io.netty.util.internal.StringUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +52,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private RequestNoteService requestNoteService;
     @Resource
     private TrackAssemblyMapper trackAssemblyMapper;
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
@@ -286,6 +292,64 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         });
         return trackAssemblyMapper.getDeliveredDetail(trackAssemblyPage, id);
     }
+
+    @Override
+    public void addTrackAssemblyByTrackHead(TrackHead trackHead) {
+        List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
+        for (TrackAssembly trackAssembly : trackAssemblyList) {
+            trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+            trackAssembly.setCreateTime(new Date());
+            trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+            trackAssembly.setModifyTime(new Date());
+            trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            this.save(trackAssembly);
+        }
+    }
+
+    /**
+     * 功能描述: 添加跟单 装配列表数据整合，分组数据取值等
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/23 10:59
+     **/
+    List<TrackAssembly> pojectBomList(TrackHead trackHead) {
+        List<TrackAssembly> trackAssemblyList = new ArrayList<>();
+        if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomId())) {
+            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHead.getProjectBomId());
+            Map<String, String> group = new HashMap<>();
+            if (!StringUtil.isNullOrEmpty(trackHead.getProjectBomGroup())) {
+                group = JSON.parseObject(trackHead.getProjectBomGroup(), Map.class);
+            }
+            for (ProjectBom pb : projectBomList) {
+                TrackAssembly trackAssembly = new TrackAssembly();
+                trackAssembly.setGrade(pb.getGrade());
+                trackAssembly.setName(pb.getProdDesc());
+                trackAssembly.setDrawingNo(pb.getDrawingNo());
+                trackAssembly.setMaterialNo(pb.getMaterialNo());
+                trackAssembly.setTrackHeadId(trackHead.getId());
+                trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
+                trackAssembly.setIsKeyPart(pb.getIsKeyPart());
+                trackAssembly.setTrackType(pb.getTrackType());
+                trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
+                trackAssembly.setIsCheck(pb.getIsCheck());
+                trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
+                trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
+                trackAssembly.setUnit(pb.getUnit());
+                trackAssembly.setSourceType(pb.getSourceType());
+                if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
+                    if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                        trackAssemblyList.add(trackAssembly);
+                    }
+                } else {
+                    trackAssemblyList.add(trackAssembly);
+                }
+
+            }
+        }
+        return trackAssemblyList;
+    }
+
 
     private int queryMaterialCount(String materialNo) {
         return wmsServiceClient.queryMaterialCount(materialNo).getData();
