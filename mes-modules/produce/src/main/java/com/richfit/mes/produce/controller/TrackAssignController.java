@@ -87,7 +87,7 @@ public class TrackAssignController extends BaseController {
     @GetMapping("/page")
     public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode, String order, String orderCol, String assignBy) {
         try {
-            QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
+            QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
                 queryWrapper.eq("ti_id", tiId);
             }
@@ -313,15 +313,13 @@ public class TrackAssignController extends BaseController {
                         trackAssignPersonMapper.insert(person);
                     }
                 }
+                systemServiceClient.savenote(assign.getAssignBy(),
+                        "您有新的派工跟单需要报工！",
+                        assign.getTrackNo(),
+                        assign.getUserId().substring(0, assign.getUserId().length() - 1),
+                        assign.getBranchCode(),
+                        assign.getTenantId());
             }
-//            for (Assign assign : assigns) {
-//                systemServiceClient.savenote(assign.getAssignBy(),
-//                        "您有新的派工跟单需要报工！",
-//                        assign.getTrackNo(),
-//                        assign.getUserId().substring(0, assign.getUserId().length() - 1),
-//                        assign.getBranchCode(),
-//                        assign.getTenantId());
-//            }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {
             e.printStackTrace();
@@ -650,7 +648,6 @@ public class TrackAssignController extends BaseController {
                 trackItem.setIsCurrent(1);
                 trackItem.setIsDoing(0);
                 trackItem.setIsSchedule(0);
-//                trackItem.setAssignableQty(trackItem.getAssignableQty() + assign.getQty());
                 trackItemService.updateById(trackItem);
                 trackAssignService.removeById(ids[i]);
             }
