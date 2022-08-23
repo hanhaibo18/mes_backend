@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
@@ -106,4 +107,12 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Author WangRui
      */
     String backSequence(String thId);
+
+    /**
+     * 功能描述: 添加跟单 生产线工序信息添加
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/23 10:59
+     **/
+    void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId);
 }

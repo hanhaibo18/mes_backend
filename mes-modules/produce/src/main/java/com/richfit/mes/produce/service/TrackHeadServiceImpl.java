@@ -456,7 +456,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 //料单添加成品信息
                 LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
-                
+
                 //添加跟单-分流-料单的关联信息
                 TrackHeadRelation relationCp = new TrackHeadRelation();
                 relationCp.setThId(trackHead.getId());
@@ -474,33 +474,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             trackHeadFlowService.save(trackFlow);
+            
             //跟单工序添加
-            if (trackItems != null && trackItems.size() > 0) {
-                for (TrackItem item : trackItems) {
-                    item.setId(UUID.randomUUID().toString().replace("-", ""));
-                    item.setTrackHeadId(trackHead.getId());
-                    item.setFlowId(flowId);
-                    item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
-                    item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    item.setCreateTime(new Date());
-                    item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    item.setModifyTime(new Date());
-                    item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                    //可分配数量
-                    item.setAssignableQty(number);
-                    item.setNumber(number);
-                    item.setIsSchedule(0);
-                    item.setIsPrepare(0);
-                    item.setIsNotarize(0);
-                    //需要调度审核时展示
-                    if (1 == item.getIsExistScheduleCheck()) {
-                        item.setIsScheduleCompleteShow(1);
-                    } else {
-                        item.setIsScheduleCompleteShow(0);
-                    }
-                    trackItemService.save(item);
-                }
-            }
+            trackItemService.addItemByTrackHead(trackHead, trackItems, productsNo, number, flowId);
             return trackFlow;
         } catch (Exception e) {
             e.printStackTrace();
