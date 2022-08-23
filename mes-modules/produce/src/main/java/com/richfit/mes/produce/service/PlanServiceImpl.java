@@ -356,22 +356,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
     }
 
-    public List<Map<String, String>> disposePlan(List<Plan> planList) {
-        List<Map<String, String>> planListMap = new ArrayList<>();
-        for (Plan plan : planList) {
-            Map<String, String> planMap = new HashMap<>();
-            Integer integer = trackHeadService.queryTrackHeadList(plan.getId());
-            if (integer.compareTo(plan.getProjNum()) == 1) {
-                continue;
-            }
-            planMap.put("id", plan.getId());
-            int num = plan.getProjNum() - integer;
-            planMap.put("name", plan.getId() + ",可跟单数量:" + num);
-            planListMap.add(planMap);
-        }
-        return planListMap;
-    }
-
     /*
         status 0:无关联跟单  1：有关联跟单，跟单中数量之和<计划数量  2：跟单中数量之和 = 计划数量
          */
@@ -470,22 +454,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         actionService.saveAction(action);
 
         return result;
-    }
-
-    private boolean setPlanStatus(int status, String projCode, String tenantId) {
-
-        UpdateWrapper<Plan> planUpdateWrapper = new UpdateWrapper<>();
-        planUpdateWrapper.eq("tenant_id", tenantId);
-        planUpdateWrapper.eq("proj_code", projCode);
-
-        Plan plan = this.getOne(planUpdateWrapper);
-
-        planUpdateWrapper.lambda()
-                .eq(Plan::getId, plan.getId())
-                .setSql("status=" + status);
-        this.update(planUpdateWrapper);
-
-        return true;
     }
 
     protected void checkPlan(Plan plan) {
