@@ -513,10 +513,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         if (StringUtils.hasText(oldPlan.getId())) {
             //根据id查询父计划
             Plan parentPlan = planMapper.selectById(oldPlan.getId());
-            int parentPlanProjNum = parentPlan.getProjNum() == null ? 0 : parentPlan.getProjNum();
-            int newPlanProjNum = newPlan.getProjNum() == null ? 0 : newPlan.getProjNum();
-
             if (!ObjectUtil.isEmpty(parentPlan)) {
+                int parentPlanProjNum = parentPlan.getProjNum() == null ? 0 : parentPlan.getProjNum();
+                int newPlanProjNum = newPlan.getProjNum() == null ? 0 : newPlan.getProjNum();
                 if (newPlanProjNum > parentPlanProjNum) {
                     return CommonResult.failed("拆分计划数量超出原计划数量");
                 }
