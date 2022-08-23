@@ -1062,7 +1062,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //生产线迁移新跟单
         for (TrackFlow t : trackFlowList) {
             if ("2".equals(t.getStatus()) || "8".equals(t.getStatus()) || "9".equals(t.getStatus())) {
-                numberComplete++;
+                numberComplete += t.getNumber();
             }
             productNoDesc += "," + t.getProductNo();
             //跟单总数量计算
@@ -1070,7 +1070,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         trackHead.setProductNoDesc(productNoDesc.replaceFirst(",", ""));
         trackHead.setNumberComplete(numberComplete);
-        if (numberComplete < trackFlowList.size()) {
+        if (numberComplete < trackHead.getNumber()) {
             //未完工
         } else {
             trackHead.setStatus("2");
