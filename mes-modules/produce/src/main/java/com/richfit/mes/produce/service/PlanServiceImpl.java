@@ -300,7 +300,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         processNum += trackHead.getNumber();
                         for (TrackItem trackItem : trackItemList) {
                             //工序未完工
-                            if (trackItem.getIsOperationComplete() == 0) {
+                            if (trackItem.getIsOperationComplete().intValue() == 0) {
                                 optProcessNumber++;
                             }
                         }
@@ -342,7 +342,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             //工序完成数量
             plan.setOptFinishNumber(optNumber - optProcessNumber);
             //计划数量、已交数量判断用来处理计划状态
-            if (plan.getProjNum().intValue() <= plan.getDeliveryNum().intValue()) {
+            if (plan.getProjNum() <= plan.getDeliveryNum()) {
                 plan.setStatus(3);
             } else {
                 if (plan.getTrackHeadNumber() > 0) {
