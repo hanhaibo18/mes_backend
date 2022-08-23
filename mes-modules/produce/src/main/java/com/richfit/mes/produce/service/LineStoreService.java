@@ -101,7 +101,7 @@ public interface LineStoreService extends IService<LineStore> {
      * @Date: 2022/7/19 10:59
      * @return: Boolean
      **/
-    Boolean zpExpend(String drawingNo, String materialNo, int number, int state);
+    boolean zpExpend(String drawingNo, String materialNo, int number, int state);
 
     /**
      * 功能描述: 根据料单Id，查询附件并存储到临时目录，等待压缩下载
@@ -119,9 +119,9 @@ public interface LineStoreService extends IService<LineStore> {
      * @param id
      * @Author: xinYu.hou
      * @Date: 2022/7/19 10:59
-     * @return: Boolean
+     * @return: List<String>
      **/
-    List<String> qeuryStoreFileIdList(String id);
+    List<String> queryStoreFileIdList(String id);
 
     /**
      * 功能描述: 仓储配送，物料接收入库

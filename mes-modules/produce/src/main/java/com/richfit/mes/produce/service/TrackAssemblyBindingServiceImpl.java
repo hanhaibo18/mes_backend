@@ -78,9 +78,9 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         trackHeadService.updateById(trackHead);
         this.updateById(assemblyBinding);
         trackAssemblyService.updateById(trackAssembly);
-        Boolean expend = lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getNumber(), assemblyBinding.getQuantity(), isBinding);
+        boolean expend = lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getNumber(), assemblyBinding.getQuantity(), isBinding);
         if (expend) {
-            return CommonResult.success(expend, "绑定成功");
+            return CommonResult.success(true, "绑定成功");
         } else {
             return CommonResult.failed("绑定失败");
         }

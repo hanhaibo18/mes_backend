@@ -610,7 +610,7 @@ public class LineStoreController extends BaseController {
     @GetMapping("/query_quality_file_ids/{id}")
     public CommonResult<List<String>> downloadQualityFile(@ApiIgnore HttpServletResponse response, @ApiParam(value = "料单Id", required = true) @PathVariable String id) throws Exception {
 
-        List<String> fileIdList = lineStoreService.qeuryStoreFileIdList(id);
+        List<String> fileIdList = lineStoreService.queryStoreFileIdList(id);
 
         return CommonResult.success(fileIdList);
 

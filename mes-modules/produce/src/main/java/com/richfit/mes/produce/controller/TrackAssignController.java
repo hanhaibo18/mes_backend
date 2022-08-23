@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,6 +66,9 @@ public class TrackAssignController extends BaseController {
     private TrackHeadFlowService trackHeadFlowService;
     @Resource
     private RequestNoteService requestNoteService;
+
+    @Value("${switch}")
+    private String off;
 
     /**
      * ***
@@ -116,9 +120,9 @@ public class TrackAssignController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
-                    if (order.equals("desc")) {
+                    if ("desc".equals(order)) {
                         queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
-                    } else if (order.equals("asc")) {
+                    } else if ("asc".equals(order)) {
                         queryWrapper.orderByAsc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
                     }
                 } else {
@@ -203,7 +207,7 @@ public class TrackAssignController extends BaseController {
                     }
 
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                    if (null == trackHead.getStatus() || trackHead.getStatus().equals("0") || trackHead.getStatus().equals("")) {
+                    if (null == trackHead.getStatus() || "0".equals(trackHead.getStatus()) || "".equals(trackHead.getStatus())) {
                         //将跟单状态改为在制
                         trackHead.setStatus("1");
                         trackHeadService.updateById(trackHead);
@@ -275,58 +279,11 @@ public class TrackAssignController extends BaseController {
                         }
                         //齐套性检查
                         if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent()) {
-                            CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());
-                            //组装申请单信息
-                            IngredientApplicationDto ingredient = new IngredientApplicationDto();
-                            //申请单号
-                            ingredient.setSqd(trackItem.getId() + "@0");
-                            ingredient.setGc(assign.getBranchCode());
-                            //车间
-                            ingredient.setCj(assign.getBranchCode());
-                            //车间名称
-                            //工位 == 车间?
-                            ingredient.setGw(assign.getBranchCode());
-                            //工位名称
-                            //工序
-                            ingredient.setGx(trackItem.getId());
-                            //工序名称
-                            ingredient.setGxName(trackItem.getOptName());
-                            //生产订单编号
-                            ingredient.setScdd(trackHead.getProductionOrder());
-                            //跟单Id
-                            ingredient.setGd(trackHead.getId());
-                            //产品编号
-                            ingredient.setCp(trackHead.getProductNo());
-                            //产品名称
-                            ingredient.setCpName(trackHead.getProductName());
-                            //优先级
-                            ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
-                            //派工时间
-                            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmSS");
-                            ingredient.setPgsj(format.format(new Date()));
-                            //追加物料
-                            List<LineList> lineLists = new ArrayList<LineList>();
-                            for (KittingVo kitting : kittingExamine.getData()) {
-                                if (1 == kitting.getIsKitting()) {
-                                    continue;
-                                }
-                                LineList lineList = new LineList();
-                                //物料编码
-                                lineList.setMaterialNum(kitting.getMaterialNo());
-                                //物料名称
-                                lineList.setMaterialDesc(kitting.getMaterialName());
-                                //单位
-                                lineList.setUnit("单位");
-                                //数量
-                                Double number = Double.valueOf(kitting.getSurplusNumber().toString().replaceAll("-", ""));
-                                lineList.setQuantity(number);
-                                //实物配送标识
-                                lineList.setSwFlag(kitting.getIsEdgeStore());
-                                lineLists.add(lineList);
+                            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
+                            requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
+                            if ("true".equals(off)) {
+                                wmsServiceClient.anApplicationForm(ingredient);
                             }
-                            ingredient.setLineList(lineLists);
-                            requestNoteService.saveRequestNote(ingredient, lineLists);
-//                            CommonResult<Boolean> booleanCommonResult = wmsServiceClient.anApplicationForm(ingredient);
                         }
                         if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
                             //下工序激活
@@ -337,6 +294,7 @@ public class TrackAssignController extends BaseController {
                             map.put("number", String.valueOf(assign.getQty()));
                             publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
                         }
+
                     }
                     assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                     if (null != SecurityUtils.getCurrentUser()) {
@@ -354,18 +312,16 @@ public class TrackAssignController extends BaseController {
                         person.setAssignId(assign.getId());
                         trackAssignPersonMapper.insert(person);
                     }
-
                 }
             }
-            for (Assign assign : assigns) {
-                systemServiceClient.savenote(assign.getAssignBy(),
-                        "您有新的派工跟单需要报工！",
-                        assign.getTrackNo(),
-                        assign.getUserId().substring(0, assign.getUserId().length() - 1),
-                        assign.getBranchCode(),
-                        assign.getTenantId());
-
-            }
+//            for (Assign assign : assigns) {
+//                systemServiceClient.savenote(assign.getAssignBy(),
+//                        "您有新的派工跟单需要报工！",
+//                        assign.getTrackNo(),
+//                        assign.getUserId().substring(0, assign.getUserId().length() - 1),
+//                        assign.getBranchCode(),
+//                        assign.getTenantId());
+//            }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {
             e.printStackTrace();
@@ -375,10 +331,66 @@ public class TrackAssignController extends BaseController {
     }
 
 
+    private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
+        CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());
+        //组装申请单信息
+        IngredientApplicationDto ingredient = new IngredientApplicationDto();
+        //申请单号
+        ingredient.setSqd(trackItem.getId() + "@0");
+        ingredient.setGc(branchCode);
+        //车间
+        ingredient.setCj(branchCode);
+        //车间名称
+        //工位 == 车间?
+        ingredient.setGw(branchCode);
+        //工位名称
+        //工序
+        ingredient.setGx(trackItem.getId());
+        //工序名称
+        ingredient.setGxName(trackItem.getOptName());
+        //生产订单编号
+        ingredient.setScdd(trackHead.getProductionOrder());
+        //跟单Id
+        ingredient.setGd(trackHead.getId());
+        //产品编号
+        ingredient.setCp(trackHead.getProductNo());
+        //产品名称
+        ingredient.setCpName(trackHead.getProductName());
+        //优先级
+        ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
+        //派工时间
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmss");
+        ingredient.setPgsj(format.format(new Date()));
+        //追加物料
+        List<LineList> lineLists = new ArrayList<>();
+        for (KittingVo kitting : kittingExamine.getData()) {
+            //过滤以齐套的
+            if (1 == kitting.getIsKitting()) {
+                continue;
+            }
+            LineList lineList = new LineList();
+            //物料编码
+            lineList.setMaterialNum(kitting.getMaterialNo());
+            //物料名称
+            lineList.setMaterialDesc(kitting.getMaterialName());
+            //单位
+            lineList.setUnit("单位");
+            //数量
+            double number = Double.parseDouble(kitting.getSurplusNumber().toString().replaceAll("-", ""));
+            lineList.setQuantity(number);
+            //实物配送标识
+            lineList.setSwFlag(kitting.getIsEdgeStore());
+            lineLists.add(lineList);
+        }
+        ingredient.setLineList(lineLists);
+        return ingredient;
+    }
+
     @ApiOperation(value = "修改派工", notes = "修改派工")
     @ApiImplicitParam(name = "device", value = "派工", required = true, dataType = "Assign", paramType = "path")
     @PostMapping("/update")
     @Transactional(rollbackFor = Exception.class)
+
     public CommonResult<Assign> updateAssign(@RequestBody Assign assign) {
         try {
             if (StringUtils.isNullOrEmpty(assign.getTiId())) {
@@ -390,7 +402,7 @@ public class TrackAssignController extends BaseController {
                     return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
                 }
                 if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！");
                 }
                 // 判断后置工序是否已派工，否则无法修改
                 List<Assign> cs = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
@@ -512,9 +524,9 @@ public class TrackAssignController extends BaseController {
 
         if (!StringUtils.isNullOrEmpty(orderCol) && !excludeOrderCols.contains(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
+                if ("desc".equals(order)) {
                     queryWrapper.orderByDesc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
-                } else if (order.equals("asc")) {
+                } else if ("asc".equals(order)) {
                     queryWrapper.orderByAsc(new String[]{StrUtil.toUnderlineCase(orderCol), "sequence_order_by"});
                 }
             } else {
@@ -576,9 +588,9 @@ public class TrackAssignController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
+                if ("desc".equals(order)) {
                     queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")) {
+                } else if ("asc".equals(order)) {
                     queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
@@ -609,7 +621,7 @@ public class TrackAssignController extends BaseController {
                     return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
                 }
                 if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！");
                 }
                 List<Assign> ca = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
                 for (int j = 0; j < ca.size(); j++) {

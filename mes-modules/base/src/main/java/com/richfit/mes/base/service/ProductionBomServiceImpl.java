@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -102,7 +103,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateStatus(ProductionBom bom) {
         UpdateWrapper<ProductionBom> update = new UpdateWrapper<ProductionBom>();
         update.apply("(drawing_no = {0} or main_drawing_no = {0} ) and bom_key = {1}", bom.getDrawingNo(), bom.getBomKey());
@@ -170,18 +171,6 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             query.eq("branch_code", branchCode);
         }
         query.eq("grade", "H");
-//        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
-//        boolean isAdmin = false;
-//        for (GrantedAuthority authority : authorities) {
-//            //超级管理员 ROLE_12345678901234567890000000000000
-//            if ("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
-//                isAdmin = true;
-//                break;
-//            }
-//        }
-//        if (!isAdmin) {
-//            query.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-//        }
         query.eq("tenant_id", tenantId);
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
@@ -348,8 +337,8 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 currentRow++;
             }
             rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
-            rsp.setHeader("Content-disposition", "attachment; filename=" + new String(productionBom.getDrawingNo().getBytes("utf-8"),
-                    "ISO-8859-1") + ".xls");
+            rsp.setHeader("Content-disposition", "attachment; filename=" + new String(productionBom.getDrawingNo().getBytes(StandardCharsets.UTF_8),
+                    StandardCharsets.ISO_8859_1) + ".xls");
             ServletOutputStream outputStream = rsp.getOutputStream();
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
@@ -385,6 +374,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult newImportExcel(@RequestParam("file") MultipartFile file) throws IOException {
 
         //封装证件信息实体类
@@ -395,22 +385,6 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
         tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
-
-
-       /* // 创建文件输入流
-        InputStream in = new ByteArrayInputStream(file.getBytes());
-        // 创建Excel工作簿（包括2003和2007版）
-        Workbook workbook = ExcelUtils.createWorkbook(tempName.toString(),in);
-        // 根据下标获取Excel工作表
-        Sheet sheet = workbook.getSheetAt(0);
-        Row row = sheet.getRow(1);
-        //工作号
-        Cell cell1 = sheet.getRow(1).getCell(3);
-        String proNo = cell1.getRichStringCellValue().getString();
-        //项目名称
-        Cell cell2 = sheet.getRow(2).getCell(3);
-        String proName = cell2.getRichStringCellValue().getString();*/
-
         try {
             excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);

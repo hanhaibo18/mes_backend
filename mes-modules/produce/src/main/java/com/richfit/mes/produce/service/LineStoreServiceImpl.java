@@ -477,7 +477,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Override
     @Transactional
-    public Boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
+    public boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         queryWrapper.eq("drawing_no", drawingNo);
         queryWrapper.eq("workblank_no", prodNo);
@@ -539,7 +539,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
-    public List<String> qeuryStoreFileIdList(String id) {
+    public List<String> queryStoreFileIdList(String id) {
         //查询附件
         QueryWrapper<StoreAttachRel> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("line_store_id", id);

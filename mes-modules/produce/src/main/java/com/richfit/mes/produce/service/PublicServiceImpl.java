@@ -48,9 +48,10 @@ public class PublicServiceImpl implements PublicService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean publicUpdateState(Map<String, String> map, int code) {
-        //派工
+        //派工 暂时关闭派工激活下工序
         if (PublicCodeEnum.DISPATCHING.getCode() == code) {
-            return updateDispatching(map);
+//            return updateDispatching(map);
+            return true;
         }
         //报工
         if (PublicCodeEnum.COMPLETE.getCode() == code) {

@@ -853,7 +853,6 @@ public class TrackCompleteController extends BaseController {
         return trackCompleteService.queryDetails(assignId, tiId, state);
     }
 
-    //Todo:报工需要增加一个报工参数
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
     @PostMapping("/saveComplete")
     public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto) {

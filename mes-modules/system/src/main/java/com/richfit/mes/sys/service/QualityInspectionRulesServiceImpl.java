@@ -34,7 +34,7 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
     public CommonResult<Boolean> saveQualityInspectionRules(QualityInspectionRules qualityInspectionRules) {
         qualityInspectionRules.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //增加判断 当前车间下状态码唯一
-        QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper();
+        QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", qualityInspectionRules.getBranchCode());
         queryWrapper.eq("state", qualityInspectionRules.getState());
         int count = this.count(queryWrapper);
@@ -47,7 +47,7 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
     @Override
     public CommonResult<Boolean> updateQualityInspectionRules(QualityInspectionRules qualityInspectionRules) {
         //增加判断 当前车间下状态码唯一
-        QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper();
+        QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", qualityInspectionRules.getBranchCode());
         queryWrapper.eq("state", qualityInspectionRules.getState());
         QualityInspectionRules rules = this.getOne(queryWrapper);

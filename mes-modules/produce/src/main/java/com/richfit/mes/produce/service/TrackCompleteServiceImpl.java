@@ -102,7 +102,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
             }
             if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
-                //TODO:调用方法
+                //调用工序激活方法
                 Map<String, String> map = new HashMap<>(3);
                 map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
                 map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
@@ -153,14 +153,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult<Boolean> updateComplete(CompleteDto completeDto) {
+        if (StringUtils.isNullOrEmpty(completeDto.getTiId())) {
+            return CommonResult.failed("工序Id不能为空");
+        }
         if (StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
             return CommonResult.failed("质检人员不能为空");
         }
         if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
             return CommonResult.failed("报工人员不能为空");
-        }
-        if (StringUtils.isNullOrEmpty(completeDto.getTiId())) {
-            return CommonResult.failed("工序Id不能为空");
         }
         TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
         //检验人
@@ -270,7 +270,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackItem.setIsCurrent(1);
                 trackItem.setIsFinalComplete("0");
                 trackItem.setIsOperationComplete(0);
-                trackItem.setAssignableQty(trackItem.getAssignableQty().intValue() + trackComplete.getCompletedQty().intValue());
+                trackItem.setAssignableQty(trackItem.getAssignableQty() + trackComplete.getCompletedQty().intValue());
                 trackItemService.updateById(trackItem);
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 trackHead.setStatus("1");
