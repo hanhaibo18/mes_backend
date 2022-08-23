@@ -244,7 +244,7 @@ public class BranchController extends BaseController {
         return CommonResult.success(branchService.queryAllCode());
     }
 
-    @ApiOperation(value = "查询组织机构列表", notes = "通过条件查询组织机构列表")
+    @ApiOperation(value = "查询下级组织机构列表", notes = "通过条件查询下级组织机构列表")
     @GetMapping("/list")
     public CommonResult<List<Branch>> list(@ApiParam(value = "机构类型") @RequestParam String branchType) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
@@ -252,6 +252,7 @@ public class BranchController extends BaseController {
             queryWrapper.eq("branch_type", branchType);
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.ne("main_branch_code", "");
         List<Branch> result = branchService.list(queryWrapper);
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
     }

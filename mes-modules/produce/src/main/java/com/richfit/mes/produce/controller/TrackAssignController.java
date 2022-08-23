@@ -329,7 +329,7 @@ public class TrackAssignController extends BaseController {
                             }
                             ingredient.setLineList(lineLists);
                             requestNoteService.saveRequestNote(ingredient, lineLists);
-//                            CommonResult<Boolean> booleanCommonResult = wmsServiceClient.anApplicationForm(ingredient);
+                            CommonResult<Boolean> booleanCommonResult = wmsServiceClient.anApplicationForm(ingredient);
                         }
                         if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
                             //下工序激活

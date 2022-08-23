@@ -104,6 +104,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
                 //TODO:调用方法
                 Map<String, String> map = new HashMap<>(3);
+                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
                 map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
                 map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
                 map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
