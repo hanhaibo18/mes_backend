@@ -348,7 +348,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("track_no", trackHead.getTrackNo());
             queryWrapper.eq("branch_code", trackHead.getBranchCode());
             queryWrapper.eq("tenant_id", trackHead.getTenantId());
-            List trackHeads = trackHeadMapper.selectList(queryWrapper);
+            List<TrackHead> trackHeads = trackHeadMapper.selectList(queryWrapper);
             if (trackHeads.size() > 0) {
                 throw new GlobalException("跟单号码已存在！请联系管理员处理流程码问题！", ResultCode.FAILED);
             }
@@ -378,7 +378,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //跟单创建完成 在执行（侯欣雨、自动派工）
             for (TrackItem trackItem : trackItems) {
-                if (1 == trackItem.getIsAutoSchedule().intValue()) {
+                Integer i = 1;
+                if (i.equals(trackItem.getIsAutoSchedule())) {
                     Map<String, String> map = new HashMap<>(4);
                     map.put("trackItemId", trackItem.getId());
                     map.put("trackHeadId", trackHead.getId());
@@ -493,7 +494,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.updateById(trackHead);
 
             //工序批量修改（单件跟单多生产线、普通跟单判断）
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().intValue() > 1) {
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) == 0) {
                 //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
@@ -504,7 +505,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (trackItems != null && trackItems.size() > 0) {
                     for (TrackItem item : trackItems) {
                         //批量添加未派工的工序
-                        if (item.getIsSchedule().intValue() == 0) {
+                        if (item.getIsSchedule() == 0) {
                             QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
                             queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
                             List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
