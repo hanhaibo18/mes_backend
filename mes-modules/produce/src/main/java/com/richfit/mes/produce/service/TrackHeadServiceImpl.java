@@ -378,8 +378,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //跟单创建完成 在执行（侯欣雨、自动派工）
             for (TrackItem trackItem : trackItems) {
-                Integer i = 1;
-                if (i.equals(trackItem.getIsAutoSchedule())) {
+                if (trackItem.getIsAutoSchedule().compareTo(1) == 0) {
                     Map<String, String> map = new HashMap<>(4);
                     map.put("trackItemId", trackItem.getId());
                     map.put("trackHeadId", trackHead.getId());
