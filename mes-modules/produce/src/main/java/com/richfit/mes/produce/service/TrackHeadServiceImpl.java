@@ -314,9 +314,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackHeadAdd(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
             }
             //当匹配计划时更新计划状态
-            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                planService.planData(trackHead.getWorkPlanId());
-            }
+            planService.planData(trackHead.getWorkPlanId());
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -605,11 +603,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     queryWrapperTrackAssembly.eq("branch_code", trackHead.getBranchCode());
                     queryWrapperTrackAssembly.eq("tenant_id", trackHead.getTenantId());
                     trackAssemblyService.remove(queryWrapperTrackAssembly);
-                    //处理计划细节状态等
-                    if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                        //计划通用计算方法
-                        planService.planData(trackHead.getWorkPlanId());
-                    }
+                    //处理计划细节状态等、计划通用计算方法
+                    planService.planData(trackHead.getWorkPlanId());
                     //取消跟单关联
                     UpdateWrapper<LineStore> lineStoreUpdateWrapper = new UpdateWrapper<>();
                     lineStoreUpdateWrapper.eq("track_no", trackHead.getTrackNo());
@@ -655,9 +650,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackHeadMapper.updateById(t);
 
                 //修改老跟单匹配计划
-                if (!StringUtils.isNullOrEmpty(trackHeadOld.getWorkPlanId())) {
-                    planService.planData(trackHeadOld.getWorkPlanId());
-                }
+                planService.planData(trackHeadOld.getWorkPlanId());
                 //修改新跟单匹配计划
                 planService.planData(t.getWorkPlanId());
             }
@@ -710,12 +703,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.updateById(trackHead);
 
             //计划数据更新
-            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                planService.planData(trackHead.getWorkPlanId());
-            }
-            if (!StringUtils.isNullOrEmpty(trackHead.getProductionOrderId())) {
-                orderService.orderData(trackHead.getProductionOrderId());
-            }
+            planService.planData(trackHead.getWorkPlanId());
+            //订单数据更新
+            orderService.orderData(trackHead.getProductionOrderId());
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -761,12 +751,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.updateById(trackHead);
 
             //计划数据更新
-            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                planService.planData(trackHead.getWorkPlanId());
-            }
-            if (!StringUtils.isNullOrEmpty(trackHead.getProductionOrderId())) {
-                orderService.orderData(trackHead.getProductionOrderId());
-            }
+            planService.planData(trackHead.getWorkPlanId());
+            //订单数据更新
+            orderService.orderData(trackHead.getProductionOrderId());
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -976,9 +963,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //生产线迁移新跟单
         trackFlowMigrations(trackHeadNew.getId(), TrackFlowNew);
         //计划数据更新
-        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-            planService.planData(trackHead.getWorkPlanId());
-        }
+        planService.planData(trackHead.getWorkPlanId());
     }
 
     @Override

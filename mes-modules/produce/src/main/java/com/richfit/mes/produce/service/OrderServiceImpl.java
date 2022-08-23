@@ -104,28 +104,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public void orderData(String orderId) {
-        Map map = new HashMap();
-        map.put("production_order_id", orderId);
-        List<TrackFlow> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
-        int numberComplete = 0;
-        for (TrackFlow trackFlow : trackFlowList) {
-            if ("2".equals(trackFlow.getStatus())) {
-                //完成
-                numberComplete++;
-            } else if ("8".equals(trackFlow.getStatus())) {
-                //完工质量资料
-                numberComplete++;
-            } else if ("9".equals(trackFlow.getStatus())) {
-                //交付
-                numberComplete++;
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderId)) {
+            Map map = new HashMap();
+            map.put("production_order_id", orderId);
+            List<TrackFlow> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
+            int numberComplete = 0;
+            for (TrackFlow trackFlow : trackFlowList) {
+                if ("2".equals(trackFlow.getStatus())) {
+                    //完成
+                    numberComplete++;
+                } else if ("8".equals(trackFlow.getStatus())) {
+                    //完工质量资料
+                    numberComplete++;
+                } else if ("9".equals(trackFlow.getStatus())) {
+                    //交付
+                    numberComplete++;
+                }
             }
+            Order order = orderMapper.queryOrder(orderId);
+            order.setStoreNum(numberComplete);
+            if (order.getOrderNum().equals(order.getStoreNum())) {
+                //数量完成时，老mes没有关于这部分的状态管理，新mes根据后期业务是否加入
+            }
+            orderMapper.updateById(order);
         }
-        Order order = orderMapper.queryOrder(orderId);
-        order.setStoreNum(numberComplete);
-        if (order.getOrderNum().equals(order.getStoreNum())) {
-            //数量完成时，老mes没有关于这部分的状态管理，新mes根据后期业务是否加入
-        }
-        orderMapper.updateById(order);
     }
 
 
