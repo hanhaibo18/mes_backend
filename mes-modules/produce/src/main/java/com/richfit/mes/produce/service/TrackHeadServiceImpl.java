@@ -454,28 +454,19 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 relation.setNumber(number);
                 trackHeadRelationMapper.insert(relation);
 
-                //新增一条半成品/成品信息
-                QueryWrapper<LineStore> queryWrapperStore = new QueryWrapper<>();
-                queryWrapperStore.eq("workblank_no", trackHead.getDrawingNo() + " " + productsNo);
-                queryWrapperStore.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                List<LineStore> lineStores = lineStoreService.list(queryWrapperStore);
-                if (lineStores != null && lineStores.size() > 0) {
-                    //校验是否存在重复的产品编码
-                    throw new RuntimeException("产品编号已存在！");
-                } else {
-                    //料单添加成品信息
-                    LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
-                    //添加跟单-分流-料单的关联信息
-                    TrackHeadRelation relationCp = new TrackHeadRelation();
-                    relationCp.setThId(trackHead.getId());
-                    relation.setFlowId(flowId);
-                    relationCp.setLsId(lineStoreCp.getId());
-                    relationCp.setType("1");
-                    relationCp.setNumber(number);
-                    trackHeadRelationMapper.insert(relationCp);
-                }
+                //料单添加成品信息
+                LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
+                
+                //添加跟单-分流-料单的关联信息
+                TrackHeadRelation relationCp = new TrackHeadRelation();
+                relationCp.setThId(trackHead.getId());
+                relation.setFlowId(flowId);
+                relationCp.setLsId(lineStoreCp.getId());
+                relationCp.setType("1");
+                relationCp.setNumber(number);
+                trackHeadRelationMapper.insert(relationCp);
             }
-            
+
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
             trackFlow.setId(flowId);
