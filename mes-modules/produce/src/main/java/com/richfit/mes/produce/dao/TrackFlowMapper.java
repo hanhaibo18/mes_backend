@@ -32,6 +32,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " <if test='endDate != null and endDate != \"\"'> " +
             "  and create_time &lt;= #{endDate} " +
             " </if> " +
+            " <if test='isExamineCard != null and isExamineCard != \"\"'> " +
+            "  and is_examine_card = #{isExamineCard} " +
+            " </if> " +
             " <if test='templateCode != null and templateCode != \"\"'> " +
             "  and template_code = #{templateCode} " +
             " </if> " +
