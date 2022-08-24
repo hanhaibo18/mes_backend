@@ -219,7 +219,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //完工资料zip保存文件服务器
             String filePath = completionDataZip(flowId);
-            CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(filePath);
+            File file = new File(filePath);
+            byte[] fileBytes = new byte[(int) file.length()];
+            CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(fileBytes, file.getName());
             if (commonResult.getStatus() != 200) {
                 throw new GlobalException("上传文件入库失败", ResultCode.FAILED);
             }
@@ -244,7 +246,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackHead.setIsCompletionData("Y");
             }
             this.updateById(trackHead);
-        } catch (GlobalException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
