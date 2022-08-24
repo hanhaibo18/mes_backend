@@ -48,7 +48,9 @@ public class InspectionRecordCardController extends BaseController {
                                                                         @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
                                                                         @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
                                                                         @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
+                                                                        @ApiParam(value = "工厂类型") @RequestParam(required = false) String classes,
                                                                         @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                                                        @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
                                                                         @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                                         @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
         Map<String, String> map = new HashMap<>();
@@ -65,7 +67,9 @@ public class InspectionRecordCardController extends BaseController {
         map.put("batchNo", batchNo);
         map.put("productionOrder", productionOrder);
         map.put("workPlanId", workPlanId);
+        map.put("classes", classes);
         map.put("branchCode", branchCode);
+        map.put("tenantId", tenantId);
         PageHelper.startPage(page, limit);
         List<TrackHead> trackFlowList = trackFlowService.selectTrackFlowList(map);
         PageInfo<QualityTrackHead> trackFlowPage = new PageInfo(trackFlowList);
