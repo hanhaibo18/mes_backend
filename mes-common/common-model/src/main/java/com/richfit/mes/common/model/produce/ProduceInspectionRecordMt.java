@@ -10,15 +10,35 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-@TableName(value = "produce_inspection_records")
-public class ProduceInspectionRecord extends BaseEntity<ProduceInspectionRecord> {
+@TableName(value = "produce_inspection_records_mt")
+public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecordMt> {
     private static final long serialVersionUID = -1472432735506772177L;
-    @ApiModelProperty(value = "工序id")
-    private String itemId;
+    @ApiModelProperty(value = "记录编号")
+    private String recordNo;
+    @ApiModelProperty(value = "委托单号")
+    private String orderNo;
+    @ApiModelProperty(value = "报告编号")
+    private String reportNo;
+    @ApiModelProperty(value = "委托单位")
+    private String entrustDepartment;
+    @ApiModelProperty(value = "工程名称")
+    private String projectName;
+    @ApiModelProperty(value = "样品名称")
+    private String sampleName;
+    @ApiModelProperty(value = "样品图号")
+    private String sampleDrawNo;
+    @ApiModelProperty(value = "出厂编号")
+    private String factoryNo;
+    @ApiModelProperty(value = "样品编号")
+    private String sampleNo;
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
+    @ApiModelProperty(value = "种类")
+    private String type;
     @ApiModelProperty(value = "检件规格")
     private String checkSpecification;
+    @ApiModelProperty(value = "检件材质")
+    private String checkMaterial;
     @ApiModelProperty(value = "样品状态")
     private String sampleStatus;
     @ApiModelProperty(value = "环境条件")
@@ -43,13 +63,19 @@ public class ProduceInspectionRecord extends BaseEntity<ProduceInspectionRecord>
     private String concentrationMagneticSuspension;
     @ApiModelProperty(value = "磁粉施加方法")
     private String magneticPowderMethod;
+    @ApiModelProperty(value = "试验规范")
+    private String testSpecification;
+    @ApiModelProperty(value = "验收标准")
+    private String acceptanceCriteria;
+    @ApiModelProperty(value = "上次检定时间")
+    private String lastCheckDate;
     @ApiModelProperty(value = "灵敏度试片")
     private String sensitivityTestPiece;
     @ApiModelProperty(value = "检测示意图")
     private String diagramAttachmentId;
-    @ApiModelProperty(value = "缺陷情况")
-    private String defectsInfo;
-    @TableField(exist = false)
-    private List<String> itemIds;
+    @ApiModelProperty(value = "模板类型")
+    private String tempType;
+    @TableField(exist = false,value = "缺陷记录")
+    private List<ProduceDefectsInfo> defectsInfoList;
 
 }
