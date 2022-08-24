@@ -225,8 +225,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             byte[] fileBytes = new byte[(int) file.length()];
             fis.read(fileBytes);
             fis.close();
+            //文件转为byte[]并上传文件服务器
             CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(fileBytes, file.getName());
-
             if (commonResult.getStatus() != 200) {
                 throw new GlobalException("上传文件入库失败", ResultCode.FAILED);
             }
