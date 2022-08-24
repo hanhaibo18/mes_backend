@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.produce.entity.quality.QualityTrackHead;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,22 +35,24 @@ public class InspectionRecordCardController extends BaseController {
 
     @ApiOperation(value = "检测记录卡生产跟单分页", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询检测记录卡生产跟单信息")
     @GetMapping("/track_flow_page")
-    public CommonResult<PageInfo<TrackHead>> selectTrackFLowPage(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
-                                                                 @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
-                                                                 @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
-                                                                 @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
-                                                                 @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
-                                                                 @ApiParam(value = "合格证生成/Y以生产 N未生成") @RequestParam(required = false) String isCertificate,
-                                                                 @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
-                                                                 @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
-                                                                 @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
-                                                                 @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
-                                                                 @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
-                                                                 @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
-                                                                 @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
-                                                                 @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
-                                                                 @ApiParam(value = "页码") @RequestParam(required = false) int page,
-                                                                 @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
+    public CommonResult<PageInfo<QualityTrackHead>> selectTrackFLowPage(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                                                                        @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+                                                                        @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
+                                                                        @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                                        @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
+                                                                        @ApiParam(value = "合格证生成/Y以生产 N未生成") @RequestParam(required = false) String isCertificate,
+                                                                        @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
+                                                                        @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+                                                                        @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                                        @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                                        @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
+                                                                        @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
+                                                                        @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
+                                                                        @ApiParam(value = "工厂类型") @RequestParam(required = false) String classes,
+                                                                        @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                                                        @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
+                                                                        @ApiParam(value = "页码") @RequestParam(required = false) int page,
+                                                                        @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("startDate", startDate);
         map.put("endDate", endDate);
@@ -64,10 +67,12 @@ public class InspectionRecordCardController extends BaseController {
         map.put("batchNo", batchNo);
         map.put("productionOrder", productionOrder);
         map.put("workPlanId", workPlanId);
+        map.put("classes", classes);
         map.put("branchCode", branchCode);
+        map.put("tenantId", tenantId);
         PageHelper.startPage(page, limit);
-        List trackFlowList = trackFlowService.selectTrackFlowList(map);
-        PageInfo<TrackHead> trackFlowPage = new PageInfo(trackFlowList);
+        List<TrackHead> trackFlowList = trackFlowService.selectTrackFlowList(map);
+        PageInfo<QualityTrackHead> trackFlowPage = new PageInfo(trackFlowList);
         return CommonResult.success(trackFlowPage);
     }
 }

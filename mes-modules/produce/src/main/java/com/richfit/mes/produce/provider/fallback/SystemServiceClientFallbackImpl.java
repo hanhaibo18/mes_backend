@@ -80,9 +80,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
-    public CommonResult<Attachment> uploadFile(String filePath) {
+    public CommonResult<Attachment> uploadFile(byte[] fileBytes, String fileName) {
         return null;
     }
-
-
 }

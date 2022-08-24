@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -219,7 +220,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //完工资料zip保存文件服务器
             String filePath = completionDataZip(flowId);
-            CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(filePath);
+            File file = new File(filePath);
+            FileInputStream fis = new FileInputStream(file);
+            byte[] fileBytes = new byte[(int) file.length()];
+            fis.read(fileBytes);
+            fis.close();
+            //文件转为byte[]并上传文件服务器
+            CommonResult<Attachment> commonResult = systemServiceClient.uploadFile(fileBytes, file.getName());
             if (commonResult.getStatus() != 200) {
                 throw new GlobalException("上传文件入库失败", ResultCode.FAILED);
             }
@@ -244,7 +251,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackHead.setIsCompletionData("Y");
             }
             this.updateById(trackHead);
-        } catch (GlobalException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }

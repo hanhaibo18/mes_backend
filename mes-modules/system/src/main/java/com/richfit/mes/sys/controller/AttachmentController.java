@@ -29,8 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
@@ -58,20 +56,16 @@ public class AttachmentController extends BaseController {
 
 
     @PostMapping("upload_file")
-    @ApiOperation(value = "通过文件路径上传文件", notes = "通过文件路径上传文件")
-    public CommonResult<Attachment> uploadFile(@ApiParam(value = "文件路径", required = true) @RequestParam String filePath) {
+    @ApiOperation(value = "通过文件流上传文件", notes = "通过文件流上传文件")
+    public CommonResult<Attachment> uploadFile(@ApiParam(value = "文件流", required = true) @RequestBody byte[] fileBytes,
+                                               @ApiParam(value = "文件名称", required = true) @RequestParam String fileName) {
         try {
             Attachment attachment = new Attachment();
-            File file = new File(filePath);
-            FileInputStream fis = new FileInputStream(file);
-            byte[] fileBytes = new byte[(int) file.length()];
-            fis.read(fileBytes);
-            fis.close();
             attachment.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            attachment.setAttachType(FileUtils.getFilenameExtension(file.getName()));
-            attachment.setAttachSize(String.valueOf(file.length()));
-            attachment.setAttachName(file.getName());
+            attachment.setAttachType(FileUtils.getFilenameExtension(fileName));
+            attachment.setAttachSize(String.valueOf(fileBytes.length));
+            attachment.setAttachName(fileName);
             attachment = attachmentService.upload(attachment, fileBytes);
             return CommonResult.success(attachment);
         } catch (Exception e) {
