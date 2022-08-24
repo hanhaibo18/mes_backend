@@ -7,11 +7,11 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -244,16 +244,26 @@ public class BranchController extends BaseController {
         return CommonResult.success(branchService.queryAllCode());
     }
 
-    @ApiOperation(value = "查询下级组织机构列表", notes = "通过条件查询下级组织机构列表")
-    @GetMapping("/list")
-    public CommonResult<List<Branch>> list(@ApiParam(value = "机构类型") @RequestParam String branchType) {
+    @ApiOperation(value = "查询登录用的车间列表", notes = "查询登录用的车间列表")
+    @GetMapping("/login_branch_list")
+    public CommonResult<List<Branch>> loginBranchList() {
+        List<Branch> branchList = new ArrayList<>();
+        TenantUserDetails tenantUserDetails = SecurityUtils.getCurrentUser();
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        if (!StringUtils.isNullOrEmpty(branchType)) {
-            queryWrapper.eq("branch_type", branchType);
-        }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("branch_type", "0");
+        queryWrapper.eq("tenant_id", tenantUserDetails.getTenantId());
         queryWrapper.ne("main_branch_code", "");
         List<Branch> result = branchService.list(queryWrapper);
-        return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
+        //当前机构的代码等于顶级机构的代码时返回所有的工厂列表
+        if (tenantUserDetails.getBelongOrgId().equals(tenantUserDetails.getOrgId())) {
+            return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
+        } else {
+            for (Branch branch : result) {
+                if (tenantUserDetails.getBelongOrgId().startsWith(branch.getBranchCode())) {
+                    branchList.add(branch);
+                }
+            }
+            return CommonResult.success(branchList, BRANCH_SUCCESS_MESSAGE);
+        }
     }
 }
