@@ -175,7 +175,7 @@ public class RouterController extends BaseController {
             router.setModifyTime(new Date());
             //禁止或激活状态无法直接修改为历史状态;历史状态修改为禁止或启动状态，要把其他的工艺状态设置为历史
             if (router.getStatus().equals("2")) {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), "0,1", router.getTenantId());
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1");
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
