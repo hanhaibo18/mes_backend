@@ -244,6 +244,10 @@ public class BranchController extends BaseController {
         return CommonResult.success(branchService.queryAllCode());
     }
 
+    /**
+     * @Author: zhiqiang.lu
+     * @Date: 2022.8.24
+     */
     @ApiOperation(value = "查询登录用的车间列表", notes = "查询登录用的车间列表")
     @GetMapping("/login_branch_list")
     public CommonResult<List<Branch>> loginBranchList() {
