@@ -371,4 +371,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "调度是否显示")
     private Integer isScheduleCompleteShow;
 
+    @ApiModelProperty(value = "探伤记录编码")
+    private String inspectRecordNo;
+
 }
