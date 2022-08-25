@@ -1,7 +1,6 @@
 package com.richfit.mes.sys.service;
 
 import com.alibaba.nacos.common.utils.UuidUtils;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,7 +10,6 @@ import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
 import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
-import com.richfit.mes.common.model.produce.TrackHeadTemplate;
 import com.richfit.mes.common.model.sys.*;
 import com.richfit.mes.sys.dao.TenantMapper;
 import com.richfit.mes.sys.provider.BaseServiceClient;
@@ -93,19 +91,19 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
     public String initData(String tenantId) {
         Tenant tenant = this.getById(tenantId);
         Boolean result = false;
-        if(tenant != null && !StringUtils.isEmpty(tenant.getId())) {
+        if (tenant != null && !StringUtils.isEmpty(tenant.getId())) {
             // 初始化组织机构
             CommonResult<Branch> commonResult =
                     baseServiceClient.initBranch(tenantId, tenant.getTenantCode(), tenant.getTenantName());
             Branch branch = new Branch();
-            if(commonResult != null) {
+            if (commonResult != null) {
                 branch = commonResult.getData();
             }
 
             // 开始初始化角色数据
             List<RoleTemp> roleTemps = roleTempService.list();
             List<Role> roles = new ArrayList<>();
-            for (RoleTemp temp: roleTemps) {
+            for (RoleTemp temp : roleTemps) {
                 Role role = new Role();
                 role.setRoleName(temp.getRoleName());
                 role.setRoleCode(tenant.getTenantCode() + "_" + temp.getRoleCode());
@@ -117,9 +115,9 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                 role.setOrgId(branch.getBranchCode());
                 roles.add(role);
             }
-            if(roles.size() > 0) {
+            if (roles.size() > 0) {
                 result = roleService.batchAdd(roles);
-                if(!result) {
+                if (!result) {
                     return "初始化角色数据失败！";
                 }
             }
@@ -131,17 +129,17 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
             List<ItemClass> classes = new ArrayList<>();
             List<ItemParam> params = new ArrayList<>();
 
-            if(CollectionUtils.isNotEmpty(itemClassTemps)){
-                for (ItemClassTemp temp: itemClassTemps) {
+            if (CollectionUtils.isNotEmpty(itemClassTemps)) {
+                for (ItemClassTemp temp : itemClassTemps) {
                     ItemClass itemClass = new ItemClass();
                     itemClass.setTenantId(tenantId);
                     itemClass.setCode(temp.getCode());
                     itemClass.setName(temp.getName());
                     itemClass.setRemark(temp.getRemark());
-                    itemClass.setId(UuidUtils.generateUuid().replace("-",""));
-                    if(CollectionUtils.isNotEmpty(itemParamTemps)){
+                    itemClass.setId(UuidUtils.generateUuid().replace("-", ""));
+                    if (CollectionUtils.isNotEmpty(itemParamTemps)) {
                         for (ItemParamTemp paramTemp : itemParamTemps) {
-                            if(paramTemp.getClassId().equals(temp.getId())) {
+                            if (paramTemp.getClassId().equals(temp.getId())) {
                                 ItemParam itemParam = new ItemParam();
                                 itemParam.setClassId(itemClass.getId());
                                 itemParam.setLabel(paramTemp.getLabel());
@@ -159,16 +157,16 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                 }
             }
 
-            if(classes.size() > 0) {
+            if (classes.size() > 0) {
                 result = itemClassService.saveBatch(classes);
-                if(!result) {
+                if (!result) {
                     return "初始化字典项失败！";
                 }
             }
 
-            if(params.size() > 0) {
+            if (params.size() > 0) {
                 result = itemParamService.saveBatch(params);
-                if(!result) {
+                if (!result) {
                     return "初始化字典参数失败！";
                 }
             }
@@ -179,8 +177,8 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
 
             List<CodeRule> codeRules = new ArrayList<>();
             List<CodeRuleItem> codeRuleItems = new ArrayList<>();
-            if(CollectionUtils.isNotEmpty(codeRuleTemps)){
-                for (CodeRuleTemp temp: codeRuleTemps) {
+            if (CollectionUtils.isNotEmpty(codeRuleTemps)) {
+                for (CodeRuleTemp temp : codeRuleTemps) {
                     CodeRule entity = new CodeRule();
                     entity.setTenantId(tenantId);
                     entity.setCode(temp.getCode());
@@ -193,11 +191,11 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                     entity.setIsInner(temp.getIsInner());
                     entity.setMaxLength(temp.getMaxLength());
                     entity.setStatus(temp.getStatus());
-                    entity.setId(UuidUtils.generateUuid().replace("-",""));
+                    entity.setId(UuidUtils.generateUuid().replace("-", ""));
 
-                    if(CollectionUtils.isNotEmpty(codeRuleItemTemps)) {
-                        for (CodeRuleItemTemp itemTemp: codeRuleItemTemps) {
-                            if(itemTemp.getCodeRuleId().equals(temp.getId())) {
+                    if (CollectionUtils.isNotEmpty(codeRuleItemTemps)) {
+                        for (CodeRuleItemTemp itemTemp : codeRuleItemTemps) {
+                            if (itemTemp.getCodeRuleId().equals(temp.getId())) {
                                 CodeRuleItem item = new CodeRuleItem();
                                 item.setCodeRuleId(entity.getId());
                                 item.setTenantId(tenantId);
@@ -230,22 +228,22 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                 }
             }
 
-            if(codeRules.size() > 0) {
+            if (codeRules.size() > 0) {
                 CommonResult<Boolean> pResult = produceServiceClient.batchSaveCodeRule(codeRules);
-                if(pResult != null && pResult.getData() != null){
+                if (pResult != null && pResult.getData() != null) {
                     result = pResult.getData();
                 }
-                if(!result) {
+                if (!result) {
                     return "初始化编码规则失败！";
                 }
             }
 
-            if(codeRuleItems.size() > 0) {
+            if (codeRuleItems.size() > 0) {
                 CommonResult<Boolean> pResult = produceServiceClient.batchSaveCodeRuleItem(codeRuleItems);
-                if(pResult != null && pResult.getData() != null){
+                if (pResult != null && pResult.getData() != null) {
                     result = pResult.getData();
                 }
-                if(!result) {
+                if (!result) {
                     return "初始化编码规则项失败！";
                 }
             }
@@ -254,7 +252,7 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
             List<TrackHeadTemp> trackHeadTemps = trackHeadTempService.list();
 
             List<ProduceTrackHeadTemplate> templates = new ArrayList<>();
-            if(CollectionUtils.isNotEmpty(trackHeadTemps)){
+            if (CollectionUtils.isNotEmpty(trackHeadTemps)) {
                 Branch finalBranch = branch;
                 templates = trackHeadTemps.stream().map(temp -> {
                     ProduceTrackHeadTemplate entity = new ProduceTrackHeadTemplate();
@@ -273,12 +271,12 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                 }).collect(Collectors.toList());
             }
 
-            if(templates.size() > 0) {
+            if (templates.size() > 0) {
                 CommonResult<Boolean> pResult = produceServiceClient.batchSaveTrackHeadTemplate(templates);
-                if(pResult != null && pResult.getData() != null){
+                if (pResult != null && pResult.getData() != null) {
                     result = pResult.getData();
                 }
-                if(!result) {
+                if (!result) {
                     return "初始化跟单模板失败！";
                 }
             }

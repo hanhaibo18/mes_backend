@@ -41,11 +41,11 @@ public class TenantMenuServiceImpl extends ServiceImpl<TenantMenuMapper, TenantM
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Boolean saveTenantMenu(List<TenantMenu> menus, String tenantId) {
 
         //删除该租户已分配菜单
-        Map parMap = new HashMap();
+        Map parMap = new HashMap(1);
         parMap.put("tenant_id", tenantId);
         this.removeByMap(parMap);
         //批量保存菜单
