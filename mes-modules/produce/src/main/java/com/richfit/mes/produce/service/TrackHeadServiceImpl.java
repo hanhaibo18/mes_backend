@@ -1119,4 +1119,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public List<Map> selectTrackStoreCount(String drawingNos) {
         return trackHeadMapper.selectTrackStoreCount(drawingNos);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void addTrackHeadProductNo(String flowId, String productNo) {
+        //查询跟单、跟单生产线信息
+        TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+        String trackHeadId = trackFlow.getTrackHeadId();
+        TrackHead trackHead = this.getById(trackHeadId);
+
+        trackHead.setProductNoDesc(trackHead.getDrawingNo() + " " + productNo);
+        trackHead.setProductNo(productNo);
+        this.updateById(trackHead);
+        
+        trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productNo);
+        trackHeadFlowService.updateById(trackFlow);
+    }
 }
