@@ -67,7 +67,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
-    public boolean saveCertificate(Certificate certificate) throws Exception {
+    public boolean saveCertificate(Certificate certificate) {
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
         certificate.setIsPush("0");
         //1 保存合格证
@@ -257,7 +257,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.eq("pc.is_push", "0");
         queryWrapper.eq("pc.next_opt_work", queryDto.getBranchCode());
         queryWrapper.ne("pc.branch_code", queryDto.getBranchCode());
-//        queryWrapper.apply("pc.id = track.certificate_id");
         queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         if (!StringUtils.isNullOrEmpty(queryDto.getCertificateNo())) {

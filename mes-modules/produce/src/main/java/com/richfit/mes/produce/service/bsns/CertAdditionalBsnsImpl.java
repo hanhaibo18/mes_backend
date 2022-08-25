@@ -104,9 +104,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
         int nowDay = DateUtil.dayOfMonth(new Date());
         if (startDay != null && startDay.getData() != null && endDay != null && endDay.getData() != null) {
-            if (Integer.parseInt(startDay.getData().getLabel()) <= nowDay && nowDay <= Integer.parseInt(endDay.getData().getLabel())) {
-
-            } else {
+            if (Integer.parseInt(startDay.getData().getLabel()) > nowDay || nowDay > Integer.parseInt(endDay.getData().getLabel())) {
                 enable = false;
                 log.debug("当前日期[{}]在同步工时接口允许日期范围外[{}]-[{}]，不进行工时推送", nowDay, startDay.getData().getLabel(), endDay.getData().getLabel());
             }

@@ -36,7 +36,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore> implements LineStoreService {
 
     @Autowired
@@ -63,12 +63,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Resource
     private TrackHeadService trackHeadService;
 
-    @Resource
-    MaterialReceiveService materialReceiveService;
-
-    @Resource
-    MaterialReceiveDetailService materialReceiveDetailService;
-
     @Autowired
     private PublicService publicService;
 
@@ -91,10 +85,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Override
     public boolean changeStatus(TrackHead trackHead) {
 
-        String pNo = trackHead.getUserProductNo(); //毛坯编号
-
         UpdateWrapper<LineStore> update2 = new UpdateWrapper<LineStore>();
-        update2.set("status", StoreItemStatusEnum.FINISH.getCode()); //将状态设置为完工
+        //将状态设置为完工
+        update2.set("status", StoreItemStatusEnum.FINISH.getCode());
         update2.set("in_time", new Date());
         update2.eq("workblank_no", trackHead.getProductNo());
         update2.eq("drawing_no", trackHead.getDrawingNo());
@@ -107,7 +100,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     // 料单投用
     @Override
     public Map useItem(int num, TrackHead trackHead, String workblankNo) {
-        int useNum = 0; //本次使用数量
+        //本次使用数量
+        int useNum = 0;
         //修改库存状态
         LineStore lineStore1 = lineStoreMapper.selectOne(
                 new QueryWrapper<LineStore>().eq("drawing_no", trackHead.getDrawingNo())
@@ -118,21 +112,21 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 useNum = lineStore1.getNumber() - lineStore1.getUseNum();
                 num -= useNum;
                 lineStore1.setUseNum(lineStore1.getNumber());
-                changeStatus(lineStore1);//没有消耗光不需要修改状态
+                //没有消耗光不需要修改状态
+                changeStatus(lineStore1);
             } else {
                 useNum = num;
                 lineStore1.setUseNum(lineStore1.getUseNum() + num);
                 num = 0;
             }
-            if (lineStore1.getMaterialType().equals("0")) {
+            // 0 : 毛坯
+            if ("0".equals(lineStore1.getMaterialType())) {
                 lineStore1.setOutTime(new Date());
             }
 
             //关联跟单号码
             lineStore1.setTrackNo(trackHead.getTrackNo());
             lineStoreMapper.updateById(lineStore1);
-        } else {
-
         }
 
         Map map = new HashMap();
@@ -191,7 +185,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStore.setNumber(num);
         lineStore.setUseNum(num);
         changeStatus(lineStore);
-        lineStore.setStockType("1"); //自动
+        //自动
+        lineStore.setStockType("1");
         lineStore.setTrackType(trackHead.getTrackType());
 
         lineStore.setInputType("2");
@@ -300,7 +295,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStore.setCreateTime(new Date());
         lineStore.setInTime(new Date());
 
-        boolean bool = false;
+        boolean bool;
 
         if (startNo != null && startNo > 0) {
             List<LineStore> list = new ArrayList<>();
@@ -313,9 +308,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 if (isAutoMatchProd) {
                     entity.setProductionOrder(matchProd(entity.getMaterialNo(), entity.getNumber()));
                 }
-//                if (isAutoMatchPur) {
-//                    entity.setPurchaseOrder(matchPur(entity.getMaterialNo(), entity.getNumber()));
-//                }
+
                 String workblankNo = oldWorkblankNo + "" + i;
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
                     workblankNo += "_" + suffixNo;
@@ -336,11 +329,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (isAutoMatchProd) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
             }
-
-            //新业务要求：不匹配采购订单
-//            if (isAutoMatchPur) {
-//                lineStore.setPurchaseOrder(matchPur(lineStore.getMaterialNo(), lineStore.getNumber()));
-//            }
 
             bool = this.save(lineStore);
             //保存料单-附件关系
@@ -489,7 +477,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
-    @Transactional
     public boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         queryWrapper.eq("drawing_no", drawingNo);
@@ -603,7 +590,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
 
     @Override
-    public IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) throws Exception {
+    public IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) {
 
         //1 当前库存量
         IPage<LineStoreSumZp> storeList = this.lineStoreMapper.selectStoreNumForAssembly(page, parMap);
@@ -672,26 +659,32 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             throw new RuntimeException("产品编号已存在！");
         } else {
             //新增一条半成品/成品信息
-            LineStore lineStoreCp = new LineStore();
-            lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
-            lineStoreCp.setTenantId(trackHead.getTenantId());
-            lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
-            lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
-            lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
-            lineStoreCp.setNumber(number);//添加单件多个产品
-            lineStoreCp.setUseNum(0);
-            lineStoreCp.setStatus("1");//在制状态
-            lineStoreCp.setTrackNo(trackHead.getTrackNo());
-            lineStoreCp.setMaterialType("1");
-            lineStoreCp.setTrackType(trackHead.getTrackType());
-            lineStoreCp.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            lineStoreCp.setCreateTime(new Date());
-            lineStoreCp.setInTime(new Date());
-            lineStoreCp.setBranchCode(trackHead.getBranchCode());
-            lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            lineStoreCp.setInputType("2");  //录入类型 系统自动生成
+            LineStore lineStoreCp = getLineStore(trackHead, productsNo, number);
             lineStoreMapper.insert(lineStoreCp);
             return lineStoreCp;
         }
+    }
+
+    private static LineStore getLineStore(TrackHead trackHead, String productsNo, Integer number) {
+        LineStore lineStoreCp = new LineStore();
+        lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
+        lineStoreCp.setTenantId(trackHead.getTenantId());
+        lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
+        lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
+        lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
+        //添加单件多个产品
+        lineStoreCp.setNumber(number);
+        lineStoreCp.setUseNum(0);
+        //在制状态
+        lineStoreCp.setStatus("1");
+        lineStoreCp.setTrackNo(trackHead.getTrackNo());
+        lineStoreCp.setMaterialType("1");
+        lineStoreCp.setTrackType(trackHead.getTrackType());
+        lineStoreCp.setInTime(new Date());
+        lineStoreCp.setBranchCode(trackHead.getBranchCode());
+        lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        //录入类型 系统自动生成
+        lineStoreCp.setInputType("2");
+        return lineStoreCp;
     }
 }
