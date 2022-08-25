@@ -27,4 +27,14 @@ public interface ProduceInspectionRecordCardService extends IService<ProduceInsp
      * @Date: 2022/7/29 15:06
      */
     void updateProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard);
+
+    /**
+     * 功能描述: 质量检验卡更新
+     *
+     * @param flowId 质量检测卡id/flowID
+     * @return ProduceInspectionRecordCard 质量检测卡信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     */
+    ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId);
 }

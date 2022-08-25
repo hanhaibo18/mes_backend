@@ -4,9 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCard;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCardContent;
+import com.richfit.mes.common.model.produce.TrackFlow;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.ProduceInspectionRecordCardContentMapper;
 import com.richfit.mes.produce.dao.quality.ProduceInspectionRecordCardMapper;
+import com.richfit.mes.produce.service.TrackHeadFlowService;
+import com.richfit.mes.produce.service.TrackHeadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +28,12 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
 
     @Autowired
     public ProduceInspectionRecordCardContentMapper produceInspectionRecordCardContentMapper;
+
+    @Autowired
+    public TrackHeadService trackHeadService;
+
+    @Autowired
+    public TrackHeadFlowService trackHeadFlowService;
 
     @Override
     public void saveProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
@@ -52,5 +62,18 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             produceInspectionRecordCardContent.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             produceInspectionRecordCardContentMapper.insert(produceInspectionRecordCardContent);
         }
+    }
+
+    @Override
+    public ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId) {
+        ProduceInspectionRecordCard produceInspectionRecordCard = this.getById(flowId);
+        //如果查到说明已保存过，直接返回，否则需要从原工厂进行查询信息
+        if (produceInspectionRecordCard != null) {
+            return produceInspectionRecordCard;
+        } else {
+            TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+            TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
+        }
+        return null;
     }
 }

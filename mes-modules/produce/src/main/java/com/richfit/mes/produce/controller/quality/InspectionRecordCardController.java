@@ -101,4 +101,10 @@ public class InspectionRecordCardController extends BaseController {
     public void update(@ApiParam(value = "质量检测卡信息", required = true) @RequestBody ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCardService.updateProduceInspectionRecordCard(produceInspectionRecordCard);
     }
+
+    @ApiOperation(value = "质量检测卡查询", notes = "质量检测卡查询")
+    @GetMapping("/select")
+    public void select(@ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
+        produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+    }
 }
