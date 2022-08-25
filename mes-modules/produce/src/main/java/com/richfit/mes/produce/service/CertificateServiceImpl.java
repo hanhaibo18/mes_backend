@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certificate> implements CertificateService {
 
     @Autowired
@@ -110,7 +110,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
-    public boolean savePushCert(Certificate certificate) throws Exception {
+    public boolean savePushCert(Certificate certificate) {
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
         certificate.setIsPush("0");
         //1 保存合格证
@@ -131,9 +131,14 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     }
 
-
+    /**
+     * 更新合格证时，可能关联的跟单记录有变化：又有新增的跟单，之前关联的可能去掉，故需要一个较复杂的对比逻辑
+     *
+     * @param certificate
+     * @param changeTrack 关联的跟单是否有变化
+     */
     @Override
-    public void updateCertificate(Certificate certificate, boolean changeTrack) throws Exception {
+    public void updateCertificate(Certificate certificate, boolean changeTrack) {
         //1、保存合格证
         this.updateById(certificate);
 
@@ -187,7 +192,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                         //删除线边库对应半成品 对应合格证号
                         TrackHead th = trackHeadService.getById(track.getThId());
                         lineStoreService.reSetCertNoByTrackHead(th);
-
                     }
                 }
                 return !isHave;
@@ -227,7 +231,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             }
 
             //删除关系表
-            Map map = new HashMap();
+            Map map = new HashMap(16);
             map.put("certificate_id", track.getCertificateId());
             trackCertificateService.removeByMap(map);
         });
