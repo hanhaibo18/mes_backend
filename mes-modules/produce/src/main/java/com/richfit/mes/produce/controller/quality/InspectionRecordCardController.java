@@ -4,9 +4,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.model.produce.ProduceInspectionRecordCard;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.quality.QualityTrackHead;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
+import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -30,6 +32,10 @@ public class InspectionRecordCardController extends BaseController {
     @Autowired
     private TrackHeadFlowService trackFlowService;
 
+    @Autowired
+    private ProduceInspectionRecordCardService produceInspectionRecordCardService;
+
+
     @ApiOperation(value = "检测记录卡生产跟单分页", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询检测记录卡生产跟单信息")
     @GetMapping("/track_flow_page")
     public CommonResult<PageInfo<QualityTrackHead>> selectTrackFLowPage(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
@@ -51,7 +57,7 @@ public class InspectionRecordCardController extends BaseController {
                                                                         @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                                                         @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
                                                                         @ApiParam(value = "页码") @RequestParam(required = false) int page,
-                                                                        @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
+                                                                        @ApiParam(value = "条数") @RequestParam(required = false) int limit) {
         Map<String, String> map = new HashMap<>();
         map.put("startDate", startDate);
         map.put("endDate", endDate);
@@ -80,7 +86,19 @@ public class InspectionRecordCardController extends BaseController {
     @ApiOperation(value = "质量检测卡审核功能", notes = "质量检测卡审核功能")
     @PostMapping("/examine")
     public void examine(@ApiParam(value = "生成线id") @RequestParam(required = false) String flowId,
-                        @ApiParam(value = "是否通过：Y通过，N不通过") @RequestParam(required = false) String approved) throws Exception {
+                        @ApiParam(value = "是否通过：Y通过，N不通过") @RequestParam(required = false) String approved) {
         trackFlowService.examineCard(flowId, approved);
+    }
+
+    @ApiOperation(value = "质量检测卡保存", notes = "质量检测卡保存")
+    @PostMapping("/save")
+    public void save(@ApiParam(value = "质量检测卡信息", required = true) @RequestBody ProduceInspectionRecordCard produceInspectionRecordCard) {
+        produceInspectionRecordCardService.saveProduceInspectionRecordCard(produceInspectionRecordCard);
+    }
+
+    @ApiOperation(value = "质量检测卡更新", notes = "质量检测卡更新")
+    @PostMapping("/update")
+    public void update(@ApiParam(value = "质量检测卡信息", required = true) @RequestBody ProduceInspectionRecordCard produceInspectionRecordCard) {
+        produceInspectionRecordCardService.updateProduceInspectionRecordCard(produceInspectionRecordCard);
     }
 }
