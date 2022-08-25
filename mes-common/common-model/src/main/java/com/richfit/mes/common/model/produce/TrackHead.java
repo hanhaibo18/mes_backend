@@ -173,9 +173,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "完成数量", dataType = "Integer")
     private Integer numberComplete;
 
-    @TableField(exist = false)
-    @ApiModelProperty(value = "分流id", dataType = "String")
-    private String flowId;
 
     @ApiModelProperty(value = "原跟单id", dataType = "String")
     private String originalTrackId;
@@ -193,7 +190,39 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "选择的毛胚物料号码", dataType = "String")
     private String selectedMaterialNo;
 
-    //无用属性
+    /**
+     * 跟单分流表开始
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "分流id", dataType = "String")
+    private String flowId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "完工资料附件")
+    private String completionData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检验记录卡审核状态  Y已审核 N审核未通过")
+    private String isExamineCardData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检验记录卡生成状态  Y已生成")
+    private String isCardData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检验记录卡文件")
+    private String cardData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单id")
+    private String trackHeadId;
+    /**
+     * 跟单分流表结束
+     */
+    //
+    /**
+     * 无用属性
+     */
     private String userProductNo;
     private Integer startNo;
     private Integer endNo;
