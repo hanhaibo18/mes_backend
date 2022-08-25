@@ -1,12 +1,10 @@
 package com.kld.mes.erp.service;
 
-import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024;
 import com.kld.mes.erp.entity.order.WERKS;
 import com.kld.mes.erp.entity.order.ZC80PPIF009;
 import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
 import com.kld.mes.erp.entity.order.ZPPS0008;
 import com.kld.mes.erp.utils.WsTemplateFactory;
-import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
