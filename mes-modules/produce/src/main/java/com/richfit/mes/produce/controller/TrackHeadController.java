@@ -263,7 +263,7 @@ public class TrackHeadController extends BaseController {
             queryWrapper.like("work_plan_id", workPlanId);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
-            queryWrapper.like("product_no", productNo);
+            queryWrapper.like("product_no_desc", productNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("material_no", materialNo);
