@@ -71,6 +71,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         if (produceInspectionRecordCard != null) {
             return produceInspectionRecordCard;
         } else {
+            //从跟单中过去数据
             TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
             TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
         }
