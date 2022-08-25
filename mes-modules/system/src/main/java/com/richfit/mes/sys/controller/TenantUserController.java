@@ -142,7 +142,7 @@ public class TenantUserController extends BaseController {
         userQueryForm.setOrgId(orgId);
         userQueryForm.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
 
-        IPage<TenantUserVo> users = tenantUserService.query(new Page<TenantUser>(page, limit), userQueryForm);
+        IPage<TenantUserVo> users = tenantUserService.query(new Page<>(page, limit), userQueryForm);
         return CommonResult.success(users);
     }
 
@@ -163,7 +163,7 @@ public class TenantUserController extends BaseController {
         userQueryForm.setEmplName(emplName);
         userQueryForm.setTenantId(tenantId);
 
-        IPage<TenantUserVo> users = tenantUserService.queryAdmin(new Page<TenantUser>(page, limit), userQueryForm);
+        IPage<TenantUserVo> users = tenantUserService.queryAdmin(new Page<>(page, limit), userQueryForm);
         return CommonResult.success(users);
     }
 

@@ -31,6 +31,7 @@ import java.util.List;
 @Slf4j
 public class RoleController extends BaseController {
 
+
     @Autowired
     private RoleService roleService;
 
@@ -71,7 +72,7 @@ public class RoleController extends BaseController {
         }
 
         //非系统管理员 不能修改租户管理员角色
-        if (!SecurityUtils.getCurrentUser().isSysAdmin() && "role_tenant_admin".equals(role.getRoleCode())) {
+        if (!SecurityUtils.getCurrentUser().isSysAdmin() && TENANT_ROLE_CODE.equals(role.getRoleCode())) {
             return CommonResult.forbidden("租户管理员角色为系统默认,请勿修改");
         }
 
@@ -90,7 +91,7 @@ public class RoleController extends BaseController {
         }
         //非系统管理员 不能修改租户管理员角色
         Role role = roleService.get(id);
-        if (!SecurityUtils.getCurrentUser().isSysAdmin() && "role_tenant_admin".equals(role.getRoleCode())) {
+        if (!SecurityUtils.getCurrentUser().isSysAdmin() && TENANT_ROLE_CODE.equals(role.getRoleCode())) {
             return CommonResult.forbidden("租户管理员角色为系统默认,请勿删除");
         }
 
