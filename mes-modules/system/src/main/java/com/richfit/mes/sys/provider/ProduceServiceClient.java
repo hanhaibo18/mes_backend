@@ -1,18 +1,14 @@
 package com.richfit.mes.sys.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.CheckAttachment;
 import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
 import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
-import com.richfit.mes.sys.provider.fallback.BaseServiceClientFallbackImpl;
 import com.richfit.mes.sys.provider.fallback.ProduceServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
