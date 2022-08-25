@@ -12,10 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -78,5 +75,12 @@ public class InspectionRecordCardController extends BaseController {
         List<TrackHead> trackFlowList = trackFlowService.selectTrackFlowList(map);
         PageInfo<QualityTrackHead> trackFlowPage = new PageInfo(trackFlowList);
         return CommonResult.success(trackFlowPage);
+    }
+
+    @ApiOperation(value = "质量检测卡审核功能", notes = "质量检测卡审核功能")
+    @PostMapping("/examine")
+    public void examine(@ApiParam(value = "生成线id") @RequestParam(required = false) String flowId,
+                        @ApiParam(value = "是否通过：Y通过，N不通过") @RequestParam(required = false) String approved) throws Exception {
+        trackFlowService.examineCard(flowId, approved);
     }
 }
