@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.TenantUser;
+import com.richfit.mes.common.model.sys.UserRole;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.TenantUserMapper;
@@ -79,6 +80,10 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         }
         TenantUserVo tenantUserVo = new TenantUserVo(tenantUser);
         tenantUserVo.setRoleList(userRoleService.queryRolesByUserId(id));
+        QueryWrapper<UserRole> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", tenantUserVo.getId());
+        List<UserRole> roleList = userRoleService.list(wrapper);
+        tenantUserVo.setUserRoleType(roleList.get(0).getUserType());
         return tenantUserVo;
     }
 
@@ -103,7 +108,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         }
 
         boolean inserts = this.save(tenantUser);
-        userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds());
+        userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds(), tenantUser.getUserRoleType());
         return inserts;
     }
 
@@ -163,7 +168,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         }
         boolean isSuccess = this.updateById(tenantUser);
         if (tenantUser.getRoleIds() != null && !tenantUser.getRoleIds().isEmpty()) {
-            isSuccess = userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds());
+            isSuccess = userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds(), tenantUser.getUserRoleType());
         }
 
         return isSuccess;

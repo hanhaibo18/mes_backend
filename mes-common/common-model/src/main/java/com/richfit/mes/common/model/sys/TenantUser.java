@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.sys;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -79,6 +80,11 @@ public class TenantUser extends BaseEntity<TenantUser> {
      */
     @TableField(exist = false)
     private Set<String> roleIds;
+
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "用户类型(0=普通,1=普通质检,2=质检租户)")
+    private String userRoleType;
 
     @TableField(exist = false)
     private String orgName;

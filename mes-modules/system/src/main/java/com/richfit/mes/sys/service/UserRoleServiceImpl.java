@@ -19,12 +19,13 @@ import java.util.stream.Collectors;
 public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements UserRoleService {
 
     @Override
-    public boolean saveBatch(String userId, Set<String> roleIds) {
+    public boolean saveBatch(String userId, Set<String> roleIds, String userType) {
         baseMapper.deleteByUserId(userId);
         List<UserRole> userRoleList = roleIds.stream().map(roleId -> {
             UserRole userRole = new UserRole();
             userRole.setUserId(userId);
             userRole.setRoleId(roleId);
+            userRole.setUserType(userType);
             return userRole;
         }).collect(Collectors.toList());
         return this.saveBatch(userRoleList);
