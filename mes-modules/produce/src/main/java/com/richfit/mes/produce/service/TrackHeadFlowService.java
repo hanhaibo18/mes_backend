@@ -8,9 +8,27 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author 王瑞
- * @Description 跟单服务
+ * @author zhiqiang.lu
+ * @date 2022.8.25
  */
 public interface TrackHeadFlowService extends IService<TrackFlow> {
-    public List<TrackHead> selectTrackFlowList(Map<String, String> map) throws Exception;
+    /**
+     * 功能描述: 查询跟单与生产线视图
+     *
+     * @param map 查询条件
+     * @return 返回视图列表
+     * @author zhiqiang.lu
+     * @date 2022.8.25
+     */
+    List<TrackHead> selectTrackFlowList(Map<String, String> map);
+
+    /**
+     * 功能描述: 质量检测卡审核流程
+     *
+     * @param flowId   生产线id
+     * @param approved 是否通过：Y通过，N不通过
+     * @author zhiqiang.lu
+     * @date 2022.8.25
+     */
+    void examineCard(String flowId, String approved);
 }
