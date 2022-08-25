@@ -37,7 +37,8 @@ public class InspectionRecordCardController extends BaseController {
     @GetMapping("/track_flow_page")
     public CommonResult<PageInfo<QualityTrackHead>> selectTrackFLowPage(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
                                                                         @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
-                                                                        @ApiParam(value = "检验记录卡审核状态  Y已审核") @RequestParam(required = false) String isExamineCard,
+                                                                        @ApiParam(value = "检验记录卡审核状态  Y已审核 N审核不通过") @RequestParam(required = false) String isExamineCardData,
+                                                                        @ApiParam(value = "检验记录卡生成状态  Y已生成") @RequestParam(required = false) String isCardData,
                                                                         @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
                                                                         @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
                                                                         @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
@@ -55,9 +56,10 @@ public class InspectionRecordCardController extends BaseController {
                                                                         @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                                         @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
         Map<String, String> map = new HashMap<>();
-        map.put("isExamineCard", isExamineCard);
         map.put("startDate", startDate);
         map.put("endDate", endDate);
+        map.put("isExamineCardData", isExamineCardData);
+        map.put("isCardData", isCardData);
         map.put("templateCode", templateCode);
         map.put("status", status);
         map.put("isCompletionData", isCompletionData);

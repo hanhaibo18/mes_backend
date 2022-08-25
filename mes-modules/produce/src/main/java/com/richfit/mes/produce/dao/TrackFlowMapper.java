@@ -35,6 +35,12 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " <if test='isExamineCard != null and isExamineCard != \"\"'> " +
             "  and is_examine_card = #{isExamineCard} " +
             " </if> " +
+            " <if test='isExamineCardData != null and isExamineCardData != \"\"'> " +
+            "  and is_examine_card_data = #{isExamineCardData} " +
+            " </if> " +
+            " <if test='isCardData != null and isCardData != \"\"'> " +
+            "  and is_card_data = #{isCardData} " +
+            " </if> " +
             " <if test='templateCode != null and templateCode != \"\"'> " +
             "  and template_code = #{templateCode} " +
             " </if> " +

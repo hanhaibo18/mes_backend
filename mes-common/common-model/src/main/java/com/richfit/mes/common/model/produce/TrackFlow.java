@@ -41,8 +41,14 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
     @ApiModelProperty(value = "完工资料附件")
     private String completionData;
 
-    @ApiModelProperty(value = "检验记录卡审核状态  Y已审核")
-    private String isExamineCard;
+    @ApiModelProperty(value = "检验记录卡审核状态  Y已审核 N审核未通过")
+    private String isExamineCardData;
+
+    @ApiModelProperty(value = "检验记录卡生成状态  Y已生成")
+    private String isCardData;
+
+    @ApiModelProperty(value = "检验记录卡文件")
+    private String cardData;
 
     @ApiModelProperty(value = "组织机构编号")
     private String branchCode;
