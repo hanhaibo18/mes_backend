@@ -1,11 +1,14 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+
+import java.util.List;
 
 /**
  * @author zhiqiang.lu
@@ -50,4 +53,8 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
 
     @ApiModelProperty(value = "材质")
     private String texture;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "详细明细")
+    private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
 }
