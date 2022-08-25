@@ -43,14 +43,14 @@ public class ProductToWmsService {
     private final String mesUrlTokenKey = "wms-url-token";
     private final String mesUrlQueryMaterialCountApiKey = "wms-url-query-material-count";
 
-    private String mesUploadAPi = "";
+    private String mesUploadApi = "";
     private String mesToWmsApiKey = "";
     private String mesScddUploadApi = "";
     private String mesUrlToken = "";
     private String mesUrlQueryMaterialCountApi = "";
 
     private void init() {
-        mesUploadAPi = systemServiceClient.findItemParamByCode(mesUploadAPiKey).getData().getLabel();
+        mesUploadApi = systemServiceClient.findItemParamByCode(mesUploadAPiKey).getData().getLabel();
         mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey).getData().getLabel();
         mesScddUploadApi = systemServiceClient.findItemParamByCode(mesScddUploadKey).getData().getLabel();
         mesUrlToken = systemServiceClient.findItemParamByCode(mesUrlTokenKey).getData().getLabel();
@@ -60,29 +60,34 @@ public class ProductToWmsService {
     //接口格式，详见条码-mes接口文档
     public Boolean sendRequest(Certificate cert) {
 
-        if (StringUtils.isEmpty(mesUploadAPi)) {
+        if (StringUtils.isEmpty(mesUploadApi)) {
             init();
         }
 
         String sqd = cert.getCertificateNo() + DateUtil.format(new Date(), "MMddHHmmss");
         String gc = SecurityUtils.getCurrentUser().getTenantErpCode();
 
-        String prod_No = "";
-        if (!cert.getProductNo().equals("") && cert.getProductNo().split(" ").length > 1) {
-            prod_No = cert.getProductNo().split(" ")[1];
+        //如果产品编号是图号+“ ”+序列号形式，需要截取“ ”之后的部分
+        String prodNo = "";
+        String spitStr = " ";
+        if (!"".equals(cert.getProductNo()) && cert.getProductNo().split(spitStr).length > 1) {
+            prodNo = cert.getProductNo().split(spitStr)[1];
         }
 
         String json = "{\"sqd\":\"" + sqd + "\",\"gc\":\"" + gc + "\",\"scdd\":\""
                 + cert.getProductNo() + "\",\"materialNum\":\"" + cert.getMaterialNo()
-                + "\",\"quantity\":" + cert.getNumber() + ",\"cp\":\"" + prod_No + "\",\"batchNum\":\"\",\"hgz\":\""
+                + "\",\"quantity\":" + cert.getNumber() + ",\"cp\":\"" + prodNo + "\",\"batchNum\":\"\",\"hgz\":\""
                 + cert.getCertificateNo() + "\",\"swFlag\":\"1\"}";
 
-        String url = mesUploadAPi + AESUtil.encrypt(json, mesToWmsApiKey);
+        String url = mesUploadApi + AESUtil.encrypt(json, mesToWmsApiKey);
 
         ResponseEntity<JsonNode> resp = restTemplate.getForEntity(url, JsonNode.class);
         log.debug("resp status is [{}],body is [{}]", resp.getStatusCode(), resp.getBody());
-        String retStatus = resp.getBody().get("retStatus").asText();
-        log.debug("retMsg is [{}]", resp.getBody().get("retMsg").asText());
+        String retStatus = "";
+        if (resp.getBody() != null) {
+            retStatus = resp.getBody().get("retStatus").asText();
+            log.debug("retMsg is [{}]", resp.getBody().get("retMsg").asText());
+        }
 
         return "Y".equals(retStatus);
     }
@@ -96,7 +101,7 @@ public class ProductToWmsService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("wstr", materialNo);
         params.put("page", 1);
-        params.put("token",mesUrlToken);
+        params.put("token", mesUrlToken);
         //调用接口
         String number = HttpUtil.get(mesUrlQueryMaterialCountApi, params);
         if (StringUtil.isNullOrEmpty(number)) {
