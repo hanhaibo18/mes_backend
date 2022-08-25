@@ -7,10 +7,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.RoleMapper;
 import com.richfit.mes.sys.entity.param.RoleQueryParam;
+import com.richfit.mes.sys.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     private UserRoleService userRoleService;
 
     private final static String ADMIN_ROLE_CODE = "role_tenant_admin";
+
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public boolean add(Role role) {
@@ -129,6 +134,21 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 //            queryWrapper.eq("tenant_id", tenantId);
 //        }
 
-        return this.page(page, queryWrapper);
+        return fillBranchName(this.page(page, queryWrapper));
+    }
+
+    private IPage<Role> fillBranchName(IPage<Role> roleIPage) {
+
+        List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
+
+        for (Role role : roleIPage.getRecords()) {
+            for (Branch b : branchList) {
+                if (b.getBranchCode().equals(role.getOrgId())) {
+                    role.setOrgName(b.getBranchName());
+
+                }
+            }
+        }
+        return roleIPage;
     }
 }

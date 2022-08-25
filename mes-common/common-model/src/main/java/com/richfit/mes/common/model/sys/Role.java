@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.sys;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -60,4 +61,8 @@ public class Role extends BaseEntity<Role> {
      */
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "所在机构名称")
+    private String orgName;
 }
