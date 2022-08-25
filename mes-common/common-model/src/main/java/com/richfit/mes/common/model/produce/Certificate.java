@@ -107,4 +107,15 @@ public class Certificate extends BaseEntity<Certificate> {
 
     @ApiModelProperty(value = "工作号")
     private String workNo;
+
+    @ApiModelProperty(value = "下车间需要完成的工序列表，逗号隔开")
+    private String nextWorkOpts;
+
+    @ApiModelProperty(value = "本车间名称")
+    @TableField(exist = false)
+    private String branchCodeName;
+
+    @ApiModelProperty(value = "下工序车间名称")
+    @TableField(exist = false)
+    private String nextOptWorkName;
 }

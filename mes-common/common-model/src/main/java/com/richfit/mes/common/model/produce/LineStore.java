@@ -45,6 +45,10 @@ public class LineStore extends BaseEntity<LineStore> {
     @ApiModelProperty(value = "物料来源")
     private String materialSource;
 
+    @ApiModelProperty(value = "物料来源名称")
+    @TableField(exist = false)
+    private String materialSourceName;
+
     @ApiModelProperty(value = "炉批号")
     private String batchNo;
 

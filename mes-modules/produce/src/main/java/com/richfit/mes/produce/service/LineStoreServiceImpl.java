@@ -69,6 +69,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Resource
     MaterialReceiveDetailService materialReceiveDetailService;
 
+    @Autowired
+    private PublicService publicService;
+
     @Override
     public LineStore LineStoreById(String id) {
         return lineStoreMapper.selectById(id);
@@ -220,16 +223,26 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
             LineStore lineStore = this.getOne(queryWrapper);
 
+
             if (null == lineStore) {
                 lineStore = new LineStore(certificate, tc);
                 lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 changeStatus(lineStore);
                 this.save(lineStore);
             }
+            //3 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
+            //3 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
+            else {
+                QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<TrackHead>();
+                //该字段可能存有多个产品编号，故需要like查询
+                trackHeadQueryWrapper.like("product_no", lineStore.getProdNo());
+                List<TrackHead> list = trackHeadService.list(trackHeadQueryWrapper);
+                if (!list.isEmpty()) {
+                    publicService.thirdPartyAction(list.get(0).getId());
+                }
+            }
         }
 
-        //3 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
-        //3 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
         certificate.setCertOrigin("1");
         certificate.setBranchCode(certificate.getNextOptWork());
         certificate.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
