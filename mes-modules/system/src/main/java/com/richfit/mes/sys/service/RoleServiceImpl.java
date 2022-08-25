@@ -38,8 +38,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public boolean add(Role role) {
-        boolean isSuccess = this.save(role);
-        return isSuccess;
+        return this.save(role);
     }
 
     @Override
@@ -90,8 +89,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public boolean update(Role role) {
-        boolean isSuccess = this.updateById(role);
-        return isSuccess;
+        return this.updateById(role);
     }
 
     @Override
@@ -116,23 +114,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleName()), "role_name", roleQueryParam.getRoleName());
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleCode()), "role_code", roleQueryParam.getRoleCode());
 
-
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-
-//        在上层拦截系统管理员不能查询角色列表，这块逻辑无用了  2022-5-09 gl  modify
-//        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
-//        boolean isAdmin = false;
-//        for (GrantedAuthority authority : authorities) {
-//            //超级管理员 ROLE_12345678901234567890000000000000
-//            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
-//                isAdmin = true;
-//                break;
-//            }
-//        }
-//        if (!isAdmin) {
-//            String tenantId =  SecurityUtils.getCurrentUser().getTenantId();
-//            queryWrapper.eq("tenant_id", tenantId);
-//        }
 
         return fillBranchName(this.page(page, queryWrapper));
     }
