@@ -131,12 +131,13 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
 
             //全量保存更新BOM
             PdmBom bom = pdmBomService.getBomByProcessIdAndRev(pdmProcess.getDrawNo(), pdmProcess.getRev());
-            PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
-            if (!StringUtils.isNullOrEmpty(pdmMesBom.getBomId())) {
-                pdmMesBomService.saveOrUpdate(pdmMesBom);
-                getBomList(bom.getChildBom());
+            if (bom != null) {
+                PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
+                if (!StringUtils.isNullOrEmpty(pdmMesBom.getBomId())) {
+                    pdmMesBomService.saveOrUpdate(pdmMesBom);
+                    getBomList(bom.getChildBom());
+                }
             }
-
 
             // 保存&更新MES工艺，并更新工艺接收状态
             PdmMesProcess pdmMesProcess = JSON.parseObject(JSON.toJSONString(pdmProcess), PdmMesProcess.class);
