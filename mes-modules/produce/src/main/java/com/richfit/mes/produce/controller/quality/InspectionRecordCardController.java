@@ -80,7 +80,7 @@ public class InspectionRecordCardController extends BaseController {
         PageHelper.startPage(page, limit);
         List<TrackHead> trackFlowList = trackFlowService.selectTrackFlowList(map);
         PageInfo<QualityTrackHead> trackFlowPage = new PageInfo(trackFlowList);
-        log.debug("inspection_record_card trackFlowPage is [{}]", trackFlowPage);
+        log.debug("inspection_record_card trackFlowPage return is [{}]", trackFlowPage);
         return CommonResult.success(trackFlowPage);
     }
 
