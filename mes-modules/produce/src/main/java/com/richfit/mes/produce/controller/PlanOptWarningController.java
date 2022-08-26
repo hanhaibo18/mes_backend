@@ -40,10 +40,13 @@ public class PlanOptWarningController extends BaseController {
 
     @ApiOperation(value = "保存&更新", notes = "工序预警保存&更新")
     @PostMapping("/save_or_update")
-    public void saveOrUpdate(@ApiParam(value = "工序预警信息", required = true) @RequestBody List<PlanOptWarning> planOptWarningList) throws Exception {
+    public void saveOrUpdate(@ApiParam(value = "工序预警信息", required = true) @RequestBody List<PlanOptWarning> planOptWarningList) {
         for (PlanOptWarning planOptWarning : planOptWarningList) {
             if (StringUtils.isNullOrEmpty(planOptWarning.getId())) {
                 planOptWarning.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            }
+            if (StringUtils.isNullOrEmpty(planOptWarning.getDateWarning())) {
+                planOptWarning.setDateWarning("");
             }
             planOptWarningService.saveOrUpdate(planOptWarning);
         }
