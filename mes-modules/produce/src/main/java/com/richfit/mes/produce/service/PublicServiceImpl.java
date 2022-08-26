@@ -273,6 +273,12 @@ public class PublicServiceImpl implements PublicService {
      **/
     @Override
     public Boolean thirdPartyAction(String trackHeadId, String certificateId, List<String> optSequenceList) {
+        if (StringUtils.isNullOrEmpty(certificateId)) {
+            return false;
+        }
+        if (optSequenceList.isEmpty()) {
+            return false;
+        }
         //通过跟单ID和工序顺序倒序查询工序
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackHeadId);
