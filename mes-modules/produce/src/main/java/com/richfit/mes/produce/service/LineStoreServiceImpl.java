@@ -233,7 +233,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 trackHeadQueryWrapper.like("product_no", lineStore.getProdNo());
                 List<TrackHead> list = trackHeadService.list(trackHeadQueryWrapper);
                 if (!list.isEmpty()) {
-                    publicService.thirdPartyAction(list.get(0).getId());
+                    publicService.thirdPartyAction(list.get(0).getId(), null, null);
                 }
             }
         }

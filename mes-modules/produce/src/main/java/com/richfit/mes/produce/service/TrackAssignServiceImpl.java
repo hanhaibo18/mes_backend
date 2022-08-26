@@ -192,7 +192,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             calendar.setTime(sdf.parse(endTime));
             calendar.add(Calendar.DAY_OF_MONTH, 1);
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+            queryWrapper.apply("UNIX_TIMESTAMP(u.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
         }
         if ("0,1".equals(state)) {
             queryWrapper.in("u.state", 0, 1);
@@ -203,10 +203,10 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (!StringUtils.isNullOrEmpty(userId)) {
             queryWrapper.eq("u.user_id", userId);
         }
-        queryWrapper.eq("classes", classes);
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.orderByDesc("assign_time");
+        queryWrapper.eq("u.classes", classes);
+        queryWrapper.eq("u.branch_code", branchCode);
+        queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.orderByDesc("u.assign_time");
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {

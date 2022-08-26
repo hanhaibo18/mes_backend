@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,11 +75,13 @@ public interface PublicService {
      * 功能描述: 第三方下工序激活
      *
      * @param trackHeadId
+     * @param certificateId   合格证Id
+     * @param optSequenceList 工序顺序号
      * @Author: xinYu.hou
-     * @Date: 2022/7/22 9:30
+     * @Date: 2022/7/22 9:30 updateTime: 2022年8月25日10:49:09
      * @return: Boolean
      **/
-    Boolean thirdPartyAction(String trackHeadId);
+    Boolean thirdPartyAction(String trackHeadId, String certificateId, List<String> optSequenceList);
 
     /**
      * 功能描述: 自动派工
