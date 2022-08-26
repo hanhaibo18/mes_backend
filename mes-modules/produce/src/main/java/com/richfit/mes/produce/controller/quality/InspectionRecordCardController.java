@@ -80,6 +80,7 @@ public class InspectionRecordCardController extends BaseController {
         PageHelper.startPage(page, limit);
         List<TrackHead> trackFlowList = trackFlowService.selectTrackFlowList(map);
         PageInfo<QualityTrackHead> trackFlowPage = new PageInfo(trackFlowList);
+        log.debug("inspection_record_card trackFlowPage is [{}]", trackFlowPage);
         return CommonResult.success(trackFlowPage);
     }
 
@@ -88,23 +89,27 @@ public class InspectionRecordCardController extends BaseController {
     public void examine(@ApiParam(value = "生成线id") @RequestParam(required = false) String flowId,
                         @ApiParam(value = "是否通过：Y通过，N不通过") @RequestParam(required = false) String approved) {
         trackFlowService.examineCard(flowId, approved);
+        log.debug("inspection_record_card examine is params [{}]", flowId + ":" + approved);
     }
 
     @ApiOperation(value = "质量检测卡保存", notes = "质量检测卡保存")
     @PostMapping("/save")
     public void save(@ApiParam(value = "质量检测卡信息", required = true) @RequestBody ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCardService.saveProduceInspectionRecordCard(produceInspectionRecordCard);
+        log.debug("inspection_record_card save is params [{}]", produceInspectionRecordCard);
     }
 
     @ApiOperation(value = "质量检测卡更新", notes = "质量检测卡更新")
     @PostMapping("/update")
     public void update(@ApiParam(value = "质量检测卡信息", required = true) @RequestBody ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCardService.updateProduceInspectionRecordCard(produceInspectionRecordCard);
+        log.debug("inspection_record_card update is params [{}]", produceInspectionRecordCard);
     }
 
     @ApiOperation(value = "质量检测卡查询", notes = "质量检测卡查询")
     @GetMapping("/select")
     public void select(@ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
         produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+        log.debug("inspection_record_card select is params [{}]", flowId);
     }
 }

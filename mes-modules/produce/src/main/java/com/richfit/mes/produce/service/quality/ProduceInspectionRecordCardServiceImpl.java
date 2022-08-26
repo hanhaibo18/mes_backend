@@ -40,6 +40,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         this.save(produceInspectionRecordCard);
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = produceInspectionRecordCard.getProduceInspectionRecordCardContentList();
+        //保存检测明细信息
         for (ProduceInspectionRecordCardContent produceInspectionRecordCardContent : produceInspectionRecordCardContentList) {
             produceInspectionRecordCardContent.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             produceInspectionRecordCardContent.setFlowId(produceInspectionRecordCard.getId());
@@ -52,10 +53,12 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     public void updateProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         this.updateById(produceInspectionRecordCard);
+        //删除原明细
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = produceInspectionRecordCard.getProduceInspectionRecordCardContentList();
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("flow_id", produceInspectionRecordCard.getId());
         produceInspectionRecordCardContentMapper.delete(queryWrapper);
+        //保存新检测明细信息
         for (ProduceInspectionRecordCardContent produceInspectionRecordCardContent : produceInspectionRecordCardContentList) {
             produceInspectionRecordCardContent.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             produceInspectionRecordCardContent.setFlowId(produceInspectionRecordCard.getId());
