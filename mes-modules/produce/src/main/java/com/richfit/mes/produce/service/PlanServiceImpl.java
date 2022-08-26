@@ -624,6 +624,20 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 if (!ObjectUtil.isEmpty(plan.getFinalAssemblyContractorUnit()) && plan.getFinalAssemblyContractorUnit().equals("0")) {
                     plan.setFinalAssemblyContractorUnit(null);
                 }
+                //数量的为空赋值0
+                //计划
+                plan.setProjNum(StringUtils.isEmpty(plan.getProjNum())?0:plan.getProjNum());
+                //单机
+                plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber())?0:plan.getSingleNumber());
+                //总台数
+                plan.setTotalNumber(StringUtils.isEmpty(plan.getTotalNumber())?0:plan.getTotalNumber());
+                //生产数量
+                plan.setProcessNum(StringUtils.isEmpty(plan.getProcessNum())?0:plan.getProcessNum());
+                plan.setOptNumber(0);
+                plan.setOptFinishNumber(0);
+                plan.setDeliveryNum(0);
+                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum())?0:plan.getMissingNum());
+                plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber())?0:plan.getStoreNumber());
             }
 
 
