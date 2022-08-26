@@ -388,7 +388,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         checkPlan(plan);
         //根据计划图号判断计划类型  机加or装配or？
 //
-        CommonResult<Router> router = baseServiceClient.getRouterByNo(plan.getDrawNo(), null);
+        CommonResult<Router> router = baseServiceClient.getByRouterNo(plan.getDrawNo(), null);
 //        plan.setDrawNoType(router.getData() != null ? router.getData().getType() : null);
         //更新对应订单状态
         if (StringUtils.hasText(plan.getOrderNo())) {
@@ -626,18 +626,18 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 }
                 //数量的为空赋值0
                 //计划
-                plan.setProjNum(StringUtils.isEmpty(plan.getProjNum())?0:plan.getProjNum());
+                plan.setProjNum(StringUtils.isEmpty(plan.getProjNum()) ? 0 : plan.getProjNum());
                 //单机
-                plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber())?0:plan.getSingleNumber());
+                plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber()) ? 0 : plan.getSingleNumber());
                 //总台数
-                plan.setTotalNumber(StringUtils.isEmpty(plan.getTotalNumber())?0:plan.getTotalNumber());
+                plan.setTotalNumber(StringUtils.isEmpty(plan.getTotalNumber()) ? 0 : plan.getTotalNumber());
                 //生产数量
-                plan.setProcessNum(StringUtils.isEmpty(plan.getProcessNum())?0:plan.getProcessNum());
+                plan.setProcessNum(StringUtils.isEmpty(plan.getProcessNum()) ? 0 : plan.getProcessNum());
                 plan.setOptNumber(0);
                 plan.setOptFinishNumber(0);
                 plan.setDeliveryNum(0);
-                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum())?0:plan.getMissingNum());
-                plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber())?0:plan.getStoreNumber());
+                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? 0 : plan.getMissingNum());
+                plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
             }
 
 
@@ -651,12 +651,21 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Override
     public void planPackageRouter(List<Plan> planList) {
+        String branchCode = null;
+        String drawNos = "";
         for (Plan plan : planList) {
-            CommonResult<Router> result = baseServiceClient.getRouterByNo(plan.getDrawNo(), plan.getBranchCode());
-            if (result.getData() != null && "1".equals(result.getData().getStatus())) {
-                plan.setProcessStatus(1);
-            } else {
-                plan.setProcessStatus(0);
+            if (!drawNos.contains(plan.getDrawNo())) {
+                drawNos += "," + plan.getDrawNo();
+            }
+            branchCode = plan.getBranchCode();
+            plan.setProcessStatus(0);
+        }
+        CommonResult<List<Router>> result = baseServiceClient.getByRouterNos(drawNos.substring(1), branchCode);
+        for (Plan plan : planList) {
+            for (Router router : result.getData()) {
+                if (plan.getDrawNo().equals(router.getRouterNo())) {
+                    plan.setProcessStatus(1);
+                }
             }
         }
     }

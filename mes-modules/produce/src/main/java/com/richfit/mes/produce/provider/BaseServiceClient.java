@@ -39,10 +39,14 @@ public interface BaseServiceClient {
     public CommonResult<List<CalendarDay>> selectCalendarDay(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate);
 
     @GetMapping(value = "/api/base/router/getByRouterNo")
-    public CommonResult<Router> getRouterByNo(@RequestParam("routerNo") String routerNo,
+    public CommonResult<Router> getByRouterNo(@RequestParam("routerNo") String routerNo,
                                               @RequestParam("branchCode") String branchCode
     );
 
+    @GetMapping(value = "/api/base/router/getByRouterNos")
+    public CommonResult<List<Router>> getByRouterNos(@RequestParam("routerNos") String routerNos,
+                                                     @RequestParam("branchCode") String branchCode
+    );
 
     @GetMapping(value = "/api/base/sequencesite/find")
     public CommonResult<List<SequenceSite>> getSequenceDevice(@RequestParam("sequenceId") String sequenceId, @RequestParam("siteId") String siteId, @RequestParam("siteCode") String siteCode, @RequestParam("branchCode") String branchCode, @RequestParam("isDefault") String isDefault);
