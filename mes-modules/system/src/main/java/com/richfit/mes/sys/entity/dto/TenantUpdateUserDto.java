@@ -41,7 +41,7 @@ public class TenantUpdateUserDto extends BaseDto<TenantUser> {
     private String mail;
 
     @ApiModelProperty(value = "用户状态，true为可用")
-    private Boolean status=true;
+    private Boolean status = true;
 
     @ApiModelProperty(value = "用户姓名")
     private String emplName;
@@ -54,4 +54,7 @@ public class TenantUpdateUserDto extends BaseDto<TenantUser> {
 
     @ApiModelProperty(value = "用户拥有的角色id列表")
     private Set<String> roleIds;
+
+    @ApiModelProperty(value = "用户类型(0=普通,1=普通质检,2=质检租户)")
+    private String userRoleType;
 }
