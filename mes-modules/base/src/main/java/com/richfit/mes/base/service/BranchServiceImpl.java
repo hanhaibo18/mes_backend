@@ -66,19 +66,18 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
 
     @Override
     public List<TenantUserVo> queryUserList(String branchCode) {
-        List<Branch> branchList = new ArrayList<Branch>();
-        List<TenantUserVo> tenantUserVo = new ArrayList<TenantUserVo>();
+        //先获取所有车间
+        List<Branch> branchList = new ArrayList<>();
+        List<TenantUserVo> tenantUserVo = new ArrayList<>();
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         branchList = this.list(queryWrapper);
+        //在获取质检人员
         if (!branchList.isEmpty()) {
             //不为空查询人员信 并进行递归查询
             for (Branch branch : branchList) {
                 tenantUserVo.addAll(systemServiceClient.queryByBranchCode(branch.getBranchCode()));
             }
-            //TODO:检查查询
-            queryByBranchCode(branchList, tenantUserVo);
         }
         return tenantUserVo;
     }
@@ -97,23 +96,6 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
             queryByBranchCode(branch1);
         }
         return branchList;
-    }
-
-    private void queryByBranchCode(List<Branch> branchList, List<TenantUserVo> users) {
-        for (Branch branch : branchList) {
-            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("main_branch_code", branch.getBranchCode())
-                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            List<Branch> branches = this.list(queryWrapper);
-            if (branches.isEmpty()) {
-                continue;
-            }
-            for (Branch branch1 : branches) {
-                users.addAll(systemServiceClient.queryByBranchCode(branch1.getBranchCode()));
-            }
-            queryByBranchCode(branches, users);
-            branch.setBranchList(branches);
-        }
     }
 
     private void queryByBranchCode(Branch branch) {

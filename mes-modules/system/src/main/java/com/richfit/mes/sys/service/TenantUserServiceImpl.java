@@ -230,8 +230,8 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Override
     public List<TenantUserVo> queryByBranchCode(String branchCode) {
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
-        //Todo:后期放到配置文件中 方便配置
-        queryWrapper.eq("role.role_id", "0697-63FB-476E-BD86-9E157B336ED7");
+        //0 = 普通用户 1 = 本公司质检用户 2 = 租户质检用户
+        queryWrapper.eq("role.user_type", 1);
         queryWrapper.eq("users.belong_org_id", branchCode);
         queryWrapper.eq("users.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return tenantUserMapper.queryByBranchCode(queryWrapper);
