@@ -23,7 +23,7 @@ import java.util.UUID;
  * @date 2022.8.25
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceInspectionRecordCardMapper, ProduceInspectionRecordCard> implements ProduceInspectionRecordCardService {
 
     @Autowired
