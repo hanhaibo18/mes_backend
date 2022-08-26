@@ -37,6 +37,11 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @ApiModelProperty(value = "跟单ID", dataType = "String")
     private String thId;
     /**
+     * 分流Id
+     */
+    @ApiModelProperty(value = "分流Id", dataType = "String")
+    private String flowId;
+    /**
      * 质检类型 0-半检 1-全检 2-抽检
      */
     @ApiModelProperty(value = "质检类型 0-半检 1-全检 2-抽检", dataType = "int")
