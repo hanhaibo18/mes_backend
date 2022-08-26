@@ -33,7 +33,7 @@ public class ProduceInspectionRecordRt extends BaseEntity<ProduceInspectionRecor
     private String sampleNo;
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
-    @ApiModelProperty(value = "种类")
+    @ApiModelProperty(value = "种类 0、铸 1、锻 2、 焊")
     private String type;
     @ApiModelProperty(value = "焊接方法")
     private String weldingMethod;

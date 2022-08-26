@@ -2,14 +2,22 @@ package com.richfit.mes.produce.controller;
 
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.http.HttpResponse;
+import com.alibaba.fastjson.JSONObject;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
+import freemarker.template.TemplateException;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 
 /**
@@ -37,6 +45,18 @@ public class ProduceInspectionRecordController extends BaseController {
     @GetMapping("/queryRecordByItemId/{itemId}")
     public CommonResult queryRecordByItemId(@PathVariable String itemId){
         return CommonResult.success(produceInspectionRecordService.queryRecordByItemId(itemId));
+    }
+
+    @ApiOperation(value = "审核提交探伤记录", notes = "审核提交探伤记录")
+    @PostMapping("/auditSubmitRecord")
+    public CommonResult auditSubmitRecord(@RequestBody TrackItem trackItem){
+        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(trackItem));
+    }
+
+    @ApiOperation(value = "报告预览", notes = "报告预览")
+    @GetMapping("/exoprtReport")
+    public void exoprtReport(HttpServletResponse response, HttpServletRequest httpServletRequest) throws IOException, TemplateException {
+        produceInspectionRecordService.exoprtReport(response);
     }
 
 

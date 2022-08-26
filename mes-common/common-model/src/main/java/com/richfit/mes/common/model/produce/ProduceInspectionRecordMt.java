@@ -33,7 +33,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String sampleNo;
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
-    @ApiModelProperty(value = "种类")
+    @ApiModelProperty(value = "种类 0、铸 1、锻 2、 焊")
     private String type;
     @ApiModelProperty(value = "检件规格")
     private String checkSpecification;
@@ -55,7 +55,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String liftPower;
     @ApiModelProperty(value = "磁化电流(交流、直流)")
     private String magnetizingCurrent;
-    @ApiModelProperty(value = "磁化规范")
+    @ApiModelProperty(value = "磁化规范 0.磁轭1.线圈2.直接通电3.中心导体4.支杆5.其它6.连续法7.剩磁法8.非荧光9.荧光10.纵向11.横向12.湿粉13.退磁")
     private String magnetizationSpecification;
     @ApiModelProperty(value = "磁粉种类")
     private String typeMagneticPowder;

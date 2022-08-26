@@ -33,7 +33,7 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
     private String sampleNo;
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
-    @ApiModelProperty(value = "种类")
+    @ApiModelProperty(value = "种类 0、铸 1、锻 2、 焊")
     private String type;
     @ApiModelProperty(value = "检件规格")
     private String checkSpecification;
@@ -53,7 +53,7 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
     private String intensityOfIllumination;
     @ApiModelProperty(value = "检测剂有效日期")
     private String testAgentDeadline;
-    @ApiModelProperty(value = "检测方法(1、清洗  2、渗透 3、干燥 4、乳化 5、显像)")
+    @ApiModelProperty(value = "检测方法(0、清洗  1、渗透 2、干燥 3、乳化 4、显像)")
     private String testMethod;
     @ApiModelProperty(value = "渗透剂")
     private String penetratingAgent;
