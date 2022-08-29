@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -660,11 +661,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             branchCode = plan.getBranchCode();
             plan.setProcessStatus(0);
         }
-        CommonResult<List<Router>> result = baseServiceClient.getByRouterNos(drawNos.substring(1), branchCode);
-        for (Plan plan : planList) {
-            for (Router router : result.getData()) {
-                if (plan.getDrawNo().equals(router.getRouterNo())) {
-                    plan.setProcessStatus(1);
+        if (!StrUtil.isBlank(drawNos)) {
+            CommonResult<List<Router>> result = baseServiceClient.getByRouterNos(drawNos.substring(1), branchCode);
+            if (result != null) {
+                for (Plan plan : planList) {
+                    for (Router router : result.getData()) {
+                        if (plan.getDrawNo().equals(router.getRouterNo())) {
+                            plan.setProcessStatus(1);
+                        }
+                    }
                 }
             }
         }
