@@ -427,7 +427,14 @@ public class SequenceController extends BaseController {
                 int optOrder = 0;
                 // 遍历导入数据
                 for (int i = 0; i < list.size(); i++) {
+                    list.get(i).setCreateTime(new Date());
+                    list.get(i).setModifyTime(new Date());
+                    list.get(i).setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    list.get(i).setTenantId(tenantId);
+                    list.get(i).setBranchCode(branchCode);
                     try {
+
                         if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && list.get(i).getContent().equals(drawnos.split(",")[j])) {
                             List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
                             if (null != SecurityUtils.getCurrentUser()) {
@@ -484,12 +491,7 @@ public class SequenceController extends BaseController {
 
                             }
                             msg = "工序获取完成";
-                            list.get(i).setCreateTime(new Date());
-                            list.get(i).setModifyTime(new Date());
-                            list.get(i).setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                            list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                            list.get(i).setTenantId(tenantId);
-                            list.get(i).setBranchCode(branchCode);
+
                             if ("是".equals(list.get(i).getIsQualityCheck())) {
                                 list.get(i).setIsQualityCheck("1");
                             }
