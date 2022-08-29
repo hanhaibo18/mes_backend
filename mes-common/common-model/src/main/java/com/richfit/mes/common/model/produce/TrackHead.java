@@ -21,6 +21,26 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     private static final long serialVersionUID = 6336423092552908350L;
 
+    /**
+     * 跟单类型（机加）
+     */
+    public static final String TRACKHEAD_CLASSES_JJ = "1";
+
+    /**
+     * 跟单类型（装配）
+     */
+    public static final String TRACKHEAD_CLASSES_ZP = "2";
+
+    /**
+     * 跟单类型（热处理）
+     */
+    public static final String TRACKHEAD_CLASSES_RCL = "3";
+
+    /**
+     * 跟单类型（钢结构）
+     */
+    public static final String TRACKHEAD_CLASSES_GJG = "4";
+
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 

@@ -89,7 +89,7 @@ public class InspectionRecordCardController extends BaseController {
     public void examine(@ApiParam(value = "生成线id") @RequestParam(required = false) String flowId,
                         @ApiParam(value = "是否通过：Y通过，N不通过") @RequestParam(required = false) String approved) {
         trackFlowService.examineCard(flowId, approved);
-        log.debug("inspection_record_card examine is params [{}]", flowId + ":" + approved);
+        log.debug("inspection_record_card examine is return [{}]", flowId + ":" + approved);
     }
 
     @ApiOperation(value = "质量检测卡保存", notes = "质量检测卡保存")
@@ -108,8 +108,10 @@ public class InspectionRecordCardController extends BaseController {
 
     @ApiOperation(value = "质量检测卡查询", notes = "质量检测卡查询")
     @GetMapping("/select")
-    public void select(@ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
-        produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+    public CommonResult<ProduceInspectionRecordCard> select(@ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
+        ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
         log.debug("inspection_record_card select is params [{}]", flowId);
+        log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
+        return CommonResult.success(produceInspectionRecordCard);
     }
 }

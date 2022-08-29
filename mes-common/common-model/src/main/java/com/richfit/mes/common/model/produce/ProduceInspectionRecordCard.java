@@ -54,7 +54,38 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "材质")
     private String texture;
 
+    @ApiModelProperty(value = "炉批号")
+    private String batchNo;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "详细明细")
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
+
+    public ProduceInspectionRecordCard() {
+
+    }
+
+    public ProduceInspectionRecordCard(TrackHead trackHead) {
+        this.id = trackHead.getFlowId();
+        this.tenantId = trackHead.getTenantId();
+        this.branchCode = trackHead.getBranchCode();
+        this.trackHeadId = trackHead.getTrackHeadId();
+        this.productName = trackHead.getProductName();
+        this.productDrawingNo = trackHead.getDrawingNo();
+        this.sparePartsNo = trackHead.getProductNo();
+        this.texture = trackHead.getTexture();
+        this.batchNo = trackHead.getBatchNo();
+        if (TrackHead.TRACKHEAD_CLASSES_JJ.equals(trackHead.getClasses())) {
+            this.sparePartsName = trackHead.getMaterialName();
+            //图号
+//            this.sparePartsDrawingNo;
+        }
+
+        if (TrackHead.TRACKHEAD_CLASSES_ZP.equals(trackHead.getClasses())) {
+            this.partsName = trackHead.getMaterialName();
+            //图号
+//            this.partsDrawingNo;
+        }
+    }
+
 }
