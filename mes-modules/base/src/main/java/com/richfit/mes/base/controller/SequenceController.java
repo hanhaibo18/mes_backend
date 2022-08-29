@@ -461,25 +461,9 @@ public class SequenceController extends BaseController {
                             }
                             msg = "工艺获取完成";
                             // 获取工艺类型
-                            list.get(i).setOptType(String.valueOf(OptTypeEnum.getCode(list.get(i).getOptType())));
+                            int optType = OptTypeEnum.getCode(list.get(i).getOptType());
+                            list.get(i).setOptType(String.valueOf(optType));
 
-                            int optType = 0;
-                            if (list.get(i).getOptType().equals("普通工序")) {
-                                optType = 0;
-                                list.get(i).setOptType("0");
-                            } else if (list.get(i).getOptType().equals("装配工序")) {
-                                optType = 1;
-                                list.get(i).setOptType("1");
-                            } else if (list.get(i).getOptType().equals("热处理工序")) {
-                                optType = 2;
-                                list.get(i).setOptType("2");
-                            } else if (list.get(i).getOptType().equals("质检工序")) {
-                                optType = 3;
-                                list.get(i).setOptType("3");
-                            } else if (list.get(i).getOptType().equals("外协工序")) {
-                                optType = 4;
-                                list.get(i).setOptType("4");
-                            }
                             // 获取工序
                             List<Operatipon> opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type", optType).eq("branch_code", branchCode));
                             if (opts.size() > 0) {
