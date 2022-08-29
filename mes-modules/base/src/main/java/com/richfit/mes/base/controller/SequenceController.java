@@ -509,6 +509,7 @@ public class SequenceController extends BaseController {
                                 list.get(i).setOptCode(opts.get(0).getOptCode());
 
                             }
+                            optOrder++;
                             msg = "工序获取完成";
 
 
@@ -518,6 +519,8 @@ public class SequenceController extends BaseController {
                     }
                 }
             }
+            // 将最后一道工序的下工序设置为0
+            list.get(list.size() - 1).setOptNextOrder(0);
             boolean bool = sequenceService.saveBatch(list);
             if (bool) {
                 return CommonResult.success(msg);
