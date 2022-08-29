@@ -55,6 +55,16 @@ public enum OptTypeEnum {
         throw new IllegalArgumentException("No element matches " + stateId);
     }
 
+    public static int getCode(String name) {
+
+        for (OptTypeEnum recipientsEnum : OptTypeEnum.values()) {
+            if (name.contains(recipientsEnum.name())) {
+                return recipientsEnum.ordinal();
+            }
+        }
+        throw new IllegalArgumentException("No element matches " + name);
+    }
+
     public static String getMessage(int stateId) {
 
         for (OptTypeEnum recipientsEnum : OptTypeEnum.values()) {
