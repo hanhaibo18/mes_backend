@@ -102,4 +102,11 @@ public interface AttachmentService {
      */
     int update(Attachment attachment);
 
+    /**
+     * 获取图片base64编码串
+     * @param id
+     * @return
+     */
+    Object getImageStr(String id);
+
 }

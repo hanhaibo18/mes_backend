@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
@@ -8,7 +9,6 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-
 import java.util.List;
 
 /**
@@ -81,6 +81,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
 
     @Override
     public CommonResult<Attachment> uploadFile(byte[] fileBytes, String fileName) {
+        return null;
+    }
+
+    @Override
+    public CommonResult<Object> getBase64Code(String id) throws GlobalException{
         return null;
     }
 }

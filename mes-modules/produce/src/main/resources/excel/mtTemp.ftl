@@ -17,8 +17,9 @@
         <pkg:xmlData>
             <Relationships
                     xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-                <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
-                <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml"/>
+                <Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
+                <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml"/>
+                <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.png"/>
                 <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>
                 <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
                 <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>
@@ -359,8 +360,6 @@
                                         </w:rPr>
                                         <w:t>:</w:t>
                                     </w:r>
-                                    <w:bookmarkStart w:id="0" w:name="_GoBack"/>
-                                    <w:bookmarkEnd w:id="0"/>
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -2133,94 +2132,62 @@
                                 <w:p>
                                     <w:pPr>
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:szCs w:val="21"/>
+                                            <w:rFonts w:hint="default" w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                            <w:kern w:val="2"/>
+                                            <w:sz w:val="21"/>
+                                            <w:szCs w:val="24"/>
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA"/>
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体"/>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:eastAsia="宋体"/>
                                             <w:szCs w:val="21"/>
-                                        </w:rPr>
-                                        <w:t>图Illustration</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="宋体"/>
-                                            <w:szCs w:val="21"/>
-                                        </w:rPr>
-                                        <w:t>;</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:szCs w:val="21"/>
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"></w:t>
-                                    </w:r>
-                                </w:p>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
                                             <w:lang w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"></w:t>
+                                        <w:drawing>
+                                            <wp:inline distT="0" distB="0" distL="114300" distR="114300">
+                                                <wp:extent cx="4000500" cy="2844800"/>
+                                                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                                                <wp:docPr id="1" name="图片 1" descr="img"/>
+                                                <wp:cNvGraphicFramePr>
+                                                    <a:graphicFrameLocks
+                                                            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                                                </wp:cNvGraphicFramePr>
+                                                <a:graphic
+                                                        xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                                                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                                        <pic:pic
+                                                                xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                                            <pic:nvPicPr>
+                                                                <pic:cNvPr id="1" name="图片 1" descr="img"/>
+                                                                <pic:cNvPicPr>
+                                                                    <a:picLocks noChangeAspect="1"/>
+                                                                </pic:cNvPicPr>
+                                                            </pic:nvPicPr>
+                                                            <pic:blipFill>
+                                                                <a:blip r:embed="rId6"/>
+                                                                <a:stretch>
+                                                                    <a:fillRect/>
+                                                                </a:stretch>
+                                                            </pic:blipFill>
+                                                            <pic:spPr>
+                                                                <a:xfrm>
+                                                                    <a:off x="0" y="0"/>
+                                                                    <a:ext cx="4000500" cy="2844800"/>
+                                                                </a:xfrm>
+                                                                <a:prstGeom prst="rect">
+                                                                    <a:avLst/>
+                                                                </a:prstGeom>
+                                                            </pic:spPr>
+                                                        </pic:pic>
+                                                    </a:graphicData>
+                                                </a:graphic>
+                                            </wp:inline>
+                                        </w:drawing>
                                     </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>{图片}</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"></w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"></w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"></w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"></w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"></w:t>
-                                    </w:r>
+                                    <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+                                    <w:bookmarkEnd w:id="0"/>
                                 </w:p>
                             </w:tc>
                         </w:tr>
@@ -2815,14 +2782,14 @@
                 <Template>Normal</Template>
                 <Company>sdf</Company>
                 <Pages>1</Pages>
-                <Words>292</Words>
-                <Characters>774</Characters>
+                <Words>286</Words>
+                <Characters>756</Characters>
                 <Lines>10</Lines>
                 <Paragraphs>2</Paragraphs>
-                <TotalTime>7</TotalTime>
+                <TotalTime>1</TotalTime>
                 <ScaleCrop>false</ScaleCrop>
                 <LinksUpToDate>false</LinksUpToDate>
-                <CharactersWithSpaces>1095</CharactersWithSpaces>
+                <CharactersWithSpaces>1048</CharactersWithSpaces>
                 <Application>WPS Office_11.1.0.12116_F1E327BC-269C-435d-A152-05C5408002CA</Application>
                 <DocSecurity>0</DocSecurity>
             </Properties>
@@ -2840,7 +2807,7 @@
                 <dc:creator>a</dc:creator>
                 <cp:lastModifiedBy>EDZ</cp:lastModifiedBy>
                 <cp:lastPrinted>2021-06-24T06:26:00Z</cp:lastPrinted>
-                <dcterms:modified xsi:type="dcterms:W3CDTF">2022-08-26T07:28:46Z</dcterms:modified>
+                <dcterms:modified xsi:type="dcterms:W3CDTF">2022-08-29T01:58:38Z</dcterms:modified>
                 <dc:title>宝鸡石油机械有限责任公司</dc:title>
                 <cp:revision>186</cp:revision>
             </cp:coreProperties>
@@ -2855,7 +2822,7 @@
                     <vt:lpwstr>2052-11.1.0.12116</vt:lpwstr>
                 </property>
                 <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="ICV">
-                    <vt:lpwstr>2250B8511FB84D4F8242F693019EA0AF</vt:lpwstr>
+                    <vt:lpwstr>9C5543296350418E8973D73E3A38AC44</vt:lpwstr>
                 </property>
             </Properties>
         </pkg:xmlData>
@@ -2944,13 +2911,6 @@
                     <w:family w:val="auto"/>
                     <w:pitch w:val="default"/>
                     <w:sig w:usb0="E1002EFF" w:usb1="C000605B" w:usb2="00000029" w:usb3="00000000" w:csb0="200101FF" w:csb1="20280000"/>
-                </w:font>
-                <w:font w:name="Consolas">
-                    <w:panose1 w:val="020B0609020204030204"/>
-                    <w:charset w:val="00"/>
-                    <w:family w:val="auto"/>
-                    <w:pitch w:val="default"/>
-                    <w:sig w:usb0="E00006FF" w:usb1="0000FCFF" w:usb2="00000001" w:usb3="00000000" w:csb0="6000019F" w:csb1="DFD70000"/>
                 </w:font>
             </w:fonts>
         </pkg:xmlData>
@@ -3342,6 +3302,9 @@
             QAkJhEggikVIMiKCYkCDFfIQUkZABAiYhEAiEAHlgU8BJjBEgcBMSpEgfzGSSEZkGFCACJgAcK7e
             GSKAFgAkBAEpUOcbdoMNNnivcnMDrhtssMEGt8L1xz422GCDDf63+B8MXE/D0ouzTwAAAABJRU5E
             rkJggg==</pkg:binaryData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/media/image2.png" pkg:contentType="image/png">
+        <pkg:binaryData>${img}</pkg:binaryData>
     </pkg:part>
     <pkg:part pkg:name="/word/settings.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml">
         <pkg:xmlData>
@@ -4248,6 +4211,7 @@
                     <w:rsid w:val="0E895A58"/>
                     <w:rsid w:val="123D53E4"/>
                     <w:rsid w:val="12F5520C"/>
+                    <w:rsid w:val="130F251E"/>
                     <w:rsid w:val="15FB11BF"/>
                     <w:rsid w:val="16476137"/>
                     <w:rsid w:val="16EB1E76"/>
@@ -4271,7 +4235,6 @@
                     <w:rsid w:val="359735A5"/>
                     <w:rsid w:val="36D07438"/>
                     <w:rsid w:val="389E5FDD"/>
-                    <w:rsid w:val="39C64410"/>
                     <w:rsid w:val="3A545044"/>
                     <w:rsid w:val="3B3C6AE0"/>
                     <w:rsid w:val="3B816F56"/>
@@ -4295,6 +4258,7 @@
                     <w:rsid w:val="55DD4BEE"/>
                     <w:rsid w:val="56C43753"/>
                     <w:rsid w:val="575B7500"/>
+                    <w:rsid w:val="589219F3"/>
                     <w:rsid w:val="5D475F35"/>
                     <w:rsid w:val="61525808"/>
                     <w:rsid w:val="639717C0"/>
@@ -4307,6 +4271,7 @@
                     <w:rsid w:val="76EB5F2B"/>
                     <w:rsid w:val="7A5E1660"/>
                     <w:rsid w:val="7D87607F"/>
+                    <w:rsid w:val="7DA24E28"/>
                     <w:rsid w:val="7F720D72"/>
                 </w:rsids>
                 <m:mathPr>

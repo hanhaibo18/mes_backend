@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 @Component
 public class WordUtil {
@@ -18,10 +19,11 @@ public class WordUtil {
      * @param response
      * @param dataMap  填充数据
      * @param tempName 模板名称
+     * @param docName  导出文件名
      * @throws IOException
      * @throws TemplateException
      */
-    public void exoprtReport(HttpServletResponse response, Map<String, Object> dataMap,String tempName) throws IOException, TemplateException {
+    public void exoprtReport(HttpServletResponse response, Map<String, Object> dataMap,String tempName,String docName) throws IOException, TemplateException {
 
         //配置对象
         Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
@@ -35,6 +37,8 @@ public class WordUtil {
         response.setContentType("application/msword");
         //设置文旦编码
         response.setCharacterEncoding("utf-8");
+        response.setHeader("Content-disposition", "attachment; filename=" + new String(docName.getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.ISO_8859_1) + ".doc");
         PrintWriter out = response.getWriter();
         //填充数据
         template.process(dataMap,out);
