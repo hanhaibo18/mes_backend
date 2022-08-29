@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
@@ -54,6 +57,53 @@ public class PlanController extends BaseController {
     @Autowired
     private TrackHeadService trackHeadService;
 
+
+    /**
+     * 分页查询plan
+     */
+    @ApiOperation(value = "分页查询缺件计划信息", notes = "分页查询缺件计划信息")
+    @GetMapping("/page_missing")
+    public CommonResult pageMissing(@ApiParam(value = "计划编码") @RequestParam(required = false) String projCode,
+                                    @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                    @ApiParam(value = "图号") @RequestParam(required = false) String drawNo,
+                                    @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                                    @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                    @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                    @ApiParam(value = "页码") @RequestParam(required = false) int page,
+                                    @ApiParam(value = "条数") @RequestParam(required = false) int limit) {
+        QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(projCode)) {
+            queryWrapper.eq("proj_code", projCode);
+        }
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.eq("work_no", workNo);
+        }
+        if (!StringUtils.isNullOrEmpty(drawNo)) {
+            queryWrapper.eq("draw_no", drawNo);
+        }
+        if (!StringUtils.isNullOrEmpty(projCode)) {
+            queryWrapper.eq("proj_code", projCode);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.ge("start_time", startTime);
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            queryWrapper.le("end_time", endTime);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.gt("missing_num", 0);
+        queryWrapper.orderByDesc("priority");
+        queryWrapper.orderByDesc("modify_time");
+        PageHelper.startPage(page, limit);
+        List<Plan> planList = planService.list(queryWrapper);
+        PageInfo<Plan> planPageInfo = new PageInfo(planList);
+        log.debug("plan page_missing return is [{}]", planPageInfo);
+        return CommonResult.success(planPageInfo);
+    }
+
     /**
      * 分页查询plan
      */
@@ -62,7 +112,7 @@ public class PlanController extends BaseController {
             @ApiImplicitParam(name = "queryDto", value = "计划属性", paramType = "BasePageDto")
     })
     @GetMapping("/page")
-    public CommonResult page(BasePageDto<String> queryDto) throws Exception {
+    public CommonResult page(BasePageDto<String> queryDto) {
         PlanDto planDto = null;
         try {
             planDto = objectMapper.readValue(queryDto.getParam(), PlanDto.class);
@@ -70,22 +120,22 @@ public class PlanController extends BaseController {
             e.printStackTrace();
         }
         QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getOrderNo())) {
+        if (!StringUtils.isNullOrEmpty(planDto.getOrderNo())) {
             queryWrapper.like("order_no", planDto.getOrderNo());
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getProjCode())) {
+        if (!StringUtils.isNullOrEmpty(planDto.getProjCode())) {
             queryWrapper.like("proj_code", planDto.getProjCode());
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getWorkNo())) {
+        if (!StringUtils.isNullOrEmpty(planDto.getWorkNo())) {
             queryWrapper.like("work_no", planDto.getWorkNo());
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getDrawNo())) {
+        if (!StringUtils.isNullOrEmpty(planDto.getDrawNo())) {
             queryWrapper.like("draw_no", planDto.getDrawNo());
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getStartTime())) {
+        if (!StringUtils.isNullOrEmpty(planDto.getStartTime())) {
             queryWrapper.ge("start_time", planDto.getStartTime());
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getEndTime())) {
+        if (!StringUtils.isNullOrEmpty(planDto.getEndTime())) {
             queryWrapper.le("end_time", planDto.getEndTime());
         }
         if (planDto.getStatus() != -1) {
@@ -94,12 +144,10 @@ public class PlanController extends BaseController {
         if (planDto.isFiterClose()) {
             queryWrapper.ne("status", 2);
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
+        if (!StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planDto.getTenantId())) {
-            queryWrapper.eq("tenant_id", planDto.getTenantId());
-        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);

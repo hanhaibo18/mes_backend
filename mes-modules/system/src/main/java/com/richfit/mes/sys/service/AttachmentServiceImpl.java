@@ -58,12 +58,12 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
     public Attachment upload(Attachment attachment, byte[] bytes) throws Exception {
         attachment.setAttachSize(String.valueOf(bytes.length));
         String fastFileId = fastDfsService.uploadFile(new ByteArrayInputStream(bytes), bytes.length, attachment.getAttachType());
-        System.out.println("fastFileId--------------------------------------");
-        System.out.println(fastFileId);
         if (fastFileId != null) {
             String groupName = fastFileId.substring(0, fastFileId.indexOf("/"));
             attachment.setFastFileId(fastFileId);
             attachment.setGroupName(groupName);
+            String url = getTokenUrl(attachment);
+            attachment.setPreviewUrl(url);
         }
         attachmentMapper.insert(attachment);
         return attachment;
@@ -90,6 +90,7 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
         return fastDfsService.downloadStream(attachment.getGroupName(), attachment.getFastFileId());
     }
 
+    @Override
     public InputStream downloadZip(List<Attachment> attachments, String zipName) {
 
         List<String> filePaths = new ArrayList<>();

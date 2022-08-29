@@ -55,7 +55,7 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "计划数量")
     private Integer projNum;
 
-    @ApiModelProperty(value = "在制数量")
+    @ApiModelProperty(value = "库存数量")
     private Integer storeNumber;
 
     @ApiModelProperty(value = "在制数量")

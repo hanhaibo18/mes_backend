@@ -2,7 +2,6 @@ package com.richfit.mes.produce.controller;
 
 import com.richfit.mes.produce.service.PublicService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @ClassName: PublicController.java
@@ -28,9 +29,14 @@ public class PublicController {
 
 
     @ApiOperation(value = "查询计划信息", notes = "根据查询条件返回计划信息")
-    @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", paramType = "query")
     @GetMapping("/thirdPartyAction")
-    public Boolean thirdPartyAction(String trackHeadId) {
-        return publicService.thirdPartyAction(trackHeadId);
+    public Boolean thirdPartyAction() {
+        //测试
+        String trackHeadId = "a2157b705a8f459da440b11dc1dcf76b";
+        String certificateNo = "123";
+        List<String> optSequenceList = new ArrayList<>();
+        optSequenceList.add("2");
+        optSequenceList.add("3");
+        return publicService.thirdPartyAction(trackHeadId, certificateNo, optSequenceList);
     }
 }

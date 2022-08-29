@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.TenantUser;
+import com.richfit.mes.common.model.sys.UserRole;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.TenantUserMapper;
@@ -79,6 +80,10 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         }
         TenantUserVo tenantUserVo = new TenantUserVo(tenantUser);
         tenantUserVo.setRoleList(userRoleService.queryRolesByUserId(id));
+        QueryWrapper<UserRole> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", tenantUserVo.getId());
+        List<UserRole> roleList = userRoleService.list(wrapper);
+        tenantUserVo.setUserRoleType(roleList.get(0).getUserType());
         return tenantUserVo;
     }
 
@@ -98,10 +103,12 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             tenantUser.setPasswd(passwordEncoder.encode(tenantUser.getPasswd()));
         }
         //设备默认的belongOrgId为租户的tenantCode
-        tenantUser.setBelongOrgId(tenantService.getById(tenantUser.getTenantId()).getTenantCode());
+        if (StringUtils.isEmpty(tenantUser.getBelongOrgId())) {
+            tenantUser.setBelongOrgId(tenantService.getById(tenantUser.getTenantId()).getTenantCode());
+        }
 
         boolean inserts = this.save(tenantUser);
-        userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds());
+        userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds(), tenantUser.getUserRoleType());
         return inserts;
     }
 
@@ -161,7 +168,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         }
         boolean isSuccess = this.updateById(tenantUser);
         if (tenantUser.getRoleIds() != null && !tenantUser.getRoleIds().isEmpty()) {
-            isSuccess = userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds());
+            isSuccess = userRoleService.saveBatch(tenantUser.getId(), tenantUser.getRoleIds(), tenantUser.getUserRoleType());
         }
 
         return isSuccess;
@@ -223,8 +230,8 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Override
     public List<TenantUserVo> queryByBranchCode(String branchCode) {
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
-        //Todo:后期放到配置文件中 方便配置
-        queryWrapper.eq("role.role_id", "0697-63FB-476E-BD86-9E157B336ED7");
+        //0 = 普通用户 1 = 本公司质检用户 2 = 租户质检用户
+        queryWrapper.eq("role.user_type", 1);
         queryWrapper.eq("users.belong_org_id", branchCode);
         queryWrapper.eq("users.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return tenantUserMapper.queryByBranchCode(queryWrapper);

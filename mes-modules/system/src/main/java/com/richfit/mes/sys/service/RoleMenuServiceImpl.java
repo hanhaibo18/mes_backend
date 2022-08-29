@@ -4,11 +4,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.sys.RoleMenu;
 import com.richfit.mes.sys.dao.RoleMenuMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +23,7 @@ public class RoleMenuServiceImpl extends ServiceImpl<RoleMenuMapper, RoleMenu> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveRoleMenus(List<RoleMenu> menus) {
-        if(menus!=null && menus.isEmpty()){
+        if (menus != null && menus.isEmpty()) {
             return Boolean.TRUE;
         }
 
@@ -29,7 +31,7 @@ public class RoleMenuServiceImpl extends ServiceImpl<RoleMenuMapper, RoleMenu> i
                 Collectors.toCollection(() -> new TreeSet<>(
                         Comparator.comparing(
                                 RoleMenu::getRoleId))), ArrayList::new));
-        collect.forEach(menu->{
+        collect.forEach(menu -> {
             this.remove(Wrappers.<RoleMenu>query().lambda().eq(RoleMenu::getRoleId, menu.getRoleId()));
         });
 

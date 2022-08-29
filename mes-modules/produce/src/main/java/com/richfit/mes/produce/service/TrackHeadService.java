@@ -260,4 +260,14 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Date: 2022/8/10 15:06
      **/
     List<Map> selectTrackStoreCount(String drawingNos);
+
+    /**
+     * 功能描述: 添加跟单的产品编码（装配业务，如果后续还有其他不同业务在进行补充）
+     *
+     * @param flowId    生产线id
+     * @param productNo 物料产品编码，无需拼接图号，接口会自动拼接图号
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/25 15:06
+     **/
+    void addTrackHeadProductNo(String flowId, String productNo);
 }

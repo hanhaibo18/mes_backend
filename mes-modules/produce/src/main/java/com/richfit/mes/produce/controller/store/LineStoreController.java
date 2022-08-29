@@ -18,8 +18,10 @@ import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
+import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.LineStoreService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
@@ -68,6 +70,8 @@ public class LineStoreController extends BaseController {
     @Autowired
     private BaseServiceClient baseServiceClient;
 
+    @Autowired
+    private SystemServiceClient systemServiceClient;
 
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
     @PostMapping("/line_store")
@@ -230,7 +234,21 @@ public class LineStoreController extends BaseController {
         } else {
             queryWrapper.orderByDesc("modify_time");
         }
-        return CommonResult.success(lineStoreService.page(new Page<LineStore>(page, limit), queryWrapper), SUCCESS_MESSAGE);
+        return CommonResult.success(fillBranchName(lineStoreService.page(new Page<LineStore>(page, limit), queryWrapper)), SUCCESS_MESSAGE);
+    }
+
+    private IPage<LineStore> fillBranchName(IPage<LineStore> certificateIPage) {
+
+        List<ItemParam> itemParamList = systemServiceClient.selectItemClass("stockFrom", "").getData();
+        for (LineStore lineStore : certificateIPage.getRecords()) {
+            for (ItemParam b : itemParamList) {
+                if (b.getCode().equals(lineStore.getMaterialSource())) {
+                    lineStore.setMaterialSourceName(b.getLabel());
+                    break;
+                }
+            }
+        }
+        return certificateIPage;
     }
 
     @ApiOperation(value = "通过id查询库存", notes = "通过id查询库存")

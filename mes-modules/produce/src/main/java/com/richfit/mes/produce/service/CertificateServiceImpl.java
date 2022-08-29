@@ -11,9 +11,11 @@ import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
 import com.richfit.mes.produce.entity.CertQueryDto;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certificate> implements CertificateService {
 
     @Autowired
@@ -56,13 +58,16 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Autowired
     private CodeRuleService codeRuleService;
 
+    @Autowired
+    private SystemServiceClient systemServiceClient;
+
     @Override
     public IPage<Certificate> selectCertificate(Page<Certificate> page, QueryWrapper<Certificate> query) {
-        return certificateMapper.selectCertificate(page, query);
+        return fillBranchName(certificateMapper.selectCertificate(page, query));
     }
 
     @Override
-    public boolean saveCertificate(Certificate certificate) throws Exception {
+    public boolean saveCertificate(Certificate certificate) {
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
         certificate.setIsPush("0");
         //1 保存合格证
@@ -105,7 +110,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
-    public boolean savePushCert(Certificate certificate) throws Exception {
+    public boolean savePushCert(Certificate certificate) {
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
         certificate.setIsPush("0");
         //1 保存合格证
@@ -114,8 +119,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         } else {
             return false;
         }
-
-        //TODO 如果是出去又回来的合格证，则需要更新对应跟单的当前工序为 完工
 
     }
 
@@ -128,9 +131,14 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     }
 
-
+    /**
+     * 更新合格证时，可能关联的跟单记录有变化：又有新增的跟单，之前关联的可能去掉，故需要一个较复杂的对比逻辑
+     *
+     * @param certificate
+     * @param changeTrack 关联的跟单是否有变化
+     */
     @Override
-    public void updateCertificate(Certificate certificate, boolean changeTrack) throws Exception {
+    public void updateCertificate(Certificate certificate, boolean changeTrack) {
         //1、保存合格证
         this.updateById(certificate);
 
@@ -184,7 +192,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                         //删除线边库对应半成品 对应合格证号
                         TrackHead th = trackHeadService.getById(track.getThId());
                         lineStoreService.reSetCertNoByTrackHead(th);
-
                     }
                 }
                 return !isHave;
@@ -224,7 +231,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             }
 
             //删除关系表
-            Map map = new HashMap();
+            Map map = new HashMap(16);
             map.put("certificate_id", track.getCertificateId());
             trackCertificateService.removeByMap(map);
         });
@@ -254,7 +261,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.eq("pc.is_push", "0");
         queryWrapper.eq("pc.next_opt_work", queryDto.getBranchCode());
         queryWrapper.ne("pc.branch_code", queryDto.getBranchCode());
-//        queryWrapper.apply("pc.id = track.certificate_id");
         queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         if (!StringUtils.isNullOrEmpty(queryDto.getCertificateNo())) {
@@ -285,6 +291,29 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         cert.setId(certificate.getId());
         cert.setIsSendWorkHour("1");
         this.updateById(cert);
+    }
+
+
+    /**
+     * 查询字典表：stockFrom字典项，把生产单位、下工序单位对应的中文名称填充进行数据中
+     *
+     * @param certificateIPage
+     * @return
+     */
+    private IPage<Certificate> fillBranchName(IPage<Certificate> certificateIPage) {
+
+        List<ItemParam> itemParamList = systemServiceClient.selectItemClass("stockFrom", "").getData();
+        for (Certificate cert : certificateIPage.getRecords()) {
+            for (ItemParam b : itemParamList) {
+                if (b.getCode().equals(cert.getBranchCode())) {
+                    cert.setBranchCodeName(b.getLabel());
+                }
+                if (b.getCode().equals(cert.getNextOptWork())) {
+                    cert.setNextOptWorkName(b.getLabel());
+                }
+            }
+        }
+        return certificateIPage;
     }
 
 }

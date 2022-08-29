@@ -263,7 +263,7 @@ public class TrackHeadController extends BaseController {
             queryWrapper.like("work_plan_id", workPlanId);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
-            queryWrapper.like("product_no", productNo);
+            queryWrapper.like("product_no_desc", productNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("material_no", materialNo);
@@ -575,7 +575,7 @@ public class TrackHeadController extends BaseController {
             @ApiParam(value = "生产订单号") @RequestParam(required = false) String orderNo,
             @ApiParam(value = "页码") @RequestParam int page,
             @ApiParam(value = "每页记录数") @RequestParam int limit,
-            @ApiParam(value = "分公司") @RequestParam String branchCode) {
+            @ApiParam(value = "分公司") @RequestParam String branchCode) throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("startDate", startTime);
         map.put("endDate", endTime);
@@ -589,12 +589,7 @@ public class TrackHeadController extends BaseController {
         map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
         map.put("rollStatus", "0");
         PageHelper.startPage(page, limit);
-        List trackFlowList = null;
-        try {
-            trackFlowList = trackHeadService.selectTrackFlowList(map);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        List trackFlowList = trackHeadService.selectTrackFlowList(map);
         PageInfo<TrackHead> trackFlowPage = new PageInfo(trackFlowList);
         return CommonResult.success(trackFlowPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }

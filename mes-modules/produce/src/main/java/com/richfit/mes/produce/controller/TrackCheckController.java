@@ -639,6 +639,7 @@ public class TrackCheckController extends BaseController {
                     trackHeadService.trackHeadUseless(item.getTrackHeadId());
                 }
                 trackItemService.updateById(item);
+                trackCheck.setFlowId(item.getFlowId());
                 if (!StringUtils.isNullOrEmpty(trackCheck.getId())) {
                     trackCheck.setModifyTime(new Date());
                     trackCheckService.updateById(trackCheck);

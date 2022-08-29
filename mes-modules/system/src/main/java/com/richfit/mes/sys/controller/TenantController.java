@@ -102,7 +102,7 @@ public class TenantController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tenantName", value = "租户名称", required = false, paramType = "query")
+            @ApiImplicitParam(name = "tenantName", value = "租户名称", paramType = "query")
     })
     @GetMapping("/query/page")
     public CommonResult queryByCondition(@RequestParam(value = "tenantName", required = false) String tenantName,
@@ -220,7 +220,7 @@ public class TenantController extends BaseController {
     @ApiOperation(value = "查询所有启用的租户列表信息", notes = "查询所有启用的租户列表信息")
     @GetMapping("/query/enable/list")
     public CommonResult queryEnableList() throws GlobalException {
-        QueryWrapper<Tenant> queryWrapper = new QueryWrapper();
+        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_status", 1);
         queryWrapper.ne("tenant_code", "DEFAULT");
         List<Tenant> tenantList = tenantService.list(queryWrapper);

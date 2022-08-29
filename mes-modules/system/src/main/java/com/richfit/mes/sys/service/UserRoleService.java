@@ -1,6 +1,8 @@
 package com.richfit.mes.sys.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.sys.Role;
+import com.richfit.mes.common.model.sys.UserRole;
 
 import java.util.List;
 import java.util.Set;
@@ -9,7 +11,7 @@ import java.util.Set;
  * @author sun
  * @Description 用户角色服务
  */
-public interface UserRoleService {
+public interface UserRoleService extends IService<UserRole> {
     /**
      * 给用户添加角色
      *
@@ -17,7 +19,7 @@ public interface UserRoleService {
      * @param roleIds
      * @return
      */
-    boolean saveBatch(String userId, Set<String> roleIds);
+    boolean saveBatch(String userId, Set<String> roleIds, String userType);
 
     /**
      * 删除用户拥有的角色

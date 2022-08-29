@@ -1,7 +1,7 @@
 package com.richfit.mes.produce.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.richfit.mes.common.model.produce.ProduceInspectionRecord;
+import com.richfit.mes.common.model.produce.ProduceInspectionRecordPt;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -9,5 +9,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2022-08-22 11:23
  */
 @Mapper
-public interface ProduceInspectionRecordMapper extends BaseMapper<ProduceInspectionRecord> {
+public interface ProduceInspectionRecordPtMapper extends BaseMapper<ProduceInspectionRecordPt> {
 }

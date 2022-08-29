@@ -41,7 +41,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
     public boolean sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
 
         //生成报文主体
-        Zc80Ppif024 zc80Ppif024 = generateRequstBody(trackItemList, erpCode, orderNo, qty, unit);
+        Zc80Ppif024 zc80Ppif024 = generateRequestBody(trackItemList, erpCode, orderNo, qty, unit);
 
         //获取调用服务接口类实例
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
@@ -54,7 +54,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
     }
 
 
-    private Zc80Ppif024 generateRequstBody(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
+    private Zc80Ppif024 generateRequestBody(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
 
         List<Zc80Ppif024S1> zc80Ppif024S1List = new ArrayList<>();
         for (int i = 0; i < trackItemList.size(); i++) {
@@ -83,7 +83,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
         zc80Ppif024S1.setMeinh(unit);
         zc80Ppif024S1.setIle01("MIN");
 
-        zc80Ppif024S1.setIsm01(new BigDecimal(getHourToMinutes(trackItem)));
+        zc80Ppif024S1.setIsm01(BigDecimal.valueOf(getHourToMinutes(trackItem)));
         zc80Ppif024S1.setFinConf("P");
         zc80Ppif024S1.setBudat(sdf.format(new Date()));
         zc80Ppif024S1.setZflag("Y");
@@ -101,7 +101,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
 
         Assert.notNull(item, "item 不应该为null");
 
-        String s = "";
+        String s;
 
         int optSequence = item.getOptSequence();
 

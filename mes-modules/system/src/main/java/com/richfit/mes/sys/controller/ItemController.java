@@ -167,7 +167,7 @@ public class ItemController extends BaseController {
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
-//            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         List<ItemClass> iClasses = itemClassService.list(queryWrapper);
         if (iClasses.size() > 0) {
@@ -177,7 +177,7 @@ public class ItemController extends BaseController {
                 wrapper.like("label", label);
             }
             if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
-                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             }
 //            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             wrapper.orderByAsc("order_num");

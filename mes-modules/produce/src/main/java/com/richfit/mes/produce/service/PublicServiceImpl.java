@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * @ClassName: PublicServiceImpl.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 状态流转业务
  * @CreateTime: 2022年07月12日 16:34:00
  */
 @Slf4j
@@ -69,7 +69,12 @@ public class PublicServiceImpl implements PublicService {
         return false;
     }
 
-    //派工
+    /**
+     * 功能描述: 派工
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateDispatching(Map<String, String> map) {
@@ -85,6 +90,7 @@ public class PublicServiceImpl implements PublicService {
                     //激活下工序
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                     if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                        //更新计划的工序以完成数量
                         planService.planData(trackHead.getWorkPlanId());
                     }
                     activation = activation(trackItem);
@@ -94,7 +100,12 @@ public class PublicServiceImpl implements PublicService {
         return activation;
     }
 
-    //报工
+    /**
+     * 功能描述: 报工
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateComplete(Map<String, String> map) {
@@ -153,7 +164,12 @@ public class PublicServiceImpl implements PublicService {
         return activationProcess;
     }
 
-    //质检
+    /**
+     * 功能描述: 质检
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateQualityTesting(Map<String, String> map) {
@@ -180,47 +196,48 @@ public class PublicServiceImpl implements PublicService {
         return true;
     }
 
+    /**
+     * 功能描述: 调度
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateDispatch(Map<String, String> map) {
         String tiId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(tiId);
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
-
-        try {
-            if (0 == trackItem.getNextOptSequence()) {
-                trackHeadService.trackHeadFinish(trackItem.getFlowId());
-                trackHead.setStatus("2");
-                trackHead.setCompleteTime(new Date());
-                trackHeadService.updateById(trackHead);
-                //设置产品完工
-                lineStoreService.changeStatus(trackHead);
-                //设置计划状态
-                planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
-            } else {
-                trackItem.setIsFinalComplete("1");
-                trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
-                if (null != SecurityUtils.getCurrentUser()) {
-                    trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-                }
-                trackItem.setScheduleCompleteTime(new Date());
-                trackItem.setIsOperationComplete(1);
-                trackItem.setOperationCompleteTime(new Date());
-                trackItem.setIsFinalComplete("1");
-                trackItemService.updateById(trackItem);
+        if (0 == trackItem.getNextOptSequence()) {
+            trackHeadService.trackHeadFinish(trackItem.getFlowId());
+            //设置产品完工
+            lineStoreService.changeStatus(trackHead);
+            //设置计划状态
+            planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
+        } else {
+            trackItem.setIsFinalComplete("1");
+            trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+            if (null != SecurityUtils.getCurrentUser()) {
+                trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             }
-            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                planService.planData(trackHead.getWorkPlanId());
-            }
-            this.activationProcess(map);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
-            return false;
+            trackItem.setScheduleCompleteTime(new Date());
+            trackItem.setIsOperationComplete(1);
+            trackItem.setOperationCompleteTime(new Date());
+            trackItem.setIsFinalComplete("1");
+            trackItemService.updateById(trackItem);
         }
-        return true;
+        if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+            planService.planData(trackHead.getWorkPlanId());
+        }
+        return this.activationProcess(map);
     }
 
+    /**
+     * 功能描述: 激活工序
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean activationProcess(Map<String, String> map) {
@@ -237,12 +254,8 @@ public class PublicServiceImpl implements PublicService {
 
         //判断还有没有下工序
         if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
-            try {
-                trackHeadService.trackHeadFinish(map.get("trackHeadId"));
-                return true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            trackHeadService.trackHeadFinish(map.get("trackHeadId"));
+            return true;
         }
         boolean activation = false;
         if (!currentTrackItemList.isEmpty() && currentTrackItemList.get(0).getNextOptSequence() != 0) {
@@ -252,54 +265,88 @@ public class PublicServiceImpl implements PublicService {
         return activation;
     }
 
+    /**
+     * 功能描述: 第三方激活
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     @Override
-    public Boolean thirdPartyAction(String trackHeadId) {
-        QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
-        currentTrackItem.eq("track_head_id", trackHeadId);
-        currentTrackItem.eq("is_current", 1);
-        currentTrackItem.orderByDesc("sequence_order_by");
-        List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
-        //判断是否质检
+    public Boolean thirdPartyAction(String trackHeadId, String certificateId, List<String> optSequenceList) {
+        if (StringUtils.isNullOrEmpty(certificateId)) {
+            return false;
+        }
+        if (optSequenceList.isEmpty()) {
+            return false;
+        }
+        //通过跟单ID和工序顺序倒序查询工序
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        queryWrapper.in("opt_sequence", optSequenceList);
+        queryWrapper.orderByDesc("opt_sequence");
+        List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+        //向最后面的工序插入合格证
+        trackItemList.get(0).setCertificateNo(certificateId);
+        for (TrackItem trackItem : trackItemList) {
+            //是否是当前工序
+            trackItem.setIsCurrent(0);
+            //3 == 完工
+            trackItem.setIsDoing(3);
+            //当前工序是否完成
+            trackItem.setIsOperationComplete(1);
+        }
+        //设置当前工序在传入的最后一道工序上
+        trackItemList.get(0).setIsCurrent(1);
+        trackItemService.updateBatchById(trackItemList);
+        //判断是否质检,只判断最后一道工序
         boolean isNext = false;
-        for (TrackItem trackItem : currentTrackItemList) {
-            if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
-                isNext = true;
-                continue;
-            }
-            if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete() && 0 == trackItem.getIsExistScheduleCheck()) {
-                isNext = true;
-                continue;
-            }
-            if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
-                isNext = true;
-            }
+        TrackItem lastTrackItem = trackItemList.get(0);
+        //不质检,不调度
+        if (0 == lastTrackItem.getIsExistQualityCheck() && 0 == lastTrackItem.getIsExistScheduleCheck()) {
+            isNext = true;
+        }
+        //已质检完成,不调度
+        if (1 == lastTrackItem.getIsExistQualityCheck() && 1 == lastTrackItem.getIsQualityComplete() && 0 == lastTrackItem.getIsExistScheduleCheck()) {
+            isNext = true;
+        }
+        //调度完成
+        if (1 == lastTrackItem.getIsExistScheduleCheck() && 1 == lastTrackItem.getIsScheduleComplete()) {
+            isNext = true;
         }
         //判断还有没有下工序
-        if (isNext && currentTrackItemList.get(0).getNextOptSequence() == 0) {
-            try {
-                trackHeadService.trackHeadFinish(trackHeadId);
-                return true;
-            } catch (Exception e) {
-                e.printStackTrace();
+        TrackHead trackHead = trackHeadService.getById(trackHeadId);
+        //没有下工序设置完工
+        if (lastTrackItem.getNextOptSequence() == 0) {
+            //设置产品完工
+            lineStoreService.changeStatus(trackHead);
+            //跟单完成
+            trackHeadService.trackHeadFinish(trackHeadId);
+            //设置计划状态
+            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
             }
+            return true;
         }
         boolean activation = false;
         if (isNext) {
-            for (TrackItem trackItem : currentTrackItemList) {
-                //是否是当前工序
-                trackItem.setIsCurrent(0);
-                //3 == 完工
-                trackItem.setIsDoing(3);
-                //当前工序是否完成
-                trackItem.setIsOperationComplete(1);
+            //有下工序的时候有计划,触发计划计算工序
+            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                planService.planData(trackHead.getWorkPlanId());
             }
-            trackItemService.updateBatchById(currentTrackItemList);
-            activation = activation(currentTrackItemList.get(0));
+            //下工序激活
+            activation = activation(trackItemList.get(0));
         }
         return activation;
     }
 
+    /**
+     * 功能描述: 自动派工
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean automaticProcess(Map<String, String> map) {
         TrackItem trackItem = trackItemService.getById(map.get("trackItemId"));
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
@@ -341,12 +388,18 @@ public class PublicServiceImpl implements PublicService {
         queryWrapper.eq("flow_id", trackItem.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
-        if (1 == trackItemEntity.getOptParallelType()) {
+        if (null != trackItemEntity && 1 == trackItemEntity.getOptParallelType()) {
             activation(trackItem);
         }
         return null != commonResult.getData();
     }
 
+    /**
+     * 功能描述: 激活
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     private boolean activation(TrackItem trackItem) {
         //激活下工序
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
@@ -369,6 +422,12 @@ public class PublicServiceImpl implements PublicService {
         return update;
     }
 
+    /**
+     * 功能描述: 激活
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/23 15:08
+     **/
     private void queryTrackItemList(TrackItem trackItems) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("flow_id", trackItems.getFlowId());

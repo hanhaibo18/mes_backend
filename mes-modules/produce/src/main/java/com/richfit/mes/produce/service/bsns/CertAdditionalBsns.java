@@ -8,7 +8,7 @@ import com.richfit.mes.common.model.produce.Certificate;
  */
 public interface CertAdditionalBsns {
 
-    public void doAdditionalBsns(Certificate certificate);
+    void doAdditionalBsns(Certificate certificate);
 
     void pushWorkHour(Certificate certificate);
 

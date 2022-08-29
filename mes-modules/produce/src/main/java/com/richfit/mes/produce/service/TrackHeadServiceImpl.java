@@ -1071,7 +1071,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if ("2".equals(t.getStatus()) || "8".equals(t.getStatus()) || "9".equals(t.getStatus())) {
                 numberComplete += t.getNumber();
             }
-            productNoDesc += "," + t.getProductNo();
+            //当产生产先的品编码不为空时，进行产品编码的拼接
+            if (!StringUtils.isNullOrEmpty(t.getProductNo())) {
+                productNoDesc += "," + t.getProductNo();
+            }
             //跟单总数量计算
             trackHead.setNumber(trackHead.getNumber() + t.getNumber());
         }
@@ -1115,5 +1118,21 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public List<Map> selectTrackStoreCount(String drawingNos) {
         return trackHeadMapper.selectTrackStoreCount(drawingNos);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void addTrackHeadProductNo(String flowId, String productNo) {
+        //查询跟单、跟单生产线信息
+        TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+        String trackHeadId = trackFlow.getTrackHeadId();
+        TrackHead trackHead = this.getById(trackHeadId);
+
+        trackHead.setProductNoDesc(trackHead.getDrawingNo() + " " + productNo);
+        trackHead.setProductNo(productNo);
+        this.updateById(trackHead);
+        
+        trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productNo);
+        trackHeadFlowService.updateById(trackFlow);
     }
 }

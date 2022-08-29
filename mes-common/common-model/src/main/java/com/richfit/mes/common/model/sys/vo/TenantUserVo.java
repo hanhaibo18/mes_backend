@@ -87,4 +87,6 @@ public class TenantUserVo extends BaseVo<TenantUser> {
     private String orgName;
     @ApiModelProperty(value = "所在结构单位名称", dataType = "String")
     private String belongOrgName;
+    @ApiModelProperty(value = "用户角色类型", dataType = "String")
+    private String userRoleType;
 }

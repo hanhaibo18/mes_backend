@@ -8,7 +8,9 @@ import com.richfit.mes.common.core.exception.GlobalException;
  */
 public abstract class BaseController {
 
-     public GlobalException handleException(Exception e){
+    public final static String TENANT_ROLE_CODE = "role_tenant_admin";
+
+    public GlobalException handleException(Exception e) {
 
 
         return null;

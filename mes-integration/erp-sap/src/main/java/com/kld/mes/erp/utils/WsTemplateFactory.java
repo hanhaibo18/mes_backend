@@ -7,7 +7,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.client.support.interceptor.ClientInterceptor;
 
 /**
- * 生成调用erpwebservice的template工厂类
+ * 生成调用 ERP webservice的template工厂类
  *
  * @Author: GaoLiang
  * @Date: 2022/7/22 14:04

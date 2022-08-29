@@ -270,7 +270,7 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/getByRouterNo")
-    public CommonResult<Router> getByRouterNo(String routerNo, String branchCode, String tenantId) {
+    public CommonResult<Router> getByRouterNo(String routerNo, String branchCode) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
 
         if (!StringUtils.isNullOrEmpty(routerNo)) {
@@ -280,14 +280,36 @@ public class RouterController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         queryWrapper.in("is_active", "0,1".split(","));
-
-        if (!StringUtils.isNullOrEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id", tenantId);
-        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("status", "1");
         List<Router> routers = routerService.list(queryWrapper);
         if (routers.size() > 0) {
             return CommonResult.success(routers.get(0), "操作成功！");
+        } else {
+            return CommonResult.success(null, "操作成功！");
+        }
+    }
+
+    @ApiOperation(value = "批量图号查询工艺", notes = "批量图号获得工艺")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "routerNos", value = "批量图号（,隔开）", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")
+    })
+    @GetMapping("/getByRouterNos")
+    public CommonResult<List<Router>> getByRouterNos(String routerNos, String branchCode) {
+        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+        if (!StringUtils.isNullOrEmpty(routerNos)) {
+            queryWrapper.in("router_no", routerNos.split(","));
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        queryWrapper.in("is_active", "0,1".split(","));
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("status", "1");
+        List<Router> routers = routerService.list(queryWrapper);
+        if (routers.size() > 0) {
+            return CommonResult.success(routers, "操作成功！");
         } else {
             return CommonResult.success(null, "操作成功！");
         }

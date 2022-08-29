@@ -7,10 +7,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.RoleMapper;
 import com.richfit.mes.sys.entity.param.RoleQueryParam;
+import com.richfit.mes.sys.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,10 +33,12 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     private final static String ADMIN_ROLE_CODE = "role_tenant_admin";
 
+    @Autowired
+    private BaseServiceClient baseServiceClient;
+
     @Override
     public boolean add(Role role) {
-        boolean isSuccess = this.save(role);
-        return isSuccess;
+        return this.save(role);
     }
 
     @Override
@@ -85,8 +89,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public boolean update(Role role) {
-        boolean isSuccess = this.updateById(role);
-        return isSuccess;
+        return this.updateById(role);
     }
 
     @Override
@@ -111,24 +114,23 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleName()), "role_name", roleQueryParam.getRoleName());
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleCode()), "role_code", roleQueryParam.getRoleCode());
 
-
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
-//        在上层拦截系统管理员不能查询角色列表，这块逻辑无用了  2022-5-09 gl  modify
-//        List<GrantedAuthority> authorities = new ArrayList<>(SecurityUtils.getCurrentUser().getAuthorities());
-//        boolean isAdmin = false;
-//        for (GrantedAuthority authority : authorities) {
-//            //超级管理员 ROLE_12345678901234567890000000000000
-//            if("ROLE_12345678901234567890000000000000".equals(authority.getAuthority())) {
-//                isAdmin = true;
-//                break;
-//            }
-//        }
-//        if (!isAdmin) {
-//            String tenantId =  SecurityUtils.getCurrentUser().getTenantId();
-//            queryWrapper.eq("tenant_id", tenantId);
-//        }
+        return fillBranchName(this.page(page, queryWrapper));
+    }
 
-        return this.page(page, queryWrapper);
+    private IPage<Role> fillBranchName(IPage<Role> roleIPage) {
+
+        List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
+
+        for (Role role : roleIPage.getRecords()) {
+            for (Branch b : branchList) {
+                if (b.getBranchCode().equals(role.getOrgId())) {
+                    role.setOrgName(b.getBranchName());
+
+                }
+            }
+        }
+        return roleIPage;
     }
 }
