@@ -58,11 +58,11 @@ public enum OptTypeEnum {
     public static int getCode(String name) {
 
         for (OptTypeEnum recipientsEnum : OptTypeEnum.values()) {
-            if (name.contains(recipientsEnum.name())) {
+            if (name.contains(recipientsEnum.getMessage())) {
                 return recipientsEnum.ordinal();
             }
         }
-        throw new IllegalArgumentException("No element matches " + name);
+        return 0;
     }
 
     public static String getMessage(int stateId) {

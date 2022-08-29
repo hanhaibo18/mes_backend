@@ -433,13 +433,34 @@ public class SequenceController extends BaseController {
                     list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                     list.get(i).setTenantId(tenantId);
                     list.get(i).setBranchCode(branchCode);
+                    if ("是".equals(list.get(i).getIsQualityCheck())) {
+                        list.get(i).setIsQualityCheck("1");
+                    }
+                    if ("否".equals(list.get(i).getIsQualityCheck())) {
+                        list.get(i).setIsQualityCheck("0");
+                    }
+                    if ("是".equals(list.get(i).getIsScheduleCheck())) {
+                        list.get(i).setIsScheduleCheck("1");
+                    }
+                    if ("否".equals(list.get(i).getIsScheduleCheck())) {
+                        list.get(i).setIsScheduleCheck("0");
+                    }
+                    if ("是".equals(list.get(i).getIsParallel())) {
+                        list.get(i).setIsParallel("1");
+                    }
+                    if ("否".equals(list.get(i).getIsParallel())) {
+                        list.get(i).setIsParallel("0");
+                    }
+                    list.get(i).setOptOrder(optOrder);
+                    list.get(i).setTechnologySequence(String.valueOf(optOrder));
+                    list.get(i).setOptNextOrder(optOrder + 1);
+                    list.get(i).setIsParallel("0");
                     try {
-
+                        // 获取工艺类型
+                        int optType = OptTypeEnum.getCode(list.get(i).getOptType());
+                        list.get(i).setOptType(String.valueOf(optType));
                         if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && list.get(i).getContent().equals(drawnos.split(",")[j])) {
                             List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
-                            if (null != SecurityUtils.getCurrentUser()) {
-                                list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                            }
                             // 如果没有工艺，则新增工艺
                             if (routers.size() == 0) {
                                 Router r = new Router();
@@ -467,9 +488,7 @@ public class SequenceController extends BaseController {
                                 list.get(i).setStatus("0");
                             }
                             msg = "工艺获取完成";
-                            // 获取工艺类型
-                            int optType = OptTypeEnum.getCode(list.get(i).getOptType());
-                            list.get(i).setOptType(String.valueOf(optType));
+
 
                             // 获取工序
                             List<Operatipon> opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type", optType).eq("branch_code", branchCode));
@@ -492,28 +511,6 @@ public class SequenceController extends BaseController {
                             }
                             msg = "工序获取完成";
 
-                            if ("是".equals(list.get(i).getIsQualityCheck())) {
-                                list.get(i).setIsQualityCheck("1");
-                            }
-                            if ("否".equals(list.get(i).getIsQualityCheck())) {
-                                list.get(i).setIsQualityCheck("0");
-                            }
-                            if ("是".equals(list.get(i).getIsScheduleCheck())) {
-                                list.get(i).setIsScheduleCheck("1");
-                            }
-                            if ("否".equals(list.get(i).getIsScheduleCheck())) {
-                                list.get(i).setIsScheduleCheck("0");
-                            }
-                            if ("是".equals(list.get(i).getIsParallel())) {
-                                list.get(i).setIsParallel("1");
-                            }
-                            if ("否".equals(list.get(i).getIsParallel())) {
-                                list.get(i).setIsParallel("0");
-                            }
-                            list.get(i).setOptOrder(optOrder);
-                            list.get(i).setTechnologySequence(String.valueOf(optOrder));
-                            list.get(i).setOptNextOrder(optOrder + 1);
-                            list.get(i).setIsParallel("0");
 
                         }
                     } catch (Exception ex) {
