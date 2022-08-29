@@ -484,6 +484,12 @@ public class SequenceController extends BaseController {
 
                             }
                             msg = "工序获取完成";
+                            list.get(i).setCreateTime(new Date());
+                            list.get(i).setModifyTime(new Date());
+                            list.get(i).setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                            list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                            list.get(i).setTenantId(tenantId);
+                            list.get(i).setBranchCode(branchCode);
                             if ("是".equals(list.get(i).getIsQualityCheck())) {
                                 list.get(i).setIsQualityCheck("1");
                             }
@@ -506,12 +512,7 @@ public class SequenceController extends BaseController {
                             list.get(i).setTechnologySequence(String.valueOf(optOrder));
                             list.get(i).setOptNextOrder(optOrder + 1);
                             list.get(i).setIsParallel("0");
-                            list.get(i).setCreateTime(new Date());
-                            list.get(i).setModifyTime(new Date());
-                            list.get(i).setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                            list.get(i).setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                            list.get(i).setTenantId(tenantId);
-                            list.get(i).setBranchCode(branchCode);
+
                         }
                     } catch (Exception ex) {
 
