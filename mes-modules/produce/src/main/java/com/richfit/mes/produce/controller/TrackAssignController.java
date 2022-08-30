@@ -279,9 +279,10 @@ public class TrackAssignController extends BaseController {
                         }
                         //齐套性检查
                         if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent()) {
-                            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
-                            requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
+                            //控制第一道工序是否发送申请单
                             if ("true".equals(off)) {
+                                IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
+                                requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
                                 wmsServiceClient.anApplicationForm(ingredient);
                             }
                         }
