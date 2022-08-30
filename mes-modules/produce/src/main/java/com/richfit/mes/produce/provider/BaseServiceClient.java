@@ -98,7 +98,7 @@ public interface BaseServiceClient {
      * @Date: 2022/8/30 10:28
      * @return: CommonResult<List < PdmDraw>>
      **/
-    @GetMapping("/api/base/query/queryDrawList")
+    @GetMapping("/api/base/pdmDraw/query/queryDrawList")
     public CommonResult<List<PdmDraw>> queryDrawList(@RequestParam("itemId") String itemId);
 
     /**

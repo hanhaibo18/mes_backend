@@ -484,11 +484,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     public ItemMessageDto queryItemMessageDto(String itemId) {
         TrackItem trackItem = this.getById(itemId);
         ItemMessageDto itMessage = new ItemMessageDto();
-        TrackHead trackHead = trackHeadService.getById(trackItem.getId());
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
         itMessage.setDrawingNo(trackHead.getDrawingNo());
         itMessage.setSerialNumber(trackItem.getOptNo());
         itMessage.setOptName(trackItem.getOptName());
-        itMessage.setVersion(trackHead.getRouterVer());
         itMessage.setItemType(trackItem.getOptType());
         itMessage.setOptParallelType(trackItem.getOptParallelType());
         itMessage.setPrepareEndHours(trackItem.getPrepareEndHours());
@@ -508,6 +507,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         if (null != option.getData()) {
             itMessage.setPdmItemType(option.getData().getType());
             itMessage.setNotice(option.getData().getContent());
+            itMessage.setVersion(option.getData().getRev());
         }
         return itMessage;
     }
