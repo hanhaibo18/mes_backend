@@ -237,7 +237,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setModifyTime(new Date());
             trackHeadFlowService.updateById(trackFlow);
             QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
-            queryWrapper.ge("track_head_id", trackHead.getId());
+            queryWrapper.eq("track_head_id", trackHead.getId());
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
             //跟单多生产线判断，当全部生成后跟新跟单状态
             boolean flag = true;
@@ -1131,7 +1132,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHead.setProductNoDesc(trackHead.getDrawingNo() + " " + productNo);
         trackHead.setProductNo(productNo);
         this.updateById(trackHead);
-        
+
         trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productNo);
         trackHeadFlowService.updateById(trackFlow);
     }
