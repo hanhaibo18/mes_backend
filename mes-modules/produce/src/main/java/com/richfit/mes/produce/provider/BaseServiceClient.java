@@ -89,4 +89,26 @@ public interface BaseServiceClient {
      **/
     @GetMapping("/api/base/sequence/queryCraft")
     public String queryCraft(@RequestParam("id") String id);
+
+    /**
+     * 功能描述: 查询PDM图纸
+     *
+     * @param itemId
+     * @Author: xinYu.hou
+     * @Date: 2022/8/30 10:28
+     * @return: CommonResult<List < PdmDraw>>
+     **/
+    @GetMapping("/api/base/query/queryDrawList")
+    public CommonResult<List<PdmDraw>> queryDrawList(@RequestParam("itemId") String itemId);
+
+    /**
+     * 功能描述: 查询工序
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/8/30 10:47
+     * @return: CommonResult<PdmMesDraw>
+     **/
+    @GetMapping("/api/base/mes/pdmOption/queryOptionDraw/queryOptionDraw")
+    public CommonResult<PdmMesOption> queryOptionDraw(@RequestParam("id") String id);
 }

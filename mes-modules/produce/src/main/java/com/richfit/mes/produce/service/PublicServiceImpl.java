@@ -369,7 +369,7 @@ public class PublicServiceImpl implements PublicService {
         assign.setPriority(assignGet.getData().getPriority());
         assign.setQty(assignGet.getData().getQty());
         assign.setAvailQty(assignGet.getData().getQty());
-        assign.setState(0);
+        assign.setState(1);
         assign.setAssignBy(assignGet.getData().getCreateBy());
         assign.setAssignTime(new Date());
         assign.setTrackNo(trackHead.getTrackNo());

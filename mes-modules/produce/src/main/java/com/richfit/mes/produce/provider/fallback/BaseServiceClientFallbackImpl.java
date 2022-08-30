@@ -110,5 +110,15 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public CommonResult<List<PdmDraw>> queryDrawList(String itemId) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<PdmMesOption> queryOptionDraw(String id) {
+        return CommonResult.success(null);
+    }
+
 
 }

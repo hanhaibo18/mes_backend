@@ -86,5 +86,10 @@ public class PdmMesOptionController {
         return CommonResult.success(pdmMesDrawService.page(new Page<>(page, limit), queryWrapper));
     }
 
-
+    @GetMapping("/queryOptionDraw/queryOptionDraw")
+    @ApiOperation(value = "工序图纸分页查询", notes = "工序分页查询")
+    @ApiImplicitParam(name = "id", value = "工序Id", dataType = "String", paramType = "query")
+    public CommonResult<PdmMesOption> queryOptionDraw(String id) {
+        return CommonResult.success(pdmMesOptionService.getById(id));
+    }
 }
