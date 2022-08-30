@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.PdmProcessMapper;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -129,15 +128,15 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
                 pdmMesDrawService.save(pdmMesOption);
             }
 
-            //全量保存更新BOM
-            PdmBom bom = pdmBomService.getBomByProcessIdAndRev(pdmProcess.getDrawNo(), pdmProcess.getRev());
-            if (bom != null) {
-                PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
-                if (!StringUtils.isNullOrEmpty(pdmMesBom.getBomId())) {
-                    pdmMesBomService.saveOrUpdate(pdmMesBom);
-                    getBomList(bom.getChildBom());
-                }
-            }
+            //全量保存更新BOM(暂时不保存，使用pdm i bom)
+//            PdmBom bom = pdmBomService.getBomByProcessIdAndRev(pdmProcess.getDrawNo(), pdmProcess.getRev());
+//            if (bom != null) {
+//                PdmMesBom pdmMesBom = JSON.parseObject(JSON.toJSONString(bom), PdmMesBom.class);
+//                if (!StringUtils.isNullOrEmpty(pdmMesBom.getBomId())) {
+//                    pdmMesBomService.saveOrUpdate(pdmMesBom);
+//                    getBomList(bom.getChildBom());
+//                }
+//            }
 
             // 保存&更新MES工艺，并更新工艺接收状态
             PdmMesProcess pdmMesProcess = JSON.parseObject(JSON.toJSONString(pdmProcess), PdmMesProcess.class);
