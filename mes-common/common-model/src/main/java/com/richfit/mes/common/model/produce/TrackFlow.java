@@ -28,6 +28,11 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
     public static final String EXAMINE_CARD_DATA_NO = "N";
 
     /**
+     * 质量检测卡修改后申请审核
+     */
+    public static final String EXAMINE_CARD_DATA_XG = "X";
+
+    /**
      * 质量检测卡资料生成
      */
     public static final String CARD_DATA_YES = "Y";
