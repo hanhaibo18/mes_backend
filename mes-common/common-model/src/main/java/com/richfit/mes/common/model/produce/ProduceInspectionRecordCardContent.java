@@ -113,11 +113,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
                     pt.setInspectionRequirement(jsyq);
                     pt.setInspectionTesting(trackCheckDetail.getCheckMethod());
                     pt.setInspectionResult(trackCheckDetail.getValue());
-                    if (trackCheckDetail.getResult() == 1) {
-                        pt.setInspectionQualified("合格");
-                    } else {
-                        pt.setInspectionQualified("不合格");
-                    }
+                    pt.setInspectionQualified(trackCheckDetail.getResult() + "");
                     pt.setInspectionDate(DateUtil.format(trackCheckDetail.getCreateTime(), "yyyy/MM/dd"));
                     pt.setRemark(trackCheckDetail.getRemark());
                     pt.setInspectionUserName(trackCheck.getDealBy());

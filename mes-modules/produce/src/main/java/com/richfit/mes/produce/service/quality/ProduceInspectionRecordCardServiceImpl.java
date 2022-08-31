@@ -64,6 +64,14 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     }
 
     @Override
+    public void updateTrackCheckDetail(ProduceInspectionRecordCardContent produceInspectionRecordCardContent) {
+        TrackCheckDetail trackCheckDetail = trackCheckDetailService.getById(produceInspectionRecordCardContent.getId());
+        trackCheckDetail.setValue(produceInspectionRecordCardContent.getInspectionResult());
+        trackCheckDetail.setResult(Integer.parseInt(produceInspectionRecordCardContent.getInspectionQualified()));
+        trackCheckDetailService.updateById(trackCheckDetail);
+    }
+
+    @Override
     public void updateProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         this.updateById(produceInspectionRecordCard);
