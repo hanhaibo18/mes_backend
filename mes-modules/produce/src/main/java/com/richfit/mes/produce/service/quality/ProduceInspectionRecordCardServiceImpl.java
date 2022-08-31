@@ -81,6 +81,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
             TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
             trackHead.setFlowId(flowId);
+            trackHead.setIsCardData(trackFlow.getIsCardData());
             produceInspectionRecordCard = new ProduceInspectionRecordCard(trackHead);
         }
         //记录检验卡明细
@@ -106,6 +107,10 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
 
         //材料追溯（炉号）
         produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackHead(produceInspectionRecordCard));
+        int i = 1;
+        for (ProduceInspectionRecordCardContent p : produceInspectionRecordCardContentList) {
+            p.setInspectionNo(i++ + "");
+        }
 
         //数据整合
         produceInspectionRecordCard.setProduceInspectionRecordCardContentList(produceInspectionRecordCardContentList);
