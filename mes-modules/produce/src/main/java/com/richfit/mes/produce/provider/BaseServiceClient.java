@@ -3,6 +3,7 @@ package com.richfit.mes.produce.provider;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
+import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -111,4 +112,14 @@ public interface BaseServiceClient {
      **/
     @GetMapping("/api/base/mes/pdmOption/queryOptionDraw/queryOptionDraw")
     public CommonResult<PdmMesOption> queryOptionDraw(@RequestParam("id") String id);
+
+
+    /**
+     * 功能描述: ERP库存查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/12 11:37
+     **/
+    @GetMapping("/api/base/routerCheck/select_by_id")
+    public CommonResult<RouterCheck> routerCheckSelectById(@ApiParam(value = "id", required = true) @RequestParam String id);
 }

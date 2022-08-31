@@ -120,5 +120,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return CommonResult.success(null);
     }
 
+    @Override
+    public CommonResult<RouterCheck> routerCheckSelectById(String id) {
+        return null;
+    }
+
 
 }

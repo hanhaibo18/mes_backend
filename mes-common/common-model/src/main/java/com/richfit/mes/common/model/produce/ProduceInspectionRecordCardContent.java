@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.base.RouterCheck;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -85,31 +86,44 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
     @ApiModelProperty(value = "类型：1普通 2工序合格证 3探伤记录 4材料追溯（炉号）")
     private String type;
 
-
-    public ProduceInspectionRecordCardContent() {
-
-    }
-
-    public ProduceInspectionRecordCardContent(TrackCheck trackCheck) {
-        this.id = trackCheck.getId();
-        this.tenantId = trackCheck.getTenantId();
-        this.branchCode = trackCheck.getBranchCode();
-        this.flowId = trackCheck.getFlowId();
-//        this.inspectionNo;
-//        this.inspectionName
-//        this.inspectionItemName
-//        this.inspectionContent
-//        this.inspectionRequirement
-//        this.inspectionTesting
-//        this.inspectionResult
-//        this.inspectionQualified
-        this.inspectionUserName = trackCheck.getDealBy();
-        this.inspectionDate = DateUtil.format(trackCheck.getDealTime(), "yyyy-MM-dd");
-        this.type = ProduceInspectionRecordCardContent.PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_PT;
-    }
-
-    public static List<ProduceInspectionRecordCardContent> listByTrackItem(TrackItem trackItem) {
+    public static List<ProduceInspectionRecordCardContent> listByTrackItem(TrackItem trackItem, List<TrackCheck> trackCheckList) {
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
+
+        for (TrackCheck trackCheck : trackCheckList) {
+            for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
+                if (trackItem.getId().equals(trackCheckDetail.getTiId())) {
+                    RouterCheck routerCheck = trackCheckDetail.getRouterCheck();
+                    String jsyq = "";
+                    if (!StrUtil.isBlank(routerCheck.getPropertyUplimit())) {
+                        jsyq += "最大值" + routerCheck.getPropertyUplimit() + ";";
+                    }
+                    if (!StrUtil.isBlank(routerCheck.getPropertyLowerlimit())) {
+                        jsyq += "最小值" + routerCheck.getPropertyLowerlimit() + ";";
+                    }
+                    ProduceInspectionRecordCardContent pt = new ProduceInspectionRecordCardContent();
+                    pt.setId(trackItem.getId());
+                    pt.setTenantId(trackItem.getTenantId());
+                    pt.setBranchCode(trackItem.getBranchCode());
+                    pt.setFlowId(trackItem.getFlowId());
+                    pt.setInspectionItemName(trackItem.getOptName());
+                    pt.setInspectionContent(trackCheckDetail.getCheckName());
+                    pt.setInspectionRequirement(jsyq);
+                    pt.setInspectionTesting(trackCheckDetail.getCheckMethod());
+                    pt.setInspectionResult(trackCheckDetail.getValue());
+                    if (TrackCheckDetail.TRACKCHECKDETAIL_RESULT_Y == trackCheckDetail.getResult()) {
+                        pt.setInspectionQualified("合格");
+                    } else {
+                        pt.setInspectionQualified("不合格");
+                    }
+                    pt.setInspectionDate(DateUtil.format(trackCheckDetail.getCreateTime(), "yyyy/MM/dd"));
+                    pt.setRemark(trackCheckDetail.getRemark());
+                    pt.setInspectionUserName(trackCheck.getDealBy());
+                    pt.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_PT);
+                    produceInspectionRecordCardContentList.add(pt);
+                }
+            }
+        }
+
         //工序合格证
         if (!StrUtil.hasBlank(trackItem.getCertificateNo())) {
             ProduceInspectionRecordCardContent gxhgz = new ProduceInspectionRecordCardContent();
@@ -125,6 +139,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
             gxhgz.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_GXHGZ);
             produceInspectionRecordCardContentList.add(gxhgz);
         }
+
         //探伤
         if (!StrUtil.hasBlank(trackItem.getInspectRecordNo())) {
             ProduceInspectionRecordCardContent ts = new ProduceInspectionRecordCardContent();

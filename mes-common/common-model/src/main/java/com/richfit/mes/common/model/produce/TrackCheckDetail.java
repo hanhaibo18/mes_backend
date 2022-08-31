@@ -1,6 +1,8 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.base.RouterCheck;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,6 +13,7 @@ import lombok.Data;
 @Data
 public class TrackCheckDetail extends BaseEntity<TrackCheckDetail> {
 
+    private static final long serialVersionUID = 4386745442903137730L;
     /**
      * 租户ID
      */
@@ -67,6 +70,10 @@ public class TrackCheckDetail extends BaseEntity<TrackCheckDetail> {
      * 填写说明
      */
     protected String remark;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "base工艺工序质检明细")
+    private RouterCheck routerCheck;
 
 
 }
