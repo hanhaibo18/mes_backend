@@ -317,6 +317,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     for (Map m : trackHead.getStoreList()) {
                         //流水号获取
                         CodeRule codeRule = codeRuleService.gerCode("track_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+                        if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
+                            throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
+                        }
                         trackHead.setTrackNo(codeRule.getCurValue());
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
