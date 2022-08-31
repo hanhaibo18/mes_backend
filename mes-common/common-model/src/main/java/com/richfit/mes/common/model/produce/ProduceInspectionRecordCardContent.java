@@ -110,7 +110,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
                     pt.setInspectionRequirement(jsyq);
                     pt.setInspectionTesting(trackCheckDetail.getCheckMethod());
                     pt.setInspectionResult(trackCheckDetail.getValue());
-                    if (TrackCheckDetail.TRACKCHECKDETAIL_RESULT_Y == trackCheckDetail.getResult()) {
+                    if (trackCheckDetail.getResult() == 1) {
                         pt.setInspectionQualified("合格");
                     } else {
                         pt.setInspectionQualified("不合格");
