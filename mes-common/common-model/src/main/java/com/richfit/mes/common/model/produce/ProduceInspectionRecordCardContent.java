@@ -104,7 +104,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
                         jsyq += "默认值" + routerCheck.getPropertyDefaultvalue() + ";";
                     }
                     ProduceInspectionRecordCardContent pt = new ProduceInspectionRecordCardContent();
-                    pt.setId(trackItem.getId());
+                    pt.setId(trackCheckDetail.getId());
                     pt.setTenantId(trackItem.getTenantId());
                     pt.setBranchCode(trackItem.getBranchCode());
                     pt.setFlowId(trackItem.getFlowId());
