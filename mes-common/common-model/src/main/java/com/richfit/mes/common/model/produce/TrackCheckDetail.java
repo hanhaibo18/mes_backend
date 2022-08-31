@@ -34,6 +34,14 @@ public class TrackCheckDetail extends BaseEntity<TrackCheckDetail> {
      * 规则ID
      */
     protected String checkId;
+
+    /**
+     * 功能描述: trackCheck表Id
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/8/31 14:18
+     **/
+    private String trackCheckId;
     /**
      * 质检类型 规则类型 0-人工判断 1-枚举 2-区间 3-允差
      */
@@ -41,7 +49,7 @@ public class TrackCheckDetail extends BaseEntity<TrackCheckDetail> {
     /**
      * 质检结果 0-不合格 1-合格
      */
-    protected int result;
+    protected Integer result;
     /**
      * 检查名称
      */
