@@ -87,6 +87,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     public TrackHeadFlowService trackHeadFlowService;
 
+    @Autowired
+    public CodeRuleService codeRuleService;
+
     @Resource
     private PublicService publicService;
 
@@ -313,15 +316,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
                     for (Map m : trackHead.getStoreList()) {
                         //流水号获取
-                        CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"跟单编号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-                        if (commonResult.getStatus() == 200) {
-                            if (commonResult.getData() == null) {
-                                throw new GlobalException("获取跟单号流水失败！", ResultCode.FAILED);
-                            }
-                            trackHead.setTrackNo(commonResult.getData().getCurValue());
-                        } else {
-                            throw new GlobalException(commonResult.getMessage(), ResultCode.FAILED);
-                        }
+                        CodeRule codeRule = codeRuleService.gerCode("track_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+                        trackHead.setTrackNo(codeRule.getCurValue());
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
                 } else {
@@ -407,8 +403,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
+            System.out.println("---------------------------------");
+            System.out.println(trackHead.getTrackNo());
+            System.out.println(Calendar.getInstance().get(Calendar.YEAR) + "");
             //流水号更新
-            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            codeRuleService.updateCode("track_no", null, trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
