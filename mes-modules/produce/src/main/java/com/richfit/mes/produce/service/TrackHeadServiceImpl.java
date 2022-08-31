@@ -314,13 +314,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     for (Map m : trackHead.getStoreList()) {
                         //流水号获取
                         CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"跟单编号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-                        if (commonResult.getData() == null) {
-                            throw new GlobalException("获取跟单号流水失败！", ResultCode.FAILED);
+                        if (commonResult.getStatus() == 200) {
+                            if (commonResult.getData() == null) {
+                                throw new GlobalException("获取跟单号流水失败！", ResultCode.FAILED);
+                            }
+                            trackHead.setTrackNo(commonResult.getData().getCurValue());
+                        } else {
+                            throw new GlobalException(commonResult.getMessage(), ResultCode.FAILED);
                         }
-                        trackHead.setTrackNo(commonResult.getData().getCurValue());
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
-                        //流水号更新
-                        codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
                     }
                 } else {
                     throw new GlobalException("请添加产品编码", ResultCode.FAILED);
@@ -405,6 +407,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
+            //流水号更新
+            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
