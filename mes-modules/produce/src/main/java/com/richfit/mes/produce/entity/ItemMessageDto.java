@@ -49,4 +49,6 @@ public class ItemMessageDto {
     private Integer isExistQualityCheck;
     @ApiModelProperty(value = "工序指导")
     private String notice;
+    @ApiModelProperty(value = "跟新工序")
+    private String isUpdate;
 }

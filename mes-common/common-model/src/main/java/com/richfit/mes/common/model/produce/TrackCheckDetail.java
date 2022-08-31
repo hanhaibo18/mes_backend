@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -18,6 +19,13 @@ public class TrackCheckDetail extends BaseEntity<TrackCheckDetail> {
      * 机构编码
      */
     protected String branchCode;
+
+    /**
+     * @Author: xinYu.hou
+     * @Date: 2022/8/31 11:20
+     **/
+    @ApiModelProperty(value = "分流Id")
+    private String flowId;
     /**
      * 跟单工序项ID
      */
@@ -51,6 +59,6 @@ public class TrackCheckDetail extends BaseEntity<TrackCheckDetail> {
      * 填写说明
      */
     protected String remark;
-   
+
 
 }

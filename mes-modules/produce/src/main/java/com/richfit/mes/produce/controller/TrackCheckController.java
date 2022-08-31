@@ -665,6 +665,7 @@ public class TrackCheckController extends BaseController {
                     for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
                         trackCheckDetail.setTenantId(tenantId);
                         trackCheckDetail.setBranchCode(trackCheck.getBranchCode());
+                        trackCheckDetail.setFlowId(item.getFlowId());
                         if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
                             List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
                             if (!list.isEmpty()) {

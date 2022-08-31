@@ -508,6 +508,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             itMessage.setPdmItemType(option.getData().getType());
             itMessage.setNotice(option.getData().getContent());
             itMessage.setVersion(option.getData().getRev());
+            itMessage.setIsDrawingNo(option.getData().getDrawing());
         }
         return itMessage;
     }
