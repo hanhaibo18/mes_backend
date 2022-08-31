@@ -100,6 +100,9 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
                     if (!StrUtil.isBlank(routerCheck.getPropertyLowerlimit())) {
                         jsyq += "最小值" + routerCheck.getPropertyLowerlimit() + ";";
                     }
+                    if (!StrUtil.isBlank(routerCheck.getPropertyDefaultvalue())) {
+                        jsyq += "默认值" + routerCheck.getPropertyDefaultvalue() + ";";
+                    }
                     ProduceInspectionRecordCardContent pt = new ProduceInspectionRecordCardContent();
                     pt.setId(trackItem.getId());
                     pt.setTenantId(trackItem.getTenantId());
