@@ -1,6 +1,7 @@
 package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.base.entity.TreeVo;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 
@@ -45,4 +46,14 @@ public interface BranchService extends IService<Branch> {
      * @return: List<Branch>
      **/
     List<Branch> queryAllCode();
+
+    /**
+     * 功能描述: 查询质检人员树
+     *
+     * @param branchCodeList
+     * @Author: xinYu.hou
+     * @Date: 2022/8/30 17:27
+     * @return: List<TreeVo>
+     **/
+    List<TreeVo> queryUserTreeList(List<String> branchCodeList);
 }
