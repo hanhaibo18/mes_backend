@@ -66,6 +66,8 @@ public class TrackAssignController extends BaseController {
     private TrackHeadFlowService trackHeadFlowService;
     @Resource
     private RequestNoteService requestNoteService;
+    @Resource
+    private TrackItemInspectionService inspectionService;
 
     @Value("${switch}")
     private String off;
@@ -320,6 +322,10 @@ public class TrackAssignController extends BaseController {
                         assign.getUserId().substring(0, assign.getUserId().length() - 1),
                         assign.getBranchCode(),
                         assign.getTenantId());
+                //参数不为空 并且为"1" 复制工序参数
+                if (!StringUtils.isNullOrEmpty(assign.getIsFlawDetection()) && "1".equals(assign.getIsFlawDetection())) {
+                    inspectionService.saveItem(assign.getTiId());
+                }
             }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {

@@ -604,9 +604,6 @@ public class TrackCheckController extends BaseController {
                 if (StringUtils.isNullOrEmpty(trackCheck.getTiId())) {
                     return CommonResult.failed("关联跟单ID编码不能为空！");
                 }
-                if (StringUtils.isNullOrEmpty(trackCheck.getDealBy())) {
-                    return CommonResult.failed("处理人不能为空");
-                }
                 String tenantId = SecurityUtils.getCurrentUser().getTenantId();
                 trackCheck.setTenantId(tenantId);
                 trackCheck.setDealTime(new Date());

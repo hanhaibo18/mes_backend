@@ -254,7 +254,7 @@ public class PublicServiceImpl implements PublicService {
 
         //判断还有没有下工序
         if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
-            trackHeadService.trackHeadFinish(map.get("trackHeadId"));
+            trackHeadService.trackHeadFinish(map.get("flowId"));
             return true;
         }
         boolean activation = false;
