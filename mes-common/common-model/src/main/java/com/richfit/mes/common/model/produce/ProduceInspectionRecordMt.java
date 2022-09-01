@@ -31,6 +31,20 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String factoryNo;
     @ApiModelProperty(value = "样品编号")
     private String sampleNo;
+
+   /* @ApiModelProperty(value = "仪器型号")
+    private String instrumentModel;
+    @ApiModelProperty(value = "仪器编号")
+    private String instrumentCode;
+    @ApiModelProperty(value = "零件顺序号")
+    private String partOrderNo;
+    @ApiModelProperty(value = "下次检定时间")
+    private String nextCheckDate;*/
+
+    @ApiModelProperty(value = "检测时机")
+    private String testOpportunity;
+
+
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
     @ApiModelProperty(value = "种类 0、铸 1、锻 2、 焊")
@@ -73,8 +87,14 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String sensitivityTestPiece;
     @ApiModelProperty(value = "检测示意图")
     private String diagramAttachmentId;
+    @ApiModelProperty(value = "检测员及技术资格")
+    private String inspectorLevel;
+    @ApiModelProperty(value = "检测日期")
+    private String inspectionDate;
+    @ApiModelProperty(value = "核验员")
+    private String checkBy;
     @ApiModelProperty(value = "模板类型")
-    private String tempType;
+    private String tempType = "mt";
     @TableField(exist = false,value = "缺陷记录")
     private List<ProduceDefectsInfo> defectsInfoList;
 

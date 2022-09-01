@@ -13,6 +13,8 @@ import java.util.List;
 @TableName(value = "produce_inspection_records_pt")
 public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecordPt> {
     private static final long serialVersionUID = -1472432735506772177L;
+    @ApiModelProperty(value = "id")
+    private String id;
     @ApiModelProperty(value = "记录编号")
     private String recordNo;
     @ApiModelProperty(value = "委托单号")
@@ -31,6 +33,16 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
     private String factoryNo;
     @ApiModelProperty(value = "样品编号")
     private String sampleNo;
+
+/*    @ApiModelProperty(value = "仪器型号")
+    private String instrumentModel;
+    @ApiModelProperty(value = "仪器编号")
+    private String instrumentCode;
+    @ApiModelProperty(value = "零件顺序号")
+    private String partOrderNo;
+    @ApiModelProperty(value = "下次检定时间")
+    private String nextCheckDate;*/
+
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
     @ApiModelProperty(value = "种类 0、铸 1、锻 2、 焊")
@@ -82,7 +94,7 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "检测日期")
     private Date inspectionDate;
     @ApiModelProperty(value = "模板类型")
-    private String tempType;
+    private String tempType = "pt";
     @TableField(exist = false,value = "缺陷记录")
     private List<ProduceDefectsInfo> defectsInfoList;
 

@@ -27,6 +27,9 @@ public class ProduceInspectionRecordDto{
      * 关联工序ids
      */
     private List<String> itemIds;
-
+    /**
+     * 模板类型
+     */
+    private String tempType;
 
 }
