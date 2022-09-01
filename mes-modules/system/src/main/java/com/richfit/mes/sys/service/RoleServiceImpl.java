@@ -113,9 +113,14 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         QueryWrapper<Role> queryWrapper = roleQueryParam.build();
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleName()), "role_name", roleQueryParam.getRoleName());
         queryWrapper.like(StringUtils.isNotBlank(roleQueryParam.getRoleCode()), "role_code", roleQueryParam.getRoleCode());
-
+        /**
+         * 添加角色类型条件过滤
+         *
+         * @Author: zhiqiang.lu
+         * @date :2022.9.1
+         */
+        queryWrapper.eq(StringUtils.isNotBlank(roleQueryParam.getRoleType()), "role_type", roleQueryParam.getRoleType());
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-
         return fillBranchName(this.page(page, queryWrapper));
     }
 
