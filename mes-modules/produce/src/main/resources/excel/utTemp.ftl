@@ -2614,7 +2614,11 @@
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
-                                        <w:jc w:val="right" />
+                                        <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
+                                            <w:sz w:val="24" />
+                                        </w:rPr>
                                     </w:pPr>
                                 </w:p>
                             </w:tc>
@@ -2628,6 +2632,11 @@
                                 <w:p>
                                     <w:pPr>
                                         <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
+                                            <w:sz w:val="24" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
@@ -2649,6 +2658,37 @@
                                 <w:p>
                                     <w:pPr>
                                         <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
+                                            <w:sz w:val="24" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="24" />
+                                        </w:rPr>
+                                        <w:t>${defect.testResults!""}</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="2598" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
+                                </w:tcPr>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
+                                            <w:sz w:val="24" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
