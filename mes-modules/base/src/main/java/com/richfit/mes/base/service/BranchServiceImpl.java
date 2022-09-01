@@ -42,22 +42,18 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
     @Override
     public List<Branch> queryCode(String branchCode) {
         List<Branch> branchList = new ArrayList<Branch>();
-        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         if (StringUtils.isNullOrEmpty(branchCode)) {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getBelongOrgId());
-            queryWrapper.eq("tenant_id", tenantId);
             branchList = this.list(queryWrapper);
         } else {
             QueryWrapper<Branch> queryWrapperTop = new QueryWrapper<>();
             queryWrapperTop.eq("branch_code", branchCode);
-            queryWrapperTop.eq("tenant_id", tenantId);
             branchList = this.list(queryWrapperTop);
         }
         if (branchList.isEmpty()) {
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("branch_code", branchCode)
-                    .eq("tenant_id", tenantId);
+            queryWrapper.eq("branch_code", branchCode);
             return this.list(queryWrapper);
         }
         for (Branch branch : branchList) {
@@ -72,7 +68,6 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         List<Branch> branchList = new ArrayList<>();
         List<TenantUserVo> tenantUserVo = new ArrayList<>();
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         branchList = this.list(queryWrapper);
         //在获取质检人员
         if (!branchList.isEmpty()) {

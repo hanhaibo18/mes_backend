@@ -179,4 +179,8 @@ public class Assign extends BaseEntity<Assign> {
 
     @ApiModelProperty(value = "跟单分类：1机加  2装配 3热处理 4钢结构 ", dataType = "String")
     private String classes;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "探伤工序标识")
+    private String isFlawDetection;
 }
