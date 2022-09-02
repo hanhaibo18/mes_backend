@@ -133,8 +133,7 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
 
     private void queryByBranchCode(Branch branch) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("main_branch_code", branch.getBranchCode())
-                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("main_branch_code", branch.getBranchCode());
         List<Branch> branches = this.list(queryWrapper);
         for (Branch branch1 : branches) {
             queryByBranchCode(branch1);
