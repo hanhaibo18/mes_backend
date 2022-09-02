@@ -94,14 +94,16 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
                 if (trackItem.getId().equals(trackCheckDetail.getTiId())) {
                     RouterCheck routerCheck = trackCheckDetail.getRouterCheck();
                     String jsyq = "";
-                    if (!StrUtil.isBlank(routerCheck.getPropertyUplimit())) {
-                        jsyq += "最大值" + routerCheck.getPropertyUplimit() + ";";
-                    }
-                    if (!StrUtil.isBlank(routerCheck.getPropertyLowerlimit())) {
-                        jsyq += "最小值" + routerCheck.getPropertyLowerlimit() + ";";
-                    }
-                    if (!StrUtil.isBlank(routerCheck.getPropertyDefaultvalue())) {
-                        jsyq += "默认值" + routerCheck.getPropertyDefaultvalue() + ";";
+                    if (routerCheck != null) {
+                        if (!StrUtil.isBlank(routerCheck.getPropertyUplimit())) {
+                            jsyq += "最大值" + routerCheck.getPropertyUplimit() + ";";
+                        }
+                        if (!StrUtil.isBlank(routerCheck.getPropertyLowerlimit())) {
+                            jsyq += "最小值" + routerCheck.getPropertyLowerlimit() + ";";
+                        }
+                        if (!StrUtil.isBlank(routerCheck.getPropertyDefaultvalue())) {
+                            jsyq += "默认值" + routerCheck.getPropertyDefaultvalue() + ";";
+                        }
                     }
                     ProduceInspectionRecordCardContent pt = new ProduceInspectionRecordCardContent();
                     pt.setId(trackCheckDetail.getId());
