@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,6 +12,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel(value = "角色工序配置表")
+@TableName(value = "produce_role_operation")
 public class ProduceRoleOperation extends BaseEntity<TrackHead> {
     private static final long serialVersionUID = 2780348291041220734L;
 
@@ -21,14 +23,14 @@ public class ProduceRoleOperation extends BaseEntity<TrackHead> {
     private String branchCode;
 
     @ApiModelProperty(value = "sys角色id")
-    private String role_id;
+    private String roleId;
 
     @ApiModelProperty(value = "base工序id")
-    private String operation_id;
+    private String operationId;
 
     @ApiModelProperty(value = "工序代码(无用)")
-    private String operation_code;
+    private String operationCode;
 
     @ApiModelProperty(value = "工序名称")
-    private String operation_name;
+    private String operationName;
 }
