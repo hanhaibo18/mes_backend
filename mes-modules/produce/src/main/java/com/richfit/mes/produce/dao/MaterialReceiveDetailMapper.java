@@ -20,6 +20,9 @@ import java.util.List;
 @Mapper
 public interface MaterialReceiveDetailMapper extends BaseMapper<MaterialReceiveDetail> {
 
-    @Select("SELECT mrd.*, prnd.note_id,prnd.drawing_no FROM produce_material_receive_detail mrd LEFT JOIN produce_request_note_detail prnd ON mrd.aply_num = prnd.note_id AND mrd.material_num = prnd.material_no  ${ew.customSqlSegment}")
+    @Select("SELECT mrd.*,prnd.drawing_no \n" +
+            "FROM produce_material_receive_detail mrd \n" +
+            "LEFT JOIN (select drawing_no,material_no from produce_request_note_detail  where id in (select max(id) as id from  produce_request_note_detail \n" +
+            "GROUP BY material_no)) prnd ON mrd.material_num = prnd.material_no   ${ew.customSqlSegment}")
     List<MaterialReceiveDetail> getReceiveDetail(@Param(Constants.WRAPPER) QueryWrapper<MaterialReceiveDetail> queryWrapper);
 }

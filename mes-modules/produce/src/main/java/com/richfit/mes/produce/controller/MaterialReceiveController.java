@@ -64,8 +64,8 @@ public class MaterialReceiveController extends BaseController {
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.like("prn.track_head_id", trackNo);
         }
-        if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("mr.track_head_id", branchCode);
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("mr.branch_code", branchCode);
         }
         queryWrapper.eq("mr.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("outbound_date");
