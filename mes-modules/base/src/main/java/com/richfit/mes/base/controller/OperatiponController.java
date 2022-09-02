@@ -12,10 +12,7 @@ import com.richfit.mes.common.model.base.OperationDevice;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -248,5 +245,36 @@ public class OperatiponController extends BaseController {
             return CommonResult.failed("操作失败，请重试！");
         }
 
+    }
+
+    /**
+     * 功能描述: 工序列表查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/1 15:06
+     **/
+    @ApiOperation(value = "工序列表查询", notes = "工序列表查询")
+    @GetMapping("/list")
+    public CommonResult<List<Operatipon>> list(@ApiParam(value = "工序字典编码") @RequestParam(required = false) String optCode,
+                                               @ApiParam(value = "工序字典名称") @RequestParam(required = false) String optName,
+                                               @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) {
+        try {
+            QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
+            if (!StringUtils.isNullOrEmpty(optCode)) {
+                queryWrapper.like("opt_code", optCode);
+            }
+            if (!StringUtils.isNullOrEmpty(optName)) {
+                queryWrapper.like("opt_name", optName);
+            }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.orderByDesc("modify_time");
+            List<Operatipon> operatiponList = operatiponService.list(queryWrapper);
+            return CommonResult.success(operatiponList);
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
     }
 }

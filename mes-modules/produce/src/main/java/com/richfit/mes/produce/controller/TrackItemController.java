@@ -5,6 +5,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -293,6 +294,12 @@ public class TrackItemController extends BaseController {
     @GetMapping("/backSequence")
     public CommonResult<String> backSequence(String thId) {
         return CommonResult.success(trackItemService.backSequence(thId));
+    }
+
+    @GetMapping("/queryItemMessageDto")
+    @ApiOperation(value = "查询工序信息", notes = "根据工序Id查询工序信息")
+    public CommonResult<ItemMessageDto> queryItemMessageDto(String tiId) {
+        return CommonResult.success(trackItemService.queryItemMessageDto(tiId));
     }
 
 }

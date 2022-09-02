@@ -2,18 +2,19 @@ package com.richfit.mes.produce.service.quality;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.ProduceInspectionRecordCardContentMapper;
 import com.richfit.mes.produce.dao.quality.ProduceInspectionRecordCardMapper;
-import com.richfit.mes.produce.service.TrackCheckService;
-import com.richfit.mes.produce.service.TrackHeadFlowService;
-import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +40,14 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     public TrackCheckService trackCheckService;
 
     @Autowired
+    public TrackCheckDetailService trackCheckDetailService;
+
+    @Autowired
     public TrackItemService trackItemService;
+
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public void saveProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
@@ -53,6 +61,18 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             produceInspectionRecordCardContent.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             produceInspectionRecordCardContentMapper.insert(produceInspectionRecordCardContent);
         }
+    }
+
+    @Override
+    public void updateTrackCheckDetail(ProduceInspectionRecordCardContent produceInspectionRecordCardContent) {
+        TrackFlow trackFlow = trackHeadFlowService.getById(produceInspectionRecordCardContent.getFlowId());
+        trackFlow.setIsExamineCardData(TrackFlow.EXAMINE_CARD_DATA_XG);
+        trackHeadFlowService.updateById(trackFlow);
+        
+        TrackCheckDetail trackCheckDetail = trackCheckDetailService.getById(produceInspectionRecordCardContent.getId());
+        trackCheckDetail.setValue(produceInspectionRecordCardContent.getInspectionResult());
+        trackCheckDetail.setResult(Integer.parseInt(produceInspectionRecordCardContent.getInspectionQualified()));
+        trackCheckDetailService.updateById(trackCheckDetail);
     }
 
     @Override
@@ -81,31 +101,47 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
             TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
             trackHead.setFlowId(flowId);
+            trackHead.setIsCardData(trackFlow.getIsCardData());
             produceInspectionRecordCard = new ProduceInspectionRecordCard(trackHead);
         }
         //记录检验卡明细
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
         //获取工序质检信息
-        QueryWrapper<TrackCheck> queryWrapperTrackCheck = new QueryWrapper<>();
-        queryWrapperTrackCheck.eq("flow_id", flowId);
-        queryWrapperTrackCheck.orderByAsc("deal_time");
-        List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperTrackCheck);
-        for (TrackCheck trackCheck : trackCheckList) {
-            ProduceInspectionRecordCardContent produceInspectionRecordCardContent = new ProduceInspectionRecordCardContent(trackCheck);
-            produceInspectionRecordCardContentList.add(produceInspectionRecordCardContent);
-        }
-
-        //获取工序其他信息（工序合格证、探伤记录）
         QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
         queryWrapperTrackItem.eq("flow_id", flowId);
         queryWrapperTrackItem.orderByAsc("opt_sequence");
         List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+        //质检信息
+        QueryWrapper<TrackCheck> queryWrapperTrackCheck = new QueryWrapper<>();
+        queryWrapperTrackCheck.eq("flow_id", flowId);
+        List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperTrackCheck);
+        //质检明细
+        QueryWrapper<TrackCheckDetail> queryWrapperTrackCheckDetail = new QueryWrapper<>();
+        queryWrapperTrackCheckDetail.eq("flow_id", flowId);
+        List<TrackCheckDetail> trackCheckDetailList = trackCheckDetailService.list(queryWrapperTrackCheckDetail);
+        //质检信息数据重组
+        for (TrackCheck trackCheck : trackCheckList) {
+            List<TrackCheckDetail> list = new ArrayList<>();
+            for (TrackCheckDetail trackCheckDetail : trackCheckDetailList) {
+                if (trackCheck.getId().equals(trackCheckDetail.getTrackCheckId())) {
+                    CommonResult<RouterCheck> result = baseServiceClient.routerCheckSelectById(trackCheckDetail.getCheckId());
+                    trackCheckDetail.setRouterCheck(result.getData());
+                    list.add(trackCheckDetail);
+                }
+            }
+            trackCheck.setCheckDetailsList(list);
+        }
+        //获取质检信息与其他信息（工序合格证、探伤记录）
         for (TrackItem trackItem : trackItemList) {
-            produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackItem(trackItem));
+            produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackItem(trackItem, trackCheckList));
         }
 
         //材料追溯（炉号）
         produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackHead(produceInspectionRecordCard));
+        int i = 1;
+        for (ProduceInspectionRecordCardContent p : produceInspectionRecordCardContentList) {
+            p.setInspectionNo(i++ + "");
+        }
 
         //数据整合
         produceInspectionRecordCard.setProduceInspectionRecordCardContentList(produceInspectionRecordCardContentList);

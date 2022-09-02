@@ -6,17 +6,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.PdmDraw;
+import com.richfit.mes.common.model.base.PdmMesOption;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -56,6 +62,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Autowired
     private LineStoreService lineStoreService;
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query) {
@@ -469,6 +478,39 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 this.save(item);
             }
         }
+    }
+
+    @Override
+    public ItemMessageDto queryItemMessageDto(String itemId) {
+        TrackItem trackItem = this.getById(itemId);
+        ItemMessageDto itMessage = new ItemMessageDto();
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        itMessage.setDrawingNo(trackHead.getDrawingNo());
+        itMessage.setSerialNumber(trackItem.getOptNo());
+        itMessage.setOptName(trackItem.getOptName());
+        itMessage.setItemType(trackItem.getOptType());
+        itMessage.setOptParallelType(trackItem.getOptParallelType());
+        itMessage.setPrepareEndHours(trackItem.getPrepareEndHours());
+        itMessage.setSinglePieceHours(trackItem.getSinglePieceHours());
+        itMessage.setIsExistQualityCheck(trackItem.getIsExistQualityCheck());
+        itMessage.setIsExistScheduleCheck(trackItem.getIsExistScheduleCheck());
+        itMessage.setNotice(trackItem.getNotice());
+        //根据图号查询有没有 有图纸?
+        CommonResult<List<PdmDraw>> drawList = baseServiceClient.queryDrawList(trackHead.getDrawingNo());
+        if (!drawList.getData().isEmpty()) {
+            itMessage.setIsDrawingNo("1");
+        } else {
+            itMessage.setIsDrawingNo("0");
+        }
+        //pdm 工序类型
+        CommonResult<PdmMesOption> option = baseServiceClient.queryOptionDraw(trackItem.getOptId());
+        if (null != option.getData()) {
+            itMessage.setPdmItemType(option.getData().getType());
+            itMessage.setNotice(option.getData().getContent());
+            itMessage.setVersion(option.getData().getRev());
+            itMessage.setIsDrawingNo(option.getData().getDrawing());
+        }
+        return itMessage;
     }
 
 }

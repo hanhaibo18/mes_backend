@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.misc.BASE64Encoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -129,6 +130,23 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
     @Transactional(rollbackFor = Exception.class)
     public int update(Attachment attachment) {
         return attachmentMapper.updateById(attachment);
+    }
+
+    @Override
+    public Object getImageStr(String id){
+        if(!org.springframework.util.StringUtils.isEmpty(id)){
+            Attachment attachment = new Attachment();
+            attachment.setId(id);
+            attachment = attachmentMapper.selectById(id);
+            //判断是不是图片格式
+            if(!StringUtils.isEmpty(attachment.getAttachName())
+                    && (attachment.getAttachName().endsWith("jpg") || attachment.getAttachName().endsWith("png"))){
+                byte[] data = this.downloadbyte(attachment);
+                BASE64Encoder encoder = new BASE64Encoder();
+                return encoder.encode(data);
+            }
+        }
+        return null;
     }
 
 }

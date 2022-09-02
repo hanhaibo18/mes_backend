@@ -46,6 +46,22 @@ public class RouterCheckController extends BaseController {
     private SequenceService sequenceService;
 
     /**
+     * 功能描述: id查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/8/31 11:37
+     **/
+    @ApiOperation(value = "id查询", notes = "id查询")
+    @GetMapping("/select_by_id")
+    public CommonResult<RouterCheck> selectById(@ApiParam(value = "id", required = true) @RequestParam String id) {
+        try {
+            return CommonResult.success(routerCheckService.getById(id));
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    /**
      * 功能描述: 列表查询
      *
      * @Author: zhiqiang.lu

@@ -18,10 +18,11 @@ public class WordUtil {
      * @param response
      * @param dataMap  填充数据
      * @param tempName 模板名称
+     * @param docName  导出文件名
      * @throws IOException
      * @throws TemplateException
      */
-    public void exoprtReport(HttpServletResponse response, Map<String, Object> dataMap,String tempName) throws IOException, TemplateException {
+    public void exoprtReport(HttpServletResponse response, Map<String, Object> dataMap, String tempName, String docName) throws IOException, TemplateException {
 
         //配置对象
         Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
@@ -35,6 +36,7 @@ public class WordUtil {
         response.setContentType("application/msword");
         //设置文旦编码
         response.setCharacterEncoding("utf-8");
+        response.setHeader("Content-disposition", "attachment; filename=" + java.net.URLEncoder.encode(docName, "UTF-8") + ".doc");
         PrintWriter out = response.getWriter();
         //填充数据
         template.process(dataMap,out);

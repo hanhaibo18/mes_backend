@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
@@ -115,4 +116,14 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Date: 2022/8/23 10:59
      **/
     void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId);
+
+    /**
+     * 功能描述: 查询工序信息
+     *
+     * @param itemId
+     * @Author: xinYu.hou
+     * @Date: 2022/8/26 17:54
+     * @return: ItemMessageDto
+     **/
+    ItemMessageDto queryItemMessageDto(String itemId);
 }

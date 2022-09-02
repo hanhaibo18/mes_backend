@@ -65,6 +65,8 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     private String instrumentCode;
     @ApiModelProperty(value = "上次检定时间")
     private String lastCheckDate;
+    /*@ApiModelProperty(value = "下次检定时间")
+    private String nextCheckDate;*/
     @ApiModelProperty(value = "探头型号")
     private String probeModel;
     @ApiModelProperty(value = "直探头参数盲区")
@@ -108,7 +110,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "核验员")
     private String checkBy;
     @ApiModelProperty(value = "模板类型")
-    private String tempType;
+    private String tempType = "ut";
     @TableField(exist = false,value = "缺陷记录")
     private List<ProduceDefectsInfo> defectsInfoList;
 

@@ -57,6 +57,9 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "炉批号")
     private String batchNo;
 
+    @ApiModelProperty(value = "检验记录卡生成状态  Y已生成 N未为生成")
+    private String isCardData;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "详细明细")
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
@@ -69,12 +72,13 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
         this.id = trackHead.getFlowId();
         this.tenantId = trackHead.getTenantId();
         this.branchCode = trackHead.getBranchCode();
-        this.trackHeadId = trackHead.getTrackHeadId();
+        this.trackHeadId = trackHead.getId();
         this.productName = trackHead.getProductName();
         this.productDrawingNo = trackHead.getDrawingNo();
         this.sparePartsNo = trackHead.getProductNo();
         this.texture = trackHead.getTexture();
         this.batchNo = trackHead.getBatchNo();
+        this.isCardData = trackHead.getIsCardData();
         if (TrackHead.TRACKHEAD_CLASSES_JJ.equals(trackHead.getClasses())) {
             this.sparePartsName = trackHead.getMaterialName();
             //图号

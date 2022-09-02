@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.ProduceDefectsInfo;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordMt;
-import com.richfit.mes.common.model.produce.ProduceItemInspectInfo;
 import com.richfit.mes.produce.dao.ProduceInspectionRecordMtMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

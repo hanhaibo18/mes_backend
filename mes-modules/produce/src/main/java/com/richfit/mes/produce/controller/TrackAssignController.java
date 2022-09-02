@@ -66,6 +66,8 @@ public class TrackAssignController extends BaseController {
     private TrackHeadFlowService trackHeadFlowService;
     @Resource
     private RequestNoteService requestNoteService;
+    @Resource
+    private TrackItemInspectionService inspectionService;
 
     @Value("${switch}")
     private String off;
@@ -279,9 +281,10 @@ public class TrackAssignController extends BaseController {
                         }
                         //齐套性检查
                         if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent()) {
-                            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
-                            requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
+                            //控制第一道工序是否发送申请单
                             if ("true".equals(off)) {
+                                IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
+                                requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
                                 wmsServiceClient.anApplicationForm(ingredient);
                             }
                         }
@@ -319,6 +322,10 @@ public class TrackAssignController extends BaseController {
                         assign.getUserId().substring(0, assign.getUserId().length() - 1),
                         assign.getBranchCode(),
                         assign.getTenantId());
+                //参数不为空 并且为"1" 复制工序参数
+                if (!StringUtils.isNullOrEmpty(assign.getIsFlawDetection()) && "1".equals(assign.getIsFlawDetection())) {
+                    inspectionService.saveItem(assign.getTiId());
+                }
             }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {

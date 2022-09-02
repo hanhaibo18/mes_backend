@@ -43,8 +43,6 @@ public class ProduceInspectionRecordRt extends BaseEntity<ProduceInspectionRecor
     private String checkSpecification;
     @ApiModelProperty(value = "检件材质")
     private String checkMaterial;
-    @ApiModelProperty(value = "照度")
-    private String intensityOfIllumination;
     @ApiModelProperty(value = "样品状态")
     private Date sampleStatus;
     @ApiModelProperty(value = "环境条件")
@@ -102,8 +100,10 @@ public class ProduceInspectionRecordRt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "核验员")
     private String checkBy;
     @ApiModelProperty(value = "模板类型")
-    private String tempType;
+    private String tempType = "rt";
     @TableField(exist = false,value = "缺陷记录")
     private List<ProduceDefectsInfo> defectsInfoList;
+    @ApiModelProperty(value = "透照厚度")
+    private String transThickness;
 
 }

@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCard;
+import com.richfit.mes.common.model.produce.ProduceInspectionRecordCardContent;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.quality.QualityTrackHead;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
@@ -113,5 +114,12 @@ public class InspectionRecordCardController extends BaseController {
         log.debug("inspection_record_card select is params [{}]", flowId);
         log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
         return CommonResult.success(produceInspectionRecordCard);
+    }
+
+    @ApiOperation(value = "质量检测卡明细信息更新", notes = "质量检测卡明细信息更新")
+    @PostMapping("/update_Track_check_detail")
+    public void updateTrackCheckDetail(@ApiParam(value = "质量检测卡明细信息", required = true) @RequestBody ProduceInspectionRecordCardContent produceInspectionRecordCardContent) {
+        produceInspectionRecordCardService.updateTrackCheckDetail(produceInspectionRecordCardContent);
+        log.debug("inspection_record_card update is params [{}]", produceInspectionRecordCardContent);
     }
 }

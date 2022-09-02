@@ -87,6 +87,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Autowired
     public TrackHeadFlowService trackHeadFlowService;
 
+    @Autowired
+    public CodeRuleService codeRuleService;
+
     @Resource
     private PublicService publicService;
 
@@ -237,7 +240,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setModifyTime(new Date());
             trackHeadFlowService.updateById(trackFlow);
             QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
-            queryWrapper.ge("track_head_id", trackHead.getId());
+            queryWrapper.eq("track_head_id", trackHead.getId());
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
             //跟单多生产线判断，当全部生成后跟新跟单状态
             boolean flag = true;
@@ -311,6 +315,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
                 if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
                     for (Map m : trackHead.getStoreList()) {
+                        //流水号获取
+                        CodeRule codeRule = codeRuleService.gerCode("track_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+                        if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
+                            throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
+                        }
+                        trackHead.setTrackNo(codeRule.getCurValue());
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                     }
                 } else {
@@ -338,12 +348,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Transactional(rollbackFor = GlobalException.class)
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
-            //流水号获取
-            CommonResult<CodeRule> commonResult = codeRuleController.gerCode("track_no", "跟单编号", new String[]{"跟单编号"}, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-
             //封装跟单信息数据
             trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
-            trackHead.setTrackNo(commonResult.getData().getCurValue());
             trackHead.setNumberComplete(0);
             trackHead.setNumber(number);
             trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -400,9 +406,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
-
+            System.out.println("---------------------------------");
+            System.out.println(trackHead.getTrackNo());
+            System.out.println(Calendar.getInstance().get(Calendar.YEAR) + "");
             //流水号更新
-            codeRuleController.updateCode("track_no", "跟单编号", trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            codeRuleService.updateCode("track_no", null, trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -1131,7 +1139,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHead.setProductNoDesc(trackHead.getDrawingNo() + " " + productNo);
         trackHead.setProductNo(productNo);
         this.updateById(trackHead);
-        
+
         trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productNo);
         trackHeadFlowService.updateById(trackFlow);
     }

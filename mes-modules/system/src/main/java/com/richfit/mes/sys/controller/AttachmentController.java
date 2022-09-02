@@ -246,6 +246,13 @@ public class AttachmentController extends BaseController {
         }
     }
 
+    @PostMapping("/download/getBase64Code")
+    @ApiOperation(value = "获取图片base64编码", notes = "获取图片base64编码")
+    @ApiImplicitParam(name = "id", value = "附件ID", required = true, dataType = "String")
+    public CommonResult<Object> getBase64Code(@RequestParam String id) throws GlobalException{
+        return CommonResult.success(attachmentService.getImageStr(id));
+    }
+
     @GetMapping("/preview")
     @ApiOperation(value = "预览附件", notes = "根据附件ID预览附件")
     @ApiImplicitParam(name = "id", value = "附件id", required = true, dataType = "String")

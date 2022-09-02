@@ -17,6 +17,30 @@ import java.util.Date;
 @TableName("produce_track_head_flow")
 @ApiModel(value = "跟单分流（生产线）")
 public class TrackFlow extends BaseEntity<TrackFlow> {
+    /**
+     * 质量检测卡已审核
+     */
+    public static final String EXAMINE_CARD_DATA_YES = "Y";
+
+    /**
+     * 质量检测卡审核不通过
+     */
+    public static final String EXAMINE_CARD_DATA_NO = "N";
+
+    /**
+     * 质量检测卡修改后申请审核
+     */
+    public static final String EXAMINE_CARD_DATA_XG = "X";
+
+    /**
+     * 质量检测卡资料生成
+     */
+    public static final String CARD_DATA_YES = "Y";
+
+    /**
+     * 质量检测卡资料未生成
+     */
+    public static final String CARD_DATA_NO = "N";
 
     private static final long serialVersionUID = -1044825101675722165L;
 

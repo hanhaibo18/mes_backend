@@ -2,6 +2,7 @@ package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.entity.TreeVo;
 import com.richfit.mes.base.service.BranchService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -269,5 +270,12 @@ public class BranchController extends BaseController {
             }
             return CommonResult.success(branchList, BRANCH_SUCCESS_MESSAGE);
         }
+    }
+
+    @ApiOperation(value = "查询质检人员(新)/树形结构")
+    @ApiImplicitParam(name = "branchCodeList", value = "机构编码", dataType = "List<String>", paramType = "body")
+    @PostMapping("/queryUserTreeList")
+    public CommonResult<List<TreeVo>> queryUserTreeList(@RequestBody List<String> branchCodeList) {
+        return CommonResult.success(branchService.queryUserTreeList(branchCodeList));
     }
 }

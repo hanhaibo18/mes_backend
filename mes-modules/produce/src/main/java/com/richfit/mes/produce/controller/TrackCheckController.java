@@ -604,9 +604,6 @@ public class TrackCheckController extends BaseController {
                 if (StringUtils.isNullOrEmpty(trackCheck.getTiId())) {
                     return CommonResult.failed("关联跟单ID编码不能为空！");
                 }
-                if (StringUtils.isNullOrEmpty(trackCheck.getDealBy())) {
-                    return CommonResult.failed("处理人不能为空");
-                }
                 String tenantId = SecurityUtils.getCurrentUser().getTenantId();
                 trackCheck.setTenantId(tenantId);
                 trackCheck.setDealTime(new Date());
@@ -665,6 +662,8 @@ public class TrackCheckController extends BaseController {
                     for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
                         trackCheckDetail.setTenantId(tenantId);
                         trackCheckDetail.setBranchCode(trackCheck.getBranchCode());
+                        trackCheckDetail.setFlowId(item.getFlowId());
+                        trackCheckDetail.setTrackCheckId(trackCheck.getId());
                         if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
                             List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
                             if (!list.isEmpty()) {

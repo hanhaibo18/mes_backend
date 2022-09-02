@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
@@ -9,7 +10,7 @@ import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.SystemServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -61,4 +62,7 @@ public interface SystemServiceClient {
 
     @PostMapping(value = "/api/sys/attachment/upload_file")
     public CommonResult<Attachment> uploadFile(@RequestBody byte[] fileBytes, @RequestParam String fileName);
+
+    @PostMapping(value = "/api/sys/attachment/download/getBase64Code")
+    public CommonResult<Object> getBase64Code(@RequestParam String id) throws GlobalException, IOException;
 }
