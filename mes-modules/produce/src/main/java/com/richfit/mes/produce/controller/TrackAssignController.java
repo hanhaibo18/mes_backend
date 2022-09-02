@@ -490,7 +490,7 @@ public class TrackAssignController extends BaseController {
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
+            routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
 
@@ -510,6 +510,9 @@ public class TrackAssignController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
+        }
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.eq("product_no", productNo);
         }
         queryWrapper.eq("is_schedule", 0);
 
