@@ -526,7 +526,7 @@ public class TrackAssignController extends BaseController {
         //过滤排序（list中的字段不在此处排序，后边步骤再排序）
         List<String> excludeOrderCols = new ArrayList<>();
         excludeOrderCols.add("workNo");
-        excludeOrderCols.add("routerVer");
+        excludeOrderCols.add("versions");
         excludeOrderCols.add("totalQuantity");
         excludeOrderCols.add("dispatchingNumber");
 

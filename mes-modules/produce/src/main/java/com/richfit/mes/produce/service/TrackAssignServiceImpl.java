@@ -143,11 +143,11 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                     pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo, Comparator.nullsLast(String::compareTo))));
                 }
             }
-            if ("routerVer".equals(orderCol)) {
+            if ("versions".equals(orderCol)) {
                 if ("desc".equals(order)) {
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer, Comparator.nullsLast(String::compareTo))).reversed());
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getVersions, Comparator.nullsLast(String::compareTo))).reversed());
                 } else {
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer, Comparator.nullsLast(String::compareTo))));
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getVersions, Comparator.nullsLast(String::compareTo))));
                 }
             }
             if ("totalQuantity".equals(orderCol)) {
