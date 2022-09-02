@@ -519,7 +519,7 @@ public class TrackAssignController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
-            queryWrapper.eq("product_no", productNo);
+            queryWrapper.like("product_no", productNo);
         }
         queryWrapper.eq("is_schedule", 0);
 
