@@ -62,9 +62,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         queryWrapper.eq("track_head_id", trackHeadId);
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
+                if ("desc".equals(order)) {
                     queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")) {
+                } else if ("asc".equals(order)) {
                     queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
@@ -297,6 +297,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     public void addTrackAssemblyByTrackHead(TrackHead trackHead) {
         List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
         for (TrackAssembly trackAssembly : trackAssemblyList) {
+            trackAssembly.setBranchCode(trackHead.getBranchCode());
             trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
             trackAssembly.setCreateTime(new Date());
