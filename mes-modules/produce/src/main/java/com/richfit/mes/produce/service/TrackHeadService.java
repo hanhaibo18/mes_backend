@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author 王瑞
- * @Description 跟单服务
+ * @Author: zhiqiang.lu
+ * @Date: 2020.9.2 9:54
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
