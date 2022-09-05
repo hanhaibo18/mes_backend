@@ -212,8 +212,6 @@ public class PublicServiceImpl implements PublicService {
             trackHeadService.trackHeadFinish(trackItem.getFlowId());
             //设置产品完工
             lineStoreService.changeStatus(trackHead);
-            //设置计划状态
-            planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
         } else {
             trackItem.setIsFinalComplete("1");
             trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
@@ -369,7 +367,7 @@ public class PublicServiceImpl implements PublicService {
         assign.setPriority(assignGet.getData().getPriority());
         assign.setQty(assignGet.getData().getQty());
         assign.setAvailQty(assignGet.getData().getQty());
-        assign.setState(1);
+        assign.setState(0);
         assign.setAssignBy(assignGet.getData().getCreateBy());
         assign.setAssignTime(new Date());
         assign.setTrackNo(trackHead.getTrackNo());

@@ -10,6 +10,7 @@ import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
@@ -41,7 +42,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     @Resource
     private BaseServiceClient baseServiceClient;
     @Resource
-    private LineStoreService lineStoreService;
+    private LineStoreMapper lineStoreMapper;
     @Resource
     private TrackAssemblyService trackAssembleService;
 
@@ -143,11 +144,11 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                     pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getWorkNo, Comparator.nullsLast(String::compareTo))));
                 }
             }
-            if ("routerVer".equals(orderCol)) {
+            if ("versions".equals(orderCol)) {
                 if ("desc".equals(order)) {
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer, Comparator.nullsLast(String::compareTo))).reversed());
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getVersions, Comparator.nullsLast(String::compareTo))).reversed());
                 } else {
-                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getRouterVer, Comparator.nullsLast(String::compareTo))));
+                    pageAssignsByStatus.getRecords().sort(Comparator.nullsFirst(Comparator.comparing(TrackItem::getVersions, Comparator.nullsLast(String::compareTo))));
                 }
             }
             if ("totalQuantity".equals(orderCol)) {
@@ -274,10 +275,11 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
                     if ("0".equals(trackAssembly.getIsKeyPart())) {
                         continue;
                     }
-                    Map<String, String> map = new HashMap<>(2);
-                    map.put("drawingNo", trackAssembly.getDrawingNo());
-                    map.put("materialNo", trackAssembly.getMaterialNo());
-                    Integer number = lineStoreService.queryLineStoreSumZpNumber(map);
+                    Integer number = lineStoreMapper.selectTotalNum(
+                            trackAssembly.getMaterialNo(), trackHead.getBranchCode(), trackHead.getTenantId());
+                    if (null == number) {
+                        number = 0;
+                    }
                     KittingVo kitting = new KittingVo();
                     kitting.setMaterialNo(trackAssembly.getMaterialNo());
                     kitting.setDrawingNo(trackAssembly.getDrawingNo());

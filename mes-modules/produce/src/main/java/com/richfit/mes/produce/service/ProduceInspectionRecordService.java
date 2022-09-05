@@ -271,7 +271,7 @@ public class ProduceInspectionRecordService{
             createUtDataMap(trackHead, recordInfo, trackItemInspection, dataMap);
         }
         dataMap.put("year", String.valueOf(DateUtil.year(DateUtil.date())));
-        dataMap.put("month", DateUtil.thisMonth());
+        dataMap.put("month", DateUtil.thisMonth()+1);
         dataMap.put("day", DateUtil.dayOfMonth(DateUtil.date()));
     }
 
@@ -360,7 +360,9 @@ public class ProduceInspectionRecordService{
         //审核人
         dataMap.put("auditBy",trackItemInspection.getAuditBy());
         //图片base64编码
-        dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordUt.getDiagramAttachmentId()).getData());
+        if(!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())){
+            dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordUt.getDiagramAttachmentId()).getData());
+        }
     }
 
     /**

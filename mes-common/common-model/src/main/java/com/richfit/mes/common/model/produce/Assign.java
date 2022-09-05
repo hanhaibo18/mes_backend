@@ -92,7 +92,7 @@ public class Assign extends BaseEntity<Assign> {
     /**
      * 派工状态
      */
-    @ApiModelProperty(value = "派工状态(0=外开工,1=以开工,2=已完成)", dataType = "int")
+    @ApiModelProperty(value = "派工状态(0=未开工,1=以开工,2=已完成)", dataType = "int")
     private int state;
 
     /**
