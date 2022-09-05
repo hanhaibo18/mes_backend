@@ -383,6 +383,8 @@ public class TrackItemInspection extends BaseEntity<TrackItemInspection> {
     @ApiModelProperty(value = "探伤审核人")
     private String auditBy;
 
-
+    @TableField(exist = false)
+    @ApiModelProperty(value = "委托单信息")
+    private PhysChemOrder physChemOrder;
 
 }
