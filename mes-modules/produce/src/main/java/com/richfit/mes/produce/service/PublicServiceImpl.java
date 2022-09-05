@@ -212,8 +212,6 @@ public class PublicServiceImpl implements PublicService {
             trackHeadService.trackHeadFinish(trackItem.getFlowId());
             //设置产品完工
             lineStoreService.changeStatus(trackHead);
-            //设置计划状态
-            planService.updatePlanStatus(trackHead.getWorkPlanNo(), trackHead.getTenantId());
         } else {
             trackItem.setIsFinalComplete("1");
             trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
