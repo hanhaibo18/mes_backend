@@ -439,7 +439,7 @@ public class SequenceController extends BaseController {
                     } else {
                         routers.get(jj).setStatus("2");
                         routers.get(jj).setIsActive("0");
-                        routerService.save(routers.get(jj));
+                        routerService.updateById(routers.get(jj));
                     }
                 }
                 // 如果没有工艺，则新增工艺
