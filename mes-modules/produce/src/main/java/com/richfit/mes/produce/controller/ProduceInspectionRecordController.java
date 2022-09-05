@@ -23,7 +23,7 @@ import java.io.IOException;
  * @Date: 2022/8/22 13:10
  */
 @Slf4j
-@Api(tags = "质量管理/探伤")
+@Api(tags = "质量管理(探伤管理)")
 @RestController
 @RequestMapping("/api/produce/inspectionRecord")
 public class ProduceInspectionRecordController extends BaseController {
