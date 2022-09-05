@@ -403,21 +403,17 @@ public class SequenceController extends BaseController {
             List<Sequence> list2 = new ArrayList<>();
             // 获取图号列表
             String drawnos = "";
+            String drawnames = "";
             for (int i = 0; i < list.size(); i++) {
                 if (!StringUtils.isNullOrEmpty(list.get(i).getContent())) {
                     list2.add(list.get(i));
                 }
-                if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && !drawnos.contains(list.get(i).getContent() + ",")) {
+                if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && !drawnos.contains(list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",")) {
                     drawnos += list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",";
-
-                }
-            }
-            String drawnames = "";
-            for (int i = 0; i < list.size(); i++) {
-                if (!StringUtils.isNullOrEmpty(list.get(i).getRemark()) && !drawnames.contains(list.get(i).getRemark() + ",")) {
                     drawnames += list.get(i).getRemark() + ",";
                 }
             }
+
             FileUtils.delete(excelFile);
             list = list2;
             msg = "导入完成";
@@ -426,9 +422,10 @@ public class SequenceController extends BaseController {
             for (int j = 0; j < drawnos.split(",").length; j++) {
                 String drawno = drawnos.split(",")[j].split("@")[0];
                 String drawversion = drawnos.split(",")[j].split("@")[1];
+                String drawname = drawnames.split(",")[j];
                 List<Sequence> newlist = new ArrayList<>();
 
-                List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
+                List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", drawno).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
                 int existRouterIndex = -1;
                 // 如果已存在的工艺和当前版本不一致，则改为历史工艺
                 for (int jj = 0; jj < routers.size(); jj++) {
@@ -452,13 +449,13 @@ public class SequenceController extends BaseController {
                     r.setType("0");
                     r.setVersion(drawversion);
                     r.setRouterNo(drawno);
-                    r.setRouterName(drawnames.split(",")[j]);
+                    r.setRouterName(drawname);
                     r.setCreateTime(new Date());
                     r.setModifyTime(new Date());
                     r.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                     r.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
                     routerService.save(r);
-                    routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
+                    routers = routerService.list(new QueryWrapper<Router>().eq("router_no", drawno).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
                     existRouterIndex = 0;
                 }
 
@@ -541,7 +538,7 @@ public class SequenceController extends BaseController {
                 }
                 // 将最后一道工序的下工序设置为0
                 if (newlist.size() > 0) {
-                    newlist.get(newlist.size()).setOptNextOrder(0);
+                    newlist.get(newlist.size() - 1).setOptNextOrder(0);
                     boolean bool = sequenceService.saveBatch(newlist);
                 }
             }
