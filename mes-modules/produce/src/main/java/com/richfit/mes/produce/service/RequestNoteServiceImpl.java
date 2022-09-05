@@ -23,6 +23,9 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
     @Resource
     private RequestNoteDetailService requestNoteDetailService;
 
+    @Resource
+    private TrackHeadService trackHeadService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -31,6 +34,9 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
         requestNote.setId(UUID.randomUUID().toString().replace("-", ""));
         //跟单Id
         requestNote.setTrackHeadId(ingredient.getGd());
+        //存入跟单编号
+        TrackHead trackHead = trackHeadService.getById(ingredient.getGd());
+        requestNote.setTrackNo(trackHead.getTrackNo());
         //工序Id
         requestNote.setTrackItemId(ingredient.getGx());
         //申请单号

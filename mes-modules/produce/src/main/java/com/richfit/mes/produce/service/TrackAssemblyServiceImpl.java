@@ -274,7 +274,6 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         ApplicationResult applicationResult = new ApplicationResult();
         try {
             applicationResult.setRetMsg(anApplicationForm(ingredient).toString());
-            ;
         } catch (Exception e) {
             ApplicationResult result = new ApplicationResult();
             result.setRetStatus("500");
@@ -384,6 +383,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         requestNote.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //跟单id
         requestNote.setTrackHeadId(additionalMaterialDto.getTrackHeadId());
+        TrackHead trackHead = trackHeadService.getById(additionalMaterialDto.getTrackHeadId());
+        requestNote.setTrackNo(trackHead.getTrackNo());
         //工序id
         requestNote.setTrackItemId(ingredient.getGx());
         //申请单号
@@ -404,7 +405,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             //物料名称
             requestNoteDetail.setMaterialName(line.getMaterialDesc());
             //数量
-            requestNoteDetail.setNumber((int) line.getQuantity());
+            requestNoteDetail.setNumber(line.getQuantity());
+            requestNoteDetail.setReasonExplain(additionalMaterialDto.getExplain());
             requestNoteDetails.add(requestNoteDetail);
         }
 
