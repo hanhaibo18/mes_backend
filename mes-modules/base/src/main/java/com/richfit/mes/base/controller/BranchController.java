@@ -278,4 +278,11 @@ public class BranchController extends BaseController {
     public CommonResult<List<TreeVo>> queryUserTreeList(@RequestBody List<String> branchCodeList) {
         return CommonResult.success(branchService.queryUserTreeList(branchCodeList));
     }
+
+    @ApiOperation(value = "多车间组成树形结构")
+    @ApiImplicitParam(name = "branchCodeList", value = "机构编码", dataType = "List<String>", paramType = "body")
+    @PostMapping("/queryBranchCodeList")
+    public CommonResult<List<Branch>> queryBranchCodeList(List<String> branchCodeList) {
+        return CommonResult.success(branchService.queryBranchCodeList(branchCodeList));
+    }
 }
