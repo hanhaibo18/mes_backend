@@ -98,7 +98,7 @@ public class InspectionDictionaryController {
     public CommonResult<List> getListInfoById(@PathVariable String id) throws GlobalException {
         QueryWrapper<InspectionDictionary> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("parent_id",id)
-                .orderByAsc("create_time");
+                .orderByAsc("serial_num");
         inspectionDictionaryService.list(queryWrapper);
         return CommonResult.success(inspectionDictionaryService.list(queryWrapper));
     }
@@ -110,15 +110,16 @@ public class InspectionDictionaryController {
     @GetMapping("/getListInfoByTempType/{tempType}")
     public CommonResult<Map> getListInfoByTempType(@PathVariable String tempType) throws GlobalException {
         QueryWrapper<InspectionDictionary> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("temp_type",tempType);
+        queryWrapper.eq("temp_type",tempType)
+                .orderByAsc("serial_num");
         List<InspectionDictionary> list = inspectionDictionaryService.list(queryWrapper);
 
         //头信息
         Map<String, InspectionDictionary> headsMap = list.stream().filter(item -> StringUtils.isNullOrEmpty(item.getParentId()))
                 .collect(Collectors.toMap(InspectionDictionary::getId, Function.identity()));
         //下拉列表信息
-        Map<String, List<String>> valuesMap = list.stream().filter(item -> !StringUtils.isNullOrEmpty(item.getParentId()))
-                .collect(Collectors.groupingBy(InspectionDictionary::getParentId, Collectors.mapping(InspectionDictionary::getDicValue, Collectors.toList())));
+        Map<String, List<InspectionDictionary>> valuesMap = list.stream().filter(item -> !StringUtils.isNullOrEmpty(item.getParentId()))
+                .collect(Collectors.groupingBy(InspectionDictionary::getParentId));
 
         Map<String, List> returnMap = new HashMap<>();
 

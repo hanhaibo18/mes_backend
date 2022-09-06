@@ -59,6 +59,8 @@ public class ProduceInspectionRecordService{
     private TrackItemInspectionService trackItemInspectionService;
     @Autowired
     private TrackHeadService trackHeadService;
+    @Autowired
+    private ProbeInfoService probeInfoService;
 
     /**
      * 查询跟单工序探伤列表
@@ -135,6 +137,8 @@ public class ProduceInspectionRecordService{
         JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
         //缺陷记录
         List<ProduceDefectsInfo> produceDefectsInfos = produceInspectionRecordDto.getProduceDefectsInfos();
+        //探头信息
+        List<ProbeInfo> probeInfoList = produceInspectionRecordDto.getProbeInfoList();
         //工序ids
         List<String> itemIds = produceInspectionRecordDto.getItemIds();
         //探伤记录id
@@ -157,10 +161,16 @@ public class ProduceInspectionRecordService{
             ProduceInspectionRecordUt produceInspectionRecordUt = jsonObject.toJavaObject(ProduceInspectionRecordUt.class);
             produceInspectionRecordUtService.save(produceInspectionRecordUt);
             recordId = produceInspectionRecordUt.getId();
+            //绑定探头
+            for (ProbeInfo probeInfo : probeInfoList) {
+                probeInfo.setRecordId(recordId);
+            }
+            //保存探头
+            probeInfoService.saveBatch(probeInfoList);
         }else {
             throw new GlobalException(ResultCode.INVALID_ARGUMENTS.getMessage(),ResultCode.INVALID_ARGUMENTS);
         }
-        //新增操作才去执行工序and探伤记录绑定操作
+        //工序and探伤记录绑定操作
         List<ProduceItemInspectInfo> produceItemInspectInfos = new ArrayList<>();
         for (String itemId : itemIds) {
             ProduceItemInspectInfo produceItemInspectInfo = new ProduceItemInspectInfo();
@@ -225,7 +235,7 @@ public class ProduceInspectionRecordService{
         Map<String,Object> recordInfo = new HashMap<>();
         //查询探伤工序
         TrackItemInspection trackItemInspection = trackItemInspectionService.getById(itemId);
-        //跟单信息
+
         if(!ObjectUtil.isEmpty(trackItemInspection)){
             trackHead = trackHeadService.getById(trackItemInspection.getTrackHeadId());
             List<Map<String, Object>> list = new ArrayList<>();
@@ -347,22 +357,80 @@ public class ProduceInspectionRecordService{
 
     //ut模板填充
     private void createUtDataMap(TrackHead trackHead, Map<String, Object> recordInfo, TrackItemInspection trackItemInspection, Map<String, Object> dataMap) throws IOException {
-        //mt探伤记录
+        //ut探伤记录
         ProduceInspectionRecordUt produceInspectionRecordUt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordUt.class);
         //报告号
-        dataMap.put("reportNo",produceInspectionRecordUt.getReportNo());
+        //dataMap.put("reportNo",produceInspectionRecordUt.getReportNo());
         //图号
-        dataMap.put("drawingNo",trackHead.getDrawingNo());
+        /*dataMap.put("drawingNo",trackHead.getDrawingNo());
         //零件名称
         dataMap.put("materialName",trackHead.getMaterialName());
+        //仪器型号
+        dataMap.put("instrumentModel",produceInspectionRecordUt.getInstrumentModel());
+        //生产单位
+        dataMap.put("11","生产单位");
+        //材质
+        dataMap.put("texture",trackHead.getTexture());
+        //种类
+        dataMap.put("type",produceInspectionRecordUt.getType());
+        //偶合剂
+        dataMap.put("couplingAgent",produceInspectionRecordUt.getCouplingAgent());
+        //偶合剂
+        dataMap.put("compareSample",produceInspectionRecordUt.getCompareSample());
+        //试验规范
+        dataMap.put("testSpecification",produceInspectionRecordUt.getTestSpecification());
+        //验收标准
+        dataMap.put("acceptanceCriteria",produceInspectionRecordUt.getAcceptanceCriteria());
+        //灵敏度
+        dataMap.put("sensitivity",produceInspectionRecordUt.getSensitivity());
+        //零件顺序号
+        dataMap.put("222",produceInspectionRecordUt.getSensitivity());
+        //业主
+        dataMap.put("owner",produceInspectionRecordUt.getOwner());
+        //见证
+        dataMap.put("witnesses",produceInspectionRecordUt.getWitnesses());
         //检验员
         dataMap.put("checkBy",trackItemInspection.getCheckBy());
         //审核人
-        dataMap.put("auditBy",trackItemInspection.getAuditBy());
+        dataMap.put("auditBy",trackItemInspection.getAuditBy());*/
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())){
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordUt.getDiagramAttachmentId()).getData());
         }
+        //缺陷列表
+        List<ProduceDefectsInfo> produceDefectsInfoList = produceDefectsInfoService.list(new QueryWrapper<ProduceDefectsInfo>()
+                .eq("record_id", produceInspectionRecordUt.getId())
+                .orderByAsc("serial_num"));
+        //缺陷记录
+        dataMap.put("defectsInfoList",produceDefectsInfoList);
+        ProduceDefectsInfo produceDefectsInfo = new ProduceDefectsInfo();
+        produceDefectsInfo.setTestResults("1");
+        ProduceDefectsInfo produceDefectsInfo2 = new ProduceDefectsInfo();
+        produceDefectsInfo2.setTestResults("2");
+        produceDefectsInfoList.add(produceDefectsInfo);
+        produceDefectsInfoList.add(produceDefectsInfo2);
+        //探头列表
+        List<ProbeInfo> probeInfoList = probeInfoService.list(new QueryWrapper<ProbeInfo>()
+                .eq("record_id", produceInspectionRecordUt.getId())
+                .orderByAsc("serial_num"));
+        ProbeInfo probeInfo1 = new ProbeInfo();
+        probeInfo1.setAngle("q");
+        probeInfo1.setFrequency("1");
+        probeInfo1.setLeadingEdge("1");
+        probeInfoList.add(probeInfo1);
+        ProbeInfo probeInfo2 = new ProbeInfo();
+        probeInfo2.setAngle("2");
+        probeInfo2.setFrequency("2");
+        probeInfo2.setLeadingEdge("2");
+        probeInfoList.add(probeInfo2);
+        ProbeInfo probeInfo3 = new ProbeInfo();
+        probeInfo3.setAngle("3");
+        probeInfo3.setFrequency("3");
+        probeInfo3.setLeadingEdge("3");
+        probeInfoList.add(probeInfo3);
+        //探头列表
+        dataMap.put("probeInfoList",probeInfoList);
+
     }
 
     /**

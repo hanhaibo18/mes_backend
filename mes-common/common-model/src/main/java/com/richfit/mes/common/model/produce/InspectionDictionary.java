@@ -27,4 +27,7 @@ public class InspectionDictionary extends BaseEntity<InspectionDictionary> {
 
     @ApiModelProperty(value = "字典值")
     private String dicValue;
+
+    @ApiModelProperty(value = "排序号")
+    private Integer serialNum;
 }

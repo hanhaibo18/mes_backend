@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.model.produce.ProbeInfo;
 import com.richfit.mes.common.model.produce.ProduceDefectsInfo;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordRt;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordUt;
@@ -28,6 +29,8 @@ public class ProduceInspectionRecordUtServiceImpl extends ServiceImpl<ProduceIns
 
     @Autowired
     private ProduceDefectsInfoService produceDefectsInfoService;
+    @Autowired
+    private ProbeInfoService probeInfoService;
 
     /**
      * 根据ids获取记录
@@ -40,9 +43,12 @@ public class ProduceInspectionRecordUtServiceImpl extends ServiceImpl<ProduceIns
         Map<String, ProduceInspectionRecordUt> recordMap = produceInspectionRecordUts.stream().collect(Collectors.toMap(ProduceInspectionRecordUt::getId, Function.identity()));
         //缺陷记录 key->探伤记录id
         Map<String, List<ProduceDefectsInfo>> defectsInfoMap = produceDefectsInfoService.getMapByRecordIds(ids);
+        //探头信息 key->探伤记录id
+        Map<String, List<ProbeInfo>> probeMap = probeInfoService.getProbeByRecordIds(ids);
 
         recordMap.forEach((key,value)->{
             value.setDefectsInfoList(defectsInfoMap.get(key));
+            value.setProbeInfoList(probeMap.get(key));
         });
         return new ArrayList<>(recordMap.values());
     }
