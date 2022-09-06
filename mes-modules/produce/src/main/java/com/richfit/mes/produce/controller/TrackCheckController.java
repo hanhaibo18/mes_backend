@@ -144,7 +144,7 @@ public class TrackCheckController extends BaseController {
                 TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
                 item.setTrackNo(trackHead.getTrackNo());
                 item.setDrawingNo(trackHead.getDrawingNo());
-                item.setQty(trackHead.getNumber());
+                item.setQty(item.getNumber());
                 item.setProductName(trackHead.getProductName());
                 item.setWorkNo(trackHead.getWorkNo());
                 item.setTrackType(trackHead.getTrackType());
@@ -172,7 +172,7 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/pageCheck")
-    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId) {
+    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo) {
         try {
             QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -180,6 +180,9 @@ public class TrackCheckController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
+            }
+            if (!StringUtils.isNullOrEmpty(drawingNo)) {
+                queryWrapper.eq("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no ='" + trackNo + "')");
@@ -637,6 +640,9 @@ public class TrackCheckController extends BaseController {
                 }
                 trackItemService.updateById(item);
                 trackCheck.setFlowId(item.getFlowId());
+                //调用TrackHeadService 获取图号
+                TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
+                trackCheck.setDrawingNo(trackHead.getDrawingNo());
                 if (!StringUtils.isNullOrEmpty(trackCheck.getId())) {
                     trackCheck.setModifyTime(new Date());
                     trackCheckService.updateById(trackCheck);

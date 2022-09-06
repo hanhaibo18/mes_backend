@@ -212,18 +212,16 @@ public class PublicServiceImpl implements PublicService {
             trackHeadService.trackHeadFinish(trackItem.getFlowId());
             //设置产品完工
             lineStoreService.changeStatus(trackHead);
-        } else {
             trackItem.setIsFinalComplete("1");
-            trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
-            if (null != SecurityUtils.getCurrentUser()) {
-                trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-            }
-            trackItem.setScheduleCompleteTime(new Date());
-            trackItem.setIsOperationComplete(1);
-            trackItem.setOperationCompleteTime(new Date());
-            trackItem.setIsFinalComplete("1");
-            trackItemService.updateById(trackItem);
         }
+        trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+        if (null != SecurityUtils.getCurrentUser()) {
+            trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+        }
+        trackItem.setScheduleCompleteTime(new Date());
+        trackItem.setIsOperationComplete(1);
+        trackItem.setOperationCompleteTime(new Date());
+        trackItemService.updateById(trackItem);
         if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
             planService.planData(trackHead.getWorkPlanId());
         }
