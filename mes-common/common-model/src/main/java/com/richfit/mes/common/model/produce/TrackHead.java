@@ -239,7 +239,31 @@ public class TrackHead extends BaseEntity<TrackHead> {
     /**
      * 跟单分流表结束
      */
-    //
+    /**
+     * 跟单合格证
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序顺序")
+    private String sequenceOrderBy;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序名称")
+    private String optName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序id")
+    private String optId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序id")
+    private String tiId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String finalProductNo;
+    /**
+     * 跟单合格证结束
+     */
     /**
      * 无用属性
      */
@@ -250,23 +274,4 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String userMaterialNo;
 
 
-//    @TableField(exist = false)
-//    @ApiModelProperty(value = "项目号")
-//    private String sequenceOrderBy;
-
-//    @TableField(exist = false)
-//    @ApiModelProperty(value = "项目号")
-//    private String optName;
-
-//    @TableField(exist = false)
-//    @ApiModelProperty(value = "项目号")
-//    private String optId;
-
-//    @TableField(exist = false)
-//    @ApiModelProperty(value = "项目号")
-//    private String tiId;
-
-//    @TableField(exist = false)
-//    @ApiModelProperty(value = "材质", dataType = "String")
-//    private String finalProductNo;
 }

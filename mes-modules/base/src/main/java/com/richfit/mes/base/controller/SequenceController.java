@@ -403,27 +403,62 @@ public class SequenceController extends BaseController {
             List<Sequence> list2 = new ArrayList<>();
             // 获取图号列表
             String drawnos = "";
+            String drawnames = "";
             for (int i = 0; i < list.size(); i++) {
                 if (!StringUtils.isNullOrEmpty(list.get(i).getContent())) {
                     list2.add(list.get(i));
                 }
-                if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && !drawnos.contains(list.get(i).getContent() + ",")) {
-                    drawnos += list.get(i).getContent() + ",";
-
-                }
-            }
-            String drawnames = "";
-            for (int i = 0; i < list.size(); i++) {
-                if (!StringUtils.isNullOrEmpty(list.get(i).getRemark()) && !drawnames.contains(list.get(i).getRemark() + ",")) {
+                if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && !drawnos.contains(list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",")) {
+                    drawnos += list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",";
                     drawnames += list.get(i).getRemark() + ",";
                 }
             }
+
             FileUtils.delete(excelFile);
             list = list2;
             msg = "导入完成";
 
             // 遍历图号
             for (int j = 0; j < drawnos.split(",").length; j++) {
+                String drawno = drawnos.split(",")[j].split("@")[0];
+                String drawversion = drawnos.split(",")[j].split("@")[1];
+                String drawname = drawnames.split(",")[j];
+                List<Sequence> newlist = new ArrayList<>();
+
+                List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", drawno).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
+                int existRouterIndex = -1;
+                // 如果已存在的工艺和当前版本不一致，则改为历史工艺
+                for (int jj = 0; jj < routers.size(); jj++) {
+                    // 如果工艺版本相同，则删除该工艺下的工序
+                    if (routers.get(jj).getVersion().equals(drawversion)) {
+                        existRouterIndex = jj;
+                        sequenceService.remove(new QueryWrapper<Sequence>().eq("router_id", routers.get(jj).getId()));
+                    } else {
+                        routers.get(jj).setStatus("2");
+                        routers.get(jj).setIsActive("0");
+                        routerService.updateById(routers.get(jj));
+                    }
+                }
+                // 如果没有工艺，则新增工艺
+                if (existRouterIndex == -1) {
+                    Router r = new Router();
+                    r.setTenantId(tenantId);
+                    r.setBranchCode(branchCode);
+                    r.setStatus("1");
+                    r.setIsActive("1");
+                    r.setType("0");
+                    r.setVersion(drawversion);
+                    r.setRouterNo(drawno);
+                    r.setRouterName(drawname);
+                    r.setCreateTime(new Date());
+                    r.setModifyTime(new Date());
+                    r.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    r.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    routerService.save(r);
+                    routers = routerService.list(new QueryWrapper<Router>().eq("router_no", drawno).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
+                    existRouterIndex = 0;
+                }
+
                 int optOrder = 0;
                 // 遍历导入数据
                 for (int i = 0; i < list.size(); i++) {
@@ -459,30 +494,11 @@ public class SequenceController extends BaseController {
                         // 获取工艺类型
                         int optType = OptTypeEnum.getCode(list.get(i).getOptType());
                         list.get(i).setOptType(String.valueOf(optType));
-                        if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && list.get(i).getContent().equals(drawnos.split(",")[j])) {
-                            List<Router> routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
-                            // 如果没有工艺，则新增工艺
-                            if (routers.size() == 0) {
-                                Router r = new Router();
-                                r.setTenantId(tenantId);
-                                r.setBranchCode(branchCode);
-                                r.setStatus("1");
-                                r.setIsActive("1");
-                                r.setType("0");
-                                r.setVersion(list.get(i).getVersionCode());
-                                r.setRouterNo(drawnos.split(",")[j]);
-                                r.setRouterName(drawnames.split(",")[j]);
-                                r.setCreateTime(new Date());
-                                r.setModifyTime(new Date());
-                                r.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                                r.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                                routerService.save(r);
-                                routers = routerService.list(new QueryWrapper<Router>().eq("router_no", list.get(j).getContent()).eq("status", "1").eq("tenant_id", tenantId).eq("branch_code", branchCode));
+                        if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && list.get(i).getContent().equals(drawno) && list.get(i).getVersionCode().equals(drawversion)) {
 
-                            }
                             list.get(i).setStatus("1");
                             if (routers.size() > 0) {
-                                list.get(i).setRouterId(routers.get(0).getId());
+                                list.get(i).setRouterId(routers.get(existRouterIndex).getId());
                             } else {
                                 msg += "第" + (i + 1) + "行:" + "找不到图号,";
                                 list.get(i).setStatus("0");
@@ -510,6 +526,7 @@ public class SequenceController extends BaseController {
 
                             }
                             optOrder++;
+                            newlist.add(list.get(i));
                             msg = "工序获取完成";
 
 
@@ -517,16 +534,16 @@ public class SequenceController extends BaseController {
                     } catch (Exception ex) {
 
                     }
+
+                }
+                // 将最后一道工序的下工序设置为0
+                if (newlist.size() > 0) {
+                    newlist.get(newlist.size() - 1).setOptNextOrder(0);
+                    boolean bool = sequenceService.saveBatch(newlist);
                 }
             }
-            // 将最后一道工序的下工序设置为0
-            list.get(list.size() - 1).setOptNextOrder(0);
-            boolean bool = sequenceService.saveBatch(list);
-            if (bool) {
-                return CommonResult.success(msg);
-            } else {
-                return CommonResult.failed(msg);
-            }
+
+            return CommonResult.success(msg);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage() + msg);
         }

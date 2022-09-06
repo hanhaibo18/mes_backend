@@ -131,6 +131,27 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         return treeList;
     }
 
+    @Override
+    public List<Branch> queryBranchCodeList(List<String> branchCodeList) {
+        //返回列表
+        List<Branch> treeList = new ArrayList<>();
+        Branch branch = new Branch();
+        branch.setBranchName("总公司");
+        treeList.add(branch);
+        //对总公司下存储车间结点
+        List<Branch> list = new ArrayList<>();
+        for (String code : branchCodeList) {
+            //查询车间
+            QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("branch_code", code);
+            Branch branchEntity = this.getOne(queryWrapper);
+            queryByBranchCode(branchEntity);
+            list.add(branchEntity);
+        }
+        branch.setBranchList(list);
+        return treeList;
+    }
+
     private void queryByBranchCode(Branch branch) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("main_branch_code", branch.getBranchCode());

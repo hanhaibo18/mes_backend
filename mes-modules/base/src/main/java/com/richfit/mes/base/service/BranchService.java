@@ -56,4 +56,14 @@ public interface BranchService extends IService<Branch> {
      * @return: List<TreeVo>
      **/
     List<TreeVo> queryUserTreeList(List<String> branchCodeList);
+
+    /**
+     * 功能描述: 查询树形 多车间结构
+     *
+     * @param branchCodeList
+     * @Author: xinYu.hou
+     * @Date: 2022/9/6 14:27
+     * @return: List<Branch>
+     **/
+    List<Branch> queryBranchCodeList(List<String> branchCodeList);
 }
