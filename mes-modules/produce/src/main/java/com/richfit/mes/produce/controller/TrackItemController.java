@@ -115,13 +115,16 @@ public class TrackItemController extends BaseController {
 
     @ApiOperation(value = "查询跟单工序", notes = "根据跟单ID查询跟单工序")
     @GetMapping("/track_item")
-    public CommonResult<List<TrackItem>> selectTrackHead(String id, String trackId, String optVer) {
+    public CommonResult<List<TrackItem>> selectTrackHead(String id, String trackId, String optVer, String productNo) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(trackId)) {
             queryWrapper.eq("track_head_id", trackId);
+        }
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.like("product_no", productNo);
         }
         if (!StringUtils.isNullOrEmpty(optVer)) {
             queryWrapper.like("opt_ver", optVer);
@@ -188,7 +191,7 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "激活工序", notes = "激活工序")
     @GetMapping("/active_trackitem")
     public CommonResult<List<TrackItem>> activeTrackItem(String trackHeadId, Boolean isGoNextOpt) {
-        List<TrackItem> items = this.selectTrackHead(null, trackHeadId, null).getData();
+        List<TrackItem> items = this.selectTrackHead(null, trackHeadId, null, null).getData();
 
         List<TrackItem> activeItems = new ArrayList();
         // 跟单初始化，激活第1个工序
