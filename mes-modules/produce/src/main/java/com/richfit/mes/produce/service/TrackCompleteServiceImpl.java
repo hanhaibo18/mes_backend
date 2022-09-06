@@ -182,7 +182,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setTrackNo(completeDto.getTrackNo());
             trackComplete.setProdNo(completeDto.getProdNo());
             trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-            trackComplete.setCompleteBy(completeDto.getCompleteBy());
             trackComplete.setCompleteTime(new Date());
             numDouble += trackComplete.getCompletedQty();
         }
