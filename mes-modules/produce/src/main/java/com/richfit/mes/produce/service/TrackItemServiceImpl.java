@@ -19,7 +19,6 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -30,7 +29,7 @@ import java.util.*;
  * @Description 跟单工序服务
  */
 @Service
-@Transactional(value = "transactionManager", propagation = Propagation.REQUIRED, rollbackFor = Throwable.class)
+@Transactional(rollbackFor = Exception.class)
 public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem> implements TrackItemService {
 
     @Autowired
@@ -277,14 +276,14 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
-    public String nextSequence(String thId) {
-        return trackHeadNext(thId);
+    public String nextSequence(String flowId) {
+        return trackHeadNext(flowId);
     }
 
-    private String trackHeadNext(String thId) {
+    private String trackHeadNext(String flowId) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_current", 1);
-        queryWrapper.eq("track_head_id", thId);
+        queryWrapper.eq("flow_id", flowId);
         List<TrackItem> items = this.list(queryWrapper);
         boolean isComplete = true;
         for (TrackItem item : items) {
@@ -294,18 +293,16 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
         }
 
+        System.out.println(items.size());
         if (!isComplete) {
             return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
         } else if (items.size() > 0) {
             TrackItem item = items.get(0);
             // 若同一个跟单下的同一个步序中的所有产品都已完成,更新跟单工艺步序至下一步
-
             QueryWrapper<TrackItem> allWrapper = new QueryWrapper<>();
-            allWrapper.eq("track_head_id", item.getTrackHeadId());
+            allWrapper.eq("flow_id", flowId);
             List<TrackItem> allItems = this.list(allWrapper);
-
             List<TrackItem> updateItems = new ArrayList<>();
-
             for (TrackItem trackItem : allItems) {
                 if (trackItem.getIsCurrent() == 1) {
                     trackItem.setIsCurrent(0);
@@ -313,23 +310,16 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     updateItems.add(trackItem);
                 } else if (item.getNextOptSequence() > 0) {
                     //下道激活工序
-                    if (trackItem.getOptSequence().equals(item.getNextOptSequence())) {
+                    if (trackItem.getOriginalOptSequence().equals(item.getNextOptSequence())) {
                         trackItem.setIsCurrent(1);
                         updateItems.add(trackItem);
                     }
                 }
             }
-
             this.updateBatchById(updateItems);
             if (item.getNextOptSequence() == 0) {
-                TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
-                trackHead.setStatus("2");
-                trackHead.setCompleteTime(new Date());
-                trackHeadService.updateById(trackHead);
-                //设置产品完工
-                lineStoreService.changeStatus(trackHead);
+                trackHeadService.trackHeadFinish(flowId);
             }
-
         } else {
             return "该跟单没有当前工序！";
         }
@@ -408,10 +398,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
-    public String backSequence(String thId) {
+    public String backSequence(String flowId) {
 
         QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
-        wrapper.eq("track_head_id", thId);
+        wrapper.eq("flow_id", flowId);
         List<TrackItem> items = this.list(wrapper);
         TrackItem item = new TrackItem();
         if (items.size() > 0) {
@@ -433,18 +423,15 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
 
         // 将当前工序is_current设为0
-        UpdateWrapper<TrackItem> itemUpdateWrapper = new UpdateWrapper<>();
-        itemUpdateWrapper.set("is_current", 0);
-        itemUpdateWrapper.eq("track_head_id", item.getTrackHeadId());
-        itemUpdateWrapper.eq("opt_sequence", item.getOptSequence());
-        this.update(itemUpdateWrapper);
+        item.setIsCurrent(0);
+        this.updateById(item);
 
         // 将上道工序is_current设为1
         UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
         updateWrapper.set("is_current", 1);
         updateWrapper.set("is_track_sequence_complete", 0);
-        updateWrapper.eq("track_head_id", item.getTrackHeadId());
-        updateWrapper.eq("next_opt_sequence", item.getOptSequence());
+        updateWrapper.eq("flow_id", flowId);
+        updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
         this.update(updateWrapper);
 
         return "success";

@@ -94,20 +94,20 @@ public interface TrackItemService extends IService<TrackItem> {
     /**
      * 更新至下工序
      *
-     * @param thId
+     * @param flowId
      * @return
      * @Author WangRui
      */
-    String nextSequence(String thId);
+    String nextSequence(String flowId);
 
     /**
      * 回退工序
      *
-     * @param thId
+     * @param flowId
      * @return
      * @Author WangRui
      */
-    String backSequence(String thId);
+    String backSequence(String flowId);
 
     /**
      * 功能描述: 添加跟单 生产线工序信息添加

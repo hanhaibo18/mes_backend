@@ -289,14 +289,14 @@ public class TrackItemController extends BaseController {
 
     @ApiOperation(value = "更新至下工序", notes = "根据跟单ID更新至下工序")
     @GetMapping("/nextSequence")
-    public CommonResult<String> nextSequence(String thId) {
-        return CommonResult.success(trackItemService.nextSequence(thId));
+    public CommonResult<String> nextSequence(String flowId) {
+        return CommonResult.success(trackItemService.nextSequence(flowId));
     }
 
     @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")
     @GetMapping("/backSequence")
-    public CommonResult<String> backSequence(String thId) {
-        return CommonResult.success(trackItemService.backSequence(thId));
+    public CommonResult<String> backSequence(String flowId) {
+        return CommonResult.success(trackItemService.backSequence(flowId));
     }
 
     @GetMapping("/queryItemMessageDto")
