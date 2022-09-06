@@ -68,5 +68,11 @@ public class MaterialReceiveDetail extends BaseEntity<MaterialReceiveDetail> {
     @TableField(exist = false)
     private String drawingNo;
 
+    /**
+     * 跟单号
+     */
+    @TableField(exist = false)
+    private String trackNo;
+
 
 }
