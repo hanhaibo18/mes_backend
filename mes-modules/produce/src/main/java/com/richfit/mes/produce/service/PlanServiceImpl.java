@@ -315,14 +315,17 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                             break;
                         case "4":
                             //打印跟单
+                            trackHeadFinish++;
                             break;
                         case "5":
                             //作废跟单
+                            trackHeadFinish++;
                             break;
                         case "8":
                         case "9":
                             //已交
                             //生成完工资料
+                            trackHeadFinish++;
                             deliveryNum += trackHead.getNumber();
                             break;
                         default:
