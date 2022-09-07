@@ -269,6 +269,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 } else {
                     item.setAssignableQty(item.getBatchQty());
                 }
+                //补充当工序顺序为1时进行跟单状态处理接口调用
+                if (item.getOptSequence() == 1) {
+                    trackHeadService.trackHeadData(item.getTrackHeadId());
+                }
             }
 
         }
