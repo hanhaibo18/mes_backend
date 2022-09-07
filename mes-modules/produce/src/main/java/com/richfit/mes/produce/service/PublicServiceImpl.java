@@ -3,6 +3,8 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.OperationAssign;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.Assign;
@@ -351,7 +353,7 @@ public class PublicServiceImpl implements PublicService {
         CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptId());
         CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptId());
         if (null == assignGet.getData()) {
-            return false;
+            throw new GlobalException("未查询到自动派工信息", ResultCode.FAILED);
         }
         Assign assign = new Assign();
         assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());

@@ -387,16 +387,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
 
-            //跟单创建完成 在执行（侯欣雨、自动派工）
-            for (TrackItem trackItem : trackItems) {
-                if (trackItem.getIsAutoSchedule() != null && trackItem.getIsAutoSchedule().compareTo(1) == 0) {
+            //循环分流表数据
+            for (int i = 0; i < trackFlowList.size(); i++) {
+                //获取第一道工序 判断是否需要派工
+                if (null != trackItems.get(0).getIsAutoSchedule() && trackItems.get(0).getIsAutoSchedule() == 1) {
                     Map<String, String> map = new HashMap<>(4);
-                    map.put("trackItemId", trackItem.getId());
+                    map.put("trackItemId", trackItems.get(0).getId());
                     map.put("trackHeadId", trackHead.getId());
                     map.put("trackNo", trackHead.getTrackNo());
                     map.put("classes", trackHead.getClasses());
                     publicService.automaticProcess(map);
-                    break;
                 }
             }
 
