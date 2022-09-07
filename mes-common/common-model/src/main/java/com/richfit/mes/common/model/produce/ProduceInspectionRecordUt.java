@@ -30,7 +30,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "室温(0,1)")
     private String isRoomTemp;
     @ApiModelProperty(value = "粗糙度")
-    private Date roughness;
+    private String roughness;
     @ApiModelProperty(value = "检测日期")
     private Date inspectionDate;
     @ApiModelProperty(value = "仪器型号")
@@ -61,8 +61,10 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     private String diagramAttachmentId;
     @ApiModelProperty(value = "检测示意图文字描述")
     private String pictureRemark;
-    @ApiModelProperty(value = "核验员")
+    @ApiModelProperty(value = "检验员")
     private String checkBy;
+    @ApiModelProperty(value = "审核人")
+    private String auditBy;
     @ApiModelProperty(value = "业主")
     private String owner;
     @ApiModelProperty(value = "见证")

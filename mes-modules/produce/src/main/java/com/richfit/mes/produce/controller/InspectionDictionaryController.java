@@ -2,18 +2,12 @@ package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.mysql.cj.Query;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.InspectionDictionary;
-import com.richfit.mes.common.model.produce.ProduceItemInspectInfo;
-import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.InspectionDictionaryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @Author: renzewen
@@ -59,8 +52,8 @@ public class InspectionDictionaryController {
         }
         //父节点为空 即为下拉列表的头信息
         queryWrapper.isNull("parent_id")
-                    //按照创建时间升序排列
-                    .orderByAsc("create_time");
+                    //升序排列
+                    .orderByAsc("serial_num");
 
         return CommonResult.success(inspectionDictionaryService.page(new Page<>(page, limit), queryWrapper));
     }
@@ -124,7 +117,9 @@ public class InspectionDictionaryController {
         Map<String, List> returnMap = new HashMap<>();
 
         headsMap.forEach((key,value)->{
-            returnMap.put(value.getDicCode(),!ObjectUtil.isEmpty(valuesMap.get(key))?valuesMap.get(key):new ArrayList());
+            if(!StringUtils.isNullOrEmpty(value.getDicCode())){
+                returnMap.put(value.getDicCode(),!ObjectUtil.isEmpty(valuesMap.get(key))?valuesMap.get(key):new ArrayList());
+            }
         });
 
         return CommonResult.success(returnMap);

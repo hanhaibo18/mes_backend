@@ -13,6 +13,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -58,9 +60,13 @@ public class ProduceInspectionRecordService{
     @Autowired
     private TrackItemInspectionService trackItemInspectionService;
     @Autowired
-    private TrackHeadService trackHeadService;
+    private TrackHeadMapper trackHeadMapper;
     @Autowired
     private ProbeInfoService probeInfoService;
+    @Autowired
+    private CodeRuleService codeRuleService;
+    @Autowired
+    private TrackHeadService trackHeadService;
 
     /**
      * 查询跟单工序探伤列表
@@ -112,7 +118,7 @@ public class ProduceInspectionRecordService{
         queryWrapper.orderByDesc("modify_time");
         IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
         for (TrackItemInspection trackItemInspection : trackItemInspections.getRecords()) {
-            TrackHead trackHead = trackHeadService.getById(trackItemInspection.getTrackHeadId());
+            TrackHead trackHead = trackHeadMapper.selecProjectNametById(trackItemInspection.getTrackHeadId());
             trackItemInspection.setTrackNo(trackHead.getTrackNo());
             trackItemInspection.setDrawingNo(trackHead.getDrawingNo());
             trackItemInspection.setQty(trackHead.getNumber());
@@ -121,6 +127,7 @@ public class ProduceInspectionRecordService{
             trackItemInspection.setTrackType(trackHead.getTrackType());
             trackItemInspection.setTexture(trackHead.getTexture());
             trackItemInspection.setPartsName(trackHead.getMaterialName());
+            trackItemInspection.setProjectName(trackHead.getProjectName());
         }
         return trackItemInspections;
     }
@@ -143,6 +150,13 @@ public class ProduceInspectionRecordService{
         List<String> itemIds = produceInspectionRecordDto.getItemIds();
         //探伤记录id
         String recordId = null;
+        //生成探伤记录号
+        CodeRule codeRule = codeRuleService.gerCode("ut_record_no", null, null, SecurityUtils.getCurrentUser().getTenantId(),null);
+        if (codeRule == null || com.mysql.cj.util.StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
+            throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
+        }
+        jsonObject.put("recordNo",codeRule.getCurValue());
+       // codeRuleService.updateCode("ut_record_no",null, null, SecurityUtils.getCurrentUser().getTenantId(),null);
 
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             //保存探伤记录
@@ -218,10 +232,27 @@ public class ProduceInspectionRecordService{
 
     /**
      * 审核提交探伤记录
-     * @param trackItemInspection
+     * @param itemId 探伤工序id
+     * @param remark 探伤备注
+     * @param flawDetection 探伤结果
+     * @param tempType 探伤记录模板
+     * @param recordNo 探伤记录编号
+     * @param checkBy 探伤检验人
+     * @param auditBy 探伤审核人
+     * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public Boolean auditSubmitRecord(TrackItemInspection trackItemInspection){
+    public Boolean auditSubmitRecord(String itemId,String remark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
+        TrackItemInspection trackItemInspection = new TrackItemInspection();
+        trackItemInspection.setId(itemId);
+        trackItemInspection.setRemark(remark);
+        trackItemInspection.setFlawDetection(flawDetection);
+        trackItemInspection.setTempType(tempType);
+        trackItemInspection.setInspectRecordNo(recordNo);
+        trackItemInspection.setCheckBy(checkBy);
+        trackItemInspection.setAuditBy(auditBy);
+        //这里生成报告号
+
         return trackItemInspectionService.updateById(trackItemInspection);
     }
 
@@ -362,7 +393,7 @@ public class ProduceInspectionRecordService{
         //报告号
         //dataMap.put("reportNo",produceInspectionRecordUt.getReportNo());
         //图号
-        /*dataMap.put("drawingNo",trackHead.getDrawingNo());
+        dataMap.put("drawingNo",trackHead.getDrawingNo());
         //零件名称
         dataMap.put("materialName",trackHead.getMaterialName());
         //仪器型号
@@ -375,7 +406,7 @@ public class ProduceInspectionRecordService{
         dataMap.put("type",produceInspectionRecordUt.getType());
         //偶合剂
         dataMap.put("couplingAgent",produceInspectionRecordUt.getCouplingAgent());
-        //偶合剂
+        //对比试样
         dataMap.put("compareSample",produceInspectionRecordUt.getCompareSample());
         //试验规范
         dataMap.put("testSpecification",produceInspectionRecordUt.getTestSpecification());
@@ -385,6 +416,12 @@ public class ProduceInspectionRecordService{
         dataMap.put("sensitivity",produceInspectionRecordUt.getSensitivity());
         //零件顺序号
         dataMap.put("222",produceInspectionRecordUt.getSensitivity());
+        //温度
+        dataMap.put("tempera",produceInspectionRecordUt.getTempera());
+        //室温
+        dataMap.put("isRoomTemp",produceInspectionRecordUt.getIsRoomTemp());
+        //粗糙度
+        dataMap.put("roughness",produceInspectionRecordUt.getRoughness());
         //业主
         dataMap.put("owner",produceInspectionRecordUt.getOwner());
         //见证
@@ -392,7 +429,7 @@ public class ProduceInspectionRecordService{
         //检验员
         dataMap.put("checkBy",trackItemInspection.getCheckBy());
         //审核人
-        dataMap.put("auditBy",trackItemInspection.getAuditBy());*/
+        dataMap.put("auditBy",trackItemInspection.getAuditBy());
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())){
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordUt.getDiagramAttachmentId()).getData());

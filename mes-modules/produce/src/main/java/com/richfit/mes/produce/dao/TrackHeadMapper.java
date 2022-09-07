@@ -141,4 +141,11 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      **/
     @Select("select drawing_no, count(*),sum(number-use_num) as number FROM v_produce_track_store where type = '1' and drawing_no in (${drawingNos}) GROUP BY drawing_no;")
     List<Map> selectTrackStoreCount(String drawingNos);
+
+
+    /**
+     * 功能描述: 根据id查询跟单
+     **/
+    @Select("SELECT pth.* ,ppb.project_name FROM produce_track_head pth LEFT JOIN produce_project_bom ppb on ppb.id = pth.project_bom_id WHERE pth.id = #{id}")
+    TrackHead selecProjectNametById(@Param("id") String id);
 }

@@ -327,26 +327,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>零件名称</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${materialName!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -392,7 +374,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{图号}</w:t>
+                                        <w:t>${drawingNo!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -452,26 +434,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>仪器型号</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${instrumentModel!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -551,26 +515,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>生产单位</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>{生产单位}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -612,26 +558,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>材质</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${texture!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -740,7 +668,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{种类}</w:t>
+                                        <w:t>${type!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -813,26 +741,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>偶合剂</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${couplingAgent!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -895,26 +805,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>对比试样</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${compareSample!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1563,26 +1455,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>温度</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${tempera!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1627,7 +1501,8 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>☑</w:t>
+                                        <#if isRoomTemp=="1"><w:t>☑</w:t>
+                                        <#else><w:t>□</w:t></#if>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1671,26 +1546,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>粗糙度</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${roughness!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1753,26 +1610,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>试验规范</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${testSpecification!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1813,26 +1652,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>验收标准</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${acceptanceCriteria!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1872,26 +1693,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>灵敏度</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${sensitivity!""}</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -2523,26 +2326,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>业主</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${owner}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2609,7 +2394,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{见证}</w:t>
+                                        <w:t>${witnesses!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2695,26 +2480,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>检验员</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${checkBy!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2779,26 +2546,8 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>审核人</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:color w:val="0000FF"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${auditBy!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

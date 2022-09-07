@@ -70,9 +70,18 @@ public class ProduceInspectionRecordController extends BaseController {
     }
 
     @ApiOperation(value = "审核提交探伤记录", notes = "审核提交探伤记录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "itemId", value = "工序id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "remark", value = "探伤备注", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "flawDetection", value = "探伤结果(0,1)", required = true, paramType = "query", dataType = "Integer"),
+            @ApiImplicitParam(name = "tempType", value = "探伤记录模板类型",required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "recordNo", value = "探伤记录编号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "checkBy", value = "探伤检验人", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "auditBy", value = "探伤审核人", paramType = "query", dataType = "string")
+    })
     @PostMapping("/auditSubmitRecord")
-    public CommonResult auditSubmitRecord(@RequestBody TrackItemInspection trackItemInspection){
-        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(trackItemInspection));
+    public CommonResult auditSubmitRecord(String itemId,String remark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
+        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(itemId,remark,flawDetection,tempType,recordNo,checkBy,auditBy));
     }
 
     @ApiOperation(value = "报告预览", notes = "报告预览")
