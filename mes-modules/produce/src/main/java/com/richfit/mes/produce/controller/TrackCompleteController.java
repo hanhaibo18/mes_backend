@@ -10,10 +10,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.TrackComplete;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CompleteDto;
@@ -64,6 +61,9 @@ public class TrackCompleteController extends BaseController {
 
     @Resource
     private TrackCompleteCacheService trackCompleteCacheService;
+
+    @Resource
+    private TrackHeadFlowService trackFlowService;
 
     /**
      * ***
@@ -154,6 +154,9 @@ public class TrackCompleteController extends BaseController {
                     CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
                     track.setDeviceName(device.getData().getName());
                     TrackItem trackItem = trackItemService.getById(track.getTiId());
+                    //查询产品编号
+                    TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
+                    track.setProdNo(trackFlow.getProductNo());
                     //增加判断返回是否能修改
                     TrackHead trackHead = trackHeadService.getById(track.getTrackId());
                     track.setProductName(trackHead.getProductName());
