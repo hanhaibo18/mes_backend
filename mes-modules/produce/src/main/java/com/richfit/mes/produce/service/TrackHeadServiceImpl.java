@@ -1140,4 +1140,28 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productNo);
         trackHeadFlowService.updateById(trackFlow);
     }
+
+    @Override
+    public void trackHeadData(String id) {
+        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+        queryWrapperTrackItem.eq("track_head_id", id);
+        List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+        boolean is_schedule = false;
+        for (TrackItem trackItem : trackItemList) {
+            if (trackItem.getIsSchedule() == 1) {
+                is_schedule = true;
+            }
+        }
+        if (!is_schedule) {
+            UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
+            updateWrapperTrackFlow.eq("track_head_id", id);
+            updateWrapperTrackFlow.set("status", "0");
+            trackHeadFlowService.update(updateWrapperTrackFlow);
+
+            UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
+            updateWrapperTrackHead.eq("id", id);
+            updateWrapperTrackHead.set("status", "0");
+            this.update(updateWrapperTrackHead);
+        }
+    }
 }

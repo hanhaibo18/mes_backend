@@ -270,4 +270,13 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Date: 2022/8/25 15:06
      **/
     void addTrackHeadProductNo(String flowId, String productNo);
+
+    /**
+     * 功能描述: 跟单状态维护
+     *
+     * @param id 跟单id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/7 15:06
+     **/
+    void trackHeadData(String id);
 }
