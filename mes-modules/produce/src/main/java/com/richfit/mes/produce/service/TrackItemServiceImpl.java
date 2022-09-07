@@ -445,10 +445,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setTrackHeadId(trackHead.getId());
                 item.setFlowId(flowId);
                 item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
-                item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                item.setCreateTime(new Date());
-                item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                item.setModifyTime(new Date());
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 //可分配数量
                 item.setAssignableQty(number);
@@ -461,6 +457,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     item.setIsScheduleCompleteShow(1);
                 } else {
                     item.setIsScheduleCompleteShow(0);
+                }
+                if (trackHead.getStatus().equals("4")) {
+                    item.setIsCurrent(0);
                 }
                 this.save(item);
             }

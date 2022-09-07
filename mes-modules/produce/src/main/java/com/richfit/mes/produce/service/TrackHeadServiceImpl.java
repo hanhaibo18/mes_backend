@@ -406,9 +406,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
-            System.out.println("---------------------------------");
-            System.out.println(trackHead.getTrackNo());
-            System.out.println(Calendar.getInstance().get(Calendar.YEAR) + "");
             //流水号更新
             codeRuleService.updateCode("track_no", null, trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
         } catch (Exception e) {
