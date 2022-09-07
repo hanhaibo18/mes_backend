@@ -58,6 +58,8 @@ public class LineStoreController extends BaseController {
 
     private final static String STATUS_NOT_RIGHT_FOR_EDIT = "料单当前状态不支持该操作";
 
+    private final static String MATERIAL_TYPE_NOT_MATCH = "料单入库类型同选择的物料号类型不匹配";
+
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败！";
 
@@ -95,6 +97,8 @@ public class LineStoreController extends BaseController {
         } else if (lineStoreService.checkCodeExist(lineStore, startNo, endNo, suffixNo)) {
             String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
             return CommonResult.failed(message + CODE_EXITS);
+        } else if (!isMaterialTypeMatch(lineStore.getMaterialNo(), lineStore.getMaterialType())) {
+            return CommonResult.failed(MATERIAL_TYPE_NOT_MATCH);
         } else {
             boolean bool = lineStoreService.addStore(lineStore, startNo, endNo, suffixNo, isAutoMatchProd, isAutoMatchPur, branchCode);
             if (bool) {
@@ -127,6 +131,8 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT);
         } else if (!isMaterialNoExist(lineStore.getMaterialNo())) {
             return CommonResult.failed(MATERIAL_NO_NOT_EXIST);
+        } else if (!isMaterialTypeMatch(lineStore.getMaterialNo(), lineStore.getMaterialType())) {
+            return CommonResult.failed(MATERIAL_TYPE_NOT_MATCH);
         } else {
             boolean bool = false;
 
@@ -223,9 +229,9 @@ public class LineStoreController extends BaseController {
         queryWrapper.eq("branch_code", branchCode);
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
+                if ("desc".equals(order)) {
                     queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")) {
+                } else if ("asc".equals(order)) {
                     queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
@@ -511,15 +517,15 @@ public class LineStoreController extends BaseController {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
             List<LineStore> lineStores = new ArrayList<>();
             list.forEach(item -> {
-                if (item.getMaterialType().equals("毛坯")) {
+                if ("毛坯".equals(item.getMaterialType())) {
                     item.setMaterialType("0");
-                } else if (item.getMaterialType().equals("半成品/成品")) {
+                } else if ("半成品/成品".equals(item.getMaterialType())) {
                     item.setMaterialType("1");
                 }
-                if (item.getTrackType().equals("单件")) {
+                if ("单件".equals(item.getTrackType())) {
                     item.setTrackType("0");
                     item.setNumber(1);
-                } else if (item.getTrackType().equals("批次")) {
+                } else if ("批次".equals(item.getTrackType())) {
                     item.setTrackType("1");
                     if (item.getNumber() <= 0) {
                         item.setNumber(1);
@@ -638,11 +644,35 @@ public class LineStoreController extends BaseController {
         return lineStore.getStatus().equals(StoreItemStatusEnum.FINISH.getCode());
     }
 
-    //校验物料号是否在物料表中存在
+    /**
+     * 校验物料号是否在物料表中存在
+     */
     private boolean isMaterialNoExist(String materialNo) {
         CommonResult<List<Product>> result = baseServiceClient.selectProduct(materialNo, null, null);
 
         return result.getData().size() > 0;
+    }
+
+    /**
+     * 校验物料号对应的物料类型是否和 传入的料单物料类型对应
+     * 物料表 物料类型 0铸件 1锻件 2精铸件 3成品/半成品
+     * 料单表 物料类型 0毛坯             1半成品/成品
+     */
+    private boolean isMaterialTypeMatch(String materialNo, String materialType) {
+
+        CommonResult<List<Product>> result = baseServiceClient.selectProduct(materialNo, null, null);
+        boolean isMatch = false;
+        if (!result.getData().isEmpty()) {
+            Product product = result.getData().get(0);
+            String productType = product.getMaterialType();
+            if ("0".equals(materialType)) {
+                isMatch = "0".equals(productType) || "1".equals(productType) || "2".equals(productType);
+            } else if ("1".equals(materialType)) {
+                isMatch = "3".equals(productType);
+            }
+
+        }
+        return isMatch;
     }
 
 }
