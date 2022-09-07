@@ -26,8 +26,8 @@ public class ProduceDefectsInfo extends BaseEntity<ProduceDefectsInfo> {
     private String rating;
     @ApiModelProperty(value = "检测结果")
     private String testResults;
-    @ApiModelProperty(value = "序号")
-    private String serialNum;
+    @ApiModelProperty(value = "标记号")
+    private String marksNo;
     @ApiModelProperty(value = "底片号")
     private String theFilm;
     @ApiModelProperty(value = "埋藏深度")

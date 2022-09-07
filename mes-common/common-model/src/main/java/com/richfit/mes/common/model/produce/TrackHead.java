@@ -172,6 +172,10 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "项目bomID", dataType = "String")
     private String projectBomId;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "项目名称")
+    private String projectName;
+
     @ApiModelProperty(value = "关联项目BOM的workno", dataType = "String")
     private String projectBomWork;
 
