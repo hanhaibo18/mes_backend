@@ -72,6 +72,10 @@ public class ProduceRequestNoteController extends BaseController {
         QueryWrapper<RequestNoteDetail> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("note_id", noteId);
         queryWrapper.orderByDesc("modify_time");
-        return CommonResult.success(requestNoteDetailService.list(queryWrapper));
+        List<RequestNoteDetail> requestNoteDetailList = requestNoteDetailService.list(queryWrapper);
+        for (RequestNoteDetail requestNoteDetail : requestNoteDetailList) {
+            requestNoteDetail.setNumberMissing(requestNoteDetail.getNumber() - requestNoteDetail.getNumberDelivery());
+        }
+        return CommonResult.success(requestNoteDetailList);
     }
 }

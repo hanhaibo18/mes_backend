@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,6 +12,7 @@ import lombok.Data;
  */
 @Data
 public class RequestNoteDetail extends BaseEntity<RequestNoteDetail> {
+    private static final long serialVersionUID = 3257676325571033265L;
     /**
      * 申请单Id
      */
@@ -87,5 +89,20 @@ public class RequestNoteDetail extends BaseEntity<RequestNoteDetail> {
      */
     @ApiModelProperty(value = "租户")
     private String tenantId;
+
+
+    /**
+     * 配送数量
+     */
+    @ApiModelProperty(value = "配送数量")
+    @TableField(exist = false)
+    private Double numberDelivery = 0.00;
+
+    /**
+     * 缺件数量
+     */
+    @ApiModelProperty(value = "缺件数量")
+    @TableField(exist = false)
+    private Double numberMissing = 0.00;
 
 }
