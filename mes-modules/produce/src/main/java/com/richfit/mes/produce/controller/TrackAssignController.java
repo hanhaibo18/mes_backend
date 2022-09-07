@@ -589,7 +589,7 @@ public class TrackAssignController extends BaseController {
 
         queryWrapper.in("a.status", "0,1".split(","));
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("a.track_num", trackNo);
+            queryWrapper.like("a.track_no", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
             queryWrapper.eq("a.router_no", routerNo);
