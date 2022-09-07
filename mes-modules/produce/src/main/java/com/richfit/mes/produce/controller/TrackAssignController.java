@@ -646,7 +646,7 @@ public class TrackAssignController extends BaseController {
                     return CommonResult.failed("无法回滚，已有报工提交，需要先取消工序【" + trackItem.getOptName() + "】的报工！");
                 }
                 //将前置工序状态改为待派工
-                List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
+                List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("flow_id", trackItem.getFlowId()).orderByAsc("opt_sequence"));
                 for (int j = 0; j < items.size(); j++) {
                     TrackItem cstrackItem = items.get(j);
                     if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
