@@ -274,6 +274,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 }
                 //补充当工序顺序为1时进行跟单状态处理接口调用
                 if (item.getOptSequence() == 1) {
+                    UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
+                    updateWrapperTrackFlow.eq("id", item.getFlowId());
+                    updateWrapperTrackFlow.set("status", "0");
+                    trackHeadFlowService.update(updateWrapperTrackFlow);
                     trackHeadService.trackHeadData(item.getTrackHeadId());
                 }
             }
