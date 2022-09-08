@@ -503,7 +503,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.updateById(trackHead);
 
             //工序批量修改（单件跟单多生产线、普通跟单判断）
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) == 0) {
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) > 0) {
                 //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
