@@ -1143,6 +1143,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public void trackHeadData(String id) {
+        TrackHead trackHead = this.getById(id);
         QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
         queryWrapperTrackItem.eq("track_head_id", id);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
@@ -1163,5 +1164,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             updateWrapperTrackHead.set("status", "0");
             this.update(updateWrapperTrackHead);
         }
+        //计划数据更新
+        planService.planData(trackHead.getWorkPlanId());
+        orderService.orderData(trackHead.getProductionOrderId());
     }
 }
