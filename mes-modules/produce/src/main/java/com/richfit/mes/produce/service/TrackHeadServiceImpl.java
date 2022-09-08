@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -541,6 +542,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                             item.setId(UUID.randomUUID().toString().replace("-", ""));
                             item.setAssignableQty(trackHead.getNumber());
                             item.setNumber(trackHead.getNumber());
+
+                        }
+                        if (StrUtil.isBlank(item.getFlowId())) {
+                            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+                            queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
+                            List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
+                            item.setFlowId(trackFlows.get(0).getId());
                         }
                         item.setTrackHeadId(trackHead.getId());
                         item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
