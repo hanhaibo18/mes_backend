@@ -3,10 +3,10 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
-import com.richfit.mes.produce.entity.ApplicationResult;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
 
 import java.util.List;

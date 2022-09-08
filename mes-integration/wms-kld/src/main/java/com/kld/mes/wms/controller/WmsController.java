@@ -2,6 +2,7 @@ package com.kld.mes.wms.controller;
 
 import com.kld.mes.wms.service.ProductToWmsService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import io.swagger.annotations.Api;
@@ -38,13 +39,13 @@ public class WmsController {
 
     @ApiOperation(value = "查询仓储信息", notes = "根据物料编号参数查询仓储信息接口")
     @GetMapping("/queryMaterialCount")
-    public CommonResult<Integer> queryMaterialCount(@RequestParam("materialNo") String materialNo) throws Exception{
+    public CommonResult<Integer> queryMaterialCount(@RequestParam("materialNo") String materialNo) throws Exception {
         return new CommonResult(productToWmsService.queryMaterialCount(materialNo));
     }
 
     @ApiOperation(value = "配料申请单上传", notes = "配料申请单上传接口")
     @PostMapping("/anApplicationForm")
-    public CommonResult<Boolean> anApplicationForm(@RequestBody IngredientApplicationDto ingredientApplicationDto) throws Exception {
+    public CommonResult<ApplicationResult> anApplicationForm(@RequestBody IngredientApplicationDto ingredientApplicationDto) throws Exception {
         return new CommonResult(productToWmsService.anApplicationForm(ingredientApplicationDto));
     }
 }

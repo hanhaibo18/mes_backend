@@ -10,6 +10,6 @@ import lombok.Data;
  */
 @Data
 public class ApplicationResult {
-    private String retStatus;
+    private String retCode;
     private String retMsg;
 }

@@ -12,29 +12,15 @@ import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
 import com.richfit.mes.produce.provider.ErpServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -55,7 +41,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
 
     @Value("${interface.erp.orders-synchronization}")
     private String url;
-    
+
     @Autowired
     private ErpServiceClient erpServiceClient;
 
@@ -75,8 +61,6 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveOrderSync(List<Order> orderList) {
-        //TODO:没有物料编号 不同步  status状态=0
-        TenantUserDetails user = SecurityUtils.getCurrentUser();
         for (Order order : orderList) {
             if (order.getMaterialCode() == null) {
                 continue;

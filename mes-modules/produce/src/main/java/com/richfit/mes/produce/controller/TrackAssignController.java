@@ -253,11 +253,13 @@ public class TrackAssignController extends BaseController {
     @PostMapping("/batchAdd")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) throws Exception {
-        for (Assign assign : assigns) {
-            if (StringUtils.isNullOrEmpty(assign.getTiId())) {
-                return CommonResult.failed("关联工序ID编码不能为空！");
-            } else {
+        try {
+            for (Assign assign : assigns) {
+//                if (StringUtils.isNullOrEmpty(assign.getTiId())) {
+//                    return CommonResult.failed("关联工序ID编码不能为空！");
+//                } else {
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 if (null != trackItem) {
                     if (trackItem.getAssignableQty() < assign.getQty()) {
                         return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
@@ -267,7 +269,6 @@ public class TrackAssignController extends BaseController {
                     trackItem.setIsSchedule(1);
                     trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
                     trackItemService.updateById(trackItem);
-                    TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                     if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
                         assign.setTrackNo(trackHead.getTrackNo());
                     }
@@ -280,20 +281,6 @@ public class TrackAssignController extends BaseController {
                         update.eq("id", trackItem.getFlowId());
                         trackHeadFlowService.update(update);
                     }
-                    //齐套性检查
-                    if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent() && "true".equals(off)) {
-                        //控制第一道工序是否发送申请单
-                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
-                        requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
-                        try {
-                            CommonResult<Boolean> result = wmsServiceClient.anApplicationForm(ingredient);
-                            if (200 != result.getStatus()) {
-                                throw new GlobalException("申请单发送失败!", ResultCode.FAILED);
-                            }
-                        } catch (Exception e) {
-                            throw new GlobalException("申请单发送失败!", ResultCode.FAILED);
-                        }
-                    }
                     if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
                         //下工序激活
                         Map<String, String> map = new HashMap<>(3);
@@ -304,52 +291,77 @@ public class TrackAssignController extends BaseController {
                         publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
                     }
 
-                }
-                assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                if (null != SecurityUtils.getCurrentUser()) {
-                    assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
-                }
+//                    }
+                    assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    if (null != SecurityUtils.getCurrentUser()) {
+                        assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                        assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                    }
 
-                assign.setAssignTime(new Date());
-                assign.setModifyTime(new Date());
-                assign.setCreateTime(new Date());
-                assign.setAvailQty(assign.getQty());
-                trackAssignService.save(assign);
-                for (AssignPerson person : assign.getAssignPersons()) {
-                    person.setModifyTime(new Date());
-                    person.setAssignId(assign.getId());
-                    trackAssignPersonMapper.insert(person);
+                    assign.setAssignTime(new Date());
+                    assign.setModifyTime(new Date());
+                    assign.setCreateTime(new Date());
+                    assign.setAvailQty(assign.getQty());
+                    trackAssignService.save(assign);
+                    for (AssignPerson person : assign.getAssignPersons()) {
+                        person.setModifyTime(new Date());
+                        person.setAssignId(assign.getId());
+                        trackAssignPersonMapper.insert(person);
+                    }
+                    //齐套性检查
+                    if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent() && "true".equals(off)) {
+                        //控制第一道工序是否发送申请单
+                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
+                        requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
+                        ApplicationResult application = new ApplicationResult();
+                        try {
+                            application = wmsServiceClient.anApplicationForm(ingredient).getData();
+
+                        } catch (Exception e) {
+                            throw new GlobalException("申请单发送失败!", ResultCode.FAILED);
+                        }
+                        if ("N".equals(application.getRetCode())) {
+                            throw new GlobalException(application.getRetMsg(), ResultCode.FAILED);
+                        }
+                    }
+                }
+                systemServiceClient.savenote(assign.getAssignBy(),
+                        "您有新的派工跟单需要报工！",
+                        assign.getTrackNo(),
+                        assign.getUserId().substring(0, assign.getUserId().length() - 1),
+                        assign.getBranchCode(),
+                        assign.getTenantId());
+                //参数不为空 并且为"1" 复制工序参数
+                if (!StringUtils.isNullOrEmpty(assign.getIsFlawDetection()) && "1".equals(assign.getIsFlawDetection())) {
+                    inspectionService.saveItem(assign.getTiId());
                 }
             }
-            systemServiceClient.savenote(assign.getAssignBy(),
-                    "您有新的派工跟单需要报工！",
-                    assign.getTrackNo(),
-                    assign.getUserId().substring(0, assign.getUserId().length() - 1),
-                    assign.getBranchCode(),
-                    assign.getTenantId());
-            //参数不为空 并且为"1" 复制工序参数
-            if (!StringUtils.isNullOrEmpty(assign.getIsFlawDetection()) && "1".equals(assign.getIsFlawDetection())) {
-                inspectionService.saveItem(assign.getTiId());
-            }
+            return CommonResult.success(assigns, "操作成功！");
+        } catch (Exception e) {
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
-        return CommonResult.success(assigns, "操作成功！");
     }
 
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
         CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("ti_id", trackItem.getId());
+        //查询派工工位信息
+        Assign assign = trackAssignService.getOne(queryWrapper);
         //组装申请单信息
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
         //申请单号
         ingredient.setSqd(trackItem.getId() + "@0");
-        ingredient.setGc(branchCode);
+        //工厂编码
+        ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
         //车间
         ingredient.setCj(branchCode);
         //车间名称
-        //工位 == 车间?
-        ingredient.setGw(branchCode);
+        //工位
+        ingredient.setGw(assign.getSiteId());
         //工位名称
+        ingredient.setGwName(assign.getSiteName());
         //工序
         ingredient.setGx(trackItem.getId());
         //工序名称

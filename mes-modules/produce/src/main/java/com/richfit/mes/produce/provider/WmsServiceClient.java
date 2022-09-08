@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import com.richfit.mes.produce.provider.fallback.WmsServiceClientFallbackImpl;
@@ -24,5 +25,5 @@ public interface WmsServiceClient {
     public CommonResult<Integer> queryMaterialCount(@RequestParam("materialNo") String materialNo);
 
     @PostMapping("/api/integration/wms/anApplicationForm")
-    public CommonResult<Boolean> anApplicationForm(@RequestBody IngredientApplicationDto ingredientApplicationDto);
+    public CommonResult<ApplicationResult> anApplicationForm(@RequestBody IngredientApplicationDto ingredientApplicationDto);
 }
