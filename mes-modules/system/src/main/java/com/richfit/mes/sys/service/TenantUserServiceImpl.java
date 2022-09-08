@@ -214,7 +214,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         List<TenantUserVo> tenantUserList = new ArrayList<>();
         for (Branch branch : queryCode.getData()) {
             QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("users.belong_org_id", branch.getBranchCode());
+            queryWrapper.eq("belong_org_id", branch.getBranchCode());
             tenantUserList.addAll(tenantUserMapper.queryUserList(queryWrapper));
         }
         return tenantUserList;
