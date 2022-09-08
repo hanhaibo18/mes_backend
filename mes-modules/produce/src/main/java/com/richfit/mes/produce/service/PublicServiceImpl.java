@@ -246,16 +246,16 @@ public class PublicServiceImpl implements PublicService {
         currentTrackItem.eq("is_current", 1);
         currentTrackItem.orderByDesc("sequence_order_by");
         List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
-        for (TrackItem trackItem : currentTrackItemList) {
-            trackItem.setIsCurrent(0);
-            trackItemService.updateById(trackItem);
-        }
-
         //判断还有没有下工序
         if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
             return true;
         }
+        for (TrackItem trackItem : currentTrackItemList) {
+            trackItem.setIsCurrent(0);
+            trackItemService.updateById(trackItem);
+        }
+
         boolean activation = false;
         if (!currentTrackItemList.isEmpty() && currentTrackItemList.get(0).getNextOptSequence() != 0) {
             //激活下工序

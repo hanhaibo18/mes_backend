@@ -260,7 +260,6 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         //追加物料
         List<LineList> lineLists = new ArrayList<LineList>();
         LineList lineList = new LineList();
-        //
         lineList.setMaterialDesc(additionalMaterialDto.getMaterialName());
         lineList.setMaterialNum(additionalMaterialDto.getMaterialNo());
         lineList.setSwFlag(additionalMaterialDto.getIsEdgeStore());
@@ -396,8 +395,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             RequestNoteDetail requestNoteDetail = new RequestNoteDetail();
             requestNoteDetail.setBranchCode(ingredient.getCj());
             requestNoteDetail.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            //申请单号
+            //申请单Id
             requestNoteDetail.setNoteId(ingredient.getSqd());
+            requestNoteDetail.setRequestNoteNumber(ingredient.getSqd());
             //图号
             requestNoteDetail.setDrawingNo(additionalMaterialDto.getDrawingNo());
             //物料编码
