@@ -114,11 +114,21 @@ public class InspectionDictionaryController {
         Map<String, List<InspectionDictionary>> valuesMap = list.stream().filter(item -> !StringUtils.isNullOrEmpty(item.getParentId()))
                 .collect(Collectors.groupingBy(InspectionDictionary::getParentId));
 
-        Map<String, List> returnMap = new HashMap<>();
-
+        Map<String, Object> returnMap = new HashMap<>();
+        //构造返回参数
         headsMap.forEach((key,value)->{
             if(!StringUtils.isNullOrEmpty(value.getDicCode())){
-                returnMap.put(value.getDicCode(),!ObjectUtil.isEmpty(valuesMap.get(key))?valuesMap.get(key):new ArrayList());
+                List<Map> maps = new ArrayList<>();
+                if(!ObjectUtil.isEmpty(ObjectUtil.isEmpty(valuesMap.get(key)))){
+                    for (InspectionDictionary inspectionDictionary : valuesMap.get(key)) {
+                        //将下拉列表构造为lable value形式 便于前端取值
+                        Map<String, String> map = new HashMap<>();
+                        map.put("lable",inspectionDictionary.getDicCode());
+                        map.put("value",inspectionDictionary.getDicValue());
+                        maps.add(map);
+                    }
+                }
+                returnMap.put(value.getDicCode(),maps);
             }
         });
 

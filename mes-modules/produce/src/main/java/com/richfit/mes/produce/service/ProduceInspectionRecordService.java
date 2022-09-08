@@ -156,7 +156,8 @@ public class ProduceInspectionRecordService{
             throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
         }
         jsonObject.put("recordNo",codeRule.getCurValue());
-       // codeRuleService.updateCode("ut_record_no",null, null, SecurityUtils.getCurrentUser().getTenantId(),null);
+        //保存流水号
+        codeRuleService.updateCode("ut_record_no",null, codeRule.getCurValue(), null,SecurityUtils.getCurrentUser().getTenantId(),null);
 
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             //保存探伤记录
@@ -440,31 +441,10 @@ public class ProduceInspectionRecordService{
                 .orderByAsc("serial_num"));
         //缺陷记录
         dataMap.put("defectsInfoList",produceDefectsInfoList);
-        ProduceDefectsInfo produceDefectsInfo = new ProduceDefectsInfo();
-        produceDefectsInfo.setTestResults("1");
-        ProduceDefectsInfo produceDefectsInfo2 = new ProduceDefectsInfo();
-        produceDefectsInfo2.setTestResults("2");
-        produceDefectsInfoList.add(produceDefectsInfo);
-        produceDefectsInfoList.add(produceDefectsInfo2);
         //探头列表
         List<ProbeInfo> probeInfoList = probeInfoService.list(new QueryWrapper<ProbeInfo>()
                 .eq("record_id", produceInspectionRecordUt.getId())
                 .orderByAsc("serial_num"));
-        ProbeInfo probeInfo1 = new ProbeInfo();
-        probeInfo1.setAngle("q");
-        probeInfo1.setFrequency("1");
-        probeInfo1.setLeadingEdge("1");
-        probeInfoList.add(probeInfo1);
-        ProbeInfo probeInfo2 = new ProbeInfo();
-        probeInfo2.setAngle("2");
-        probeInfo2.setFrequency("2");
-        probeInfo2.setLeadingEdge("2");
-        probeInfoList.add(probeInfo2);
-        ProbeInfo probeInfo3 = new ProbeInfo();
-        probeInfo3.setAngle("3");
-        probeInfo3.setFrequency("3");
-        probeInfo3.setLeadingEdge("3");
-        probeInfoList.add(probeInfo3);
         //探头列表
         dataMap.put("probeInfoList",probeInfoList);
 
