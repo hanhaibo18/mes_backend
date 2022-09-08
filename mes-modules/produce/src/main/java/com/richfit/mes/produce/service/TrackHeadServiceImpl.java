@@ -1144,24 +1144,39 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public void trackHeadData(String id) {
         TrackHead trackHead = this.getById(id);
-        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-        queryWrapperTrackItem.eq("track_head_id", id);
-        List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
-        boolean is_schedule = false;
-        for (TrackItem trackItem : trackItemList) {
-            if (trackItem.getIsSchedule() == 1) {
-                is_schedule = true;
+        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+        queryWrapperTrackFlow.eq("track_head_id", id);
+        List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapperTrackFlow);
+        boolean isNotSchedule = true;
+        boolean isSchedule = true;
+        boolean isFinish = true;
+        for (TrackFlow trackFlow : trackFlowList) {
+            if (!"0".equals(trackFlow.getStatus())) {
+                isNotSchedule = false;
+            }
+            if (!"1".equals(trackFlow.getStatus())) {
+                isSchedule = false;
+            }
+            if (!"2".equals(trackFlow.getStatus())) {
+                isFinish = false;
             }
         }
-        if (!is_schedule) {
-            UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
-            updateWrapperTrackFlow.eq("track_head_id", id);
-            updateWrapperTrackFlow.set("status", "0");
-            trackHeadFlowService.update(updateWrapperTrackFlow);
-
+        if (isNotSchedule) {
             UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
             updateWrapperTrackHead.eq("id", id);
             updateWrapperTrackHead.set("status", "0");
+            this.update(updateWrapperTrackHead);
+        }
+        if (isSchedule) {
+            UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
+            updateWrapperTrackHead.eq("id", id);
+            updateWrapperTrackHead.set("status", "1");
+            this.update(updateWrapperTrackHead);
+        }
+        if (isFinish) {
+            UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
+            updateWrapperTrackHead.eq("id", id);
+            updateWrapperTrackHead.set("status", "2");
             this.update(updateWrapperTrackHead);
         }
         //计划数据更新
