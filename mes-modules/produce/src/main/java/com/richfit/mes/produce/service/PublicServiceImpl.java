@@ -367,7 +367,7 @@ public class PublicServiceImpl implements PublicService {
         assign.setDeviceId(assignGet.getData().getDeviceId());
         assign.setDeviceName(assignGet.getData().getDeviceName());
         assign.setPriority(assignGet.getData().getPriority());
-        assign.setQty(assignGet.getData().getQty());
+        assign.setQty(trackItem.getNumber());
         assign.setAvailQty(assignGet.getData().getQty());
         assign.setState(0);
         assign.setAssignBy(assignGet.getData().getCreateBy());

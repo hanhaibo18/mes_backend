@@ -525,7 +525,8 @@ public class TrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(optType)) {
             queryWrapper.apply("a.opt_type = '" + optType + "'");
         } else {
-            queryWrapper.apply("(a.opt_type ='0' or a.opt_type ='2')");
+//            queryWrapper.apply("(a.opt_type ='0' or a.opt_type ='2')");
+            queryWrapper.notIn("a.opt_type", 3);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -533,7 +534,7 @@ public class TrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", productNo);
         }
-        queryWrapper.eq("is_schedule", 0);
+        queryWrapper.ne("is_schedule", 1);
 
         //过滤排序（list中的字段不在此处排序，后边步骤再排序）
         List<String> excludeOrderCols = new ArrayList<>();
