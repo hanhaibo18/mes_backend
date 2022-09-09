@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -15,7 +16,10 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
+import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
+import com.richfit.mes.produce.enmus.PublicCodeEnum;
+import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.WordUtil;
@@ -25,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 
@@ -67,6 +72,16 @@ public class ProduceInspectionRecordService{
     private CodeRuleService codeRuleService;
     @Autowired
     private TrackHeadService trackHeadService;
+    @Resource
+    private TrackItemService trackItemService;
+    @Resource
+    private TrackAssignService trackAssignService;
+    @Resource
+    public PublicService publicService;
+    @Resource
+    private TrackCompleteCacheService trackCompleteCacheService;
+    @Autowired
+    private TrackCompleteService trackCompleteService;
 
     /**
      * 查询跟单工序探伤列表
@@ -81,7 +96,7 @@ public class ProduceInspectionRecordService{
      * @param isAudit
      * @return
      */
-    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
+    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String branchCode, String tenantId, Boolean isAudit,Integer isOperationComplete) {
         QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
         if (!StringUtils.isEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -103,17 +118,14 @@ public class ProduceInspectionRecordService{
         if (!StringUtils.isEmpty(productName)) {
             queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
         }
-        if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
-
+        if (!StringUtils.isEmpty(isOperationComplete)) {
+            queryWrapper.eq("is_operation_complete",isOperationComplete);
         }
         if (!StringUtils.isEmpty(startTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
-
         }
         if (!StringUtils.isEmpty(endTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
-
         }
         queryWrapper.orderByDesc("modify_time");
         IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
@@ -142,8 +154,6 @@ public class ProduceInspectionRecordService{
         String tempType = produceInspectionRecordDto.getTempType();
         //要保存的记录实体
         JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
-        //缺陷记录
-        List<ProduceDefectsInfo> produceDefectsInfos = produceInspectionRecordDto.getProduceDefectsInfos();
         //探头信息
         List<ProbeInfo> probeInfoList = produceInspectionRecordDto.getProbeInfoList();
         //工序ids
@@ -195,12 +205,6 @@ public class ProduceInspectionRecordService{
             produceItemInspectInfos.add(produceItemInspectInfo);
         }
         produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
-
-        //保存缺陷记录
-        for (ProduceDefectsInfo produceDefectsInfo : produceDefectsInfos) {
-            produceDefectsInfo.setRecordId(recordId);
-        }
-        produceDefectsInfoService.saveBatch(produceDefectsInfos);
         return  null;
     }
 
@@ -319,7 +323,7 @@ public class ProduceInspectionRecordService{
 
     //mt模板填充
     private void createMtDataMap(TrackHead trackHead, Map<String, Object> recordInfo, TrackItemInspection trackItemInspection, Map<String, Object> dataMap) throws IOException {
-        //mt探伤记录
+        /*//mt探伤记录
         ProduceInspectionRecordMt produceInspectionRecordMt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordMt.class);
         //报告号
         dataMap.put("reportNo",produceInspectionRecordMt.getReportNo());
@@ -348,7 +352,7 @@ public class ProduceInspectionRecordService{
         //审核人
         dataMap.put("auditBy",trackItemInspection.getAuditBy());
         //图片base64编码
-        dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());
+        dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());*/
     }
 
     //rt模板填充
@@ -391,8 +395,8 @@ public class ProduceInspectionRecordService{
     private void createUtDataMap(TrackHead trackHead, Map<String, Object> recordInfo, TrackItemInspection trackItemInspection, Map<String, Object> dataMap) throws IOException {
         //ut探伤记录
         ProduceInspectionRecordUt produceInspectionRecordUt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordUt.class);
-        //报告号
-        //dataMap.put("reportNo",produceInspectionRecordUt.getReportNo());
+        //记录号
+        dataMap.put("recordNo",produceInspectionRecordUt.getRecordNo());
         //图号
         dataMap.put("drawingNo",trackHead.getDrawingNo());
         //零件名称
@@ -431,16 +435,12 @@ public class ProduceInspectionRecordService{
         dataMap.put("checkBy",trackItemInspection.getCheckBy());
         //审核人
         dataMap.put("auditBy",trackItemInspection.getAuditBy());
+        //检验结果
+        dataMap.put("inspectionResults",produceInspectionRecordUt.getInspectionResults());
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())){
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordUt.getDiagramAttachmentId()).getData());
         }
-        //缺陷列表
-        List<ProduceDefectsInfo> produceDefectsInfoList = produceDefectsInfoService.list(new QueryWrapper<ProduceDefectsInfo>()
-                .eq("record_id", produceInspectionRecordUt.getId())
-                .orderByAsc("serial_num"));
-        //缺陷记录
-        dataMap.put("defectsInfoList",produceDefectsInfoList);
         //探头列表
         List<ProbeInfo> probeInfoList = probeInfoService.list(new QueryWrapper<ProbeInfo>()
                 .eq("record_id", produceInspectionRecordUt.getId())
@@ -473,6 +473,75 @@ public class ProduceInspectionRecordService{
             throw new GlobalException(ResultCode.ITEM_NOT_FOUND.getMessage(), ResultCode.FAILED);
         }
         return returnMap;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
+        for (CompleteDto completeDto : completeDtoList) {
+            if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
+                return CommonResult.failed("质检人员不能为空");
+            }
+            if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
+                return CommonResult.failed("报工人员不能为空");
+            }
+            if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getTiId())) {
+                return CommonResult.failed("工序Id不能为空");
+            }
+            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            //检验人
+            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+            //根据工序Id删除缓存表数据
+            QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("ti_id", completeDto.getTiId());
+            double numDouble = 0.00;
+            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
+                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
+                    return CommonResult.failed("报工工时不能大于额定工时");
+                }
+                trackComplete.setId(null);
+                trackComplete.setAssignId(completeDto.getAssignId());
+                trackComplete.setTiId(completeDto.getTiId());
+                trackComplete.setTrackId(completeDto.getTrackId());
+                trackComplete.setTrackNo(completeDto.getTrackNo());
+                trackComplete.setProdNo(completeDto.getProdNo());
+                trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackComplete.setCompleteTime(new Date());
+                trackComplete.setDetectionResult("-");
+                trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                numDouble += trackComplete.getCompletedQty();
+            }
+            Assign assign = trackAssignService.getById(completeDto.getAssignId());
+            //跟新工序完成数量
+            trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
+            double intervalNumber = assign.getQty() + 0.0;
+            if (numDouble > assign.getQty()) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
+            }
+            if (numDouble < intervalNumber - 0.1) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
+            }
+            if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
+                //调用工序激活方法
+                Map<String, String> map = new HashMap<>(3);
+                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                //更改状态 标识当前工序完成
+                trackItem.setIsDoing(2);
+                trackItem.setIsOperationComplete(1);
+                trackItemService.updateById(trackItem);
+                TrackItemInspection trackItemInspection = new TrackItemInspection();
+                BeanUtil.copyProperties(trackItem,trackItemInspection);
+                //修改探伤工序表
+                trackItemInspectionService.updateById(trackItemInspection);
+                trackCompleteCacheService.remove(queryWrapper);
+            }
+            log.error(completeDto.getTrackCompleteList().toString());
+            trackCompleteService.saveBatch(completeDto.getTrackCompleteList());
+        }
+        return CommonResult.success(true);
     }
 
 

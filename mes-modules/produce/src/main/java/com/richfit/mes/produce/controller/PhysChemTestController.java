@@ -31,6 +31,7 @@ public class PhysChemTestController extends BaseController {
     @Autowired
     private PhyChemTestService phyChemTestService;
 
+    @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> saveOrUpdate(@RequestBody PhysChemOrder physChemOrder){
         return CommonResult.success(physChemOrderService.saveOrUpdate(physChemOrder));
@@ -44,7 +45,7 @@ public class PhysChemTestController extends BaseController {
      * @param limit
      * @return
      */
-    @ApiOperation(value = "分页查询待探伤工序", notes = "分页查询待探伤工序")
+    @ApiOperation(value = "分页查询检测工序", notes = "分页查询检测工序")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -54,10 +55,12 @@ public class PhysChemTestController extends BaseController {
             @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "isAudit", value = "审核状态（false、待审核 true、已审核）", required = true, paramType = "query", dataType = "boolean"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
-        return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,branchCode,tenantId,isAudit));
+    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo,String drawingNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
+        return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,drawingNo,branchCode,tenantId,isAudit));
     }
+
 }

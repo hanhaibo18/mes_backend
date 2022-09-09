@@ -1,13 +1,10 @@
 package com.richfit.mes.common.model.produce;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.Date;
-import java.util.List;
 
 @Data
 @TableName(value = "produce_inspection_records_mt")
@@ -15,87 +12,83 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private static final long serialVersionUID = -1472432735506772177L;
     @ApiModelProperty(value = "记录编号")
     private String recordNo;
-    @ApiModelProperty(value = "委托单号")
-    private String orderNo;
-    @ApiModelProperty(value = "报告编号")
-    private String reportNo;
-    @ApiModelProperty(value = "委托单位")
-    private String entrustDepartment;
-    @ApiModelProperty(value = "工程名称")
-    private String projectName;
-    @ApiModelProperty(value = "样品名称")
-    private String sampleName;
-    @ApiModelProperty(value = "样品图号")
-    private String sampleDrawNo;
-    @ApiModelProperty(value = "出厂编号")
-    private String factoryNo;
-    @ApiModelProperty(value = "样品编号")
-    private String sampleNo;
-
-   /* @ApiModelProperty(value = "仪器型号")
-    private String instrumentModel;
-    @ApiModelProperty(value = "仪器编号")
-    private String instrumentCode;
-    @ApiModelProperty(value = "零件顺序号")
-    private String partOrderNo;
-    @ApiModelProperty(value = "下次检定时间")
-    private String nextCheckDate;*/
-
     @ApiModelProperty(value = "检测时机")
     private String testOpportunity;
-
-
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
-    @ApiModelProperty(value = "种类 0、铸 1、锻 2、 焊")
+    @ApiModelProperty(value = "检测地点")
+    private String testSite;
+    @ApiModelProperty(value = "种类")
     private String type;
     @ApiModelProperty(value = "检件规格")
     private String checkSpecification;
-    @ApiModelProperty(value = "检件材质")
-    private String checkMaterial;
-    @ApiModelProperty(value = "样品状态")
-    private String sampleStatus;
-    @ApiModelProperty(value = "环境条件")
-    private String environmentalConditions;
-    @ApiModelProperty(value = "收样日期")
-    private Date receivedDate;
-    @ApiModelProperty(value = "检测地点")
-    private String testSite;
+    @ApiModelProperty(value = "温度")
+    private String tempera;
+    @ApiModelProperty(value = "室温(0,1)")
+    private String isRoomTemp;
+    @ApiModelProperty(value = "粗糙度")
+    private String roughness;
+    @ApiModelProperty(value = "仪器名称")
+    private String instrumentName;
+    @ApiModelProperty(value = "仪器型号")
+    private String instrumentModel;
+    @ApiModelProperty(value = "灵敏度试片")
+    private String sensitivityTestPiece;
     @ApiModelProperty(value = "检测比例")
     private String detectionRatio;
-    @ApiModelProperty(value = "照度")
-    private String intensityOfIllumination;
+    @ApiModelProperty(value = "检测方法")
+    private String detectionMethod;
+    @ApiModelProperty(value = "磁化方法")
+    private String magneticMethod;
+    @ApiModelProperty(value = "磁化电流")
+    private String magnetizingCurrent;
+    @ApiModelProperty(value = "电流类型")
+    private String currentType;
+    @ApiModelProperty(value = "磁化方向")
+    private String magneticDirection;
     @ApiModelProperty(value = "提升力")
     private String liftPower;
-    @ApiModelProperty(value = "磁化电流(交流、直流)")
-    private String magnetizingCurrent;
-    @ApiModelProperty(value = "磁化规范 0.磁轭1.线圈2.直接通电3.中心导体4.支杆5.其它6.连续法7.剩磁法8.非荧光9.荧光10.纵向11.横向12.湿粉13.退磁")
-    private String magnetizationSpecification;
+    @ApiModelProperty(value = "磁轭间距")
+    private String yokeSpacing;
     @ApiModelProperty(value = "磁粉种类")
     private String typeMagneticPowder;
+    @ApiModelProperty(value = "磁粉载体")
+    private String magneticCarrier;
+    @ApiModelProperty(value = "荧光/非荧光")
+    private String fluorescent;
     @ApiModelProperty(value = "磁悬液浓度")
     private String concentrationMagneticSuspension;
     @ApiModelProperty(value = "磁粉施加方法")
     private String magneticPowderMethod;
+    @ApiModelProperty(value = "磁化时间")
+    private String magneticTime;
     @ApiModelProperty(value = "试验规范")
     private String testSpecification;
+    @ApiModelProperty(value = "退磁")
+    private String isMagnetic;
+    @ApiModelProperty(value = "剩磁")
+    private String remaMagnetic;
+    @ApiModelProperty(value = "光照度")
+    private String intensityOfIllumination;
+    @ApiModelProperty(value = "黑光辐照度")
+    private String irradiance;
     @ApiModelProperty(value = "验收标准")
     private String acceptanceCriteria;
-    @ApiModelProperty(value = "上次检定时间")
-    private String lastCheckDate;
-    @ApiModelProperty(value = "灵敏度试片")
-    private String sensitivityTestPiece;
     @ApiModelProperty(value = "检测示意图")
     private String diagramAttachmentId;
-    @ApiModelProperty(value = "检测员及技术资格")
-    private String inspectorLevel;
-    @ApiModelProperty(value = "检测日期")
-    private String inspectionDate;
-    @ApiModelProperty(value = "核验员")
+    @ApiModelProperty(value = "检测示意图文字描述")
+    private String pictureRemark;
+    @ApiModelProperty(value = "检验员")
     private String checkBy;
+    @ApiModelProperty(value = "审核人")
+    private String auditBy;
+    @ApiModelProperty(value = "业主")
+    private String owner;
+    @ApiModelProperty(value = "见证")
+    private String witnesses;
+    @ApiModelProperty(value = "检测结果")
+    private String inspectionResults;
     @ApiModelProperty(value = "模板类型")
     private String tempType = "mt";
-    @TableField(exist = false,value = "缺陷记录")
-    private List<ProduceDefectsInfo> defectsInfoList;
 
 }

@@ -36,12 +36,12 @@ public class ProduceInspectionRecordRtServiceImpl extends ServiceImpl<ProduceIns
         List<ProduceInspectionRecordRt> produceInspectionRecordPts = this.list(new QueryWrapper<ProduceInspectionRecordRt>().in("id", ids));
         //探伤记录map
         Map<String, ProduceInspectionRecordRt> recordMap = produceInspectionRecordPts.stream().collect(Collectors.toMap(ProduceInspectionRecordRt::getId, Function.identity()));
-        //缺陷记录 key->探伤记录id
+        /*//缺陷记录 key->探伤记录id
         Map<String, List<ProduceDefectsInfo>> defectsInfoMap = produceDefectsInfoService.getMapByRecordIds(ids);
 
         recordMap.forEach((key,value)->{
             value.setDefectsInfoList(defectsInfoMap.get(key));
-        });
+        });*/
         return new ArrayList<>(recordMap.values());
     }
 }

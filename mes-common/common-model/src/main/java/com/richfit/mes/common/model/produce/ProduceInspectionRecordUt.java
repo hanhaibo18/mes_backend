@@ -22,7 +22,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "焊接方法")
     private String weldingMethod;
     @ApiModelProperty(value = "检测时机")
-    private String testingTime;
+    private String testOpportunity;
     @ApiModelProperty(value = "坡口形式")
     private String grooveForm;
     @ApiModelProperty(value = "温度")
@@ -71,9 +71,11 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     private String witnesses;
     @ApiModelProperty(value = "模板类型")
     private String tempType = "ut";
-    @TableField(exist = false,value = "缺陷记录")
-    private List<ProduceDefectsInfo> defectsInfoList;
+   /* @TableField(exist = false,value = "缺陷记录")
+    private List<ProduceDefectsInfo> defectsInfoList;*/
     @TableField(exist = false,value = "探头集合")
     private List<ProbeInfo> probeInfoList;
+    @ApiModelProperty(value = "检验结果")
+    private String inspectionResults;
 
 }
