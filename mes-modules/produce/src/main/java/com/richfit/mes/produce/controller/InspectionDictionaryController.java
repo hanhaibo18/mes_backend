@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,21 +38,21 @@ public class InspectionDictionaryController {
      */
     @ApiOperation(value = "分页查询全部下拉列表头", notes = "分页查询全部下拉列表头")
     @GetMapping("/getHeadInfo")
-    public CommonResult<IPage> queryByCondition(String dicCode, String dicValue,String tempType, int page, int limit) throws GlobalException {
+    public CommonResult<IPage> queryByCondition(String dicCode, String dicValue, String tempType, int page, int limit) throws GlobalException {
         QueryWrapper<InspectionDictionary> queryWrapper = new QueryWrapper<>();
-        if(!StringUtils.isNullOrEmpty(dicCode)){
-            queryWrapper.eq("dic_code",dicCode);
+        if (!StringUtils.isNullOrEmpty(dicCode)) {
+            queryWrapper.eq("dic_code", dicCode);
         }
-        if(!StringUtils.isNullOrEmpty(dicValue)){
-            queryWrapper.eq("dic_value",dicValue);
+        if (!StringUtils.isNullOrEmpty(dicValue)) {
+            queryWrapper.eq("dic_value", dicValue);
         }
-        if(!StringUtils.isNullOrEmpty(tempType)){
-            queryWrapper.eq("temp_type",tempType);
+        if (!StringUtils.isNullOrEmpty(tempType)) {
+            queryWrapper.eq("temp_type", tempType);
         }
         //父节点为空 即为下拉列表的头信息
         queryWrapper.isNull("parent_id")
-                    //升序排列
-                    .orderByAsc("serial_num");
+                //升序排列
+                .orderByAsc("serial_num");
 
         return CommonResult.success(inspectionDictionaryService.page(new Page<>(page, limit), queryWrapper));
     }
@@ -64,7 +63,7 @@ public class InspectionDictionaryController {
      */
     @ApiOperation(value = "新增或修改操作信息", notes = "新增或修改操作信息")
     @PostMapping("/addOrUpdate")
-    public CommonResult<Boolean> addOrUpdate(@RequestBody InspectionDictionary inspectionDictionary) throws GlobalException{
+    public CommonResult<Boolean> addOrUpdate(@RequestBody InspectionDictionary inspectionDictionary) throws GlobalException {
         return CommonResult.success(inspectionDictionaryService.saveOrUpdate(inspectionDictionary));
     }
 
@@ -73,14 +72,13 @@ public class InspectionDictionaryController {
      */
     @ApiOperation(value = "删除操作信息", notes = "根据id删除操作信息")
     @DeleteMapping("/delete/{id}")
-    public CommonResult<Boolean> delById(@PathVariable String id) throws GlobalException{
+    public CommonResult<Boolean> delById(@PathVariable String id) throws GlobalException {
         //父节点需要删除关联的子节点数据
         QueryWrapper<InspectionDictionary> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id",id)
-                .or(wrapper->wrapper.eq("parent_id",id));
+        queryWrapper.eq("id", id)
+                .or(wrapper -> wrapper.eq("parent_id", id));
         return CommonResult.success(inspectionDictionaryService.remove(queryWrapper));
     }
-
 
 
     /**
@@ -90,7 +88,7 @@ public class InspectionDictionaryController {
     @GetMapping("/getListInfoById/{id}")
     public CommonResult<List> getListInfoById(@PathVariable String id) throws GlobalException {
         QueryWrapper<InspectionDictionary> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("parent_id",id)
+        queryWrapper.eq("parent_id", id)
                 .orderByAsc("serial_num");
         inspectionDictionaryService.list(queryWrapper);
         return CommonResult.success(inspectionDictionaryService.list(queryWrapper));
@@ -103,7 +101,7 @@ public class InspectionDictionaryController {
     @GetMapping("/getListInfoByTempType/{tempType}")
     public CommonResult<Map> getListInfoByTempType(@PathVariable String tempType) throws GlobalException {
         QueryWrapper<InspectionDictionary> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("temp_type",tempType)
+        queryWrapper.eq("temp_type", tempType)
                 .orderByAsc("serial_num");
         List<InspectionDictionary> list = inspectionDictionaryService.list(queryWrapper);
 
@@ -116,25 +114,24 @@ public class InspectionDictionaryController {
 
         Map<String, Object> returnMap = new HashMap<>();
         //构造返回参数
-        headsMap.forEach((key,value)->{
-            if(!StringUtils.isNullOrEmpty(value.getDicCode())){
+        headsMap.forEach((key, value) -> {
+            if (!StringUtils.isNullOrEmpty(value.getDicCode())) {
                 List<Map> maps = new ArrayList<>();
-                if(!ObjectUtil.isEmpty(ObjectUtil.isEmpty(valuesMap.get(key)))){
+                if (valuesMap != null && valuesMap.get(key) != null) {
                     for (InspectionDictionary inspectionDictionary : valuesMap.get(key)) {
                         //将下拉列表构造为lable value形式 便于前端取值
                         Map<String, String> map = new HashMap<>();
-                        map.put("lable",inspectionDictionary.getDicCode());
-                        map.put("value",inspectionDictionary.getDicValue());
+                        map.put("lable", inspectionDictionary.getDicCode());
+                        map.put("value", inspectionDictionary.getDicValue());
                         maps.add(map);
                     }
                 }
-                returnMap.put(value.getDicCode(),maps);
+                returnMap.put(value.getDicCode(), maps);
             }
         });
 
         return CommonResult.success(returnMap);
     }
-
 
 
 }
