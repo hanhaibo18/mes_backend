@@ -45,7 +45,7 @@ public class PhyChemTestService{
      * @param isCheckOut
      * @return
      */
-    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String branchCode, String tenantId, Boolean isCheckOut) {
+    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String drawingNo, String branchCode, String tenantId, Boolean isCheckOut) {
         QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
         if (!StringUtils.isEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -67,9 +67,8 @@ public class PhyChemTestService{
         if (!StringUtils.isEmpty(productName)) {
             queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
         }
-        if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
-
+        if (!StringUtils.isEmpty(drawingNo)) {
+            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + drawingNo + '%' + "')");
         }
         if (!StringUtils.isEmpty(startTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");

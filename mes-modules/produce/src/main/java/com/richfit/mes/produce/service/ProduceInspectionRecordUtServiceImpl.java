@@ -42,12 +42,11 @@ public class ProduceInspectionRecordUtServiceImpl extends ServiceImpl<ProduceIns
         //探伤记录map
         Map<String, ProduceInspectionRecordUt> recordMap = produceInspectionRecordUts.stream().collect(Collectors.toMap(ProduceInspectionRecordUt::getId, Function.identity()));
         //缺陷记录 key->探伤记录id
-        Map<String, List<ProduceDefectsInfo>> defectsInfoMap = produceDefectsInfoService.getMapByRecordIds(ids);
+        //Map<String, List<ProduceDefectsInfo>> defectsInfoMap = produceDefectsInfoService.getMapByRecordIds(ids);
         //探头信息 key->探伤记录id
         Map<String, List<ProbeInfo>> probeMap = probeInfoService.getProbeByRecordIds(ids);
 
         recordMap.forEach((key,value)->{
-            value.setDefectsInfoList(defectsInfoMap.get(key));
             value.setProbeInfoList(probeMap.get(key));
         });
         return new ArrayList<>(recordMap.values());

@@ -95,7 +95,7 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
     private Date inspectionDate;
     @ApiModelProperty(value = "模板类型")
     private String tempType = "pt";
-    @TableField(exist = false,value = "缺陷记录")
-    private List<ProduceDefectsInfo> defectsInfoList;
+    /*@TableField(exist = false,value = "缺陷记录")
+    private List<ProduceDefectsInfo> defectsInfoList;*/
 
 }

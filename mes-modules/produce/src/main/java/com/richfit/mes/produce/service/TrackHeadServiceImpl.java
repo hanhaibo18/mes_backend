@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -387,16 +388,22 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
 
-            //跟单创建完成 在执行（侯欣雨、自动派工）
-            for (TrackItem trackItem : trackItems) {
-                if (trackItem.getIsAutoSchedule() != null && trackItem.getIsAutoSchedule().compareTo(1) == 0) {
+            //跟单状态为0的未派工，用于排除跟单打印等不进行自动派工
+            if ("0".equals(trackHead.getStatus())) {
+                //通过跟单ID查询所有第一道工序需要派工的
+                QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
+                queryWrapperItem.eq("track_head_id", trackHead.getId());
+                queryWrapperItem.eq("is_auto_schedule", 1);
+                queryWrapperItem.eq("sequence_order_by", 1);
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
+                //循环工序
+                for (TrackItem trackItem : trackItemList) {
                     Map<String, String> map = new HashMap<>(4);
                     map.put("trackItemId", trackItem.getId());
                     map.put("trackHeadId", trackHead.getId());
                     map.put("trackNo", trackHead.getTrackNo());
                     map.put("classes", trackHead.getClasses());
                     publicService.automaticProcess(map);
-                    break;
                 }
             }
 
@@ -503,7 +510,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadMapper.updateById(trackHead);
 
             //工序批量修改（单件跟单多生产线、普通跟单判断）
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) == 0) {
+            if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) > 0) {
                 //多生产线工序修改
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
@@ -541,6 +548,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                             item.setId(UUID.randomUUID().toString().replace("-", ""));
                             item.setAssignableQty(trackHead.getNumber());
                             item.setNumber(trackHead.getNumber());
+
+                        }
+                        if (StrUtil.isBlank(item.getFlowId())) {
+                            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+                            queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
+                            List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
+                            item.setFlowId(trackFlows.get(0).getId());
                         }
                         item.setTrackHeadId(trackHead.getId());
                         item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
@@ -1143,25 +1157,44 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public void trackHeadData(String id) {
-        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-        queryWrapperTrackItem.eq("track_head_id", id);
-        List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
-        boolean is_schedule = false;
-        for (TrackItem trackItem : trackItemList) {
-            if (trackItem.getIsSchedule() == 1) {
-                is_schedule = true;
+        TrackHead trackHead = this.getById(id);
+        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+        queryWrapperTrackFlow.eq("track_head_id", id);
+        List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapperTrackFlow);
+        boolean isNotSchedule = true;
+        boolean isSchedule = true;
+        boolean isFinish = true;
+        for (TrackFlow trackFlow : trackFlowList) {
+            if (!"0".equals(trackFlow.getStatus())) {
+                isNotSchedule = false;
+            }
+            if (!"1".equals(trackFlow.getStatus())) {
+                isSchedule = false;
+            }
+            if (!"2".equals(trackFlow.getStatus())) {
+                isFinish = false;
             }
         }
-        if (!is_schedule) {
-            UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
-            updateWrapperTrackFlow.eq("track_head_id", id);
-            updateWrapperTrackFlow.set("status", "0");
-            trackHeadFlowService.update(updateWrapperTrackFlow);
-
+        if (isNotSchedule) {
             UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
             updateWrapperTrackHead.eq("id", id);
             updateWrapperTrackHead.set("status", "0");
             this.update(updateWrapperTrackHead);
         }
+        if (isSchedule) {
+            UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
+            updateWrapperTrackHead.eq("id", id);
+            updateWrapperTrackHead.set("status", "1");
+            this.update(updateWrapperTrackHead);
+        }
+        if (isFinish) {
+            UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
+            updateWrapperTrackHead.eq("id", id);
+            updateWrapperTrackHead.set("status", "2");
+            this.update(updateWrapperTrackHead);
+        }
+        //计划数据更新
+        planService.planData(trackHead.getWorkPlanId());
+        orderService.orderData(trackHead.getProductionOrderId());
     }
 }

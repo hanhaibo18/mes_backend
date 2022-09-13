@@ -31,6 +31,9 @@ public class RequestNoteDetail extends BaseEntity<RequestNoteDetail> {
     @ApiModelProperty(value = "物料名称")
     private String materialName;
 
+    @ApiModelProperty(value = "申请单号")
+    private String requestNoteNumber;
+
     /**
      * 图号
      */

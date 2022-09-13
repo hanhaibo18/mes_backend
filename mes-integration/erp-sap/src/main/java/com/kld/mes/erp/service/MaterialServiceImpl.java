@@ -81,7 +81,8 @@ public class MaterialServiceImpl implements MaterialService {
                 p.setDrawingNo(o.getTMARA().getItem().get(i).getZEINR());
                 p.setMaterialNo(trimStringWith(o.getTMARA().getItem().get(i).getMATNR(), zero));
                 p.setBranchCode(o.getTMARA().getItem().get(i).getWERKS());
-                p.setUnit(o.getTMARA().getItem().get(i).getMEINS());
+                //单位取错了
+                p.setUnit(o.getTMARA().getItem().get(i).getZYL1());
                 products.add(p);
             }
             return products;

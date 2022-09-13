@@ -1,6 +1,7 @@
 package com.kld.mes.wms.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,7 +11,6 @@ import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -104,7 +104,7 @@ public class ProductToWmsService {
         params.put("token", mesUrlToken);
         //调用接口
         String number = HttpUtil.get(mesUrlQueryMaterialCountApi, params);
-        if (StringUtil.isNullOrEmpty(number)) {
+        if (StrUtil.isBlank(number)) {
             return 0;
         }
         String replaceAll = number.replaceAll("\\ufeff", "");
@@ -113,12 +113,10 @@ public class ProductToWmsService {
     }
 
     //配料申请单上传接口
-    public Boolean anApplicationForm(IngredientApplicationDto ingredientApplicationDto) throws Exception {
-
+    public ApplicationResult anApplicationForm(IngredientApplicationDto ingredientApplicationDto) throws Exception {
         if (StringUtils.isEmpty(mesScddUploadApi)) {
             init();
         }
-
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
         //加密后的16进制字符串
@@ -129,8 +127,8 @@ public class ProductToWmsService {
         //调用上传接口
         String s = HttpUtil.get(mesScddUploadApi, params, 120000);
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        //上传成功返回Y
-        return "Y".equals(applicationResult.getRetStatus());
+        //返回上传信息
+        return applicationResult;
     }
 
 

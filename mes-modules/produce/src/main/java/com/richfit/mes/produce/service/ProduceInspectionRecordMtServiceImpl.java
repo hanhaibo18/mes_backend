@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProduceInspectionRecordMtServiceImpl extends ServiceImpl<ProduceInspectionRecordMtMapper, ProduceInspectionRecordMt> implements ProduceInspectionRecordMtService {
 
-    @Autowired
-    private ProduceDefectsInfoService produceDefectsInfoService;
 
     /**
      * 根据ids获取记录
@@ -33,12 +31,12 @@ public class ProduceInspectionRecordMtServiceImpl extends ServiceImpl<ProduceIns
         List<ProduceInspectionRecordMt> produceInspectionRecordMts = this.list(new QueryWrapper<ProduceInspectionRecordMt>().in("id", ids));
         //探伤记录map
         Map<String, ProduceInspectionRecordMt> recordMap = produceInspectionRecordMts.stream().collect(Collectors.toMap(ProduceInspectionRecordMt::getId, Function.identity()));
-        //缺陷记录 key->探伤记录id
+        /*//缺陷记录 key->探伤记录id
         Map<String, List<ProduceDefectsInfo>> defectsInfoMap = produceDefectsInfoService.getMapByRecordIds(ids);
 
         recordMap.forEach((key,value)->{
             value.setDefectsInfoList(defectsInfoMap.get(key));
-        });
+        });*/
         return new ArrayList<>(recordMap.values());
     }
 }

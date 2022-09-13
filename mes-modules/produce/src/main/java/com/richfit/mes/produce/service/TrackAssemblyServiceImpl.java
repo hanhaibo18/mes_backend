@@ -8,13 +8,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
-import com.richfit.mes.produce.entity.ApplicationResult;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
@@ -224,64 +225,71 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     @Override
     public ApplicationResult application(AdditionalMaterialDto additionalMaterialDto) {
-        TrackHead trackHead = trackHeadService.getById(additionalMaterialDto.getTrackHeadId());
-        TrackItem trackItem = trackItemService.getById(additionalMaterialDto.getTiId());
-        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_id", trackHead.getId());
-        queryWrapper.eq("ti_id", trackItem.getId());
-        List<Assign> list = trackAssignService.list(queryWrapper);
-        IngredientApplicationDto ingredient = new IngredientApplicationDto();
-        //申请单号
-        ingredient.setSqd(trackItem.getId() + "@0");
-        ingredient.setGc(additionalMaterialDto.getBranchCode());
-        //车间
-        ingredient.setCj(additionalMaterialDto.getBranchCode());
-        //车间名称
-        //工位 == 车间?
-        ingredient.setGw(additionalMaterialDto.getBranchCode());
-        //工位名称
-        //工序
-        ingredient.setGx(trackItem.getId());
-        //工序名称
-        ingredient.setGxName(trackItem.getOptName());
-        //生产订单编号
-        ingredient.setScdd(trackHead.getProductionOrder());
-        //跟单Id
-        ingredient.setGd(trackHead.getId());
-        //产品编号
-        ingredient.setCp(trackHead.getProductNo());
-        //产品名称
-        ingredient.setCpName(trackHead.getProductName());
-        //优先级
-        ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
-        //派工时间
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmSS");
-        ingredient.setPgsj(format.format(list.get(0).getAssignTime()));
-        //追加物料
-        List<LineList> lineLists = new ArrayList<LineList>();
-        LineList lineList = new LineList();
-        //
-        lineList.setMaterialDesc(additionalMaterialDto.getMaterialName());
-        lineList.setMaterialNum(additionalMaterialDto.getMaterialNo());
-        lineList.setSwFlag(additionalMaterialDto.getIsEdgeStore());
-        lineList.setQuantity(additionalMaterialDto.getCount());
-        //单位 从哪获取
-        lineLists.add(lineList);
-        ingredient.setLineList(lineLists);
-        //保存信息到本地
-        saveNodeAndDetail(additionalMaterialDto, ingredient);
-
-        ApplicationResult applicationResult = new ApplicationResult();
         try {
-            applicationResult.setRetMsg(anApplicationForm(ingredient).toString());
+            TrackHead trackHead = trackHeadService.getById(additionalMaterialDto.getTrackHeadId());
+            trackHead.setProductionOrder("ceshi");
+            if (StrUtil.isBlank(trackHead.getProductionOrder())) {
+                throw new GlobalException("无生产订单编号", ResultCode.FAILED);
+            }
+            TrackItem trackItem = trackItemService.getById(additionalMaterialDto.getTiId());
+            QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("ti_id", trackItem.getId());
+            //查询派工工位信息
+            Assign assign = trackAssignService.getOne(queryWrapper);
+            IngredientApplicationDto ingredient = new IngredientApplicationDto();
+            //申请单号
+            ingredient.setSqd(trackItem.getId() + "@0");
+            //车间编码
+            ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
+            //车间code
+            ingredient.setCj(additionalMaterialDto.getBranchCode());
+            //车间名称
+            //工位
+            ingredient.setGw(assign.getSiteId());
+            //工位名称
+            ingredient.setGwName(assign.getSiteName());
+            //工序
+            ingredient.setGx(trackItem.getId());
+            //工序名称
+            ingredient.setGxName(trackItem.getOptName());
+            //生产订单编号
+            ingredient.setScdd(trackHead.getProductionOrder());
+            //跟单Id
+            ingredient.setGd(trackHead.getId());
+            //产品编号
+            ingredient.setCp(trackHead.getProductNo());
+            //产品名称
+            ingredient.setCpName(trackHead.getProductName());
+            //优先级
+            ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
+            //派工时间
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmSS");
+            ingredient.setPgsj(format.format(assign.getAssignTime()));
+            //追加物料
+            List<LineList> lineLists = new ArrayList<LineList>();
+            LineList lineList = new LineList();
+            lineList.setMaterialDesc(additionalMaterialDto.getMaterialName());
+            lineList.setMaterialNum(additionalMaterialDto.getMaterialNo());
+            lineList.setSwFlag(additionalMaterialDto.getIsEdgeStore());
+            lineList.setQuantity(additionalMaterialDto.getCount());
+            //单位 从哪获取
+            lineLists.add(lineList);
+            ingredient.setLineList(lineLists);
+            //保存信息到本地
+            saveNodeAndDetail(additionalMaterialDto, ingredient);
+            ApplicationResult applicationForm = new ApplicationResult();
+            try {
+                applicationForm = anApplicationForm(ingredient);
+            } catch (Exception e) {
+                throw new GlobalException("申请单发送失败!", ResultCode.FAILED);
+            }
+            if ("N".equals(applicationForm.getRetCode())) {
+                throw new GlobalException(applicationForm.getRetMsg(), ResultCode.FAILED);
+            }
+            return applicationForm;
         } catch (Exception e) {
-            ApplicationResult result = new ApplicationResult();
-            result.setRetStatus("500");
-            result.setRetMsg(e.getMessage());
-            e.printStackTrace();
-            return result;
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
-        return applicationResult;
     }
 
     @Override
@@ -355,7 +363,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         return wmsServiceClient.queryMaterialCount(materialNo).getData();
     }
 
-    private Boolean anApplicationForm(IngredientApplicationDto ingredientApplicationDto) {
+    private ApplicationResult anApplicationForm(IngredientApplicationDto ingredientApplicationDto) {
         return wmsServiceClient.anApplicationForm(ingredientApplicationDto).getData();
     }
 
@@ -389,15 +397,17 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         requestNote.setTrackItemId(ingredient.getGx());
         //申请单号
         requestNote.setRequestNoteNumber(ingredient.getSqd());
+        //保存申请单
+        requestNoteService.save(requestNote);
         //物料信息
         List<LineList> lineList = ingredient.getLineList();
-
         for (LineList line : lineList) {
             RequestNoteDetail requestNoteDetail = new RequestNoteDetail();
             requestNoteDetail.setBranchCode(ingredient.getCj());
             requestNoteDetail.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            //申请单号
-            requestNoteDetail.setNoteId(ingredient.getSqd());
+            //申请单Id
+            requestNoteDetail.setNoteId(requestNote.getId());
+            requestNoteDetail.setRequestNoteNumber(ingredient.getSqd());
             //图号
             requestNoteDetail.setDrawingNo(additionalMaterialDto.getDrawingNo());
             //物料编码
@@ -409,9 +419,6 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             requestNoteDetail.setReasonExplain(additionalMaterialDto.getExplain());
             requestNoteDetails.add(requestNoteDetail);
         }
-
-        //保存申请单
-        requestNoteService.save(requestNote);
         //保存物料信息
         requestNoteDetailService.saveBatch(requestNoteDetails);
 

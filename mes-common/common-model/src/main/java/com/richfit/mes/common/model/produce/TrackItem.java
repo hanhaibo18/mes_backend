@@ -301,7 +301,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private Date startTime;
 
-    @TableField(exist = false)
+    @ApiModelProperty(value = "图号", dataType = "String")
     private String drawingNo;
     @TableField(exist = false)
     private String trackType;
@@ -382,7 +382,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "探伤审核人")
     private String auditBy;
-
 
 
 }

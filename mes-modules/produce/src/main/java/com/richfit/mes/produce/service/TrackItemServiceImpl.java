@@ -39,6 +39,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     private TrackHeadService trackHeadService;
 
     @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
+
+    @Autowired
     private TrackAssignService trackAssignService;
 
     @Autowired
@@ -271,6 +274,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 }
                 //补充当工序顺序为1时进行跟单状态处理接口调用
                 if (item.getOptSequence() == 1) {
+                    UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
+                    updateWrapperTrackFlow.eq("id", item.getFlowId());
+                    updateWrapperTrackFlow.set("status", "0");
+                    trackHeadFlowService.update(updateWrapperTrackFlow);
                     trackHeadService.trackHeadData(item.getTrackHeadId());
                 }
             }
@@ -302,27 +309,28 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
         } else if (items.size() > 0) {
             TrackItem item = items.get(0);
-            // 若同一个跟单下的同一个步序中的所有产品都已完成,更新跟单工艺步序至下一步
-            QueryWrapper<TrackItem> allWrapper = new QueryWrapper<>();
-            allWrapper.eq("flow_id", flowId);
-            List<TrackItem> allItems = this.list(allWrapper);
-            List<TrackItem> updateItems = new ArrayList<>();
-            for (TrackItem trackItem : allItems) {
-                if (trackItem.getIsCurrent() == 1) {
-                    trackItem.setIsCurrent(0);
-                    trackItem.setIsTrackSequenceComplete(1);
-                    updateItems.add(trackItem);
-                } else if (item.getNextOptSequence() > 0) {
-                    //下道激活工序
-                    if (trackItem.getOriginalOptSequence().equals(item.getNextOptSequence())) {
-                        trackItem.setIsCurrent(1);
-                        updateItems.add(trackItem);
-                    }
-                }
-            }
-            this.updateBatchById(updateItems);
             if (item.getNextOptSequence() == 0) {
                 trackHeadService.trackHeadFinish(flowId);
+            } else {
+                // 若同一个跟单下的同一个步序中的所有产品都已完成,更新跟单工艺步序至下一步
+                QueryWrapper<TrackItem> allWrapper = new QueryWrapper<>();
+                allWrapper.eq("flow_id", flowId);
+                List<TrackItem> allItems = this.list(allWrapper);
+                List<TrackItem> updateItems = new ArrayList<>();
+                for (TrackItem trackItem : allItems) {
+                    if (trackItem.getIsCurrent() == 1) {
+                        trackItem.setIsCurrent(0);
+                        trackItem.setIsTrackSequenceComplete(1);
+                        updateItems.add(trackItem);
+                    } else if (item.getNextOptSequence() > 0) {
+                        //下道激活工序
+                        if (trackItem.getOriginalOptSequence().equals(item.getNextOptSequence())) {
+                            trackItem.setIsCurrent(1);
+                            updateItems.add(trackItem);
+                        }
+                    }
+                }
+                this.updateBatchById(updateItems);
             }
         } else {
             return "该跟单没有当前工序！";
@@ -421,8 +429,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             return "该跟单没有当前工序！";
         }
 
-        List<TrackItem> nextItems = trackItemMapper.selectNextItem(item.getId());
-        if (nextItems == null || nextItems.size() == 0) {
+        if (item.getOptSequence() == 1) {
             return "当前工序已是跟单第一步有效工序,不可回退！";
         }
 
@@ -437,7 +444,13 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         updateWrapper.eq("flow_id", flowId);
         updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
         this.update(updateWrapper);
-
+        //生产线状态改为在制
+        UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
+        updateWrapperTrackFlow.set("status", "1");
+        updateWrapperTrackFlow.eq("id", item.getFlowId());
+        trackHeadFlowService.update(updateWrapperTrackFlow);
+        //重置跟单状态
+        trackHeadService.trackHeadData(item.getTrackHeadId());
         return "success";
     }
 

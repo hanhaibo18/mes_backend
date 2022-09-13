@@ -3,6 +3,8 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.OperationAssign;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.Assign;
@@ -244,16 +246,16 @@ public class PublicServiceImpl implements PublicService {
         currentTrackItem.eq("is_current", 1);
         currentTrackItem.orderByDesc("sequence_order_by");
         List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
-        for (TrackItem trackItem : currentTrackItemList) {
-            trackItem.setIsCurrent(0);
-            trackItemService.updateById(trackItem);
-        }
-
         //判断还有没有下工序
         if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
             return true;
         }
+        for (TrackItem trackItem : currentTrackItemList) {
+            trackItem.setIsCurrent(0);
+            trackItemService.updateById(trackItem);
+        }
+
         boolean activation = false;
         if (!currentTrackItemList.isEmpty() && currentTrackItemList.get(0).getNextOptSequence() != 0) {
             //激活下工序
@@ -351,7 +353,7 @@ public class PublicServiceImpl implements PublicService {
         CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptId());
         CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptId());
         if (null == assignGet.getData()) {
-            return false;
+            throw new GlobalException("未查询到自动派工信息", ResultCode.FAILED);
         }
         Assign assign = new Assign();
         assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -365,7 +367,7 @@ public class PublicServiceImpl implements PublicService {
         assign.setDeviceId(assignGet.getData().getDeviceId());
         assign.setDeviceName(assignGet.getData().getDeviceName());
         assign.setPriority(assignGet.getData().getPriority());
-        assign.setQty(assignGet.getData().getQty());
+        assign.setQty(trackItem.getNumber());
         assign.setAvailQty(assignGet.getData().getQty());
         assign.setState(0);
         assign.setAssignBy(assignGet.getData().getCreateBy());

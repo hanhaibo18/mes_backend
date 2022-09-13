@@ -87,11 +87,14 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck) {
+    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck, String drawingNo) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
+            }
+            if (!StringUtils.isNullOrEmpty(drawingNo)) {
+                queryWrapper.eq("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);

@@ -387,4 +387,8 @@ public class TrackItemInspection extends BaseEntity<TrackItemInspection> {
     @ApiModelProperty(value = "委托单信息")
     private PhysChemOrder physChemOrder;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "项目名称")
+    private String projectName;
+
 }

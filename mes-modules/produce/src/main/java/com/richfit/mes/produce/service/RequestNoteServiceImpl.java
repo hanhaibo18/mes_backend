@@ -60,6 +60,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
                 requestNoteDetail.setDrawingNo(one.getDrawingNo());
                 requestNoteDetail.setUnit(one.getUnit());
                 requestNoteDetail.setNumber(i.getQuantity());
+                requestNoteDetail.setRequestNoteNumber(ingredient.getSqd());
                 requestNoteDetail.setBranchCode(SecurityUtils.getCurrentUser().getBelongOrgId());
                 requestNoteDetail.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 requestNoteDetail.setIsNeedPicking(one.getIsNeedPicking());

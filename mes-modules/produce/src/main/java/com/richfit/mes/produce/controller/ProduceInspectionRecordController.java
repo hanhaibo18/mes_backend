@@ -6,6 +6,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.TrackItemInspection;
+import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
 import freemarker.template.TemplateException;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -43,17 +45,19 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "tenantId", value = "组织机构id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tenantId", value = "组织机构id", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isAudit", value = "审核状态（false、待审核 true、已审核）", required = true, paramType = "query", dataType = "boolean"),
+            @ApiImplicitParam(name = "productNo", value = "产品编号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
+            @ApiImplicitParam(name = "isOperationComplete", value = "报工状态（0、未报工 1、已报工）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
-        return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,branchCode,tenantId,isAudit));
+    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit,Integer isOperationComplete) {
+        return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit,isOperationComplete));
     }
 
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
@@ -70,15 +74,30 @@ public class ProduceInspectionRecordController extends BaseController {
     }
 
     @ApiOperation(value = "审核提交探伤记录", notes = "审核提交探伤记录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "itemId", value = "工序id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "remark", value = "探伤备注", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "flawDetection", value = "探伤结果(0,1)", required = true, paramType = "query", dataType = "Integer"),
+            @ApiImplicitParam(name = "tempType", value = "探伤记录模板类型",required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "recordNo", value = "探伤记录编号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "checkBy", value = "探伤检验人", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "auditBy", value = "探伤审核人", paramType = "query", dataType = "string")
+    })
     @PostMapping("/auditSubmitRecord")
-    public CommonResult auditSubmitRecord(@RequestBody TrackItemInspection trackItemInspection){
-        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(trackItemInspection));
+    public CommonResult auditSubmitRecord(String itemId,String remark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
+        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(itemId,remark,flawDetection,tempType,recordNo,checkBy,auditBy));
     }
 
     @ApiOperation(value = "报告预览", notes = "报告预览")
     @GetMapping("/exoprtReport")
     public void exoprtReport(HttpServletResponse response, String itemId) throws IOException, TemplateException, GlobalException {
         produceInspectionRecordService.exoprtReport(response,itemId);
+    }
+
+    @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
+    @PostMapping("/saveComplete")
+    public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto) {
+        return produceInspectionRecordService.saveComplete(completeDto);
     }
 
 

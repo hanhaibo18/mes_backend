@@ -22,7 +22,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "焊接方法")
     private String weldingMethod;
     @ApiModelProperty(value = "检测时机")
-    private String testingTime;
+    private String testOpportunity;
     @ApiModelProperty(value = "坡口形式")
     private String grooveForm;
     @ApiModelProperty(value = "温度")
@@ -30,7 +30,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "室温(0,1)")
     private String isRoomTemp;
     @ApiModelProperty(value = "粗糙度")
-    private Date roughness;
+    private String roughness;
     @ApiModelProperty(value = "检测日期")
     private Date inspectionDate;
     @ApiModelProperty(value = "仪器型号")
@@ -61,17 +61,21 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     private String diagramAttachmentId;
     @ApiModelProperty(value = "检测示意图文字描述")
     private String pictureRemark;
-    @ApiModelProperty(value = "核验员")
+    @ApiModelProperty(value = "检验员")
     private String checkBy;
+    @ApiModelProperty(value = "审核人")
+    private String auditBy;
     @ApiModelProperty(value = "业主")
     private String owner;
     @ApiModelProperty(value = "见证")
     private String witnesses;
     @ApiModelProperty(value = "模板类型")
     private String tempType = "ut";
-    @TableField(exist = false,value = "缺陷记录")
-    private List<ProduceDefectsInfo> defectsInfoList;
+   /* @TableField(exist = false,value = "缺陷记录")
+    private List<ProduceDefectsInfo> defectsInfoList;*/
     @TableField(exist = false,value = "探头集合")
     private List<ProbeInfo> probeInfoList;
+    @ApiModelProperty(value = "检验结果")
+    private String inspectionResults;
 
 }

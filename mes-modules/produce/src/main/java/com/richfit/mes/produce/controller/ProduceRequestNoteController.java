@@ -69,10 +69,7 @@ public class ProduceRequestNoteController extends BaseController {
     @ApiOperation(value = "查询申请单明细信息", notes = "查询申请单明细信息")
     @GetMapping("/detail")
     public CommonResult<List<RequestNoteDetail>> getThisDeliveryDetail(@ApiParam(value = "配送单号") @RequestParam(required = false) String noteId) {
-        QueryWrapper<RequestNoteDetail> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note_id", noteId);
-        queryWrapper.orderByDesc("modify_time");
-        List<RequestNoteDetail> requestNoteDetailList = requestNoteDetailService.list(queryWrapper);
+        List<RequestNoteDetail> requestNoteDetailList = requestNoteDetailService.getDeliveryInformation(noteId);
         for (RequestNoteDetail requestNoteDetail : requestNoteDetailList) {
             requestNoteDetail.setNumberMissing(requestNoteDetail.getNumber() - requestNoteDetail.getNumberDelivery());
         }

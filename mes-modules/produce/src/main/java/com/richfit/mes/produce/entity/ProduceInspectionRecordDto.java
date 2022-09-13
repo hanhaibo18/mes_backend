@@ -1,10 +1,7 @@
 package com.richfit.mes.produce.entity;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.model.produce.ProbeInfo;
-import com.richfit.mes.common.model.produce.ProduceDefectsInfo;
 import lombok.Data;
 
 import java.util.List;
@@ -20,10 +17,6 @@ public class ProduceInspectionRecordDto{
      * 探伤记录信息
      */
     private JSONObject inspectionRecord;
-    /**
-     * 缺陷列表
-     */
-    private List<ProduceDefectsInfo> produceDefectsInfos;
     /**
      * 探头信息
      */
