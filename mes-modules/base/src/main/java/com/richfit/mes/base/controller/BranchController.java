@@ -201,7 +201,9 @@ public class BranchController extends BaseController {
     public CommonResult<List<Branch>> selectBranchChildByCode(String branchCode) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
         if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.apply(branchCode != null, "FIND_IN_SET(branch_code, getBranchChildList('" + branchCode + "'))");
+            //没有找到getBranchChildList方法，报错先注释掉
+            //queryWrapper.apply(branchCode != null, "FIND_IN_SET(branch_code, getBranchChildList('" + branchCode + "'))");
+            queryWrapper.apply(branchCode != null, "FIND_IN_SET(branch_code, '" + branchCode + "')");
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("order_no");
