@@ -96,7 +96,7 @@ public class ProduceInspectionRecordService{
      * @param isAudit
      * @return
      */
-    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String branchCode, String tenantId, Boolean isAudit,Integer isOperationComplete) {
+    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit,Integer isOperationComplete) {
         QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
         if (!StringUtils.isEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -105,9 +105,9 @@ public class ProduceInspectionRecordService{
             queryWrapper.eq("tenant_id", tenantId);
         }
         //已审核
-        if (Boolean.TRUE.equals(isAudit)) {
+        if ("1".equals(isAudit)) {
             queryWrapper.isNotNull("audit_by");
-        } else if (Boolean.FALSE.equals(isAudit)) {
+        } else if ("0".equals(isAudit)) {
             //未审核
             queryWrapper.isNull("audit_by");
         }
@@ -117,6 +117,9 @@ public class ProduceInspectionRecordService{
         }
         if (!StringUtils.isEmpty(productName)) {
             queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
+        }
+        if (!StringUtils.isEmpty(productNo)) {
+            queryWrapper.likeLeft("productNo", productNo);
         }
         if (!StringUtils.isEmpty(isOperationComplete)) {
             queryWrapper.eq("is_operation_complete",isOperationComplete);
@@ -360,7 +363,7 @@ public class ProduceInspectionRecordService{
         //mt探伤记录
         ProduceInspectionRecordRt produceInspectionRecordRt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordRt.class);
         //报告号
-        dataMap.put("reportNo",produceInspectionRecordRt.getReportNo());
+        //dataMap.put("reportNo",produceInspectionRecordRt.getReportNo());
         //图号
         dataMap.put("drawingNo",trackHead.getDrawingNo());
         //零件名称

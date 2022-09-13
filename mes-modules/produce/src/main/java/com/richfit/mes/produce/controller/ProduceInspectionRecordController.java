@@ -51,12 +51,13 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核 true、已审核）", paramType = "query", dataType = "boolean"),
+            @ApiImplicitParam(name = "productNo", value = "产品编号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
             @ApiImplicitParam(name = "isOperationComplete", value = "报工状态（0、未报工 1、已报工）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String branchCode, String tenantId, Boolean isAudit,Integer isOperationComplete) {
-        return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,branchCode,tenantId,isAudit,isOperationComplete));
+    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit,Integer isOperationComplete) {
+        return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit,isOperationComplete));
     }
 
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
