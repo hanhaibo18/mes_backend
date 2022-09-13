@@ -388,20 +388,23 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
 
-            //通过跟单ID查询所有第一道工序需要派工的
-            QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
-            queryWrapperItem.eq("track_head_id", trackHead.getId());
-            queryWrapperItem.eq("is_auto_schedule", 1);
-            queryWrapperItem.eq("sequence_order_by", 1);
-            List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
-            //循环工序
-            for (TrackItem trackItem : trackItemList) {
-                Map<String, String> map = new HashMap<>(4);
-                map.put("trackItemId", trackItem.getId());
-                map.put("trackHeadId", trackHead.getId());
-                map.put("trackNo", trackHead.getTrackNo());
-                map.put("classes", trackHead.getClasses());
-                publicService.automaticProcess(map);
+            //跟单状态为0的未派工，用于排除跟单打印等不进行自动派工
+            if ("0".equals(trackHead.getStatus())) {
+                //通过跟单ID查询所有第一道工序需要派工的
+                QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
+                queryWrapperItem.eq("track_head_id", trackHead.getId());
+                queryWrapperItem.eq("is_auto_schedule", 1);
+                queryWrapperItem.eq("sequence_order_by", 1);
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
+                //循环工序
+                for (TrackItem trackItem : trackItemList) {
+                    Map<String, String> map = new HashMap<>(4);
+                    map.put("trackItemId", trackItem.getId());
+                    map.put("trackHeadId", trackHead.getId());
+                    map.put("trackNo", trackHead.getTrackNo());
+                    map.put("classes", trackHead.getClasses());
+                    publicService.automaticProcess(map);
+                }
             }
 
             //添加日志
