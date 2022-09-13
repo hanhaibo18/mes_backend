@@ -405,13 +405,14 @@ public class SequenceController extends BaseController {
             String drawnos = "";
             String drawnames = "";
             for (int i = 0; i < list.size(); i++) {
-                if (!StringUtils.isNullOrEmpty(list.get(i).getContent())) {
+                if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && "X".equals(list.get(i).getStatus())) {
                     list2.add(list.get(i));
+                    if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && !drawnos.contains(list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",")) {
+                        drawnos += list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",";
+                        drawnames += list.get(i).getRemark() + ",";
+                    }
                 }
-                if (!StringUtils.isNullOrEmpty(list.get(i).getContent()) && !drawnos.contains(list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",")) {
-                    drawnos += list.get(i).getContent() + "@" + list.get(i).getVersionCode() + ",";
-                    drawnames += list.get(i).getRemark() + ",";
-                }
+
             }
 
             FileUtils.delete(excelFile);

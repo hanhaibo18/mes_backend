@@ -298,12 +298,13 @@ public class RouterCheckController extends BaseController {
                 // 获取图号列表
                 String drawnos = "";
                 for (int i = 0; i < checkList.size(); i++) {
-                    if (!StringUtils.isNullOrEmpty(checkList.get(i).getRouterNo())) {
+                    if (!StringUtils.isNullOrEmpty(checkList.get(i).getRouterNo()) && "X".equals(list.get(i).getIsImport())) {
                         list2.add(checkList.get(i));
+                        if (!drawnos.contains(checkList.get(i).getRouterNo() + ",")) {
+                            drawnos += checkList.get(i).getRouterNo() + ",";
+                        }
                     }
-                    if (!drawnos.contains(checkList.get(i).getRouterNo() + ",")) {
-                        drawnos += checkList.get(i).getRouterNo() + ",";
-                    }
+
                 }
                 step += "获取图号成功";
 
