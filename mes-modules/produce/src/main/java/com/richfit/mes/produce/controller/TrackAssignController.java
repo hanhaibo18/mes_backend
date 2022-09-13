@@ -332,7 +332,7 @@ public class TrackAssignController extends BaseController {
                         assign.getBranchCode(),
                         assign.getTenantId());
                 //参数不为空 并且为"1" 复制工序参数
-                if (!StringUtils.isNullOrEmpty(assign.getIsFlawDetection()) && "1".equals(assign.getIsFlawDetection())) {
+                if (!StringUtils.isNullOrEmpty(trackItem.getOptType()) && "6".equals(trackItem.getOptType())) {
                     inspectionService.saveItem(assign.getTiId());
                 }
             }
