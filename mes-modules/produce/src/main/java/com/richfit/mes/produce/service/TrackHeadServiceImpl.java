@@ -666,13 +666,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 Plan plan = planService.getById(t.getWorkPlanId());
                 //修改跟单管理计划id
+                t.setWorkPlanId(plan.getId());
                 t.setWorkPlanNo(plan.getProjCode());
-                t.setProductionOrder(plan.getOrderNo());
+                t.setWorkPlanProjectNo(plan.getProjectNo());
+                t.setWorkPlanEndTime(plan.getEndTime());
+
                 t.setWorkNo(plan.getWorkNo());
+                t.setProductionOrder(plan.getOrderNo());
                 t.setProjectBomId(plan.getProjectBom());
                 t.setProjectBomName(plan.getProjectBomName());
                 t.setProjectBomWork(plan.getProjectBomWork());
                 t.setProjectBomGroup(plan.getProjectBomGroup());
+
                 trackHeadMapper.updateById(t);
 
                 //修改老跟单匹配计划
