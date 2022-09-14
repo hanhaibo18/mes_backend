@@ -605,7 +605,7 @@ public class TrackAssignController extends BaseController {
             queryWrapper.like("a.track_no", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.eq("a.router_no", routerNo);
+            queryWrapper.eq("a.drawing_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
