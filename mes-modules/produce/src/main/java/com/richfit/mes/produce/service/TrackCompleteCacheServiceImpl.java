@@ -36,6 +36,7 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
             //检验人
             trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+            trackItem.setQualityCheckBranch(completeDto.getQualityCheckBranch());
             //根据工序Id先删除,在重新新增数据
             QueryWrapper<TrackCompleteCache> removeCache = new QueryWrapper<>();
             removeCache.eq("ti_id", completeDto.getTiId());

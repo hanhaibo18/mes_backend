@@ -51,6 +51,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
                 RequestNoteDetail requestNoteDetail = new RequestNoteDetail();
                 //申请单id
                 requestNoteDetail.setNoteId(requestNote.getId());
+                requestNoteDetail.setRequestNoteNumber(ingredient.getSqd());
                 requestNoteDetail.setMaterialNo(i.getMaterialNum());
                 requestNoteDetail.setMaterialName(i.getMaterialDesc());
                 QueryWrapper<TrackAssembly> wrapper = new QueryWrapper<>();

@@ -10,6 +10,7 @@ import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.SystemServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -65,4 +66,15 @@ public interface SystemServiceClient {
 
     @PostMapping(value = "/api/sys/attachment/download/getBase64Code")
     public CommonResult<Object> getBase64Code(@RequestParam String id) throws GlobalException, IOException;
+
+    /**
+     * 功能描述: 根据UserId查询用户信息
+     *
+     * @param userId
+     * @Author: xinYu.hou
+     * @Date: 2022/9/14 9:56
+     * @return: CommonResult<TenantUserVo>
+     **/
+    @GetMapping(value = "/api/sys/user/queryByUserId")
+    public CommonResult<TenantUserVo> queryByUserId(@RequestParam("userId") String userId);
 }

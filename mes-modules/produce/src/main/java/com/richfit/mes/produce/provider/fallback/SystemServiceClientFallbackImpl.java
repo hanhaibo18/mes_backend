@@ -9,6 +9,7 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
+
 import java.util.List;
 
 /**
@@ -85,7 +86,12 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
-    public CommonResult<Object> getBase64Code(String id) throws GlobalException{
+    public CommonResult<Object> getBase64Code(String id) throws GlobalException {
         return null;
+    }
+
+    @Override
+    public CommonResult<TenantUserVo> queryByUserId(String userId) {
+        return CommonResult.success(null);
     }
 }

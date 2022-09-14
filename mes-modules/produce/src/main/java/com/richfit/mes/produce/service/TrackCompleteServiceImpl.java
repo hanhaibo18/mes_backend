@@ -71,6 +71,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
             //检验人
             trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+            //检验车间
+            trackItem.setQualityCheckBranch(completeDto.getQualityCheckBranch());
             //根据工序Id删除缓存表数据
             QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("ti_id", completeDto.getTiId());
@@ -165,6 +167,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
         //检验人
         trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+        trackItem.setQualityCheckBranch(completeDto.getQualityCheckBranch());
         //根据工序Id先删除,在重新新增数据
         QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
         removeComplete.eq("ti_id", completeDto.getTiId());

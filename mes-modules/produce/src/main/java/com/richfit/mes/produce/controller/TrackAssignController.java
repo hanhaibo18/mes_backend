@@ -9,8 +9,10 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
@@ -33,6 +35,7 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -70,6 +73,8 @@ public class TrackAssignController extends BaseController {
     private RequestNoteService requestNoteService;
     @Resource
     private TrackItemInspectionService inspectionService;
+    @Resource
+    private ProduceRoleOperationService roleOperationService;
 
     @Value("${switch}")
     private String off;
@@ -255,9 +260,9 @@ public class TrackAssignController extends BaseController {
     public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) throws Exception {
         try {
             for (Assign assign : assigns) {
-//                if (StringUtils.isNullOrEmpty(assign.getTiId())) {
-//                    return CommonResult.failed("关联工序ID编码不能为空！");
-//                } else {
+                if (StringUtils.isNullOrEmpty(assign.getTiId())) {
+                    throw new GlobalException("未关联工序", ResultCode.FAILED);
+                }
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 if (null != trackItem) {
@@ -291,7 +296,6 @@ public class TrackAssignController extends BaseController {
                         publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
                     }
 
-//                    }
                     assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                     if (null != SecurityUtils.getCurrentUser()) {
                         assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -311,6 +315,9 @@ public class TrackAssignController extends BaseController {
                     //齐套性检查
                     if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent() && "true".equals(off)) {
                         //控制第一道工序是否发送申请单
+                        if (StrUtil.isBlank(trackHead.getProductionOrder())) {
+                            throw new GlobalException("无生产订单编号", ResultCode.FAILED);
+                        }
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
                         requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
                         ApplicationResult application = new ApplicationResult();
@@ -351,8 +358,12 @@ public class TrackAssignController extends BaseController {
         Assign assign = trackAssignService.getOne(queryWrapper);
         //组装申请单信息
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
+        //申请单号保持唯一
+        QueryWrapper<RequestNote> queryWrapperNote = new QueryWrapper<>();
+        queryWrapperNote.likeLeft("request_note_number", trackItem.getId());
+        int count = requestNoteService.count(queryWrapperNote);
         //申请单号
-        ingredient.setSqd(trackItem.getId() + "@0");
+        ingredient.setSqd(trackItem.getId() + "@" + count);
         //工厂编码
         ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
         //车间
@@ -512,7 +523,6 @@ public class TrackAssignController extends BaseController {
             routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null )");
             Calendar calendar = new GregorianCalendar();
@@ -521,7 +531,17 @@ public class TrackAssignController extends BaseController {
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "') or a.modify_time is null)");
         }
-        // 如果工序类型不为空，则按类型获取，否则获取普通0和装配工序2
+
+        //增加工序过滤
+        CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
+        QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
+        List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
+        queryWrapperRole.in("role_id", roleId);
+        List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
+        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
+        queryWrapper.in("operatipon_id", set);
+
+        // 如果工序类型不为空，则按类型获取，没有类型查询所有类型工序
         if (!StringUtils.isNullOrEmpty(optType)) {
             queryWrapper.apply("a.opt_type = '" + optType + "'");
         } else {

@@ -227,7 +227,6 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     public ApplicationResult application(AdditionalMaterialDto additionalMaterialDto) {
         try {
             TrackHead trackHead = trackHeadService.getById(additionalMaterialDto.getTrackHeadId());
-            trackHead.setProductionOrder("ceshi");
             if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                 throw new GlobalException("无生产订单编号", ResultCode.FAILED);
             }
@@ -237,8 +236,12 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             //查询派工工位信息
             Assign assign = trackAssignService.getOne(queryWrapper);
             IngredientApplicationDto ingredient = new IngredientApplicationDto();
+            //申请单号保持唯一
+            QueryWrapper<RequestNote> queryWrapperNote = new QueryWrapper<>();
+            queryWrapperNote.likeRight("request_note_number", trackItem.getId());
+            int count = requestNoteService.count(queryWrapperNote);
             //申请单号
-            ingredient.setSqd(trackItem.getId() + "@0");
+            ingredient.setSqd(trackItem.getId() + "@" + count);
             //车间编码
             ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
             //车间code

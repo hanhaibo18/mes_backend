@@ -7,11 +7,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -71,6 +74,8 @@ public class TrackCheckController extends BaseController {
     private SystemServiceClient systemServiceClient;
     @Resource
     private TrackCompleteService trackCompleteService;
+    @Resource
+    private ProduceRoleOperationService roleOperationService;
 
     /**
      * ***
@@ -93,6 +98,8 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
+
+
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
                 queryWrapper.eq("drawing_no", drawingNo);
             }
@@ -100,6 +107,14 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("tenant_id", tenantId);
             }
             if (Boolean.TRUE.equals(isRecheck)) {
+                //查询用户信息 组装过滤数据
+                CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
+                QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
+                List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
+                queryWrapperRole.in("role_id", roleId);
+                List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
+                Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
+                queryWrapper.in("operatipon_id", set);
                 queryWrapper.eq("is_recheck", 1);
             } else if (Boolean.FALSE.equals(isRecheck)) {
                 //未质检
@@ -128,12 +143,16 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(productNo)) {
                 queryWrapper.eq("product_no", productNo);
             }
+//            if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
+//                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+//                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + "')");
+//            }
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
 
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + "')");
 
             }
             if ("1".equals(isExistScheduleCheck)) {

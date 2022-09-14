@@ -163,12 +163,21 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "质检结果", dataType = "Integer")
     private Integer qualityResult;
-    //不合格步骤?
+    /**
+     * 不合格步骤?
+     */
     @ApiModelProperty(value = "不合格步骤", dataType = "String")
     private String failProcess;
-    //检验人
+    /**
+     * 检验人
+     */
     @ApiModelProperty(value = "检验人", dataType = "String")
     private String qualityCheckBy;
+    /**
+     * 检验车间
+     */
+    @ApiModelProperty(value = "检验车间", dataType = "String")
+    private String qualityCheckBranch;
     /**
      * 是否调度确认
      */
