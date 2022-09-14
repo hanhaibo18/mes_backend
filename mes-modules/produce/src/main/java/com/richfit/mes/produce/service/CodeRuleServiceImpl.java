@@ -180,109 +180,105 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         }
         item.setCurValue("");
         int index = 0;
-        try {
-            String value = "";
-            List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null, tenantId, branchCode);
-            for (int i = 0; i < cris.size(); i++) {
-                String subvalue = "";
-                if (StringUtils.isNullOrEmpty(cris.get(i).getSuffixChar())) {
-                    cris.get(i).setSuffixChar("");
-                }
-                // 常量
-                if ("0".equals(cris.get(i).getType())) {
-                    subvalue = cris.get(i).getConstant() + cris.get(i).getSuffixChar();
-                }
-                // 日期
-                if ("1".equals(cris.get(i).getType())) {
-                    Date currentTime = new Date();
-                    SimpleDateFormat formatter = new SimpleDateFormat(cris.get(i).getDateFormat());
-                    String dateString = formatter.format(currentTime);
+        String value = "";
+        List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null, tenantId, branchCode);
+        for (int i = 0; i < cris.size(); i++) {
+            String subvalue = "";
+            if (StringUtils.isNullOrEmpty(cris.get(i).getSuffixChar())) {
+                cris.get(i).setSuffixChar("");
+            }
+            // 常量
+            if ("0".equals(cris.get(i).getType())) {
+                subvalue = cris.get(i).getConstant() + cris.get(i).getSuffixChar();
+            }
+            // 日期
+            if ("1".equals(cris.get(i).getType())) {
+                Date currentTime = new Date();
+                SimpleDateFormat formatter = new SimpleDateFormat(cris.get(i).getDateFormat());
+                String dateString = formatter.format(currentTime);
 
-                    subvalue = dateString + cris.get(i).getSuffixChar();
-                }
-                //流水号
-                if ("2".equals(cris.get(i).getType())) {
-                    //如果规则项 值重置的逻辑处理，根据年，月，日，最大值的变化来重置
-                    if (!StringUtils.isNullOrEmpty(cris.get(i).getSnResetDependency())) {
-                        if ("year".equals(cris.get(i).getSnResetDependency())) {
-                            if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                        } else if ("quarter".equals(cris.get(i).getSnResetDependency())) {
-                        } else if ("month".equals(cris.get(i).getSnResetDependency())) {
-                            if (new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                        } else if ("date".equals(cris.get(i).getSnResetDependency())) {
-                            if (new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                        } else if ("input".equals(cris.get(i).getSnResetDependency())) {
-
-                        } else {
-
-                            if (Integer.parseInt(cris.get(i).getSnCurrentValue()) >= Integer.parseInt(cris.get(i).getSnResetDependency())) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
+                subvalue = dateString + cris.get(i).getSuffixChar();
+            }
+            //流水号
+            if ("2".equals(cris.get(i).getType())) {
+                //如果规则项 值重置的逻辑处理，根据年，月，日，最大值的变化来重置
+                if (!StringUtils.isNullOrEmpty(cris.get(i).getSnResetDependency())) {
+                    if ("year".equals(cris.get(i).getSnResetDependency())) {
+                        if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
                         }
-                    }
-                    subvalue = String.valueOf(Integer.parseInt(cris.get(i).getSnCurrentValue()) + Integer.parseInt(cris.get(i).getSnStep())) + cris.get(i).getSuffixChar();
-                    System.out.println("----------------------");
-                    System.out.println(subvalue);
-                }
-                //用户输入项
-                if ("3".equals(cris.get(i).getType())) {
-
-                    if ("0".equals(cris.get(i).getCheckType())) {
-
-                        if (!java.util.regex.Pattern.matches("^[0-9]*$", inputs[index])) {
-                            throw new NullPointerException("不是数字");
+                    } else if ("quarter".equals(cris.get(i).getSnResetDependency())) {
+                    } else if ("month".equals(cris.get(i).getSnResetDependency())) {
+                        if (new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
                         }
-                    }
-                    if ("1".equals(cris.get(i).getCheckType())) {
-
-                        if (!java.util.regex.Pattern.matches("[a-zA-Z]+", inputs[index])) {
-                            throw new NullPointerException("不是字母");
+                    } else if ("date".equals(cris.get(i).getSnResetDependency())) {
+                        if (new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
                         }
-                    }
-                    if ("2".equals(cris.get(i).getCheckType()) && !StringUtils.isNullOrEmpty(cris.get(i).getCheckRegex())) {
+                    } else if ("input".equals(cris.get(i).getSnResetDependency())) {
 
-                        if (!java.util.regex.Pattern.matches(cris.get(i).getCheckRegex(), inputs[index])) {
-                            throw new NullPointerException("不满足正则校验");
-                        }
-                    }
-
-
-                    subvalue = inputs[index] + cris.get(i).getSuffixChar();
-                    index++;
-                }
-                //GUID
-                if ("4".equals(cris.get(i).getType())) {
-
-
-                    subvalue = java.util.UUID.randomUUID() + cris.get(i).getSuffixChar();
-                    index++;
-                }
-                if (!StringUtils.isNullOrEmpty(cris.get(i).getCompChar())) {
-                    if ("0".equals(cris.get(i).getCompDirect())) {
-                        subvalue = org.apache.commons.lang.StringUtils.leftPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
                     } else {
-                        subvalue = org.apache.commons.lang.StringUtils.rightPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
+
+                        if (Integer.parseInt(cris.get(i).getSnCurrentValue()) >= Integer.parseInt(cris.get(i).getSnResetDependency())) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                        }
                     }
                 }
-                value = value + subvalue;
+                subvalue = String.valueOf(Integer.parseInt(cris.get(i).getSnCurrentValue()) + Integer.parseInt(cris.get(i).getSnStep())) + cris.get(i).getSuffixChar();
+                System.out.println("----------------------");
+                System.out.println(subvalue);
             }
-            if (!StringUtils.isNullOrEmpty(item.getMaxLength())) {
-                if (value.length() > Integer.parseInt(item.getMaxLength())) {
-                    throw new NullPointerException("编码长度超出范围，最大为" + item.getMaxLength());
+            //用户输入项
+            if ("3".equals(cris.get(i).getType())) {
 
+                if ("0".equals(cris.get(i).getCheckType())) {
+
+                    if (!java.util.regex.Pattern.matches("^[0-9]*$", inputs[index])) {
+                        throw new NullPointerException("不是数字");
+                    }
+                }
+                if ("1".equals(cris.get(i).getCheckType())) {
+
+                    if (!java.util.regex.Pattern.matches("[a-zA-Z]+", inputs[index])) {
+                        throw new NullPointerException("不是字母");
+                    }
+                }
+                if ("2".equals(cris.get(i).getCheckType()) && !StringUtils.isNullOrEmpty(cris.get(i).getCheckRegex())) {
+
+                    if (!java.util.regex.Pattern.matches(cris.get(i).getCheckRegex(), inputs[index])) {
+                        throw new NullPointerException("不满足正则校验");
+                    }
+                }
+
+
+                subvalue = inputs[index] + cris.get(i).getSuffixChar();
+                index++;
+            }
+            //GUID
+            if ("4".equals(cris.get(i).getType())) {
+
+
+                subvalue = java.util.UUID.randomUUID() + cris.get(i).getSuffixChar();
+                index++;
+            }
+            if (!StringUtils.isNullOrEmpty(cris.get(i).getCompChar())) {
+                if ("0".equals(cris.get(i).getCompDirect())) {
+                    subvalue = org.apache.commons.lang.StringUtils.leftPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
+                } else {
+                    subvalue = org.apache.commons.lang.StringUtils.rightPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
                 }
             }
-            item.setCurValue(value);
-            return item;
-        } catch (Exception e) {
-            return null;
+            value = value + subvalue;
         }
+        if (!StringUtils.isNullOrEmpty(item.getMaxLength())) {
+            if (value.length() > Integer.parseInt(item.getMaxLength())) {
+                throw new NullPointerException("编码长度超出范围，最大为" + item.getMaxLength());
+            }
+        }
+        System.out.println(value);
+        item.setCurValue(value);
+        return item;
     }
 
 
