@@ -391,4 +391,8 @@ public class TrackItemInspection extends BaseEntity<TrackItemInspection> {
     @ApiModelProperty(value = "项目名称")
     private String projectName;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单派工信息")
+    private Assign assign;
+
 }

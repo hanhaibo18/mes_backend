@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.TrackItemInspection;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
@@ -53,11 +53,36 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "productNo", value = "产品编号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
-            @ApiImplicitParam(name = "isOperationComplete", value = "报工状态（0、未报工 1、已报工）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page")
     public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit,Integer isOperationComplete) {
         return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit,isOperationComplete));
+    }
+
+    /**
+     * ***
+     * 分页查询待探伤工序
+     *
+     * @param page
+     * @param limit
+     * @return
+     */
+    @ApiOperation(value = "分页查询探伤派工信息", notes = "分页查询探伤派工信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tenantId", value = "组织机构id", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "productNo", value = "产品编号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isOperationComplete", value = "报工状态（0、未报工 1、已报工）", paramType = "query", dataType = "Integer"),
+    })
+    @GetMapping("/assginPage")
+    public CommonResult<IPage<Assign>> assginPage(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId,Integer isOperationComplete) {
+        return CommonResult.success(produceInspectionRecordService.assginPage(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isOperationComplete));
     }
 
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
@@ -71,6 +96,13 @@ public class ProduceInspectionRecordController extends BaseController {
     @GetMapping("/queryRecordByItemId/{itemId}")
     public CommonResult queryRecordByItemId(@PathVariable String itemId){
         return CommonResult.success(produceInspectionRecordService.queryRecordByItemId(itemId));
+    }
+
+    @ApiOperation(value = "根据工序id查询最近一条探伤记录", notes = "根据工序id查询最近一条探伤记录")
+    @ApiImplicitParam(name = "itemId", value = "工序id", required = true, paramType = "path", dataType = "string")
+    @GetMapping("/queryLastInfoByItemId/{itemId}")
+    public CommonResult queryLastInfoByItemId(@PathVariable String itemId){
+        return CommonResult.success(produceInspectionRecordService.queryLastInfoByItemId(itemId));
     }
 
     @ApiOperation(value = "审核提交探伤记录", notes = "审核提交探伤记录")
