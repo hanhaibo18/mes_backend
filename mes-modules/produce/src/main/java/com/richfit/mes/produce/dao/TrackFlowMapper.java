@@ -79,6 +79,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " <if test='productionOrder != null and productionOrder != \"\"'> " +
             "  and production_order like concat('%',#{productionOrder},'%') " +
             " </if> " +
+            " <if test='productionOrderId != null and productionOrderId != \"\"'> " +
+            "  and production_order_id = #{productionOrderId} " +
+            " </if> " +
             " <if test='workPlanId != null and workPlanId != \"\"'> " +
             "  and work_plan_id = #{workPlanId} " +
             " </if> " +

@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.TrackFlow;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.dao.TrackFlowMapper;
 import com.richfit.mes.produce.entity.OrderDto;
@@ -107,9 +107,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderId)) {
             Map map = new HashMap();
             map.put("production_order_id", orderId);
-            List<TrackFlow> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
+            List<TrackHead> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
             int numberComplete = 0;
-            for (TrackFlow trackFlow : trackFlowList) {
+            for (TrackHead trackFlow : trackFlowList) {
                 if ("2".equals(trackFlow.getStatus())) {
                     //完成
                     numberComplete++;
