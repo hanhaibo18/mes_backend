@@ -60,6 +60,9 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "检验记录卡生成状态  Y已生成 N未为生成")
     private String isCardData;
 
+    @ApiModelProperty(value = "状态 同跟单管理状态")
+    private String status;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "详细明细")
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
@@ -79,6 +82,7 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
         this.texture = trackHead.getTexture();
         this.batchNo = trackHead.getBatchNo();
         this.isCardData = trackHead.getIsCardData();
+        this.status = trackHead.getStatus();
         if (TrackHead.TRACKHEAD_CLASSES_JJ.equals(trackHead.getClasses())) {
             this.sparePartsName = trackHead.getMaterialName();
             //图号
