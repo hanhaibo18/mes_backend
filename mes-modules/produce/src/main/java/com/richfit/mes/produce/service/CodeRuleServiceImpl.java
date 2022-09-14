@@ -205,33 +205,29 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                 if (!StringUtils.isNullOrEmpty(cris.get(i).getSnResetDependency())) {
                     if ("year".equals(cris.get(i).getSnResetDependency())) {
                         if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
-                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
                         }
                     } else if ("quarter".equals(cris.get(i).getSnResetDependency())) {
                     } else if ("month".equals(cris.get(i).getSnResetDependency())) {
                         if (new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
-                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
                         }
                     } else if ("date".equals(cris.get(i).getSnResetDependency())) {
                         if (new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()) {
-                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
                         }
                     } else if ("input".equals(cris.get(i).getSnResetDependency())) {
 
                     } else {
-
                         if (Integer.parseInt(cris.get(i).getSnCurrentValue()) >= Integer.parseInt(cris.get(i).getSnResetDependency())) {
                             cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
                         }
                     }
                 }
                 subvalue = String.valueOf(Integer.parseInt(cris.get(i).getSnCurrentValue()) + Integer.parseInt(cris.get(i).getSnStep())) + cris.get(i).getSuffixChar();
-                System.out.println("----------------------");
-                System.out.println(subvalue);
             }
             //用户输入项
             if ("3".equals(cris.get(i).getType())) {
-
                 if ("0".equals(cris.get(i).getCheckType())) {
 
                     if (!java.util.regex.Pattern.matches("^[0-9]*$", inputs[index])) {
@@ -250,8 +246,6 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                         throw new NullPointerException("不满足正则校验");
                     }
                 }
-
-
                 subvalue = inputs[index] + cris.get(i).getSuffixChar();
                 index++;
             }
@@ -276,7 +270,6 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                 throw new NullPointerException("编码长度超出范围，最大为" + item.getMaxLength());
             }
         }
-        System.out.println(value);
         item.setCurValue(value);
         return item;
     }
