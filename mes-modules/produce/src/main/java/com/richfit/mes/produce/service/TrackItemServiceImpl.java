@@ -247,11 +247,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
 
             if (resetType == 1 || resetType == 5) {
-                if ((item.getIsDoing() != null && item.getIsDoing() != 0)
-                        || (item.getIsOperationComplete() != null && item.getIsOperationComplete() != 0)) {
+                if (item.getIsDoing() != null && item.getIsDoing() > 0) {
                     return "操作工已开工或报工已完成，记录不可重置！";
                 }
-
                 /*if (item.getSequenceOrderBy() == 1) {
                     UpdateWrapper<TrackHead> updateWrapper = new UpdateWrapper<>();
                     updateWrapper.set("product_no", "");
