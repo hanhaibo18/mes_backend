@@ -127,10 +127,10 @@ public class ProduceInspectionRecordService{
         //报工状态
         queryWrapper.eq("is_operation_complete",1);
         if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')",startTime);
         }
         if (!StringUtils.isEmpty(endTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
+            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')",endTime);
         }
         queryWrapper.orderByDesc("modify_time");
         IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
@@ -183,10 +183,10 @@ public class ProduceInspectionRecordService{
             queryWrapper.eq("is_operation_complete",isOperationComplete);
         }
         if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')",startTime);
         }
         if (!StringUtils.isEmpty(endTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
+            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')",endTime);
         }
         queryWrapper.orderByDesc("modify_time");
         IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
@@ -229,19 +229,13 @@ public class ProduceInspectionRecordService{
         //要保存的记录实体
         JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
         //缺陷记录
-        List<ProduceDefectsInfo> produceDefectsInfos = produceInspectionRecordDto.getProduceDefectsInfos();
+        List<ProduceDefectsInfo> produceDefectsInfos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("defectsInfoList")), ProduceDefectsInfo.class);
         //探头信息
-        List<ProbeInfo> probeInfoList = produceInspectionRecordDto.getProbeInfoList();
+        List<ProbeInfo> probeInfoList = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("probeInfoList")), ProbeInfo.class);
         //工序ids
         List<String> itemIds = produceInspectionRecordDto.getItemIds();
         //探伤记录id
         String recordId = null;
-        //生成探伤记录号
-        CodeRule codeRule = codeRuleService.gerCode("ut_record_no", null, null, SecurityUtils.getCurrentUser().getTenantId(),null);
-        if (codeRule == null || com.mysql.cj.util.StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
-            throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
-        }
-        jsonObject.put("recordNo",codeRule.getCurValue());
 
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             //保存探伤记录
@@ -266,7 +260,7 @@ public class ProduceInspectionRecordService{
 
         //保存流水号
         if(!StringUtils.isEmpty(tempType)){
-            codeRuleService.updateCode("inspection_code_"+tempType,null, codeRule.getCurValue(), null,SecurityUtils.getCurrentUser().getTenantId(),null);
+            codeRuleService.updateCode("inspection_code_"+tempType,null,jsonObject.get("recordNo").toString(), null,SecurityUtils.getCurrentUser().getTenantId(),null);
         }
 
         //工序and探伤记录绑定操作
@@ -281,17 +275,22 @@ public class ProduceInspectionRecordService{
         produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
 
         //ut保存探头
-        for (ProbeInfo probeInfo : probeInfoList) {
-            probeInfo.setRecordId(recordId);
+        if(!ObjectUtil.isEmpty(probeInfoList)){
+            for (ProbeInfo probeInfo : probeInfoList) {
+                probeInfo.setRecordId(recordId);
+            }
+            probeInfoService.saveBatch(probeInfoList);
         }
-        probeInfoService.saveBatch(probeInfoList);
 
 
         //rt保存缺陷记录
-        for (ProduceDefectsInfo produceDefectsInfo : produceDefectsInfos) {
-            produceDefectsInfo.setRecordId(recordId);
+        if(!ObjectUtil.isEmpty(produceDefectsInfos)){
+            for (ProduceDefectsInfo produceDefectsInfo : produceDefectsInfos) {
+                produceDefectsInfo.setRecordId(recordId);
+            }
+            produceDefectsInfoService.saveBatch(produceDefectsInfos);
         }
-        produceDefectsInfoService.saveBatch(produceDefectsInfos);
+
         return  null;
     }
 
@@ -406,7 +405,7 @@ public class ProduceInspectionRecordService{
         }
         Map<String, Object> dataMap = new HashMap<>();
         //填充数据
-        createDataMap(trackHead,recordInfo,trackItemInspection,dataMap,trackItemInspection.getTempType());
+        createDataMap(trackHead,recordInfo,dataMap,trackItemInspection.getTempType());
 
         //根据模板类型获取模板和导出文件名
         Map<String, String> tempNameAndDocNameMap = checkTempNameAndDocName(trackItemInspection.getTempType());
@@ -418,45 +417,59 @@ public class ProduceInspectionRecordService{
      * 构造导出填充数据dataMap
      * @param trackHead
      * @param recordInfo
-     * @param trackItemInspection
      * @param dataMap
      * @param tempType
      */
-    private void createDataMap(TrackHead trackHead,Map<String,Object> recordInfo,TrackItemInspection trackItemInspection,Map<String, Object> dataMap,String tempType)throws IOException{
+    private void createDataMap(TrackHead trackHead,Map<String,Object> recordInfo,Map<String, Object> dataMap,String tempType)throws IOException{
+        dataMap = recordInfo;
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
-            createMtDataMap(trackHead, recordInfo, trackItemInspection, dataMap);
+            createMtDataMap(recordInfo, dataMap);
         }else if(InspectionRecordTypeEnum.PT.getType().equals(tempType)){
-            createPtDataMap(trackHead, recordInfo, trackItemInspection, dataMap);
+            createPtDataMap(recordInfo,  dataMap);
         }else if(InspectionRecordTypeEnum.RT.getType().equals(tempType)){
-            createRtDataMap(trackHead, recordInfo, trackItemInspection, dataMap);
+            createRtDataMap(recordInfo, dataMap);
         }else if(InspectionRecordTypeEnum.UT.getType().equals(tempType)){
-            createUtDataMap(trackHead, recordInfo, trackItemInspection, dataMap);
+            createUtDataMap(recordInfo, dataMap);
         }
+        //图号
+        dataMap.put("drawingNo",trackHead.getDrawingNo());
+        //零件名称
+        dataMap.put("materialName",trackHead.getMaterialName());
+        //材质
+        dataMap.put("texture",trackHead.getTexture());
         dataMap.put("year", String.valueOf(DateUtil.year(DateUtil.date())));
         dataMap.put("month", DateUtil.thisMonth()+1);
         dataMap.put("day", DateUtil.dayOfMonth(DateUtil.date()));
     }
 
     //mt模板填充
-    private void createMtDataMap(TrackHead trackHead, Map<String, Object> recordInfo, TrackItemInspection trackItemInspection, Map<String, Object> dataMap) throws IOException {
-        /*//mt探伤记录
+    private void createMtDataMap(Map<String, Object> recordInfo,  Map<String, Object> dataMap) throws IOException {
+        //mt探伤记录
         ProduceInspectionRecordMt produceInspectionRecordMt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordMt.class);
-        //报告号
-        dataMap.put("reportNo",produceInspectionRecordMt.getReportNo());
-        //图号
-        dataMap.put("drawingNo",trackHead.getDrawingNo());
-        //零件名称
-        dataMap.put("materialName",trackHead.getMaterialName());
-        //材质
-        dataMap.put("checkMaterial",produceInspectionRecordMt.getCheckMaterial());
-        //报告编号
-        dataMap.put("reportNo",produceInspectionRecordMt.getReportNo());
+        /*//记录编号
+        dataMap.put("recordNo",produceInspectionRecordMt.getRecordNo());
         //种类
-        dataMap.put("typeList", StringUtils.hasText(produceInspectionRecordMt.getType()) ? produceInspectionRecordMt.getType().split("/") : new String[0]);
+        dataMap.put("type",produceInspectionRecordMt.getType());
         //提升力
-        dataMap.put("n",produceInspectionRecordMt.getLiftPower());
-        //磁化规范
-        dataMap.put("magnetizationSpecificationList",StringUtils.hasText(produceInspectionRecordMt.getMagnetizationSpecification()) ? produceInspectionRecordMt.getMagnetizationSpecification().split("/") : new String[0]);
+        dataMap.put("liftPower",produceInspectionRecordMt.getLiftPower());
+        //磁化方法
+        dataMap.put("magneticMethod",produceInspectionRecordMt.getMagneticMethod());
+        //检测方法
+        dataMap.put("detectionMethod",produceInspectionRecordMt.getDetectionMethod());
+        //磁粉载体
+        dataMap.put("magneticCarrier",produceInspectionRecordMt.getMagneticCarrier());
+        //磁化方向
+        dataMap.put("magneticDirection",produceInspectionRecordMt.getMagneticDirection());
+        //荧光/非荧光
+        dataMap.put("fluorescent",produceInspectionRecordMt.getFluorescent());
+        //退磁
+        dataMap.put("isMagnetic",produceInspectionRecordMt.getIsMagnetic());
+        //温度
+        dataMap.put("tempera",produceInspectionRecordMt.getTempera());
+        //室温
+        dataMap.put("isRoomTemp",produceInspectionRecordMt.getIsRoomTemp());
+        //粗糙度
+        dataMap.put("roughness",produceInspectionRecordMt.getRoughness());
         //试验规范
         dataMap.put("testSpecification",produceInspectionRecordMt.getTestSpecification());
         //试验标准
@@ -464,27 +477,24 @@ public class ProduceInspectionRecordService{
         //灵敏度试片
         dataMap.put("sensitivityTestPiece",produceInspectionRecordMt.getSensitivityTestPiece());
         //检验员
-        dataMap.put("checkBy",trackItemInspection.getCheckBy());
+        dataMap.put("checkBy",produceInspectionRecordMt.getCheckBy());
         //审核人
-        dataMap.put("auditBy",trackItemInspection.getAuditBy());
+        dataMap.put("auditBy",produceInspectionRecordMt.getAuditBy());
+        //检验结果
+        dataMap.put("inspectionResults",produceInspectionRecordMt.getInspectionResults());
+        //见证
+        dataMap.put("witnesses",produceInspectionRecordMt.getWitnesses());*/
         //图片base64编码
-        dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());*/
+        if(!StringUtils.isEmpty(produceInspectionRecordMt.getDiagramAttachmentId())){
+            dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());
+        }
+
     }
 
     //rt模板填充
-    private void createRtDataMap(TrackHead trackHead, Map<String, Object> recordInfo, TrackItemInspection trackItemInspection, Map<String, Object> dataMap) throws IOException {
+    private void createRtDataMap(Map<String, Object> recordInfo,  Map<String, Object> dataMap) throws IOException {
         //mt探伤记录
         ProduceInspectionRecordRt produceInspectionRecordRt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordRt.class);
-        //报告号
-        //dataMap.put("reportNo",produceInspectionRecordRt.getReportNo());
-        //图号
-        dataMap.put("drawingNo",trackHead.getDrawingNo());
-        //零件名称
-        dataMap.put("materialName",trackHead.getMaterialName());
-        //检验员
-        dataMap.put("checkBy",trackItemInspection.getCheckBy());
-        //审核人
-        dataMap.put("auditBy",trackItemInspection.getAuditBy());
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordRt.getDiagramAttachmentId())){
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordRt.getDiagramAttachmentId()).getData());
@@ -492,19 +502,10 @@ public class ProduceInspectionRecordService{
     }
 
     //pt模板填充
-    private void createPtDataMap(TrackHead trackHead, Map<String, Object> recordInfo, TrackItemInspection trackItemInspection, Map<String, Object> dataMap) throws IOException {
-        //mt探伤记录
+    private void createPtDataMap(Map<String, Object> recordInfo, Map<String, Object> dataMap) throws IOException {
+        //pt探伤记录
         ProduceInspectionRecordPt produceInspectionRecordPt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordPt.class);
-        //报告号
-        //dataMap.put("reportNo",produceInspectionRecordPt.getReportNo());
-        //图号
-        dataMap.put("drawingNo",trackHead.getDrawingNo());
-        //零件名称
-        dataMap.put("materialName",trackHead.getMaterialName());
-        //检验员
-        dataMap.put("checkBy",trackItemInspection.getCheckBy());
-        //审核人
-        dataMap.put("auditBy",trackItemInspection.getAuditBy());
+
         if(!StringUtils.isEmpty(produceInspectionRecordPt.getDiagramAttachmentId())){
             //图片base64编码
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordPt.getDiagramAttachmentId()).getData());
@@ -513,51 +514,10 @@ public class ProduceInspectionRecordService{
     }
 
     //ut模板填充
-    private void createUtDataMap(TrackHead trackHead, Map<String, Object> recordInfo, TrackItemInspection trackItemInspection, Map<String, Object> dataMap) throws IOException {
+    private void createUtDataMap(Map<String, Object> recordInfo,  Map<String, Object> dataMap) throws IOException {
         //ut探伤记录
         ProduceInspectionRecordUt produceInspectionRecordUt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordUt.class);
-        //记录号
-        dataMap.put("recordNo",produceInspectionRecordUt.getRecordNo());
-        //图号
-        dataMap.put("drawingNo",trackHead.getDrawingNo());
-        //零件名称
-        dataMap.put("materialName",trackHead.getMaterialName());
-        //仪器型号
-        dataMap.put("instrumentModel",produceInspectionRecordUt.getInstrumentModel());
-        //生产单位
-        dataMap.put("11","生产单位");
-        //材质
-        dataMap.put("texture",trackHead.getTexture());
-        //种类
-        dataMap.put("type",produceInspectionRecordUt.getType());
-        //偶合剂
-        dataMap.put("couplingAgent",produceInspectionRecordUt.getCouplingAgent());
-        //对比试样
-        dataMap.put("compareSample",produceInspectionRecordUt.getCompareSample());
-        //试验规范
-        dataMap.put("testSpecification",produceInspectionRecordUt.getTestSpecification());
-        //验收标准
-        dataMap.put("acceptanceCriteria",produceInspectionRecordUt.getAcceptanceCriteria());
-        //灵敏度
-        dataMap.put("sensitivity",produceInspectionRecordUt.getSensitivity());
-        //零件顺序号
-        dataMap.put("222",produceInspectionRecordUt.getSensitivity());
-        //温度
-        dataMap.put("tempera",produceInspectionRecordUt.getTempera());
-        //室温
-        dataMap.put("isRoomTemp",produceInspectionRecordUt.getIsRoomTemp());
-        //粗糙度
-        dataMap.put("roughness",produceInspectionRecordUt.getRoughness());
-        //业主
-        dataMap.put("owner",produceInspectionRecordUt.getOwner());
-        //见证
-        dataMap.put("witnesses",produceInspectionRecordUt.getWitnesses());
-        //检验员
-        dataMap.put("checkBy",trackItemInspection.getCheckBy());
-        //审核人
-        dataMap.put("auditBy",trackItemInspection.getAuditBy());
-        //检验结果
-        dataMap.put("inspectionResults",produceInspectionRecordUt.getInspectionResults());
+
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())){
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordUt.getDiagramAttachmentId()).getData());
@@ -683,7 +643,7 @@ public class ProduceInspectionRecordService{
             for (String diagramAttachmentId : diagramAttachmentIds) {
                 fileInfos.add(systemServiceClient.attachment(diagramAttachmentId).getData());
             }
-            jsonObject.put("fileInfos", fileInfos);
+            jsonObject.put("fileList", fileInfos);
         }
 
         return jsonObject;

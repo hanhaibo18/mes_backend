@@ -19,14 +19,6 @@ public class ProduceInspectionRecordDto{
      */
     private JSONObject inspectionRecord;
     /**
-     * 缺陷列表
-     */
-    private List<ProduceDefectsInfo> produceDefectsInfos;
-    /**
-     * 探头信息
-     */
-    private List<ProbeInfo> probeInfoList;
-    /**
      * 关联工序ids
      */
     private List<String> itemIds;
