@@ -121,5 +121,13 @@ public interface TenantUserService {
      **/
     List<TenantUserVo> queryByBranchCode(String BranchCode);
 
-    
+    /**
+     * 功能描述: 根据UserId查询用户
+     *
+     * @param userId
+     * @Author: xinYu.hou
+     * @Date: 2022/9/14 9:37
+     * @return: TenantUserVo
+     **/
+    TenantUserVo queryByUserId(String userId);
 }

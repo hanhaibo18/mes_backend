@@ -236,4 +236,23 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         return tenantUserMapper.queryByBranchCode(queryWrapper);
     }
 
+    @Override
+    public TenantUserVo queryByUserId(String userId) {
+        TenantUser tenantUser = this.getById(userId);
+        if (null == tenantUser) {
+            tenantUser = this.getOne(new QueryWrapper<TenantUser>()
+                    .eq("user_account", userId));
+        }
+        if (Objects.isNull(tenantUser)) {
+            throw new GlobalException("user not found with id:" + userId, ResultCode.ITEM_NOT_FOUND);
+        }
+        TenantUserVo tenantUserVo = new TenantUserVo(tenantUser);
+        tenantUserVo.setRoleList(userRoleService.queryRolesByUserId(userId));
+        QueryWrapper<UserRole> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", tenantUserVo.getId());
+        List<UserRole> roleList = userRoleService.list(wrapper);
+        tenantUserVo.setUserRoleType(roleList.get(0).getUserType());
+        return tenantUserVo;
+    }
+
 }

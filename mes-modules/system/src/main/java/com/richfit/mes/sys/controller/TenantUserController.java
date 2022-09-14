@@ -255,5 +255,12 @@ public class TenantUserController extends BaseController {
     public List<TenantUserVo> queryByBranchCode(String branchCode) {
         return tenantUserService.queryByBranchCode(branchCode);
     }
+
+    @ApiOperation(value = "根据userId查询用户信息", notes = "根据用户Id获取人员信息")
+    @ApiImplicitParam(name = "userId", value = "用户编码", required = true, dataType = "query")
+    @GetMapping("/queryByUserId")
+    public CommonResult<TenantUserVo> queryByUserId(String userId) {
+        return CommonResult.success(tenantUserService.queryByUserId(userId));
+    }
 }
 
