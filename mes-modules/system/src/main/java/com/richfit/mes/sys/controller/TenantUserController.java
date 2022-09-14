@@ -252,8 +252,8 @@ public class TenantUserController extends BaseController {
     @ApiOperation(value = "根据组织机构获取质检人员", notes = "根据组织机构获取质检人员")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
     @GetMapping("/queryByBranchCode")
-    public List<TenantUserVo> queryByBranchCode(String branchCode) {
-        return tenantUserService.queryByBranchCode(branchCode);
+    public CommonResult<List<TenantUserVo>> queryByBranchCode(String branchCode) {
+        return CommonResult.success(tenantUserService.queryByBranchCode(branchCode));
     }
 
     @ApiOperation(value = "根据userId查询用户信息", notes = "根据用户Id获取人员信息")
