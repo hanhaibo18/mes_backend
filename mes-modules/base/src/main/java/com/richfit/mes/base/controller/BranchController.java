@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.entity.TreeVo;
@@ -262,7 +263,7 @@ public class BranchController extends BaseController {
         queryWrapper.ne("main_branch_code", "");
         List<Branch> result = branchService.list(queryWrapper);
         //当前机构的代码等于顶级机构的代码时返回所有的工厂列表
-        if (tenantUserDetails.getBelongOrgId().equals(tenantUserDetails.getOrgId())) {
+        if (StrUtil.isBlank(tenantUserDetails.getOrgId()) || tenantUserDetails.getBelongOrgId().equals(tenantUserDetails.getOrgId())) {
             return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
         } else {
             for (Branch branch : result) {
