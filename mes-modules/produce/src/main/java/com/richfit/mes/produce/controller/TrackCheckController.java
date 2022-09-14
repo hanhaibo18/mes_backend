@@ -98,8 +98,6 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
-
-
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
                 queryWrapper.eq("drawing_no", drawingNo);
             }

@@ -460,6 +460,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             for (TrackItem item : trackItems) {
                 item.setId(UUID.randomUUID().toString().replace("-", ""));
                 item.setTrackHeadId(trackHead.getId());
+                item.setDrawingNo(trackHead.getDrawingNo());
                 item.setFlowId(flowId);
                 item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
