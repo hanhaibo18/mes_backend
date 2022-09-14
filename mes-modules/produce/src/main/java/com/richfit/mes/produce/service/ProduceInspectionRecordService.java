@@ -15,6 +15,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
@@ -82,6 +83,8 @@ public class ProduceInspectionRecordService{
     private TrackCompleteCacheService trackCompleteCacheService;
     @Autowired
     private TrackCompleteService trackCompleteService;
+    @Autowired
+    private TrackAssignPersonMapper trackAssignPersonMapper;
 
     /**
      * 查询跟单工序探伤列表
@@ -121,9 +124,8 @@ public class ProduceInspectionRecordService{
         if (!StringUtils.isEmpty(productNo)) {
             queryWrapper.likeLeft("productNo", productNo);
         }
-        if (!StringUtils.isEmpty(isOperationComplete)) {
-            queryWrapper.eq("is_operation_complete",isOperationComplete);
-        }
+        //报工状态
+        queryWrapper.eq("is_operation_complete",1);
         if (!StringUtils.isEmpty(startTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
         }
@@ -148,6 +150,75 @@ public class ProduceInspectionRecordService{
     }
 
     /**
+     * 分页查询探伤派工信息
+     * @param page
+     * @param limit
+     * @param startTime
+     * @param endTime
+     * @param trackNo
+     * @param productName
+     * @param branchCode
+     * @param tenantId
+     * @return
+     */
+    public IPage<Assign> assginPage(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isOperationComplete) {
+        QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
+        if (!StringUtils.isEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if (!StringUtils.isEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+
+        if (!StringUtils.isEmpty(trackNo)) {
+            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
+        }
+        if (!StringUtils.isEmpty(productName)) {
+            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
+        }
+        if (!StringUtils.isEmpty(productNo)) {
+            queryWrapper.likeLeft("productNo", productNo);
+        }
+        if (!StringUtils.isEmpty(isOperationComplete)) {
+            queryWrapper.eq("is_operation_complete",isOperationComplete);
+        }
+        if (!StringUtils.isEmpty(startTime)) {
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+        }
+        if (!StringUtils.isEmpty(endTime)) {
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
+        }
+        queryWrapper.orderByDesc("modify_time");
+        IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
+
+        //工序ids
+        List<String> itemIds = trackItemInspections.getRecords().stream().map(TrackItemInspection::getId).collect(Collectors.toList());
+
+        if(itemIds.size()>0){
+            IPage<Assign> assigns = trackAssignService.page(new Page<Assign>(page,limit),new QueryWrapper<Assign>().in("ti_id",itemIds));
+            for (int i = 0; i < assigns.getRecords().size(); i++) {
+                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
+            }
+            if (null != assigns.getRecords()) {
+                for (Assign assign : assigns.getRecords()) {
+                    TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                    TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                    assign.setWeight(trackHead.getWeight());
+                    assign.setWorkNo(trackHead.getWorkNo());
+                    assign.setProductName(trackHead.getProductName());
+                    assign.setPartsName(trackHead.getMaterialName());
+                    assign.setTotalQuantity(trackItem.getNumber());
+                    assign.setDispatchingNumber(trackItem.getAssignableQty());
+                    assign.setWorkPlanNo(trackHead.getWorkPlanNo());
+                }
+            }
+
+            return assigns;
+        }
+        return null;
+    }
+
+    /**
      * 保存探伤记录
      * @return
      */
@@ -157,6 +228,8 @@ public class ProduceInspectionRecordService{
         String tempType = produceInspectionRecordDto.getTempType();
         //要保存的记录实体
         JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
+        //缺陷记录
+        List<ProduceDefectsInfo> produceDefectsInfos = produceInspectionRecordDto.getProduceDefectsInfos();
         //探头信息
         List<ProbeInfo> probeInfoList = produceInspectionRecordDto.getProbeInfoList();
         //工序ids
@@ -169,8 +242,6 @@ public class ProduceInspectionRecordService{
             throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
         }
         jsonObject.put("recordNo",codeRule.getCurValue());
-        //保存流水号
-        codeRuleService.updateCode("ut_record_no",null, codeRule.getCurValue(), null,SecurityUtils.getCurrentUser().getTenantId(),null);
 
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             //保存探伤记录
@@ -189,15 +260,15 @@ public class ProduceInspectionRecordService{
             ProduceInspectionRecordUt produceInspectionRecordUt = jsonObject.toJavaObject(ProduceInspectionRecordUt.class);
             produceInspectionRecordUtService.save(produceInspectionRecordUt);
             recordId = produceInspectionRecordUt.getId();
-            //绑定探头
-            for (ProbeInfo probeInfo : probeInfoList) {
-                probeInfo.setRecordId(recordId);
-            }
-            //保存探头
-            probeInfoService.saveBatch(probeInfoList);
         }else {
             throw new GlobalException(ResultCode.INVALID_ARGUMENTS.getMessage(),ResultCode.INVALID_ARGUMENTS);
         }
+
+        //保存流水号
+        if(!StringUtils.isEmpty(tempType)){
+            codeRuleService.updateCode("inspection_code_"+tempType,null, codeRule.getCurValue(), null,SecurityUtils.getCurrentUser().getTenantId(),null);
+        }
+
         //工序and探伤记录绑定操作
         List<ProduceItemInspectInfo> produceItemInspectInfos = new ArrayList<>();
         for (String itemId : itemIds) {
@@ -208,6 +279,19 @@ public class ProduceInspectionRecordService{
             produceItemInspectInfos.add(produceItemInspectInfo);
         }
         produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
+
+        //ut保存探头
+        for (ProbeInfo probeInfo : probeInfoList) {
+            probeInfo.setRecordId(recordId);
+        }
+        probeInfoService.saveBatch(probeInfoList);
+
+
+        //rt保存缺陷记录
+        for (ProduceDefectsInfo produceDefectsInfo : produceDefectsInfos) {
+            produceDefectsInfo.setRecordId(recordId);
+        }
+        produceDefectsInfoService.saveBatch(produceDefectsInfos);
         return  null;
     }
 
@@ -216,7 +300,7 @@ public class ProduceInspectionRecordService{
      * @param itemId
      * @return
      */
-    public List<Object> queryRecordByItemId(String itemId){
+    public List<Map<String,Object>> queryRecordByItemId(String itemId){
         QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
         itemInspectInfoQueryWrapper.eq("track_item_id",itemId);
         List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
@@ -235,8 +319,37 @@ public class ProduceInspectionRecordService{
                 returnList.addAll(produceInspectionRecordUtService.queryListByIds(ids));
             }
         });
-        return  returnList;
+        List<Map<String,Object>> listMap = new ArrayList<>();
+        //转换map 顺便file详情查询
+        for (Object o : returnList) {
+            listMap.add(objectToMap(o));
+        }
+
+        //根据修改时间排序
+        if(listMap.size()>0){
+            listMap.sort((t1,t2)->
+                    t2.get("modifyTime").toString().compareTo(t1.get("modifyTime").toString())
+            );
+        }
+
+        return  listMap;
     }
+
+    /**
+     * 返回最近一条记录
+     * @param itemId
+     * @return
+     */
+    public Object queryLastInfoByItemId(String itemId){
+        //所有记录
+        List<Map<String, Object>> inspects = queryRecordByItemId(itemId);
+        if(inspects.size()>0){
+            return inspects.get(0);
+        }
+        return null;
+    }
+
+
 
     /**
      * 审核提交探伤记录
@@ -373,7 +486,9 @@ public class ProduceInspectionRecordService{
         //审核人
         dataMap.put("auditBy",trackItemInspection.getAuditBy());
         //图片base64编码
-        dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordRt.getDiagramAttachmentId()).getData());
+        if(!StringUtils.isEmpty(produceInspectionRecordRt.getDiagramAttachmentId())){
+            dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordRt.getDiagramAttachmentId()).getData());
+        }
     }
 
     //pt模板填充
@@ -381,7 +496,7 @@ public class ProduceInspectionRecordService{
         //mt探伤记录
         ProduceInspectionRecordPt produceInspectionRecordPt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordPt.class);
         //报告号
-        dataMap.put("reportNo",produceInspectionRecordPt.getReportNo());
+        //dataMap.put("reportNo",produceInspectionRecordPt.getReportNo());
         //图号
         dataMap.put("drawingNo",trackHead.getDrawingNo());
         //零件名称
@@ -390,8 +505,11 @@ public class ProduceInspectionRecordService{
         dataMap.put("checkBy",trackItemInspection.getCheckBy());
         //审核人
         dataMap.put("auditBy",trackItemInspection.getAuditBy());
-        //图片base64编码
-        dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordPt.getDiagramAttachmentId()).getData());
+        if(!StringUtils.isEmpty(produceInspectionRecordPt.getDiagramAttachmentId())){
+            //图片base64编码
+            dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordPt.getDiagramAttachmentId()).getData());
+        }
+
     }
 
     //ut模板填充
@@ -545,6 +663,30 @@ public class ProduceInspectionRecordService{
             trackCompleteService.saveBatch(completeDto.getTrackCompleteList());
         }
         return CommonResult.success(true);
+    }
+
+
+    /**
+     * 将Object对象里面的属性和值转化成Map对象
+     *
+     * @param obj
+     * @return
+     * @throws IllegalAccessException
+     */
+    public  Map<String, Object> objectToMap(Object obj){
+        JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(obj));
+
+        //插入附件信息
+        if(!ObjectUtil.isEmpty(jsonObject.get("diagramAttachmentId"))){
+            List<Object> fileInfos = new ArrayList<>();
+            String[] diagramAttachmentIds = jsonObject.get("diagramAttachmentId").toString().split(",");
+            for (String diagramAttachmentId : diagramAttachmentIds) {
+                fileInfos.add(systemServiceClient.attachment(diagramAttachmentId).getData());
+            }
+            jsonObject.put("fileInfos", fileInfos);
+        }
+
+        return jsonObject;
     }
 
 
