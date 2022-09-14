@@ -16,7 +16,7 @@
             <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
                 <Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml" />
                 <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml" />
-                <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.png" />
+                <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.jpeg" />
                 <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png" />
                 <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml" />
                 <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml" />
@@ -39,6 +39,8 @@
                                 <w:sz w:val="36" />
                             </w:rPr>
                         </w:pPr>
+                        <w:bookmarkStart w:id="0" w:name="_GoBack" />
+                        <w:bookmarkEnd w:id="0" />
                         <w:r>
                             <w:rPr>
                                 <w:rFonts w:eastAsia="黑体" />
@@ -95,7 +97,9 @@
                             </w:tblBorders>
                             <w:tblLayout w:type="autofit" />
                             <w:tblCellMar>
+                                <w:top w:w="0" w:type="dxa" />
                                 <w:left w:w="108" w:type="dxa" />
+                                <w:bottom w:w="0" w:type="dxa" />
                                 <w:right w:w="108" w:type="dxa" />
                             </w:tblCellMar>
                         </w:tblPr>
@@ -114,7 +118,9 @@
                                     <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                 </w:tblBorders>
                                 <w:tblCellMar>
+                                    <w:top w:w="0" w:type="dxa" />
                                     <w:left w:w="108" w:type="dxa" />
+                                    <w:bottom w:w="0" w:type="dxa" />
                                     <w:right w:w="108" w:type="dxa" />
                                 </w:tblCellMar>
                             </w:tblPrEx>
@@ -127,6 +133,8 @@
                                         <w:bottom w:val="nil" />
                                         <w:right w:val="nil" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -148,7 +156,7 @@
                                             <w:vertAlign w:val="baseline" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>${reportNo}</w:t>
+                                        <w:t>${recordNo!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -161,6 +169,8 @@
                                         <w:bottom w:val="nil" />
                                         <w:right w:val="nil" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -169,7 +179,7 @@
                                         <w:keepLines w:val="0" />
                                         <w:widowControl />
                                         <w:suppressLineNumbers w:val="0" />
-                                        <w:shd w:val="clear" w:fill="FFFFFF" />
+                                        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
                                         <w:jc w:val="right" />
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
@@ -181,11 +191,12 @@
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="default" w:ascii="Consolas" w:hAnsi="Consolas" w:eastAsia="Consolas" w:cs="Consolas" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="19" />
                                             <w:szCs w:val="19" />
-                                            <w:shd w:val="clear" w:fill="FFFFFF" />
+                                            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                         <w:t>${year!""}</w:t>
                                     </w:r>
@@ -195,17 +206,18 @@
                                             <w:color w:val="000000" />
                                             <w:sz w:val="19" />
                                             <w:szCs w:val="19" />
-                                            <w:shd w:val="clear" w:fill="FFFFFF" />
+                                            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
                                         </w:rPr>
                                         <w:t>年</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="default" w:ascii="Consolas" w:hAnsi="Consolas" w:eastAsia="Consolas" w:cs="Consolas" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="19" />
                                             <w:szCs w:val="19" />
-                                            <w:shd w:val="clear" w:fill="FFFFFF" />
+                                            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                         <w:t>${month!""}</w:t>
                                     </w:r>
@@ -215,17 +227,18 @@
                                             <w:color w:val="000000" />
                                             <w:sz w:val="19" />
                                             <w:szCs w:val="19" />
-                                            <w:shd w:val="clear" w:fill="FFFFFF" />
+                                            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
                                         </w:rPr>
                                         <w:t>月</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="default" w:ascii="Consolas" w:hAnsi="Consolas" w:eastAsia="Consolas" w:cs="Consolas" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="19" />
                                             <w:szCs w:val="19" />
-                                            <w:shd w:val="clear" w:fill="FFFFFF" />
+                                            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                         <w:t>${day!""}</w:t>
                                     </w:r>
@@ -235,7 +248,7 @@
                                             <w:color w:val="000000" />
                                             <w:sz w:val="19" />
                                             <w:szCs w:val="19" />
-                                            <w:shd w:val="clear" w:fill="FFFFFF" />
+                                            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
                                         </w:rPr>
                                         <w:t>日</w:t>
                                     </w:r>
@@ -267,15 +280,13 @@
                         <w:tblGrid>
                             <w:gridCol w:w="2077" />
                             <w:gridCol w:w="913" />
-                            <w:gridCol w:w="1482" />
-                            <w:gridCol w:w="570" />
-                            <w:gridCol w:w="218" />
+                            <w:gridCol w:w="970" />
+                            <w:gridCol w:w="1300" />
                             <w:gridCol w:w="274" />
                             <w:gridCol w:w="1283" />
-                            <w:gridCol w:w="895" />
-                            <w:gridCol w:w="213" />
-                            <w:gridCol w:w="82" />
-                            <w:gridCol w:w="313" />
+                            <w:gridCol w:w="1190" />
+                            <w:gridCol w:w="109" />
+                            <w:gridCol w:w="204" />
                             <w:gridCol w:w="112" />
                             <w:gridCol w:w="2540" />
                         </w:tblGrid>
@@ -304,21 +315,22 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="5260" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
+                                    <w:gridSpan w:val="4" />
                                     <w:tcBorders>
                                         <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                         <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                         <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                         <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:rPr>
-                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
@@ -331,12 +343,30 @@
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                        </w:rPr>
+                                        <w:t>Part Name</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                         </w:rPr>
                                         <w:t>:</w:t>
                                     </w:r>
+                                </w:p>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
                                     <w:r>
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
@@ -345,17 +375,19 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>${materialName}</w:t>
+                                        <w:t>${materialName!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="3060" w:type="dxa" />
-                                    <w:gridSpan w:val="6" />
+                                    <w:gridSpan w:val="5" />
                                     <w:tcBorders>
                                         <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -408,11 +440,13 @@
                                 <w:tcPr>
                                     <w:tcW w:w="2652" w:type="dxa" />
                                     <w:gridSpan w:val="2" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:rPr>
-                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
@@ -435,6 +469,16 @@
                                         </w:rPr>
                                         <w:t>:</w:t>
                                     </w:r>
+                                </w:p>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
                                     <w:r>
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
@@ -443,7 +487,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{仪器型号}</w:t>
+                                        <w:t>${instrumentModel!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -478,14 +522,15 @@
                                     <w:tcBorders>
                                         <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:rPr>
-                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
@@ -530,6 +575,16 @@
                                         </w:rPr>
                                         <w:t>:</w:t>
                                     </w:r>
+                                </w:p>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
                                     <w:r>
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
@@ -554,11 +609,13 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2270" w:type="dxa" />
-                                    <w:gridSpan w:val="3" />
+                                    <w:gridSpan w:val="2" />
                                     <w:vMerge w:val="restart" />
                                     <w:tcBorders>
                                         <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -604,14 +661,16 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t xml:space="preserve"> ${checkMaterial!""}</w:t>
+                                        <w:t>${texture!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="5712" w:type="dxa" />
-                                    <w:gridSpan w:val="8" />
+                                    <w:gridSpan w:val="7" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -660,6 +719,7 @@
                                     <w:tcW w:w="2990" w:type="dxa" />
                                     <w:gridSpan w:val="2" />
                                     <w:vMerge w:val="continue" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -675,8 +735,10 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2270" w:type="dxa" />
-                                    <w:gridSpan w:val="3" />
+                                    <w:gridSpan w:val="2" />
                                     <w:vMerge w:val="continue" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -691,110 +753,29 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="5712" w:type="dxa" />
-                                    <w:gridSpan w:val="8" />
+                                    <w:gridSpan w:val="7" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>铸</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>C</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">ast </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if typeList?seq_contains("0")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"> 锻</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>Forging</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if typeList?seq_contains("1")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve"> 焊</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>W</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">eld </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if typeList?seq_contains("2")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
+                                        <w:t>${type!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -824,7 +805,9 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="10972" w:type="dxa" />
-                                    <w:gridSpan w:val="13" />
+                                    <w:gridSpan w:val="11" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:tbl>
                                     <w:tblPr>
@@ -841,7 +824,9 @@
                                         </w:tblBorders>
                                         <w:tblLayout w:type="fixed" />
                                         <w:tblCellMar>
+                                            <w:top w:w="0" w:type="dxa" />
                                             <w:left w:w="108" w:type="dxa" />
+                                            <w:bottom w:w="0" w:type="dxa" />
                                             <w:right w:w="108" w:type="dxa" />
                                         </w:tblCellMar>
                                     </w:tblPr>
@@ -849,9 +834,10 @@
                                         <w:gridCol w:w="2787" />
                                         <w:gridCol w:w="1625" />
                                         <w:gridCol w:w="297" />
-                                        <w:gridCol w:w="1537" />
-                                        <w:gridCol w:w="1537" />
-                                        <w:gridCol w:w="1537" />
+                                        <w:gridCol w:w="539" />
+                                        <w:gridCol w:w="2535" />
+                                        <w:gridCol w:w="321" />
+                                        <w:gridCol w:w="1216" />
                                         <w:gridCol w:w="1640" />
                                     </w:tblGrid>
                                     <w:tr>
@@ -865,7 +851,9 @@
                                                 <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                             </w:tblBorders>
                                             <w:tblCellMar>
+                                                <w:top w:w="0" w:type="dxa" />
                                                 <w:left w:w="108" w:type="dxa" />
+                                                <w:bottom w:w="0" w:type="dxa" />
                                                 <w:right w:w="108" w:type="dxa" />
                                             </w:tblCellMar>
                                         </w:tblPrEx>
@@ -877,6 +865,7 @@
                                                     <w:bottom w:val="nil" />
                                                     <w:right w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
                                                 <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
@@ -918,6 +907,8 @@
                                                     <w:bottom w:val="nil" />
                                                     <w:right w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -939,25 +930,28 @@
                                                         <w:vertAlign w:val="baseline" />
                                                         <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                                     </w:rPr>
-                                                    <w:t>${n!""}</w:t>
+                                                    <w:t>${liftPower!""}</w:t>
                                                 </w:r>
                                             </w:p>
                                         </w:tc>
                                         <w:tc>
                                             <w:tcPr>
-                                                <w:tcW w:w="297" w:type="dxa" />
+                                                <w:tcW w:w="836" w:type="dxa" />
+                                                <w:gridSpan w:val="2" />
+                                                <w:vMerge w:val="restart" />
                                                 <w:tcBorders>
                                                     <w:top w:val="nil" />
                                                     <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
+                                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
                                                     <w:jc w:val="left" />
                                                     <w:rPr>
-                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                                         <w:sz w:val="18" />
                                                         <w:szCs w:val="18" />
                                                         <w:vertAlign w:val="baseline" />
@@ -975,17 +969,6 @@
                                                     <w:t>N</w:t>
                                                 </w:r>
                                             </w:p>
-                                        </w:tc>
-                                        <w:tc>
-                                            <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
-                                                <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
-                                                </w:tcBorders>
-                                            </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
                                                     <w:jc w:val="left" />
@@ -996,96 +979,86 @@
                                                         <w:vertAlign w:val="baseline" />
                                                     </w:rPr>
                                                 </w:pPr>
-                                            </w:p>
-                                        </w:tc>
-                                        <w:tc>
-                                            <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
-                                                <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
-                                                </w:tcBorders>
-                                            </w:tcPr>
-                                            <w:p>
-                                                <w:pPr>
-                                                    <w:jc w:val="left" />
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                        <w:vertAlign w:val="baseline" />
-                                                    </w:rPr>
-                                                </w:pPr>
-                                                <w:r>
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                    </w:rPr>
-                                                    <w:t>交流AC</w:t>
-                                                </w:r>
-                                            </w:p>
-                                        </w:tc>
-                                        <w:tc>
-                                            <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
-                                                <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
-                                                </w:tcBorders>
-                                            </w:tcPr>
-                                            <w:p>
-                                                <w:pPr>
-                                                    <w:jc w:val="left" />
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                        <w:vertAlign w:val="baseline" />
-                                                    </w:rPr>
-                                                </w:pPr>
-                                            </w:p>
-                                        </w:tc>
-                                        <w:tc>
-                                            <w:tcPr>
-                                                <w:tcW w:w="1640" w:type="dxa" />
-                                                <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
-                                                </w:tcBorders>
-                                            </w:tcPr>
-                                            <w:p>
-                                                <w:pPr>
-                                                    <w:jc w:val="left" />
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                        <w:vertAlign w:val="baseline" />
-                                                    </w:rPr>
-                                                </w:pPr>
-                                                <w:r>
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                    </w:rPr>
-                                                    <w:t xml:space="preserve">A </w:t>
-                                                </w:r>
                                                 <w:r>
                                                     <w:rPr>
                                                         <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                                         <w:sz w:val="18" />
                                                         <w:szCs w:val="18" />
-                                                        <w:lang w:eastAsia="zh-CN" />
+                                                        <w:vertAlign w:val="baseline" />
+                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                                     </w:rPr>
-                                                    <w:t>□</w:t>
+                                                    <w:t>A</w:t>
+                                                </w:r>
+                                            </w:p>
+                                        </w:tc>
+                                        <w:tc>
+                                            <w:tcPr>
+                                                <w:tcW w:w="2856" w:type="dxa" />
+                                                <w:gridSpan w:val="2" />
+                                                <w:vMerge w:val="restart" />
+                                                <w:tcBorders>
+                                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="center" />
+                                            </w:tcPr>
+                                            <w:p>
+                                                <w:pPr>
+                                                    <w:jc w:val="center" />
+                                                    <w:rPr>
+                                                        <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                                        <w:sz w:val="18" />
+                                                        <w:szCs w:val="18" />
+                                                        <w:vertAlign w:val="baseline" />
+                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                                    </w:rPr>
+                                                </w:pPr>
+                                                <w:r>
+                                                    <w:rPr>
+                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                                        <w:sz w:val="18" />
+                                                        <w:szCs w:val="18" />
+                                                        <w:vertAlign w:val="baseline" />
+                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                                    </w:rPr>
+                                                    <w:t>电流类型Current type</w:t>
+                                                </w:r>
+                                            </w:p>
+                                        </w:tc>
+                                        <w:tc>
+                                            <w:tcPr>
+                                                <w:tcW w:w="2856" w:type="dxa" />
+                                                <w:gridSpan w:val="2" />
+                                                <w:vMerge w:val="restart" />
+                                                <w:tcBorders>
+                                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="center" />
+                                            </w:tcPr>
+                                            <w:p>
+                                                <w:pPr>
+                                                    <w:jc w:val="center" />
+                                                    <w:rPr>
+                                                        <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                                        <w:sz w:val="18" />
+                                                        <w:szCs w:val="18" />
+                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                                    </w:rPr>
+                                                </w:pPr>
+                                                <w:r>
+                                                    <w:rPr>
+                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                                        <w:color w:val="0000FF" />
+                                                        <w:sz w:val="18" />
+                                                        <w:szCs w:val="18" />
+                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                                    </w:rPr>
+                                                    <w:t>${currentType!""}</w:t>
                                                 </w:r>
                                             </w:p>
                                         </w:tc>
@@ -1101,7 +1074,9 @@
                                                 <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                             </w:tblBorders>
                                             <w:tblCellMar>
+                                                <w:top w:w="0" w:type="dxa" />
                                                 <w:left w:w="108" w:type="dxa" />
+                                                <w:bottom w:w="0" w:type="dxa" />
                                                 <w:right w:w="108" w:type="dxa" />
                                             </w:tblCellMar>
                                         </w:tblPrEx>
@@ -1117,6 +1092,8 @@
                                                     <w:bottom w:val="nil" />
                                                     <w:right w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1147,6 +1124,8 @@
                                                     <w:bottom w:val="nil" />
                                                     <w:right w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1161,59 +1140,27 @@
                                                 </w:pPr>
                                                 <w:r>
                                                     <w:rPr>
-                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                                         <w:color w:val="0000FF" />
                                                         <w:sz w:val="18" />
                                                         <w:szCs w:val="18" />
-                                                        <w:vertAlign w:val="baseline" />
-                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                                     </w:rPr>
-                                                    <w:t>{A}</w:t>
+                                                    <w:t>${magnetizingCurrent!""}</w:t>
                                                 </w:r>
                                             </w:p>
                                         </w:tc>
                                         <w:tc>
                                             <w:tcPr>
-                                                <w:tcW w:w="297" w:type="dxa" />
+                                                <w:tcW w:w="836" w:type="dxa" />
+                                                <w:gridSpan w:val="2" />
+                                                <w:vMerge w:val="continue" />
                                                 <w:tcBorders>
-                                                    <w:top w:val="nil" />
                                                     <w:left w:val="nil" />
                                                     <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
+                                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                                 </w:tcBorders>
-                                            </w:tcPr>
-                                            <w:p>
-                                                <w:pPr>
-                                                    <w:jc w:val="left" />
-                                                    <w:rPr>
-                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                        <w:vertAlign w:val="baseline" />
-                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
-                                                    </w:rPr>
-                                                </w:pPr>
-                                                <w:r>
-                                                    <w:rPr>
-                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                        <w:vertAlign w:val="baseline" />
-                                                        <w:lang w:val="en-US" w:eastAsia="zh-CN" />
-                                                    </w:rPr>
-                                                    <w:t>A</w:t>
-                                                </w:r>
-                                            </w:p>
-                                        </w:tc>
-                                        <w:tc>
-                                            <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
-                                                <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
-                                                </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1229,43 +1176,16 @@
                                         </w:tc>
                                         <w:tc>
                                             <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
+                                                <w:tcW w:w="2856" w:type="dxa" />
+                                                <w:gridSpan w:val="2" />
+                                                <w:vMerge w:val="continue" />
                                                 <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
+                                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                                 </w:tcBorders>
-                                            </w:tcPr>
-                                            <w:p>
-                                                <w:pPr>
-                                                    <w:jc w:val="left" />
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                        <w:vertAlign w:val="baseline" />
-                                                    </w:rPr>
-                                                </w:pPr>
-                                                <w:r>
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                    </w:rPr>
-                                                    <w:t>直流DC</w:t>
-                                                </w:r>
-                                            </w:p>
-                                        </w:tc>
-                                        <w:tc>
-                                            <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
-                                                <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
-                                                </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1281,13 +1201,16 @@
                                         </w:tc>
                                         <w:tc>
                                             <w:tcPr>
-                                                <w:tcW w:w="1640" w:type="dxa" />
+                                                <w:tcW w:w="2856" w:type="dxa" />
+                                                <w:gridSpan w:val="2" />
+                                                <w:vMerge w:val="continue" />
                                                 <w:tcBorders>
-                                                    <w:top w:val="nil" />
-                                                    <w:left w:val="nil" />
-                                                    <w:bottom w:val="nil" />
-                                                    <w:right w:val="nil" />
+                                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1299,23 +1222,6 @@
                                                         <w:vertAlign w:val="baseline" />
                                                     </w:rPr>
                                                 </w:pPr>
-                                                <w:r>
-                                                    <w:rPr>
-                                                        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                    </w:rPr>
-                                                    <w:t xml:space="preserve">A </w:t>
-                                                </w:r>
-                                                <w:r>
-                                                    <w:rPr>
-                                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                                        <w:sz w:val="18" />
-                                                        <w:szCs w:val="18" />
-                                                        <w:lang w:eastAsia="zh-CN" />
-                                                    </w:rPr>
-                                                    <w:t>□</w:t>
-                                                </w:r>
                                             </w:p>
                                         </w:tc>
                                     </w:tr>
@@ -1330,7 +1236,9 @@
                                                 <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                             </w:tblBorders>
                                             <w:tblCellMar>
+                                                <w:top w:w="0" w:type="dxa" />
                                                 <w:left w:w="108" w:type="dxa" />
+                                                <w:bottom w:w="0" w:type="dxa" />
                                                 <w:right w:w="108" w:type="dxa" />
                                             </w:tblCellMar>
                                         </w:tblPrEx>
@@ -1340,6 +1248,8 @@
                                                 <w:tcBorders>
                                                     <w:top w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1358,6 +1268,8 @@
                                                 <w:tcBorders>
                                                     <w:top w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1379,6 +1291,8 @@
                                                 <w:tcBorders>
                                                     <w:top w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1395,10 +1309,12 @@
                                         </w:tc>
                                         <w:tc>
                                             <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
+                                                <w:tcW w:w="539" w:type="dxa" />
                                                 <w:tcBorders>
                                                     <w:top w:val="nil" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1414,10 +1330,12 @@
                                         </w:tc>
                                         <w:tc>
                                             <w:tcPr>
-                                                <w:tcW w:w="1537" w:type="dxa" />
+                                                <w:tcW w:w="2535" w:type="dxa" />
                                                 <w:tcBorders>
-                                                    <w:top w:val="nil" />
+                                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1433,9 +1351,12 @@
                                         <w:tc>
                                             <w:tcPr>
                                                 <w:tcW w:w="1537" w:type="dxa" />
+                                                <w:gridSpan w:val="2" />
                                                 <w:tcBorders>
-                                                    <w:top w:val="nil" />
+                                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1453,8 +1374,10 @@
                                             <w:tcPr>
                                                 <w:tcW w:w="1640" w:type="dxa" />
                                                 <w:tcBorders>
-                                                    <w:top w:val="nil" />
+                                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                                 </w:tcBorders>
+                                                <w:noWrap w:val="0" />
+                                                <w:vAlign w:val="top" />
                                             </w:tcPr>
                                             <w:p>
                                                 <w:pPr>
@@ -1506,7 +1429,9 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="10972" w:type="dxa" />
-                                    <w:gridSpan w:val="13" />
+                                    <w:gridSpan w:val="11" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -1547,43 +1472,33 @@
                             </w:tblPrEx>
                             <w:trPr>
                                 <w:cantSplit />
-                                <w:trHeight w:val="340" w:hRule="atLeast" />
+                                <w:trHeight w:val="481" w:hRule="atLeast" />
                                 <w:jc w:val="center" />
                             </w:trPr>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="4472" w:type="dxa" />
+                                    <w:tcW w:w="3960" w:type="dxa" />
                                     <w:gridSpan w:val="3" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">磁轭Yoke </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("0")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
+                                        <w:t>磁化方法</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -1591,419 +1506,7 @@
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                         </w:rPr>
-                                        <w:t xml:space="preserve"> 线圈Coil </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("1")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="3240" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">连续法Continuous </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("6")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="3260" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">纵向Longitudinal </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("10")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                        </w:tr>
-                        <w:tr>
-                            <w:tblPrEx>
-                                <w:tblBorders>
-                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                </w:tblBorders>
-                                <w:tblCellMar>
-                                    <w:top w:w="0" w:type="dxa" />
-                                    <w:left w:w="108" w:type="dxa" />
-                                    <w:bottom w:w="0" w:type="dxa" />
-                                    <w:right w:w="108" w:type="dxa" />
-                                </w:tblCellMar>
-                            </w:tblPrEx>
-                            <w:trPr>
-                                <w:cantSplit />
-                                <w:trHeight w:val="362" w:hRule="atLeast" />
-                                <w:jc w:val="center" />
-                            </w:trPr>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="4472" w:type="dxa" />
-                                    <w:gridSpan w:val="3" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>直接通电Contact</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("2")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="3240" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">剩磁法Residual </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("7")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="3260" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">横向Transverse </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("11")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                        </w:tr>
-                        <w:tr>
-                            <w:tblPrEx>
-                                <w:tblBorders>
-                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                </w:tblBorders>
-                                <w:tblCellMar>
-                                    <w:top w:w="0" w:type="dxa" />
-                                    <w:left w:w="108" w:type="dxa" />
-                                    <w:bottom w:w="0" w:type="dxa" />
-                                    <w:right w:w="108" w:type="dxa" />
-                                </w:tblCellMar>
-                            </w:tblPrEx>
-                            <w:trPr>
-                                <w:cantSplit />
-                                <w:trHeight w:val="317" w:hRule="atLeast" />
-                                <w:jc w:val="center" />
-                            </w:trPr>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="4472" w:type="dxa" />
-                                    <w:gridSpan w:val="3" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>中心导体Central Conductor</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("3")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="3240" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>非荧光Visible Magnetic</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("8")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="3260" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">湿粉Wet </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("12")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                        </w:tr>
-                        <w:tr>
-                            <w:tblPrEx>
-                                <w:tblBorders>
-                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                </w:tblBorders>
-                                <w:tblCellMar>
-                                    <w:top w:w="0" w:type="dxa" />
-                                    <w:left w:w="108" w:type="dxa" />
-                                    <w:bottom w:w="0" w:type="dxa" />
-                                    <w:right w:w="108" w:type="dxa" />
-                                </w:tblCellMar>
-                            </w:tblPrEx>
-                            <w:trPr>
-                                <w:cantSplit />
-                                <w:trHeight w:val="260" w:hRule="atLeast" />
-                                <w:jc w:val="center" />
-                            </w:trPr>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="4472" w:type="dxa" />
-                                    <w:gridSpan w:val="3" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t xml:space="preserve">支杆yoke </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("4")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
+                                        <w:t>Magnetization</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -2012,99 +1515,406 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t xml:space="preserve"> </w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>其它Others</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("5")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
+                                        <w:t xml:space="preserve"> method</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="3240" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
+                                    <w:tcW w:w="7012" w:type="dxa" />
+                                    <w:gridSpan w:val="8" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                         </w:rPr>
-                                        <w:t>荧光Fluorescent Light</w:t>
+                                        <w:t>${magneticMethod!""}</w:t>
                                     </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                        <w:tr>
+                            <w:tblPrEx>
+                                <w:tblBorders>
+                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                </w:tblBorders>
+                                <w:tblCellMar>
+                                    <w:top w:w="0" w:type="dxa" />
+                                    <w:left w:w="108" w:type="dxa" />
+                                    <w:bottom w:w="0" w:type="dxa" />
+                                    <w:right w:w="108" w:type="dxa" />
+                                </w:tblCellMar>
+                            </w:tblPrEx>
+                            <w:trPr>
+                                <w:cantSplit />
+                                <w:trHeight w:val="454" w:hRule="atLeast" />
+                                <w:jc w:val="center" />
+                            </w:trPr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="3960" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
+                                </w:tcPr>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:pStyle w:val="5" />
+                                        <w:keepNext w:val="0" />
+                                        <w:keepLines w:val="0" />
+                                        <w:widowControl />
+                                        <w:suppressLineNumbers w:val="0" />
+                                        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
+                                        <w:ind w:firstLine="720" w:firstLineChars="400" />
+                                        <w:jc w:val="both" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
                                     <w:r>
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("9")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
+                                        <w:t>检测方法</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:kern w:val="2" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA" />
+                                        </w:rPr>
+                                        <w:t>D</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                            <w:kern w:val="2" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA" />
+                                        </w:rPr>
+                                        <w:t>etection</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:kern w:val="2" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA" />
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> m</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                            <w:kern w:val="2" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA" />
+                                        </w:rPr>
+                                        <w:t>ethod</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="3260" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
+                                    <w:tcW w:w="7012" w:type="dxa" />
+                                    <w:gridSpan w:val="8" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t xml:space="preserve">退磁Demagnetization </w:t>
+                                        <w:t>${detectionMethod!""}</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                        <w:tr>
+                            <w:tblPrEx>
+                                <w:tblBorders>
+                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                </w:tblBorders>
+                                <w:tblCellMar>
+                                    <w:top w:w="0" w:type="dxa" />
+                                    <w:left w:w="108" w:type="dxa" />
+                                    <w:bottom w:w="0" w:type="dxa" />
+                                    <w:right w:w="108" w:type="dxa" />
+                                </w:tblCellMar>
+                            </w:tblPrEx>
+                            <w:trPr>
+                                <w:cantSplit />
+                                <w:trHeight w:val="609" w:hRule="atLeast" />
+                                <w:jc w:val="center" />
+                            </w:trPr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="3960" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
+                                </w:tcPr>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:pStyle w:val="5" />
+                                        <w:keepNext w:val="0" />
+                                        <w:keepLines w:val="0" />
+                                        <w:widowControl />
+                                        <w:suppressLineNumbers w:val="0" />
+                                        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
+                                        <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>磁粉载体M</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:kern w:val="2" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA" />
+                                        </w:rPr>
+                                        <w:t>agnetic</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:kern w:val="2" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA" />
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> c</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:kern w:val="2" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA" />
+                                        </w:rPr>
+                                        <w:t>arrier</w:t>
+                                    </w:r>
+                                </w:p>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:pStyle w:val="5" />
+                                        <w:keepNext w:val="0" />
+                                        <w:keepLines w:val="0" />
+                                        <w:widowControl />
+                                        <w:suppressLineNumbers w:val="0" />
+                                        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
+                                        <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${magneticCarrier!""}</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="4156" w:type="dxa" />
+                                    <w:gridSpan w:val="5" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
+                                </w:tcPr>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:pStyle w:val="5" />
+                                        <w:keepNext w:val="0" />
+                                        <w:keepLines w:val="0" />
+                                        <w:widowControl />
+                                        <w:suppressLineNumbers w:val="0" />
+                                        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF" />
+                                        <w:tabs>
+                                            <w:tab w:val="center" w:pos="2029" />
+                                            <w:tab w:val="right" w:pos="3940" />
+                                        </w:tabs>
+                                        <w:jc w:val="left" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:tab />
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <#if magnetizationSpecificationList?seq_contains("13")><w:t>☑</w:t>
-                                        <#else><w:t>□</w:t></#if>
+                                        <w:t>磁化方向M</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>agnetic</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> d</w:t>
+                                    </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>irection</w:t>
+                                    </w:r>
+                                </w:p>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${magneticDirection!""}</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="2856" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
+                                    <w:tcBorders>
+                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                                    </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="center" />
+                                </w:tcPr>
+                                <w:p>
+                                    <w:pPr>
+                                        <w:jc w:val="center" />
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${fluorescent!""}{、退磁}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2137,6 +1947,7 @@
                                     <w:tcBorders>
                                         <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2178,7 +1989,7 @@
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="2965" w:type="dxa" />
+                                    <w:tcW w:w="3183" w:type="dxa" />
                                     <w:gridSpan w:val="3" />
                                     <w:tcBorders>
                                         <w:top w:val="nil" />
@@ -2186,6 +1997,8 @@
                                         <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                         <w:right w:val="nil" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -2209,24 +2022,36 @@
                                     <w:pPr>
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${tempera!""}</w:t>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="2965" w:type="dxa" />
-                                    <w:gridSpan w:val="6" />
+                                    <w:tcW w:w="2747" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
                                     <w:tcBorders>
                                         <w:top w:val="nil" />
                                         <w:left w:val="nil" />
                                         <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                         <w:right w:val="nil" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -2262,20 +2087,23 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>□</w:t>
+                                        <#if isRoomTemp?? && isRoomTemp=="1"><w:t>☑</w:t>
+                                        <#else><w:t>□</w:t></#if>
                                     </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2965" w:type="dxa" />
-                                    <w:gridSpan w:val="3" />
+                                    <w:gridSpan w:val="4" />
                                     <w:tcBorders>
                                         <w:top w:val="nil" />
                                         <w:left w:val="nil" />
                                         <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                         <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -2299,11 +2127,22 @@
                                     <w:pPr>
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${roughness!""}</w:t>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                         </w:tr>
@@ -2331,16 +2170,19 @@
                             </w:trPr>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="2077" w:type="dxa" />
-                                    <w:vAlign w:val="center" />
+                                    <w:tcW w:w="3960" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
-                                        <w:jc w:val="center" />
+                                        <w:jc w:val="both" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
@@ -2351,16 +2193,15 @@
                                         </w:rPr>
                                         <w:t>试验规范Test</w:t>
                                     </w:r>
-                                </w:p>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
+                                    <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                    </w:pPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
                                     <w:r>
                                         <w:rPr>
                                             <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
@@ -2369,20 +2210,22 @@
                                         </w:rPr>
                                         <w:t>Specification</w:t>
                                     </w:r>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>:</w:t>
+                                    </w:r>
                                 </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="2395" w:type="dxa" />
-                                    <w:gridSpan w:val="2" />
-                                    <w:tcBorders>
-                                        <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                    <w:vAlign w:val="center" />
-                                </w:tcPr>
                                 <w:p>
                                     <w:pPr>
-                                        <w:jc w:val="center" />
+                                        <w:tabs>
+                                            <w:tab w:val="left" w:pos="2908" />
+                                        </w:tabs>
+                                        <w:jc w:val="both" />
                                         <w:rPr>
                                             <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
@@ -2392,11 +2235,10 @@
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                         <w:t>${testSpecification!""}</w:t>
                                     </w:r>
@@ -2404,15 +2246,17 @@
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="3453" w:type="dxa" />
-                                    <w:gridSpan w:val="6" />
+                                    <w:tcW w:w="4156" w:type="dxa" />
+                                    <w:gridSpan w:val="5" />
                                     <w:tcBorders>
                                         <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
-                                        <w:jc w:val="center" />
+                                        <w:jc w:val="both" />
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
@@ -2438,7 +2282,7 @@
                                 </w:p>
                                 <w:p>
                                     <w:pPr>
-                                        <w:jc w:val="center" />
+                                        <w:jc w:val="both" />
                                         <w:rPr>
                                             <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
                                             <w:sz w:val="18" />
@@ -2448,11 +2292,10 @@
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                         <w:t>${acceptanceCriteria!""}</w:t>
                                     </w:r>
@@ -2460,18 +2303,22 @@
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="3047" w:type="dxa" />
-                                    <w:gridSpan w:val="4" />
+                                    <w:tcW w:w="2856" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
                                     <w:tcBorders>
                                         <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                                     </w:tcBorders>
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
+                                        <w:jc w:val="both" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
                                     <w:r>
@@ -2498,16 +2345,15 @@
                                         </w:rPr>
                                         <w:t>30/100</w:t>
                                     </w:r>
-                                </w:p>
-                                <w:p>
-                                    <w:pPr>
+                                    <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                    </w:pPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
                                     <w:r>
                                         <w:rPr>
                                             <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
@@ -2521,9 +2367,9 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>：</w:t>
+                                        <w:t>:</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -2563,6 +2409,7 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2077" w:type="dxa" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2605,7 +2452,8 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="8895" w:type="dxa" />
-                                    <w:gridSpan w:val="12" />
+                                    <w:gridSpan w:val="10" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2656,6 +2504,7 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2077" w:type="dxa" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2734,7 +2583,9 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="8895" w:type="dxa" />
-                                    <w:gridSpan w:val="12" />
+                                    <w:gridSpan w:val="10" />
+                                    <w:noWrap w:val="0" />
+                                    <w:vAlign w:val="top" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
@@ -2747,48 +2598,22 @@
                                     </w:pPr>
                                     <w:r>
                                         <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:drawing>
-                                            <wp:inline distT="0" distB="0" distL="114300" distR="114300">
-                                                <wp:extent cx="4000500" cy="2844800" />
-                                                <wp:effectExtent l="0" t="0" r="0" b="0" />
-                                                <wp:docPr id="1" name="图片 1" descr="img" />
-                                                <wp:cNvGraphicFramePr>
-                                                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1" />
-                                                </wp:cNvGraphicFramePr>
-                                                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-                                                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                                                        <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                                                            <pic:nvPicPr>
-                                                                <pic:cNvPr id="1" name="图片 1" descr="img" />
-                                                                <pic:cNvPicPr>
-                                                                    <a:picLocks noChangeAspect="1" />
-                                                                </pic:cNvPicPr>
-                                                            </pic:nvPicPr>
-                                                            <pic:blipFill>
-                                                                <a:blip r:embed="rId6" />
-                                                                <a:stretch>
-                                                                    <a:fillRect />
-                                                                </a:stretch>
-                                                            </pic:blipFill>
-                                                            <pic:spPr>
-                                                                <a:xfrm>
-                                                                    <a:off x="0" y="0" />
-                                                                    <a:ext cx="4000500" cy="2844800" />
-                                                                </a:xfrm>
-                                                                <a:prstGeom prst="rect">
-                                                                    <a:avLst />
-                                                                </a:prstGeom>
-                                                            </pic:spPr>
-                                                        </pic:pic>
-                                                    </a:graphicData>
-                                                </a:graphic>
-                                            </wp:inline>
-                                        </w:drawing>
+                                        <w:pict>
+                                            <v:shape id="_x0000_i1025" o:spt="75" alt="图片四" type="#_x0000_t75" style="height:119.35pt;width:191.1pt;" filled="f" o:preferrelative="t" stroked="f" coordsize="21600,21600">
+                                                <v:path />
+                                                <v:fill on="f" focussize="0,0" />
+                                                <v:stroke on="f" />
+                                                <v:imagedata r:id="rId6" o:title="图片四" />
+                                                <o:lock v:ext="edit" aspectratio="t" />
+                                                <w10:wrap type="none" />
+                                                <w10:anchorlock />
+                                            </v:shape>
+                                        </w:pict>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2819,6 +2644,7 @@
                                 <w:tcPr>
                                     <w:tcW w:w="2077" w:type="dxa" />
                                     <w:vMerge w:val="restart" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2879,7 +2705,8 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="3457" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
+                                    <w:gridSpan w:val="4" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2903,7 +2730,8 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2786" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
+                                    <w:gridSpan w:val="4" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2928,6 +2756,7 @@
                                 <w:tcPr>
                                     <w:tcW w:w="2652" w:type="dxa" />
                                     <w:gridSpan w:val="2" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2975,6 +2804,7 @@
                                 <w:tcPr>
                                     <w:tcW w:w="2077" w:type="dxa" />
                                     <w:vMerge w:val="continue" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -2990,20 +2820,29 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="8895" w:type="dxa" />
-                                    <w:gridSpan w:val="12" />
+                                    <w:gridSpan w:val="10" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:eastAsia="zh-CN" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
-                                    <w:bookmarkStart w:id="0" w:name="_GoBack" />
-                                    <w:bookmarkEnd w:id="0" />
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${inspectionResults!""}</w:t>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                         </w:tr>
@@ -3032,6 +2871,7 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2077" w:type="dxa" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3073,8 +2913,9 @@
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="2395" w:type="dxa" />
+                                    <w:tcW w:w="1883" w:type="dxa" />
                                     <w:gridSpan w:val="2" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3087,12 +2928,23 @@
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${owner!""}</w:t>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="2345" w:type="dxa" />
-                                    <w:gridSpan w:val="4" />
+                                    <w:tcW w:w="2857" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3135,18 +2987,30 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="4155" w:type="dxa" />
-                                    <w:gridSpan w:val="6" />
+                                    <w:gridSpan w:val="5" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
                                     <w:pPr>
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="宋体" w:cs="Arial" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <w:t>${witnesses!""}</w:t>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                         </w:tr>
@@ -3175,6 +3039,7 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2077" w:type="dxa" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3216,8 +3081,9 @@
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="2395" w:type="dxa" />
+                                    <w:tcW w:w="1883" w:type="dxa" />
                                     <w:gridSpan w:val="2" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3244,8 +3110,9 @@
                             </w:tc>
                             <w:tc>
                                 <w:tcPr>
-                                    <w:tcW w:w="2345" w:type="dxa" />
-                                    <w:gridSpan w:val="4" />
+                                    <w:tcW w:w="2857" w:type="dxa" />
+                                    <w:gridSpan w:val="3" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3288,7 +3155,8 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="1615" w:type="dxa" />
-                                    <w:gridSpan w:val="5" />
+                                    <w:gridSpan w:val="4" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3316,6 +3184,7 @@
                             <w:tc>
                                 <w:tcPr>
                                     <w:tcW w:w="2540" w:type="dxa" />
+                                    <w:noWrap w:val="0" />
                                     <w:vAlign w:val="center" />
                                 </w:tcPr>
                                 <w:p>
@@ -3419,15 +3288,15 @@
             <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Template>Normal</Template>
                 <Company>sdf</Company>
                 <Pages>1</Pages>
-                <Words>314</Words>
-                <Characters>813</Characters>
+                <Words>352</Words>
+                <Characters>760</Characters>
                 <Lines>10</Lines>
                 <Paragraphs>2</Paragraphs>
-                <TotalTime>1</TotalTime>
+                <TotalTime>6</TotalTime>
                 <ScaleCrop>false</ScaleCrop>
                 <LinksUpToDate>false</LinksUpToDate>
-                <CharactersWithSpaces>883</CharactersWithSpaces>
-                <Application>WPS Office_11.1.0.12116_F1E327BC-269C-435d-A152-05C5408002CA</Application>
+                <CharactersWithSpaces>797</CharactersWithSpaces>
+                <Application>WPS Office_11.1.0.12358_F1E327BC-269C-435d-A152-05C5408002CA</Application>
                 <DocSecurity>0</DocSecurity>
             </Properties>
         </pkg:xmlData>
@@ -3439,7 +3308,7 @@
                 <dc:creator>a</dc:creator>
                 <cp:lastModifiedBy>EDZ</cp:lastModifiedBy>
                 <cp:lastPrinted>2021-06-24T06:26:00Z</cp:lastPrinted>
-                <dcterms:modified xsi:type="dcterms:W3CDTF">2022-08-30T09:39:57Z</dcterms:modified>
+                <dcterms:modified xsi:type="dcterms:W3CDTF">2022-09-14T07:50:36Z</dcterms:modified>
                 <dc:title>宝鸡石油机械有限责任公司</dc:title>
                 <cp:revision>186</cp:revision>
             </cp:coreProperties>
@@ -3449,10 +3318,10 @@
         <pkg:xmlData>
             <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
                 <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="KSOProductBuildVer">
-                    <vt:lpwstr>2052-11.1.0.12116</vt:lpwstr>
+                    <vt:lpwstr>2052-11.1.0.12358</vt:lpwstr>
                 </property>
                 <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="ICV">
-                    <vt:lpwstr>5DAD65661C0B40FE899C0480D02FA0C6</vt:lpwstr>
+                    <vt:lpwstr>B27CF1A97A4B46CD94EEC550307DEDB6</vt:lpwstr>
                 </property>
             </Properties>
         </pkg:xmlData>
@@ -3516,13 +3385,12 @@
                     <w:pitch w:val="default" />
                     <w:sig w:usb0="E4002EFF" w:usb1="C000247B" w:usb2="00000009" w:usb3="00000000" w:csb0="200001FF" w:csb1="00000000" />
                 </w:font>
-                <w:font w:name="Wingdings 2">
-                    <w:altName w:val="Wingdings" />
-                    <w:panose1 w:val="05020102010507070707" />
-                    <w:charset w:val="02" />
-                    <w:family w:val="roman" />
+                <w:font w:name="Consolas">
+                    <w:panose1 w:val="020B0609020204030204" />
+                    <w:charset w:val="00" />
+                    <w:family w:val="auto" />
                     <w:pitch w:val="default" />
-                    <w:sig w:usb0="00000000" w:usb1="00000000" w:usb2="00000000" w:usb3="00000000" w:csb0="80000000" w:csb1="00000000" />
+                    <w:sig w:usb0="E00006FF" w:usb1="0000FCFF" w:usb2="00000001" w:usb3="00000000" w:csb0="6000019F" w:csb1="DFD70000" />
                 </w:font>
                 <w:font w:name="微软雅黑">
                     <w:panose1 w:val="020B0503020204020204" />
@@ -3537,20 +3405,6 @@
                     <w:family w:val="auto" />
                     <w:pitch w:val="default" />
                     <w:sig w:usb0="E1002EFF" w:usb1="C000605B" w:usb2="00000029" w:usb3="00000000" w:csb0="200101FF" w:csb1="20280000" />
-                </w:font>
-                <w:font w:name="Consolas">
-                    <w:panose1 w:val="020B0609020204030204" />
-                    <w:charset w:val="00" />
-                    <w:family w:val="auto" />
-                    <w:pitch w:val="default" />
-                    <w:sig w:usb0="E00006FF" w:usb1="0000FCFF" w:usb2="00000001" w:usb3="00000000" w:csb0="6000019F" w:csb1="DFD70000" />
-                </w:font>
-                <w:font w:name="Arial">
-                    <w:panose1 w:val="020B0604020202020204" />
-                    <w:charset w:val="00" />
-                    <w:family w:val="auto" />
-                    <w:pitch w:val="default" />
-                    <w:sig w:usb0="E0002EFF" w:usb1="C000785B" w:usb2="00000009" w:usb3="00000000" w:csb0="400001FF" w:csb1="FFFF0000" />
                 </w:font>
             </w:fonts>
         </pkg:xmlData>
@@ -3926,18 +3780,19 @@
             GSKAFgAkBAEpUOcbdoMNNnivcnMDrhtssMEGt8L1xz422GCDDf63+B8MXE/D0ouzTwAAAABJRU5E
             rkJgghjj</pkg:binaryData>
     </pkg:part>
-    <pkg:part pkg:name="/word/media/image2.png" pkg:contentType="image/png">
-        <pkg:binaryData>${img}</pkg:binaryData>
+    <pkg:part pkg:name="/word/media/image2.jpeg" pkg:contentType="image/jpeg">
+        <pkg:binaryData>{img!""}</pkg:binaryData>
     </pkg:part>
     <pkg:part pkg:name="/word/settings.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml">
         <pkg:xmlData>
             <w:settings xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:wpsCustomData="http://www.wps.cn/officeDocument/2013/wpsCustomData" mc:Ignorable="w14">
-                <w:zoom w:percent="80" />
+                <w:zoom w:percent="90" />
                 <w:bordersDoNotSurroundHeader w:val="0" />
                 <w:bordersDoNotSurroundFooter w:val="0" />
                 <w:gutterAtTop />
                 <w:documentProtection w:enforcement="0" />
                 <w:defaultTabStop w:val="420" />
+                <w:hyphenationZone w:val="360" />
                 <w:drawingGridVerticalSpacing w:val="156" />
                 <w:displayHorizontalDrawingGridEvery w:val="1" />
                 <w:displayVerticalDrawingGridEvery w:val="1" />
@@ -3955,8 +3810,21 @@
                     <w:doNotWrapTextWithPunct />
                     <w:doNotUseEastAsianBreakRules />
                     <w:useFELayout />
+                    <w:useNormalStyleForList />
                     <w:doNotUseIndentAsNumberingTabStop />
-                    <w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="12" />
+                    <w:useAltKinsokuLineBreakRules />
+                    <w:allowSpaceOfSameStyleInTable />
+                    <w:doNotSuppressIndentation />
+                    <w:doNotAutofitConstrainedTables />
+                    <w:autofitToFirstFixedWidthCell />
+                    <w:displayHangulFixedWidth />
+                    <w:splitPgBreakAndParaMark />
+                    <w:doNotVertAlignCellWithSp />
+                    <w:doNotBreakConstrainedForcedTable />
+                    <w:doNotVertAlignInTxbx />
+                    <w:useAnsiKerningPairs />
+                    <w:cachedColBalance />
+                    <w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="11" />
                 </w:compat>
                 <w:docVars>
                     <w:docVar w:name="commondata" w:val="eyJoZGlkIjoiODhlZGJkODhkOWQ2MzFjZjNkNDEzOWY4ZjFkMjQyZTYifQ==" />
@@ -4818,6 +4686,7 @@
                     <w:rsid w:val="054D3B37" />
                     <w:rsid w:val="05BE7495" />
                     <w:rsid w:val="05C408FD" />
+                    <w:rsid w:val="08E9737B" />
                     <w:rsid w:val="0AE36F5E" />
                     <w:rsid w:val="0BCC7E2C" />
                     <w:rsid w:val="0DE21B04" />
@@ -4826,6 +4695,7 @@
                     <w:rsid w:val="123D53E4" />
                     <w:rsid w:val="12F5520C" />
                     <w:rsid w:val="130F251E" />
+                    <w:rsid w:val="133133BE" />
                     <w:rsid w:val="15FB11BF" />
                     <w:rsid w:val="16476137" />
                     <w:rsid w:val="16EB1E76" />
@@ -4843,6 +4713,7 @@
                     <w:rsid w:val="29B51E67" />
                     <w:rsid w:val="2B752A62" />
                     <w:rsid w:val="2D696877" />
+                    <w:rsid w:val="2FF86BA9" />
                     <w:rsid w:val="31FC546C" />
                     <w:rsid w:val="32132BB5" />
                     <w:rsid w:val="321756BA" />
@@ -4854,14 +4725,18 @@
                     <w:rsid w:val="3A545044" />
                     <w:rsid w:val="3B3C6AE0" />
                     <w:rsid w:val="3B816F56" />
+                    <w:rsid w:val="3B9F3746" />
                     <w:rsid w:val="3BEC766D" />
                     <w:rsid w:val="3C4D2A47" />
+                    <w:rsid w:val="3F3348D1" />
+                    <w:rsid w:val="3FF027C2" />
                     <w:rsid w:val="42C012F5" />
                     <w:rsid w:val="441F3786" />
                     <w:rsid w:val="4542206B" />
                     <w:rsid w:val="454D73A3" />
                     <w:rsid w:val="47C730F1" />
                     <w:rsid w:val="4ADF256F" />
+                    <w:rsid w:val="4D3006A2" />
                     <w:rsid w:val="4D9D21FE" />
                     <w:rsid w:val="501E2C09" />
                     <w:rsid w:val="50617418" />
@@ -4878,21 +4753,23 @@
                     <w:rsid w:val="589219F3" />
                     <w:rsid w:val="5D475F35" />
                     <w:rsid w:val="61525808" />
+                    <w:rsid w:val="620F48D2" />
                     <w:rsid w:val="639717C0" />
                     <w:rsid w:val="6621209C" />
+                    <w:rsid w:val="66D63C10" />
                     <w:rsid w:val="6B6F7E74" />
                     <w:rsid w:val="6BE1055C" />
                     <w:rsid w:val="6E5C127E" />
                     <w:rsid w:val="70621027" />
                     <w:rsid w:val="71F065D1" />
                     <w:rsid w:val="76EB5F2B" />
+                    <w:rsid w:val="79C60CAC" />
                     <w:rsid w:val="7A5E1660" />
                     <w:rsid w:val="7D87607F" />
                     <w:rsid w:val="7DA24E28" />
                     <w:rsid w:val="7F720D72" />
                 </w:rsids>
                 <m:mathPr>
-                    <m:mathFont m:val="Cambria Math" />
                     <m:brkBin m:val="before" />
                     <m:brkBinSub m:val="--" />
                     <m:smallFrac m:val="0" />
@@ -4998,7 +4875,7 @@
                     <w:lsdException w:qFormat="1" w:unhideWhenUsed="0" w:uiPriority="10" w:semiHidden="0" w:name="Title" />
                     <w:lsdException w:uiPriority="99" w:name="Closing" />
                     <w:lsdException w:uiPriority="99" w:name="Signature" />
-                    <w:lsdException w:qFormat="1" w:uiPriority="1" w:name="Default Paragraph Font" />
+                    <w:lsdException w:qFormat="1" w:uiPriority="1" w:semiHidden="0" w:name="Default Paragraph Font" />
                     <w:lsdException w:uiPriority="99" w:name="Body Text" />
                     <w:lsdException w:uiPriority="99" w:name="Body Text Indent" />
                     <w:lsdException w:uiPriority="99" w:name="List Continue" />
@@ -5032,11 +4909,11 @@
                     <w:lsdException w:uiPriority="99" w:name="HTML Code" />
                     <w:lsdException w:uiPriority="99" w:name="HTML Definition" />
                     <w:lsdException w:uiPriority="99" w:name="HTML Keyboard" />
-                    <w:lsdException w:uiPriority="99" w:name="HTML Preformatted" />
+                    <w:lsdException w:uiPriority="99" w:semiHidden="0" w:name="HTML Preformatted" />
                     <w:lsdException w:uiPriority="99" w:name="HTML Sample" />
                     <w:lsdException w:uiPriority="99" w:name="HTML Typewriter" />
                     <w:lsdException w:uiPriority="99" w:name="HTML Variable" />
-                    <w:lsdException w:qFormat="1" w:uiPriority="99" w:name="Normal Table" />
+                    <w:lsdException w:qFormat="1" w:uiPriority="99" w:semiHidden="0" w:name="Normal Table" />
                     <w:lsdException w:uiPriority="99" w:name="annotation subject" />
                     <w:lsdException w:uiPriority="99" w:name="Table Simple 1" />
                     <w:lsdException w:uiPriority="99" w:name="Table Simple 2" />
@@ -5081,7 +4958,7 @@
                     <w:lsdException w:uiPriority="99" w:name="Table Web 2" />
                     <w:lsdException w:uiPriority="99" w:name="Table Web 3" />
                     <w:lsdException w:qFormat="1" w:unhideWhenUsed="0" w:uiPriority="0" w:semiHidden="0" w:name="Balloon Text" />
-                    <w:lsdException w:uiPriority="99" w:name="Table Grid" />
+                    <w:lsdException w:uiPriority="99" w:semiHidden="0" w:name="Table Grid" />
                     <w:lsdException w:uiPriority="99" w:name="Table Theme" />
                     <w:lsdException w:unhideWhenUsed="0" w:uiPriority="60" w:semiHidden="0" w:name="Light Shading" />
                     <w:lsdException w:unhideWhenUsed="0" w:uiPriority="61" w:semiHidden="0" w:name="Light List" />
@@ -5201,18 +5078,17 @@
                 </w:style>
                 <w:style w:type="character" w:default="1" w:styleId="8">
                     <w:name w:val="Default Paragraph Font" />
-                    <w:semiHidden />
                     <w:unhideWhenUsed />
                     <w:qFormat />
                     <w:uiPriority w:val="1" />
                 </w:style>
                 <w:style w:type="table" w:default="1" w:styleId="6">
                     <w:name w:val="Normal Table" />
-                    <w:semiHidden />
                     <w:unhideWhenUsed />
                     <w:qFormat />
                     <w:uiPriority w:val="99" />
                     <w:tblPr>
+                        <w:tblStyle w:val="6" />
                         <w:tblCellMar>
                             <w:top w:w="0" w:type="dxa" />
                             <w:left w:w="108" w:type="dxa" />
@@ -5273,7 +5149,6 @@
                 <w:style w:type="paragraph" w:styleId="5">
                     <w:name w:val="HTML Preformatted" />
                     <w:basedOn w:val="1" />
-                    <w:semiHidden />
                     <w:unhideWhenUsed />
                     <w:uiPriority w:val="99" />
                     <w:pPr>
@@ -5308,7 +5183,6 @@
                 <w:style w:type="table" w:styleId="7">
                     <w:name w:val="Table Grid" />
                     <w:basedOn w:val="6" />
-                    <w:semiHidden />
                     <w:unhideWhenUsed />
                     <w:uiPriority w:val="99" />
                     <w:pPr>
@@ -5316,6 +5190,7 @@
                         <w:jc w:val="both" />
                     </w:pPr>
                     <w:tblPr>
+                        <w:tblStyle w:val="6" />
                         <w:tblBorders>
                             <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
                             <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
@@ -5340,7 +5215,7 @@
     </pkg:part>
     <pkg:part pkg:name="/word/theme/theme1.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.theme+xml">
         <pkg:xmlData>
-            <a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office 主题">
+            <a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office">
                 <a:themeElements>
                     <a:clrScheme name="Office">
                         <a:dk1>
@@ -5414,6 +5289,7 @@
                             <a:font script="Mong" typeface="Mongolian Baiti" />
                             <a:font script="Viet" typeface="Times New Roman" />
                             <a:font script="Uigh" typeface="Microsoft Uighur" />
+                            <a:font script="Geor" typeface="Sylfaen" />
                         </a:majorFont>
                         <a:minorFont>
                             <a:latin typeface="Calibri" />
@@ -5448,6 +5324,7 @@
                             <a:font script="Mong" typeface="Mongolian Baiti" />
                             <a:font script="Viet" typeface="Arial" />
                             <a:font script="Uigh" typeface="Microsoft Uighur" />
+                            <a:font script="Geor" typeface="Sylfaen" />
                         </a:minorFont>
                     </a:fontScheme>
                     <a:fmtScheme name="Office">
@@ -5580,8 +5457,8 @@
                                     <a:gs pos="40000">
                                         <a:schemeClr val="phClr">
                                             <a:tint val="45000" />
-                                            <a:shade val="99000" />
                                             <a:satMod val="350000" />
+                                            <a:shade val="99000" />
                                         </a:schemeClr>
                                     </a:gs>
                                     <a:gs pos="100000">
