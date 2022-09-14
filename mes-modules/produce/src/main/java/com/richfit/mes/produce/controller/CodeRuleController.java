@@ -78,8 +78,8 @@ public class CodeRuleController extends BaseController {
     @ApiOperation(value = "获取默认值", notes = "根据编码、名称、输入项获取默认值")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "name", value = "编码名称", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "name", value = "编码名称", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "inputs", value = "输入项值，如图号", paramType = "query", dataType = "string")
     })
     @GetMapping("/gerCode")
     public CommonResult<CodeRule> gerCode(String code, String name, String[] inputs, String tenantId, String branchCode) {
