@@ -117,8 +117,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "合同编号")
     private String contractNo;
 
-    @ApiModelProperty(value = "计划号")
-    private String workPlanNo;
 
     @ApiModelProperty(value = "组织机构编号")
     private String branchCode;
@@ -156,9 +154,17 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "材质", dataType = "String")
     private String templateCode;
 
-
     @ApiModelProperty(value = "计划Id", dataType = "String")
     private String workPlanId;
+
+    @ApiModelProperty(value = "计划号")
+    private String workPlanNo;
+
+    @ApiModelProperty(value = "计划项目号")
+    private String workPlanProjectNo;
+
+    @ApiModelProperty(value = "计划结束时间")
+    private Date workPlanEndTime;
 
     @ApiModelProperty(value = "工艺id", dataType = "String")
     private String routerId;
