@@ -22,6 +22,11 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "跟单ID", dataType = "String")
     private String trackHeadId;
     /**
+     * 跟单ID
+     */
+    @ApiModelProperty(value = "工序字典表Id", dataType = "String")
+    private String operatiponId;
+    /**
      * 产品编号
      */
     @ApiModelProperty(value = "产品编号", dataType = "String")
