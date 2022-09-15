@@ -149,6 +149,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setTrackCompleteList(completeList);
         queryWorkingTimeVo.setAssign(assign);
         queryWorkingTimeVo.setQcPersonId(trackItem.getQualityCheckBy());
+        queryWorkingTimeVo.setQualityCheckBranch(trackItem.getQualityCheckBranch());
         return CommonResult.success(queryWorkingTimeVo);
     }
 

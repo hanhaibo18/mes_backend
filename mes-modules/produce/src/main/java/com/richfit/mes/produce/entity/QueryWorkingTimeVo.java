@@ -21,4 +21,6 @@ public class QueryWorkingTimeVo {
     private List<TrackComplete> trackCompleteList;
     @ApiModelProperty(value = "检验人", dataType = "String")
     private String qcPersonId;
+    @ApiModelProperty(value = "检验车间", dataType = "String")
+    private String qualityCheckBranch;
 }

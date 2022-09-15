@@ -100,7 +100,7 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("branch_code", branchCode);
             }
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                queryWrapper.eq("drawing_no", drawingNo);
+                queryWrapper.like("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
