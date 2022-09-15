@@ -6,7 +6,6 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -32,7 +31,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "粗糙度")
     private String roughness;
     @ApiModelProperty(value = "检测日期")
-    private Date inspectionDate;
+    private String inspectionDate;
     @ApiModelProperty(value = "仪器型号")
     private String instrumentModel;
     @ApiModelProperty(value = "探头型号")

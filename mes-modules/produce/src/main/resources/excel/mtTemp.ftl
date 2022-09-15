@@ -3781,7 +3781,7 @@
             rkJgghjj</pkg:binaryData>
     </pkg:part>
     <pkg:part pkg:name="/word/media/image2.jpeg" pkg:contentType="image/jpeg">
-        <pkg:binaryData>{img!""}</pkg:binaryData>
+        <pkg:binaryData>${img!""}</pkg:binaryData>
     </pkg:part>
     <pkg:part pkg:name="/word/settings.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml">
         <pkg:xmlData>

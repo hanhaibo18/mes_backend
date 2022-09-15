@@ -259,7 +259,7 @@ public class ProduceInspectionRecordService{
         }
 
         //保存流水号
-        if(!StringUtils.isEmpty(tempType)){
+        if(!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))){
             codeRuleService.updateCode("inspection_code_"+tempType,null,jsonObject.get("recordNo").toString(), null,SecurityUtils.getCurrentUser().getTenantId(),null);
         }
 
@@ -421,7 +421,6 @@ public class ProduceInspectionRecordService{
      * @param tempType
      */
     private void createDataMap(TrackHead trackHead,Map<String,Object> recordInfo,Map<String, Object> dataMap,String tempType)throws IOException{
-        dataMap = recordInfo;
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             createMtDataMap(recordInfo, dataMap);
         }else if(InspectionRecordTypeEnum.PT.getType().equals(tempType)){
@@ -446,6 +445,8 @@ public class ProduceInspectionRecordService{
     private void createMtDataMap(Map<String, Object> recordInfo,  Map<String, Object> dataMap) throws IOException {
         //mt探伤记录
         ProduceInspectionRecordMt produceInspectionRecordMt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordMt.class);
+
+        dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordMt), Map.class));
         /*//记录编号
         dataMap.put("recordNo",produceInspectionRecordMt.getRecordNo());
         //种类
@@ -495,6 +496,8 @@ public class ProduceInspectionRecordService{
     private void createRtDataMap(Map<String, Object> recordInfo,  Map<String, Object> dataMap) throws IOException {
         //mt探伤记录
         ProduceInspectionRecordRt produceInspectionRecordRt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordRt.class);
+
+        dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordRt), Map.class));
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordRt.getDiagramAttachmentId())){
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordRt.getDiagramAttachmentId()).getData());
@@ -505,6 +508,8 @@ public class ProduceInspectionRecordService{
     private void createPtDataMap(Map<String, Object> recordInfo, Map<String, Object> dataMap) throws IOException {
         //pt探伤记录
         ProduceInspectionRecordPt produceInspectionRecordPt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordPt.class);
+
+        dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordPt), Map.class));
 
         if(!StringUtils.isEmpty(produceInspectionRecordPt.getDiagramAttachmentId())){
             //图片base64编码
@@ -517,6 +522,8 @@ public class ProduceInspectionRecordService{
     private void createUtDataMap(Map<String, Object> recordInfo,  Map<String, Object> dataMap) throws IOException {
         //ut探伤记录
         ProduceInspectionRecordUt produceInspectionRecordUt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordUt.class);
+
+        dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
 
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())){
