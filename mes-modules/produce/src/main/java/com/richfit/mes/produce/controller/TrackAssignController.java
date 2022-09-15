@@ -306,6 +306,7 @@ public class TrackAssignController extends BaseController {
                     assign.setModifyTime(new Date());
                     assign.setCreateTime(new Date());
                     assign.setAvailQty(assign.getQty());
+                    assign.setFlowId(trackItem.getFlowId());
                     trackAssignService.save(assign);
                     for (AssignPerson person : assign.getAssignPersons()) {
                         person.setModifyTime(new Date());
@@ -433,7 +434,7 @@ public class TrackAssignController extends BaseController {
                     return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！");
                 }
                 // 判断后置工序是否已派工，否则无法修改
-                List<Assign> cs = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
+                List<Assign> cs = this.find(null, null, null, null, null, trackItem.getFlowId()).getData();
                 for (int j = 0; j < cs.size(); j++) {
                     TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
                     if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
@@ -485,7 +486,7 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "派工查询", notes = "派工查询")
     @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/find")
-    public CommonResult<List<Assign>> find(String id, String tiId, String state, String trackId, String trackNo) {
+    public CommonResult<List<Assign>> find(String id, String tiId, String state, String trackId, String trackNo, String flowId) {
 
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
         if (!StringUtils.isNullOrEmpty(id)) {
@@ -502,6 +503,9 @@ public class TrackAssignController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             queryWrapper.eq("track_no", trackNo);
+        }
+        if (!StringUtils.isNullOrEmpty(flowId)) {
+            queryWrapper.eq("flow_id", flowId);
         }
         queryWrapper.orderByAsc("modify_time");
         List<Assign> result = trackAssignService.list(queryWrapper);
@@ -664,7 +668,7 @@ public class TrackAssignController extends BaseController {
                 if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
                     return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！");
                 }
-                List<Assign> ca = this.find(null, null, null, trackItem.getTrackHeadId(), null).getData();
+                List<Assign> ca = this.find(null, null, null, null, null, trackItem.getFlowId()).getData();
                 for (int j = 0; j < ca.size(); j++) {
                     TrackItem cstrackItem = trackItemService.getById(ca.get(j).getTiId());
                     if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
@@ -691,6 +695,7 @@ public class TrackAssignController extends BaseController {
                 trackItem.setIsCurrent(1);
                 trackItem.setIsDoing(0);
                 trackItem.setIsSchedule(0);
+                trackItem.setAssignableQty(trackItem.getNumber());
                 trackItemService.updateById(trackItem);
                 trackAssignService.removeById(ids[i]);
             }
