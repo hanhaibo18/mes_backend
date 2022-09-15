@@ -118,7 +118,10 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
                     pt.setInspectionQualified(trackCheckDetail.getResult() + "");
                     pt.setInspectionDate(DateUtil.format(trackCheckDetail.getCreateTime(), "yyyy/MM/dd"));
                     pt.setRemark(trackCheckDetail.getRemark());
-                    pt.setInspectionUserName(trackCheck.getDealBy());
+                    //处理人签字
+                    //pt.setInspectionUserName(trackCheck.getDealBy());
+                    //系统记录修改人
+                    pt.setInspectionUserName(trackCheckDetail.getModifyBy());
                     pt.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_PT);
                     produceInspectionRecordCardContentList.add(pt);
                 }
