@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -298,7 +299,7 @@ public class RouterCheckController extends BaseController {
                 // 获取图号列表
                 String drawnos = "";
                 for (int i = 0; i < checkList.size(); i++) {
-                    if (!StringUtils.isNullOrEmpty(checkList.get(i).getRouterNo()) && "X".equals(list.get(i).getIsImport())) {
+                    if (!StringUtils.isNullOrEmpty(checkList.get(i).getRouterNo()) && "X".equals(checkList.get(i).getIsImport())) {
                         list2.add(checkList.get(i));
                         if (!drawnos.contains(checkList.get(i).getRouterNo() + ",")) {
                             drawnos += checkList.get(i).getRouterNo() + ",";
@@ -380,6 +381,8 @@ public class RouterCheckController extends BaseController {
                 step += "资料类型列表获取";
                 List<RouterCheckQualityDto> list3 = new ArrayList<>();
                 String drawnos = "";
+                //过滤获取导入状态为X的数据列
+                qualityList = qualityList.stream().filter(item->"X".equals(item.getIsImport())).collect(Collectors.toList());
                 for (int i = 0; i < qualityList.size(); i++) {
                     if (!StringUtils.isNullOrEmpty(qualityList.get(i).getRouterNo())) {
                         list3.add(qualityList.get(i));
