@@ -15,6 +15,7 @@ import java.util.List;
 @Data
 public class Certificate extends BaseEntity<Certificate> {
 
+    private static final long serialVersionUID = -5801277389681557358L;
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
@@ -44,6 +45,9 @@ public class Certificate extends BaseEntity<Certificate> {
 
     @ApiModelProperty(value = "产品编号")
     private String productNo;
+
+    @ApiModelProperty(value = "产品全部编号")
+    private String productNoDesc;
 
     @ApiModelProperty(value = "产品名称")
     private String productName;
