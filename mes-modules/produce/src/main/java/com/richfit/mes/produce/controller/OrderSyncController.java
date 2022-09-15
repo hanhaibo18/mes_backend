@@ -1,5 +1,7 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -17,7 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: OrderSyncController.java
@@ -68,13 +72,16 @@ public class OrderSyncController {
 
     @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")
     @GetMapping("/export_excel")
-    public void exportExcel(BasePageDto<String> queryDto, HttpServletResponse rsp) {
+    public void exportExcel(BasePageDto<String> queryDto, HttpServletResponse rsp) throws Exception {
         OrdersSynchronizationDto ordersSynchronization = new OrdersSynchronizationDto();
-        try {
-            ordersSynchronization = objectMapper.readValue(queryDto.getParam(), OrdersSynchronizationDto.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        Map<String, String> map = JSON.parseObject(queryDto.getParam(), HashMap.class);
+        if (StrUtil.isBlank(map.get("erpCode"))) {
+            throw new Exception("erpcode不能为空");
         }
+        ordersSynchronization.setCode(map.get("erpCode"));
+        ordersSynchronization.setDate(map.get("selectDate"));
+        ordersSynchronization.setController(map.get("controller"));
+        ordersSynchronization.setOrderSn(map.get("orderNo"));
         List<Order> orderList = orderSyncService.queryOrderSynchronization(ordersSynchronization);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
