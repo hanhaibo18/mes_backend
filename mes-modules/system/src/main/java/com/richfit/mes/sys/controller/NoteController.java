@@ -200,14 +200,14 @@ public class NoteController {
      * 功能描述: 查询个详情
      *
      * @param id
-     * @param userId
+     * @param userAccount
      * @Author: xinYu.hou
      * @Date: 2022/3/14 10:14
      * @return: CommonResult<Note>
      **/
-    @GetMapping("/query_one/{id}/{userId}")
-    public CommonResult<Note> queryById(@PathVariable String id, @PathVariable String userId) {
-        return noteService.queryById(id, userId);
+    @GetMapping("/query_one/{id}/{userAccount}")
+    public CommonResult<Note> queryById(@PathVariable String id, @PathVariable String userAccount) {
+        return noteService.queryById(id, userAccount);
     }
 
     @GetMapping("/query_one/note/{id}")
