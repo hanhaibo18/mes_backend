@@ -23,10 +23,11 @@ public interface NoteUserMapper extends BaseMapper<NoteUser> {
 
     /**
      * 功能描述: 根据收件人查询邮件
-     * @Author: xinYu.hou
-     * @Date: 2022/2/15 16:14
+     *
      * @param page
      * @param queryWrapper
+     * @Author: xinYu.hou
+     * @Date: 2022/2/15 16:14
      * @return: IPage<NoteVo>
      **/
     @Select("SELECT\n" +
@@ -47,20 +48,23 @@ public interface NoteUserMapper extends BaseMapper<NoteUser> {
 
     /**
      * 功能描述: 更改状态记录
+     *
+     * @param queryWrapper
      * @Author: xinYu.hou
      * @Date: 2022/3/22 10:34
-     * @param queryWrapper
      * @return: Boolean
      **/
-    @Update("UPDATE sys_note_user note SET note.is_delete = 1 ${ew.customSqlSegment}")
-    Boolean deleteSenderById(@Param(Constants.WRAPPER)QueryWrapper<NoteUserVo> queryWrapper);
+    @Update("delete from sys_note_user note ${ew.customSqlSegment}")
+    Boolean deleteSenderById(@Param(Constants.WRAPPER) QueryWrapper<NoteUserVo> queryWrapper);
+
     /**
      * 功能描述: 逻辑删除
+     *
+     * @param id
      * @Author: xinYu.hou
      * @Date: 2022/2/16 16:07
-     * @param id
      * @return: boolean
      **/
-    @Update("UPDATE sys_note_user note SET note.state = 3 WHERE note.id = #{id}")
+    @Update("delete from sys_note_user note WHERE note.id = #{id}")
     boolean deleteRecipients(@Param("id") String id);
 }
