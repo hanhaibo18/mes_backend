@@ -1,14 +1,14 @@
 package com.richfit.mes.common.model.sys;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.Date;
+
 /**
  * sys_note_user
+ *
  * @author
  */
 @Data
@@ -28,7 +28,7 @@ public class NoteUser extends BaseEntity<NoteUser> {
     /**
      * 查看状态,[{"未读":"0"},{"已读":"1"}]
      */
-    private Integer state;
+    private Integer state = 0;
 
     /**
      * 收件人

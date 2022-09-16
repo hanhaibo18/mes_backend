@@ -160,10 +160,10 @@ public class NoteController {
         for (NoteUserVo noteUserVo : idList) {
             NoteUser noteUser = new NoteUser();
             noteUser.setId(noteUserVo.getId());
-            noteUser.setState(1);
-            if (noteUser.getCheckLook() == null) {
+            if (noteUser.getState() != 1) {
                 noteUser.setCheckLook(new Date());
             }
+            noteUser.setState(1);
             update = noteUserService.updateById(noteUser);
         }
         return CommonResult.success(update);
