@@ -110,7 +110,6 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
             queryWrapper.notIn("note_user.state", SenderEnum.DELETE.getStateId());
             queryWrapper.orderByDesc("note_user.create_time");
             IPage<NoteUserVo> noteUserList = noteUserMapper.queryRecipients(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
-            //无用业务代码
 //            if (noteUserList.getTotal() != 0) {
 //                noteUserList.getRecords().forEach(note -> {
 //                    TenantUserVo tenantUserVo = tenantUserService.get(note.getCreateBy());
