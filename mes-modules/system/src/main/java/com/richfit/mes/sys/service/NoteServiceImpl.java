@@ -142,6 +142,15 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
         if (noteList.getTotal() != 0) {
             noteList.getRecords().forEach(note -> {
+                TenantUserVo tenantUserVo = tenantUserMapper.queryUser(new QueryWrapper<TenantUserVo>()
+                        .eq("user_account", note.getUserAccount()));
+                if (tenantUserVo == null) {
+                    note.setStateName(SenderEnum.getMessage(note.getState()));
+                    note.setEmplName("用户已删除");
+                } else {
+                    note.setStateName(SenderEnum.getMessage(note.getState()));
+                    note.setEmplName(tenantUserVo.getEmplName());
+                }
                 note.setStateName(RecipientsEnum.getMessage(note.getState()));
             });
         }
