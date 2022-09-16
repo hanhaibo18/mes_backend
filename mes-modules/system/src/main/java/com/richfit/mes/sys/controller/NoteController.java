@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -160,6 +161,9 @@ public class NoteController {
             NoteUser noteUser = new NoteUser();
             noteUser.setId(noteUserVo.getId());
             noteUser.setState(1);
+            if (noteUser.getCheckLook() == null) {
+                noteUser.setCheckLook(new Date());
+            }
             update = noteUserService.updateById(noteUser);
         }
         return CommonResult.success(update);
