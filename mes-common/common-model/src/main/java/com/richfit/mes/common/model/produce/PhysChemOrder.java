@@ -23,6 +23,8 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String itemId;
     @ApiModelProperty(value = "化学分析->全分析")
     private String chemicalAnalysis;
+    @ApiModelProperty(value = "化学分析->碳硫")
+    private String chemicalCarbonSulfur;
     @ApiModelProperty(value = "化学分析->清洁度")
     private String chemicalClean;
     @ApiModelProperty(value = "化学分析->其他")
@@ -51,6 +53,8 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String forceHardnessNumber;
     @ApiModelProperty(value = "力学性能->剪切数量")
     private String forceShearNumber;
+    @ApiModelProperty(value = "力学性能->压扁数量")
+    private String forceFlaserNumber;
     @ApiModelProperty(value = "力学性能->其他数量")
     private String forceOtherNumber;
     @ApiModelProperty(value = "力学性能->拉伸->屈服强度")
