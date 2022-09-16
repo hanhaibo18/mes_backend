@@ -13,8 +13,10 @@ import com.richfit.mes.common.model.sys.dto.NoteDto;
 import com.richfit.mes.common.model.sys.vo.DustbinVo;
 import com.richfit.mes.common.model.sys.vo.NoteUserVo;
 import com.richfit.mes.common.model.sys.vo.NoteVo;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.dao.NoteMapper;
 import com.richfit.mes.sys.dao.NoteUserMapper;
+import com.richfit.mes.sys.dao.TenantUserMapper;
 import com.richfit.mes.sys.enmus.RecipientsEnum;
 import com.richfit.mes.sys.enmus.SenderEnum;
 import com.richfit.mes.sys.entity.dto.DropDto;
@@ -52,6 +54,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
 
     @Resource
     private TenantUserService tenantUserService;
+
+    @Resource
+    private TenantUserMapper tenantUserMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -110,14 +115,21 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         queryWrapper.orderByDesc("note_user.create_time");
         IPage<NoteUserVo> noteUserList = noteUserMapper.queryRecipients(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
         //屏蔽无用代码
-//        if (noteUserList.getTotal() != 0){
-//            noteUserList.getRecords().forEach(note -> {
-//                TenantUserVo tenantUserVo = tenantUserService.get(note.getCreateBy());
-//                note.setStateName(SenderEnum.getMessage(note.getState()))
-//                       .setUserAccount(tenantUserVo.getUserAccount())
-//                       .setEmplName(tenantUserVo.getEmplName());
-//            });
-//        }
+        if (noteUserList.getTotal() != 0) {
+            noteUserList.getRecords().forEach(note -> {
+                TenantUserVo tenantUserVo = tenantUserMapper.queryUser(new QueryWrapper<TenantUserVo>()
+                        .eq("user_account", note.getCreateBy()));
+                if (tenantUserVo == null) {
+                    note.setStateName(SenderEnum.getMessage(note.getState()))
+                            .setUserAccount(note.getCreateBy())
+                            .setEmplName("用户已删除");
+                } else {
+                    note.setStateName(SenderEnum.getMessage(note.getState()))
+                            .setUserAccount(tenantUserVo.getUserAccount())
+                            .setEmplName(tenantUserVo.getEmplName());
+                }
+            });
+        }
         return CommonResult.success(noteUserList);
     }
 
@@ -130,9 +142,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
         IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
         if (noteList.getTotal() != 0) {
             noteList.getRecords().forEach(note -> {
-                if (null == note.getCheckLook()) {
-                    note.setStateName(RecipientsEnum.getMessage(note.getStart()));
-                }
+                note.setStateName(RecipientsEnum.getMessage(note.getState()));
             });
         }
         return CommonResult.success(noteList);

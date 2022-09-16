@@ -1,7 +1,5 @@
 package com.richfit.mes.common.model.sys.vo;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
@@ -20,7 +18,7 @@ public class NoteVo {
     private String emplName;
     private String title;
     private Date createTime;
-    private int start;
+    private int state;
     private Date checkLook;
     private String stateName;
 }
