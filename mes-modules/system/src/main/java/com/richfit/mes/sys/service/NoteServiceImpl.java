@@ -9,22 +9,24 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Note;
 import com.richfit.mes.common.model.sys.NoteUser;
+import com.richfit.mes.common.model.sys.dto.NoteDto;
 import com.richfit.mes.common.model.sys.vo.DustbinVo;
 import com.richfit.mes.common.model.sys.vo.NoteUserVo;
 import com.richfit.mes.common.model.sys.vo.NoteVo;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.dao.NoteMapper;
 import com.richfit.mes.sys.dao.NoteUserMapper;
-import com.richfit.mes.sys.enmus.SenderEnum;
 import com.richfit.mes.sys.enmus.RecipientsEnum;
+import com.richfit.mes.sys.enmus.SenderEnum;
 import com.richfit.mes.sys.entity.dto.DropDto;
-import com.richfit.mes.common.model.sys.dto.NoteDto;
 import com.richfit.mes.sys.entity.dto.QueryDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -54,11 +56,11 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveNote(NoteDto noteDto) {
-        if (StringUtils.isBlank(noteDto.getUserAccount())){
+        if (StringUtils.isBlank(noteDto.getUserAccount())) {
             return false;
         }
         Note note = new Note();
-        note.setId(UuidUtils.generateUuid().replace("-",""));
+        note.setId(UuidUtils.generateUuid().replace("-", ""));
         note.setTitle(noteDto.getTitle())
                 .setContent(noteDto.getContent())
                 .setTenantId(noteDto.getTenantId())
@@ -81,13 +83,13 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     }
 
     @Override
-    public CommonResult<Note> queryById(String id,String userId) {
+    public CommonResult<Note> queryById(String id, String userId) {
         QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note_id",id);
-        queryWrapper.eq("user_account",userId);
+        queryWrapper.eq("note_id", id);
+        queryWrapper.eq("user_account", userId);
         NoteUser noteUser = noteUserService.getOne(queryWrapper);
         assert noteUser != null;
-        if (noteUser.getState() == 0){
+        if (noteUser.getState() == 0) {
             noteUser.setState(1);
             noteUser.setCheckLook(new Date());
             noteUserService.updateById(noteUser);
@@ -103,31 +105,32 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<IPage<NoteUserVo>> queryRecipients(QueryDto<String> queryDto) {
         QueryWrapper<NoteUserVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note_user.user_account",queryDto.getParam());
-        queryWrapper.notIn("note_user.state",SenderEnum.DELETE.getStateId());
+        queryWrapper.eq("note_user.user_account", queryDto.getParam());
+        queryWrapper.notIn("note_user.state", SenderEnum.DELETE.getStateId());
         queryWrapper.orderByDesc("note_user.create_time");
         IPage<NoteUserVo> noteUserList = noteUserMapper.queryRecipients(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
-        if (noteUserList.getTotal() != 0){
-            noteUserList.getRecords().forEach(note -> {
-                TenantUserVo tenantUserVo = tenantUserService.get(note.getCreateBy());
-                note.setStateName(SenderEnum.getMessage(note.getState()))
-                       .setUserAccount(tenantUserVo.getUserAccount())
-                       .setEmplName(tenantUserVo.getEmplName());
-            });
-        }
+        //屏蔽无用代码
+//        if (noteUserList.getTotal() != 0){
+//            noteUserList.getRecords().forEach(note -> {
+//                TenantUserVo tenantUserVo = tenantUserService.get(note.getCreateBy());
+//                note.setStateName(SenderEnum.getMessage(note.getState()))
+//                       .setUserAccount(tenantUserVo.getUserAccount())
+//                       .setEmplName(tenantUserVo.getEmplName());
+//            });
+//        }
         return CommonResult.success(noteUserList);
     }
 
     @Override
     public CommonResult<IPage<NoteVo>> querySender(QueryDto<String> queryDto) {
         QueryWrapper<NoteVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note.create_By",queryDto.getParam());
-        queryWrapper.notIn("note_user.is_delete",1);
+        queryWrapper.eq("note.create_By", queryDto.getParam());
+        queryWrapper.notIn("note_user.is_delete", 1);
         queryWrapper.orderByDesc("note.create_time");
-        IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(),queryDto.getSize()),queryWrapper);
-        if (noteList.getTotal() != 0){
+        IPage<NoteVo> noteList = noteMapper.querySender(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper);
+        if (noteList.getTotal() != 0) {
             noteList.getRecords().forEach(note -> {
-                if (null==note.getCheckLook()) {
+                if (null == note.getCheckLook()) {
                     note.setStateName(RecipientsEnum.getMessage(note.getStart()));
                 }
             });
@@ -145,7 +148,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteSender(NoteVo noteVo) {
         QueryWrapper<NoteUserVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note.id",noteVo.getNoteUserId());
+        queryWrapper.eq("note.id", noteVo.getNoteUserId());
         noteUserMapper.deleteSenderById(queryWrapper);
         return noteMapper.deleteSender(noteVo.getId());
     }
@@ -153,8 +156,8 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
     @Override
     public CommonResult<IPage<DustbinVo>> queryDustbinVoList(QueryDto<String> queryDto) {
         QueryWrapper<DustbinVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("note.create_by",queryDto.getParam())
-                .and(wrapper -> wrapper.eq("note.state",SenderEnum.DELETE.getStateId()).or().eq("note_user.state",RecipientsEnum.DELETE.getStateId()));
+        queryWrapper.eq("note.create_by", queryDto.getParam())
+                .and(wrapper -> wrapper.eq("note.state", SenderEnum.DELETE.getStateId()).or().eq("note_user.state", RecipientsEnum.DELETE.getStateId()));
         return CommonResult.success(noteMapper.queryDustbin(new Page<>(queryDto.getPage(), queryDto.getSize()), queryWrapper));
     }
 
@@ -166,12 +169,12 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note> implements No
             message = noteService.removeById(dropDto.getId());
         } else if (dropDto.getState() == 2) {
             QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("note_id",dropDto.getId());
+            queryWrapper.eq("note_id", dropDto.getId());
             message = noteUserService.remove(queryWrapper);
-        }else {
+        } else {
             message = noteService.removeById(dropDto.getId());
             QueryWrapper<NoteUser> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("note_id",dropDto.getId());
+            queryWrapper.eq("note_id", dropDto.getId());
             message = noteUserService.remove(queryWrapper);
         }
         return CommonResult.success(message);
