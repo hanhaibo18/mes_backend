@@ -5,14 +5,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
+import com.richfit.mes.common.model.produce.PhysChemResult;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItemInspection;
 import com.richfit.mes.produce.dao.TrackItemInspectionMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -31,6 +34,8 @@ public class PhyChemTestService{
     private TrackHeadService trackHeadService;
     @Autowired
     private PhysChemOrderService physChemOrderService;
+    @Autowired
+    private PhysChemResultService physChemResultService;
 
     /**
      * 查询跟单工序发起委托列表
@@ -103,4 +108,32 @@ public class PhyChemTestService{
         }
         return trackItemInspections;
     }
+
+    /**
+     * 同步试验结果
+     * @param itemIds
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void syncResult(List<String> itemIds){
+        //构造存储本地理化试验结果数据
+        List<PhysChemResult> physChemResults = new ArrayList<>();
+        for (String itemId : itemIds) {
+            //调用理化试验接口获取试验结果数据
+            try {
+
+            }catch (Exception e){
+                log.error("调用化验同步数据接口错误！", e);
+            }
+        }
+
+        //删除旧的实验结果数据(调试时需要确定重复同步情况是否更新)
+        List<PhysChemResult> oldResults = physChemResultService.list(new QueryWrapper<PhysChemResult>().in("item_id", itemIds));
+        if(oldResults.size()>0){
+            List<String> oldResultsIds = oldResults.stream().map(PhysChemResult::getId).collect(Collectors.toList());
+            physChemResultService.removeByIds(oldResultsIds);
+        }
+        //保存新的测试结果数据
+        physChemResultService.saveBatch(physChemResults);
+    }
+
 }
