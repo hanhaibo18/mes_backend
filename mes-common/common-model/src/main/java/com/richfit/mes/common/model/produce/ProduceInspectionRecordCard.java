@@ -73,13 +73,16 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "状态 同跟单管理状态")
     private String status;
 
-    @TableField(exist = false)
-    @ApiModelProperty(value = "详细明细")
-    private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
+    @ApiModelProperty(value = "跟单分类：1机加  2装配 3热处理 4钢结构")
+    private String classes;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "是否保存 Y是，N否")
     private String isSave = "Y";
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "详细明细")
+    private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
 
     public ProduceInspectionRecordCard() {
 
@@ -97,5 +100,6 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
         this.batchNo = trackHead.getBatchNo();
         this.isCardData = trackHead.getIsCardData();
         this.status = trackHead.getStatus();
+        this.classes = trackHead.getClasses();
     }
 }

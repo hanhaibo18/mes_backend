@@ -1,5 +1,9 @@
 package com.richfit.mes.produce.controller.quality;
 
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -17,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,5 +127,37 @@ public class InspectionRecordCardController extends BaseController {
     public void updateTrackCheckDetail(@ApiParam(value = "质量检测卡明细信息", required = true) @RequestBody ProduceInspectionRecordCardContent produceInspectionRecordCardContent) {
         produceInspectionRecordCardService.updateTrackCheckDetail(produceInspectionRecordCardContent);
         log.debug("inspection_record_card update is params [{}]", produceInspectionRecordCardContent);
+    }
+
+    @ApiOperation(value = "质量检测卡excel", notes = "质量检测卡excel")
+    @GetMapping("/excel")
+    public void excel(
+            HttpServletResponse response,
+            @ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
+        ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+        log.debug("inspection_record_card select is params [{}]", flowId);
+        log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
+        String excelName = "";
+        if (TrackHead.TRACKHEAD_CLASSES_JJ.equals(produceInspectionRecordCard.getClasses())) {
+            //机加模板名称
+            excelName = "检验记录卡机加.xlsx";
+        } else if (TrackHead.TRACKHEAD_CLASSES_ZP.equals(produceInspectionRecordCard.getClasses())) {
+            //装配模板名称
+            excelName = "检验记录卡装配.xlsx";
+        }
+        try {
+            ExcelWriter writer = ExcelUtil.getReader(ResourceUtil.getStream("excel/" + excelName)).getWriter();
+            writer.writeCellValue(11, 3, produceInspectionRecordCard.getSparePartsName());
+            writer.writeCellValue(11, 4, produceInspectionRecordCard.getSparePartsDrawingNo());
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+            response.setHeader("Content-Disposition", "attachment;filename=test.xlsx");
+            writer.flush(outputStream, true);
+            writer.close();
+            IoUtil.close(outputStream);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
