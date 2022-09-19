@@ -60,6 +60,9 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
     private String inspectionName;
 
     @ApiModelProperty(value = "工序名称")
+    private String inspectionItemNo;
+
+    @ApiModelProperty(value = "工序名称")
     private String inspectionItemName;
 
     @ApiModelProperty(value = "检查内容")
@@ -110,6 +113,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
                     pt.setTenantId(trackItem.getTenantId());
                     pt.setBranchCode(trackItem.getBranchCode());
                     pt.setFlowId(trackItem.getFlowId());
+                    pt.setInspectionItemNo(trackItem.getOptNo());
                     pt.setInspectionItemName(trackItem.getOptName());
                     pt.setInspectionContent(trackCheckDetail.getCheckName());
                     pt.setInspectionRequirement(jsyq);
