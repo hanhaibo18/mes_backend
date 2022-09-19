@@ -86,9 +86,9 @@ public class TrackCompleteController extends BaseController {
             if (!StringUtils.isNullOrEmpty(tiId)) {
                 queryWrapper.eq("ti_id", tiId);
             }
-            if (!StringUtils.isNullOrEmpty(userId)) {
-                queryWrapper.apply("(user_id='" + userId + "' or user_name='" + userName + "')");
-            }
+//            if (!StringUtils.isNullOrEmpty(userId)) {
+//                queryWrapper.apply("(user_id='" + userId + "' or user_name='" + userName + "')");
+//            }
             if (!StringUtils.isNullOrEmpty(productNo)) {
                 queryWrapper.eq("product_no", productNo);
             }
@@ -119,7 +119,7 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.eq("branch_code", branchCode);
             }
 
-            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+            queryWrapper.eq("complete_by", SecurityUtils.getCurrentUser().getUsername());
 
             //外协报工判断过滤，外协报工类型是4
             if (!StringUtils.isNullOrEmpty(optType)) {
