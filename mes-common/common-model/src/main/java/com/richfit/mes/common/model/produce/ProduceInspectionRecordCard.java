@@ -76,24 +76,12 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
         this.tenantId = trackHead.getTenantId();
         this.branchCode = trackHead.getBranchCode();
         this.trackHeadId = trackHead.getId();
-        this.productName = trackHead.getProductName();
-        this.productDrawingNo = trackHead.getDrawingNo();
         this.sparePartsNo = trackHead.getProductNo();
+        this.sparePartsName = trackHead.getProductName();
+        this.sparePartsDrawingNo = trackHead.getDrawingNo();
         this.texture = trackHead.getTexture();
         this.batchNo = trackHead.getBatchNo();
         this.isCardData = trackHead.getIsCardData();
         this.status = trackHead.getStatus();
-        if (TrackHead.TRACKHEAD_CLASSES_JJ.equals(trackHead.getClasses())) {
-            this.sparePartsName = trackHead.getMaterialName();
-            //图号
-//            this.sparePartsDrawingNo;
-        }
-
-        if (TrackHead.TRACKHEAD_CLASSES_ZP.equals(trackHead.getClasses())) {
-            this.partsName = trackHead.getMaterialName();
-            //图号
-//            this.partsDrawingNo;
-        }
     }
-
 }

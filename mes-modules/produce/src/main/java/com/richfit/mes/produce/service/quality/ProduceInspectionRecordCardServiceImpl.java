@@ -52,7 +52,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     @Override
     public void saveProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        this.save(produceInspectionRecordCard);
+        this.saveOrUpdate(produceInspectionRecordCard);
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = produceInspectionRecordCard.getProduceInspectionRecordCardContentList();
         //保存检测明细信息
         for (ProduceInspectionRecordCardContent produceInspectionRecordCardContent : produceInspectionRecordCardContentList) {
@@ -68,7 +68,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         TrackFlow trackFlow = trackHeadFlowService.getById(produceInspectionRecordCardContent.getFlowId());
         trackFlow.setIsExamineCardData(TrackFlow.EXAMINE_CARD_DATA_XG);
         trackHeadFlowService.updateById(trackFlow);
-        
+
         TrackCheckDetail trackCheckDetail = trackCheckDetailService.getById(produceInspectionRecordCardContent.getId());
         trackCheckDetail.setValue(produceInspectionRecordCardContent.getInspectionResult());
         trackCheckDetail.setResult(Integer.parseInt(produceInspectionRecordCardContent.getInspectionQualified()));
@@ -102,6 +102,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
             trackHead.setFlowId(flowId);
             trackHead.setIsCardData(trackFlow.getIsCardData());
+            trackHead.setProductNo(trackFlow.getProductNo());
             produceInspectionRecordCard = new ProduceInspectionRecordCard(trackHead);
         }
         //记录检验卡明细
