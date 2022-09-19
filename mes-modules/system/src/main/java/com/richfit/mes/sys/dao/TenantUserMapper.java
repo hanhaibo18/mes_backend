@@ -59,6 +59,6 @@ public interface TenantUserMapper extends BaseMapper<TenantUser> {
      * @Date: 2022/7/8 15:49
      * @return: List<TenantUserVo>
      **/
-    @Select("SELECT users.*,role.user_type user_role_type FROM sys_tenant_user users LEFT JOIN sys_user_role role ON role.user_id = users.id ${ew.customSqlSegment}")
+    @Select("SELECT DISTINCT(role.user_id),users.*,role.user_type user_role_type FROM sys_tenant_user users LEFT JOIN sys_user_role role ON role.user_id = users.id ${ew.customSqlSegment}")
     List<TenantUserVo> queryByBranchCode(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
 }
