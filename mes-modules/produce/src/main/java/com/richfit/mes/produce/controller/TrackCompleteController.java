@@ -119,12 +119,13 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.eq("branch_code", branchCode);
             }
 
-            //外协报工判断过滤，外协报工类型是4
+            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
 
+            //外协报工判断过滤，外协报工类型是4
             if (!StringUtils.isNullOrEmpty(optType)) {
                 queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type = '" + optType + "')");
             } else {
-                queryWrapper.apply("ti_id in (select id from produce_track_item where (opt_type ='0' or  opt_type ='2') )");
+                queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type not in (3) )");
             }
             // todo 如果是管理员或租户管理员，那么不过滤完工用户ID
             if (null != SecurityUtils.getCurrentUser()) {

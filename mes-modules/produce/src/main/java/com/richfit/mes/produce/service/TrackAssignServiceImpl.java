@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -184,6 +185,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("u.product_no", productNo);
+        }
+        if (!StrUtil.isBlank(userId)) {
+            queryWrapper.eq("u.user_id", userId);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + startTime + " ')");

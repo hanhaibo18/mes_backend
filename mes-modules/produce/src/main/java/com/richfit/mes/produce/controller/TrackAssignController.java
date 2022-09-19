@@ -161,7 +161,7 @@ public class TrackAssignController extends BaseController {
      * @param limit
      * @return
      */
-    @ApiOperation(value = "派工自定义分页查询", notes = "派工自定义分页查询")
+    @ApiOperation(value = "派工自定义分页查询(已派工,未报工)", notes = "派工自定义分页查询")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -176,6 +176,10 @@ public class TrackAssignController extends BaseController {
     @GetMapping("/querypage")
     public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes) {
         try {
+            //前端没传递人员信息 后台自己赋值
+//            if (!StrUtil.isBlank(userId)) {
+//                userId = SecurityUtils.getCurrentUser().getUsername();
+//            }
             IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes);
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));

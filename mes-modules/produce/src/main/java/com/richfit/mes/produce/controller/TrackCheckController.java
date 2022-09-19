@@ -106,6 +106,8 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("tenant_id", tenantId);
             }
             if (Boolean.TRUE.equals(isRecheck)) {
+                //质检页面只查询指派给自己的质检信息
+                queryWrapper.eq("qualityCheckBy", SecurityUtils.getCurrentUser().getUsername());
                 //查询用户信息 组装过滤数据
                 CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
                 QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
