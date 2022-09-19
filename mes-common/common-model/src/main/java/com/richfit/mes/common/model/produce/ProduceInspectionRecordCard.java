@@ -21,6 +21,16 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
 
     private static final long serialVersionUID = -1044825101675722165L;
 
+    /**
+     * 已保存
+     */
+    public static final String PRODUCE_INSPECTION_RECORD_CARD_SAVE_Y = "Y";
+
+    /**
+     * 未保存
+     */
+    public static final String PRODUCE_INSPECTION_RECORD_CARD_SAVE_N = "N";
+
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
@@ -66,6 +76,10 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @TableField(exist = false)
     @ApiModelProperty(value = "详细明细")
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否保存 Y是，N否")
+    private String isSave = "Y";
 
     public ProduceInspectionRecordCard() {
 

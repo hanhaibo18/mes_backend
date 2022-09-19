@@ -83,6 +83,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             trackHead.setIsCardData(trackFlow.getIsCardData());
             trackHead.setProductNo(trackFlow.getProductNo());
             produceInspectionRecordCard = new ProduceInspectionRecordCard(trackHead);
+            produceInspectionRecordCard.setIsSave(ProduceInspectionRecordCard.PRODUCE_INSPECTION_RECORD_CARD_SAVE_N);
         }
         //记录检验卡明细
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
