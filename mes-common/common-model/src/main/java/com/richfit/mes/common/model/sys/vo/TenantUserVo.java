@@ -1,5 +1,7 @@
 package com.richfit.mes.common.model.sys.vo;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseVo;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.TenantUser;
@@ -9,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,6 +22,8 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class TenantUserVo extends BaseVo<TenantUser> {
+    private static final long serialVersionUID = 207908208583575574L;
+
     public TenantUserVo(TenantUser user) {
         BeanUtils.copyProperties(user, this);
     }
@@ -89,4 +94,29 @@ public class TenantUserVo extends BaseVo<TenantUser> {
     private String belongOrgName;
     @ApiModelProperty(value = "用户角色类型", dataType = "String")
     private String userRoleType;
+
+
+    /**
+     * 创建者
+     */
+    @TableField(fill = FieldFill.INSERT)
+    protected String createBy;
+
+    /**
+     * 创建日期
+     */
+    @TableField(fill = FieldFill.INSERT)
+    protected Date createTime;
+
+    /**
+     * 更新者
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected String modifyBy;
+
+    /**
+     * 更新日期
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected Date modifyTime;
 }
