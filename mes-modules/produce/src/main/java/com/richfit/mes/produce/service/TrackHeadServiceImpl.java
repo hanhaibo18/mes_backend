@@ -471,7 +471,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setId(flowId);
             trackFlow.setNumber(number);
             trackFlow.setTrackHeadId(trackHead.getId());
-            trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+            if (!StrUtil.isBlank(productsNo)) {
+                trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+            }
             trackHeadFlowService.save(trackFlow);
 
             //跟单工序添加
