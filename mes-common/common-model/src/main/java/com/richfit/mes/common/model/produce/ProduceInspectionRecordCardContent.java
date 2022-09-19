@@ -74,7 +74,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
     @ApiModelProperty(value = "检测结果")
     private String inspectionResult;
 
-    @ApiModelProperty(value = "合格 N不合格、Y合格")
+    @ApiModelProperty(value = "合格 0不合格、1合格")
     private String inspectionQualified;
 
     @ApiModelProperty(value = "检验员名称")
@@ -141,6 +141,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
             gxhgz.setInspectionTesting("/");
             gxhgz.setInspectionResult(trackItem.getCertificateNo());
             gxhgz.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_GXHGZ);
+            gxhgz.setInspectionQualified(null);
             produceInspectionRecordCardContentList.add(gxhgz);
         }
 
@@ -157,6 +158,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
             ts.setInspectionTesting("/");
             ts.setInspectionResult(trackItem.getInspectRecordNo());
             ts.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_TS);
+            ts.setInspectionQualified(null);
             produceInspectionRecordCardContentList.add(ts);
         }
         return produceInspectionRecordCardContentList;
@@ -176,6 +178,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
             clzs.setInspectionTesting("/");
             clzs.setInspectionResult(produceInspectionRecordCard.getBatchNo());
             clzs.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_CLZS);
+            clzs.setInspectionQualified(null);
             produceInspectionRecordCardContentList.add(clzs);
         }
         return produceInspectionRecordCardContentList;

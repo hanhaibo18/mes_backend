@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author zhiqiang.lu
@@ -53,14 +52,6 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     public void saveProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         this.saveOrUpdate(produceInspectionRecordCard);
-        List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = produceInspectionRecordCard.getProduceInspectionRecordCardContentList();
-        //保存检测明细信息
-        for (ProduceInspectionRecordCardContent produceInspectionRecordCardContent : produceInspectionRecordCardContentList) {
-            produceInspectionRecordCardContent.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-            produceInspectionRecordCardContent.setFlowId(produceInspectionRecordCard.getId());
-            produceInspectionRecordCardContent.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            produceInspectionRecordCardContentMapper.insert(produceInspectionRecordCardContent);
-        }
     }
 
     @Override
@@ -79,18 +70,6 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     public void updateProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         this.updateById(produceInspectionRecordCard);
-        //删除原明细
-        List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = produceInspectionRecordCard.getProduceInspectionRecordCardContentList();
-        QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("flow_id", produceInspectionRecordCard.getId());
-        produceInspectionRecordCardContentMapper.delete(queryWrapper);
-        //保存新检测明细信息
-        for (ProduceInspectionRecordCardContent produceInspectionRecordCardContent : produceInspectionRecordCardContentList) {
-            produceInspectionRecordCardContent.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-            produceInspectionRecordCardContent.setFlowId(produceInspectionRecordCard.getId());
-            produceInspectionRecordCardContent.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            produceInspectionRecordCardContentMapper.insert(produceInspectionRecordCardContent);
-        }
     }
 
     @Override
