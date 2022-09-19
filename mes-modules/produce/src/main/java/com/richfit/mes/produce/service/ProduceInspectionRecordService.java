@@ -15,6 +15,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
@@ -85,6 +86,13 @@ public class ProduceInspectionRecordService{
     private TrackCompleteService trackCompleteService;
     @Autowired
     private TrackAssignPersonMapper trackAssignPersonMapper;
+    @Autowired
+    private TrackAssignPersonService trackAssignPersonService;
+    @Autowired
+    private TrackAssignMapper trackAssignMapper;
+    @Autowired
+
+
 
     /**
      * 查询跟单工序探伤列表
@@ -195,7 +203,7 @@ public class ProduceInspectionRecordService{
         List<String> itemIds = trackItemInspections.getRecords().stream().map(TrackItemInspection::getId).collect(Collectors.toList());
 
         if(itemIds.size()>0){
-            IPage<Assign> assigns = trackAssignService.page(new Page<Assign>(page,limit),new QueryWrapper<Assign>().in("ti_id",itemIds));
+            IPage<Assign> assigns = trackAssignMapper.queryPageNew(new Page<Assign>(page,limit),new QueryWrapper<Assign>().in("ti_id",itemIds));
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }
@@ -217,6 +225,7 @@ public class ProduceInspectionRecordService{
         }
         return null;
     }
+
 
     /**
      * 保存探伤记录
@@ -654,6 +663,212 @@ public class ProduceInspectionRecordService{
         }
 
         return jsonObject;
+    }
+
+    public CommonResult updateAssign(Assign assign){
+        try {
+            if (com.mysql.cj.util.StringUtils.isNullOrEmpty(assign.getTiId())) {
+                return CommonResult.failed("关联工序ID编码不能为空！");
+            } else {
+                TrackItem trackItem = trackItemService.getById(assign.getTiId());
+
+                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
+                }
+                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
+                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！");
+                }
+                // 判断后置工序是否已派工，否则无法修改
+                List<Assign> cs = this.find(null, null, null, null, null, trackItem.getFlowId());
+                for (int j = 0; j < cs.size(); j++) {
+                    TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
+                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                        return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
+                    }
+                }
+                // 判断修改的派工数量是否在合理范围
+                Assign oldassign = trackAssignService.getById(assign.getId());
+                if (null != trackItem) {
+                    if (trackItem.getAssignableQty() < (assign.getQty() - oldassign.getQty())) {
+                        return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
+                    }
+                }
+                // 设置派工时间，人员，工序可派工数
+                if (null != SecurityUtils.getCurrentUser()) {
+
+                    assign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                assign.setAssignTime(new Date());
+                assign.setModifyTime(new Date());
+                assign.setAvailQty(assign.getQty());
+                boolean bool = trackAssignService.updateById(assign);
+                QueryWrapper<AssignPerson> queryWrapper = new QueryWrapper<AssignPerson>();
+                queryWrapper.eq("assign_id", assign.getId());
+                trackAssignPersonService.remove(queryWrapper);
+                for (AssignPerson person : assign.getAssignPersons()) {
+                    person.setModifyTime(new Date());
+                    person.setAssignId(assign.getId());
+                    trackAssignPersonService.save(person);
+                }
+                trackItem.setAssignableQty(trackItem.getAssignableQty() - (assign.getQty() - oldassign.getQty()));
+                if (assign.getState() == 1) {
+                    trackItem.setIsDoing(1);
+                    trackItem.setStartDoingTime(new Date());
+                    trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
+                } else {
+                    trackItem.setIsSchedule(0);
+                    trackItem.setIsDoing(0);
+                }
+                trackItemService.updateById(trackItem);
+                //修改探伤报工信息
+                TrackItemInspection trackItemInspection = new TrackItemInspection();
+                BeanUtil.copyProperties(trackItem,trackItemInspection);
+                trackItemInspectionService.updateById(trackItemInspection);
+            }
+            return CommonResult.success(assign, "操作成功！");
+        } catch (Exception e) {
+            return CommonResult.failed("操作失败，请重试！" + e.getMessage());
+        }
+    }
+
+    /**
+     * 派工查询
+     * @param id
+     * @param tiId
+     * @param state
+     * @param trackId
+     * @param trackNo
+     * @param flowId
+     * @return
+     */
+    public List<Assign> find(String id, String tiId, String state, String trackId, String trackNo, String flowId){
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(id)) {
+            queryWrapper.eq("id", id);
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(tiId)) {
+            queryWrapper.eq("ti_id", tiId);
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(state)) {
+            queryWrapper.eq("state", Integer.parseInt(state));
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(trackId)) {
+            queryWrapper.eq("track_id", trackId);
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.eq("track_no", trackNo);
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(flowId)) {
+            queryWrapper.eq("flow_id", flowId);
+        }
+        queryWrapper.orderByAsc("modify_time");
+        return  trackAssignService.list(queryWrapper);
+    }
+
+    /**
+     * 保存报工
+     * @param completeDtoList
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> saveCompleteCache(List<CompleteDto> completeDtoList) {
+        for (CompleteDto completeDto : completeDtoList) {
+            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            //检验人
+            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+            trackItem.setQualityCheckBranch(completeDto.getQualityCheckBranch());
+            //根据工序Id先删除,在重新新增数据
+            QueryWrapper<TrackCompleteCache> removeCache = new QueryWrapper<>();
+            removeCache.eq("ti_id", completeDto.getTiId());
+            trackCompleteCacheService.remove(removeCache);
+
+            List<TrackCompleteCache> trackCompleteCacheList = new ArrayList<>();
+            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
+                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
+                    return CommonResult.failed("报工工时不能大于额定工时");
+                }
+                TrackCompleteCache trackCompleteCache = new TrackCompleteCache();
+                trackCompleteCache.setAssignId(completeDto.getAssignId());
+                trackCompleteCache.setTiId(completeDto.getTiId());
+                trackCompleteCache.setTrackId(completeDto.getTrackId());
+                trackCompleteCache.setTrackNo(completeDto.getTrackNo());
+                trackCompleteCache.setProdNo(completeDto.getProdNo());
+                trackCompleteCache.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackCompleteCache.setCompleteTime(new Date());
+                trackCompleteCache.setUserId(trackComplete.getUserId());
+                trackCompleteCache.setDeviceId(trackComplete.getDeviceId());
+                trackCompleteCache.setCompletedHours(trackComplete.getCompletedHours());
+                trackCompleteCache.setActualHours(trackComplete.getActualHours());
+                trackCompleteCache.setReportHours(trackComplete.getReportHours());
+                trackCompleteCache.setStaticHours(trackComplete.getStaticHours());
+                trackCompleteCache.setCompletedQty(trackComplete.getCompletedQty());
+                trackCompleteCache.setRejectQty(trackComplete.getRejectQty());
+                trackCompleteCache.setDetectionResult(trackComplete.getDetectionResult());
+                trackCompleteCacheList.add(trackCompleteCache);
+            }
+            trackItemService.updateById(trackItem);
+            //修改探伤报工信息
+            TrackItemInspection trackItemInspection = new TrackItemInspection();
+            BeanUtil.copyProperties(trackItem,trackItemInspection);
+            trackItemInspectionService.updateById(trackItemInspection);
+
+            trackCompleteCacheService.saveBatch(trackCompleteCacheList);
+        }
+        return CommonResult.success(true);
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> updateComplete(CompleteDto completeDto) {
+        if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getTiId())) {
+            return CommonResult.failed("工序Id不能为空");
+        }
+        if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
+            return CommonResult.failed("质检人员不能为空");
+        }
+        if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
+            return CommonResult.failed("报工人员不能为空");
+        }
+        TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+        //检验人
+        trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+        trackItem.setQualityCheckBranch(completeDto.getQualityCheckBranch());
+        //根据工序Id先删除,在重新新增数据
+        QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
+        removeComplete.eq("ti_id", completeDto.getTiId());
+        trackCompleteService.remove(removeComplete);
+        double numDouble = 0.00;
+        Assign assign = trackAssignService.getById(completeDto.getAssignId());
+        double intervalNumber = assign.getQty() + 0.0;
+        for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
+            if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
+                return CommonResult.failed("报工工时不能大于额定工时");
+            }
+            trackComplete.setAssignId(completeDto.getAssignId());
+            trackComplete.setTiId(completeDto.getTiId());
+            trackComplete.setTrackId(completeDto.getTrackId());
+            trackComplete.setTrackNo(completeDto.getTrackNo());
+            trackComplete.setProdNo(completeDto.getProdNo());
+            trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+            trackComplete.setCompleteTime(new Date());
+            numDouble += trackComplete.getCompletedQty();
+        }
+        //报工数量判断
+        if (numDouble > assign.getQty()) {
+            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得大于" + assign.getQty());
+        }
+        if (numDouble < intervalNumber - 0.1) {
+            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得少于" + +(intervalNumber - 0.1));
+        }
+        //跟新工序完成数量
+        trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
+        trackItemService.updateById(trackItem);
+        //修改探伤报工信息
+        TrackItemInspection trackItemInspection = new TrackItemInspection();
+        BeanUtil.copyProperties(trackItem,trackItemInspection);
+        trackItemInspectionService.updateById(trackItemInspection);
+        return CommonResult.success(trackCompleteService.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
     }
 
 

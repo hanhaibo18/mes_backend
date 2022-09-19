@@ -13,6 +13,7 @@ import freemarker.template.TemplateException;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class ProduceInspectionRecordController extends BaseController {
 
     @Autowired
     private ProduceInspectionRecordService produceInspectionRecordService;
+
 
     /**
      * ***
@@ -132,7 +134,26 @@ public class ProduceInspectionRecordController extends BaseController {
         return produceInspectionRecordService.saveComplete(completeDto);
     }
 
+    @ApiOperation(value = "保存报工(新)", notes = "保存报工(新)")
+    @PostMapping("/saveCompleteCache")
+    public CommonResult<Boolean> saveCompleteCache(@RequestBody List<CompleteDto> completeDtoList) {
+        return produceInspectionRecordService.saveCompleteCache(completeDtoList);
+    }
 
+    @ApiOperation(value = "修改报工(新)", notes = "修改报工(新)")
+    @PutMapping("/updateComplete")
+    public CommonResult<Boolean> updateComplete(@RequestBody CompleteDto completeDto) {
+        return produceInspectionRecordService.updateComplete(completeDto);
+    }
+
+
+    @ApiOperation(value = "开工", notes = "开工")
+    @ApiImplicitParam(name = "assign", value = "派工", required = true, dataType = "Assign", paramType = "path")
+    @PostMapping("/updateAssign")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Assign> updateAssign(@RequestBody Assign assign) {
+        return produceInspectionRecordService.updateAssign(assign);
+    }
 
 
 

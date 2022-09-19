@@ -620,6 +620,13 @@ public class TrackAssignController extends BaseController {
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "') or a.modify_time is null)");
         }
+
+        /*if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.and(wrapper1->wrapper1.ge("date_format(a.modify_time, '%Y-%m-%d')",startTime).or(wrapper->wrapper.isNull("a.modify_time")));
+        }
+        if (!org.springframework.util.StringUtils.isEmpty(endTime)) {
+            queryWrapper.and(wrapper1->wrapper1.ge("date_format(a.modify_time, '%Y-%m-%d')",endTime).or(wrapper->wrapper.isNull("a.modify_time")));
+        }*/
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("a.branch_code", branchCode);
         }
