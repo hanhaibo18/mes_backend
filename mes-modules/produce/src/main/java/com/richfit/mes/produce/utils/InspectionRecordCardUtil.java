@@ -127,7 +127,8 @@ public class InspectionRecordCardUtil {
      */
     public static void cardNo(ProduceInspectionRecordCard produceInspectionRecordCard, CodeRuleService codeRuleService) throws Exception {
         String code = Code.code("inspection_card", produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
-        produceInspectionRecordCard.setCardNo("BOMCO J77-" + produceInspectionRecordCard.getBranchCode() + "-" + code);
+        code = code.replace("BRANCHCODE", produceInspectionRecordCard.getBranchCode());
+        produceInspectionRecordCard.setCardNo(code);
         Code.codeUpdate("inspection_card", produceInspectionRecordCard.getCardNo(), produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
     }
 }
