@@ -73,22 +73,18 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "详细明细")
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
 
-    public ProduceInspectionRecordCard() {
-
-    }
-
-    public ProduceInspectionRecordCard(TrackHead trackHead) {
-        this.id = trackHead.getFlowId();
-        this.tenantId = trackHead.getTenantId();
-        this.branchCode = trackHead.getBranchCode();
-        this.trackHeadId = trackHead.getId();
-        this.sparePartsNo = trackHead.getProductNo();
-        this.sparePartsName = trackHead.getProductName();
-        this.sparePartsDrawingNo = trackHead.getDrawingNo();
-        this.texture = trackHead.getTexture();
-        this.batchNo = trackHead.getBatchNo();
-        this.isCardData = trackHead.getIsCardData();
-        this.status = trackHead.getStatus();
-        this.classes = trackHead.getClasses();
+    public void byTrackHead(ProduceInspectionRecordCard produceInspectionRecordCard, TrackHead trackHead) {
+        produceInspectionRecordCard.setId(trackHead.getFlowId());
+        produceInspectionRecordCard.setTenantId(trackHead.getTenantId());
+        produceInspectionRecordCard.setBranchCode(trackHead.getBranchCode());
+        produceInspectionRecordCard.setTrackHeadId(trackHead.getId());
+        produceInspectionRecordCard.setSparePartsNo(trackHead.getProductNo());
+        produceInspectionRecordCard.setSparePartsName(trackHead.getProductName());
+        produceInspectionRecordCard.setSparePartsDrawingNo(trackHead.getDrawingNo());
+        produceInspectionRecordCard.setTexture(trackHead.getTexture());
+        produceInspectionRecordCard.setBatchNo(trackHead.getBatchNo());
+        produceInspectionRecordCard.setIsCardData(trackHead.getIsCardData());
+        produceInspectionRecordCard.setStatus(trackHead.getStatus());
+        produceInspectionRecordCard.setClasses(trackHead.getClasses());
     }
 }
