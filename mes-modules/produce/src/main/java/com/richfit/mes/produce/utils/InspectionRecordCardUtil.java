@@ -4,10 +4,13 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.poi.excel.StyleSet;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCard;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCardContent;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.service.CodeRuleService;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
 import java.util.List;
 
@@ -86,6 +89,12 @@ public class InspectionRecordCardUtil {
         InspectionRecordCardUtil inspectionRecordCardUtil = new InspectionRecordCardUtil();
         String excelName = inspectionRecordCardUtil.excelName(produceInspectionRecordCard);
         ExcelWriter writer = ExcelUtil.getReader(ResourceUtil.getStream("excel/" + excelName)).getWriter();
+
+        //excel内容居左
+        StyleSet style = writer.getStyleSet();
+        CellStyle cellStyle = style.getCellStyle();
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+
         if (TrackHead.TRACKHEAD_CLASSES_JJ.equals(produceInspectionRecordCard.getClasses())) {
             //机加
             inspectionRecordCardUtil.jj(writer, produceInspectionRecordCard);
