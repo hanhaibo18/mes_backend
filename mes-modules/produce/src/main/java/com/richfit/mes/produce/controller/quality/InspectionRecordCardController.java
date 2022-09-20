@@ -1,8 +1,6 @@
 package com.richfit.mes.produce.controller.quality;
 
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
-import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -135,22 +133,12 @@ public class InspectionRecordCardController extends BaseController {
     public void excel(
             HttpServletResponse response,
             @ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
-        ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
-        log.debug("inspection_record_card select is params [{}]", flowId);
-        log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
-        String excelName = "";
-        if (TrackHead.TRACKHEAD_CLASSES_JJ.equals(produceInspectionRecordCard.getClasses())) {
-            //机加模板名称
-            excelName = "检验记录卡机加.xlsx";
-        } else if (TrackHead.TRACKHEAD_CLASSES_ZP.equals(produceInspectionRecordCard.getClasses())) {
-            //装配模板名称
-            excelName = "检验记录卡装配.xlsx";
-        }
-
         try {
-            ExcelWriter writer = ExcelUtil.getReader(ResourceUtil.getStream("excel/" + excelName)).getWriter();
+            ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+            log.debug("inspection_record_card select is params [{}]", flowId);
+            log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
             //excel封装工具类
-            InspectionRecordCardUtil.excel(writer, produceInspectionRecordCard);
+            ExcelWriter writer = InspectionRecordCardUtil.excel(produceInspectionRecordCard);
             ServletOutputStream outputStream = response.getOutputStream();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
             response.setHeader("Content-Disposition", "attachment;filename=test.xlsx");
