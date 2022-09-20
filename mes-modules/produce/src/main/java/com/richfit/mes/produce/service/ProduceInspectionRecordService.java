@@ -1,4 +1,3 @@
-/*
 package com.richfit.mes.produce.service;
 
 
@@ -41,12 +40,10 @@ import java.util.stream.Collectors;
 import freemarker.template.*;
 import org.springframework.util.StringUtils;
 
-*/
 /***
  * 探伤记录
  * @author renzewen
- *//*
-
+ */
 @Service
 @Slf4j
 public class ProduceInspectionRecordService{
@@ -93,12 +90,10 @@ public class ProduceInspectionRecordService{
     private TrackAssignPersonService trackAssignPersonService;
     @Autowired
     private TrackAssignMapper trackAssignMapper;
-    @Autowired
 
 
 
-    */
-/**
+    /**
      * 查询跟单工序探伤列表
      * @param page
      * @param limit
@@ -110,8 +105,7 @@ public class ProduceInspectionRecordService{
      * @param tenantId
      * @param isAudit
      * @return
-     *//*
-
+     */
     public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit,Integer isOperationComplete) {
         QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
         if (!StringUtils.isEmpty(branchCode)) {
@@ -162,8 +156,7 @@ public class ProduceInspectionRecordService{
         return trackItemInspections;
     }
 
-    */
-/**
+    /**
      * 分页查询探伤派工信息
      * @param page
      * @param limit
@@ -174,8 +167,7 @@ public class ProduceInspectionRecordService{
      * @param branchCode
      * @param tenantId
      * @return
-     *//*
-
+     */
     public IPage<Assign> assginPage(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isOperationComplete) {
         QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
         if (!StringUtils.isEmpty(branchCode)) {
@@ -234,12 +226,10 @@ public class ProduceInspectionRecordService{
     }
 
 
-    */
-/**
+    /**
      * 保存探伤记录
      * @return
-     *//*
-
+     */
     @Transactional(rollbackFor = Exception.class)
     public CommonResult saveRecord(ProduceInspectionRecordDto produceInspectionRecordDto) throws GlobalException{
         //获取模板类型
@@ -312,13 +302,11 @@ public class ProduceInspectionRecordService{
         return  null;
     }
 
-    */
-/**
+    /**
      *根据工序id查询探伤记录
      * @param itemId
      * @return
-     *//*
-
+     */
     public List<Map<String,Object>> queryRecordByItemId(String itemId){
         QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
         itemInspectInfoQueryWrapper.eq("track_item_id",itemId);
@@ -354,13 +342,11 @@ public class ProduceInspectionRecordService{
         return  listMap;
     }
 
-    */
-/**
+    /**
      * 返回最近一条记录
      * @param itemId
      * @return
-     *//*
-
+     */
     public Object queryLastInfoByItemId(String itemId){
         //所有记录
         List<Map<String, Object>> inspects = queryRecordByItemId(itemId);
@@ -372,8 +358,7 @@ public class ProduceInspectionRecordService{
 
 
 
-    */
-/**
+    /**
      * 审核提交探伤记录
      * @param itemId 探伤工序id
      * @param remark 探伤备注
@@ -383,8 +368,7 @@ public class ProduceInspectionRecordService{
      * @param checkBy 探伤检验人
      * @param auditBy 探伤审核人
      * @return
-     *//*
-
+     */
     @Transactional(rollbackFor = Exception.class)
     public Boolean auditSubmitRecord(String itemId,String remark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
         TrackItemInspection trackItemInspection = new TrackItemInspection();
@@ -400,11 +384,9 @@ public class ProduceInspectionRecordService{
         return trackItemInspectionService.updateById(trackItemInspection);
     }
 
-    */
-/**
+    /**
      * 报告导出doc
-     *//*
-
+     */
     public void exoprtReport(HttpServletResponse response,String itemId) throws IOException, TemplateException {
         //跟单信息
         TrackHead trackHead = null;
@@ -439,15 +421,13 @@ public class ProduceInspectionRecordService{
         wordUtil.exoprtReport(response,dataMap,tempNameAndDocNameMap.get("tempName"),tempNameAndDocNameMap.get("docName"));
     }
 
-    */
-/**
+    /**
      * 构造导出填充数据dataMap
      * @param trackHead
      * @param recordInfo
      * @param dataMap
      * @param tempType
-     *//*
-
+     */
     private void createDataMap(TrackHead trackHead,Map<String,Object> recordInfo,Map<String, Object> dataMap,String tempType)throws IOException{
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             createMtDataMap(recordInfo, dataMap);
@@ -475,9 +455,7 @@ public class ProduceInspectionRecordService{
         ProduceInspectionRecordMt produceInspectionRecordMt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordMt.class);
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordMt), Map.class));
-        */
-/*//*
-/记录编号
+        /*//记录编号
         dataMap.put("recordNo",produceInspectionRecordMt.getRecordNo());
         //种类
         dataMap.put("type",produceInspectionRecordMt.getType());
@@ -514,8 +492,7 @@ public class ProduceInspectionRecordService{
         //检验结果
         dataMap.put("inspectionResults",produceInspectionRecordMt.getInspectionResults());
         //见证
-        dataMap.put("witnesses",produceInspectionRecordMt.getWitnesses());*//*
-
+        dataMap.put("witnesses",produceInspectionRecordMt.getWitnesses());*/
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordMt.getDiagramAttachmentId())){
             dataMap.put("img",systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());
@@ -569,13 +546,11 @@ public class ProduceInspectionRecordService{
 
     }
 
-    */
-/**
+    /**
      * 根据模板类型获取模板和导出文件名
      * @param tempType
      * @return
-     *//*
-
+     */
     private Map<String,String> checkTempNameAndDocName(String tempType){
         Map<String, String> returnMap = new HashMap<>();
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
@@ -666,15 +641,13 @@ public class ProduceInspectionRecordService{
     }
 
 
-    */
-/**
+    /**
      * 将Object对象里面的属性和值转化成Map对象
      *
      * @param obj
      * @return
      * @throws IllegalAccessException
-     *//*
-
+     */
     public  Map<String, Object> objectToMap(Object obj){
         JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(obj));
 
@@ -691,8 +664,7 @@ public class ProduceInspectionRecordService{
         return jsonObject;
     }
 
-   */
-/* public CommonResult updateAssign(Assign assign){
+    public CommonResult updateAssign(Assign assign){
         try {
             if (com.mysql.cj.util.StringUtils.isNullOrEmpty(assign.getTiId())) {
                 return CommonResult.failed("关联工序ID编码不能为空！");
@@ -759,9 +731,7 @@ public class ProduceInspectionRecordService{
         }
     }
 
-    *//*
-*/
-/**
+    /**
      * 派工查询
      * @param id
      * @param tiId
@@ -770,9 +740,7 @@ public class ProduceInspectionRecordService{
      * @param trackNo
      * @param flowId
      * @return
-     *//*
-*/
-/*
+     */
     public List<Assign> find(String id, String tiId, String state, String trackId, String trackNo, String flowId){
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(id)) {
@@ -796,18 +764,12 @@ public class ProduceInspectionRecordService{
         queryWrapper.orderByAsc("modify_time");
         return  trackAssignService.list(queryWrapper);
     }
-*//*
 
-   */
-/* *//*
-*/
-/**
+    /**
      * 保存报工
      * @param completeDtoList
      * @return
-     *//*
-*/
-/*
+     */
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveCompleteCache(List<CompleteDto> completeDtoList) {
         for (CompleteDto completeDto : completeDtoList) {
@@ -906,9 +868,7 @@ public class ProduceInspectionRecordService{
         BeanUtil.copyProperties(trackItem,trackItemInspection);
         trackItemInspectionService.updateById(trackItemInspection);
         return CommonResult.success(trackCompleteService.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
-    }*//*
-
+    }
 
 
 }
-*/
