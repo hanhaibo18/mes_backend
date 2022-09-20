@@ -106,8 +106,15 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("tenant_id", tenantId);
             }
             if (Boolean.TRUE.equals(isRecheck)) {
+                queryWrapper.eq("is_recheck", 1);
+            } else if (Boolean.FALSE.equals(isRecheck)) {
+                //未质检
+                queryWrapper.eq("is_quality_complete", 0);
+                queryWrapper.and(wrapper -> wrapper.isNull("is_recheck").or().eq("is_recheck", 0));
+            }
+            if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
                 //质检页面只查询指派给自己的质检信息
-                queryWrapper.eq("qualityCheckBy", SecurityUtils.getCurrentUser().getUsername());
+                queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
                 //查询用户信息 组装过滤数据
                 CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
                 QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
@@ -116,13 +123,7 @@ public class TrackCheckController extends BaseController {
                 List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
                 Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
                 queryWrapper.in("operatipon_id", set);
-                queryWrapper.eq("is_recheck", 1);
-            } else if (Boolean.FALSE.equals(isRecheck)) {
-                //未质检
-                queryWrapper.eq("is_quality_complete", 0);
-                queryWrapper.and(wrapper -> wrapper.isNull("is_recheck").or().eq("is_recheck", 0));
-            }
-            if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
+                
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
             if (!StringUtils.isNullOrEmpty(isExistScheduleCheck)) {

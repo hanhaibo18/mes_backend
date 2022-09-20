@@ -64,7 +64,7 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
     public QueryIsHistory queryIsHistory(String routerId) {
         Router router = this.getById(routerId);
         QueryIsHistory queryIsHistory = new QueryIsHistory();
-        if (!"1".equals(router.getIsActive())) {
+        if (null != router && !"1".equals(router.getIsActive())) {
             queryIsHistory.setOldVersions(router.getVersion());
             queryIsHistory.setIsHistory(true);
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
