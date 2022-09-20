@@ -114,7 +114,7 @@ public class InspectionRecordCardController extends BaseController {
 
     @ApiOperation(value = "质量检测卡查询", notes = "质量检测卡查询")
     @GetMapping("/select")
-    public CommonResult<ProduceInspectionRecordCard> select(@ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
+    public CommonResult<ProduceInspectionRecordCard> select(@ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) throws Exception {
         ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
         log.debug("inspection_record_card select is params [{}]", flowId);
         log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
