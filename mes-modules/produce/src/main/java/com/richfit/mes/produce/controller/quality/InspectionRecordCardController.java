@@ -14,6 +14,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.quality.QualityTrackHead;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
+import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -145,10 +146,11 @@ public class InspectionRecordCardController extends BaseController {
             //装配模板名称
             excelName = "检验记录卡装配.xlsx";
         }
+
         try {
             ExcelWriter writer = ExcelUtil.getReader(ResourceUtil.getStream("excel/" + excelName)).getWriter();
-            writer.writeCellValue(11, 3, produceInspectionRecordCard.getSparePartsName());
-            writer.writeCellValue(11, 4, produceInspectionRecordCard.getSparePartsDrawingNo());
+            //excel封装工具类
+            InspectionRecordCardUtil.excel(writer, produceInspectionRecordCard);
             ServletOutputStream outputStream = response.getOutputStream();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
             response.setHeader("Content-Disposition", "attachment;filename=test.xlsx");
