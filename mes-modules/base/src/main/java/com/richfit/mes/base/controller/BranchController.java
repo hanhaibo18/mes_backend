@@ -267,7 +267,7 @@ public class BranchController extends BaseController {
             return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
         } else {
             for (Branch branch : result) {
-                if (tenantUserDetails.getBelongOrgId().startsWith(branch.getBranchCode())) {
+                if (tenantUserDetails.getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
                     branchList.add(branch);
                 }
             }
