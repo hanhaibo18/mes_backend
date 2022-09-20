@@ -75,16 +75,18 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     @Override
     public ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId) {
         ProduceInspectionRecordCard produceInspectionRecordCard = this.getById(flowId);
-        //如果查到说明已保存过，直接返回，否则需要从原工厂进行查询信息
         if (produceInspectionRecordCard == null) {
-            TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
-            TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
-            trackHead.setFlowId(flowId);
-            trackHead.setIsCardData(trackFlow.getIsCardData());
-            trackHead.setProductNo(trackFlow.getProductNo());
-            produceInspectionRecordCard = new ProduceInspectionRecordCard(trackHead);
             produceInspectionRecordCard.setIsSave(ProduceInspectionRecordCard.PRODUCE_INSPECTION_RECORD_CARD_SAVE_N);
         }
+
+        //质量检测卡基本信息查询
+        TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+        TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
+        trackHead.setFlowId(flowId);
+        trackHead.setIsCardData(trackFlow.getIsCardData());
+        trackHead.setProductNo(trackFlow.getProductNo());
+        produceInspectionRecordCard = new ProduceInspectionRecordCard(trackHead);
+
         //记录检验卡明细
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
         //获取工序质检信息
@@ -112,7 +114,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             }
             trackCheck.setCheckDetailsList(list);
         }
-        //获取质检信息与其他信息（工序合格证、探伤记录）
+        //获取质检信息与其他信息（质检信息、工序合格证、探伤记录）
         for (TrackItem trackItem : trackItemList) {
             produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackItem(trackItem, trackCheckList));
         }
