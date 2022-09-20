@@ -210,6 +210,11 @@ public class TrackHeadController extends BaseController {
             Action action = new Action();
             action.setActionType("2");
             action.setActionItem("2");
+            String trackNos = "";
+            for (TrackHead trackHead : trackHeads) {
+                trackNos += trackHead.getTrackNo() + ",";
+            }
+            action.setRemark("跟单号：" + trackNos);
             actionService.saveAction(action);
             return CommonResult.success(trackHeads, TRACK_HEAD_SUCCESS_MESSAGE);
         } else {
