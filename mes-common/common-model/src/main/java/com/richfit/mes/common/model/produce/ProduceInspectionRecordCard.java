@@ -74,6 +74,9 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
 
     public static void byTrackHead(ProduceInspectionRecordCard produceInspectionRecordCard, TrackHead trackHead) {
+        if (produceInspectionRecordCard == null) {
+            produceInspectionRecordCard = new ProduceInspectionRecordCard();
+        }
         produceInspectionRecordCard.setId(trackHead.getFlowId());
         produceInspectionRecordCard.setTenantId(trackHead.getTenantId());
         produceInspectionRecordCard.setBranchCode(trackHead.getBranchCode());
