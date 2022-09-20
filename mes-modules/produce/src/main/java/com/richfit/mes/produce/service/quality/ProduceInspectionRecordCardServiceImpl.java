@@ -85,7 +85,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         trackHead.setFlowId(flowId);
         trackHead.setIsCardData(trackFlow.getIsCardData());
         trackHead.setProductNo(trackFlow.getProductNo());
-        produceInspectionRecordCard.byTrackHead(produceInspectionRecordCard, trackHead);
+        ProduceInspectionRecordCard.byTrackHead(produceInspectionRecordCard, trackHead);
         //给质量检测卡添加号码
         if (StrUtil.isBlank(produceInspectionRecordCard.getCardNo())) {
             //质量检测卡流水号获取

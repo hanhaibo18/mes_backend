@@ -73,7 +73,7 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "详细明细")
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
 
-    public void byTrackHead(ProduceInspectionRecordCard produceInspectionRecordCard, TrackHead trackHead) {
+    public static void byTrackHead(ProduceInspectionRecordCard produceInspectionRecordCard, TrackHead trackHead) {
         produceInspectionRecordCard.setId(trackHead.getFlowId());
         produceInspectionRecordCard.setTenantId(trackHead.getTenantId());
         produceInspectionRecordCard.setBranchCode(trackHead.getBranchCode());
