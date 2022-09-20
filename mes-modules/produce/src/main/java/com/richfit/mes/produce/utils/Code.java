@@ -23,7 +23,7 @@ public class Code {
         if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
             throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
         }
-        return codeRule.getCurValue();
+        return codeRule.getCurValue().replace("BRANCHCODE", branchCode);
     }
 
     /**
