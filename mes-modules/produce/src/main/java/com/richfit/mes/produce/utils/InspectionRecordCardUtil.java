@@ -137,8 +137,8 @@ public class InspectionRecordCardUtil {
      * @Date: 2022.9.20
      */
     public static void cardNo(ProduceInspectionRecordCard produceInspectionRecordCard, CodeRuleService codeRuleService) throws Exception {
-        String code = Code.code("inspection_card", produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
+        String code = Code.value("inspection_card", produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
         produceInspectionRecordCard.setCardNo(code);
-        Code.codeUpdate("inspection_card", produceInspectionRecordCard.getCardNo(), produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
+        Code.update("inspection_card", produceInspectionRecordCard.getCardNo(), produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
     }
 }

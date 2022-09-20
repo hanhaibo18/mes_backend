@@ -18,7 +18,7 @@ public class Code {
      * @Author: zhiqiang.lu
      * @Date: 2022.9.20
      */
-    public static String code(String code, String tenantId, String branchCode, CodeRuleService codeRuleService) throws Exception {
+    public static String value(String code, String tenantId, String branchCode, CodeRuleService codeRuleService) throws Exception {
         CodeRule codeRule = codeRuleService.gerCode(code, null, null, tenantId, branchCode);
         if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
             throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
@@ -37,7 +37,7 @@ public class Code {
      * @Author: zhiqiang.lu
      * @Date: 2022.9.20
      */
-    public static void codeUpdate(String code, String value, String tenantId, String branchCode, CodeRuleService codeRuleService) throws Exception {
+    public static void update(String code, String value, String tenantId, String branchCode, CodeRuleService codeRuleService) throws Exception {
         codeRuleService.updateCode(code, null, value, null, tenantId, branchCode);
     }
 }
