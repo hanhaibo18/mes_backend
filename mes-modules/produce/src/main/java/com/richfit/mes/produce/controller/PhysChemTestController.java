@@ -74,7 +74,7 @@ public class PhysChemTestController extends BaseController {
     }
 
 
-    @ApiOperation(value = "根据跟单工序id分页查询试验结果", notes = "根据跟单工序id分页查询试验结果")
+   /* @ApiOperation(value = "根据跟单工序id分页查询试验结果", notes = "根据跟单工序id分页查询试验结果")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -87,6 +87,6 @@ public class PhysChemTestController extends BaseController {
                 .eq("branch_code", SecurityUtils.getCurrentUser().getBelongOrgId())
                 .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(physChemResultService.page(new Page<>(page, limit), queryWrapper));
-    }
+    }*/
 
 }

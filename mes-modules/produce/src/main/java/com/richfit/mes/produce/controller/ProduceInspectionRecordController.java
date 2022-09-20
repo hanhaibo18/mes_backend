@@ -1,3 +1,4 @@
+/*
 package com.richfit.mes.produce.controller;
 
 
@@ -20,11 +21,13 @@ import java.io.IOException;
 import java.util.List;
 
 
+*/
 /**
  * 质量管理模块接口
  * @Author: renzewen
  * @Date: 2022/8/22 13:10
- */
+ *//*
+
 @Slf4j
 @Api(tags = "质量管理(探伤管理)")
 @RestController
@@ -35,14 +38,16 @@ public class ProduceInspectionRecordController extends BaseController {
     private ProduceInspectionRecordService produceInspectionRecordService;
 
 
-    /**
+    */
+/**
      * ***
      * 分页查询待探伤工序
      *
      * @param page
      * @param limit
      * @return
-     */
+     *//*
+
     @ApiOperation(value = "分页查询待探伤工序", notes = "分页查询待探伤工序")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
@@ -61,14 +66,16 @@ public class ProduceInspectionRecordController extends BaseController {
         return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit,isOperationComplete));
     }
 
-    /**
+    */
+/**
      * ***
      * 分页查询待探伤工序
      *
      * @param page
      * @param limit
      * @return
-     */
+     *//*
+
     @ApiOperation(value = "分页查询探伤派工信息", notes = "分页查询探伤派工信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
@@ -134,7 +141,8 @@ public class ProduceInspectionRecordController extends BaseController {
         return produceInspectionRecordService.saveComplete(completeDto);
     }
 
-    @ApiOperation(value = "保存报工(新)", notes = "保存报工(新)")
+   */
+/* @ApiOperation(value = "保存报工(新)", notes = "保存报工(新)")
     @PostMapping("/saveCompleteCache")
     public CommonResult<Boolean> saveCompleteCache(@RequestBody List<CompleteDto> completeDtoList) {
         return produceInspectionRecordService.saveCompleteCache(completeDtoList);
@@ -144,18 +152,22 @@ public class ProduceInspectionRecordController extends BaseController {
     @PutMapping("/updateComplete")
     public CommonResult<Boolean> updateComplete(@RequestBody CompleteDto completeDto) {
         return produceInspectionRecordService.updateComplete(completeDto);
-    }
+    }*//*
 
 
-    @ApiOperation(value = "开工", notes = "开工")
+
+    */
+/*@ApiOperation(value = "开工", notes = "开工")
     @ApiImplicitParam(name = "assign", value = "派工", required = true, dataType = "Assign", paramType = "path")
     @PostMapping("/updateAssign")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign> updateAssign(@RequestBody Assign assign) {
         return produceInspectionRecordService.updateAssign(assign);
-    }
+    }*//*
+
 
 
 
 
 }
+*/
