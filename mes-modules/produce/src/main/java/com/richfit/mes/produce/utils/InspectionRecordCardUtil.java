@@ -28,6 +28,7 @@ public class InspectionRecordCardUtil {
      * @Date: 2022.9.20
      */
     public void jj(ExcelWriter writer, ProduceInspectionRecordCard produceInspectionRecordCard) {
+        writer.writeCellValue(0, 2, produceInspectionRecordCard.getCardNo());
         writer.writeCellValue(11, 3, produceInspectionRecordCard.getSparePartsName());
         writer.writeCellValue(11, 4, produceInspectionRecordCard.getSparePartsDrawingNo());
         writer.writeCellValue(14, 3, produceInspectionRecordCard.getSparePartsNo());
@@ -43,6 +44,7 @@ public class InspectionRecordCardUtil {
      * @Date: 2022.9.20
      */
     public void zp(ExcelWriter writer, ProduceInspectionRecordCard produceInspectionRecordCard) {
+        writer.writeCellValue(0, 2, produceInspectionRecordCard.getCardNo());
         writer.writeCellValue(14, 3, produceInspectionRecordCard.getSparePartsNo());
     }
 
