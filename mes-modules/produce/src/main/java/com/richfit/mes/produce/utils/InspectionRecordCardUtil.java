@@ -12,6 +12,7 @@ import com.richfit.mes.produce.service.CodeRuleService;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -106,6 +107,18 @@ public class InspectionRecordCardUtil {
         return writer;
     }
 
+    /**
+     * 功能描述: 质量检验卡通用生成excel文件的方法
+     *
+     * @param produceInspectionRecordCard 质量检验卡信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022.9.20
+     */
+    public static void excelFile(ProduceInspectionRecordCard produceInspectionRecordCard, String path) throws Exception {
+        ExcelWriter writer = InspectionRecordCardUtil.excel(produceInspectionRecordCard);
+        writer.flush(new File(path));
+        writer.close();
+    }
 
     /**
      * 功能描述: 获取excel文件名

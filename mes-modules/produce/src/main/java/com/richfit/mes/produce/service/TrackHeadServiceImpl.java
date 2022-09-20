@@ -25,7 +25,9 @@ import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
 import com.richfit.mes.produce.utils.FilesUtil;
+import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
 import com.richfit.mes.produce.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,6 +95,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Resource
     private PublicService publicService;
+
+    @Resource
+    private ProduceInspectionRecordCardService produceInspectionRecordCardService;
 
     /**
      * 功能描述: 工序资料下载指定位置
@@ -201,6 +206,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //工序资料下载
             downloadTrackItem(flowId, path);
+
+            //质量检测卡资料下载
+            ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+            InspectionRecordCardUtil.excelFile(produceInspectionRecordCard, path + "/质量检测卡/" + produceInspectionRecordCard.getCardNo() + ".xlsx");
             ZipUtil.zip(path);
             return path + ".zip";
         } catch (Exception e) {
