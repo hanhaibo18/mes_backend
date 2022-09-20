@@ -112,6 +112,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         for (TrackCheck trackCheck : trackCheckList) {
             List<TrackCheckDetail> list = new ArrayList<>();
             for (TrackCheckDetail trackCheckDetail : trackCheckDetailList) {
+                //当质检的id等于质检明细的质检id时进行数据的封装
                 if (trackCheck.getId().equals(trackCheckDetail.getTrackCheckId())) {
                     CommonResult<RouterCheck> result = baseServiceClient.routerCheckSelectById(trackCheckDetail.getCheckId());
                     trackCheckDetail.setRouterCheck(result.getData());

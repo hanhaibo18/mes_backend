@@ -94,6 +94,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
 
         for (TrackCheck trackCheck : trackCheckList) {
             for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
+                //当工序的id等于质检数据中的工序id时
                 if (trackItem.getId().equals(trackCheckDetail.getTiId())) {
                     RouterCheck routerCheck = trackCheckDetail.getRouterCheck();
                     String jsyq = "";
