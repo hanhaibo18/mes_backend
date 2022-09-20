@@ -87,6 +87,7 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         List<Branch> branches = this.list(queryWrapper);
         Branch branch = new Branch();
         branch.setBranchName("总公司");
+        branch.setBranchCode("ranch_code");
         branch.setBranchList(branches);
         branchList.add(branch);
         for (Branch branch1 : branches) {
