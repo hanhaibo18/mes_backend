@@ -73,7 +73,7 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "详细明细")
     private List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList;
 
-    public static void byTrackHead(ProduceInspectionRecordCard produceInspectionRecordCard, TrackHead trackHead) {
+    public static ProduceInspectionRecordCard byTrackHead(ProduceInspectionRecordCard produceInspectionRecordCard, TrackHead trackHead) {
         if (produceInspectionRecordCard == null) {
             produceInspectionRecordCard = new ProduceInspectionRecordCard();
         }
@@ -89,5 +89,6 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
         produceInspectionRecordCard.setIsCardData(trackHead.getIsCardData());
         produceInspectionRecordCard.setStatus(trackHead.getStatus());
         produceInspectionRecordCard.setClasses(trackHead.getClasses());
+        return produceInspectionRecordCard;
     }
 }
