@@ -102,6 +102,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 质检人
      */
     protected String qualityCheckBy;
+    @TableField(exist = false)
+    private String qualityCheckBranch;
     /**
      * 备注
      */
