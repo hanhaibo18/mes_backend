@@ -40,6 +40,9 @@ public class ProduceInspectionRecordCard extends BaseEntity<ProduceInspectionRec
     @ApiModelProperty(value = "跟单id")
     private String trackHeadId;
 
+    @ApiModelProperty(value = "质量检测卡号")
+    private String cardNo;
+
     @ApiModelProperty(value = "产品名称")
     private String productName;
 
