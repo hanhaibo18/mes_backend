@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service.quality;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -10,6 +11,7 @@ import com.richfit.mes.produce.dao.quality.ProduceInspectionRecordCardContentMap
 import com.richfit.mes.produce.dao.quality.ProduceInspectionRecordCardMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,8 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     @Autowired
     public TrackItemService trackItemService;
 
+    @Autowired
+    public CodeRuleService codeRuleService;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -73,12 +77,8 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     }
 
     @Override
-    public ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId) {
+    public ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId) throws Exception {
         ProduceInspectionRecordCard produceInspectionRecordCard = this.getById(flowId);
-        if (produceInspectionRecordCard == null) {
-            produceInspectionRecordCard.setIsSave(ProduceInspectionRecordCard.PRODUCE_INSPECTION_RECORD_CARD_SAVE_N);
-        }
-
         //质量检测卡基本信息查询
         TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
         TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
@@ -86,6 +86,13 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         trackHead.setIsCardData(trackFlow.getIsCardData());
         trackHead.setProductNo(trackFlow.getProductNo());
         produceInspectionRecordCard = new ProduceInspectionRecordCard(trackHead);
+
+        //给质量检测卡添加号码
+        if (StrUtil.isBlank(produceInspectionRecordCard.getCardNo())) {
+            //质量检测卡流水号获取
+            InspectionRecordCardUtil.cardNo(produceInspectionRecordCard, codeRuleService);
+            this.saveOrUpdate(produceInspectionRecordCard);
+        }
 
         //记录检验卡明细
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();

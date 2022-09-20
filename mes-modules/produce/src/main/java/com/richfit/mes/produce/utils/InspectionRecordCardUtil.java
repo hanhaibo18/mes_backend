@@ -7,6 +7,7 @@ import cn.hutool.poi.excel.ExcelWriter;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCard;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCardContent;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.produce.service.CodeRuleService;
 
 import java.util.List;
 
@@ -115,5 +116,18 @@ public class InspectionRecordCardUtil {
             throw new Exception("获取excel文件名失败");
         }
         return excelName;
+    }
+
+    /**
+     * 功能描述: 获取excel文件名
+     *
+     * @param produceInspectionRecordCard 质量检验卡信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022.9.20
+     */
+    public static void cardNo(ProduceInspectionRecordCard produceInspectionRecordCard, CodeRuleService codeRuleService) throws Exception {
+        String code = Code.code("inspection_card", produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
+        produceInspectionRecordCard.setCardNo("BOMCO J77-" + produceInspectionRecordCard.getBranchCode() + "-" + code);
+        Code.codeUpdate("inspection_card", produceInspectionRecordCard.getCardNo(), produceInspectionRecordCard.getTenantId(), produceInspectionRecordCard.getBranchCode(), codeRuleService);
     }
 }

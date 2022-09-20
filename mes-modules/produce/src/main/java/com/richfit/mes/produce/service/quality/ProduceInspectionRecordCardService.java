@@ -46,5 +46,5 @@ public interface ProduceInspectionRecordCardService extends IService<ProduceInsp
      * @Author: zhiqiang.lu
      * @Date: 2022/7/29 15:06
      */
-    ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId);
+    ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId) throws Exception;
 }
