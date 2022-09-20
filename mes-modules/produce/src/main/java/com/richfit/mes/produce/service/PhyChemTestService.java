@@ -9,13 +9,18 @@ import com.richfit.mes.common.model.produce.PhysChemResult;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItemInspection;
 import com.richfit.mes.produce.dao.TrackItemInspectionMapper;
+import com.richfit.mes.produce.utils.WordUtil;
+import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,6 +41,8 @@ public class PhyChemTestService{
     private PhysChemOrderService physChemOrderService;
     @Autowired
     private PhysChemResultService physChemResultService;
+    @Autowired
+    private WordUtil wordUtil;
 
     /**
      * 查询跟单工序发起委托列表
@@ -134,6 +141,32 @@ public class PhyChemTestService{
         }
         //保存新的测试结果数据
         physChemResultService.saveBatch(physChemResults);
+    }
+
+    /**
+     * 理化检测报告导出
+     * @param response
+     * @throws IOException
+     * @throws TemplateException
+     */
+    public void exoprtReport(HttpServletResponse response,String itemId) throws IOException, TemplateException {
+        //根据id查询试验数据
+        QueryWrapper<PhysChemResult> physChemResultQueryWrapper = new QueryWrapper<>();
+        physChemResultQueryWrapper.eq("item_id",itemId);
+        List<PhysChemResult> results = physChemResultService.list(physChemResultQueryWrapper);
+        //根据跟单工序id查询委托单
+        QueryWrapper<PhysChemOrder> physChemOrderQueryWrapper = new QueryWrapper<>();
+        physChemOrderQueryWrapper.eq("item_id",itemId);
+        List<PhysChemOrder> orders = physChemOrderService.list(physChemOrderQueryWrapper);
+        //构造填充数据
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("rel","Rel");
+        dataMap.put("forceTensileElongation","A50mm");
+        dataMap.put("forceBendDirection","横向");
+        dataMap.put("forceBendType","截面1/2");
+        dataMap.put("forceFlaserNumber","1232");
+        //导出
+        wordUtil.exoprtReport(response,dataMap,"lhjcTemp.ftl","理化检测报告");
     }
 
 }

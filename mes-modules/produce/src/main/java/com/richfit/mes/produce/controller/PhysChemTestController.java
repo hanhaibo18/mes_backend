@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
 import com.richfit.mes.common.model.produce.TrackItemInspection;
@@ -12,6 +13,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.PhyChemTestService;
 import com.richfit.mes.produce.service.PhysChemOrderService;
 import com.richfit.mes.produce.service.PhysChemResultService;
+import freemarker.template.TemplateException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -20,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -74,7 +78,7 @@ public class PhysChemTestController extends BaseController {
     }
 
 
-   /* @ApiOperation(value = "根据跟单工序id分页查询试验结果", notes = "根据跟单工序id分页查询试验结果")
+   @ApiOperation(value = "根据跟单工序id分页查询试验结果", notes = "根据跟单工序id分页查询试验结果")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -87,6 +91,12 @@ public class PhysChemTestController extends BaseController {
                 .eq("branch_code", SecurityUtils.getCurrentUser().getBelongOrgId())
                 .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(physChemResultService.page(new Page<>(page, limit), queryWrapper));
-    }*/
+    }
+
+    @ApiOperation(value = "理化检测报告导出", notes = "理化检测报告导出")
+    @GetMapping("/exoprtReport")
+    public void exoprtReport(HttpServletResponse response, String itemId) throws IOException, TemplateException, GlobalException {
+        phyChemTestService.exoprtReport(response,itemId);
+    }
 
 }
