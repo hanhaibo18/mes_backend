@@ -171,7 +171,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         queryWrapperTrackCheckDetail.eq(!StrUtil.isBlank(flowId), "flow_id", flowId);
         queryWrapperTrackCheckDetail.eq(!StrUtil.isBlank(itemId), "ti_id", itemId);
         List<TrackCheckDetail> trackCheckDetailList = trackCheckDetailService.list(queryWrapperTrackCheckDetail);
-        //质检信息数据重组
+        //质检信息数据重组（将质检明细与质检信息合并）
         for (TrackCheck trackCheck : trackCheckList) {
             List<TrackCheckDetail> list = new ArrayList<>();
             for (TrackCheckDetail trackCheckDetail : trackCheckDetailList) {

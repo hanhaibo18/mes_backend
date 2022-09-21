@@ -126,8 +126,8 @@ public class InspectionRecordCardController extends BaseController {
     public CommonResult<List<ProduceInspectionRecordCardContent>> selectItemCheckList(@ApiParam(value = "质量检测卡id/flowID，如果itemId有值flowId可以为null", required = true) @RequestParam String flowId,
                                                                                       @ApiParam(value = "工序id，null为查询全部工序质检信息", required = true) @RequestParam String itemId) throws Exception {
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = produceInspectionRecordCardService.selectItemCheckList(flowId, itemId);
-        log.debug("inspection_record_card select is params [{}]", flowId);
-        log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCardContentList);
+        log.debug("inspection_record_card select_item_check_list is params [{}]", flowId);
+        log.debug("inspection_record_card select_item_check_list is return [{}]", produceInspectionRecordCardContentList);
         return CommonResult.success(produceInspectionRecordCardContentList);
     }
 
@@ -145,8 +145,8 @@ public class InspectionRecordCardController extends BaseController {
             @ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
         try {
             ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
-            log.debug("inspection_record_card select is params [{}]", flowId);
-            log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
+            log.debug("inspection_record_card excel is params [{}]", flowId);
+            log.debug("inspection_record_card excel is return [{}]", produceInspectionRecordCard);
             //excel封装工具类
             ExcelWriter writer = InspectionRecordCardUtil.excel(produceInspectionRecordCard);
             ServletOutputStream outputStream = response.getOutputStream();
