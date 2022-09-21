@@ -116,10 +116,15 @@ public class InspectionRecordCardController extends BaseController {
     @ApiOperation(value = "质量检测卡全部信息查询", notes = "质量检测卡全部信息查询")
     @GetMapping("/select")
     public CommonResult<ProduceInspectionRecordCard> select(@ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) throws Exception {
-        ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
-        log.debug("inspection_record_card select is params [{}]", flowId);
-        log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
-        return CommonResult.success(produceInspectionRecordCard);
+        try {
+            ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+            log.debug("inspection_record_card select is params [{}]", flowId);
+            log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCard);
+            return CommonResult.success(produceInspectionRecordCard);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("信息所在工厂" + e.getMessage());
+        }
     }
 
     @ApiOperation(value = "工序质量检测卡列表查询", notes = "工序质量检测卡列表查询")
@@ -144,16 +149,21 @@ public class InspectionRecordCardController extends BaseController {
     public void excel(
             HttpServletResponse response,
             @ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) throws Exception {
-        ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
-        log.debug("inspection_record_card excel is params [{}]", flowId);
-        log.debug("inspection_record_card excel is return [{}]", produceInspectionRecordCard);
-        //excel封装工具类
-        ExcelWriter writer = InspectionRecordCardUtil.excel(produceInspectionRecordCard);
-        ServletOutputStream outputStream = response.getOutputStream();
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename=test.xlsx");
-        writer.flush(outputStream, true);
-        writer.close();
-        IoUtil.close(outputStream);
+        try {
+            ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+            log.debug("inspection_record_card excel is params [{}]", flowId);
+            log.debug("inspection_record_card excel is return [{}]", produceInspectionRecordCard);
+            //excel封装工具类
+            ExcelWriter writer = InspectionRecordCardUtil.excel(produceInspectionRecordCard);
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+            response.setHeader("Content-Disposition", "attachment;filename=test.xlsx");
+            writer.flush(outputStream, true);
+            writer.close();
+            IoUtil.close(outputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("信息所在工厂" + e.getMessage());
+        }
     }
 }
