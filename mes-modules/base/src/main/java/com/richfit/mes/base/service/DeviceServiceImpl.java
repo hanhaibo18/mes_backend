@@ -78,11 +78,18 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
             //先保存设备组
             List<Device> exportDeviceGroups = list.stream().filter(t -> "1".equals(t.getType())).collect(Collectors.toList());
-            boolean groupBool = saveExportDeviceGroup(branchCode, tenantId, exportDeviceGroups, deviceGroupMap);
+            boolean groupBool = true;
+            if(exportDeviceGroups.size()>0){
+                groupBool = saveExportDeviceGroup(branchCode, tenantId, exportDeviceGroups, deviceGroupMap);
+            }
+
 
             //后保存设备
+            boolean deviceBool= true;
             List<Device> exportDevices = list.stream().filter(t -> "0".equals(t.getType())).collect(Collectors.toList());
-            boolean deviceBool = saveExportDevice(branchCode, tenantId, deviceGroupMap, exportDevices);
+            if(exportDevices.size()>0){
+                deviceBool = saveExportDevice(branchCode, tenantId, deviceGroupMap, exportDevices);
+            }
 
             if (deviceBool & groupBool) {
                 return CommonResult.success(null);
@@ -173,6 +180,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
         }
         //保存设备组
         return this.saveOrUpdateBatch(list);
+
     }
 
 
