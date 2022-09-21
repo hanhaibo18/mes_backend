@@ -73,8 +73,10 @@ public class InspectionRecordCardUtil {
             writer.writeCellValue(8, y, inspectionRecordCardContent.getInspectionTesting());
             writer.writeCellValue(10, y, inspectionRecordCardContent.getInspectionResult());
             writer.writeCellValue(12, y, inspectionRecordCardContent.getInspectionQualifiedDesc());
-            writer.writeCellValue(13, y, inspectionRecordCardContent.getInspectionUserName() + " " + inspectionRecordCardContent.getInspectionDate());
-//            writer.writeCellValue(15, y, inspectionRecordCardContent.getInspectionDate());
+            if (!StrUtil.isBlank(inspectionRecordCardContent.getInspectionUserName())) {
+                writer.writeCellValue(13, y, inspectionRecordCardContent.getInspectionUserName() + " " + inspectionRecordCardContent.getInspectionDate());
+            }
+            writer.writeCellValue(15, y, inspectionRecordCardContent.getRemark());
             y++;
         }
     }
