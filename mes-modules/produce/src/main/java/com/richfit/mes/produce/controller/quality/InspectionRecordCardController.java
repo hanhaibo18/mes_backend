@@ -143,22 +143,17 @@ public class InspectionRecordCardController extends BaseController {
     @GetMapping("/excel")
     public void excel(
             HttpServletResponse response,
-            @ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) {
-        try {
-            ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
-            log.debug("inspection_record_card excel is params [{}]", flowId);
-            log.debug("inspection_record_card excel is return [{}]", produceInspectionRecordCard);
-            //excel封装工具类
-            ExcelWriter writer = InspectionRecordCardUtil.excel(produceInspectionRecordCard);
-            ServletOutputStream outputStream = response.getOutputStream();
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-            response.setHeader("Content-Disposition", "attachment;filename=test.xlsx");
-            writer.flush(outputStream, true);
-            writer.close();
-            IoUtil.close(outputStream);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
+            @ApiParam(value = "质量检测卡id/flowID", required = true) @RequestParam String flowId) throws Exception {
+        ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
+        log.debug("inspection_record_card excel is params [{}]", flowId);
+        log.debug("inspection_record_card excel is return [{}]", produceInspectionRecordCard);
+        //excel封装工具类
+        ExcelWriter writer = InspectionRecordCardUtil.excel(produceInspectionRecordCard);
+        ServletOutputStream outputStream = response.getOutputStream();
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment;filename=test.xlsx");
+        writer.flush(outputStream, true);
+        writer.close();
+        IoUtil.close(outputStream);
     }
 }

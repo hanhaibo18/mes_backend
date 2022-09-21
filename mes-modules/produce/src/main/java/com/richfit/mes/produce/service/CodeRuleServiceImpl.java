@@ -176,7 +176,7 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
             item = items.get(0);
 
         } else {
-            throw new NullPointerException("找不到该编码规则");
+            throw new NullPointerException("找不到该编码规则:" + code);
         }
         item.setCurValue("");
         int index = 0;
