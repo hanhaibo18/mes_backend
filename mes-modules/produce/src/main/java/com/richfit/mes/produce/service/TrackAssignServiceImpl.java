@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -319,6 +322,22 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     public IPage<TrackHead> getPageTrackHeadByType(Page page, QueryWrapper<TrackHead> qw) {
         IPage<TrackHead> list = trackAssignMapper.getPageTrackHeadByType(page, qw);
         return list;
+    }
+
+    @Override
+    public CommonResult<Boolean> startWorking(List<String> assignIdList) {
+        try {
+            for (String assignId : assignIdList) {
+                Assign assign = this.getById(assignId);
+                TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                trackItem.setIsDoing(1);
+                trackItem.setStartDoingTime(new Date());
+                trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
+            }
+        } catch (Exception e) {
+            throw new GlobalException("开工失败,请重试", ResultCode.FAILED);
+        }
+        return CommonResult.success(true);
     }
 
 

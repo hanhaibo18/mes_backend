@@ -737,4 +737,13 @@ public class TrackAssignController extends BaseController {
     public CommonResult<List<KittingVo>> kittingExamine(String trackHeadId) {
         return CommonResult.success(trackAssignService.kittingExamine(trackHeadId));
     }
+
+    @PostMapping("/startWorking")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "assignIdList", value = "派工Id", required = true, paramType = "body", dataType = "List<String>"),
+    })
+    @ApiOperation(value = "开工")
+    public CommonResult<Boolean> startWorking(@RequestBody List<String> assignIdList) {
+        return trackAssignService.startWorking(assignIdList);
+    }
 }

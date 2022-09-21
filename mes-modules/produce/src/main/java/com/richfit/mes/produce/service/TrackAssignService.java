@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -64,4 +65,13 @@ public interface TrackAssignService extends IService<Assign> {
      **/
     IPage<TrackHead> getPageTrackHeadByType(Page page, QueryWrapper<TrackHead> qw);
 
+    /**
+     * 功能描述: 批量开工
+     *
+     * @param assignId
+     * @Author: xinYu.hou
+     * @Date: 2022/9/21 15:21
+     * @return: CommonResult<Boolean>
+     **/
+    CommonResult<Boolean> startWorking(List<String> assignId);
 }
