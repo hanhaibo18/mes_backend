@@ -123,7 +123,7 @@ public class TrackCheckController extends BaseController {
                 List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
                 Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
                 queryWrapper.in("operatipon_id", set);
-                
+
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
             if (!StringUtils.isNullOrEmpty(isExistScheduleCheck)) {
@@ -641,7 +641,8 @@ public class TrackCheckController extends BaseController {
                 item.setQualityCheckBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setQualityCompleteTime(new Date());
                 item.setQualityQty(trackCheck.getQualify());
-                item.setQualityUnqty(item.getBatchQty() - trackCheck.getQualify());
+//                item.setQualityUnqty(item.getBatchQty() - trackCheck.getQualify());
+                item.setQualityUnqty(trackCheck.getUnqualify());
                 //查询质检规则
                 CommonResult<QualityInspectionRules> rules = systemServiceClient.queryQualityInspectionRulesById(trackCheck.getResult());
                 //通过规则是否下一步控制已质检是否显示
