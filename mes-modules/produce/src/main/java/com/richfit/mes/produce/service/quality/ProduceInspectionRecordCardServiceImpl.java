@@ -52,12 +52,26 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     @Resource
     private BaseServiceClient baseServiceClient;
 
+    /**
+     * 功能描述: 质量检验卡保存
+     *
+     * @param produceInspectionRecordCard 质量检验卡信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     */
     @Override
     public void saveProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         this.saveOrUpdate(produceInspectionRecordCard);
     }
 
+    /**
+     * 功能描述: 质量检验卡质检明细信息更新
+     *
+     * @param produceInspectionRecordCardContent 质量检验卡明细信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     */
     @Override
     public void updateTrackCheckDetail(ProduceInspectionRecordCardContent produceInspectionRecordCardContent) {
         TrackFlow trackFlow = trackHeadFlowService.getById(produceInspectionRecordCardContent.getFlowId());
@@ -70,12 +84,27 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         trackCheckDetailService.updateById(trackCheckDetail);
     }
 
+    /**
+     * 功能描述: 质量检验卡更新
+     *
+     * @param produceInspectionRecordCard 质量检验卡信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     */
     @Override
     public void updateProduceInspectionRecordCard(ProduceInspectionRecordCard produceInspectionRecordCard) {
         produceInspectionRecordCard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         this.updateById(produceInspectionRecordCard);
     }
 
+    /**
+     * 功能描述: 质量检验卡查询
+     *
+     * @param flowId 质量检测卡id/flowID
+     * @return ProduceInspectionRecordCard 质量检测卡信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     */
     @Override
     public ProduceInspectionRecordCard selectProduceInspectionRecordCard(String flowId) throws Exception {
         ProduceInspectionRecordCard produceInspectionRecordCard = this.getById(flowId);
@@ -93,20 +122,54 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
             this.saveOrUpdate(produceInspectionRecordCard);
         }
 
+        //质量检测卡内容明细list
+        List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
+
+        //获取质检信息与其他信息（质检信息、工序合格证、探伤记录）
+        produceInspectionRecordCardContentList.addAll(this.selectItemCheckList(flowId, null));
+
+        //材料追溯（炉号）
+        produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackHead(produceInspectionRecordCard));
+
+        //质量检测卡序号统一处理
+        int i = 1;
+        for (ProduceInspectionRecordCardContent p : produceInspectionRecordCardContentList) {
+            p.setInspectionNo(i++ + "");
+        }
+
+        //数据整合
+        produceInspectionRecordCard.setProduceInspectionRecordCardContentList(produceInspectionRecordCardContentList);
+        return produceInspectionRecordCard;
+    }
+
+    /**
+     * 功能描述: 工序质检信息查询
+     *
+     * @param flowId 质量检测卡id/flowID，如果itemId有值flowId可以为null
+     * @param itemId 工序id，null为查询全部工序质检信息
+     * @return ProduceInspectionRecordCard 质量检测卡信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/29 15:06
+     */
+    @Override
+    public List<ProduceInspectionRecordCardContent> selectItemCheckList(String flowId, String itemId) throws Exception {
         //记录检验卡明细
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
         //获取工序质检信息
         QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-        queryWrapperTrackItem.eq("flow_id", flowId);
+        queryWrapperTrackItem.eq(!StrUtil.isBlank(flowId), "flow_id", flowId);
+        queryWrapperTrackItem.eq(!StrUtil.isBlank(itemId), "id", itemId);
         queryWrapperTrackItem.orderByAsc("opt_sequence");
         List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
         //质检信息
         QueryWrapper<TrackCheck> queryWrapperTrackCheck = new QueryWrapper<>();
-        queryWrapperTrackCheck.eq("flow_id", flowId);
+        queryWrapperTrackCheck.eq(!StrUtil.isBlank(flowId), "flow_id", flowId);
+        queryWrapperTrackCheck.eq(!StrUtil.isBlank(itemId), "ti_id", itemId);
         List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperTrackCheck);
         //质检明细
         QueryWrapper<TrackCheckDetail> queryWrapperTrackCheckDetail = new QueryWrapper<>();
-        queryWrapperTrackCheckDetail.eq("flow_id", flowId);
+        queryWrapperTrackCheckDetail.eq(!StrUtil.isBlank(flowId), "flow_id", flowId);
+        queryWrapperTrackCheckDetail.eq(!StrUtil.isBlank(itemId), "ti_id", itemId);
         List<TrackCheckDetail> trackCheckDetailList = trackCheckDetailService.list(queryWrapperTrackCheckDetail);
         //质检信息数据重组
         for (TrackCheck trackCheck : trackCheckList) {
@@ -125,16 +188,6 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
         for (TrackItem trackItem : trackItemList) {
             produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackItem(trackItem, trackCheckList));
         }
-
-        //材料追溯（炉号）
-        produceInspectionRecordCardContentList.addAll(ProduceInspectionRecordCardContent.listByTrackHead(produceInspectionRecordCard));
-        int i = 1;
-        for (ProduceInspectionRecordCardContent p : produceInspectionRecordCardContentList) {
-            p.setInspectionNo(i++ + "");
-        }
-
-        //数据整合
-        produceInspectionRecordCard.setProduceInspectionRecordCardContentList(produceInspectionRecordCardContentList);
-        return produceInspectionRecordCard;
+        return produceInspectionRecordCardContentList;
     }
 }

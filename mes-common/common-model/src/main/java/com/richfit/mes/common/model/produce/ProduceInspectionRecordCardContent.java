@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.base.RouterCheck;
@@ -14,7 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 质量检测卡内容列表信息类，并包含很多封装类的方法
+ *
  * @author zhiqiang.lu
+ * @date 2022.9.21
  */
 @Data
 @Accessors(chain = true)
@@ -80,6 +84,10 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
     @ApiModelProperty(value = "合格 0不合格、1合格")
     private String inspectionQualified;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "合格状态文字描述")
+    private String inspectionQualifiedDexc;
+
     @ApiModelProperty(value = "检验员名称")
     private String inspectionUserName;
 
@@ -89,46 +97,73 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
     @ApiModelProperty(value = "类型：1普通 2工序合格证 3探伤记录 4材料追溯（炉号）")
     private String type;
 
+    /**
+     * 合格状态文字处理
+     *
+     * @author zhiqiang.lu
+     * @date 2022.9.21
+     */
+    public static String qualified(String inspectionQualified) {
+        switch (inspectionQualified) {
+            case "0":
+                return "不合格";
+            case "1":
+                return "合格";
+        }
+        return inspectionQualified;
+    }
+
+
+    /**
+     * 质检信息列表信息封装类
+     *
+     * @author zhiqiang.lu
+     * @date 2022.9.21
+     */
+    public static ProduceInspectionRecordCardContent packageInfo(TrackItem trackItem, TrackCheckDetail trackCheckDetail) {
+        ProduceInspectionRecordCardContent pt = new ProduceInspectionRecordCardContent();
+        RouterCheck routerCheck = trackCheckDetail.getRouterCheck();
+        String requirement = "";
+        if (routerCheck != null) {
+            if (!StrUtil.isBlank(routerCheck.getPropertyUplimit())) {
+                requirement += "最大值" + routerCheck.getPropertyUplimit() + ";";
+            }
+            if (!StrUtil.isBlank(routerCheck.getPropertyLowerlimit())) {
+                requirement += "最小值" + routerCheck.getPropertyLowerlimit() + ";";
+            }
+            if (!StrUtil.isBlank(routerCheck.getPropertyDefaultvalue())) {
+                requirement += "默认值" + routerCheck.getPropertyDefaultvalue() + ";";
+            }
+        }
+        pt.setId(trackCheckDetail.getId());
+        pt.setTenantId(trackItem.getTenantId());
+        pt.setBranchCode(trackItem.getBranchCode());
+        pt.setFlowId(trackItem.getFlowId());
+        pt.setInspectionItemNo(trackItem.getOptNo());
+        pt.setInspectionItemName(trackItem.getOptName());
+        pt.setInspectionContent(trackCheckDetail.getCheckName());
+        pt.setInspectionRequirement(requirement);
+        pt.setInspectionTesting(trackCheckDetail.getCheckMethod());
+        pt.setInspectionResult(trackCheckDetail.getValue());
+        pt.setInspectionQualified(trackCheckDetail.getResult() + "");
+        pt.setInspectionQualifiedDexc(ProduceInspectionRecordCardContent.qualified(pt.getInspectionQualified()));
+        pt.setInspectionDate(DateUtil.format(trackCheckDetail.getCreateTime(), "yyyy/MM/dd"));
+        pt.setRemark(trackCheckDetail.getRemark());
+        //处理人签字
+        //pt.setInspectionUserName(trackCheck.getDealBy());
+        //系统记录修改人
+        pt.setInspectionUserName(trackCheckDetail.getModifyBy());
+        pt.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_PT);
+        return pt;
+    }
+
     public static List<ProduceInspectionRecordCardContent> listByTrackItem(TrackItem trackItem, List<TrackCheck> trackCheckList) {
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
-
         for (TrackCheck trackCheck : trackCheckList) {
             for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
                 //当工序的id等于质检数据中的工序id时
                 if (trackItem.getId().equals(trackCheckDetail.getTiId())) {
-                    RouterCheck routerCheck = trackCheckDetail.getRouterCheck();
-                    String jsyq = "";
-                    if (routerCheck != null) {
-                        if (!StrUtil.isBlank(routerCheck.getPropertyUplimit())) {
-                            jsyq += "最大值" + routerCheck.getPropertyUplimit() + ";";
-                        }
-                        if (!StrUtil.isBlank(routerCheck.getPropertyLowerlimit())) {
-                            jsyq += "最小值" + routerCheck.getPropertyLowerlimit() + ";";
-                        }
-                        if (!StrUtil.isBlank(routerCheck.getPropertyDefaultvalue())) {
-                            jsyq += "默认值" + routerCheck.getPropertyDefaultvalue() + ";";
-                        }
-                    }
-                    ProduceInspectionRecordCardContent pt = new ProduceInspectionRecordCardContent();
-                    pt.setId(trackCheckDetail.getId());
-                    pt.setTenantId(trackItem.getTenantId());
-                    pt.setBranchCode(trackItem.getBranchCode());
-                    pt.setFlowId(trackItem.getFlowId());
-                    pt.setInspectionItemNo(trackItem.getOptNo());
-                    pt.setInspectionItemName(trackItem.getOptName());
-                    pt.setInspectionContent(trackCheckDetail.getCheckName());
-                    pt.setInspectionRequirement(jsyq);
-                    pt.setInspectionTesting(trackCheckDetail.getCheckMethod());
-                    pt.setInspectionResult(trackCheckDetail.getValue());
-                    pt.setInspectionQualified(trackCheckDetail.getResult() + "");
-                    pt.setInspectionDate(DateUtil.format(trackCheckDetail.getCreateTime(), "yyyy/MM/dd"));
-                    pt.setRemark(trackCheckDetail.getRemark());
-                    //处理人签字
-                    //pt.setInspectionUserName(trackCheck.getDealBy());
-                    //系统记录修改人
-                    pt.setInspectionUserName(trackCheckDetail.getModifyBy());
-                    pt.setType(PRODUCEINSPECTIONRECORDCARDCONTENT_TYPE_PT);
-                    produceInspectionRecordCardContentList.add(pt);
+                    produceInspectionRecordCardContentList.add(packageInfo(trackItem, trackCheckDetail));
                 }
             }
         }
