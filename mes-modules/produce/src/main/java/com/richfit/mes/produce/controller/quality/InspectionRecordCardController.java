@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCard;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordCardContent;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.quality.QualityTrackHead;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
@@ -65,24 +66,24 @@ public class InspectionRecordCardController extends BaseController {
                                                                         @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                                         @ApiParam(value = "条数") @RequestParam(required = false) int limit) {
         Map<String, String> map = new HashMap<>();
-        map.put("startDate", startDate);
-        map.put("endDate", endDate);
-        map.put("isExamineCardData", isExamineCardData);
-        map.put("isCardData", isCardData);
-        map.put("templateCode", templateCode);
-        map.put("status", status);
-        map.put("isCompletionData", isCompletionData);
-        map.put("isCertificate", isCertificate);
-        map.put("productNo", productNo);
-        map.put("trackNo", trackNo);
-        map.put("workNo", workNo);
-        map.put("drawingNo", drawingNo);
-        map.put("batchNo", batchNo);
-        map.put("productionOrder", productionOrder);
-        map.put("workPlanId", workPlanId);
-        map.put("classes", classes);
-        map.put("branchCode", branchCode);
-        map.put("tenantId", tenantId);
+        TrackFlow.param(startDate,
+                endDate,
+                isExamineCardData,
+                isCardData,
+                templateCode,
+                status,
+                isCompletionData,
+                isCertificate,
+                productNo,
+                trackNo,
+                workNo,
+                drawingNo,
+                batchNo,
+                productionOrder,
+                workPlanId,
+                classes,
+                branchCode,
+                tenantId, map);
         PageHelper.startPage(page, limit);
         List<TrackHead> trackFlowList = trackFlowService.selectTrackFlowList(map);
         PageInfo<QualityTrackHead> trackFlowPage = new PageInfo(trackFlowList);

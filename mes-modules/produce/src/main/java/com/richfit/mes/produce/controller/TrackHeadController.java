@@ -332,32 +332,24 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                              @ApiParam(value = "条数") @RequestParam(required = false) int limit) throws Exception {
         Map<String, String> map = new HashMap<>();
-        map.put("startDate", startDate);
-        map.put("endDate", endDate);
-        map.put("templateCode", templateCode);
-//        if (!StringUtils.isNullOrEmpty(status)) {
-//            String zt = "";
-//            for (String s : status.split("[,]")) {
-//                zt += ",'" + s + "'";
-//            }
-//            zt = zt.substring(1);
-//            System.out.println("-----------------------");
-//            System.out.println(zt);
-//            map.put("status", zt);
-//        }
-        map.put("status", status);
-        map.put("isCompletionData", isCompletionData);
-        map.put("isCertificate", isCertificate);
-        map.put("productNo", productNo);
-        map.put("trackNo", trackNo);
-        map.put("workNo", workNo);
-        map.put("drawingNo", drawingNo);
-        map.put("batchNo", batchNo);
-        map.put("productionOrder", productionOrder);
-        map.put("workPlanId", workPlanId);
-        map.put("classes", classes);
-        map.put("branchCode", branchCode);
-        map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
+        TrackFlow.param(startDate,
+                endDate,
+                null,
+                null,
+                templateCode,
+                status,
+                isCompletionData,
+                isCertificate,
+                productNo,
+                trackNo,
+                workNo,
+                drawingNo,
+                batchNo,
+                productionOrder,
+                workPlanId,
+                classes,
+                branchCode,
+                SecurityUtils.getCurrentUser().getTenantId(), map);
         PageHelper.startPage(page, limit);
         List trackFlowList = trackHeadService.selectTrackFlowList(map);
         PageInfo<TrackHead> trackFlowPage = new PageInfo(trackFlowList);
@@ -381,31 +373,24 @@ public class TrackHeadController extends BaseController {
                                                              @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
                                                              @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) throws Exception {
         Map<String, String> map = new HashMap<>();
-        map.put("startDate", startDate);
-        map.put("endDate", endDate);
-        map.put("templateCode", templateCode);
-//        if (!StringUtils.isNullOrEmpty(status)) {
-//            String zt = "";
-//            for (String s : status.split("[,]")) {
-//                zt += ",'" + s + "'";
-//            }
-//            zt = zt.substring(1);
-//            System.out.println("-----------------------");
-//            System.out.println(zt);
-//            map.put("status", zt);
-//        }
-        map.put("status", status);
-        map.put("isCompletionData", isCompletionData);
-        map.put("isCertificate", isCertificate);
-        map.put("productNo", productNo);
-        map.put("trackNo", trackNo);
-        map.put("workNo", workNo);
-        map.put("drawingNo", drawingNo);
-        map.put("batchNo", batchNo);
-        map.put("productionOrder", productionOrder);
-        map.put("workPlanId", workPlanId);
-        map.put("branchCode", branchCode);
-        map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
+        TrackFlow.param(startDate,
+                endDate,
+                null,
+                null,
+                templateCode,
+                status,
+                isCompletionData,
+                isCertificate,
+                productNo,
+                trackNo,
+                workNo,
+                drawingNo,
+                batchNo,
+                productionOrder,
+                workPlanId,
+                null,
+                branchCode,
+                SecurityUtils.getCurrentUser().getTenantId(), map);
         return CommonResult.success(trackHeadService.selectTrackFlowList(map), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 

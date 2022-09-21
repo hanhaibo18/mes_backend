@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author zhiqiang.lu
@@ -79,4 +80,44 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
 
     @ApiModelProperty(value = "跟单id")
     private String trackHeadId;
+
+    public static void param(
+            String startDate,
+            String endDate,
+            String isExamineCardData,
+            String isCardData,
+            String templateCode,
+            String status,
+            String isCompletionData,
+            String isCertificate,
+            String productNo,
+            String trackNo,
+            String workNo,
+            String drawingNo,
+            String batchNo,
+            String productionOrder,
+            String workPlanId,
+            String classes,
+            String branchCode,
+            String tenantId,
+            Map<String, String> map) {
+        map.put("startDate", startDate);
+        map.put("endDate", endDate);
+        map.put("isExamineCardData", isExamineCardData);
+        map.put("isCardData", isCardData);
+        map.put("templateCode", templateCode);
+        map.put("status", status);
+        map.put("isCompletionData", isCompletionData);
+        map.put("isCertificate", isCertificate);
+        map.put("productNo", productNo);
+        map.put("trackNo", trackNo);
+        map.put("workNo", workNo);
+        map.put("drawingNo", drawingNo);
+        map.put("batchNo", batchNo);
+        map.put("productionOrder", productionOrder);
+        map.put("workPlanId", workPlanId);
+        map.put("classes", classes);
+        map.put("branchCode", branchCode);
+        map.put("tenantId", tenantId);
+    }
 }
