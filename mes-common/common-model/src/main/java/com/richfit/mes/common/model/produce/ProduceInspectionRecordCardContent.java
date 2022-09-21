@@ -86,7 +86,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
 
     @TableField(exist = false)
     @ApiModelProperty(value = "合格状态文字描述")
-    private String inspectionQualifiedDexc;
+    private String inspectionQualifiedDesc;
 
     @ApiModelProperty(value = "检验员名称")
     private String inspectionUserName;
@@ -146,7 +146,7 @@ public class ProduceInspectionRecordCardContent extends BaseEntity<ProduceInspec
         pt.setInspectionTesting(trackCheckDetail.getCheckMethod());
         pt.setInspectionResult(trackCheckDetail.getValue());
         pt.setInspectionQualified(trackCheckDetail.getResult() + "");
-        pt.setInspectionQualifiedDexc(ProduceInspectionRecordCardContent.qualified(pt.getInspectionQualified()));
+        pt.setInspectionQualifiedDesc(ProduceInspectionRecordCardContent.qualified(pt.getInspectionQualified()));
         pt.setInspectionDate(DateUtil.format(trackCheckDetail.getCreateTime(), "yyyy/MM/dd"));
         pt.setRemark(trackCheckDetail.getRemark());
         //处理人签字

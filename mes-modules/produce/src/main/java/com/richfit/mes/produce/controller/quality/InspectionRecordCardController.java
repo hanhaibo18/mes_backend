@@ -123,8 +123,8 @@ public class InspectionRecordCardController extends BaseController {
 
     @ApiOperation(value = "工序质量检测卡列表查询", notes = "工序质量检测卡列表查询")
     @GetMapping("/select_item_check_list")
-    public CommonResult<List<ProduceInspectionRecordCardContent>> selectContent(@ApiParam(value = "质量检测卡id/flowID，如果itemId有值flowId可以为null", required = true) @RequestParam String flowId,
-                                                                                @ApiParam(value = "工序id，null为查询全部工序质检信息", required = true) @RequestParam String itemId) throws Exception {
+    public CommonResult<List<ProduceInspectionRecordCardContent>> selectItemCheckList(@ApiParam(value = "质量检测卡id/flowID，如果itemId有值flowId可以为null", required = true) @RequestParam String flowId,
+                                                                                      @ApiParam(value = "工序id，null为查询全部工序质检信息", required = true) @RequestParam String itemId) throws Exception {
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = produceInspectionRecordCardService.selectItemCheckList(flowId, itemId);
         log.debug("inspection_record_card select is params [{}]", flowId);
         log.debug("inspection_record_card select is return [{}]", produceInspectionRecordCardContentList);
