@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 public class StoreAttachRel extends BaseEntity<StoreAttachRel> {
 
+    private static final long serialVersionUID = -2675974869135643360L;
     @ApiModelProperty(value = "入库料单Id")
     private String lineStoreId;
 
@@ -22,4 +23,7 @@ public class StoreAttachRel extends BaseEntity<StoreAttachRel> {
 
     @ApiModelProperty(value = "分公司编码")
     private String branchCode;
+
+    @ApiModelProperty(value = "上传的质量字量类型")
+    private String type;
 }
