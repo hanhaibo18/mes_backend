@@ -28,8 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author zhiqiang.lu
- * @Date: 2022/8/23 9:33
+ * @Author: zhiqiang.lu
+ * @Date: 2022.8.23
+ * @LastEditors: zhiqiang.lu
+ * @LastEditTime: 2022.9.21
+ * @Description: 检验记录卡
+ * @LastEdit: 添加注释
  */
 @Slf4j
 @Api(tags = "检验记录卡")
