@@ -110,6 +110,14 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
         return new QueryProcessRecordsVo(oldSequenceList, newSequenceList);
     }
 
+    /**
+     * 功能描述: 通过工艺id集合批量删除工艺信息，并删除工艺的关联的工序信息。
+     * 在删除前会通过工艺id查询是否已经生产跟单，如果已经生成则不能删除工艺。
+     *
+     * @param ids 工艺id集合
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/22 9:18
+     */
     @Override
     public void delete(String[] ids) throws GlobalException {
         for (String id : ids) {

@@ -236,15 +236,8 @@ public class OperatiponController extends BaseController {
     @ApiOperation(value = "删除工序字典", notes = "根据id删除工序字典")
     @ApiImplicitParam(name = "id", value = "ids", required = true, dataType = "String", paramType = "path")
     @PostMapping("/delete")
-    public CommonResult<Operatipon> deleteById(@RequestBody String[] ids) {
-
-        boolean bool = operatiponService.removeByIds(java.util.Arrays.asList(ids));
-        if (bool) {
-            return CommonResult.success(null, "删除成功！");
-        } else {
-            return CommonResult.failed("操作失败，请重试！");
-        }
-
+    public void deleteById(@RequestBody String[] ids) {
+        operatiponService.delete(ids);
     }
 
     /**
