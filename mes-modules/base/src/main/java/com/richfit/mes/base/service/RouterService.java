@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
 
 import java.util.List;
@@ -41,4 +42,15 @@ public interface RouterService extends IService<Router> {
      * @return: QueryProcessRecordsVo
      **/
     QueryProcessRecordsVo queryProcessRecords(String routerId);
+
+
+    /**
+     * 功能描述: 通过工艺id集合批量删除工艺信息，并删除工艺的关联的工序信息。
+     * 在删除前会通过工艺id查询是否已经生产跟单，如果已经生成则不能删除工艺。
+     *
+     * @param ids 工艺id集合
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/22 9:18
+     */
+    void delete(String[] ids) throws GlobalException;
 }

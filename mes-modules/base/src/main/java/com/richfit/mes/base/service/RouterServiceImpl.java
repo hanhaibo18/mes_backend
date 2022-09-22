@@ -7,11 +7,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.RouterMapper;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
+import com.richfit.mes.base.provider.ProduceServiceClient;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.produce.TrackHead;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +27,17 @@ import java.util.List;
  * @Description 工艺服务
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> implements RouterService {
 
     @Autowired
     private RouterMapper routerMapper;
+
     @Autowired
     private SequenceService sequenceService;
+
+    @Resource
+    private ProduceServiceClient produceServiceClient;
 
     @Override
     public IPage<Router> selectPage(Page page, QueryWrapper<Router> qw) {
@@ -98,4 +110,29 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
         return new QueryProcessRecordsVo(oldSequenceList, newSequenceList);
     }
 
+    @Override
+    public void delete(String[] ids) throws GlobalException {
+        for (String id : ids) {
+            CommonResult<List<TrackHead>> commonResult = produceServiceClient.selectByRouterId(id);
+            if (commonResult.getData().size() > 0) {
+                Router router = this.getById(id);
+                throw new GlobalException(router.getRouterName() + ":当前工艺已生成跟单，不能被删除", ResultCode.FAILED);
+            }
+        }
+        for (int i = 0; i < ids.length; i++) {
+            // 删除工艺关联的工序
+            QueryWrapper<Sequence> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("router_id", ids[i]);
+            sequenceService.remove(queryWrapper);
+//如果不是历史版本，需要将历史版本先删除
+//            Router r = this.getByRouterId(ids[i]).getData();
+//            if (null != r && !"2".equals(r.getStatus())) {
+//                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2", r.getTenantId()).getData();
+//                for (int j = 0; j < routers.size(); j++) {
+//                    routerService.removeById(routers.get(j).getId());
+//                }
+//            }
+            this.removeById(ids[i]);
+        }
+    }
 }

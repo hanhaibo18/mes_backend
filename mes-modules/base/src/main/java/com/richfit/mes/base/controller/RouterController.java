@@ -320,26 +320,8 @@ public class RouterController extends BaseController {
     @PostMapping("/delete")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Router> delete(@RequestBody String[] ids) {
-        for (int i = 0; i < ids.length; i++) {
-            // 删除工艺关联的工序
-            QueryWrapper<Sequence> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("router_id", ids[i]);
-            sequenceService.remove(queryWrapper);
-
-            Router r = this.getByRouterId(ids[i]).getData();
-//如果不是历史版本，需要将历史版本先删除
-//            if (null != r && !"2".equals(r.getStatus())) {
-//                List<Router> routers = this.find(null, r.getRouterNo(), null, null, r.getBranchCode(), "2", r.getTenantId()).getData();
-//                for (int j = 0; j < routers.size(); j++) {
-//                    routerService.removeById(routers.get(j).getId());
-//                }
-//            }
-            routerService.removeById(ids[i]);
-
-
-        }
+        routerService.delete(ids);
         return CommonResult.success(null, "删除成功！");
-
     }
 
     /**
