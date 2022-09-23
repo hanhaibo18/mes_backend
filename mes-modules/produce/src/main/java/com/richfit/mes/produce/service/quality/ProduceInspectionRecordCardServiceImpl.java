@@ -155,7 +155,7 @@ public class ProduceInspectionRecordCardServiceImpl extends ServiceImpl<ProduceI
     public List<ProduceInspectionRecordCardContent> selectItemCheckList(String flowId, String itemId) throws Exception {
         //记录检验卡明细
         List<ProduceInspectionRecordCardContent> produceInspectionRecordCardContentList = new ArrayList<>();
-        //获取工序质检信息
+        //获取工序信息
         QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
         queryWrapperTrackItem.eq(!StrUtil.isBlank(flowId), "flow_id", flowId);
         queryWrapperTrackItem.eq(!StrUtil.isBlank(itemId), "id", itemId);
