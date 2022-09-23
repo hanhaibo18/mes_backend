@@ -46,14 +46,35 @@ public class TemplateServiceImpl extends ServiceImpl<ProduceInspectionRecordCard
     @Resource
     private ProduceTrackHeadTemplateService produceTrackHeadTemplateService;
 
+    /**
+     * 功能描述: 通过合格证id生成合格证文件
+     *
+     * @param id   合格证id
+     * @param path 生成文件路径
+     * @return File 合格证文件
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/23
+     */
     @Override
     public File certById(String id, String path) throws Exception {
+        //通过id查询合格证信息
         Certificate certificate = certificateService.getById(id);
         return cert(certificate, path);
     }
 
+    /**
+     * 功能描述: 通过合格证序号，工厂代码，生成合格证文件
+     *
+     * @param certNo     合格证号
+     * @param branchCode 工厂代码
+     * @param path       生成文件路径
+     * @return File 合格证文件
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/23
+     */
     @Override
     public File certByNo(String certNo, String branchCode, String path) throws Exception {
+        //通过合格证号，工厂代码查询合格证信息
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("certificate_no", certNo);
         queryWrapper.eq("branch_code", branchCode);
@@ -64,6 +85,15 @@ public class TemplateServiceImpl extends ServiceImpl<ProduceInspectionRecordCard
         return cert(certificateList.get(0), path);
     }
 
+    /**
+     * 功能描述: 通过合格证序号，工厂代码，生成合格证文件
+     *
+     * @param certificate 合格证信息
+     * @param path        生成文件路径
+     * @return File 合格证文件
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/23
+     */
     private File cert(Certificate certificate, String path) throws Exception {
         //当前机构配置合格证模板判断
         QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<>();
@@ -78,20 +108,19 @@ public class TemplateServiceImpl extends ServiceImpl<ProduceInspectionRecordCard
         ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
         CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(p.getFileId());
 
+        //定义合格证的名称
         String fileName = path + "/" + certificate.getCertificateNo() + "_合格证";
+
+        //创建需要导入sheet的内容
         List<List<Map<String, Object>>> sheets = new ArrayList();
         // 根据配置SQL，获取SHEET1、2、3表数据
         sheets.add(TemplateUtil.getDataList(certificate.getId(), p.getSheet1(), jdbcTemplate));
         sheets.add(TemplateUtil.getDataList(certificate.getId(), p.getSheet2(), jdbcTemplate));
         sheets.add(TemplateUtil.getDataList(certificate.getId(), p.getSheet3(), jdbcTemplate));
-        // 生成EXCEL文件，并输出文件流
-        try {
-            InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
-            ExcelUtils.exportExcelToFile(fileName, inputStream, sheets);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
-        }
+
+        // 使用工具类生成EXCEL文件，并输出文件流
+        InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
+        ExcelUtils.exportExcelToFile(fileName, inputStream, sheets);
         return new File(fileName);
     }
 }

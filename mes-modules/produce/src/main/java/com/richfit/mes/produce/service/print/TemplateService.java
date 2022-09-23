@@ -17,7 +17,7 @@ public interface TemplateService extends IService<ProduceInspectionRecordCard> {
      *
      * @param id   合格证id
      * @param path 生成文件路径
-     * @return ProduceInspectionRecordCard 合格证文件
+     * @return File 合格证文件
      * @Author: zhiqiang.lu
      * @Date: 2022/9/23
      */
@@ -30,7 +30,7 @@ public interface TemplateService extends IService<ProduceInspectionRecordCard> {
      * @param certNo     合格证号
      * @param branchCode 工厂代码
      * @param path       生成文件路径
-     * @return ProduceInspectionRecordCard 合格证文件
+     * @return File 合格证文件
      * @Author: zhiqiang.lu
      * @Date: 2022/9/23
      */
