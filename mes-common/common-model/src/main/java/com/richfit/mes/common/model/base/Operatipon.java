@@ -1,10 +1,8 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import java.util.Date;
 
 /**
  * @author 马峰
@@ -45,4 +43,11 @@ public class Operatipon extends BaseEntity<Operatipon> {
      * 类型
      */
     private int optOrder;
+
+    /**
+     * 是否绑定工序（用于前端判断是否可以修改编码和名称）
+     * false：不可修改   true：可修改
+     */
+    @TableField(exist = false)
+    public boolean isUpdate;
 }

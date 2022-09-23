@@ -4,14 +4,20 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.OperatiponMapper;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 /**
  * @author mafeng
@@ -20,6 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OperatiponServiceImpl extends ServiceImpl<OperatiponMapper, Operatipon> implements OperatiponService {
+
+    private static final String UPDATE_TYPE = "UPDATE"; //修改操作
+
+    private static final String DELETE_TYPE = "DELETE"; //删除操作
 
     @Autowired
     private OperatiponMapper operatiponMapper;
@@ -52,6 +62,29 @@ public class OperatiponServiceImpl extends ServiceImpl<OperatiponMapper, Operati
             }
         }
         this.removeByIds(java.util.Arrays.asList(ids));
+    }
+
+    /**
+     * 修改工序字典信息
+     * @param operatipon
+     * @return
+     */
+    @Override
+    public CommonResult updateOperatipon(Operatipon operatipon){
+        if (StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
+            return CommonResult.failed("机构编码不能为空！");
+        } else {
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
+            operatipon.setModifyBy(user.getUsername());
+            operatipon.setModifyTime(new Date());
+            operatipon.setTenantId(user.getTenantId());
+            boolean bool = this.updateById(operatipon);
+            if (bool) {
+                return CommonResult.success(operatipon, "操作成功！");
+            } else {
+                return CommonResult.failed("操作失败，请重试！");
+            }
+        }
     }
 
 }

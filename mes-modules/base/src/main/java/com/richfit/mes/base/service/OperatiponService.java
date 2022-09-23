@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Operatipon;
 
@@ -24,4 +25,11 @@ public interface OperatiponService extends IService<Operatipon> {
      * @Date: 2022/9/22 9:18
      */
     void delete(String[] ids) throws GlobalException;
+
+    /**
+     * 修改工序字典信息
+     * @param operatipon
+     * @return
+     */
+    CommonResult updateOperatipon(Operatipon operatipon);
 }

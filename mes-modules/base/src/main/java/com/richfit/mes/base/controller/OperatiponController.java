@@ -1,15 +1,18 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.OperationDeviceService;
 import com.richfit.mes.base.service.OperatiponService;
+import com.richfit.mes.base.service.SequenceService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.OperationDevice;
 import com.richfit.mes.common.model.base.Operatipon;
+import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.*;
@@ -17,10 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -37,6 +38,9 @@ public class OperatiponController extends BaseController {
 
     @Autowired
     private OperationDeviceService operationDeviceService;
+
+    @Autowired
+    private SequenceService sequenceService;
 
     /**
      * ***
@@ -77,6 +81,21 @@ public class OperatiponController extends BaseController {
             }
             queryWrapper.orderByDesc("modify_time");
             IPage<Operatipon> routers = operatiponService.page(new Page<Operatipon>(page, limit), queryWrapper);
+            //获取工序绑定工艺信息
+            List<String> ids = routers.getRecords().stream().map(Operatipon::getId).collect(Collectors.toList());
+            QueryWrapper<Sequence> operatiponQueryWrapper = new QueryWrapper<>();
+            operatiponQueryWrapper.in("opt_id",ids);
+            List<Sequence> sequences = sequenceService.list(operatiponQueryWrapper);
+            //构造map 以便于判断此工序是否绑定工艺
+            Map<String, List<Sequence>> sequenceMap = sequences.stream().collect(Collectors.groupingBy(item -> item.getOptId()));
+            //给是否绑定工艺状态字段赋值
+            for (Operatipon operatipon : routers.getRecords()) {
+                if (!ObjectUtil.isEmpty(sequenceMap.get(operatipon.getId()))) {
+                    operatipon.setUpdate(false);
+                }else{
+                    operatipon.setUpdate(true);
+                }
+            }
             return CommonResult.success(routers);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
@@ -135,20 +154,7 @@ public class OperatiponController extends BaseController {
     @ApiImplicitParam(name = "operatipon", value = "工序字典", required = true, dataType = "Operatipon", paramType = "path")
     @PostMapping("/update")
     public CommonResult<Operatipon> updateOperatipon(@RequestBody Operatipon operatipon) {
-        if (StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
-            return CommonResult.failed("机构编码不能为空！");
-        } else {
-            TenantUserDetails user = SecurityUtils.getCurrentUser();
-            operatipon.setModifyBy(user.getUsername());
-            operatipon.setModifyTime(new Date());
-            operatipon.setTenantId(user.getTenantId());
-            boolean bool = operatiponService.updateById(operatipon);
-            if (bool) {
-                return CommonResult.success(operatipon, "操作成功！");
-            } else {
-                return CommonResult.failed("操作失败，请重试！");
-            }
-        }
+        return operatiponService.updateOperatipon(operatipon);
     }
 
     @ApiOperation(value = "查询工序字典", notes = "根据编码获得工序字典")
