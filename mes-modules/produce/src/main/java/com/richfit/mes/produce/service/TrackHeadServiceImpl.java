@@ -402,24 +402,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
 
-            //跟单状态为0的未派工，用于排除跟单打印等不进行自动派工
-            if ("0".equals(trackHead.getStatus())) {
-                //通过跟单ID查询所有第一道工序需要派工的
-                QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
-                queryWrapperItem.eq("track_head_id", trackHead.getId());
-                queryWrapperItem.eq("is_auto_schedule", 1);
-                queryWrapperItem.eq("sequence_order_by", 1);
-                List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
-                //循环工序
-                for (TrackItem trackItem : trackItemList) {
-                    Map<String, String> map = new HashMap<>(4);
-                    map.put("trackItemId", trackItem.getId());
-                    map.put("trackHeadId", trackHead.getId());
-                    map.put("trackNo", trackHead.getTrackNo());
-                    map.put("classes", trackHead.getClasses());
-                    publicService.automaticProcess(map);
-                }
-            }
+            //用于在跟单存在第一道工序自动派工的情况
+            autoSchedule(trackHead);
 
             //添加日志
             Action action = new Action();
@@ -428,7 +412,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
             //流水号更新
-            codeRuleService.updateCode("track_no", null, trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            Code.update("track_no", trackHead.getTrackNo(), SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -474,10 +458,37 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     /**
+     * 描述: 将侯欣雨加入的自动派工独立封装一下
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/23 10:25
+     **/
+    @Transactional(rollbackFor = GlobalException.class)
+    public void autoSchedule(TrackHead trackHead) {
+        if ("0".equals(trackHead.getStatus()) || "1".equals(trackHead.getStatus())) {
+            //通过跟单ID查询所有第一道工序需要派工的
+            QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
+            queryWrapperItem.eq("track_head_id", trackHead.getId());
+            queryWrapperItem.eq("is_auto_schedule", 1);
+            queryWrapperItem.eq("sequence_order_by", 1);
+            List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
+            //循环工序
+            for (TrackItem trackItem : trackItemList) {
+                Map<String, String> map = new HashMap<>(4);
+                map.put("trackItemId", trackItem.getId());
+                map.put("trackHeadId", trackHead.getId());
+                map.put("trackNo", trackHead.getTrackNo());
+                map.put("classes", trackHead.getClasses());
+                publicService.automaticProcess(map);
+            }
+        }
+    }
+
+    /**
      * 描述: 跟单添加料单数据处理
      *
      * @Author: zhiqiang.lu
-     * @Date: 2022/6/21 10:25
+     * @Date: 2022/9/23 10:25
      **/
     @Transactional(rollbackFor = GlobalException.class)
     public void lineStore(String flowId, TrackHead trackHead, String productsNo, int number) {
