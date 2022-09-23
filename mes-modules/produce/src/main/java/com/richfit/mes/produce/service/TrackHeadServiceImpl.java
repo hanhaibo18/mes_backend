@@ -25,6 +25,7 @@ import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
 import com.richfit.mes.produce.utils.FilesUtil;
 import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
@@ -96,7 +97,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Resource
     private PublicService publicService;
 
-    @Resource
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
     private ProduceInspectionRecordCardService produceInspectionRecordCardService;
 
     /**
@@ -187,6 +191,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public String completionDataZip(String flowId) {
         try {
+            TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+            TrackHead trackHead = this.getById(trackFlow.getTrackHeadId());
             String path = FilesUtil.tempPath();
             path = path + "/" + SecurityUtils.getCurrentUser().getUsername();
             FileUtil.del(path);
@@ -210,6 +216,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //质量检测卡资料下载
             ProduceInspectionRecordCard produceInspectionRecordCard = produceInspectionRecordCardService.selectProduceInspectionRecordCard(flowId);
             InspectionRecordCardUtil.excelFile(produceInspectionRecordCard, path + "/质量检测卡/" + produceInspectionRecordCard.getCardNo() + ".xlsx");
+
+            //跟单合格证文件下载
+            if (!StrUtil.isBlank(trackHead.getCertificateNo())) {
+                templateService.certByNo(trackHead.getCertificateNo(), trackFlow.getBranchCode(), path + "/合格证/");
+            }
             ZipUtil.zip(path);
             return path + ".zip";
         } catch (Exception e) {

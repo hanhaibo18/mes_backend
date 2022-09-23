@@ -55,7 +55,7 @@ public class TemplateServiceImpl extends ServiceImpl<ProduceInspectionRecordCard
     @Override
     public File certByNo(String certNo, String branchCode, String path) throws Exception {
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("certificate_no", "certNo");
+        queryWrapper.eq("certificate_no", certNo);
         queryWrapper.eq("branch_code", branchCode);
         List<Certificate> certificateList = certificateService.list(queryWrapper);
         if (certificateList.isEmpty()) {
