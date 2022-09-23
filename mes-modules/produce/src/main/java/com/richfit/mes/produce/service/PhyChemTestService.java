@@ -163,10 +163,30 @@ public class PhyChemTestService{
         dataMap.put("rel","Rel");
         dataMap.put("forceTensileElongation","A50mm");
         dataMap.put("forceBendDirection","横向");
+        dataMap.put("forceImpactDirection","横向");
+        dataMap.put("forceTensileDirection","纵向");
         dataMap.put("forceBendType","截面1/2");
         dataMap.put("forceFlaserNumber","1232");
+        dataMap.put("w","10mm");
+        dataMap.put("kp","300j");
+        dataMap.put("kv2","kv2");
+        List<String> headerNames = new ArrayList<>();
+        headerNames.add("V");
+        headerNames.add("Nb");
+        headerNames.add("Ti");
+        dataMap.put("headerNames",headerNames);
+        createDataMap(dataMap);
         //导出
         wordUtil.exoprtReport(response,dataMap,"lhjcTemp.ftl","理化检测报告");
+    }
+
+    /**
+     * 构造模板参数
+     * @param dataMap
+     */
+    private void createDataMap(Map<String, Object> dataMap){
+
+
     }
 
 }

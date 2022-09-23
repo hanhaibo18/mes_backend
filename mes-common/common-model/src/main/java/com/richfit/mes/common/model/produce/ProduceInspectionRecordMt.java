@@ -12,6 +12,8 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private static final long serialVersionUID = -1472432735506772177L;
     @ApiModelProperty(value = "记录编号")
     private String recordNo;
+    @ApiModelProperty(value = "报告编号")
+    private String reportNo;
     @ApiModelProperty(value = "检测时机")
     private String testOpportunity;
     @ApiModelProperty(value = "检测部位")

@@ -26,5 +26,9 @@ public class ProduceInspectionRecordDto{
      * 模板类型
      */
     private String tempType;
+    /**
+     * branchCode
+     */
+    private String branchCode;
 
 }

@@ -2761,7 +2761,7 @@
                                         <w:ind w:left="0" w:right="0" />
                                         <w:jc w:val="center" />
                                         <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:cs="Times New Roman" />
+                                            <w:rFonts w:hint="eastAsia" w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
@@ -2776,7 +2776,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>${kv2!""}</w:t>
+                                        <w:t>${kv2}</w:t>
                                     </w:r>
                                 </w:p>
                                 <w:p>
@@ -3300,16 +3300,21 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:r>
-                                            <w:rPr>
-                                                <w:rFonts w:hint="eastAsia" w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                                <w:sz w:val="18" />
-                                                <w:szCs w:val="18" />
-                                                <w:lang w:val="en-US" w:eastAsia="zh-CN" />
-                                            </w:rPr>
-                                            <w:t>{ceshi}</w:t>
-                                        </w:r>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:cs="Times New Roman" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <#if headerNames[0]??>
+                                        <w:t>${headerNames[0]!""}</w:t>
+                                        <#else>
+                                        <w:t></w:t>
+                                        </#if>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -3334,6 +3339,20 @@
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:cs="Times New Roman" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <#if headerNames[1]??>
+                                        <w:t>${headerNames[1]!""}</w:t>
+                                        <#else>
+                                        <w:t></w:t>
+                                    </#if>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -3359,6 +3378,20 @@
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:cs="Times New Roman" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <#if headerNames[2]??>
+                                        <w:t>${headerNames[2]!""}</w:t>
+                                        <#else>
+                                        <w:t></w:t>
+                                    </#if>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -3383,6 +3416,20 @@
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:cs="Times New Roman" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <#if headerNames[3]??>
+                                        <w:t>${headerNames[3]!""}</w:t>
+                                        <#else>
+                                        <w:t></w:t>
+                                        </#if>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -3407,6 +3454,20 @@
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:r>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="eastAsia" w:cs="Times New Roman" />
+                                            <w:color w:val="0000FF" />
+                                            <w:sz w:val="18" />
+                                            <w:szCs w:val="18" />
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                        </w:rPr>
+                                        <#if headerNames[4]??>
+                                        <w:t>${headerNames[4]!""}</w:t>
+                                        <#else>
+                                        <w:t></w:t>
+                                        </#if>
+                                    </w:r>
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -7513,6 +7574,8 @@
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
                                     </w:pPr>
+                                    <w:bookmarkStart w:id="0" w:name="_GoBack" />
+                                    <w:bookmarkEnd w:id="0" />
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -8199,8 +8262,6 @@
                                         </w:rPr>
                                         <w:t>Tester:</w:t>
                                     </w:r>
-                                    <w:bookmarkStart w:id="0" w:name="_GoBack" />
-                                    <w:bookmarkEnd w:id="0" />
                                 </w:p>
                             </w:tc>
                             <w:tc>
@@ -8348,14 +8409,14 @@
             <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Template>Normal</Template>
                 <Company>sdf</Company>
                 <Pages>2</Pages>
-                <Words>232</Words>
-                <Characters>488</Characters>
+                <Words>211</Words>
+                <Characters>468</Characters>
                 <Lines>58</Lines>
                 <Paragraphs>16</Paragraphs>
-                <TotalTime>14</TotalTime>
+                <TotalTime>31</TotalTime>
                 <ScaleCrop>false</ScaleCrop>
                 <LinksUpToDate>false</LinksUpToDate>
-                <CharactersWithSpaces>514</CharactersWithSpaces>
+                <CharactersWithSpaces>494</CharactersWithSpaces>
                 <Application>WPS Office_11.1.0.12358_F1E327BC-269C-435d-A152-05C5408002CA</Application>
                 <DocSecurity>0</DocSecurity>
             </Properties>
@@ -8368,7 +8429,7 @@
                 <dc:creator>a</dc:creator>
                 <cp:lastModifiedBy>EDZ</cp:lastModifiedBy>
                 <cp:lastPrinted>2021-07-13T09:45:00Z</cp:lastPrinted>
-                <dcterms:modified xsi:type="dcterms:W3CDTF">2022-09-21T07:23:45Z</dcterms:modified>
+                <dcterms:modified xsi:type="dcterms:W3CDTF">2022-09-21T09:05:12Z</dcterms:modified>
                 <dc:title>宝鸡石油机械</dc:title>
                 <cp:revision>17</cp:revision>
             </cp:coreProperties>
@@ -9885,6 +9946,7 @@
                     <w:rsid w:val="358928AF" />
                     <w:rsid w:val="358E5D89" />
                     <w:rsid w:val="3C0473B1" />
+                    <w:rsid w:val="3DA46DF1" />
                     <w:rsid w:val="3EF378CB" />
                     <w:rsid w:val="3F087854" />
                     <w:rsid w:val="4154249A" />
@@ -9920,6 +9982,7 @@
                     <w:rsid w:val="5FB16299" />
                     <w:rsid w:val="600F4147" />
                     <w:rsid w:val="631B43C8" />
+                    <w:rsid w:val="64E762B6" />
                     <w:rsid w:val="65E73F97" />
                     <w:rsid w:val="661E3335" />
                     <w:rsid w:val="662768D3" />
@@ -9940,6 +10003,7 @@
                     <w:rsid w:val="7D3364CD" />
                     <w:rsid w:val="7D821E06" />
                     <w:rsid w:val="7DB83C18" />
+                    <w:rsid w:val="7F833DB1" />
                 </w:rsids>
                 <m:mathPr>
                     <m:brkBin m:val="before" />

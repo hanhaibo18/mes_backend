@@ -14,6 +14,8 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
     private String id;
     @ApiModelProperty(value = "记录编号")
     private String recordNo;
+    @ApiModelProperty(value = "报告编号")
+    private String reportNo;
     @ApiModelProperty(value = "检测部位")
     private String detectionOfParts;
     @ApiModelProperty(value = "种类")

@@ -24,6 +24,7 @@ import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,6 @@ import org.springframework.util.StringUtils;
 @Service
 @Slf4j
 public class ProduceInspectionRecordService{
-
     @Autowired
     private ProduceInspectionRecordMtService produceInspectionRecordMtService;
     @Autowired
@@ -231,7 +231,7 @@ public class ProduceInspectionRecordService{
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult saveRecord(ProduceInspectionRecordDto produceInspectionRecordDto) throws GlobalException{
+    public CommonResult saveRecord(ProduceInspectionRecordDto produceInspectionRecordDto) throws Exception {
         //获取模板类型
         String tempType = produceInspectionRecordDto.getTempType();
         //要保存的记录实体
@@ -244,6 +244,14 @@ public class ProduceInspectionRecordService{
         List<String> itemIds = produceInspectionRecordDto.getItemIds();
         //探伤记录id
         String recordId = null;
+        //branchCode
+        String branchCode = produceInspectionRecordDto.getBranchCode();
+
+        //报告编号（确认后再放开）
+        /*String reportNo = Code.value("报告编码", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+        jsonObject.put("report",reportNo);
+        //保存报告编号
+        Code.update("报告编码",reportNo,SecurityUtils.getCurrentUser().getTenantId(), branchCode,codeRuleService);*/
 
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             //保存探伤记录
@@ -268,7 +276,7 @@ public class ProduceInspectionRecordService{
 
         //保存流水号
         if(!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))){
-            codeRuleService.updateCode("inspection_code_"+tempType,null,jsonObject.get("recordNo").toString(), null,SecurityUtils.getCurrentUser().getTenantId(),null);
+            codeRuleService.updateCode("inspection_code_"+tempType,null,jsonObject.get("recordNo").toString(), null,SecurityUtils.getCurrentUser().getTenantId(),branchCode);
         }
 
         //工序and探伤记录绑定操作
@@ -333,10 +341,10 @@ public class ProduceInspectionRecordService{
         }
 
         //根据修改时间排序
-        if(listMap.size()>0){
-            listMap.sort((t1,t2)->
-                    t2.get("modifyTime").toString().compareTo(t1.get("modifyTime").toString())
-            );
+            if(listMap.size()>0){
+                listMap.sort((t1,t2)->
+                        t2.get("modifyTime").toString().compareTo(t1.get("modifyTime").toString())
+                );
         }
 
         return  listMap;
@@ -387,25 +395,37 @@ public class ProduceInspectionRecordService{
     /**
      * 报告导出doc
      */
-    public void exoprtReport(HttpServletResponse response,String itemId) throws IOException, TemplateException {
+    public void exoprtReport(HttpServletResponse response,String id) throws IOException, TemplateException {
+        //探伤记录、探伤工序、探伤模板信息
+        ProduceItemInspectInfo produceItemInspectInfo = new ProduceItemInspectInfo();
+        //根据探伤记录id定位
+        QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
+        itemInspectInfoQueryWrapper.eq("inspect_record_id",id);
+        List<ProduceItemInspectInfo> produceItemInspectInfos = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+        if(produceItemInspectInfos.size()>0){
+            produceItemInspectInfo = produceItemInspectInfos.get(0);
+        }else{
+            throw new GlobalException(ResultCode.ITEM_NOT_FOUND.getMessage(),ResultCode.ITEM_NOT_FOUND);
+        }
+
         //跟单信息
         TrackHead trackHead = null;
         //探伤记录
         Map<String,Object> recordInfo = new HashMap<>();
         //查询探伤工序
-        TrackItemInspection trackItemInspection = trackItemInspectionService.getById(itemId);
+        TrackItemInspection trackItemInspection = trackItemInspectionService.getById(produceItemInspectInfo.getTrackItemId());
 
         if(!ObjectUtil.isEmpty(trackItemInspection)){
             trackHead = trackHeadService.getById(trackItemInspection.getTrackHeadId());
             List<Map<String, Object>> list = new ArrayList<>();
-            if(InspectionRecordTypeEnum.MT.getType().equals(trackItemInspection.getTempType())){
-                list = produceInspectionRecordMtService.listMaps(new QueryWrapper<ProduceInspectionRecordMt>().eq("record_no", trackItemInspection.getInspectRecordNo()));
-            }else if(InspectionRecordTypeEnum.PT.getType().equals(trackItemInspection.getTempType())){
-                list = produceInspectionRecordPtService.listMaps(new QueryWrapper<ProduceInspectionRecordPt>().eq("record_no", trackItemInspection.getInspectRecordNo()));
-            }else if(InspectionRecordTypeEnum.RT.getType().equals(trackItemInspection.getTempType())){
-                list = produceInspectionRecordRtService.listMaps(new QueryWrapper<ProduceInspectionRecordRt>().eq("record_no", trackItemInspection.getInspectRecordNo()));
-            }else if(InspectionRecordTypeEnum.UT.getType().equals(trackItemInspection.getTempType())){
-                list = produceInspectionRecordUtService.listMaps(new QueryWrapper<ProduceInspectionRecordUt>().eq("record_no", trackItemInspection.getInspectRecordNo()));
+            if(InspectionRecordTypeEnum.MT.getType().equals(produceItemInspectInfo.getTempType())){
+                list = produceInspectionRecordMtService.listMaps(new QueryWrapper<ProduceInspectionRecordMt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
+            }else if(InspectionRecordTypeEnum.PT.getType().equals(produceItemInspectInfo.getTempType())){
+                list = produceInspectionRecordPtService.listMaps(new QueryWrapper<ProduceInspectionRecordPt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
+            }else if(InspectionRecordTypeEnum.RT.getType().equals(produceItemInspectInfo.getTempType())){
+                list = produceInspectionRecordRtService.listMaps(new QueryWrapper<ProduceInspectionRecordRt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
+            }else if(InspectionRecordTypeEnum.UT.getType().equals(produceItemInspectInfo.getTempType())){
+                list = produceInspectionRecordUtService.listMaps(new QueryWrapper<ProduceInspectionRecordUt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
             }
             if(!CollectionUtil.isEmpty(list)){
                 recordInfo = list.get(0);
@@ -413,10 +433,10 @@ public class ProduceInspectionRecordService{
         }
         Map<String, Object> dataMap = new HashMap<>();
         //填充数据
-        createDataMap(trackHead,recordInfo,dataMap,trackItemInspection.getTempType());
+        createDataMap(trackHead,recordInfo,dataMap,produceItemInspectInfo.getTempType());
 
         //根据模板类型获取模板和导出文件名
-        Map<String, String> tempNameAndDocNameMap = checkTempNameAndDocName(trackItemInspection.getTempType());
+        Map<String, String> tempNameAndDocNameMap = checkTempNameAndDocName(produceItemInspectInfo.getTempType());
         //导出
         wordUtil.exoprtReport(response,dataMap,tempNameAndDocNameMap.get("tempName"),tempNameAndDocNameMap.get("docName"));
     }

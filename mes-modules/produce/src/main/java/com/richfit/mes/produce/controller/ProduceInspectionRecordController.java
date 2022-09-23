@@ -89,7 +89,7 @@ public class ProduceInspectionRecordController extends BaseController {
 
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
     @PostMapping("/save")
-    public CommonResult saveRecord(@RequestBody ProduceInspectionRecordDto produceInspectionRecordDto){
+    public CommonResult saveRecord(@RequestBody ProduceInspectionRecordDto produceInspectionRecordDto) throws Exception {
         return CommonResult.success(produceInspectionRecordService.saveRecord(produceInspectionRecordDto));
     }
 
