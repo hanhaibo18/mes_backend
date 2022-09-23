@@ -104,6 +104,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
             }
             if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
+                //更改状态 标识当前工序完成
+                trackItem.setIsDoing(2);
+                trackItem.setIsOperationComplete(1);
+                trackItemService.updateById(trackItem);
+                trackCompleteCacheService.remove(queryWrapper);
                 //调用工序激活方法
                 Map<String, String> map = new HashMap<>(3);
                 map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
@@ -111,11 +116,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
                 map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
                 publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
-                //更改状态 标识当前工序完成
-                trackItem.setIsDoing(2);
-                trackItem.setIsOperationComplete(1);
-                trackItemService.updateById(trackItem);
-                trackCompleteCacheService.remove(queryWrapper);
             }
             log.error(completeDto.getTrackCompleteList().toString());
             this.saveBatch(completeDto.getTrackCompleteList());

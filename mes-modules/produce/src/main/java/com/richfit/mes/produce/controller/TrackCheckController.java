@@ -96,22 +96,26 @@ public class TrackCheckController extends BaseController {
     public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck, String drawingNo) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+            //车间
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
+            //图号
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
                 queryWrapper.like("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
             }
+            //复检
             if (Boolean.TRUE.equals(isRecheck)) {
                 queryWrapper.eq("is_recheck", 1);
             } else if (Boolean.FALSE.equals(isRecheck)) {
-                //未质检
+                //未质检 
                 queryWrapper.eq("is_quality_complete", 0);
                 queryWrapper.and(wrapper -> wrapper.isNull("is_recheck").or().eq("is_recheck", 0));
             }
+            //是否质检
             if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
                 //质检页面只查询指派给自己的质检信息
                 queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
@@ -126,24 +130,26 @@ public class TrackCheckController extends BaseController {
 
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
+            //是否调度
             if (!StringUtils.isNullOrEmpty(isExistScheduleCheck)) {
                 queryWrapper.eq("is_exist_schedule_check", Integer.parseInt(isExistScheduleCheck))
                         .eq("is_schedule_complete_show", 1);
             }
+            //调度完成
             if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
                 queryWrapper.eq("is_schedule_complete", Integer.parseInt(isScheduleComplete));
-
             }
+            //根据跟单号查询
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
                     queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
-
                 } else {
                     queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
                 }
             }
+            //产品编号
             if (!StringUtils.isNullOrEmpty(productNo)) {
-                queryWrapper.eq("product_no", productNo);
+                queryWrapper.like("product_no", productNo);
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
