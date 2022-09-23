@@ -18,14 +18,12 @@ import com.richfit.mes.produce.service.ProduceTrackHeadTemplateService;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.utils.FilesUtil;
+import com.richfit.mes.produce.utils.TemplateUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.CallableStatementCallback;
-import org.springframework.jdbc.core.CallableStatementCreator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -34,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,10 +96,9 @@ public class TemplatePrintController extends BaseController {
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
             // 根据配置SQL，获取SHEET1、2、3表数据
-            sheets.add(getList(id, p.getSheet1()));
-            sheets.add(getList(id, p.getSheet2()));
-            sheets.add(getList(id, p.getSheet3()));
-
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet1(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet2(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet3(), jdbcTemplate));
             // 生成EXCEL文件，并输出文件流
             try {
                 // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
@@ -120,7 +116,6 @@ public class TemplatePrintController extends BaseController {
     }
 
     /**
-     *
      * @param id
      * @param branchCode
      * @param rsp
@@ -129,8 +124,8 @@ public class TemplatePrintController extends BaseController {
     @ApiOperation(value = "根据flowId生成跟单模板EXCEL", notes = "按跟单模板编码生成跟单模板EXCEL")
     @GetMapping("/query/by_flow_id")
     public void getByFlowId(@ApiParam(value = "flowId", required = true) @RequestParam String id,
-                                  @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
-                                  @ApiIgnore HttpServletResponse rsp) throws IOException {
+                            @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                            @ApiIgnore HttpServletResponse rsp) throws IOException {
         try {
             // 获取跟单
             TrackFlow byId = trackHeadFlowService.getById(id);
@@ -147,9 +142,9 @@ public class TemplatePrintController extends BaseController {
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
             // 根据配置SQL，获取SHEET1、2、3表数据
-            sheets.add(getList(trackHead.getId(), p.getSheet1()));
-            sheets.add(getList(id, p.getSheet2()));
-            sheets.add(getList(id, p.getSheet3()));
+            sheets.add(TemplateUtil.getDataList(trackHead.getId(), p.getSheet1(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet2(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet3(), jdbcTemplate));
 
             // 生成EXCEL文件，并输出文件流
             try {
@@ -170,8 +165,8 @@ public class TemplatePrintController extends BaseController {
     @ApiOperation(value = "批量导出bom跟单excel", notes = "按flowId集合生成bom跟单EXCEL,按压缩包下载")
     @PostMapping("/batch")
     public void printBatch(@ApiParam(value = "flowIds", required = true) @RequestBody List<String> ids,
-                          @ApiParam(value = "工厂代码") @RequestParam(required = true) String branchCode,
-                          @ApiIgnore HttpServletResponse rsp) throws Exception {
+                           @ApiParam(value = "工厂代码") @RequestParam(required = true) String branchCode,
+                           @ApiIgnore HttpServletResponse rsp) throws Exception {
 
         QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
         queryWrapper.eq("type", "0");
@@ -192,27 +187,27 @@ public class TemplatePrintController extends BaseController {
         List<TrackHead> list = new ArrayList<>();
         for (String id : ids) {
             Map<String, String> map = new HashMap<>();
-            map.put("id",id);
+            map.put("id", id);
             map.put("branchCode", branchCode);
             map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
             List<TrackHead> tractkHeads = trackHeadService.selectTrackFlowList(map);
             list.addAll(tractkHeads);
         }
-        int i=1;
+        int i = 1;
         for (TrackHead trackHead : list) {
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
             // 根据配置SQL，获取SHEET1、2、3表数据
-            sheets.add(getList(trackHead.getId(), p.getSheet1()));
-            sheets.add(getList(trackHead.getFlowId(), p.getSheet2()));
-            sheets.add(getList(trackHead.getFlowId(), p.getSheet3()));
+            sheets.add(TemplateUtil.getDataList(trackHead.getId(), p.getSheet1(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(trackHead.getFlowId(), p.getSheet2(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(trackHead.getFlowId(), p.getSheet3(), jdbcTemplate));
             // 生成EXCEL文件，并输出文件流
             try {
                 // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
                 //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
 
                 InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
-                ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo() + "_跟单("+i+")", inputStream, sheets);
+                ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo() + "_跟单(" + i + ")", inputStream, sheets);
                 i++;
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -262,9 +257,9 @@ public class TemplatePrintController extends BaseController {
             List<List<Map<String, Object>>> sheets = new ArrayList();
 
             // 根据配置SQL，获取SHEET1、2、3表数据
-            sheets.add(getList(id, p.getSheet1()));
-            sheets.add(getList(id, p.getSheet2()));
-            sheets.add(getList(id, p.getSheet3()));
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet1(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet2(), jdbcTemplate));
+            sheets.add(TemplateUtil.getDataList(id, p.getSheet3(), jdbcTemplate));
             // 生成EXCEL文件，并输出文件流
             try {
                 // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
@@ -289,58 +284,5 @@ public class TemplatePrintController extends BaseController {
             new File(file.getAbsolutePath() + ".zip").delete();
         }
 
-    }
-
-
-    private List<Map<String, Object>> getList(String id, String sql) {
-        List<Map<String, Object>> list = new ArrayList();
-
-        if (null != sql && sql.contains("call")) {
-            // 如果包含CALL，则只需执行存储过程
-            list = getExecute(id, sql);
-        } else if (null != sql) {
-            // 如果不包含CALL，则执行SQL 查询
-            list = jdbcTemplate.queryForList(String.format(sql, id));
-        }
-        return list;
-    }
-
-    /**
-     * 执行存储过程
-     *
-     * @param id
-     * @param sql1
-     * @return
-     */
-    private List getExecute(String id, String sql1) {
-        return (List) jdbcTemplate.execute(
-                new CallableStatementCreator() {
-                    @Override
-                    public CallableStatement createCallableStatement(Connection con) throws SQLException {
-                        // String storedProc = "{call sp_list_table(?,?)}";// 调用的sql
-                        String storedProc = String.format(sql1, id);// 调用的sql
-                        CallableStatement cs = con.prepareCall(storedProc);
-                        cs.setString(1, id);// 设置输入参数的值
-                        return cs;
-                    }
-                }, new CallableStatementCallback() {
-                    @Override
-                    public Object doInCallableStatement(CallableStatement cs) throws SQLException, DataAccessException {
-                        List resultsMap = new ArrayList();
-                        cs.execute();
-                        ResultSet rs = (ResultSet) cs.getObject(2);// 获取游标一行的值
-                        ResultSetMetaData md = rs.getMetaData();
-                        int columnCount = md.getColumnCount();
-                        while (rs.next()) {// 转换每行的返回值到Map中
-                            Map rowData = new HashMap();
-                            for (int i = 1; i <= columnCount; i++) {
-                                rowData.put(md.getColumnName(i), rs.getObject(i));
-                            }
-                            resultsMap.add(rowData);
-                        }
-                        rs.close();
-                        return resultsMap;
-                    }
-                });
     }
 }
