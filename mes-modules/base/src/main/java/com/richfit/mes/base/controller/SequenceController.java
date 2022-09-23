@@ -441,9 +441,13 @@ public class SequenceController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
+        //导入文件名校验
+        if(!file.getOriginalFilename().equals("工艺导入模板.xls")){
+            return CommonResult.failed("导入模板错误!，请重新校验模板");
+        }
         CommonResult result = null;
         String msg = "";
-        String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "optCode", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
+        String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "opNo", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -570,10 +574,11 @@ public class SequenceController extends BaseController {
                             } else {
                                 // 如果没有工序则新增工序
                                 Operatipon o = new Operatipon();
-                                o.setOptCode(list.get(i).getOptCode());
+                                o.setOptCode(list.get(i).getOptName());
                                 o.setOptType(optType);
                                 o.setTenantId(tenantId);
                                 o.setBranchCode(branchCode);
+                                o.setOptName(list.get(i).getOptName());
                                 operatiponService.save(o);
                                 opts = operatiponService.list(new QueryWrapper<Operatipon>().eq("opt_name", list.get(i).getOptName()).eq("opt_type", optType));
                                 list.get(i).setOptId(opts.get(0).getId());
