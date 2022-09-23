@@ -636,8 +636,6 @@ public class SequenceController extends BaseController {
 
         List<Sequence> sequences = sequenceService.list(queryWrapper);
 
-        sequences.sort((t1,t2)->t1.getOpNo().compareTo(t2.getOpNo()));
-
         //处理返回数据
         for (Sequence sequence : sequences) {
             try {
