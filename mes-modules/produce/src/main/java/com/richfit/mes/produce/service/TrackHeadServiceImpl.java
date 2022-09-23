@@ -334,18 +334,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //判断是否单件批量跟单
             if ("Y".equals(trackHead.getIsBatch())) {
                 //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
-                if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
-                    for (Map m : trackHead.getStoreList()) {
-                        //流水号获取
-                        CodeRule codeRule = codeRuleService.gerCode("track_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-                        if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
-                            throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
-                        }
-                        trackHead.setTrackNo(codeRule.getCurValue());
-                        trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                for (Map m : trackHead.getStoreList()) {
+                    //流水号获取
+                    CodeRule codeRule = codeRuleService.gerCode("track_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+                    if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
+                        throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
                     }
-                } else {
-                    throw new GlobalException("请添加产品编码", ResultCode.FAILED);
+                    trackHead.setTrackNo(codeRule.getCurValue());
+                    trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                 }
             } else {
                 //其他类型的跟单
@@ -492,11 +488,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setNumber(number);
             trackFlow.setTrackHeadId(trackHead.getId());
             if (!StrUtil.isBlank(productsNo)) {
-                if ("0".equals(trackHead.getIsTestBar())) {
-                    trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
-                } else {
-                    trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo + "S");
+                //试棒类型拼接S
+                if ("1".equals(trackHead.getIsTestBar())) {
+                    productsNo = productsNo + "S";
                 }
+                trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             }
             trackHeadFlowService.save(trackFlow);
 
