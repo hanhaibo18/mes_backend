@@ -27,6 +27,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
+import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.FilesUtil;
 import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
 import com.richfit.mes.produce.utils.Utils;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
  * @Description 跟单服务
  */
 @Service
-@Transactional(rollbackFor = GlobalException.class)
+@Transactional(rollbackFor = Exception.class)
 public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead> implements TrackHeadService {
 
     @Resource
@@ -230,7 +231,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void completionData(String flowId) {
         try {
             //判断完工资料是否符合生产条件
@@ -327,25 +327,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
             //判断是否单件批量跟单
             if ("Y".equals(trackHead.getIsBatch())) {
                 //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
-                if (trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
-                    for (Map m : trackHead.getStoreList()) {
-                        //流水号获取
-                        CodeRule codeRule = codeRuleService.gerCode("track_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-                        if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
-                            throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
-                        }
-                        trackHead.setTrackNo(codeRule.getCurValue());
-                        trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
-                    }
-                } else {
-                    throw new GlobalException("请添加产品编码", ResultCode.FAILED);
+                for (Map m : trackHead.getStoreList()) {
+                    //流水号获取
+                    String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
+                    trackHead.setTrackNo(code);
+                    trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                 }
             } else {
                 //其他类型的跟单
@@ -366,15 +358,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
-            //封装跟单信息数据
-            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
-            trackHead.setNumberComplete(0);
-            trackHead.setNumber(number);
-            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
@@ -385,10 +370,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 throw new GlobalException("跟单号码已存在！请联系管理员处理流程码问题！", ResultCode.FAILED);
             }
 
+            //封装跟单信息数据
+            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
+            trackHead.setNumberComplete(0);
+            trackHead.setNumber(number);
+            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
             //添加跟单分流（生产线）
             List<TrackFlow> trackFlowList = new ArrayList<>();
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
-                //多生产线
+            if ("N".equals(trackHead.getIsBatch()) && !trackHead.getStoreList().isEmpty()) {
+                //单件多数量（多生产线）
                 for (Map m : trackHead.getStoreList()) {
                     TrackFlow trackFlow = trackHeadFlow(trackHead, trackItems, (String) m.get("workblankNo"), (Integer) m.get("num"));
                     trackFlowList.add(trackFlow);
@@ -408,24 +399,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
 
-            //跟单状态为0的未派工，用于排除跟单打印等不进行自动派工
-            if ("0".equals(trackHead.getStatus())) {
-                //通过跟单ID查询所有第一道工序需要派工的
-                QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
-                queryWrapperItem.eq("track_head_id", trackHead.getId());
-                queryWrapperItem.eq("is_auto_schedule", 1);
-                queryWrapperItem.eq("sequence_order_by", 1);
-                List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
-                //循环工序
-                for (TrackItem trackItem : trackItemList) {
-                    Map<String, String> map = new HashMap<>(4);
-                    map.put("trackItemId", trackItem.getId());
-                    map.put("trackHeadId", trackHead.getId());
-                    map.put("trackNo", trackHead.getTrackNo());
-                    map.put("classes", trackHead.getClasses());
-                    publicService.automaticProcess(map);
-                }
-            }
+            //用于在跟单存在第一道工序自动派工的情况
+            autoSchedule(trackHead);
 
             //添加日志
             Action action = new Action();
@@ -434,7 +409,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
             //流水号更新
-            codeRuleService.updateCode("track_no", null, trackHead.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
+            Code.update("track_no", trackHead.getTrackNo(), SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -448,43 +423,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
-            //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-            //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
-            if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
-                //修改库存状态  本次查到的料单能否匹配生产数量完成
-                //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
-                Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
-                LineStore lineStore = (LineStore) retMap.get("lineStore");
-                if (lineStore == null) {
-                    //无库存料单，默认新增库存料单，然后出库
-                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
-                }
 
-                //添加跟单-分流-料单的关联信息
-                TrackHeadRelation relation = new TrackHeadRelation();
-                relation.setThId(trackHead.getId());
-                relation.setFlowId(flowId);
-                relation.setLsId(lineStore.getId());
-                relation.setType("0");
-                relation.setNumber(number);
-                trackHeadRelationMapper.insert(relation);
-
-                //料单添加成品信息
-                LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
-
-                //添加跟单-分流-料单的关联信息
-                TrackHeadRelation relationCp = new TrackHeadRelation();
-                relationCp.setThId(trackHead.getId());
-                relation.setFlowId(flowId);
-                relationCp.setLsId(lineStoreCp.getId());
-                relationCp.setType("1");
-                relationCp.setNumber(number);
-                trackHeadRelationMapper.insert(relationCp);
-            }
+            //跟单添加料单数据处理
+            this.lineStore(flowId, trackHead, productsNo, number);
 
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
@@ -492,6 +436,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setNumber(number);
             trackFlow.setTrackHeadId(trackHead.getId());
             if (!StrUtil.isBlank(productsNo)) {
+                //试棒类型拼接S
+                if ("1".equals(trackHead.getIsTestBar())) {
+                    productsNo = productsNo + "S";
+                }
                 trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
             }
             trackHeadFlowService.save(trackFlow);
@@ -506,13 +454,79 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     /**
+     * 描述: 将侯欣雨加入的自动派工独立封装一下
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/23 10:25
+     **/
+    public void autoSchedule(TrackHead trackHead) {
+        if ("0".equals(trackHead.getStatus()) || "1".equals(trackHead.getStatus())) {
+            //通过跟单ID查询所有第一道工序需要派工的
+            QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
+            queryWrapperItem.eq("track_head_id", trackHead.getId());
+            queryWrapperItem.eq("is_auto_schedule", 1);
+            queryWrapperItem.eq("sequence_order_by", 1);
+            List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
+            //循环工序
+            for (TrackItem trackItem : trackItemList) {
+                Map<String, String> map = new HashMap<>(4);
+                map.put("trackItemId", trackItem.getId());
+                map.put("trackHeadId", trackHead.getId());
+                map.put("trackNo", trackHead.getTrackNo());
+                map.put("classes", trackHead.getClasses());
+                publicService.automaticProcess(map);
+            }
+        }
+    }
+
+    /**
+     * 描述: 跟单添加料单数据处理
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/23 10:25
+     **/
+    public void lineStore(String flowId, TrackHead trackHead, String productsNo, int number) {
+        //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
+        //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
+        if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
+            //修改库存状态  本次查到的料单能否匹配生产数量完成
+            //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
+            Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
+            LineStore lineStore = (LineStore) retMap.get("lineStore");
+            if (lineStore == null) {
+                //无库存料单，默认新增库存料单，然后出库
+                lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
+            }
+            //添加跟单-分流-料单的关联信息
+            TrackHeadRelation relation = new TrackHeadRelation();
+            relation.setThId(trackHead.getId());
+            relation.setFlowId(flowId);
+            relation.setLsId(lineStore.getId());
+            relation.setType("0");
+            relation.setNumber(number);
+            trackHeadRelationMapper.insert(relation);
+
+            //料单添加成品信息
+            LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
+
+            //添加跟单-分流-料单的关联信息
+            TrackHeadRelation relationCp = new TrackHeadRelation();
+            relationCp.setThId(trackHead.getId());
+            relation.setFlowId(flowId);
+            relationCp.setLsId(lineStoreCp.getId());
+            relationCp.setType("1");
+            relationCp.setNumber(number);
+            trackHeadRelationMapper.insert(relationCp);
+        }
+    }
+
+    /**
      * 描述: 跟单更新
      *
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
@@ -610,7 +624,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
             List<String> ids = trackHeads.stream().filter(trackHead -> {
@@ -680,7 +693,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: boolean
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean updateTrackHeadPlan(List<TrackHead> trackHeads) {
         try {
             for (TrackHead t : trackHeads) {
@@ -724,7 +736,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadFinish(String flowId) {
         try {
             //跟单完成更新分流数据
@@ -774,7 +785,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadUseless(String id) {
         try {
             //跟单作废分流数据作废
@@ -998,7 +1008,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
@@ -1020,7 +1029,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplitBack(TrackHead trackHead) {
         TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
         List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
@@ -1043,7 +1051,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/8/11 11:37
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
         try {
             for (TrackFlow t : trackFlowList) {
@@ -1073,11 +1080,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackFlowsOrder(trackFlowList);
         //机加产品编码处理
         if (trackFlowList.size() == 1) {
-            if ("0".equals(trackHead.getIsTestBar())) {
-                return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
-            } else {
-                return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "") + "S";
-            }
+            return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
         }
         if (trackFlowList.size() > 1) {
             String productsNoStr = "";
@@ -1167,7 +1170,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void addTrackHeadProductNo(String flowId, String productNo) {
         //查询跟单、跟单生产线信息
         TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
