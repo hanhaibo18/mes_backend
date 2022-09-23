@@ -192,6 +192,8 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             pdmMesProcess.setItemStatus("已发布");
             pdmMesProcess.setModifyTime(new Date());
             pdmMesProcess.setModifyBy(user.getUsername());
+            //特别添加部分pdm图号两边带有空格的问题
+            pdmMesProcess.setDrawNo(pdmMesProcess.getDrawNo().trim());
             pdmMesProcessMapper.updateById(pdmMesProcess);
 
             //更新老工艺状态模块
