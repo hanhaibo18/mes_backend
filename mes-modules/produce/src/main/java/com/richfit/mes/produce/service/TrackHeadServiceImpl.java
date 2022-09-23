@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * @Description 跟单服务
  */
 @Service
-@Transactional(rollbackFor = GlobalException.class)
+@Transactional(rollbackFor = Exception.class)
 public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead> implements TrackHeadService {
 
     @Resource
@@ -231,7 +231,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void completionData(String flowId) {
         try {
             //判断完工资料是否符合生产条件
@@ -328,7 +327,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
@@ -360,7 +358,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             //查询跟单号码是否存在
@@ -426,7 +423,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
@@ -463,7 +459,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/9/23 10:25
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public void autoSchedule(TrackHead trackHead) {
         if ("0".equals(trackHead.getStatus()) || "1".equals(trackHead.getStatus())) {
             //通过跟单ID查询所有第一道工序需要派工的
@@ -490,7 +485,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/9/23 10:25
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public void lineStore(String flowId, TrackHead trackHead, String productsNo, int number) {
         //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
         //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
@@ -533,7 +527,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
@@ -631,7 +624,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
             List<String> ids = trackHeads.stream().filter(trackHead -> {
@@ -701,7 +693,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: boolean
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public boolean updateTrackHeadPlan(List<TrackHead> trackHeads) {
         try {
             for (TrackHead t : trackHeads) {
@@ -745,7 +736,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadFinish(String flowId) {
         try {
             //跟单完成更新分流数据
@@ -795,7 +785,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @return: void
      **/
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadUseless(String id) {
         try {
             //跟单作废分流数据作废
@@ -1019,7 +1008,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
@@ -1041,7 +1029,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackHeadSplitBack(TrackHead trackHead) {
         TrackHead originalTrackHead = trackHeadMapper.selectById(trackHead.getOriginalTrackId());
         List<TrackFlow> originalTrackFlowList = trackFlowList(originalTrackHead.getId());
@@ -1064,7 +1051,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/8/11 11:37
      **/
-    @Transactional(rollbackFor = GlobalException.class)
     public void trackFlowMigrations(String id, List<TrackFlow> trackFlowList) {
         try {
             for (TrackFlow t : trackFlowList) {
@@ -1184,7 +1170,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void addTrackHeadProductNo(String flowId, String productNo) {
         //查询跟单、跟单生产线信息
         TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
