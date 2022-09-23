@@ -492,7 +492,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setNumber(number);
             trackFlow.setTrackHeadId(trackHead.getId());
             if (!StrUtil.isBlank(productsNo)) {
-                trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+                if ("0".equals(trackHead.getIsTestBar())) {
+                    trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+                } else {
+                    trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo + "S");
+                }
             }
             trackHeadFlowService.save(trackFlow);
 
@@ -1073,11 +1077,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackFlowsOrder(trackFlowList);
         //机加产品编码处理
         if (trackFlowList.size() == 1) {
-            if ("0".equals(trackHead.getIsTestBar())) {
-                return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
-            } else {
-                return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "") + "S";
-            }
+            return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
         }
         if (trackFlowList.size() > 1) {
             String productsNoStr = "";
