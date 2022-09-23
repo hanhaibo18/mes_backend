@@ -127,6 +127,7 @@ public class InspectionRecordCardController extends BaseController {
             return CommonResult.success(produceInspectionRecordCard);
         } catch (Exception e) {
             e.printStackTrace();
+            log.error("inspection_record_card select is error [{}]", e.getMessage());
             throw new Exception("信息所在工厂" + e.getMessage());
         }
     }
@@ -167,6 +168,7 @@ public class InspectionRecordCardController extends BaseController {
             IoUtil.close(outputStream);
         } catch (Exception e) {
             e.printStackTrace();
+            log.error("inspection_record_card select is error [{}]", e.getMessage());
             throw new Exception("信息所在工厂" + e.getMessage());
         }
     }
