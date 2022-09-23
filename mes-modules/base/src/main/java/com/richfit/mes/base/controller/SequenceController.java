@@ -636,6 +636,8 @@ public class SequenceController extends BaseController {
 
         List<Sequence> sequences = sequenceService.list(queryWrapper);
 
+        sequences.sort((t1,t2)->t1.getOpNo().compareTo(t2.getOpNo()));
+
         //处理返回数据
         for (Sequence sequence : sequences) {
             try {
@@ -656,7 +658,7 @@ public class SequenceController extends BaseController {
         String fileName = "工艺数据" + format.format(new Date()) + ".xlsx";
 
         String[] columnHeaders = {"是否导入", "工艺号", "工艺描述", "版本号", "工序名", "工序号", "工序类型", "单件", "准结", "质检确认", "调度确认"};
-        String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "optCode", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
+        String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "opNo", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
         //export
         try {
             ExcelUtils.exportExcel(fileName, sequences, columnHeaders, fieldNames, rsp);
