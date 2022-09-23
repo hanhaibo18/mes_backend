@@ -1,5 +1,7 @@
 package com.richfit.mes.base.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -178,6 +180,58 @@ public class SequenceController extends BaseController {
                 return CommonResult.failed("操作失败，请重试！");
             }
         }
+    }
+
+    @ApiOperation(value = "批量新增工序", notes = "批量新增工序")
+    @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "path")
+    @PostMapping("/addList")
+    public CommonResult addSequenceList(@RequestBody JSONObject list) {
+        TenantUserDetails user = SecurityUtils.getCurrentUser();
+        String branchCode = list.get("branchCode").toString();
+        String tenantId = list.get("tenantId").toString();
+
+        List<Sequence> sequenceList = JSON.parseArray(JSONObject.toJSONString(list.get("sequenceList")), Sequence.class);
+        for (Sequence sequence : sequenceList) {
+            if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
+                return CommonResult.failed("编码不能为空！");
+            } else {
+                sequence.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                sequence.setCreateBy(user.getUsername());
+                sequence.setModifyBy(user.getUsername());
+                sequence.setCreateTime(new Date());
+                sequence.setModifyTime(new Date());
+                sequence.setTenantId(tenantId);
+                sequence.setBranchCode(branchCode);
+                // 根据工序的工序类型添加质量资料
+                //查询类型关联的质量资料
+                QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
+                queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
+                queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
+                queryWrapperOperationTypeSpec.eq("tenant_id", sequence.getTenantId());
+                List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
+                for (OperationTypeSpec dts : operationTypeSpecs) {
+                    RouterCheck routerCheck = new RouterCheck();
+                    routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    routerCheck.setSequenceId(sequence.getId());
+                    routerCheck.setRouterId(sequence.getRouterId());
+                    routerCheck.setName(dts.getPropertyName());
+                    routerCheck.setType("质量资料");
+                    routerCheck.setStatus("1");
+                    routerCheck.setDefualtValue(dts.getPropertyValue());
+                    routerCheck.setPropertyObjectname(dts.getPropertyName());
+
+                    routerCheck.setBranchCode(sequence.getBranchCode());
+                    routerCheck.setTenantId(user.getTenantId());
+                    routerCheck.setCreateTime(new Date());
+                    routerCheck.setCreateBy(user.getUsername());
+                    routerCheck.setModifyTime(new Date());
+                    routerCheck.setModifyBy(user.getUsername());
+                    routerCheckService.save(routerCheck);
+                }
+                sequenceService.save(sequence);
+            }
+        }
+        return null;
     }
 
     @ApiOperation(value = "修改工序", notes = "修改工序")
