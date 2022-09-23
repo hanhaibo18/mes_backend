@@ -27,6 +27,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
+import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.FilesUtil;
 import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
 import com.richfit.mes.produce.utils.Utils;
@@ -336,11 +337,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
                 for (Map m : trackHead.getStoreList()) {
                     //流水号获取
-                    CodeRule codeRule = codeRuleService.gerCode("track_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode());
-                    if (codeRule == null || StringUtils.isNullOrEmpty(codeRule.getCurValue())) {
-                        throw new GlobalException("获取跟单号出现异常", ResultCode.FAILED);
-                    }
-                    trackHead.setTrackNo(codeRule.getCurValue());
+                    String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
+                    trackHead.setTrackNo(code);
                     trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
                 }
             } else {
@@ -365,12 +363,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Transactional(rollbackFor = GlobalException.class)
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
-            //封装跟单信息数据
-            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
-            trackHead.setNumberComplete(0);
-            trackHead.setNumber(number);
-            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
@@ -381,10 +373,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 throw new GlobalException("跟单号码已存在！请联系管理员处理流程码问题！", ResultCode.FAILED);
             }
 
+            //封装跟单信息数据
+            trackHead.setId(UUID.randomUUID().toString().replace("-", ""));
+            trackHead.setNumberComplete(0);
+            trackHead.setNumber(number);
+            trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+
             //添加跟单分流（生产线）
             List<TrackFlow> trackFlowList = new ArrayList<>();
-            if ("N".equals(trackHead.getIsBatch()) && trackHead.getStoreList() != null && trackHead.getStoreList().size() > 0) {
-                //多生产线
+            if ("N".equals(trackHead.getIsBatch()) && !trackHead.getStoreList().isEmpty()) {
+                //单件多数量（多生产线）
                 for (Map m : trackHead.getStoreList()) {
                     TrackFlow trackFlow = trackHeadFlow(trackHead, trackItems, (String) m.get("workblankNo"), (Integer) m.get("num"));
                     trackFlowList.add(trackFlow);
@@ -448,39 +446,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
-            //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-            //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
-            if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
-                //修改库存状态  本次查到的料单能否匹配生产数量完成
-                //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
-                Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
-                LineStore lineStore = (LineStore) retMap.get("lineStore");
-                if (lineStore == null) {
-                    //无库存料单，默认新增库存料单，然后出库
-                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
-                }
 
-                //添加跟单-分流-料单的关联信息
-                TrackHeadRelation relation = new TrackHeadRelation();
-                relation.setThId(trackHead.getId());
-                relation.setFlowId(flowId);
-                relation.setLsId(lineStore.getId());
-                relation.setType("0");
-                relation.setNumber(number);
-                trackHeadRelationMapper.insert(relation);
-
-                //料单添加成品信息
-                LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
-
-                //添加跟单-分流-料单的关联信息
-                TrackHeadRelation relationCp = new TrackHeadRelation();
-                relationCp.setThId(trackHead.getId());
-                relation.setFlowId(flowId);
-                relationCp.setLsId(lineStoreCp.getId());
-                relationCp.setType("1");
-                relationCp.setNumber(number);
-                trackHeadRelationMapper.insert(relationCp);
-            }
+            //跟单添加料单数据处理
+            this.lineStore(flowId, trackHead, productsNo, number);
 
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
@@ -502,6 +470,48 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+    /**
+     * 描述: 跟单添加料单数据处理
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
+    @Transactional(rollbackFor = GlobalException.class)
+    public void lineStore(String flowId, TrackHead trackHead, String productsNo, int number) {
+        //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
+        //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
+        if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
+            //修改库存状态  本次查到的料单能否匹配生产数量完成
+            //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
+            Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
+            LineStore lineStore = (LineStore) retMap.get("lineStore");
+            if (lineStore == null) {
+                //无库存料单，默认新增库存料单，然后出库
+                lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
+            }
+            //添加跟单-分流-料单的关联信息
+            TrackHeadRelation relation = new TrackHeadRelation();
+            relation.setThId(trackHead.getId());
+            relation.setFlowId(flowId);
+            relation.setLsId(lineStore.getId());
+            relation.setType("0");
+            relation.setNumber(number);
+            trackHeadRelationMapper.insert(relation);
+
+            //料单添加成品信息
+            LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
+
+            //添加跟单-分流-料单的关联信息
+            TrackHeadRelation relationCp = new TrackHeadRelation();
+            relationCp.setThId(trackHead.getId());
+            relation.setFlowId(flowId);
+            relationCp.setLsId(lineStoreCp.getId());
+            relationCp.setType("1");
+            relationCp.setNumber(number);
+            trackHeadRelationMapper.insert(relationCp);
         }
     }
 
