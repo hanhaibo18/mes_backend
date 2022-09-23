@@ -260,9 +260,8 @@ public class TrackHeadController extends BaseController {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.and((wrapper) -> {
-                wrapper.like("track_no", trackNo).or().like("original_track_no", trackNo);
-            });
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'").or().apply("replace(replace(replace(original_track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("drawing_no", drawingNo);
@@ -575,17 +574,24 @@ public class TrackHeadController extends BaseController {
             @ApiParam(value = "每页记录数") @RequestParam int limit,
             @ApiParam(value = "分公司") @RequestParam String branchCode) throws Exception {
         Map<String, String> map = new HashMap<>();
-        map.put("startDate", startTime);
-        map.put("endDate", endTime);
-        map.put("productNo", productNo);
-        map.put("trackNo", trackNo);
-        map.put("workNo", workNo);
-        map.put("drawingNo", drawingNo);
-        map.put("batchNo", batchNo);
-        map.put("productionOrder", orderNo);
-        map.put("branchCode", branchCode);
-        map.put("tenantId", SecurityUtils.getCurrentUser().getTenantId());
-        map.put("rollStatus", "0");
+        TrackFlow.param(startTime,
+                endTime,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                productNo,
+                trackNo,
+                workNo,
+                drawingNo,
+                batchNo,
+                orderNo,
+                null,
+                null,
+                branchCode,
+                SecurityUtils.getCurrentUser().getTenantId(), map);
         PageHelper.startPage(page, limit);
         List trackFlowList = trackHeadService.selectTrackFlowList(map);
         PageInfo<TrackHead> trackFlowPage = new PageInfo(trackFlowList);

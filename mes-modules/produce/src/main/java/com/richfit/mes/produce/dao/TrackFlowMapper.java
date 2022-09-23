@@ -65,7 +65,7 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             "  and product_no like concat('%',#{productNo},'%') " +
             " </if> " +
             " <if test='trackNo != null and trackNo != \"\"'> " +
-            "  and track_no like concat('%',#{trackNo},'%') " +
+            " and replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like concat('%',#{trackNo},'%') " +
             " </if> " +
             " <if test='workNo != null and workNo != \"\"'> " +
             "  and work_no like concat('%',#{workNo},'%') " +
