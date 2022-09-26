@@ -179,7 +179,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "工艺id", dataType = "String")
     private String routerId;
 
-    @ApiModelProperty(value = "跟单类型 0库存生成  1物料生成  2计划生成", dataType = "String")
+    @ApiModelProperty(value = "跟单生成类型 0课程生成  1物料生成  2计划生成", dataType = "String")
     private String type;
 
     @ApiModelProperty(value = "是否试棒跟单  0否  1是", dataType = "String")
