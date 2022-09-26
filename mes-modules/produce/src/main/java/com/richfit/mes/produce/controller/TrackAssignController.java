@@ -274,8 +274,10 @@ public class TrackAssignController extends BaseController {
                     }
                     trackItem.setIsCurrent(1);
                     trackItem.setIsDoing(0);
-                    trackItem.setIsSchedule(1);
                     trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
+                    if (0 == trackItem.getAssignableQty()) {
+                        trackItem.setIsSchedule(1);
+                    }
                     trackItemService.updateById(trackItem);
                     if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
                         assign.setTrackNo(trackHead.getTrackNo());
