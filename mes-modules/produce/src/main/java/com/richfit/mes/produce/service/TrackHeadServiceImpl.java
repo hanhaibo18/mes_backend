@@ -332,12 +332,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         try {
             //判断是否单件批量跟单
             if ("Y".equals(trackHead.getIsBatch())) {
+                //流水号获取
+                String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
+                trackHead.setTrackNo(code);
                 //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
-                for (Map m : trackHead.getStoreList()) {
-                    //流水号获取
-                    String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
-                    trackHead.setTrackNo(code);
-                    trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                if (trackHead.getStoreList().isEmpty()) {
+                    for (int i = 0; i < trackHead.getNumber(); i++) {
+                        trackHeadAdd(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), 1);
+                    }
+                } else {
+                    for (Map m : trackHead.getStoreList()) {
+                        trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
+                    }
                 }
             } else {
                 //其他类型的跟单
