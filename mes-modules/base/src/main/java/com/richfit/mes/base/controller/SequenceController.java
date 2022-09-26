@@ -545,9 +545,9 @@ public class SequenceController extends BaseController {
                     if ("否".equals(list.get(i).getIsParallel())) {
                         list.get(i).setIsParallel("0");
                     }
-                    list.get(i).setOptOrder(optOrder+1);
+                    list.get(i).setOptOrder(optOrder);
                     list.get(i).setTechnologySequence(String.valueOf(optOrder));
-                    list.get(i).setOptNextOrder(optOrder + 2);
+                    list.get(i).setOptNextOrder(optOrder + 1);
                     list.get(i).setIsParallel("0");
                     try {
                         // 获取工艺类型
@@ -598,7 +598,7 @@ public class SequenceController extends BaseController {
                 }
                 // 将最后一道工序的下工序设置为0
                 if (newlist.size() > 0) {
-                    newlist.get(newlist.size() - 1).setOptNextOrder(1);
+                    newlist.get(newlist.size() - 1).setOptNextOrder(0);
                     boolean bool = sequenceService.saveBatch(newlist);
                 }
             }
