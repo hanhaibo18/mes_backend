@@ -95,6 +95,7 @@ public class MenuTreeUtil {
             node.setMenuUrl(menu.getMenuUrl());
             node.setMenuIcon(menu.getMenuIcon());
             node.setMenuOrder(menu.getMenuOrder());
+            node.setMenuCode(menu.getMenuCode());
             node.setParentId(menu.getParentId());
             node.setMenuShow(menu.getMenuShow());
             node.setPermission(menu.getPermission());

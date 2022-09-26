@@ -1,6 +1,5 @@
 package com.richfit.mes.common.model.sys.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.model.sys.Menu;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,7 +7,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * @author sun
@@ -18,6 +16,7 @@ import java.util.Map;
 @ApiModel(value = "菜单树")
 @EqualsAndHashCode(callSuper = true)
 public class MenuTree extends TreeNode implements Serializable {
+    private static final long serialVersionUID = 5552861000896192868L;
     /**
      * 名称
      */
@@ -45,6 +44,12 @@ public class MenuTree extends TreeNode implements Serializable {
      */
     @ApiModelProperty(value = "链接")
     private String menuUrl;
+
+    /**
+     * 菜单唯一编码
+     */
+    @ApiModelProperty(value = "菜单唯一编码")
+    private String menuCode;
 
     /**
      * 菜单图标
@@ -84,18 +89,20 @@ public class MenuTree extends TreeNode implements Serializable {
     public MenuTree() {
     }
 
-    public MenuTree(String id, String menuName, String parentId) {
+    public MenuTree(String id, String menuName, String parentId, String menuCode) {
         this.id = id;
         this.parentId = parentId;
         this.menuName = menuName;
         this.label = menuName;
+        this.menuCode = menuCode;
     }
 
-    public MenuTree(String id, String menuName, MenuTree parent) {
+    public MenuTree(String id, String menuName, MenuTree parent, String menuCode) {
         this.id = id;
         this.parentId = parent.getId();
         this.menuName = menuName;
         this.label = menuName;
+        this.menuCode = menuCode;
     }
 
     public MenuTree(Menu menu) {
@@ -111,5 +118,6 @@ public class MenuTree extends TreeNode implements Serializable {
         this.permission = menu.getPermission();
         this.checkedButton = menu.getCheckedButton();
         this.remark = menu.getRemark();
+        this.menuCode = menu.getMenuCode();
     }
 }
