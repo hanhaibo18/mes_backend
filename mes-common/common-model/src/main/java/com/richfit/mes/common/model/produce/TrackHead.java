@@ -41,6 +41,16 @@ public class TrackHead extends BaseEntity<TrackHead> {
      */
     public static final String TRACKHEAD_CLASSES_GJG = "4";
 
+    /**
+     * 单件批量
+     */
+    public static final String TRACKHEAD_BATCH_YES = "Y";
+
+    /**
+     * 非单件批量
+     */
+    public static final String TRACKHEAD_BATCH_NO = "N";
+
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 

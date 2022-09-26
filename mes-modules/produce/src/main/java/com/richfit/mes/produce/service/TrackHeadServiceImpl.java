@@ -27,10 +27,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
-import com.richfit.mes.produce.utils.Code;
-import com.richfit.mes.produce.utils.FilesUtil;
-import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
-import com.richfit.mes.produce.utils.Utils;
+import com.richfit.mes.produce.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -330,24 +327,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean saveTrackHead(TrackHead trackHead) {
         //单件跟单处理
         try {
-            //判断是否单件批量跟单
-            if ("Y".equals(trackHead.getIsBatch())) {
-                //流水号获取
-                String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
-                trackHead.setTrackNo(code);
-                //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
-                if (trackHead.getStoreList() == null) {
-                    for (int i = 0; i < trackHead.getNumber(); i++) {
-                        trackHeadAdd(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), 1);
-                    }
-                } else {
-                    for (Map m : trackHead.getStoreList()) {
-                        trackHeadAdd(trackHead, trackHead.getTrackItems(), (String) m.get("workblankNo"), (Integer) m.get("num"));
-                    }
-                }
-            } else {
-                //其他类型的跟单
-                trackHeadAdd(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), trackHead.getNumber());
+            List<TrackHead> trackHeadList = TrackHeadUtil.saveInfo(trackHead, codeRuleService);
+            for (TrackHead th : trackHeadList) {
+                trackHeadAdd(th, th.getTrackItems(), th.getProductNo(), th.getNumber());
             }
             //当匹配计划时更新计划状态
             planService.planData(trackHead.getWorkPlanId());
