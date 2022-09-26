@@ -545,9 +545,9 @@ public class SequenceController extends BaseController {
                     if ("否".equals(list.get(i).getIsParallel())) {
                         list.get(i).setIsParallel("0");
                     }
-                    list.get(i).setOptOrder(optOrder);
+                    list.get(i).setOptOrder(optOrder+1);
                     list.get(i).setTechnologySequence(String.valueOf(optOrder));
-                    list.get(i).setOptNextOrder(optOrder + 1);
+                    list.get(i).setOptNextOrder(optOrder + 2);
                     list.get(i).setIsParallel("0");
                     try {
                         // 获取工艺类型
