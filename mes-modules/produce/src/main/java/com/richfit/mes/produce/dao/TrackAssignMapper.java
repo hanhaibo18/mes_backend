@@ -26,11 +26,11 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     IPage<TrackItem> getPageAssignsByStatus(@Param("page") Page page, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
 
-    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where track_no LIKE CONCAT(CONCAT(#{name},'%')))) a  ${ew.customSqlSegment}")
+    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where track_no LIKE CONCAT('%',CONCAT(#{name},'%')))) a  ${ew.customSqlSegment}")
     IPage<TrackItem> getPageAssignsByStatusAndTrack(@Param("page") Page page, @Param("name") String name, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
     //@Select("select * from (SELECT * FROM produce_track_item where  (Is_Current =1 or id in(select id from produce_track_item a,  (select track_head_id,min(opt_sequence) as opt_sequence from produce_track_item  where track_head_id in (select id from produce_track_head where status ='0' or status is null or status='')   group by track_head_id)  b where  a.track_head_id=b.track_head_id and a.opt_sequence =b.opt_sequence)) and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where drawing_no=#{name})) a  ${ew.customSqlSegment}")
-    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where drawing_no LIKE CONCAT(CONCAT(#{name},'%')))) a  ${ew.customSqlSegment}")
+    @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where drawing_no LIKE CONCAT('%',CONCAT(#{name},'%')))) a  ${ew.customSqlSegment}")
     IPage<TrackItem> getPageAssignsByStatusAndRouter(@Param("page") Page page, @Param("name") String name, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
     //       @Select("select * from v_produce_assign")

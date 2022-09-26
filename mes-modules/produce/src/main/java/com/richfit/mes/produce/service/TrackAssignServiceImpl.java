@@ -178,7 +178,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("u.track_no2", trackNo);
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+//            queryWrapper.like("u.track_no2", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
             queryWrapper.like("u.drawing_no", routerNo);
@@ -200,16 +202,13 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             calendar.setTime(sdf.parse(endTime));
             calendar.add(Calendar.DAY_OF_MONTH, 1);
-            queryWrapper.apply("UNIX_TIMESTAMP(u.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
         }
         if ("0,1".equals(state)) {
             queryWrapper.in("u.state", 0, 1);
         }
         if ("2".equals(state)) {
             queryWrapper.in("u.state", 2);
-        }
-        if (!StringUtils.isNullOrEmpty(userId)) {
-            queryWrapper.eq("u.user_id", userId);
         }
         queryWrapper.eq("u.classes", classes);
         queryWrapper.eq("u.branch_code", branchCode);

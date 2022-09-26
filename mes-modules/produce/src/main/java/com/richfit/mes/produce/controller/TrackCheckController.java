@@ -111,7 +111,7 @@ public class TrackCheckController extends BaseController {
             if (Boolean.TRUE.equals(isRecheck)) {
                 queryWrapper.eq("is_recheck", 1);
             } else if (Boolean.FALSE.equals(isRecheck)) {
-                //未质检 
+                //未质检
                 queryWrapper.eq("is_quality_complete", 0);
                 queryWrapper.and(wrapper -> wrapper.isNull("is_recheck").or().eq("is_recheck", 0));
             }
@@ -142,9 +142,9 @@ public class TrackCheckController extends BaseController {
             //根据跟单号查询
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no LIKE '" + '%' + trackNo + '%' + "')");
                 } else {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no LIKE '" + '%' + trackNo + '%' + "')");
                 }
             }
             //产品编号

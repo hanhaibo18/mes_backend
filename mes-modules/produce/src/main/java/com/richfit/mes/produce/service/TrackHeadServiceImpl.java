@@ -472,6 +472,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapperItem.eq("track_head_id", trackHead.getId());
             queryWrapperItem.eq("is_auto_schedule", 1);
             queryWrapperItem.eq("sequence_order_by", 1);
+            //外协工序不进行自动派工
+            queryWrapperItem.notIn("opt_type", 3);
             List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
             //循环工序
             for (TrackItem trackItem : trackItemList) {
