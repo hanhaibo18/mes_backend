@@ -99,7 +99,8 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.like("drawing_no", routerNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
-                queryWrapper.like("track_no2", trackNo);
+                trackNo = trackNo.replaceAll(" ", "");
+                queryWrapper.apply("replace(replace(replace(track_no2, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
             }
             if (!StringUtils.isNullOrEmpty(siteId)) {
                 queryWrapper.apply("assign_id in (select id from produce_assign where site_id='" + siteId + "')");

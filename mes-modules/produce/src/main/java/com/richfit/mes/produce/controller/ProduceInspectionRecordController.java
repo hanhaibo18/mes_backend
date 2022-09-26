@@ -123,9 +123,10 @@ public class ProduceInspectionRecordController extends BaseController {
     }
 
     @ApiOperation(value = "报告预览", notes = "报告预览")
+    @ApiImplicitParam(name = "id", value = "探伤记录id", paramType = "query", dataType = "string")
     @GetMapping("/exoprtReport")
-    public void exoprtReport(HttpServletResponse response, String itemId) throws IOException, TemplateException, GlobalException {
-        produceInspectionRecordService.exoprtReport(response,itemId);
+    public void exoprtReport(HttpServletResponse response, String id) throws IOException, TemplateException, GlobalException {
+        produceInspectionRecordService.exoprtReport(response,id);
     }
 
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
