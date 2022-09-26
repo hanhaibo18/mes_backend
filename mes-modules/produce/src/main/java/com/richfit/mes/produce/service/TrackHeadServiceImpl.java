@@ -336,7 +336,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
                 trackHead.setTrackNo(code);
                 //单件批量跟单会带入生成编码的物料数据列表，产品编码等信息
-                if (trackHead.getStoreList().isEmpty()) {
+                if (trackHead.getStoreList() == null) {
                     for (int i = 0; i < trackHead.getNumber(); i++) {
                         trackHeadAdd(trackHead, trackHead.getTrackItems(), trackHead.getProductNo(), 1);
                     }
