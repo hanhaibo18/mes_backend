@@ -263,6 +263,9 @@ public class TrackAssignController extends BaseController {
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {
                     throw new GlobalException("未关联工序", ResultCode.FAILED);
                 }
+                if (StrUtil.isNotBlank(assign.getUserId())) {
+                    assign.setUserId(assign.getUserId() + ",");
+                }
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 if (null != trackItem) {
@@ -433,6 +436,11 @@ public class TrackAssignController extends BaseController {
                 if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
                     return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！");
                 }
+
+                if (StrUtil.isNotBlank(assign.getUserId())) {
+                    assign.setUserId(assign.getUserId() + ",");
+                }
+
                 // 判断后置工序是否已派工，否则无法修改
                 List<Assign> cs = this.find(null, null, null, null, null, trackItem.getFlowId()).getData();
                 for (int j = 0; j < cs.size(); j++) {
@@ -741,5 +749,14 @@ public class TrackAssignController extends BaseController {
     @ApiOperation(value = "开工")
     public CommonResult<Boolean> startWorking(@RequestBody List<String> assignIdList) {
         return trackAssignService.startWorking(assignIdList);
+    }
+
+    @ApiOperation(value = "查询派工数量")
+    @GetMapping("/dispatchingNumber")
+    public CommonResult<Integer> queryDispatchingNumber() {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("is_schedule", 1);
+        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        return CommonResult.success(trackItemService.count(queryWrapper));
     }
 }

@@ -119,7 +119,7 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.eq("branch_code", branchCode);
             }
 
-            queryWrapper.eq("complete_by", SecurityUtils.getCurrentUser().getUsername());
+            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
 
             //外协报工判断过滤，外协报工类型是4
             if (!StringUtils.isNullOrEmpty(optType)) {
