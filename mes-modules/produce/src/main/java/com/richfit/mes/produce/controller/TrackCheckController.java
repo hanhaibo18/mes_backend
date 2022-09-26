@@ -807,4 +807,15 @@ public class TrackCheckController extends BaseController {
     public CommonResult<List<TrackItem>> getItemList(String tiId) {
         return CommonResult.success(trackCheckService.getItemList(tiId));
     }
+
+    @ApiOperation(value = "查询未质检数量(新)", notes = "查询未质检数量(新)")
+    @GetMapping("/qualityTestingNumber")
+    public CommonResult<Integer> qualityTestingNumber() {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_quality_complete", 1);
+        queryWrapper.eq("is_quality_complete", 0);
+        queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
+        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        return CommonResult.success(trackItemService.count(queryWrapper));
+    }
 }

@@ -180,7 +180,6 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
             queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
-//            queryWrapper.like("u.track_no2", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
             queryWrapper.like("u.drawing_no", routerNo);
@@ -192,7 +191,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             queryWrapper.like("u.product_no", productNo);
         }
         if (!StrUtil.isBlank(userId)) {
-            queryWrapper.eq("u.user_id", userId);
+            queryWrapper.likeRight("u.user_id", userId + ",");
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + startTime + " ')");
