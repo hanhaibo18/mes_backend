@@ -8,17 +8,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.TrackAssembly;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -49,6 +50,10 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     private LineStoreMapper lineStoreMapper;
     @Resource
     private TrackAssemblyService trackAssembleService;
+    @Resource
+    private ProduceRoleOperationService roleOperationService;
+    @Resource
+    private SystemServiceClient systemServiceClient;
 
     @Override
     public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
@@ -336,6 +341,31 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             throw new GlobalException("开工失败,请重试", ResultCode.FAILED);
         }
         return CommonResult.success(true);
+    }
+
+    @Override
+    public Integer queryDispatchingNumber() {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        //增加工序过滤
+        CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
+        QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
+        List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
+        queryWrapperRole.in("role_id", roleId);
+        List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
+        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
+        queryWrapper.in("operatipon_id", set);
+        queryWrapper.eq("is_current", 1);
+        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        return trackAssignMapper.queryDispatchingNumber(queryWrapper);
+    }
+
+    @Override
+    public Integer workNumber() {
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("state", 0, 1);
+        queryWrapper.likeRight("user_id", SecurityUtils.getCurrentUser().getUsername() + ",");
+        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        return this.count(queryWrapper);
     }
 
 

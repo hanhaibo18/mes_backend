@@ -70,6 +70,16 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     @Select("SELECT assign.state FROM v_produce_assign assign WHERE assign.ti_id = #{trackItemId}")
     Integer isDispatching(@Param("trackItemId") String trackItemId);
 
+    /**
+     * 功能描述: 查询未派工工序数量
+     *
+     * @param wrapper
+     * @Author: xinYu.hou
+     * @Date: 2022/9/26 16:40
+     * @return: Integer
+     **/
+    @Select("SELECT COUNT(1) FROM (SELECT * FROM v_produce_track_item WHERE (Is_Current = 1) AND Assignable_Qty > 0) a ${ew.customSqlSegment}")
+    Integer queryDispatchingNumber(@Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
     IPage<TrackHead> getPageTrackHeadByType(Page page, @Param(Constants.WRAPPER) Wrapper<TrackHead> wrapper);
 

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.TrackCheck;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.dao.TrackCheckMapper;
 import com.richfit.mes.produce.entity.CountDto;
@@ -42,6 +43,16 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
         queryWrapper.gt("opt_sequence", trackItem.getOptSequence());
         queryWrapper.orderByAsc("opt_sequence");
         return trackItemService.list(queryWrapper);
+    }
+
+    @Override
+    public Integer qualityTestingNumber() {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_exist_quality_check", 1);
+        queryWrapper.eq("is_quality_complete", 0);
+        queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
+        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        return trackItemService.count(queryWrapper);
     }
 
 }

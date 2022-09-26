@@ -177,7 +177,7 @@ public class TrackCompleteController extends BaseController {
                         track.setIsUpdate(1);
                         continue;
                     }
-                    //条件四 当前操作人不是宝工人
+                    //条件四 当前操作人不是开工人
                     if (!SecurityUtils.getCurrentUser().getUsername().equals(trackItem.getStartDoingUser())) {
                         track.setIsUpdate(1);
                         continue;

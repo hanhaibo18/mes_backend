@@ -751,13 +751,4 @@ public class TrackAssignController extends BaseController {
     public CommonResult<Boolean> startWorking(@RequestBody List<String> assignIdList) {
         return trackAssignService.startWorking(assignIdList);
     }
-
-    @ApiOperation(value = "查询派工数量")
-    @GetMapping("/dispatchingNumber")
-    public CommonResult<Integer> queryDispatchingNumber() {
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("is_schedule", 1);
-        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
-        return CommonResult.success(trackItemService.count(queryWrapper));
-    }
 }

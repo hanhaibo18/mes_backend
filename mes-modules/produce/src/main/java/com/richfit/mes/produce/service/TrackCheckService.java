@@ -24,4 +24,13 @@ public interface TrackCheckService extends IService<TrackCheck> {
      * @return: List<TrackItem>
      **/
     List<TrackItem> getItemList(String tiId);
+
+    /**
+     * 功能描述: 查询未质检数量
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/9/26 17:03
+     * @return: Integer
+     **/
+    Integer qualityTestingNumber();
 }

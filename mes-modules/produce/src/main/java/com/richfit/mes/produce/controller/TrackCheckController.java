@@ -808,14 +808,16 @@ public class TrackCheckController extends BaseController {
         return CommonResult.success(trackCheckService.getItemList(tiId));
     }
 
-    @ApiOperation(value = "查询未质检数量(新)", notes = "查询未质检数量(新)")
-    @GetMapping("/qualityTestingNumber")
-    public CommonResult<Integer> qualityTestingNumber() {
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("is_quality_complete", 1);
-        queryWrapper.eq("is_quality_complete", 0);
-        queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
-        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
-        return CommonResult.success(trackItemService.count(queryWrapper));
+    @ApiOperation(value = "查询首页展示的未质检/未报工/未派工数据(新)", notes = "查询未质检数量(新)")
+    @GetMapping("/queryNumber")
+    public CommonResult<Map<String, Integer>> queryNumber() {
+        Map<String, Integer> num = new HashMap<>(3);
+        //未质检数量
+        num.put("qualityTestingNumber", trackCheckService.qualityTestingNumber());
+        //未报工
+        num.put("workNumber", trackAssignService.workNumber());
+        //未派工
+        num.put("dispatchingNumber", trackAssignService.queryDispatchingNumber());
+        return CommonResult.success(num);
     }
 }
