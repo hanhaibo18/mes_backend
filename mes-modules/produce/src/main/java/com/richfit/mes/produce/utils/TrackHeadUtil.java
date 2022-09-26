@@ -54,6 +54,29 @@ public class TrackHeadUtil {
         return trackHeadList;
     }
 
+    /**
+     * 功能描述: 根据保存的信息进行跟单生产线的数据封装，根据是否单件批量进行数据重组
+     *
+     * @param trackHead 页面传递过来的跟单信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022.9.26
+     */
+    public static List<TrackHead> flowInfo(TrackHead trackHead) throws Exception {
+        List<TrackHead> trackHeadList = new ArrayList<>();
+        if (TrackHead.TRACKHEAD_BATCH_NO.equals(trackHead.getIsBatch()) && !trackHead.getStoreList().isEmpty()) {
+            //单件多数量（多生产线）
+            for (Map m : trackHead.getStoreList()) {
+                trackHead.setProductNo((String) m.get("workblankNo"));
+                trackHead.setNumber((Integer) m.get("num"));
+                trackHeadList.add(trackHead);
+            }
+        } else {
+            //正常生产线
+            trackHeadList.add(trackHead);
+        }
+        return trackHeadList;
+    }
+
     public static void trackNo(TrackHead trackHead, CodeRuleService codeRuleService) throws Exception {
         String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
         trackHead.setTrackNo(code);

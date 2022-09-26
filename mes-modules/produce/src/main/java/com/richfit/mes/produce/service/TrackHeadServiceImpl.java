@@ -366,15 +366,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //添加跟单分流（生产线）
             List<TrackFlow> trackFlowList = new ArrayList<>();
-            if ("N".equals(trackHead.getIsBatch()) && !trackHead.getStoreList().isEmpty()) {
-                //单件多数量（多生产线）
-                for (Map m : trackHead.getStoreList()) {
-                    TrackFlow trackFlow = trackHeadFlow(trackHead, trackItems, (String) m.get("workblankNo"), (Integer) m.get("num"));
-                    trackFlowList.add(trackFlow);
-                }
-            } else {
-                //正常生产线
-                TrackFlow trackFlow = trackHeadFlow(trackHead, trackItems, productsNo, number);
+            List<TrackHead> trackHeadList = TrackHeadUtil.flowInfo(trackHead);
+            for (TrackHead th : trackHeadList) {
+                TrackFlow trackFlow = trackHeadFlow(th, th.getTrackItems(), th.getProductNo(), th.getNumber());
                 trackFlowList.add(trackFlow);
             }
 
