@@ -92,6 +92,8 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
 
+                    //TODO 更新跟单状态到 9 "已交"
+
                     //半成品 成品更新状态及合格证号
                     TrackHead th = trackHeadService.getById(track.getThId());
                     lineStoreService.updateCertNoByCertTrack(th);
