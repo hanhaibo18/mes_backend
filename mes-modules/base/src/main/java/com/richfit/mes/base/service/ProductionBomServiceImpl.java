@@ -136,6 +136,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         //在处理L级别零件数据
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("main_drawing_no", productionBom.getDrawingNo());
+        queryWrapper.eq("branch_code", productionBom.getBranchCode());
         List<ProductionBom> productionBomList = this.list(queryWrapper);
         List<ProjectBom> projectBomList = productionBomList.stream().map(production -> {
             ProjectBom project = projectBomEntity(production);
