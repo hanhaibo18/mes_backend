@@ -296,10 +296,10 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         } else {
-            //queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
+        //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
