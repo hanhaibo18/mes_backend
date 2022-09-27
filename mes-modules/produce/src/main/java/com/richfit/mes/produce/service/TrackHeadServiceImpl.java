@@ -1210,4 +1210,38 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         planService.planData(trackHead.getWorkPlanId());
         orderService.orderData(trackHead.getProductionOrderId());
     }
+
+    /**
+     * 功能描述: 跟单交库，并同事维护flow表，计划、订单表信息
+     *
+     * @param id 跟单id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/27 8:57
+     * @return: void
+     **/
+    @Override
+    public void trackHeadDelivery(String id) {
+        try {
+            //更新flow状态更新
+            UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
+            updateWrapperTrackFlow.eq("track_head_id", id);
+            updateWrapperTrackFlow.set("status", "9");
+            trackHeadFlowService.update(updateWrapperTrackFlow);
+
+            //更新跟单状态动作
+            TrackHead trackHead = trackHeadMapper.selectById(id);
+            trackHead.setStatus("9");
+            trackHeadMapper.updateById(trackHead);
+
+            //计划数据更新
+            planService.planData(trackHead.getWorkPlanId());
+
+            //订单数据更新
+            orderService.orderData(trackHead.getProductionOrderId());
+        } catch (Exception e) {
+            log.error("跟单交库方法 error [{}]", e);
+            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
 }

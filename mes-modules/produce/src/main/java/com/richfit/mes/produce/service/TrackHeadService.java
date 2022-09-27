@@ -279,4 +279,15 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Date: 2022/9/7 15:06
      **/
     void trackHeadData(String id);
+
+
+    /**
+     * 功能描述: 跟单交库，并同事维护flow表，计划、订单表信息
+     *
+     * @param id 跟单id
+     * @Author: zhiqiang.lu
+     * @Date: 2022/9/27 8:57
+     * @return: void
+     **/
+    void trackHeadDelivery(String id);
 }
