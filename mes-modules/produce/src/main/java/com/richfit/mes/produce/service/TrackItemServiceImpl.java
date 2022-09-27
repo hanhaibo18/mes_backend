@@ -186,7 +186,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 }
 
                 item.setIsQualityComplete(0);
-                item.setQualityCheckBy("");
                 item.setQualityCompleteTime(null);
                 item.setQualityResult(0);
 
