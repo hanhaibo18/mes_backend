@@ -182,7 +182,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             if (resetType == 3 || resetType == 5) {
                 if ((item.getIsExistScheduleCheck() != null && item.getIsExistScheduleCheck() != 0)
                         && (item.getIsScheduleComplete() != null && item.getIsScheduleComplete() != 0)) {
-                    return "调度审核已完成,报工记录不可重置！";
+                    return "调度审核已完成,质检记录不可重置！";
                 }
 
                 item.setIsQualityComplete(0);
