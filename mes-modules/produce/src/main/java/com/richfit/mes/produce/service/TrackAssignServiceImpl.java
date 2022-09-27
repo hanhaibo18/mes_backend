@@ -351,7 +351,7 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
     }
 
     @Override
-    public Integer queryDispatchingNumber() {
+    public Integer queryDispatchingNumber(String branchCode) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         //增加工序过滤
         CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
@@ -362,16 +362,16 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
         queryWrapper.in("operatipon_id", set);
         queryWrapper.eq("is_current", 1);
-        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        queryWrapper.eq("branch_code", branchCode);
         return trackAssignMapper.queryDispatchingNumber(queryWrapper);
     }
 
     @Override
-    public Integer workNumber() {
+    public Integer workNumber(String branchCode) {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("state", 0, 1);
         queryWrapper.likeRight("user_id", SecurityUtils.getCurrentUser().getUsername() + ",");
-        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        queryWrapper.eq("branch_code", branchCode);
         return this.count(queryWrapper);
     }
 

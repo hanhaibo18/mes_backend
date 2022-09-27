@@ -78,18 +78,20 @@ public interface TrackAssignService extends IService<Assign> {
     /**
      * 功能描述: 查询未派工数量
      *
+     * @param branchCode
      * @Author: xinYu.hou
      * @Date: 2022/9/26 16:44
      * @return: CommonResult<Integer>
      **/
-    Integer queryDispatchingNumber();
+    Integer queryDispatchingNumber(String branchCode);
 
     /**
      * 功能描述: 查询未报工数量
      *
+     * @param branchCode
      * @Author: xinYu.hou
      * @Date: 2022/9/26 16:45
      * @return: CommonResult<Integer>
      **/
-    Integer workNumber();
+    Integer workNumber(String branchCode);
 }
