@@ -46,12 +46,12 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
     }
 
     @Override
-    public Integer qualityTestingNumber() {
+    public Integer qualityTestingNumber(String branchCode) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_exist_quality_check", 1);
         queryWrapper.eq("is_quality_complete", 0);
         queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
-        queryWrapper.eq("branch_code", SecurityUtils.getCurrentUser().getOrgId());
+        queryWrapper.eq("branch_code", branchCode);
         return trackItemService.count(queryWrapper);
     }
 

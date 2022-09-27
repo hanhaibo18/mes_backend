@@ -813,15 +813,16 @@ public class TrackCheckController extends BaseController {
     }
 
     @ApiOperation(value = "查询首页展示的未质检/未报工/未派工数据(新)", notes = "查询未质检数量(新)")
+    @ApiImplicitParam(name = "branchCode", value = "工厂代码", required = true, paramType = "query", dataType = "string")
     @GetMapping("/queryNumber")
-    public CommonResult<Map<String, Integer>> queryNumber() {
+    public CommonResult<Map<String, Integer>> queryNumber(String branchCode) {
         Map<String, Integer> num = new HashMap<>(3);
         //未质检数量
-        num.put("qualityTestingNumber", trackCheckService.qualityTestingNumber());
+        num.put("qualityTestingNumber", trackCheckService.qualityTestingNumber(branchCode));
         //未报工
-        num.put("workNumber", trackAssignService.workNumber());
+        num.put("workNumber", trackAssignService.workNumber(branchCode));
         //未派工
-        num.put("dispatchingNumber", trackAssignService.queryDispatchingNumber());
+        num.put("dispatchingNumber", trackAssignService.queryDispatchingNumber(branchCode));
         return CommonResult.success(num);
     }
 }
