@@ -6,7 +6,6 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Action;
-import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.ActionService;
 import io.swagger.annotations.Api;
@@ -14,8 +13,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Date;
 
 /**
  * @Author: 王瑞
@@ -34,22 +31,22 @@ public class ActionController {
      */
     @ApiOperation(value = "查询操作信息", notes = "根据查询条件返回操作信息")
     @GetMapping("/action")
-    public CommonResult queryByCondition(String startTime, String endTime, String user, String actionType, String actionItem,  int page, int limit) throws GlobalException {
+    public CommonResult queryByCondition(String startTime, String endTime, String user, String actionType, String actionItem, int page, int limit) throws GlobalException {
 
         QueryWrapper<Action> queryWrapper = new QueryWrapper<Action>();
-        if(!StringUtils.isNullOrEmpty(startTime)){
+        if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.ge("action_time", startTime);
         }
-        if(!StringUtils.isNullOrEmpty(endTime)){
+        if (!StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.le("action_time", endTime);
         }
-        if(!StringUtils.isNullOrEmpty(user)){
-            queryWrapper.eq("user", user);
+        if (!StringUtils.isNullOrEmpty(user)) {
+            queryWrapper.like("user", user);
         }
-        if(!StringUtils.isNullOrEmpty(actionType)){
+        if (!StringUtils.isNullOrEmpty(actionType)) {
             queryWrapper.eq("action_type", actionType);
         }
-        if(!StringUtils.isNullOrEmpty(actionItem)){
+        if (!StringUtils.isNullOrEmpty(actionItem)) {
             queryWrapper.eq("action_item", actionItem);
         }
         queryWrapper.eq("branch_id", SecurityUtils.getCurrentUser().getOrgId());
@@ -66,7 +63,7 @@ public class ActionController {
      */
     @ApiOperation(value = "新增操作信息", notes = "新增操作信息")
     @PostMapping("/action")
-    public CommonResult<Boolean> saveAction(@RequestBody Action action) throws GlobalException{
+    public CommonResult<Boolean> saveAction(@RequestBody Action action) throws GlobalException {
         return CommonResult.success(actionService.saveAction(action));
     }
 
@@ -84,7 +81,7 @@ public class ActionController {
      */
     @ApiOperation(value = "删除操作信息", notes = "根据id删除操作信息")
     @DeleteMapping("/action/{id}")
-    public CommonResult<Boolean> delById(@PathVariable String id) throws GlobalException{
+    public CommonResult<Boolean> delById(@PathVariable String id) throws GlobalException {
         return CommonResult.success(actionService.removeById(id));
     }
 }
