@@ -27,7 +27,10 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
-import com.richfit.mes.produce.utils.*;
+import com.richfit.mes.produce.utils.FilesUtil;
+import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
+import com.richfit.mes.produce.utils.TrackHeadUtil;
+import com.richfit.mes.produce.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -390,8 +393,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             action.setActionItem("2");
             action.setRemark("跟单号：" + trackHead.getTrackNo());
             actionService.saveAction(action);
-            //流水号更新
-            Code.update("track_no", trackHead.getTrackNo(), SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);

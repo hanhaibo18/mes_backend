@@ -82,7 +82,7 @@ public class TrackHeadUtil {
     }
 
     public static void trackNo(TrackHead trackHead, CodeRuleService codeRuleService) throws Exception {
-        String code = Code.value("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
+        String code = Code.valueOnUpdate("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHead.getBranchCode(), codeRuleService);
         trackHead.setTrackNo(code);
     }
 }
