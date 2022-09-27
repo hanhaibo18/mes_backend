@@ -51,6 +51,14 @@ public class PublicServiceImpl implements PublicService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean publicUpdateState(Map<String, String> map, int code) {
+        //验证工序制作数量是否全部派工,全部派工才允许下工序激活
+        String trackItemId = map.get("trackItemId");
+        TrackItem trackItem = trackItemService.getById(trackItemId);
+        //派能派工情况下直接退出方法不执行工序激活
+        if (0 != trackItem.getAssignableQty()) {
+            return false;
+        }
+
         //派工 暂时关闭派工激活下工序
         if (PublicCodeEnum.DISPATCHING.getCode() == code) {
 //            return updateDispatching(map);
