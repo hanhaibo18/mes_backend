@@ -245,23 +245,27 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
             return Collections.emptyList();
         }
         for (QueryProcessVo queryProcess : processList) {
+            StringBuffer stringBuffer = new StringBuffer();
+            switch (queryProcess.getIsDoing()) {
+//                case 0:
+//                    stringBuffer.append("未开工");
+//                    break;
+                case 1:
+                    stringBuffer.append("已开工");
+                    break;
+                case 2:
+                    stringBuffer.append("已完工");
+                    break;
+                default:
+                    stringBuffer.append("未开工");
+                    break;
+            }
+            queryProcess.setOptState(stringBuffer.toString());
             Integer state = trackAssignMapper.isDispatching(queryProcess.getId());
             if (null != state) {
                 queryProcess.setIsDispatching("是");
-                StringBuffer stringBuffer = new StringBuffer();
-                if (0 == state) {
-                    stringBuffer.append("未开工");
-                } else {
-                    stringBuffer.append("已开工");
-                }
-                //判断是否是本工序
-                if (1 == queryProcess.getIsCurrent()) {
-                    stringBuffer.insert(0, "本工序-");
-                }
-                queryProcess.setOptState(stringBuffer.toString());
             } else {
                 queryProcess.setIsDispatching("否");
-                queryProcess.setOptState("未开工");
             }
         }
         return processList;

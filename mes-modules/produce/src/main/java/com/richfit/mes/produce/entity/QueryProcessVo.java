@@ -36,5 +36,6 @@ public class QueryProcessVo {
     private Integer optParallelType;
     @ApiModelProperty(value = "是否派工", dataType = "String")
     public String isDispatching;
-
+    @ApiModelProperty(value = "工序状态")
+    private Integer isDoing;
 }

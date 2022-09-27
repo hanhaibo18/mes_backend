@@ -234,10 +234,13 @@ public class TrackCheckController extends BaseController {
             IPage<TrackCheck> checks = trackCheckService.page(new Page<TrackCheck>(page, limit), queryWrapper);
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
+                TrackItem trackItem = trackItemService.getById(check.getTiId());
+                if (null != trackHead || null != trackItem) {
+                    continue;
+                }
                 check.setDrawingNo(trackHead.getDrawingNo());
                 check.setNumber(trackHead.getNumber());
                 check.setTrackNo(trackHead.getTrackNo());
-                TrackItem trackItem = trackItemService.getById(check.getTiId());
                 check.setProductNo(trackItem.getProductNo());
                 check.setOptId(trackItem.getOptId());
                 check.setOptName(trackItem.getOptName());
