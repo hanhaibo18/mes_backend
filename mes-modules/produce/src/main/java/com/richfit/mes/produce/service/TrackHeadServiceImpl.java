@@ -652,6 +652,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     trackAssemblyService.remove(queryWrapperTrackAssembly);
                     //处理计划细节状态等、计划通用计算方法
                     planService.planData(trackHead.getWorkPlanId());
+                    //处理订单细节状态等、计划通用计算方法
+                    orderService.orderData(trackHead.getProductionOrderId());
                     //取消跟单关联
                     UpdateWrapper<LineStore> lineStoreUpdateWrapper = new UpdateWrapper<>();
                     lineStoreUpdateWrapper.eq("track_no", trackHead.getTrackNo());
