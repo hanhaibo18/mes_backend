@@ -13,7 +13,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -23,6 +25,7 @@ import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
@@ -36,6 +39,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import freemarker.template.*;
@@ -186,9 +190,6 @@ public class ProduceInspectionRecordService{
         if (!StringUtils.isEmpty(productNo)) {
             queryWrapper.likeLeft("productNo", productNo);
         }
-        if (!StringUtils.isEmpty(isOperationComplete)) {
-            queryWrapper.eq("is_operation_complete",isOperationComplete);
-        }
         if (!StringUtils.isEmpty(startTime)) {
             queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')",startTime);
         }
@@ -223,6 +224,106 @@ public class ProduceInspectionRecordService{
             return assigns;
         }
         return null;
+    }
+
+    @Autowired
+    private BaseServiceClient baseServiceClient;
+    @Autowired
+    private TrackHeadFlowService trackFlowService;
+
+    public CommonResult<IPage<TrackComplete>> pageTrackComplete(int page, int limit, String productNo,String trackNo, String startTime, String endTime,String branchCode) {
+        try {
+            QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+//            if (!StringUtils.isNullOrEmpty(userId)) {
+//                queryWrapper.apply("(user_id='" + userId + "' or user_name='" + userName + "')");
+//            }
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(productNo)) {
+                queryWrapper.eq("product_no", productNo);
+            }
+
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(trackNo)) {
+                trackNo = trackNo.replaceAll(" ", "");
+                queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+            }
+
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(startTime)) {
+                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+            }
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(endTime)) {
+                Calendar calendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                calendar.setTime(sdf.parse(endTime));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
+
+            }
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+
+            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+
+            queryWrapper.apply("ti_id in (select id from produce_track_item_inspection)");
+
+            queryWrapper.orderByDesc("modify_time");
+           /* if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderCol)) {
+                if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(order)) {
+                    if (order.equals("desc")) {
+                        queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    } else if (order.equals("asc")) {
+                        queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                    }
+                } else {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+
+            }*/
+            IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
+            try {
+                for (TrackComplete track : completes.getRecords()) {
+                    CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
+                    track.setUserName(tenantUserVo.getData().getEmplName());
+                    CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
+                    track.setDeviceName(device.getData().getName());
+                    TrackItem trackItem = trackItemService.getById(track.getTiId());
+                    //查询产品编号
+                    TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
+                    track.setProductNo(trackFlow.getProductNo());
+                    //增加判断返回是否能修改
+                    TrackHead trackHead = trackHeadService.getById(track.getTrackId());
+                    track.setProductName(trackHead.getProductName());
+                    //条件一 需要质检 并且已质检
+                    if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
+                        track.setIsUpdate(1);
+                        continue;
+                    }
+                    //条件二 需要调度 并且以调度
+                    if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
+                        track.setIsUpdate(1);
+                        continue;
+                    }
+                    //条件三 不质检 不调度
+                    if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+                        track.setIsUpdate(1);
+                        continue;
+                    }
+                    //条件四 当前操作人不是开工人
+                    if (!SecurityUtils.getCurrentUser().getUsername().equals(trackItem.getStartDoingUser())) {
+                        track.setIsUpdate(1);
+                        continue;
+                    }
+                    if (null == track.getIsUpdate()) {
+                        track.setIsUpdate(0);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return CommonResult.success(completes);
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
     }
 
 
@@ -888,6 +989,110 @@ public class ProduceInspectionRecordService{
         BeanUtil.copyProperties(trackItem,trackItemInspection);
         trackItemInspectionService.updateById(trackItemInspection);
         return CommonResult.success(trackCompleteService.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
+    }
+
+    public CommonResult<Boolean> rollBack(String id) {
+        String msg = "";
+        TrackComplete trackComplete = trackCompleteService.getById(id);
+        Assign assign = new Assign();
+        if (null != trackComplete.getAssignId()) {
+            assign = trackAssignService.getById(trackComplete.getAssignId());
+        }
+        TrackItem trackItem = new TrackItem();
+        if (null == assign) {
+            trackItem = trackItemService.getById(trackComplete.getTiId());
+        } else {
+            trackItem = trackItemService.getById(assign.getTiId());
+        }
+        if (null == trackItem) {
+            removeComplete(trackComplete.getTiId());
+        } else {
+            QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(id)) {
+                queryWrapper.eq("track_id", id);
+            } else {
+                queryWrapper.eq("track_id", "-1");
+            }
+            queryWrapper.orderByAsc("modify_time");
+            List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
+            //判断跟单号已质检完成，报工无法取消
+            if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
+                msg += "跟单号已质检完成，报工无法取消！";
+            }
+            //判断跟单号已质检完成，报工无法取消
+            if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
+                msg += "跟单号已调度完成，报工无法取消！";
+            }
+            //判断后置工序是否已派工，否则不可回滚
+            QueryWrapper<Assign> queryWrapperAssign = new QueryWrapper<Assign>();
+            queryWrapperAssign.eq("ti_id", trackItem.getId());
+            List<Assign> assigns = trackAssignService.list(queryWrapperAssign);
+            for (int j = 0; j < assigns.size(); j++) {
+                TrackItem cstrackItem = trackItemService.getById(assigns.get(j).getTiId());
+                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                    return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已派工，需要先取消后序工序");
+                }
+            }
+            //判断后置工序是否已报工，否则不可回滚
+            for (int j = 0; j < cs.size(); j++) {
+                TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
+                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                    return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已报工，需要先取消后序工序");
+                }
+            }
+
+            //将后置工序IS_CURRENT设置为否，状态为1
+            List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
+            for (TrackItem trackItems : items) {
+                if (trackItems.getOptSequence() > trackItem.getOptSequence() && trackItems.getIsCurrent() == 1) {
+                    trackItems.setIsCurrent(0);
+                    trackItems.setIsDoing(0);
+                    trackItems.setIsFinalComplete("0");
+                    trackItemService.updateById(trackItems);
+                    //修改探伤
+                    TrackItemInspection trackItemInspection = new TrackItemInspection();
+                    BeanUtil.copyProperties(trackItems,trackItemInspection);
+                    trackItemInspectionService.updateById(trackItemInspection);
+
+                }
+            }
+            //将当前工序设置为激活
+            if (msg.equals("")) {
+                trackItem.setIsDoing(0);
+                trackItem.setIsCurrent(1);
+                trackItem.setIsFinalComplete("0");
+                trackItem.setIsOperationComplete(0);
+                trackItem.setAssignableQty(trackItem.getAssignableQty() + trackComplete.getCompletedQty().intValue());
+                trackItemService.updateById(trackItem);
+                //修改探伤
+                TrackItemInspection trackItemInspection = new TrackItemInspection();
+                BeanUtil.copyProperties(trackItem,trackItemInspection);
+                trackItemInspectionService.updateById(trackItemInspection);
+
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                trackHead.setStatus("1");
+                trackHeadService.updateById(trackHead);
+                if (null != assign) {
+                    assign.setAvailQty(assign.getQty() + trackComplete.getCompletedQty().intValue());
+                    assign.setState(0);
+                    trackAssignService.updateById(assign);
+                }
+                removeComplete(trackComplete.getTiId());
+            }
+        }
+
+
+        if (msg.equals("")) {
+            return CommonResult.success(null, "删除成功！");
+        } else {
+            return CommonResult.failed("操作失败，请重试！" + msg);
+        }
+    }
+
+    private Boolean removeComplete(String tiId) {
+        QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
+        removeComplete.eq("ti_id", tiId);
+        return trackCompleteService.remove(removeComplete);
     }
 
 

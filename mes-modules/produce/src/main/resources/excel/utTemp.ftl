@@ -1158,6 +1158,7 @@
                                 </w:p>
                             </w:tc>
                         </w:tr>
+                        <#if probeInfoList?? >
                         <#list probeInfoList as probeInfo>
                         <w:tr>
                             <w:tblPrEx>
@@ -1362,6 +1363,210 @@
                             </w:tc>
                         </w:tr>
                         </#list>
+                        <#else>
+                        <w:tr>
+                        <w:tblPrEx>
+                            <w:tblBorders>
+                                <w:top w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                <w:left w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                <w:right w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            </w:tblBorders>
+                            <w:tblCellMar>
+                                <w:top w:w="0" w:type="dxa"/>
+                                <w:left w:w="108" w:type="dxa"/>
+                                <w:bottom w:w="0" w:type="dxa"/>
+                                <w:right w:w="108" w:type="dxa"/>
+                            </w:tblCellMar>
+                        </w:tblPrEx>
+                        <w:trPr>
+                            <w:cantSplit/>
+                            <w:trHeight w:val="512" w:hRule="atLeast"/>
+                        </w:trPr>
+                        <w:tc>
+                            <w:tcPr>
+                                <w:tcW w:w="1800" w:type="dxa"/>
+                                <w:vMerge w:val="continue"/>
+                                <w:noWrap w:val="0"/>
+                                <w:vAlign w:val="center"/>
+                            </w:tcPr>
+                            <w:p>
+                                <w:pPr>
+                                    <w:jc w:val="both"/>
+                                </w:pPr>
+                            </w:p>
+                        </w:tc>
+                        <w:tc>
+                            <w:tcPr>
+                                <w:tcW w:w="1560" w:type="dxa"/>
+                                <w:gridSpan w:val="3"/>
+                                <w:tcBorders>
+                                    <w:top w:val="nil"/>
+                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                    <w:right w:val="nil"/>
+                                </w:tcBorders>
+                                <w:noWrap w:val="0"/>
+                                <w:vAlign w:val="center"/>
+                            </w:tcPr>
+                            <w:p>
+                                <w:pPr>
+                                    <w:jc w:val="center"/>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="18"/>
+                                        <w:szCs w:val="18"/>
+                                        <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                    </w:rPr>
+                                </w:pPr>
+                                <w:r>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="24"/>
+                                    </w:rPr>
+                                    <w:t>${probeInfo.specifications!""}</w:t>
+                                </w:r>
+                            </w:p>
+                        </w:tc>
+                        <w:tc>
+                            <w:tcPr>
+                                <w:tcW w:w="1560" w:type="dxa"/>
+                                <w:gridSpan w:val="4"/>
+                                <w:tcBorders>
+                                    <w:top w:val="nil"/>
+                                    <w:left w:val="nil"/>
+                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                    <w:right w:val="nil"/>
+                                </w:tcBorders>
+                                <w:noWrap w:val="0"/>
+                                <w:vAlign w:val="center"/>
+                            </w:tcPr>
+                            <w:p>
+                                <w:pPr>
+                                    <w:jc w:val="center"/>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="18"/>
+                                        <w:szCs w:val="18"/>
+                                        <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                    </w:rPr>
+                                </w:pPr>
+                                <w:r>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="24"/>
+                                    </w:rPr>
+                                    <w:t>${probeInfo.frequency!""}</w:t>
+                                </w:r>
+                            </w:p>
+                        </w:tc>
+                        <w:tc>
+                            <w:tcPr>
+                                <w:tcW w:w="1560" w:type="dxa"/>
+                                <w:gridSpan w:val="2"/>
+                                <w:tcBorders>
+                                    <w:top w:val="nil"/>
+                                    <w:left w:val="nil"/>
+                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                    <w:right w:val="nil"/>
+                                </w:tcBorders>
+                                <w:noWrap w:val="0"/>
+                                <w:vAlign w:val="center"/>
+                            </w:tcPr>
+                            <w:p>
+                                <w:pPr>
+                                    <w:jc w:val="center"/>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="18"/>
+                                        <w:szCs w:val="18"/>
+                                        <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                    </w:rPr>
+                                </w:pPr>
+                                <w:r>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="24"/>
+                                    </w:rPr>
+                                    <w:t>${probeInfo.angle!""}</w:t>
+                                </w:r>
+                            </w:p>
+                        </w:tc>
+                        <w:tc>
+                            <w:tcPr>
+                                <w:tcW w:w="1560" w:type="dxa"/>
+                                <w:gridSpan w:val="4"/>
+                                <w:tcBorders>
+                                    <w:top w:val="nil"/>
+                                    <w:left w:val="nil"/>
+                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                    <w:right w:val="nil"/>
+                                </w:tcBorders>
+                                <w:noWrap w:val="0"/>
+                                <w:vAlign w:val="center"/>
+                            </w:tcPr>
+                            <w:p>
+                                <w:pPr>
+                                    <w:jc w:val="center"/>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="18"/>
+                                        <w:szCs w:val="18"/>
+                                        <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                    </w:rPr>
+                                </w:pPr>
+                                <w:r>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="24"/>
+                                    </w:rPr>
+                                    <w:t>${probeInfo.waveShape!""}</w:t>
+                                </w:r>
+                            </w:p>
+                        </w:tc>
+                        <w:tc>
+                            <w:tcPr>
+                                <w:tcW w:w="1560" w:type="dxa"/>
+                                <w:tcBorders>
+                                    <w:top w:val="nil"/>
+                                    <w:left w:val="nil"/>
+                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                                </w:tcBorders>
+                                <w:noWrap w:val="0"/>
+                                <w:vAlign w:val="center"/>
+                            </w:tcPr>
+                            <w:p>
+                                <w:pPr>
+                                    <w:jc w:val="center"/>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="18"/>
+                                        <w:szCs w:val="18"/>
+                                        <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                    </w:rPr>
+                                </w:pPr>
+                                <w:r>
+                                    <w:rPr>
+                                        <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                        <w:color w:val="0000FF"/>
+                                        <w:sz w:val="24"/>
+                                    </w:rPr>
+                                    <w:t>${probeInfo.leadingEdge!""}</w:t>
+                                </w:r>
+                            </w:p>
+                        </w:tc>
+                    </w:tr>
+                        </#if>
                         <w:tr>
                             <w:tblPrEx>
                                 <w:tblBorders>
@@ -1501,7 +1706,7 @@
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:sz w:val="24"/>
                                         </w:rPr>
-                                        <#if isRoomTemp=="1"><w:t>☑</w:t>
+                                        <#if isRoomTemp?? && isRoomTemp=="1"><w:t>☑</w:t>
                                         <#else><w:t>□</w:t></#if>
                                     </w:r>
                                 </w:p>

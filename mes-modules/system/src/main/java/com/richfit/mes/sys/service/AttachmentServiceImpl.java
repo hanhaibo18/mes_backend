@@ -1,5 +1,6 @@
 package com.richfit.mes.sys.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -139,11 +140,13 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
             attachment.setId(id);
             attachment = attachmentMapper.selectById(id);
             //判断是不是图片格式
-            if(!StringUtils.isEmpty(attachment.getAttachName())
-                    && (attachment.getAttachName().endsWith("jpg") || attachment.getAttachName().endsWith("png"))){
-                byte[] data = this.downloadbyte(attachment);
-                BASE64Encoder encoder = new BASE64Encoder();
-                return encoder.encode(data);
+            if(!ObjectUtil.isEmpty(attachment)){
+                if(!StringUtils.isEmpty(attachment.getAttachName())
+                        && (attachment.getAttachName().endsWith("jpg") || attachment.getAttachName().endsWith("png"))){
+                    byte[] data = this.downloadbyte(attachment);
+                    BASE64Encoder encoder = new BASE64Encoder();
+                    return encoder.encode(data);
+                }
             }
         }
         return null;

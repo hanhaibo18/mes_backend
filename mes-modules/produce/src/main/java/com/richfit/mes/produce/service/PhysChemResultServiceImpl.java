@@ -15,4 +15,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class PhysChemResultServiceImpl extends ServiceImpl<PhysChemResultMapper, PhysChemResult> implements PhysChemResultService {
 
+
+    /**
+     * 根据id修改实验结果数据
+     * @param physChemResult
+     * @return
+     */
+    @Override
+    public boolean updateResult(PhysChemResult physChemResult) {
+        return this.updateById(physChemResult);
+    }
+
+
 }

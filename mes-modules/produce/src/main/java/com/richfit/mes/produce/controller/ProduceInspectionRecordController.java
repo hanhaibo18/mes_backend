@@ -31,6 +31,9 @@ import java.util.List;
 @RequestMapping("/api/produce/inspectionRecord")
 public class ProduceInspectionRecordController extends BaseController {
 
+    private static final Integer YES_OPERA = 1; //已报工
+    private static final Integer NO_OPERA = 0; //未报工
+
     @Autowired
     private ProduceInspectionRecordService produceInspectionRecordService;
 
@@ -83,8 +86,14 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "isOperationComplete", value = "报工状态（0、未报工 1、已报工）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/assginPage")
-    public CommonResult<IPage<Assign>> assginPage(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId,Integer isOperationComplete) {
-        return CommonResult.success(produceInspectionRecordService.assginPage(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isOperationComplete));
+    public Object assginPage(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId,Integer isOperationComplete) {
+        //判断
+        if(YES_OPERA.equals(isOperationComplete)){
+            return produceInspectionRecordService.pageTrackComplete(page, limit, productNo,trackNo, startTime,endTime,branchCode);
+        }else if(NO_OPERA.equals(isOperationComplete)){
+            return CommonResult.success(produceInspectionRecordService.assginPage(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isOperationComplete));
+        }
+        return null;
     }
 
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
@@ -154,6 +163,13 @@ public class ProduceInspectionRecordController extends BaseController {
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Assign> updateAssign(@RequestBody Assign assign) {
         return produceInspectionRecordService.updateAssign(assign);
+    }
+
+    @ApiOperation(value = "回滚(新)", notes = "回滚(新)")
+    @ApiImplicitParam(name = "id", value = "报工Id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("rollBack")
+    public CommonResult<Boolean> rollBack(String id) {
+        return produceInspectionRecordService.rollBack(id);
     }
 
 
