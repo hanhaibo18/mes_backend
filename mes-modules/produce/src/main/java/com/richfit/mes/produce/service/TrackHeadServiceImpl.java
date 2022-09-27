@@ -489,7 +489,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             relation.setType("0");
             relation.setNumber(number);
             trackHeadRelationMapper.insert(relation);
-
+            System.out.println("---------------------");
+            System.out.println(productsNo);
             //料单添加成品信息
             LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
 

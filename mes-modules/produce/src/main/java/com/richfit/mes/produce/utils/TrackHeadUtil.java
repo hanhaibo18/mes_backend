@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.CodeRuleService;
@@ -32,19 +33,21 @@ public class TrackHeadUtil {
                 //单件装配批量根据数量拆分跟单数量
                 int number = trackHead.getNumber();
                 for (int i = 0; i < number; i++) {
+                    TrackHead th = JSON.parseObject(JSON.toJSONString(trackHead), TrackHead.class);
                     //流水号获取
-                    trackNo(trackHead, codeRuleService);
-                    trackHead.setNumber(1);
-                    trackHeadList.add(trackHead);
+                    trackNo(th, codeRuleService);
+                    th.setNumber(1);
+                    trackHeadList.add(th);
                 }
             } else {
                 //单件机加批量跟单会带入生成编码的物料数据列表，产品编码等信息
                 for (Map m : trackHead.getStoreList()) {
+                    TrackHead th = JSON.parseObject(JSON.toJSONString(trackHead), TrackHead.class);
                     //流水号获取
-                    trackNo(trackHead, codeRuleService);
-                    trackHead.setProductNo((String) m.get("workblankNo"));
-                    trackHead.setNumber((Integer) m.get("num"));
-                    trackHeadList.add(trackHead);
+                    trackNo(th, codeRuleService);
+                    th.setProductNo((String) m.get("workblankNo"));
+                    th.setNumber((Integer) m.get("num"));
+                    trackHeadList.add(th);
                 }
             }
         } else {
@@ -66,9 +69,10 @@ public class TrackHeadUtil {
         if (TrackHead.TRACKHEAD_BATCH_NO.equals(trackHead.getIsBatch()) && !trackHead.getStoreList().isEmpty()) {
             //单件多数量（多生产线）
             for (Map m : trackHead.getStoreList()) {
-                trackHead.setProductNo((String) m.get("workblankNo"));
-                trackHead.setNumber((Integer) m.get("num"));
-                trackHeadList.add(trackHead);
+                TrackHead th = JSON.parseObject(JSON.toJSONString(trackHead), TrackHead.class);
+                th.setProductNo((String) m.get("workblankNo"));
+                th.setNumber((Integer) m.get("num"));
+                trackHeadList.add(th);
             }
         } else {
             //正常生产线
