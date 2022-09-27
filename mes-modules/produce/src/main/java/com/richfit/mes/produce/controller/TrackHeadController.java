@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -15,6 +14,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -298,19 +298,7 @@ public class TrackHeadController extends BaseController {
         } else {
             //queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
-        if (!StringUtils.isNullOrEmpty(orderCol)) {
-            if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
-                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")) {
-                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
-                }
-            } else {
-                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-            }
-        } else {
-            queryWrapper.orderByDesc("modify_time");
-        }
+        OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }

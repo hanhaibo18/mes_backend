@@ -6,6 +6,13 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.produce.service.CodeRuleService;
 
+
+/**
+ * 编码取值与更新通用工具类
+ *
+ * @author zhiqiang.lu
+ * @date 2022.9.20
+ */
 public class Code {
 
     /**
