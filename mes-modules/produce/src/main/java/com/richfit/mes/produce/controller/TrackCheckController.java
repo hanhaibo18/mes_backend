@@ -141,10 +141,11 @@ public class TrackCheckController extends BaseController {
             }
             //根据跟单号查询
             if (!StringUtils.isNullOrEmpty(trackNo)) {
+                trackNo = trackNo.replaceAll(" ", "");
                 if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where track_no LIKE '" + '%' + trackNo + '%' + "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where (is_quality_complete=1 or is_exist_quality_check=0) and track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%')");
                 } else {
-                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no LIKE '" + '%' + trackNo + '%' + "')");
+                    queryWrapper.inSql("id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%')");
                 }
             }
             //产品编号

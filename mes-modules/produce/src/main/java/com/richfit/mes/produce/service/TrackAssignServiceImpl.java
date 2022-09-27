@@ -86,6 +86,9 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
 
     @Override
     public IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
+        //进行sql拼接
+        name = name.replaceAll(" ", "");
+//        name = "replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + name + "%'";
         IPage<TrackItem> trackItemList = trackAssignMapper.getPageAssignsByStatusAndTrack(page, name, qw);
         if (null != trackItemList.getRecords()) {
             for (TrackItem trackItem : trackItemList.getRecords()) {
