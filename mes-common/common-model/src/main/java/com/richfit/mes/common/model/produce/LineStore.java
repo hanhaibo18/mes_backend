@@ -110,6 +110,9 @@ public class LineStore extends BaseEntity<LineStore> {
     @ApiModelProperty(value = "代用材料")
     private String replaceMaterial;
 
+    @ApiModelProperty(value = "代用材料单号")
+    private String replaceMaterialNo;
+
     @ApiModelProperty(value = "预先派工")
     private String beforehandAssigned;
 

@@ -94,7 +94,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " <if test='tenantId != null and tenantId != \"\"'> " +
             "  and tenant_id = #{tenantId} " +
             " </if> " +
-            " order by modify_time desc,product_no asc" +
+            " <if test='orderCol != null and orderCol != \"\"'> " +
+            " order by ${orderCol} ${order},modify_time desc" +
+            " </if> " +
             "</script>")
     List<TrackHead> selectTrackFlowList(Map<String, String> map);
 }

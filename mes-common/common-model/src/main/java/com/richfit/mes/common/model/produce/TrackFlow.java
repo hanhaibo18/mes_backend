@@ -101,7 +101,11 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
             String classes,
             String branchCode,
             String tenantId,
+            String orderCol,
+            String order,
             Map<String, String> map) {
+
+
         map.put("startDate", startDate);
         map.put("endDate", endDate);
         map.put("isExamineCardData", isExamineCardData);
@@ -122,5 +126,7 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
         map.put("classes", classes);
         map.put("branchCode", branchCode);
         map.put("tenantId", tenantId);
+        map.put("orderCol", StrUtil.toUnderlineCase(orderCol));
+        map.put("order", StrUtil.toUnderlineCase(order));
     }
 }

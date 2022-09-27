@@ -52,6 +52,7 @@ public class TrackHeadUtil {
             }
         } else {
             //其他类型的跟单
+            trackNo(trackHead, codeRuleService);
             trackHeadList.add(trackHead);
         }
         return trackHeadList;
