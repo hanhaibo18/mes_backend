@@ -84,7 +84,7 @@ public class ProductToWmsService {
         ResponseEntity<JsonNode> resp = restTemplate.getForEntity(url, JsonNode.class);
         log.debug("resp status is [{}],body is [{}]", resp.getStatusCode(), resp.getBody());
         String retStatus = "";
-        if (resp.getBody() != null) {
+        if (resp.getBody() != null && resp.getBody().get("retStatus") != null) {
             retStatus = resp.getBody().get("retStatus").asText();
             log.debug("retMsg is [{}]", resp.getBody().get("retMsg").asText());
         }
