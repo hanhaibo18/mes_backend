@@ -12,4 +12,10 @@ public interface CertAdditionalBsns {
 
     void pushWorkHour(Certificate certificate);
 
+    /**
+     * 北石工时推送接口  fengxy
+     * @param certificate
+     */
+    void pushWorkHourToBs(Certificate certificate);
+
 }
