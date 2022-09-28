@@ -337,6 +337,10 @@ public class ProduceInspectionRecordService{
         String tempType = produceInspectionRecordDto.getTempType();
         //要保存的记录实体
         JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
+        jsonObject.remove("modify_time");
+        jsonObject.remove("modify_by");
+        jsonObject.remove("create_time");
+        jsonObject.remove("create_by");
         //缺陷记录
         List<ProduceDefectsInfo> produceDefectsInfos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("defectsInfoList")), ProduceDefectsInfo.class);
         //探头信息
@@ -392,7 +396,7 @@ public class ProduceInspectionRecordService{
         produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
 
         //ut保存探头
-        if(!ObjectUtil.isEmpty(probeInfoList)){
+        if(!ObjectUtil.isEmpty(probeInfoList) && InspectionRecordTypeEnum.UT.getType().equals(tempType)){
             for (ProbeInfo probeInfo : probeInfoList) {
                 probeInfo.setRecordId(recordId);
             }
@@ -401,7 +405,7 @@ public class ProduceInspectionRecordService{
 
 
         //rt保存缺陷记录
-        if(!ObjectUtil.isEmpty(produceDefectsInfos)){
+        if(!ObjectUtil.isEmpty(produceDefectsInfos) && InspectionRecordTypeEnum.RT.getType().equals(tempType)){
             for (ProduceDefectsInfo produceDefectsInfo : produceDefectsInfos) {
                 produceDefectsInfo.setRecordId(recordId);
             }
@@ -532,6 +536,19 @@ public class ProduceInspectionRecordService{
                 recordInfo = list.get(0);
             }
         }
+
+        if(!ObjectUtil.isEmpty(recordInfo)){
+            //缺陷记录
+            QueryWrapper<ProduceDefectsInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("record_id",recordInfo.get("id")).orderByAsc("serial_number");
+            List<ProduceDefectsInfo> defectsInfoList = produceDefectsInfoService.list(queryWrapper);
+            recordInfo.put("defectsInfoList",defectsInfoList);
+            //探头
+            List<ProbeInfo> probeInfoList = probeInfoService.list(new QueryWrapper<ProbeInfo>().eq("record_id", recordInfo.get("id")).orderByAsc("serial_num"));
+            recordInfo.put("probeInfoList",probeInfoList);
+        }
+
+
         Map<String, Object> dataMap = new HashMap<>();
         //填充数据
         createDataMap(trackHead,recordInfo,dataMap,produceItemInspectInfo.getTempType());

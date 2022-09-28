@@ -24,7 +24,7 @@ public class ProduceDefectsInfoServiceImpl extends ServiceImpl<ProduceDefectsInf
     @Override
     public Map<String, List<ProduceDefectsInfo>> getMapByRecordIds(List<String> ids) {
         //获取缺陷记录
-        List<ProduceDefectsInfo> produceDefectsInfos = this.list(new QueryWrapper<ProduceDefectsInfo>().in("record_id", ids).orderByAsc("serial_num"));
+        List<ProduceDefectsInfo> produceDefectsInfos = this.list(new QueryWrapper<ProduceDefectsInfo>().in("record_id", ids).orderByAsc("serial_number"));
         //根据探伤id分组
         return produceDefectsInfos.stream().collect(Collectors.groupingBy(ProduceDefectsInfo::getRecordId));
     }

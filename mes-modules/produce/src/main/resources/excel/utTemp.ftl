@@ -224,7 +224,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{年}</w:t>
+                                        <w:t>${year!""}</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -240,7 +240,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{月}</w:t>
+                                        <w:t>${month!""}</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -256,7 +256,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{日}</w:t>
+                                        <w:t>${day!""}</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -518,7 +518,7 @@
                                             <w:color w:val="0000FF"/>
                                             <w:sz w:val="24"/>
                                         </w:rPr>
-                                        <w:t>{生产单位}</w:t>
+                                        <w:t></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1987,7 +1987,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{零件顺序号}</w:t>
+                                        <w:t>${零件顺序号!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2629,24 +2629,8 @@
                                         <w:rPr>
                                             <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
                                             <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:sz w:val="24"/>
-                                        </w:rPr>
-                                        <w:t>检验单位</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                            <w:sz w:val="24"/>
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

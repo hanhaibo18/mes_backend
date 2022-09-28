@@ -602,7 +602,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{生产单位}</w:t>
+                                        <w:t></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2474,7 +2474,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{零件顺序}</w:t>
+                                        <w:t>${零件顺序!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -3231,7 +3231,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{检验单位}</w:t>
+                                        <w:t></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

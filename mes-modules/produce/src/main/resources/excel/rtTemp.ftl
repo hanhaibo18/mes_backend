@@ -272,7 +272,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:yt>${year!""}</w:yt>
+                                        <w:t>${year!""}</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -621,7 +621,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{生产单位}</w:t>
+                                        <w:t></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2075,7 +2075,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{底片尺寸}</w:t>
+                                        <w:t>{}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

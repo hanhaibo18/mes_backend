@@ -642,7 +642,7 @@
                                             <w:shd w:val="clear" w:fill="FFFFFF" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{生产单位}</w:t>
+                                        <w:t></w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
@@ -1992,7 +1992,7 @@
                                             <w:shd w:val="clear" w:fill="FFFFFF" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{零件顺序号}</w:t>
+                                        <w:t>${零件顺序号!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
