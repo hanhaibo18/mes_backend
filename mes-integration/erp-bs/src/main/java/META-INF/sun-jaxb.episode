@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bindings xmlns="http://java.sun.com/xml/ns/jaxb" if-exists="true" version="2.1">
+  <!--
+
+此文件是由 JavaTM Architecture for XML Binding (JAXB) 引用实现 v2.3.0 生成的
+请访问 <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
+在重新编译源模式时, 对此文件的所有修改都将丢失。
+生成时间: 2022.07.26 时间 11:34:27 AM CST 
+
+  -->
+  <bindings xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" if-exists="true" scd="x-schema::tns">
+    <schemaBindings map="false">
+      <package name="com.kld.mes.erp.entity.certWorkHour"/>
+    </schemaBindings>
+    <bindings if-exists="true" scd="tns:Zc80Ppif024">
+      <class ref="com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024"/>
+    </bindings>
+    <bindings if-exists="true" scd="~tns:Zc80ppif024T1">
+      <class ref="com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024T1"/>
+    </bindings>
+    <bindings if-exists="true" scd="tns:Zc80Ppif024Response">
+      <class ref="com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024Response"/>
+    </bindings>
+    <bindings if-exists="true" scd="~tns:Zc80ppif024T2">
+      <class ref="com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024T2"/>
+    </bindings>
+    <bindings if-exists="true" scd="~tns:Zc80ppif024S1">
+      <class ref="com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024S1"/>
+    </bindings>
+    <bindings if-exists="true" scd="~tns:Zc80ppif024S2">
+      <class ref="com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024S2"/>
+    </bindings>
+  </bindings>
+</bindings>
