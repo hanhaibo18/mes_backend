@@ -19,6 +19,11 @@ public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     }
 
     @Override
+    public CommonResult<Boolean> certWorkHourPushToBs(List<TrackItem> trackItemList, String erpCode, String orderNo, String materialNo, int qty, String unit) {
+        return CommonResult.success(null);
+    }
+
+    @Override
     public CommonResult<List<Order>> getErpOrder(String erpCode, String selectDate, String orderNo, String controller) {
         return CommonResult.success(null);
     }

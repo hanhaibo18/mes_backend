@@ -52,14 +52,22 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     @Autowired
     SystemServiceClient systemServiceClient;
 
+
+    private final String pushSystemFlag = "systemFlag";
+
     @Override
     public void doAdditionalBsns(Certificate certificate) {
+
+        String pushTo = systemServiceClient.findItemParamByCode(pushSystemFlag).getData().getLabel();
 
         if (needScjk(certificate)) {
 
             wmsServiceClient.sendJkInfo(certificate);
 
-            if (sendEnabled()) {
+            //根据数据字段配置，判断推送哪个系统
+            if ("beiShi".equals(pushTo)){                           //推送北石
+                pushWorkHourToBs(certificate);
+            }else if (sendEnabled() && "baoShi".equals(pushTo)) {   //推送宝石
                 pushWorkHour(certificate);
             }
         }
@@ -89,6 +97,36 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
             }
 
+            //标记已推送工时状态
+            certificateService.setPushHourComplete(certificate);
+        }
+    }
+
+
+    @Override
+    public void pushWorkHourToBs(Certificate certificate) {
+        if (certificate != null) {
+            //erp工时推送
+            String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
+
+            List<Product> list = baseServiceClient.selectProduct(certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
+            String unit = "";
+            if (list.size() > 0) {
+                unit = list.get(0).getUnit();
+            }
+
+            for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
+
+                TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
+
+                List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
+
+                CommonResult<Boolean> b = erpServiceClient.certWorkHourPushToBs(trackItems, erpCode, trackHead.getProductionOrder(),trackHead.getMaterialNo(),
+                        certificate.getNumber(), unit);
+
+                log.debug("[{}] query erp push-hour finish , result is [{}]", trackHead.getTrackNo(), b.getData());
+
+            }
             //标记已推送工时状态
             certificateService.setPushHourComplete(certificate);
         }

@@ -29,6 +29,15 @@ public interface ErpServiceClient {
                                                   @RequestParam(value = "数量") int qty,
                                                   @RequestParam(value = "单位") String unit);
 
+    @PostMapping("/api/integration/erp/work-hour/pushToBs")
+    public CommonResult<Boolean> certWorkHourPushToBs(@RequestBody List<TrackItem> trackItemList,
+                                                      @RequestParam String erpCode,
+                                                      @RequestParam String orderNo,
+                                                      @RequestParam String materialNo,
+                                                      @RequestParam int qty,
+                                                      @RequestParam String unit);
+
+
     @GetMapping("/api/integration/erp/order/get")
     public CommonResult<List<Order>> getErpOrder(@RequestParam String erpCode,
                                                  @RequestParam String selectDate,
