@@ -14,6 +14,7 @@
     <modules>
         <module>erp-sap</module>
         <module>wms-kld</module>
+        <module>erp-bs</module>
     </modules>
     <dependencies>
 
