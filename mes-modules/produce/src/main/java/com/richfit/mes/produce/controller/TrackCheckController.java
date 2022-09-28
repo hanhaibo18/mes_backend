@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -817,6 +818,16 @@ public class TrackCheckController extends BaseController {
     @GetMapping("/queryNumber")
     public CommonResult<Map<String, Integer>> queryNumber(String branchCode) {
         Map<String, Integer> num = new HashMap<>(3);
+        //没有车间直接返回0
+        if (StrUtil.isBlank(SecurityUtils.getCurrentUser().getOrgId())) {
+            //未质检数量
+            num.put("qualityTestingNumber", 0);
+            //未报工
+            num.put("workNumber", 0);
+            //未派工
+            num.put("dispatchingNumber", 0);
+            return CommonResult.success(num);
+        }
         //未质检数量
         num.put("qualityTestingNumber", trackCheckService.qualityTestingNumber(branchCode));
         //未报工
