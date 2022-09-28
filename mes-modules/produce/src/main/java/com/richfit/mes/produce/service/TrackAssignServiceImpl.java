@@ -15,10 +15,13 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
+import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.utils.OrderUtil;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,7 +37,8 @@ import java.util.stream.Collectors;
  * @Description 跟单派工服务
  */
 @Service
-public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements TrackAssignService {
+public class
+TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements TrackAssignService {
 
     @Autowired
     public TrackAssignMapper trackAssignMapper;
@@ -373,6 +377,123 @@ public class TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assig
         queryWrapper.likeRight("user_id", SecurityUtils.getCurrentUser().getUsername() + ",");
         queryWrapper.eq("branch_code", branchCode);
         return this.count(queryWrapper);
+    }
+
+    @Override
+    public IPage<Assign> queryForDispatching(QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException {
+        ForDispatchingDto param = dispatchingDto.getParam();
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(param.getTrackNo())) {
+            param.setTrackNo(param.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + param.getTrackNo() + "%'");
+        }
+        if (!StringUtils.isNullOrEmpty(param.getRouterNo())) {
+            queryWrapper.like("u.drawing_no", param.getRouterNo());
+        }
+        if (!StringUtils.isNullOrEmpty(param.getSiteId())) {
+            queryWrapper.like("u.assign_by", param.getSiteId());
+        }
+        if (!StringUtils.isNullOrEmpty(param.getProductNo())) {
+            queryWrapper.like("u.product_no", param.getProductNo());
+        }
+        if (!StrUtil.isBlank(param.getUserId())) {
+            queryWrapper.likeRight("u.user_id", param.getUserId() + ",");
+        }
+        if (!StringUtils.isNullOrEmpty(param.getStartTime())) {
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + param.getStartTime() + " ')");
+        }
+        if (!StringUtils.isNullOrEmpty(param.getEndTime())) {
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            calendar.setTime(sdf.parse(param.getEndTime()));
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+        }
+        if (StrUtil.isNotBlank(param.getState())) {
+            queryWrapper.in("u.state", param.getState());
+        }
+        queryWrapper.eq("u.classes", param.getClasses());
+        queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
+        queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
+        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(new Page(dispatchingDto.getPage(), dispatchingDto.getSize()), queryWrapper);
+        if (null != queryPage.getRecords()) {
+            for (Assign assign : queryPage.getRecords()) {
+                TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                if (!StringUtils.isNullOrEmpty(trackHead.getRouterId())) {
+                    assign.setRouterId(trackHead.getRouterId());
+                }
+                assign.setOptId(trackItem.getOptId());
+                assign.setWeight(trackHead.getWeight());
+                assign.setWorkNo(trackHead.getWorkNo());
+                assign.setProductName(trackHead.getProductName());
+                assign.setTotalQuantity(trackItem.getNumber());
+                assign.setDispatchingNumber(trackItem.getAssignableQty());
+                assign.setWorkPlanNo(trackHead.getWorkPlanNo());
+            }
+        }
+        return queryPage;
+    }
+
+    @Override
+    public IPage<Assign> queryNotAtWork(QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException {
+        ForDispatchingDto param = dispatchingDto.getParam();
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(param.getTrackNo())) {
+            param.setTrackNo(param.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + param.getTrackNo() + "%'");
+        }
+        if (!StringUtils.isNullOrEmpty(param.getRouterNo())) {
+            queryWrapper.like("u.drawing_no", param.getRouterNo());
+        }
+        if (!StringUtils.isNullOrEmpty(param.getSiteId())) {
+            queryWrapper.like("u.assign_by", param.getSiteId());
+        }
+        if (!StringUtils.isNullOrEmpty(param.getProductNo())) {
+            queryWrapper.like("u.product_no", param.getProductNo());
+        }
+        if (!StrUtil.isBlank(param.getUserId())) {
+            queryWrapper.likeRight("u.user_id", param.getUserId() + ",");
+        }
+        if (!StringUtils.isNullOrEmpty(param.getStartTime())) {
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + param.getStartTime() + " ')");
+        }
+        if (!StringUtils.isNullOrEmpty(param.getEndTime())) {
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            calendar.setTime(sdf.parse(param.getEndTime()));
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+        }
+        if ("0,1".equals(param.getState())) {
+            queryWrapper.in("u.state", 0, 1);
+        }
+        if ("2".equals(param.getState())) {
+            queryWrapper.in("u.state", 2);
+        }
+        queryWrapper.eq("u.classes", param.getClasses());
+        queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
+        queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
+        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(new Page(dispatchingDto.getPage(), dispatchingDto.getSize()), queryWrapper);
+        if (null != queryPage.getRecords()) {
+            for (Assign assign : queryPage.getRecords()) {
+                TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+                TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                if (!StringUtils.isNullOrEmpty(trackHead.getRouterId())) {
+                    assign.setRouterId(trackHead.getRouterId());
+                }
+                assign.setOptId(trackItem.getOptId());
+                assign.setWeight(trackHead.getWeight());
+                assign.setWorkNo(trackHead.getWorkNo());
+                assign.setProductName(trackHead.getProductName());
+                assign.setTotalQuantity(trackItem.getNumber());
+                assign.setDispatchingNumber(trackItem.getAssignableQty());
+                assign.setWorkPlanNo(trackHead.getWorkPlanNo());
+            }
+        }
+        return queryPage;
     }
 
 
