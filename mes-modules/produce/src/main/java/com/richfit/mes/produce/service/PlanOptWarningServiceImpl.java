@@ -16,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: GaoLiang
@@ -95,6 +97,7 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
         for (TrackItem trackItem : trackItemList) {
             PlanOptWarning planOptWarning = new PlanOptWarning();
             planOptWarning.setPlanId(planId);
+            planOptWarning.setTrackNo(trackItem.getTrackNo());
             planOptWarning.setOptNo(trackItem.getOptNo());
             planOptWarning.setOptName(trackItem.getOptName());
             planOptWarning.setSequenceOrderBy(trackItem.getSequenceOrderBy());
@@ -102,6 +105,8 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             planOptWarning.setOperationCompleteTime(trackItem.getOperationCompleteTime());
             planOptWarning.setAssignableQty(trackItem.getNumber());
             planOptWarning.setCompleteQty(trackItem.getCompleteQty());
+            planOptWarning.setProductNo(trackItem.getProductNo());
+            planOptWarning.setTrackItemId(trackItem.getId());
             planOptWarningList.add(planOptWarning);
         }
 
@@ -115,7 +120,7 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
         Date date = new Date();
         for (PlanOptWarning planOptWarning : planOptWarningList) {
             for (PlanOptWarning pow : planOptWarnings) {
-                if (planOptWarning.getSequenceOrderBy() == pow.getSequenceOrderBy()) {
+                if (planOptWarning.getSequenceOrderBy().equals(pow.getSequenceOrderBy()) && planOptWarning.getTrackItemId().equals(pow.getTrackItemId())) {
                     planOptWarning.setId(pow.getId());
                     planOptWarning.setDateWarning(pow.getDateWarning());
                     if (!StringUtils.isNullOrEmpty(planOptWarning.getDateWarning())) {
@@ -141,9 +146,9 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
      * @Date: 2022/8/8 15:06
      **/
     public List<TrackHead> queryTrackHeadList(String planId) throws Exception {
-        Map<String, String> map = new HashMap<>();
-        map.put("workPlanId", planId);
-        return trackHeadService.selectTrackFlowList(map);
+        QueryWrapper<TrackHead> queryWrapperTrackHead = new QueryWrapper<>();
+        queryWrapperTrackHead.eq("work_plan_id", planId);
+        return trackHeadService.list(queryWrapperTrackHead);
     }
 
     /**
@@ -159,24 +164,14 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             //查询产品工序
             QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
             queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+            queryWrapperTrackItem.orderByAsc("track_head_id");
+            queryWrapperTrackItem.orderByAsc("product_no");
             queryWrapperTrackItem.orderByAsc("sequence_order_by");
             List<TrackItem> trackItems = trackItemMapper.selectList(queryWrapperTrackItem);
-            if (trackItemList.size() < trackItems.size()) {
-                trackItemList.addAll(trackItems);
-            } else {
-                //通过最后完成时间删除重复的工序
-                for (int i = 0; i < trackItems.size(); i++) {
-                    if (trackItems.get(i).getOperationCompleteTime() != null) {
-                        if (trackItemList.get(i).getOperationCompleteTime() == null) {
-                            trackItemList.set(i, trackItems.get(i));
-                        } else {
-                            if (trackItemList.get(i).getOperationCompleteTime().getTime() < trackItems.get(i).getOperationCompleteTime().getTime()) {
-                                trackItemList.set(i, trackItems.get(i));
-                            }
-                        }
-                    }
-                }
+            for (TrackItem trackItem : trackItems) {
+                trackItem.setTrackNo(trackHead.getTrackNo());
             }
+            trackItemList.addAll(trackItems);
         }
         return trackItemList;
     }

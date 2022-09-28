@@ -21,6 +21,9 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
     @ApiModelProperty(value = "计划id", dataType = "String")
     private String planId;
 
+    @ApiModelProperty(value = "跟单号码", dataType = "String")
+    private String trackNo;
+
     @ApiModelProperty(value = "工序序号", dataType = "String")
     private String optNo;
 
@@ -32,6 +35,12 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
 
     @ApiModelProperty(value = "预警时间", dataType = "String")
     private String dateWarning;
+
+    @ApiModelProperty(value = "产品编号", dataType = "String")
+    private String productNo;
+
+    @ApiModelProperty(value = "track_item表id", dataType = "String")
+    private String trackItemId;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "工序是否完工", dataType = "Integer")
