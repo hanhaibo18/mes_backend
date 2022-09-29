@@ -237,17 +237,19 @@ public class TrackCheckController extends BaseController {
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
                 TrackItem trackItem = trackItemService.getById(check.getTiId());
-                if (null != trackHead || null != trackItem) {
-                    continue;
+                if (null != trackHead) {
+                    check.setDrawingNo(trackHead.getDrawingNo());
+                    check.setTrackNo(trackHead.getTrackNo());
                 }
-                check.setDrawingNo(trackHead.getDrawingNo());
-                check.setNumber(trackHead.getNumber());
-                check.setTrackNo(trackHead.getTrackNo());
-                check.setProductNo(trackItem.getProductNo());
-                check.setOptId(trackItem.getOptId());
-                check.setOptName(trackItem.getOptName());
-                check.setOptType(trackItem.getOptType());
-                check.setIsCurrent(trackItem.getIsCurrent());
+                if (null != trackItem) {
+                    check.setNumber(trackItem.getNumber());
+                    check.setProductNo(trackItem.getProductNo());
+                    check.setOptId(trackItem.getOptId());
+                    check.setOptName(trackItem.getOptName());
+                    check.setOptType(trackItem.getOptType());
+                    check.setIsCurrent(trackItem.getIsCurrent());
+                }
+
             }
             return CommonResult.success(checks);
         } catch (Exception e) {
