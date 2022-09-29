@@ -73,6 +73,10 @@ public class TenantUserDetails extends User {
         return tenantErpCode;
     }
 
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
     public boolean isSysAdmin() {
         List<GrantedAuthority> authorities = new ArrayList<>(this.getAuthorities());
         boolean isAdmin = false;
