@@ -79,7 +79,7 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
             queryWrapper.eq("material_no", product.getMaterialNo());
             boolean remove = materialSyncService.remove(queryWrapper);
             boolean save = materialSyncService.save(product);
-            if (remove && save) {
+            if (save) {
                 data = true;
                 message = "操作成功!";
             }
