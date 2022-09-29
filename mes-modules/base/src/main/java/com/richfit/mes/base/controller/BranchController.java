@@ -84,6 +84,7 @@ public class BranchController extends BaseController {
             if (StringUtils.isNullOrEmpty(branch.getTenantId())) {
                 branch.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             }
+            branch.setRemark(SecurityUtils.getCurrentUser().getTenantErpCode());
             queryWrapper.eq("tenant_id", branch.getTenantId());
             Branch oldBranch = branchService.getOne(queryWrapper);
             if (oldBranch != null && !StringUtils.isNullOrEmpty(oldBranch.getBranchCode())) {
