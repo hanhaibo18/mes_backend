@@ -10,7 +10,7 @@ import lombok.Data;
  * @CreateTime: 2022年09月28日 10:23:00
  */
 @Data
-public class ForDispatchingDto {
+public class ForDispatchingDto extends QueryPageDto {
     @ApiModelProperty(value = "siteId", dataType = "String")
     private String siteId;
     @ApiModelProperty(value = "跟单编号", dataType = "String")

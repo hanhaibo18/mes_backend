@@ -10,7 +10,6 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
-import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -105,7 +104,7 @@ public interface TrackAssignService extends IService<Assign> {
      * @Date: 2022/9/28 10:38
      * @return: IPage<Assign>
      **/
-    IPage<Assign> queryForDispatching(QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException;
+    IPage<Assign> queryForDispatching(ForDispatchingDto dispatchingDto) throws ParseException;
 
     /**
      * 功能描述:未报工查询
@@ -115,5 +114,5 @@ public interface TrackAssignService extends IService<Assign> {
      * @Date: 2022/9/28 10:39
      * @return: IPage<Assign>
      **/
-    IPage<Assign> queryNotAtWork(QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException;
+    IPage<Assign> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException;
 }

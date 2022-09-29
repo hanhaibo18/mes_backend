@@ -19,7 +19,6 @@ import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
-import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
@@ -759,13 +758,13 @@ public class TrackAssignController extends BaseController {
 
     @ApiOperation(value = "已派工查询")
     @PostMapping("/queryForDispatching")
-    public CommonResult<IPage<Assign>> queryForDispatching(@RequestBody QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException {
+    public CommonResult<IPage<Assign>> queryForDispatching(@RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(trackAssignService.queryForDispatching(dispatchingDto));
     }
 
     @ApiOperation(value = "未报工查询")
     @PostMapping("/queryNotAtWork")
-    public CommonResult<IPage<Assign>> queryNotAtWork(QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException {
+    public CommonResult<IPage<Assign>> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(trackAssignService.queryNotAtWork(dispatchingDto));
     }
 }

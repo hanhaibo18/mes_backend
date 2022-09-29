@@ -17,7 +17,6 @@ import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
-import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -380,43 +379,42 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     }
 
     @Override
-    public IPage<Assign> queryForDispatching(QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException {
-        ForDispatchingDto param = dispatchingDto.getParam();
+    public IPage<Assign> queryForDispatching(ForDispatchingDto dispatchingDto) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
-        if (!StringUtils.isNullOrEmpty(param.getTrackNo())) {
-            param.setTrackNo(param.getTrackNo().replaceAll(" ", ""));
-            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + param.getTrackNo() + "%'");
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTrackNo())) {
+            dispatchingDto.setTrackNo(dispatchingDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
         }
-        if (!StringUtils.isNullOrEmpty(param.getRouterNo())) {
-            queryWrapper.like("u.drawing_no", param.getRouterNo());
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
+            queryWrapper.like("u.drawing_no", dispatchingDto.getRouterNo());
         }
-        if (!StringUtils.isNullOrEmpty(param.getSiteId())) {
-            queryWrapper.like("u.assign_by", param.getSiteId());
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getSiteId())) {
+            queryWrapper.like("u.assign_by", dispatchingDto.getSiteId());
         }
-        if (!StringUtils.isNullOrEmpty(param.getProductNo())) {
-            queryWrapper.like("u.product_no", param.getProductNo());
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getProductNo())) {
+            queryWrapper.like("u.product_no", dispatchingDto.getProductNo());
         }
-        if (!StrUtil.isBlank(param.getUserId())) {
-            queryWrapper.likeRight("u.user_id", param.getUserId() + ",");
+        if (!StrUtil.isBlank(dispatchingDto.getUserId())) {
+            queryWrapper.likeRight("u.user_id", dispatchingDto.getUserId() + ",");
         }
-        if (!StringUtils.isNullOrEmpty(param.getStartTime())) {
-            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + param.getStartTime() + " ')");
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + dispatchingDto.getStartTime() + " ')");
         }
-        if (!StringUtils.isNullOrEmpty(param.getEndTime())) {
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
             Calendar calendar = new GregorianCalendar();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            calendar.setTime(sdf.parse(param.getEndTime()));
+            calendar.setTime(sdf.parse(dispatchingDto.getEndTime()));
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
         }
-        if (StrUtil.isNotBlank(param.getState())) {
-            queryWrapper.in("u.state", param.getState());
+        if (StrUtil.isNotBlank(dispatchingDto.getState())) {
+            queryWrapper.in("u.state", dispatchingDto.getState());
         }
-        queryWrapper.eq("u.classes", param.getClasses());
+        queryWrapper.eq("u.classes", dispatchingDto.getClasses());
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
-        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(new Page(dispatchingDto.getPage(), dispatchingDto.getSize()), queryWrapper);
+        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(new Page(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
@@ -437,46 +435,45 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     }
 
     @Override
-    public IPage<Assign> queryNotAtWork(QueryDto<ForDispatchingDto> dispatchingDto) throws ParseException {
-        ForDispatchingDto param = dispatchingDto.getParam();
+    public IPage<Assign> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
-        if (!StringUtils.isNullOrEmpty(param.getTrackNo())) {
-            param.setTrackNo(param.getTrackNo().replaceAll(" ", ""));
-            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + param.getTrackNo() + "%'");
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTrackNo())) {
+            dispatchingDto.setTrackNo(dispatchingDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
         }
-        if (!StringUtils.isNullOrEmpty(param.getRouterNo())) {
-            queryWrapper.like("u.drawing_no", param.getRouterNo());
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
+            queryWrapper.like("u.drawing_no", dispatchingDto.getRouterNo());
         }
-        if (!StringUtils.isNullOrEmpty(param.getSiteId())) {
-            queryWrapper.like("u.assign_by", param.getSiteId());
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getSiteId())) {
+            queryWrapper.like("u.assign_by", dispatchingDto.getSiteId());
         }
-        if (!StringUtils.isNullOrEmpty(param.getProductNo())) {
-            queryWrapper.like("u.product_no", param.getProductNo());
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getProductNo())) {
+            queryWrapper.like("u.product_no", dispatchingDto.getProductNo());
         }
-        if (!StrUtil.isBlank(param.getUserId())) {
-            queryWrapper.likeRight("u.user_id", param.getUserId() + ",");
+        if (!StrUtil.isBlank(dispatchingDto.getUserId())) {
+            queryWrapper.likeRight("u.user_id", dispatchingDto.getUserId() + ",");
         }
-        if (!StringUtils.isNullOrEmpty(param.getStartTime())) {
-            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + param.getStartTime() + " ')");
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
+            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + dispatchingDto.getStartTime() + " ')");
         }
-        if (!StringUtils.isNullOrEmpty(param.getEndTime())) {
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
             Calendar calendar = new GregorianCalendar();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            calendar.setTime(sdf.parse(param.getEndTime()));
+            calendar.setTime(sdf.parse(dispatchingDto.getEndTime()));
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
         }
-        if ("0,1".equals(param.getState())) {
+        if ("0,1".equals(dispatchingDto.getState())) {
             queryWrapper.in("u.state", 0, 1);
         }
-        if ("2".equals(param.getState())) {
+        if ("2".equals(dispatchingDto.getState())) {
             queryWrapper.in("u.state", 2);
         }
-        queryWrapper.eq("u.classes", param.getClasses());
+        queryWrapper.eq("u.classes", dispatchingDto.getClasses());
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
-        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(new Page(dispatchingDto.getPage(), dispatchingDto.getSize()), queryWrapper);
+        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(new Page(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
