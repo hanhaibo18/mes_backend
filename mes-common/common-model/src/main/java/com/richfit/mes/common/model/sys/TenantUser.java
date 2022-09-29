@@ -25,6 +25,7 @@ import java.util.Set;
 public class TenantUser extends BaseEntity<TenantUser> {
 
 
+    private static final long serialVersionUID = -9037578890983509126L;
     /**
      * 用户类型
      */
@@ -94,5 +95,8 @@ public class TenantUser extends BaseEntity<TenantUser> {
 
     @TableField(exist = false)
     private String tenantErpCode;
+
+    @TableField(exist = false)
+    private String companyCode;
 
 }

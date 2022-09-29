@@ -12,6 +12,7 @@ import java.util.List;
  * @Description 扩展userDetails.User
  */
 public class TenantUserDetails extends User {
+    private static final long serialVersionUID = 1630579217770988519L;
     /**
      * 用户ID
      */
@@ -37,13 +38,19 @@ public class TenantUserDetails extends User {
      */
     private String tenantErpCode;
 
-    public TenantUserDetails(String id, String tenantId, String orgId, String belongOrgId, String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities, String tenantErpCode) {
+    /**
+     * 所在租户公司 code
+     */
+    private String companyCode;
+
+    public TenantUserDetails(String id, String tenantId, String orgId, String belongOrgId, String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities, String tenantErpCode, String companyCode) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.userId = id;
         this.tenantId = tenantId;
         this.orgId = orgId;
         this.belongOrgId = belongOrgId;
         this.tenantErpCode = tenantErpCode;
+        this.companyCode = companyCode;
     }
 
     public String getUserId() {
