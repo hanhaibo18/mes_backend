@@ -76,5 +76,8 @@ public class Tenant extends BaseEntity<Tenant> {
      */
     private String tenantMail;
 
-
+    /**
+     * 联系人邮件
+     */
+    private String companyCode;
 }

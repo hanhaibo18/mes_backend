@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.UserRole;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
@@ -59,8 +60,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
                 .eq("user_account", uniqueId));
 
         //获取租户对应的ERP—code
-        user.setTenantErpCode(tenantService.getById(user.getTenantId()).getTenantErpCode());
-
+        Tenant tenant = tenantService.getById(user.getTenantId());
+        user.setTenantErpCode(tenant.getTenantErpCode());
+        user.setCompanyCode(tenant.getCompanyCode());
         if (Objects.isNull(user)) {
             throw new GlobalException("user not found with uniqueId:" + uniqueId, ResultCode.ITEM_NOT_FOUND);
         }

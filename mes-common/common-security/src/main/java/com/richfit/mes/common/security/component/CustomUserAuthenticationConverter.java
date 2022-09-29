@@ -54,6 +54,7 @@ public class CustomUserAuthenticationConverter implements UserAuthenticationConv
             String orgId = (String) map.get("orgId");
             String belongOrgId = (String) map.get("belongOrgId");
             String tenantErpCode = (String) map.get("tenantErpCode");
+            String companyCode = (String) map.get("companyCode");
             TenantUserDetails user = new
                     TenantUserDetails(
                     id,
@@ -66,7 +67,7 @@ public class CustomUserAuthenticationConverter implements UserAuthenticationConv
                     true,
                     true,
                     true,
-                    authorities, tenantErpCode);
+                    authorities, tenantErpCode, companyCode);
             return new UsernamePasswordAuthenticationToken(user, N_A, authorities);
         }
         return null;
