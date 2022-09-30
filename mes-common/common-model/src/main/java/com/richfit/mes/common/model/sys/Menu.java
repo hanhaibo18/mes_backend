@@ -24,6 +24,7 @@ import java.util.Objects;
 public class Menu extends BaseEntity<Menu> {
 
 
+    private static final long serialVersionUID = -7226701090703246871L;
     /**
      * 名称
      */
@@ -64,6 +65,11 @@ public class Menu extends BaseEntity<Menu> {
      * 菜单权限标识
      */
     private String permission;
+
+    /**
+     * 公司代码
+     */
+    private String companyCode;
 
     /**
      * 按钮权限 分配权限用
