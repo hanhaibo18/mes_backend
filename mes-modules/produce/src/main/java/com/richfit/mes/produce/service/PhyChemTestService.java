@@ -57,63 +57,46 @@ public class PhyChemTestService{
      * @param isCheckOut
      * @return
      */
-    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String drawingNo, String branchCode, String tenantId, Boolean isCheckOut) {
-        QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
+    public IPage<TrackHead> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String drawingNo, String branchCode, String tenantId, Boolean isCheckOut) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
         if (!StringUtils.isEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
-        //已审核
-        if (Boolean.TRUE.equals(isCheckOut)) {
-            queryWrapper.isNotNull("audit_by");
-        } else if (Boolean.FALSE.equals(isCheckOut)) {
-            //未审核
-            queryWrapper.isNull("audit_by");
-        }
 
         if (!StringUtils.isEmpty(trackNo)) {
-            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
+            queryWrapper.eq("track_no",trackNo);
         }
         if (!StringUtils.isEmpty(productName)) {
-            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
+            queryWrapper.eq("product_name",productName);
         }
         if (!StringUtils.isEmpty(drawingNo)) {
-            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + drawingNo + '%' + "')");
+            queryWrapper.eq("drawing_no", drawingNo);
         }
         if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
-
+            queryWrapper.gt("modify_time",startTime);
         }
         if (!StringUtils.isEmpty(endTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + endTime + "')");
+            queryWrapper.lt("modify_time",endTime);
 
         }
         queryWrapper.orderByDesc("modify_time");
-        IPage<TrackItemInspection> trackItemInspections = trackItemInspectionMapper.selectPage(new Page<TrackItemInspection>(page, limit), queryWrapper);
+        IPage<TrackHead> trackHeads = trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper);
         //处理map
-        Map<String, TrackItemInspection> trackItemInspectionMap =
-                trackItemInspections.getRecords().stream().collect(Collectors.toMap(TrackItemInspection::getId, Function.identity()));
+        Map<String, TrackHead> trackHeadMap =
+                trackHeads.getRecords().stream().collect(Collectors.toMap(TrackHead::getId, Function.identity()));
         //查询委托单
-        List<PhysChemOrder> physChemOrders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().in("item_id", trackItemInspectionMap.keySet()));
-        Map<String, PhysChemOrder> physChemOrderMap = physChemOrders.stream().collect(Collectors.toMap(PhysChemOrder::getItemId, Function.identity()));
-        for (TrackItemInspection trackItemInspection : trackItemInspections.getRecords()) {
-            TrackHead trackHead = trackHeadService.getById(trackItemInspection.getTrackHeadId());
-            trackItemInspection.setTrackNo(trackHead.getTrackNo());
-            trackItemInspection.setDrawingNo(trackHead.getDrawingNo());
-            trackItemInspection.setQty(trackHead.getNumber());
-            trackItemInspection.setProductName(trackHead.getProductName());
-            trackItemInspection.setWorkNo(trackHead.getWorkNo());
-            trackItemInspection.setTrackType(trackHead.getTrackType());
-            trackItemInspection.setTexture(trackHead.getTexture());
-            trackItemInspection.setPartsName(trackHead.getMaterialName());
+        List<PhysChemOrder> physChemOrders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().in("id", trackHeadMap.keySet()));
+        Map<String, PhysChemOrder> physChemOrderMap = physChemOrders.stream().collect(Collectors.toMap(PhysChemOrder::getId, Function.identity()));
+        for (TrackHead trackHead : trackHeads.getRecords()) {
             //委托单赋值
-            if(!ObjectUtil.isEmpty(physChemOrderMap.get(trackItemInspection.getId()))){
-                trackItemInspection.setPhysChemOrder(physChemOrderMap.get(trackItemInspection.getId()));
+            if(!ObjectUtil.isEmpty(physChemOrderMap.get(trackHead.getPhysChemId()))){
+                trackHead.setPhysChemOrder(physChemOrderMap.get(trackHead.getPhysChemId()));
             }
         }
-        return trackItemInspections;
+        return trackHeads;
     }
 
     /**

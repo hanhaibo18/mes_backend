@@ -91,6 +91,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public CommonResult getPreviewUrl(String id) throws GlobalException {
+        return null;
+    }
+
+    @Override
     public CommonResult<TenantUserVo> queryByUserId(String userId) {
         return CommonResult.success(null);
     }

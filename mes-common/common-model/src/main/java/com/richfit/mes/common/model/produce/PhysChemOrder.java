@@ -19,8 +19,6 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
-    @ApiModelProperty(value = "跟单工序id")
-    private String itemId;
     @ApiModelProperty(value = "化学分析->全分析")
     private String chemicalAnalysis;
     @ApiModelProperty(value = "化学分析->碳硫")

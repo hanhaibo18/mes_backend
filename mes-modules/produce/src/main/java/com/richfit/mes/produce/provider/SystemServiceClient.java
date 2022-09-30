@@ -67,6 +67,9 @@ public interface SystemServiceClient {
     @PostMapping(value = "/api/sys/attachment/download/getBase64Code")
     public CommonResult<Object> getBase64Code(@RequestParam String id) throws GlobalException, IOException;
 
+    @GetMapping(value = "/api/sys/attachment/url")
+    public CommonResult getPreviewUrl(@RequestParam String id) throws GlobalException;
+
     /**
      * 功能描述: 根据UserId查询用户信息
      *

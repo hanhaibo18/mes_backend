@@ -102,6 +102,8 @@ public class ProduceInspectionRecordRt extends BaseEntity<ProduceInspectionRecor
     private String evaluationPerson;
     @ApiModelProperty(value = "复评人")
     private String recheckedBy;
+    @ApiModelProperty(value = "审核人")
+    private String auditBy;
     @ApiModelProperty(value = "见证")
     private String witnesses;
     @ApiModelProperty(value = "检验结果")
@@ -112,5 +114,7 @@ public class ProduceInspectionRecordRt extends BaseEntity<ProduceInspectionRecor
     private List<ProduceDefectsInfo> defectsInfoList;
     @ApiModelProperty(value = "是否审核")
     private String isAudit;
+    @ApiModelProperty(value = "审核意见")
+    private String auditRemark;
 
 }

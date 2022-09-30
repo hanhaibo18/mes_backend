@@ -16,6 +16,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
@@ -28,7 +29,6 @@ import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
-import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +120,7 @@ public class ProduceInspectionRecordService{
 
         //跟单工序查询
         QueryWrapper<TrackItemInspection> queryWrapper = getTrackItemInspectionQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit);
-        queryWrapper.inSql("id", "select id from  produce_track_item_inspection where id in ( select ti_id from produce_assign where user_id ='"+SecurityUtils.getCurrentUser().getUserId()+"')");
+        queryWrapper.inSql("id", "select id from  produce_track_item_inspection where id in ( select ti_id from produce_assign where user_id like'%"+SecurityUtils.getCurrentUser().getUsername()+"%')");
 
         IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
         //为跟单工序赋跟单的一些属性
@@ -528,16 +528,24 @@ public class ProduceInspectionRecordService{
     public IPage<TrackItemInspection> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit){
         //从中间表查询审核人是当前用户的数据
         QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("audit_by",SecurityUtils.getCurrentUser().getUserId());
+        queryWrapper.eq("audit_by",SecurityUtils.getCurrentUser().getUserId()).or(warpper->warpper.eq("audit_by","/"));
+
         List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
         //跟单工序
         Set<String> itemIds = list.stream().map(ProduceItemInspectInfo::getTrackItemId).collect(Collectors.toSet());
 
+
         //跟单工序查询
         QueryWrapper<TrackItemInspection> queryWrapper2 = getTrackItemInspectionQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit);
-        queryWrapper2.in("id", itemIds);
 
-        IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper2);
+
+        if(itemIds.size()>0){
+            queryWrapper2.in("id", itemIds);
+
+        }else{
+            queryWrapper2.in("id", "");
+        }
+        IPage<TrackItemInspection>  trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper2);
         //为跟单工序赋跟单的一些属性
         setHeadInfoToItem(trackItemInspections);
         return trackItemInspections;
@@ -868,9 +876,21 @@ public class ProduceInspectionRecordService{
             List<Object> fileInfos = new ArrayList<>();
             String[] diagramAttachmentIds = jsonObject.get("diagramAttachmentId").toString().split(",");
             for (String diagramAttachmentId : diagramAttachmentIds) {
-                fileInfos.add(systemServiceClient.attachment(diagramAttachmentId).getData());
+                Attachment data = systemServiceClient.attachment(diagramAttachmentId).getData();
+                data.setPreviewUrl(String.valueOf(systemServiceClient.getPreviewUrl(diagramAttachmentId).getData()));
             }
             jsonObject.put("fileList", fileInfos);
+        }
+
+        if(!ObjectUtil.isEmpty(jsonObject.get("auditBy"))){
+            String auditBy = jsonObject.get("auditBy").toString();
+            TenantUserVo data = systemServiceClient.getUserById(auditBy).getData();
+            jsonObject.put("auditByInfo", data);
+        }
+        if(!ObjectUtil.isEmpty(jsonObject.get("checkBy"))){
+            String checkBy = jsonObject.get("checkBy").toString();
+            TenantUserVo data = systemServiceClient.getUserById(checkBy).getData();
+            jsonObject.put("checkByInfo", data);
         }
 
         return jsonObject;
@@ -1193,22 +1213,22 @@ public class ProduceInspectionRecordService{
      * @param isAudit
      * @return
      */
-    public boolean auditByRecord(String id,String tempType,String isAudit){
+    public boolean auditByRecord(String id,String tempType,String isAudit,String auditRemark){
         if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
             UpdateWrapper<ProduceInspectionRecordMt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id",id).set("isAudit",isAudit);
+            updateWrapper.eq("id",id).set("is_audit",isAudit).set("audit_remark",auditRemark);
             return produceInspectionRecordMtService.update(updateWrapper);
         }else if(InspectionRecordTypeEnum.PT.getType().equals(tempType)){
             UpdateWrapper<ProduceInspectionRecordPt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id",id).set("isAudit",isAudit);
+            updateWrapper.eq("id",id).set("is_audit",isAudit).set("audit_remark",auditRemark);
             return produceInspectionRecordPtService.update(updateWrapper);
         }else if(InspectionRecordTypeEnum.RT.getType().equals(tempType)){
             UpdateWrapper<ProduceInspectionRecordRt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id",id).set("isAudit",isAudit);
+            updateWrapper.eq("id",id).set("is_audit",isAudit).set("audit_remark",auditRemark);
             return produceInspectionRecordRtService.update(updateWrapper);
         }else if(InspectionRecordTypeEnum.UT.getType().equals(tempType)){
             UpdateWrapper<ProduceInspectionRecordUt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id",id).set("isAudit",isAudit);
+            updateWrapper.eq("id",id).set("is_audit",isAudit).set("audit_remark",auditRemark);
             return produceInspectionRecordUtService.update(updateWrapper);
         }
         return false;

@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItemInspection;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.PhyChemTestService;
@@ -51,7 +52,7 @@ public class PhysChemTestController extends BaseController {
     }
 
 
-    @ApiOperation(value = "分页查询检测工序", notes = "分页查询检测工序")
+    @ApiOperation(value = "分页查询检测任务列表", notes = "分页查询检测任务列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -61,11 +62,10 @@ public class PhysChemTestController extends BaseController {
             @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "isAudit", value = "审核状态（false、待审核 true、已审核）", required = true, paramType = "query", dataType = "boolean"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo,String drawingNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
+    public CommonResult<IPage<TrackHead>> page(int page, int limit, String startTime, String endTime, String trackNo, String drawingNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
         return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,drawingNo,branchCode,tenantId,isAudit));
     }
 

@@ -94,5 +94,8 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String tempType = "mt";
     @ApiModelProperty(value = "是否审核")
     private String isAudit;
+    @ApiModelProperty(value = "审核意见")
+    private String auditRemark;
+
 
 }

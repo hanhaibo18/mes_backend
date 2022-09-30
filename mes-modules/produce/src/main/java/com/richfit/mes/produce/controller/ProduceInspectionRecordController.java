@@ -208,7 +208,7 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string")
     })
     @GetMapping("auditRecord")
-    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit) {
-        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit));
+    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark) {
+        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark));
     }
 }
