@@ -26,7 +26,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         additionalInfo.put("orgId", tenantUserDetails.getOrgId());
         additionalInfo.put("belongOrgId", tenantUserDetails.getBelongOrgId());
         additionalInfo.put("tenantErpCode", tenantUserDetails.getTenantErpCode());
-        additionalInfo.put("companyCode", tenantUserDetails.getTenantErpCode());
+        additionalInfo.put("companyCode", tenantUserDetails.getCompanyCode());
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
         return accessToken;
     }
