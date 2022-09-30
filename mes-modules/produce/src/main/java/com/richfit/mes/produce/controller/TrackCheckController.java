@@ -127,7 +127,9 @@ public class TrackCheckController extends BaseController {
                 queryWrapperRole.in("role_id", roleId);
                 List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
                 Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
-                queryWrapper.in("operatipon_id", set);
+                if (!set.isEmpty()) {
+                    queryWrapper.in("operatipon_id", set);
+                }
 
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }

@@ -555,7 +555,9 @@ public class TrackAssignController extends BaseController {
         queryWrapperRole.in("role_id", roleId);
         List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
         Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
-        queryWrapper.in("operatipon_id", set);
+        if (!set.isEmpty()) {
+            queryWrapper.in("operatipon_id", set);
+        }
 
         // 如果工序类型不为空，则按类型获取，没有类型查询所有类型工序
         if (!StringUtils.isNullOrEmpty(optType)) {
