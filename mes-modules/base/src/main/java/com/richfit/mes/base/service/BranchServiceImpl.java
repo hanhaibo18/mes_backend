@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> implements BranchService {
 
+    private final static String BOMCO_ZJ = "BOMCO_ZJ";
+
     @Autowired
     private BranchMapper branchMapper;
 
@@ -75,6 +77,19 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
             for (Branch branch : branchList) {
                 tenantUserVo.addAll(systemServiceClient.queryByBranchCode(branch.getBranchCode()));
             }
+        }
+        return tenantUserVo;
+    }
+
+    @Override
+    public List<TenantUserVo> queryUsers(String auditBy) {
+        List<TenantUserVo> tenantUserVo = new ArrayList<>();
+        if(!StringUtils.isNullOrEmpty(auditBy)){
+            TenantUserVo user = systemServiceClient.getUserById(auditBy).getData();
+            tenantUserVo.add(user);
+        }else{
+            //先获取所有车间
+            tenantUserVo.addAll(systemServiceClient.queryUserByBranchCode(BOMCO_ZJ).getData());
         }
         return tenantUserVo;
     }

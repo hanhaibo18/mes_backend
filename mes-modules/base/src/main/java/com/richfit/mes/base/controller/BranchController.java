@@ -243,6 +243,13 @@ public class BranchController extends BaseController {
         return CommonResult.success(branchService.queryUserList(branchCode));
     }
 
+    @ApiOperation(value = "查询质量检测部质检人员", notes = "查询质量检测部质检人员")
+    @ApiImplicitParam(name = "userId", value = "人员id", dataType = "String", paramType = "query")
+    @GetMapping("/queryUsers")
+    public CommonResult<List<TenantUserVo>> queryUsers(String auditBy) {
+        return CommonResult.success(branchService.queryUsers(auditBy));
+    }
+
     @ApiOperation(value = "查询所有组织机构", notes = "查询所有组织机构")
     @GetMapping("/queryAllCode")
     public CommonResult<List<Branch>> queryAllCode() {

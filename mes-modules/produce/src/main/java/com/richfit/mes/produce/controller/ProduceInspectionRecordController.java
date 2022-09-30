@@ -60,8 +60,34 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit,Integer isOperationComplete) {
-        return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit,isOperationComplete));
+    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit) {
+        return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit));
+    }
+
+    /**
+     * ***
+     * 分页查询待探伤工序
+     *
+     * @param page
+     * @param limit
+     * @return
+     */
+    @ApiOperation(value = "分页查询探伤记录审核 跟单工序列表", notes = "分页查询探伤记录审核 跟单工序列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tenantId", value = "组织机构id", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "productNo", value = "产品编号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
+    })
+    @GetMapping("/page/queryItemByAuditBy")
+    public CommonResult<IPage<TrackItemInspection>> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit) {
+        return CommonResult.success(produceInspectionRecordService.queryItemByAuditBy(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit));
     }
 
     /**
@@ -103,10 +129,14 @@ public class ProduceInspectionRecordController extends BaseController {
     }
 
     @ApiOperation(value = "根据工序id查询探伤记录列表", notes = "根据工序id查询探伤记录列表")
-    @ApiImplicitParam(name = "itemId", value = "工序id", required = true, paramType = "path", dataType = "string")
-    @GetMapping("/queryRecordByItemId/{itemId}")
-    public CommonResult queryRecordByItemId(@PathVariable String itemId){
-        return CommonResult.success(produceInspectionRecordService.queryRecordByItemId(itemId));
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "itemId", value = "工序id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "checkOrAudit", value = "探伤记录页面or探伤记录审核页面", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "isAudit", value = "审核状态", paramType = "query", dataType = "string"),
+    })
+    @GetMapping("/queryRecordByItemId")
+    public CommonResult queryRecordByItemId(String itemId,String checkOrAudit,String isAudit){
+        return CommonResult.success(produceInspectionRecordService.queryRecordByItemId(itemId,checkOrAudit,isAudit));
     }
 
     @ApiOperation(value = "根据工序id查询最近一条探伤记录", notes = "根据工序id查询最近一条探伤记录")
@@ -172,7 +202,13 @@ public class ProduceInspectionRecordController extends BaseController {
         return produceInspectionRecordService.rollBack(id);
     }
 
-
-
-
+    @ApiOperation(value = "探伤记录审核", notes = "探伤记录审核")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "探伤记录id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string")
+    })
+    @GetMapping("auditRecord")
+    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit) {
+        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit));
+    }
 }

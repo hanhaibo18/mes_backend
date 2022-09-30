@@ -39,6 +39,16 @@ public interface BranchService extends IService<Branch> {
     List<TenantUserVo> queryUserList(String branchCode);
 
     /**
+     * 功能描述: 获取质量检测部人员
+     *
+     * @param auditBy
+     * @Author: renzewen
+     * @Date: 2022/7/8 14:55
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryUsers(String auditBy);
+
+    /**
      * 功能描述: 获取所有车间
      *
      * @Author: xinYu.hou

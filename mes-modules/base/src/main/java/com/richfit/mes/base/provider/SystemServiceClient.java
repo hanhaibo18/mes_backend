@@ -26,6 +26,9 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/find_one")
     public CommonResult<TenantUserVo> getUserById(@RequestParam("id") String id);
 
+    @GetMapping(value = "/api/sys/user/queryUserByBranchCode")
+    public CommonResult<List<TenantUserVo>> queryUserByBranchCode(@RequestParam("branchCode") String branchCode);
+
     @GetMapping(value = "/api/sys/item/item/param/list")
     public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name, @RequestHeader(value = SecurityConstants.FROM) String header);
 

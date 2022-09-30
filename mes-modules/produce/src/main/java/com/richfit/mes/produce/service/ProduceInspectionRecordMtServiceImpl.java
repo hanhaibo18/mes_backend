@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordMt;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.ProduceInspectionRecordMtMapper;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import lombok.extern.slf4j.Slf4j;

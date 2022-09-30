@@ -14,4 +14,11 @@ public class ProduceItemInspectInfo{
     private String inspectRecordId;
     @ApiModelProperty(value = "探伤记录模板类型（1、mt 2、pt 3、rt 4、ut）")
     private String tempType;
+    @ApiModelProperty(value = "探伤记录审核人")
+    private String auditBy;
+    @ApiModelProperty(value = "探伤记录审核人")
+    private String checkBy;
+    @ApiModelProperty(value = "探伤记录审核状态")
+    private String isAudit;
+
 }
