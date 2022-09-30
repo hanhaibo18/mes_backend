@@ -666,7 +666,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
         if (!StrUtil.isBlank(drawNos)) {
             CommonResult<List<Router>> result = baseServiceClient.getByRouterNos(drawNos.substring(1), branchCode);
-            if (result != null) {
+            if (result != null && result.getData() != null) {
                 for (Plan plan : planList) {
                     for (Router router : result.getData()) {
                         if (plan.getDrawNo().equals(router.getRouterNo())) {
