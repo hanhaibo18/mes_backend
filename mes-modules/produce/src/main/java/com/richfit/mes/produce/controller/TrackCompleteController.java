@@ -879,7 +879,7 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "回滚(新)", notes = "回滚(新)")
     @ApiImplicitParam(name = "id", value = "报工Id", required = true, dataType = "String", paramType = "query")
-    @GetMapping("rollBack")
+    @GetMapping("/rollBack")
     public CommonResult<Boolean> rollBack(String id) {
         return trackCompleteService.rollBack(id);
     }

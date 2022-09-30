@@ -273,7 +273,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackItem.setIsCurrent(1);
                 trackItem.setIsFinalComplete("0");
                 trackItem.setIsOperationComplete(0);
-                trackItem.setAssignableQty(trackItem.getAssignableQty() + trackComplete.getCompletedQty().intValue());
                 trackItemService.updateById(trackItem);
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 trackHead.setStatus("1");
