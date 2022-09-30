@@ -821,7 +821,7 @@ public class TrackCheckController extends BaseController {
     public CommonResult<Map<String, Integer>> queryNumber(String branchCode) {
         Map<String, Integer> num = new HashMap<>(3);
         //没有车间直接返回0
-        if (StrUtil.isBlank(SecurityUtils.getCurrentUser().getOrgId())) {
+        if (StrUtil.isBlank(branchCode)) {
             //未质检数量
             num.put("qualityTestingNumber", 0);
             //未报工
