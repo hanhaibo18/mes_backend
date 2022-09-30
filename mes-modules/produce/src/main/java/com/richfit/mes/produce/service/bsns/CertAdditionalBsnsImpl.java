@@ -8,6 +8,7 @@ import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.ErpServiceClient;
@@ -57,17 +58,15 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
     @Override
     public void doAdditionalBsns(Certificate certificate) {
-
-        String pushTo = systemServiceClient.findItemParamByCode(pushSystemFlag).getData().getLabel();
-
+        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         if (needScjk(certificate)) {
-
             wmsServiceClient.sendJkInfo(certificate);
-
             //根据数据字段配置，判断推送哪个系统
-            if ("beiShi".equals(pushTo)){                           //推送北石
+            if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {
+                //推送北石
                 pushWorkHourToBs(certificate);
-            }else if (sendEnabled() && "baoShi".equals(pushTo)) {   //推送宝石
+            } else if (sendEnabled() && Tenant.COMPANYCODE_BAOSHI.equals(companyCode)) {
+                //推送宝石
                 pushWorkHour(certificate);
             }
         }
@@ -121,7 +120,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
                 List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
 
-                CommonResult<Boolean> b = erpServiceClient.certWorkHourPushToBs(trackItems, erpCode, trackHead.getProductionOrder(),trackHead.getMaterialNo(),
+                CommonResult<Boolean> b = erpServiceClient.certWorkHourPushToBs(trackItems, erpCode, trackHead.getProductionOrder(), trackHead.getMaterialNo(),
                         certificate.getNumber(), unit);
 
                 log.debug("[{}] query erp push-hour finish , result is [{}]", trackHead.getTrackNo(), b.getData());

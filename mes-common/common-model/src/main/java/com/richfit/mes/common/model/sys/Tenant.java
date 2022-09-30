@@ -24,6 +24,22 @@ public class Tenant extends BaseEntity<Tenant> {
 
     private static final long serialVersionUID = 1L;
 
+
+    /**
+     * 公司代码（默认值）
+     */
+    public static final String COMPANYCODE_DEFAULT = "DEFAULT";
+
+    /**
+     * 公司代码（宝石公司）
+     */
+    public static final String COMPANYCODE_BAOSHI = "BAOSHI";
+
+    /**
+     * 公司代码（北石公司）
+     */
+    public static final String COMPANYCODE_BEISHI = "BEISHI";
+
     /**
      * 租户姓名
      */
