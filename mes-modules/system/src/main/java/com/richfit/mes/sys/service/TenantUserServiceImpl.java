@@ -12,6 +12,7 @@ import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.UserRole;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.TenantUserMapper;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
@@ -86,6 +87,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         wrapper.eq("user_id", tenantUserVo.getId());
         List<UserRole> roleList = userRoleService.list(wrapper);
         tenantUserVo.setUserRoleType(roleList.get(0).getUserType());
+        TenantUserDetails tenantUserDetails = SecurityUtils.getCurrentUser();
+        tenantUserVo.setTenantErpCode(tenantUserDetails.getTenantErpCode());
+        tenantUserVo.setCompanyCode(tenantUserDetails.getCompanyCode());
         return tenantUserVo;
     }
 

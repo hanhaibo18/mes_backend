@@ -119,4 +119,13 @@ public class TenantUserVo extends BaseVo<TenantUser> {
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     protected Date modifyTime;
+
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "租户ERPCODE", dataType = "String")
+    private String tenantErpCode;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "所在租户公司 code", dataType = "String")
+    private String companyCode;
 }
