@@ -1244,6 +1244,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.update(updateWrapperTrackFlow);
 
             //更新跟单状态动作
+            System.out.println("-------------------");
+            System.out.println(id);
             TrackHead trackHead = trackHeadMapper.selectById(id);
             trackHead.setStatus("9");
             trackHeadMapper.updateById(trackHead);

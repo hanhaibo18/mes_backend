@@ -122,4 +122,8 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "下工序车间名称")
     @TableField(exist = false)
     private String nextOptWorkName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序产品编码")
+    private String itemProductNo;
 }
