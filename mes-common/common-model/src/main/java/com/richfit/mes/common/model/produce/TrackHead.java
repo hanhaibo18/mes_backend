@@ -303,6 +303,10 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * 跟单合格证
      */
     @TableField(exist = false)
+    @ApiModelProperty(value = "工序产品编码")
+    private String itemProductNo;
+
+    @TableField(exist = false)
     @ApiModelProperty(value = "工序顺序")
     private String sequenceOrderBy;
 

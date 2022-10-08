@@ -2,32 +2,33 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.produce.dao.TrackHeadMapper">
     <select id="selectTrackHeadRouter" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT * FROM mes_produce.produce_track_head
-        WHERE id in (SELECT th.id FROM mes_produce.produce_track_head th
-        left join produce_track_item ti on th.id = ti.track_head_id
-        ${ew.customSqlSegment}
+        SELECT *
+        FROM mes_produce.produce_track_head
+        WHERE id in (SELECT th.id
+                     FROM mes_produce.produce_track_head th
+                              left join produce_track_item ti on th.id = ti.track_head_id ${ew.customSqlSegment}
         group by th.id)
     </select>
 
     <select id="selectTrackHeadCurrentRouter" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id,ti.sequence_order_by
+        SELECT th.*, ti.product_no item_product_no, ti.opt_id, ti.opt_name, ti.id ti_id, ti.sequence_order_by
         FROM mes_produce.produce_track_head th
-        LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id AND ti.is_current = 1
-        ${ew.customSqlSegment}
+                 LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id AND ti.is_current = 1
+            ${ew.customSqlSegment}
     </select>
 
     <select id="selectTrackHeadAndFlow" resultType="com.richfit.mes.common.model.produce.TrackHead">
         SELECT th.*, tf.product_no as final_product_no
         FROM mes_produce.produce_track_head th
-        LEFT JOIN mes_produce.produce_track_head_flow tf ON th.id = tf.track_head_id
-        ${ew.customSqlSegment}
+                 LEFT JOIN mes_produce.produce_track_head_flow tf ON th.id = tf.track_head_id
+            ${ew.customSqlSegment}
     </select>
 
     <select id="queryListByCertId" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id,ti.sequence_order_by
+        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id, ti.sequence_order_by
         FROM mes_produce.produce_track_certificate tc
-        left join mes_produce.produce_track_head th on tc.th_id = th.id
-        LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id and ti.id = tc.ti_id
-        where tc.certificate_id=#{certId}
+                 left join mes_produce.produce_track_head th on tc.th_id = th.id
+                 LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id and ti.id = tc.ti_id
+        where tc.certificate_id = #{certId}
     </select>
 </mapper>
