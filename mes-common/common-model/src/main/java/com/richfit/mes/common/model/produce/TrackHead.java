@@ -333,8 +333,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String suffixNo;
     private String userMaterialNo;
 
-    @ApiModelProperty(value = "理化检测委托单id")
-    private String physChemId;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "委托单信息")
