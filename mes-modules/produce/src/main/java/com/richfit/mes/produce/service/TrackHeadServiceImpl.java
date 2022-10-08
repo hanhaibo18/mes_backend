@@ -745,7 +745,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     num += trackFlow.getNumber();
                 }
             }
-            
+
             trackHead.setNumberComplete(num);
             if (trackHead.getNumber().equals(trackHead.getNumberComplete())) {
                 trackHead.setStatus("2");
@@ -1192,15 +1192,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         boolean isSchedule = true;
         boolean isFinish = true;
         for (TrackFlow trackFlow : trackFlowList) {
-            if (!"0".equals(trackFlow.getStatus())) {
+            if (!TrackHead.STATUS_0.equals(trackFlow.getStatus())) {
                 isNotSchedule = false;
             }
-            if (!"1".equals(trackFlow.getStatus())) {
-                isSchedule = false;
-            }
-            if (!"2".equals(trackFlow.getStatus())) {
+            if (!TrackHead.STATUS_2.equals(trackFlow.getStatus())) {
                 isFinish = false;
             }
+        }
+        //当存非全部未派工，或者非全部完工显示为在制
+        if (isNotSchedule || isFinish) {
+            isSchedule = false;
         }
         if (isNotSchedule) {
             UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
