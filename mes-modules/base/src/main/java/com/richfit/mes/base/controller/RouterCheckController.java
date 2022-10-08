@@ -351,13 +351,13 @@ public class RouterCheckController extends BaseController {
                                 routerCheck.setUnit(checkList.get(j).getPropertyUnit());
                                 routerCheck.setMethod(checkList.get(j).getPropertyInputtype());
                                 routerCheck.setIsEmpty(1);
-                                routerCheck.setDefualtValue(checkList.get(i).getPropertyDefaultvalue());
+                                routerCheck.setDefualtValue(checkList.get(j).getPropertyDefaultvalue());
                                 routerCheck.setStatus("1");
-                                routerCheck.setPropertySymbol(checkList.get(i).getPropertySymbol());
-                                routerCheck.setPropertyLowerlimit(checkList.get(i).getPropertyLowerlimit());
-                                routerCheck.setPropertyUplimit(checkList.get(i).getPropertyUplimit());
-                                routerCheck.setPropertyTestmethod(checkList.get(i).getPropertyTestmethod());
-                                routerCheck.setPropertyDatatype(checkList.get(i).getPropertyInputtype());
+                                routerCheck.setPropertySymbol(checkList.get(j).getPropertySymbol());
+                                routerCheck.setPropertyLowerlimit(checkList.get(j).getPropertyLowerlimit());
+                                routerCheck.setPropertyUplimit(checkList.get(j).getPropertyUplimit());
+                                routerCheck.setPropertyTestmethod(checkList.get(j).getPropertyTestmethod());
+                                routerCheck.setPropertyDatatype(checkList.get(j).getPropertyInputtype());
                                 check_order++;
                                 routerCheckService.save(routerCheck);
                             }
