@@ -441,10 +441,7 @@ public class SequenceController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
-        //导入文件名校验
-        if(!file.getOriginalFilename().equals("工艺导入模板.xls")){
-            return CommonResult.failed("导入模板错误!，请重新校验模板");
-        }
+
         CommonResult result = null;
         String msg = "";
         String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "opNo", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
