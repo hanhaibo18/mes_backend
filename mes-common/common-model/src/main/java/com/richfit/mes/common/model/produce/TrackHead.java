@@ -51,6 +51,46 @@ public class TrackHead extends BaseEntity<TrackHead> {
      */
     public static final String TRACKHEAD_BATCH_NO = "N";
 
+
+    /**
+     * 初始跟单
+     */
+    public static final String STATUS_0 = "0";
+
+    /**
+     * 跟单在制
+     */
+    public static final String STATUS_1 = "1";
+
+
+    /**
+     * 跟单完工
+     */
+    public static final String STATUS_2 = "2";
+
+    /**
+     * 打印跟单
+     */
+    public static final String STATUS_4 = "4";
+
+
+    /**
+     * 作废跟单
+     */
+    public static final String STATUS_5 = "5";
+
+
+    /**
+     * 生产完工资料
+     */
+    public static final String STATUS_8 = "8";
+
+
+    /**
+     * 已交库
+     */
+    public static final String STATUS_9 = "9";
+
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
