@@ -872,7 +872,7 @@ public class ProduceInspectionRecordService{
         JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(obj));
 
         //插入附件信息
-        if(!ObjectUtil.isEmpty(jsonObject.get("diagramAttachmentId"))){
+        /*if(!ObjectUtil.isEmpty(jsonObject.get("diagramAttachmentId"))){
             List<Object> fileInfos = new ArrayList<>();
             String[] diagramAttachmentIds = jsonObject.get("diagramAttachmentId").toString().split(",");
             for (String diagramAttachmentId : diagramAttachmentIds) {
@@ -880,7 +880,7 @@ public class ProduceInspectionRecordService{
                 data.setPreviewUrl(String.valueOf(systemServiceClient.getPreviewUrl(diagramAttachmentId).getData()));
             }
             jsonObject.put("fileList", fileInfos);
-        }
+        }*/
 
         if(!ObjectUtil.isEmpty(jsonObject.get("auditBy"))){
             String auditBy = jsonObject.get("auditBy").toString();

@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
@@ -34,8 +35,6 @@ import java.util.stream.Collectors;
 public class PhyChemTestService{
 
     @Autowired
-    private TrackItemInspectionMapper trackItemInspectionMapper;
-    @Autowired
     private TrackHeadService trackHeadService;
     @Autowired
     private PhysChemOrderService physChemOrderService;
@@ -54,10 +53,10 @@ public class PhyChemTestService{
      * @param productName
      * @param branchCode
      * @param tenantId
-     * @param isCheckOut
+     * @param status
      * @return
      */
-    public IPage<TrackHead> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String drawingNo, String branchCode, String tenantId, Boolean isCheckOut) {
+    public IPage<TrackHead> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String drawingNo, String branchCode, String tenantId, String status) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -65,7 +64,6 @@ public class PhyChemTestService{
         if (!StringUtils.isEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
-
         if (!StringUtils.isEmpty(trackNo)) {
             queryWrapper.eq("track_no",trackNo);
         }
@@ -80,23 +78,39 @@ public class PhyChemTestService{
         }
         if (!StringUtils.isEmpty(endTime)) {
             queryWrapper.lt("modify_time",endTime);
-
+        }
+        //委托单状态
+        if(!StringUtils.isEmpty(status)){
+            queryWrapper.inSql("id", "select id from  produce_track_head where batch_no in ( select batch_no from produce_phys_chem_order where status ='" + trackNo + "')");
         }
         queryWrapper.orderByDesc("modify_time");
         IPage<TrackHead> trackHeads = trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper);
         //处理map
         Map<String, TrackHead> trackHeadMap =
-                trackHeads.getRecords().stream().collect(Collectors.toMap(TrackHead::getId, Function.identity()));
+                trackHeads.getRecords().stream().collect(Collectors.toMap(TrackHead::getId, Function.identity(),(map1,map2)->map1));
         //查询委托单
-        List<PhysChemOrder> physChemOrders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().in("id", trackHeadMap.keySet()));
-        Map<String, PhysChemOrder> physChemOrderMap = physChemOrders.stream().collect(Collectors.toMap(PhysChemOrder::getId, Function.identity()));
+        List<PhysChemOrder> physChemOrders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().in("batch_no", trackHeadMap.keySet()));
+        Map<String, PhysChemOrder> physChemOrderMap = physChemOrders.stream().collect(Collectors.toMap(PhysChemOrder::getBatchNo, Function.identity()));
         for (TrackHead trackHead : trackHeads.getRecords()) {
             //委托单赋值
-            if(!ObjectUtil.isEmpty(physChemOrderMap.get(trackHead.getPhysChemId()))){
-                trackHead.setPhysChemOrder(physChemOrderMap.get(trackHead.getPhysChemId()));
+            if(!ObjectUtil.isEmpty(physChemOrderMap.get(trackHead.getBatchNo()))){
+                trackHead.setPhysChemOrder(physChemOrderMap.get(trackHead.getBatchNo()));
             }
         }
         return trackHeads;
+    }
+
+
+    /**
+     * 修改委托单状态
+     * @param status
+     * @param id
+     */
+    public void changeOrderStaus(String status,String id){
+        PhysChemOrder physChemOrder = new PhysChemOrder();
+        physChemOrder.setId(id);
+        physChemOrder.setStatus(status);
+        physChemOrderService.updateById(physChemOrder);
     }
 
     /**

@@ -19,6 +19,10 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
+    @ApiModelProperty(value = "炉批号")
+    private String batchNo;
+    @ApiModelProperty(value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）")
+    private String status;
     @ApiModelProperty(value = "化学分析->全分析")
     private String chemicalAnalysis;
     @ApiModelProperty(value = "化学分析->碳硫")

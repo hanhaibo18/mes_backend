@@ -51,6 +51,21 @@ public class PhysChemTestController extends BaseController {
         return CommonResult.success(physChemOrderService.saveOrUpdate(physChemOrder));
     }
 
+    @ApiOperation(value = "查询委托单列表", notes = "查询委托单列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "batchNo", value = "炉批号", paramType = "query", dataType = "string"),
+
+    })
+    @PostMapping("/producePhysChemOrder/selectOrderList")
+    public CommonResult selectOrderList(int page,int limit,String branchCode,String startTime,String endTime,String batchNo){
+        return CommonResult.success(physChemOrderService.selectOrderList(page,limit,startTime,endTime,batchNo));
+    }
+
 
     @ApiOperation(value = "分页查询检测任务列表", notes = "分页查询检测任务列表")
     @ApiImplicitParams({
@@ -62,11 +77,11 @@ public class PhysChemTestController extends BaseController {
             @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isAudit", value = "审核状态（false、待审核 true、已审核）", required = true, paramType = "query", dataType = "boolean"),
+            @ApiImplicitParam(name = "status", value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）", paramType = "query", dataType = "string"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackHead>> page(int page, int limit, String startTime, String endTime, String trackNo, String drawingNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
-        return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,drawingNo,branchCode,tenantId,isAudit));
+    public CommonResult<IPage<TrackHead>> page(int page, int limit, String startTime, String endTime, String trackNo, String drawingNo, String productName, String branchCode, String tenantId, String status) {
+        return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,drawingNo,branchCode,tenantId,status));
     }
 
 
