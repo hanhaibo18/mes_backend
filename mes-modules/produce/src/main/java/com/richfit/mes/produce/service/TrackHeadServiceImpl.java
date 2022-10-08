@@ -735,8 +735,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.updateById(trackFlow);
 
             //跟单完成数量，状态更新
+            int num = 0;
             TrackHead trackHead = trackHeadMapper.selectById(trackFlow.getTrackHeadId());
-            trackHead.setNumberComplete(trackHead.getNumberComplete() + trackFlow.getNumber());
+            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+            queryWrapperTrackFlow.eq("track_head_id", trackFlow.getTrackHeadId());
+            List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapperTrackFlow);
+            for (TrackFlow tf : trackFlowList) {
+                if (TrackHead.STATUS_2.equals(tf.getStatus()) || TrackHead.STATUS_8.equals(tf.getStatus()) || TrackHead.STATUS_9.equals(tf.getStatus())) {
+                    num += trackFlow.getNumber();
+                }
+            }
+            
+            trackHead.setNumberComplete(num);
             if (trackHead.getNumber().equals(trackHead.getNumberComplete())) {
                 trackHead.setStatus("2");
             }
