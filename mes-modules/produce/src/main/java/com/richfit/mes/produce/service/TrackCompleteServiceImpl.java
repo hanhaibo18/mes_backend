@@ -104,18 +104,23 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
             }
             if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
-                //更改状态 标识当前工序完成
-                trackItem.setIsDoing(2);
-                trackItem.setIsOperationComplete(1);
-                trackItemService.updateById(trackItem);
-                trackCompleteCacheService.remove(queryWrapper);
-                //调用工序激活方法
-                Map<String, String> map = new HashMap<>(3);
-                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-                map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
-                map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
-                map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
-                publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                //派工状态设置为完成
+                assign.setState(2);
+                trackAssignService.updateById(assign);
+                if (trackItem.getAssignableQty() == 0) {
+                    //更改状态 标识当前工序完成
+                    trackItem.setIsDoing(2);
+                    trackItem.setIsOperationComplete(1);
+                    trackItemService.updateById(trackItem);
+                    trackCompleteCacheService.remove(queryWrapper);
+                    //调用工序激活方法
+                    Map<String, String> map = new HashMap<>(3);
+                    map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                    map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                    publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                }
             }
             log.error(completeDto.getTrackCompleteList().toString());
             this.saveBatch(completeDto.getTrackCompleteList());
@@ -278,7 +283,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackHead.setStatus("1");
                 trackHeadService.updateById(trackHead);
                 if (null != assign) {
-                    assign.setAvailQty(assign.getQty() + trackComplete.getCompletedQty().intValue());
+                    assign.setAvailQty(assign.getQty());
                     assign.setState(0);
                     trackAssignService.updateById(assign);
                 }

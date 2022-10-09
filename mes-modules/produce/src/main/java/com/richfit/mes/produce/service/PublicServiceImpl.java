@@ -129,9 +129,6 @@ public class PublicServiceImpl implements PublicService {
 
         int isComplete = 1;
 
-        //派工状态设置为完成
-        assignById.setState(2);
-        trackAssignService.updateById(assignById);
 
         Boolean activationProcess = false;
         boolean isNext = false;
