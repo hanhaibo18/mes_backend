@@ -209,9 +209,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                         && (item.getIsQualityComplete() != null && item.getIsQualityComplete() != 0)) {
                     return "质检已完成，报工记录不可重置！";
                 }
-                // 无质检，有调度审核并审核完成
+                // 第一行:是否质检确认 不确认为true 第二行:是否调度确认 确认为true 第三行 是否调度完成,完成为true
                 else if ((item.getIsExistQualityCheck() != null && item.getIsExistQualityCheck() == 0)
-                        && (item.getIsExistScheduleCheck() != null && item.getIsExistScheduleCheck() != 0)) {
+                        && (item.getIsExistScheduleCheck() != null && item.getIsExistScheduleCheck() != 0)
+                        && (item.getIsScheduleComplete() != null && item.getIsScheduleComplete() != 0)) {
                     return "调度审核已完成,报工记录不可重置！";
                 } else {
                     item.setIsDoing(0);
