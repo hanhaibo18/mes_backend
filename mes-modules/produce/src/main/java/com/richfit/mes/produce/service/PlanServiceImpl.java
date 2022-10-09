@@ -252,7 +252,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
                 pbc.setStoreNumber(totalStore / unit);
             }
-            totalMiss = pbc.getPlanNeedNumber() * unit + pbc.getInstallNumber() * unit - totalWms - totalStore;
+            totalMiss = pbc.getPlanNeedNumber() * unit - totalWms - totalStore;
             if (totalMiss > 0) {
                 pbc.setMissingNumber(totalMiss / unit);
             } else {
