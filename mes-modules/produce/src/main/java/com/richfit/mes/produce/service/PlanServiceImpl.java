@@ -12,6 +12,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
@@ -602,6 +603,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
             for (Plan plan : sheetList) {
                 plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                //车间代码判断，并取中文名称
+                CommonResult<Branch> result = baseServiceClient.selectBranchByCodeAndTenantId(plan.getInchargeOrg(), plan.getTenantId());
+                if (result.getData() == null) {
+                    throw new GlobalException("加工车间代码错误:" + plan.getInchargeOrg(), ResultCode.FAILED);
+                }
+                System.out.println("-------");
+                System.out.println(result.getData().getBranchName());
+                plan.setInchargeOrgName(result.getData().getBranchName());
                 //设置优先级 默认为1
                 plan.setPriority("1");
                 if (!ObjectUtil.isEmpty(plan.getDrawNo()) && plan.getDrawNo().equals("0")) {
@@ -643,13 +652,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? 0 : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
             }
-
-
             //保存计划列表
             this.saveBatch(sheetList);
-
         } catch (Exception e) {
             e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 

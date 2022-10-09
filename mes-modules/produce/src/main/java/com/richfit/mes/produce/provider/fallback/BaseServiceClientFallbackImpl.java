@@ -24,6 +24,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public CommonResult<Branch> selectBranchByCodeAndTenantId(String branchCode, String tenantId) {
+        return CommonResult.success(null);
+    }
+
+    @Override
     public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
         return CommonResult.success(null);
     }
