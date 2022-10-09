@@ -411,8 +411,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 }
             }
         }
-
-        return CommonResult.success(this.save(plan));
+        boolean f = this.save(plan);
+        this.planData(plan.getId());
+        return CommonResult.success(f);
     }
 
     @Override
@@ -608,8 +609,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 if (result.getData() == null) {
                     throw new GlobalException("加工车间代码错误:" + plan.getInchargeOrg(), ResultCode.FAILED);
                 }
-                System.out.println("-------");
-                System.out.println(result.getData().getBranchName());
                 plan.setInchargeOrgName(result.getData().getBranchName());
                 //设置优先级 默认为1
                 plan.setPriority("1");
@@ -649,7 +648,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setOptNumber(0);
                 plan.setOptFinishNumber(0);
                 plan.setDeliveryNum(0);
-                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? 0 : plan.getMissingNum());
+                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
             }
             //保存计划列表
