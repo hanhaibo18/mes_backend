@@ -490,15 +490,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             relation.setType("0");
             relation.setNumber(number);
             trackHeadRelationMapper.insert(relation);
-            System.out.println("---------------------");
-            System.out.println(productsNo);
             //料单添加成品信息
             LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
 
             //添加跟单-分流-料单的关联信息
             TrackHeadRelation relationCp = new TrackHeadRelation();
             relationCp.setThId(trackHead.getId());
-            relation.setFlowId(flowId);
+            relationCp.setFlowId(flowId);
             relationCp.setLsId(lineStoreCp.getId());
             relationCp.setType("1");
             relationCp.setNumber(number);

@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -18,6 +19,7 @@ import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
+import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.FilesUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Resource
     private TrackHeadService trackHeadService;
+
+    @Autowired
+    private TrackHeadRelationMapper trackHeadRelationMapper;
 
     @Autowired
     private PublicService publicService;
@@ -663,6 +668,21 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             lineStoreMapper.insert(lineStoreCp);
             return lineStoreCp;
         }
+    }
+
+    @Override
+    public List<LineStore> listByFlowId(String flowId, String type) {
+        //查询跟单物料关联表
+        List<LineStore> lineStoreList = new ArrayList<>();
+        QueryWrapper<TrackHeadRelation> queryWrapperTrackHeadRelation = new QueryWrapper<>();
+        queryWrapperTrackHeadRelation.eq("flow_id", flowId);
+        queryWrapperTrackHeadRelation.eq(!StrUtil.isBlank(type), "type", type);
+        List<TrackHeadRelation> trackHeadRelationList = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
+        //封装料单信息
+        for (TrackHeadRelation thr : trackHeadRelationList) {
+            lineStoreList.add(this.getById(thr.getLsId()));
+        }
+        return lineStoreList;
     }
 
     private static LineStore getLineStore(TrackHead trackHead, String productsNo, Integer number) {
