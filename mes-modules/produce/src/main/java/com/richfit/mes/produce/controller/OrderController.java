@@ -197,7 +197,7 @@ public class OrderController extends BaseController {
 
             String[] columnHeaders = {"订单号", "物料号", "物料描述", "工厂编号", "控制者", "数量", "计划开始时间", "计划结束时间", "销售订单", "工号", "合同", "交货日期", "最后更新时间", "最后更新人", "订单日期"};
 
-            String[] fieldNames = {"orderSn", "materialNo", "materialCode", "branchCode", "inChargeOrg", "orderNum", "startTime", "endTime", "", "", "", "", "modifyTime", "modifyBy", "orderDate"};
+            String[] fieldNames = {"orderSn", "materialCode", "materialDesc", "branchCode", "inChargeOrg", "orderNum", "startTime", "endTime", "", "", "", "", "modifyTime", "modifyBy", "orderDate"};
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
         } catch (Exception e) {
