@@ -27,6 +27,9 @@ public interface BaseServiceClient {
     @GetMapping(value = "/api/base/branch/select_branch_children_by_code")
     public CommonResult<List<Branch>> selectBranchChildByCode(@RequestParam("branchCode") String branchCode);
 
+    @GetMapping(value = "/api/base/branch/branch/one")
+    public CommonResult<Branch> selectBranchByCodeAndTenantId(@RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
+
     @GetMapping("/api/base/product/product/listByNo")
     public CommonResult<List<Product>> selectProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
 
