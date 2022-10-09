@@ -328,6 +328,7 @@ public class RouterCheckController extends BaseController {
 
                         QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                         queryWrapper2.eq("opt_name", checkList.get(j).getOptName().trim());
+                        queryWrapper2.eq("op_no", checkList.get(j).getOptNo().trim());
                         //queryWrapper2.eq("tenant_id", tenantId);
                         queryWrapper2.eq("branch_code", branchCode);
                         queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + drawnos.split(",")[i] + "' and branch_code='" + branchCode + "'");
