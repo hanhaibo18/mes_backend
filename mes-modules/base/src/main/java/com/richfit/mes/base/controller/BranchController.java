@@ -127,7 +127,7 @@ public class BranchController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
 
             if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.ne("tenant_id", tenantId);
+                queryWrapper.eq("tenant_id", tenantId);
             }
             queryWrapper.orderByAsc("order_no");
 
