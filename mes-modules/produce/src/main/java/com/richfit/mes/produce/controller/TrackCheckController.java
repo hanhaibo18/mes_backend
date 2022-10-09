@@ -156,7 +156,7 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.like("product_no", productNo);
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
                 Calendar calendar = new GregorianCalendar();
