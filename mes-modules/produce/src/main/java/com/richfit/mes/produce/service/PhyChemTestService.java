@@ -81,20 +81,24 @@ public class PhyChemTestService{
         }
         //委托单状态
         if(!StringUtils.isEmpty(status)){
-            queryWrapper.inSql("id", "select id from  produce_track_head where batch_no in ( select batch_no from produce_phys_chem_order where status ='" + trackNo + "')");
+            queryWrapper.inSql("id", "select id from  produce_track_head where batch_no in ( select batch_no from produce_phys_chem_order where status ='" + status + "')");
         }
+        //炉批号不为空
+        queryWrapper.isNotNull("batch_no");
         queryWrapper.orderByDesc("modify_time");
         IPage<TrackHead> trackHeads = trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper);
         //处理map
         Map<String, TrackHead> trackHeadMap =
-                trackHeads.getRecords().stream().collect(Collectors.toMap(TrackHead::getId, Function.identity(),(map1,map2)->map1));
+                trackHeads.getRecords().stream().collect(Collectors.toMap(TrackHead::getBatchNo, Function.identity(),(map1,map2)->map1));
         //查询委托单
-        List<PhysChemOrder> physChemOrders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().in("batch_no", trackHeadMap.keySet()));
-        Map<String, PhysChemOrder> physChemOrderMap = physChemOrders.stream().collect(Collectors.toMap(PhysChemOrder::getBatchNo, Function.identity()));
-        for (TrackHead trackHead : trackHeads.getRecords()) {
-            //委托单赋值
-            if(!ObjectUtil.isEmpty(physChemOrderMap.get(trackHead.getBatchNo()))){
-                trackHead.setPhysChemOrder(physChemOrderMap.get(trackHead.getBatchNo()));
+        if(trackHeadMap.keySet().size()>0){
+            List<PhysChemOrder> physChemOrders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().in("batch_no", trackHeadMap.keySet()));
+            Map<String, PhysChemOrder> physChemOrderMap = physChemOrders.stream().collect(Collectors.toMap(PhysChemOrder::getBatchNo, Function.identity()));
+            for (TrackHead trackHead : trackHeads.getRecords()) {
+                //委托单赋值
+                if(!ObjectUtil.isEmpty(physChemOrderMap.get(trackHead.getBatchNo()))){
+                    trackHead.setPhysChemOrder(physChemOrderMap.get(trackHead.getBatchNo()));
+                }
             }
         }
         return trackHeads;
