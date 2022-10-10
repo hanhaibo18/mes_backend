@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.RouterCheck;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,4 +30,6 @@ public interface RouterCheckService extends IService<RouterCheck> {
      * @return: List<RouterCheck>
      **/
     List<RouterCheck> queryRouterList(String optId, String type, String branchCode, String tenantId);
+
+    CommonResult importExcelCheck(MultipartFile file, String tenantId, String branchCode);
 }
