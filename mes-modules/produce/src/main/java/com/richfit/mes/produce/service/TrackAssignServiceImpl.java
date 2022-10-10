@@ -186,7 +186,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes) throws ParseException {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -223,6 +223,20 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         queryWrapper.eq("u.classes", classes);
         queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if ("desc".equals(order)) {
+                    queryWrapper.orderByDesc("u." + StrUtil.toUnderlineCase(orderCol));
+                } else if ("asc".equals(order)) {
+                    queryWrapper.orderByAsc("u." + StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc("u." + StrUtil.toUnderlineCase(orderCol));
+            }
+        } else {
+            queryWrapper.orderByDesc("u.modify_time");
+        }
+        OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.orderByDesc("u.assign_time");
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         if (null != queryPage.getRecords()) {
