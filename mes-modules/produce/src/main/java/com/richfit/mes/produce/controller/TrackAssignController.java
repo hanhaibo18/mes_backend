@@ -267,6 +267,8 @@ public class TrackAssignController extends BaseController {
                 if (StrUtil.isNotBlank(assign.getUserId())) {
                     assign.setUserId(assign.getUserId() + ",");
                 }
+                CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
+                assign.setAssignName(user.getData().getEmplName());
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 if (null != trackItem) {
