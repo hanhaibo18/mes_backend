@@ -19,7 +19,6 @@ import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -77,6 +76,8 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                 List<RouterCheckDto> checkList = ExcelUtils.importExcel(excelFile, RouterCheckDto.class, fieldNames, 1, 0, 0, tempName.toString());
                 step += "获取列表成功";
                 List<RouterCheckDto> list2 = new ArrayList<>();
+                //图号为空校验
+                String isNull = "";
                 // 获取图号列表
                 String drawnos = "";
                 for (int i = 0; i < checkList.size(); i++) {
@@ -86,17 +87,26 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                             drawnos += checkList.get(i).getRouterNo() + ",";
                         }
                     }
+                    if (StringUtils.isNullOrEmpty(checkList.get(i).getRouterNo()) && "X".equals(checkList.get(i).getIsImport())) {
+                        isNull = "图号不能为空";
+                    }
 
                 }
                 step += "获取图号成功";
 
                 checkList = list2;
                 //校验
-                String info = checkExportInfo(drawnos, checkList, branchCode);
-                //校验错误信息
-                if(!StringUtils.isNullOrEmpty(info)){
-                    return CommonResult.failed(info);
+                if((checkList.size()>0 && StringUtils.isNullOrEmpty(drawnos)) || !StringUtils.isNullOrEmpty(drawnos)){
+                    String info = checkExportInfo(drawnos, checkList, branchCode);
+                    if(!StringUtils.isNullOrEmpty(isNull)){
+                        info = info+isNull;
+                    }
+                    //校验错误信息
+                    if(!StringUtils.isNullOrEmpty(info)){
+                        return CommonResult.failed(info);
+                    }
                 }
+
                 list = checkList;
                 // 遍历图号插入检查内容
                 for (int i = 0; i < drawnos.split(",").length; i++) {
@@ -258,7 +268,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
             for (String drawno : drawnoList) {
                 boolean exist = routerNos.contains(drawno);
                 if(!exist){
-                    info.append("图号"+drawno+"未维护工艺管理数据<br>");
+                    info.append("图号"+drawno+"未维护工艺管理数据</br>");
                 }
             }
             //2.工序校验
@@ -299,28 +309,28 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
         String msg = "";
         if(!NumberUtil.isNumber(StringUtils.isNullOrEmpty(propertyLowerlimit)?"0":propertyLowerlimit)
                 || !NumberUtil.isNumber(StringUtils.isNullOrEmpty(propertyUplimit)?"0":propertyUplimit)){
-            msg = "最大值最小值必须为数字<br>";
+            msg = "最大值最小值必须为数字</br>";
         }else{
             if (
                     ("等于设定值".equals(propertySymbol) ||
                             "不等于设定值".equals(propertySymbol)) &&
                             StringUtils.isNullOrEmpty(propertyDefaultvalue)
             ) {
-                msg = "必须填写默认设定值<br>";
+                msg = "必须填写默认设定值</br>";
             }
             if (
                     ("结果 > 最小值".equals(propertySymbol) ||
                             "结果 >= 最小值".equals(propertySymbol)) &&
                             StringUtils.isNullOrEmpty(propertyLowerlimit)
             ) {
-                msg = "必须填写最小值<br>";
+                msg = "必须填写最小值</br>";
             }
             if (
                     ("结果 < 最大值".equals(propertySymbol) ||
                             "结果 <= 最大值".equals(propertySymbol)) &&
                             StringUtils.isNullOrEmpty(routerCheckDto.getPropertyUplimit())
             ) {
-                msg = "必须填写最大值<br>";
+                msg = "必须填写最大值</br>";
             }
             if (
                     ("最小值 <= 结果 <= 最大值".equals(propertySymbol) ||
@@ -329,7 +339,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                             "最小值 <= 结果 < 最大值".equals(propertySymbol)) &&
                             (StringUtils.isNullOrEmpty(propertyUplimit) || StringUtils.isNullOrEmpty(propertyLowerlimit))
             ) {
-                msg = "最大值和最小值必须填写<br>";
+                msg = "最大值和最小值必须填写</br>";
             } else{
                 if (
                         ("最小值 <= 结果 <= 最大值".equals(propertySymbol) ||
@@ -337,13 +347,13 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                                 "最小值 <= 结果 < 最大值".equals(propertySymbol)) &&
                                 Double.parseDouble(propertyLowerlimit) > Double.parseDouble(propertyUplimit)
                 ) {
-                    msg = "最大值必须大于等于最小值<br>";
+                    msg = "最大值必须大于等于最小值</br>";
                 }
                 if (
                         "最小值 < 结果 < 最大值".equals(propertySymbol) &&
                                 Double.parseDouble(propertyLowerlimit) > Double.parseDouble(propertyUplimit)
                 ) {
-                    msg = "最大值必须大于最小值<br>";
+                    msg = "最大值必须大于最小值</br>";
                 }
             }
         }
