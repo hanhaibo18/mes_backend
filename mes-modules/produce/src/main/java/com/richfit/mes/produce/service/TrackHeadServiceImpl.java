@@ -336,7 +336,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //当匹配计划时更新计划状态
             planService.planData(trackHead.getWorkPlanId());
-            orderService.orderData(trackHead.getProductionOrderId());
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
