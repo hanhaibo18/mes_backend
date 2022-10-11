@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.QueryDto;
@@ -67,6 +68,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Resource
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private TrackAssignMapper trackAssignMapper;
 
     @Override
     public List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query) {
@@ -256,20 +260,22 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     trackHeadService.update(updateWrapper);
                 }*/
                 item.setIsSchedule(0);
+                item.setAssignableQty(item.getNumber());
 
                 //TODO:一条工序会存在多条派工记录,重构一下代码
-                QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
-                assignQueryWrapper.eq("ti_id", tiId);
-                Assign assign = trackAssignService.getOne(assignQueryWrapper);
-                if (assign != null && !StringUtils.isNullOrEmpty(assign.getId())) {
-                    item.setAssignableQty(item.getAssignableQty() + assign.getQty());
-                    QueryWrapper<AssignPerson> personQueryWrapper = new QueryWrapper<>();
-                    personQueryWrapper.eq("assign_id", assign.getId());
-                    trackAssignPersonService.remove(personQueryWrapper);
-                    trackAssignService.removeById(assign.getId());
-                } else {
-                    item.setAssignableQty(item.getBatchQty());
-                }
+                trackAssignMapper.deleteAssignAndPerson(tiId);
+//
+//                QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+//                assignQueryWrapper.eq("ti_id", tiId);
+//                Assign assign = trackAssignService.getOne(assignQueryWrapper);
+//                if (assign != null && !StringUtils.isNullOrEmpty(assign.getId())) {
+//                    QueryWrapper<AssignPerson> personQueryWrapper = new QueryWrapper<>();
+//                    personQueryWrapper.eq("assign_id", assign.getId());
+//                    trackAssignPersonService.remove(personQueryWrapper);
+//                    trackAssignService.removeById(assign.getId());
+//                } else {
+//                    item.setAssignableQty(item.getBatchQty());
+//                }
                 //补充当工序顺序为1时进行跟单状态处理接口调用
                 if (item.getOptSequence() == 1) {
                     UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
