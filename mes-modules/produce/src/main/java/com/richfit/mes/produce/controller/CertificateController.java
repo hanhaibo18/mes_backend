@@ -184,7 +184,7 @@ public class CertificateController {
 
     @ApiOperation(value = "合格证号查询合格证信息", notes = "通过合格证号查询合格证信息")
     @GetMapping("/select/certificate_no")
-    public CommonResult<List<Certificate>> selectCertificateForTransf(@ApiParam(value = "合格证号码", required = true) @RequestParam String certificateNo) {
+    public CommonResult<List<Certificate>> selectByCertificateNo(@ApiParam(value = "合格证号码", required = true) @RequestParam String certificateNo) {
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(!StrUtil.isBlank(certificateNo), "certificate_no", certificateNo);
         return CommonResult.success(certificateService.list(queryWrapper), SUCCESS_MESSAGE);
