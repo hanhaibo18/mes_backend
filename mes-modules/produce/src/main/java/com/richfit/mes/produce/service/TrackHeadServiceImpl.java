@@ -532,17 +532,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //工序批量修改（单件跟单多生产线、普通跟单判断）
             if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) > 0) {
                 //多生产线工序修改
-                //删除所有为派工的跟单工序
+                //工序顺序降序查询以派工的工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                 queryWrapperTrackItem.eq("is_schedule", 1);
+                queryWrapperTrackItem.orderByDesc("opt_sequence");
                 List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                //取出最大的顺序数
                 int optSequence = 0;
-                for (TrackItem trackItem : trackItemList) {
-                    if (optSequence < trackItem.getOptSequence()) {
-                        optSequence = trackItem.getOptSequence();
-                    }
+                if (trackItemList != null && trackItemList.size() > 0) {
+                    optSequence = trackItemList.get(0).getOptSequence();
                 }
+                //删除大于最大顺序数的工序信息
                 QueryWrapper<TrackItem> queryWrapperTrackItem2 = new QueryWrapper<>();
                 queryWrapperTrackItem2.eq("track_head_id", trackHead.getId());
                 queryWrapperTrackItem2.gt("opt_sequence", optSequence);
