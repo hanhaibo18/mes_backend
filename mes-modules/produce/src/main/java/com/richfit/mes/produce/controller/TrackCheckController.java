@@ -25,10 +25,7 @@ import com.richfit.mes.produce.entity.QueryQualityTestingDetailsVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -839,5 +836,16 @@ public class TrackCheckController extends BaseController {
         //未派工
         num.put("dispatchingNumber", trackAssignService.queryDispatchingNumber(branchCode));
         return CommonResult.success(num);
+    }
+
+    @ApiOperation(value = "质检信息查询", notes = "质检信息查询")
+    @GetMapping("/find")
+    public CommonResult<List<TrackCheck>> find(@ApiParam(value = "跟单工序项ID") @RequestParam(required = false) String tiId) {
+
+        QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(!StrUtil.isBlank(tiId), "ti_id", tiId);
+        queryWrapper.orderByAsc("modify_time");
+        List<TrackCheck> result = trackCheckService.list(queryWrapper);
+        return CommonResult.success(result, "操作成功！");
     }
 }

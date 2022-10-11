@@ -9,7 +9,6 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
 import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItemInspection;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.PhyChemTestService;
 import com.richfit.mes.produce.service.PhysChemOrderService;
@@ -46,6 +45,7 @@ public class PhysChemTestController extends BaseController {
     private PhysChemResultService physChemResultService;
 
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
+    @ApiImplicitParam(name = "physChemOrder", value = "委托单", paramType = "body", dataType = "PhysChemOrder")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> saveOrUpdate(@RequestBody PhysChemOrder physChemOrder){
         return CommonResult.success(physChemOrderService.saveOrUpdate(physChemOrder));
@@ -59,11 +59,11 @@ public class PhysChemTestController extends BaseController {
             @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "batchNo", value = "炉批号", paramType = "query", dataType = "string"),
-
+            @ApiImplicitParam(name = "status", value = "状态", paramType = "query", dataType = "string"),
     })
     @PostMapping("/producePhysChemOrder/selectOrderList")
-    public CommonResult selectOrderList(int page,int limit,String branchCode,String startTime,String endTime,String batchNo){
-        return CommonResult.success(physChemOrderService.selectOrderList(page,limit,startTime,endTime,batchNo));
+    public CommonResult selectOrderList(int page,int limit,String branchCode,String startTime,String endTime,String batchNo,String status){
+        return CommonResult.success(physChemOrderService.selectOrderList(page,limit,startTime,endTime,batchNo,status));
     }
 
 
@@ -109,7 +109,7 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "理化检测报告导出", notes = "理化检测报告导出")
-    @GetMapping("/exoprtReport")
+    @GetMapping("/exportReport")
     public void exoprtReport(HttpServletResponse response, String itemId) throws IOException, TemplateException, GlobalException {
         phyChemTestService.exoprtReport(response,itemId);
     }

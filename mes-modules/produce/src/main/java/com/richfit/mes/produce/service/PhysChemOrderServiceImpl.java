@@ -30,7 +30,7 @@ public class PhysChemOrderServiceImpl extends ServiceImpl<PhysChemOrderMapper, P
      * @return
      */
     @Override
-    public IPage<PhysChemOrder> selectOrderList(int page, int size, String startTime, String endTime, String batchNo){
+    public IPage<PhysChemOrder> selectOrderList(int page, int size, String startTime, String endTime, String batchNo,String status){
         QueryWrapper<PhysChemOrder> queryWrapper = new QueryWrapper<>();
         if(!StringUtils.isEmpty(startTime)){
             queryWrapper.gt("modify_time",startTime);
@@ -41,6 +41,10 @@ public class PhysChemOrderServiceImpl extends ServiceImpl<PhysChemOrderMapper, P
         if(!StringUtils.isEmpty(batchNo)){
             queryWrapper.likeLeft("batch_no",batchNo);
         }
+        if(!StringUtils.isEmpty(status)){
+            queryWrapper.eq("status",status);
+        }
+        //queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         return this.page(new Page<>(page, size), queryWrapper);
     }
 }

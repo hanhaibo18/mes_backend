@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
@@ -115,7 +116,7 @@ public class ProduceInspectionRecordService{
      * @param isAudit
      * @return
      */
-    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit) {
+    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
         String userId = SecurityUtils.getCurrentUser().getUserId();
 
         //跟单工序查询
@@ -145,7 +146,7 @@ public class ProduceInspectionRecordService{
         }
     }
 
-    private QueryWrapper<TrackItemInspection> getTrackItemInspectionQueryWrapper(String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, Integer isAudit) {
+    private QueryWrapper<TrackItemInspection> getTrackItemInspectionQueryWrapper(String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
         QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
         if (!StringUtils.isEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -470,6 +471,7 @@ public class ProduceInspectionRecordService{
         Map<String, List<String>> tempValues = list.stream().collect(Collectors.groupingBy(ProduceItemInspectInfo::getTempType,Collectors.mapping(ProduceItemInspectInfo::getInspectRecordId,Collectors.toList())));
         //要返回的集合
         List<Object> returnList = new ArrayList<>();
+        DateTime date1 = DateUtil.date();
         tempValues.forEach((tempType,ids)->{
             if(InspectionRecordTypeEnum.MT.getType().equals(tempType)){
                 returnList.addAll(produceInspectionRecordMtService.queryListByIds(ids));
@@ -481,12 +483,15 @@ public class ProduceInspectionRecordService{
                 returnList.addAll(produceInspectionRecordUtService.queryListByIds(ids));
             }
         });
+        log.info("时间:"+String.valueOf(DateUtil.betweenMs(date1,DateUtil.date())));
+        DateTime date2 = DateUtil.date();
+
         List<Map<String,Object>> listMap = new ArrayList<>();
         //转换map 顺便file详情查询
         for (Object o : returnList) {
             listMap.add(objectToMap(o));
         }
-
+        log.info("时间:"+String.valueOf(DateUtil.betweenMs(date2,DateUtil.date())));
         //根据修改时间排序
             if(listMap.size()>0){
                 listMap.sort((t1,t2)->
@@ -525,7 +530,7 @@ public class ProduceInspectionRecordService{
      * @param isAudit
      * @return
      */
-    public IPage<TrackItemInspection> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit){
+    public IPage<TrackItemInspection> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit){
         //从中间表查询审核人是当前用户的数据
         QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("audit_by",SecurityUtils.getCurrentUser().getUserId()).or(warpper->warpper.eq("audit_by","/"));
@@ -565,10 +570,10 @@ public class ProduceInspectionRecordService{
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public Boolean auditSubmitRecord(String itemId,String remark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
+    public Boolean auditSubmitRecord(String itemId,String flawDetectioRemark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
         TrackItemInspection trackItemInspection = new TrackItemInspection();
         trackItemInspection.setId(itemId);
-        trackItemInspection.setRemark(remark);
+        trackItemInspection.setFlawDetectionRemark(flawDetectioRemark);
         trackItemInspection.setFlawDetection(flawDetection);
         trackItemInspection.setTempType(tempType);
         trackItemInspection.setInspectRecordNo(recordNo);

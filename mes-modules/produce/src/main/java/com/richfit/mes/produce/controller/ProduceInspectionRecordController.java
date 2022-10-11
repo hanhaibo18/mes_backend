@@ -60,7 +60,7 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit) {
+    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
         return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit));
     }
 
@@ -86,8 +86,9 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page/queryItemByAuditBy")
-    public CommonResult<IPage<TrackItemInspection>> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, Integer isAudit) {
-        return CommonResult.success(produceInspectionRecordService.queryItemByAuditBy(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit));
+    public CommonResult<IPage<TrackItemInspection>> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
+
+        return CommonResult.success(produceInspectionRecordService.queryItemByAuditBy(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,""));
     }
 
     /**
@@ -156,9 +157,9 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "checkBy", value = "探伤检验人", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "auditBy", value = "探伤审核人", paramType = "query", dataType = "string")
     })
-    @PostMapping("/auditSubmitRecord")
-    public CommonResult auditSubmitRecord(String itemId,String remark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
-        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(itemId,remark,flawDetection,tempType,recordNo,checkBy,auditBy));
+    @GetMapping("/auditSubmitRecord")
+    public CommonResult auditSubmitRecord(String itemId,String flawDetectioRemark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
+        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(itemId,flawDetectioRemark,flawDetection,tempType,recordNo,checkBy,auditBy));
     }
 
     @ApiOperation(value = "报告预览", notes = "报告预览")
