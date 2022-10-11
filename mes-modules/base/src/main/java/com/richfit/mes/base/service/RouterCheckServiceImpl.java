@@ -74,6 +74,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                     fieldNames[i] = fields[i].getName();
                 }
                 List<RouterCheckDto> checkList = ExcelUtils.importExcel(excelFile, RouterCheckDto.class, fieldNames, 1, 0, 0, tempName.toString());
+
                 step += "获取列表成功";
                 List<RouterCheckDto> list2 = new ArrayList<>();
                 //图号为空校验
@@ -257,6 +258,14 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
     private String checkExportInfo(String drawnos,List<RouterCheckDto> checkList,String branchCode){
         //提示信息
         StringBuilder info = new StringBuilder();
+        //空值校验
+        List<RouterCheckDto> nullList = checkList.stream().filter(
+                item -> StringUtils.isNullOrEmpty(item.getOptNo()) || StringUtils.isNullOrEmpty(item.getOptName())
+        ).collect(Collectors.toList());
+        if(nullList.size()>0){
+            info.append("工序号或工序名称不能为空</br>");
+        }
+
         //图号集合
         List<String> drawnoList = Arrays.asList(drawnos.split(","));
         if(drawnoList.size()>0){
@@ -268,13 +277,12 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
             for (String drawno : drawnoList) {
                 boolean exist = routerNos.contains(drawno);
                 if(!exist){
-                    info.append("图号"+drawno+"未维护工艺管理数据</br>");
+                    info.append("(图号："+drawno+") 未维护工艺管理数据</br>");
                 }
             }
-            //2.工序校验
             for (RouterCheckDto routerCheckDto : checkList) {
-                //过了图号校验的数据 再去进行工序校验
-                if(routerNos.contains(routerCheckDto.getRouterNo())){
+                //2.工序校验
+                if(routerNos.contains(routerCheckDto.getRouterNo()) && !StringUtils.isNullOrEmpty(routerCheckDto.getOptNo()) && !StringUtils.isNullOrEmpty(routerCheckDto.getOptName())){
                     QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                     queryWrapper2.eq("opt_name", routerCheckDto.getOptName().trim());
                     queryWrapper2.eq("op_no", routerCheckDto.getOptNo().trim());
@@ -283,13 +291,14 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                     queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + routerCheckDto.getRouterNo() + "' and branch_code='" + branchCode + "'");
                     List<Sequence> sequences = sequenceService.list(queryWrapper2);
                     if(sequences.size()==0){
-                        info.append("图号"+routerCheckDto.getRouterNo()+"的工艺，未维护工序序号为:"+routerCheckDto.getOptNo().trim()+"的工序数据<br>");
-                    }else{
-                        //3.规则校验
-                        checkPropertySymbol(info, routerCheckDto);
+                        info.append("图号："+routerCheckDto.getRouterNo()+"的工艺，未维护工序（序号为:"+routerCheckDto.getOptNo()+"工序名为："+routerCheckDto.getOptName()+"）"+"的工序数据<br>");
                     }
                 }
             }
+        }
+        //3.规则校验
+        for (RouterCheckDto routerCheckDto : checkList) {
+            checkPropertySymbol(info, routerCheckDto);
         }
 
         return String.valueOf(info);
@@ -358,7 +367,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
             }
         }
         if(!StringUtils.isNullOrEmpty(msg)){
-            info.append("图号:"+routerCheckDto.getRouterNo()+",工序号:"+routerCheckDto.getOptNo()+","+msg);
+            info.append("(图号："+routerCheckDto.getRouterNo()+"，工序号："+routerCheckDto.getOptNo()+"，工序名称："+routerCheckDto.getOptName()+") "+msg);
         }
     }
 
