@@ -535,8 +535,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 //删除所有为派工的跟单工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
-                queryWrapperTrackItem.eq("is_schedule", "0");
-                trackItemService.remove(queryWrapperTrackItem);
+                queryWrapperTrackItem.eq("is_schedule", 1);
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                int optSequence = 0;
+                for (TrackItem trackItem : trackItemList) {
+                    if (optSequence < trackItem.getOptSequence()) {
+                        optSequence = trackItem.getOptSequence();
+                    }
+                }
+                QueryWrapper<TrackItem> queryWrapperTrackItem2 = new QueryWrapper<>();
+                queryWrapperTrackItem2.eq("track_head_id", trackHead.getId());
+                queryWrapperTrackItem2.gt("opt_sequence", optSequence);
+                trackItemService.remove(queryWrapperTrackItem2);
                 //跟单工序添加
                 if (trackItems != null && trackItems.size() > 0) {
                     for (TrackItem item : trackItems) {
