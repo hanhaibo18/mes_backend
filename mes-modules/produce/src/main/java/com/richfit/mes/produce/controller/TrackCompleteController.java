@@ -13,6 +13,7 @@ import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -55,6 +56,9 @@ public class TrackCompleteController extends BaseController {
     private PlanService planService;
     @Autowired
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private PublicService publicService;
 
     @Resource
     private SystemServiceClient systemServiceClient;
@@ -381,7 +385,7 @@ public class TrackCompleteController extends BaseController {
             int sum = complete.getCompletedQty().intValue();
             trackItem.setCompleteQty(trackItem.getCompleteQty() + sum);
             trackItem.setAssignableQty(trackItem.getAssignableQty() - sum);
-            complete.setAssignId(complete.getTiId());
+            complete.setTiId(complete.getTiId());
             complete.setModifyTime(new Date());
             complete.setCreateTime(new Date());
             complete.setCompleteBy(complete.getUserId());
@@ -397,7 +401,9 @@ public class TrackCompleteController extends BaseController {
             }
             trackCompleteService.save(complete);
             trackItemService.updateById(trackItem);
-            this.activeTrackItem(trackItem);
+            Map<String, String> map = new HashMap<String, String>(1);
+            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+            publicService.activationProcess(map);
 
         }
 

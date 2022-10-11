@@ -104,10 +104,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
             }
             if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
-                //派工状态设置为完成
-                assign.setState(2);
-                trackAssignService.updateById(assign);
-                if (trackItem.getAssignableQty() == 0) {
+                //最后一次报工进行下工序激活
+                if (queryIsComplete(assign)) {
                     //更改状态 标识当前工序完成
                     trackItem.setIsDoing(2);
                     trackItem.setIsOperationComplete(1);
@@ -121,12 +119,45 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
                     publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
                 }
+                //派工状态设置为完成
+                assign.setState(2);
+                trackAssignService.updateById(assign);
             }
             log.error(completeDto.getTrackCompleteList().toString());
             this.saveBatch(completeDto.getTrackCompleteList());
         }
         return CommonResult.success(true);
     }
+
+    /**
+     * 功能描述: 判断当前报工是否是最后一次报工
+     *
+     * @param assign
+     * @Author: xinYu.hou
+     * @Date: 2022/10/10 16:01
+     * @return: boolean
+     **/
+    private boolean queryIsComplete(Assign assign) {
+        TrackItem trackItem = trackItemService.getById(assign.getTiId());
+        //只制作一件物品不进行判断
+        if (trackItem.getNumber() == 1) {
+            return true;
+        }
+        QueryWrapper<Assign> query = new QueryWrapper<>();
+        query.eq("ti_id", assign.getTiId());
+        //state = 2 (已完工)
+        query.eq("state", 2);
+        List<Assign> assignList = trackAssignService.list(query);
+        //获取已完成数量
+        int size = 0;
+        for (Assign assignEntity : assignList) {
+            size += assignEntity.getQty();
+        }
+
+        //当前工序制造总数 - 已完成数量 == 这次报工数量
+        return trackItem.getNumber() - size == assign.getQty();
+    }
+
 
     @Override
     public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state) {
