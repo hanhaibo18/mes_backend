@@ -102,7 +102,9 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 质检人
      */
     protected String qualityCheckBy;
-
+    /**
+     * 质检车间?
+     */
     protected String qualityCheckBranch;
     /**
      * 备注
@@ -140,7 +142,6 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 辅助工时
      */
     protected Double auxiliaryHours;
-
 
 
     /**
