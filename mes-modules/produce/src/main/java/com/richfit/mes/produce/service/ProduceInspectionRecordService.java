@@ -17,7 +17,6 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
@@ -117,7 +116,6 @@ public class ProduceInspectionRecordService{
      * @return
      */
     public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
-        String userId = SecurityUtils.getCurrentUser().getUserId();
 
         //跟单工序查询
         QueryWrapper<TrackItemInspection> queryWrapper = getTrackItemInspectionQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit);
@@ -561,7 +559,7 @@ public class ProduceInspectionRecordService{
     /**
      * 审核提交探伤记录
      * @param itemId 探伤工序id
-     * @param remark 探伤备注
+     * @param flawDetectioRemark 探伤备注
      * @param flawDetection 探伤结果
      * @param tempType 探伤记录模板
      * @param recordNo 探伤记录编号
@@ -679,6 +677,16 @@ public class ProduceInspectionRecordService{
         //mt探伤记录
         ProduceInspectionRecordMt produceInspectionRecordMt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordMt.class);
 
+        //人员信息转换
+        if(!ObjectUtil.isEmpty(produceInspectionRecordMt.getAuditBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordMt.getAuditBy()).getData();
+            produceInspectionRecordMt.setAuditBy(data.getUserAccount());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordMt.getCheckBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordMt.getCheckBy()).getData();
+            produceInspectionRecordMt.setCheckBy(data.getUserAccount());
+        }
+
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordMt), Map.class));
         /*//记录编号
         dataMap.put("recordNo",produceInspectionRecordMt.getRecordNo());
@@ -730,6 +738,15 @@ public class ProduceInspectionRecordService{
         //mt探伤记录
         ProduceInspectionRecordRt produceInspectionRecordRt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordRt.class);
 
+        if(!ObjectUtil.isEmpty(produceInspectionRecordRt.getAuditBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordRt.getAuditBy()).getData();
+            produceInspectionRecordRt.setAuditBy(data.getUserAccount());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordRt.getCheckBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordRt.getCheckBy()).getData();
+            produceInspectionRecordRt.setCheckBy(data.getUserAccount());
+        }
+
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordRt), Map.class));
         //图片base64编码
         if(!StringUtils.isEmpty(produceInspectionRecordRt.getDiagramAttachmentId())){
@@ -742,6 +759,14 @@ public class ProduceInspectionRecordService{
         //pt探伤记录
         ProduceInspectionRecordPt produceInspectionRecordPt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordPt.class);
 
+        if(!ObjectUtil.isEmpty(produceInspectionRecordPt.getAuditBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordPt.getAuditBy()).getData();
+            produceInspectionRecordPt.setAuditBy(data.getUserAccount());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordPt.getCheckBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordPt.getCheckBy()).getData();
+            produceInspectionRecordPt.setCheckBy(data.getUserAccount());
+        }
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordPt), Map.class));
 
         if(!StringUtils.isEmpty(produceInspectionRecordPt.getDiagramAttachmentId())){
@@ -756,6 +781,14 @@ public class ProduceInspectionRecordService{
         //ut探伤记录
         ProduceInspectionRecordUt produceInspectionRecordUt = JSON.parseObject(JSON.toJSONString(recordInfo), ProduceInspectionRecordUt.class);
 
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getAuditBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordUt.getAuditBy()).getData();
+            produceInspectionRecordUt.setAuditBy(data.getUserAccount());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getCheckBy())){
+            TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordUt.getCheckBy()).getData();
+            produceInspectionRecordUt.setCheckBy(data.getUserAccount());
+        }
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
 
         //图片base64编码
