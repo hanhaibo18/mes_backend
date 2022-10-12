@@ -387,7 +387,7 @@ public class PublicServiceImpl implements PublicService {
         assign.setAssignPersons(list);
         CommonResult<Assign[]> commonResult = trackAssignController.batchAssign(new Assign[]{assign});
         trackItem.setIsSchedule(1);
-        trackItem.setAssignableQty(trackItem.getAssignableQty() - trackItem.getNumber());
+//        trackItem.setAssignableQty(trackItem.getAssignableQty() - trackItem.getNumber());
         trackItemService.updateById(trackItem);
         //查询下工序,是否为并行工序依据并行工序来判断下工序是否激活
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
