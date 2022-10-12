@@ -3,7 +3,7 @@ package com.richfit.mes.produce.service.quality;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Disqualification;
-import com.richfit.mes.produce.entity.QueryInspectorDto;
+import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 
 /**
  * @ClassName: DisqualificationService.java

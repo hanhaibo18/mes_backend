@@ -12,7 +12,7 @@ import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
-import com.richfit.mes.produce.entity.QueryInspectorDto;
+import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
