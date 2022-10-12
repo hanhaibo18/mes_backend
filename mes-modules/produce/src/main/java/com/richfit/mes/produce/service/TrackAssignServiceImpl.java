@@ -57,6 +57,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     private ProduceRoleOperationService roleOperationService;
     @Resource
     private SystemServiceClient systemServiceClient;
+    @Resource
+    private TrackAssignPersonService trackAssignPersonService;
 
     @Override
     public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
@@ -355,10 +357,13 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         try {
             for (String assignId : assignIdList) {
                 Assign assign = this.getById(assignId);
+                assign.setState(1);
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 trackItem.setIsDoing(1);
                 trackItem.setStartDoingTime(new Date());
                 trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
+                trackItemService.updateById(trackItem);
+                this.updateById(assign);
             }
         } catch (Exception e) {
             throw new GlobalException("开工失败,请重试", ResultCode.FAILED);

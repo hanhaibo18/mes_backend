@@ -178,12 +178,12 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "检验车间", dataType = "String")
     private String qualityCheckBranch;
+
     /**
      * 是否调度确认
      */
     @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
     private Integer isExistScheduleCheck;
-
     /**
      * 是否自动派工
      */
