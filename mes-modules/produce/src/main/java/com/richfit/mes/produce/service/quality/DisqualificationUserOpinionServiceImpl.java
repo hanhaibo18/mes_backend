@@ -1,8 +1,8 @@
-package com.richfit.mes.produce.service;
+package com.richfit.mes.produce.service.quality;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
-import com.richfit.mes.produce.dao.DisqualificationUserOpinionMapper;
+import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
 import org.springframework.stereotype.Service;
 
 /**

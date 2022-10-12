@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.dao;
+package com.richfit.mes.produce.dao.quality;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.richfit.mes.common.model.produce.Disqualification;

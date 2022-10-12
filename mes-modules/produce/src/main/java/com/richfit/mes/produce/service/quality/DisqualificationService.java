@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.service;
+package com.richfit.mes.produce.service.quality;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;

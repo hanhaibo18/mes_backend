@@ -1,11 +1,11 @@
-package com.richfit.mes.produce.controller;
+package com.richfit.mes.produce.controller.quality;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.produce.entity.QueryInspectorDto;
-import com.richfit.mes.produce.service.DisqualificationService;
+import com.richfit.mes.produce.service.quality.DisqualificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;

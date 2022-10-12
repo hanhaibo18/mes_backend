@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.service;
+package com.richfit.mes.produce.service.quality;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -11,7 +11,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.dao.DisqualificationMapper;
+import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.entity.QueryInspectorDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
