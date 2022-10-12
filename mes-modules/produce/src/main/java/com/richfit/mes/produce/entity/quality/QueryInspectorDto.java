@@ -1,5 +1,6 @@
-package com.richfit.mes.produce.entity;
+package com.richfit.mes.produce.entity.quality;
 
+import com.richfit.mes.produce.entity.QueryPageDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
