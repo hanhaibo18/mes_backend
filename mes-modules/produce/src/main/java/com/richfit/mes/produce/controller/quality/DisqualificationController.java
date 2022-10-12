@@ -23,7 +23,7 @@ import javax.annotation.Resource;
 @Slf4j
 @Api(value = "不合格品处理流程", tags = {"不合格品处理流程"})
 @RestController
-@RequestMapping("/api/produce/disqualification")
+@RequestMapping("/api/produce/quality/disqualification")
 public class DisqualificationController extends BaseController {
 
     @Resource
