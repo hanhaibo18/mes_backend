@@ -7,13 +7,14 @@
                  left join (
             select tc.certificate_id,
                    ti.product_no             item_product_no,
+                   ti.number                 item_number,
                    ti.opt_id,
                    ti.opt_ver,
                    max(ti.sequence_order_by) sequence_order_by
             from produce_track_certificate tc
                      left join produce_track_head th on tc.th_id = th.id
                      left join produce_track_item ti on tc.ti_id = ti.id
-            group by tc.certificate_id, th.drawing_no, th.material_no, ti.product_no, ti.opt_id, ti.opt_name,
+            group by tc.certificate_id, th.drawing_no, th.material_no, ti.product_no, ti.number, ti.opt_id, ti.opt_name,
                      ti.opt_ver) as track
                            on pc.id = track.certificate_id
             ${ew.customSqlSegment}

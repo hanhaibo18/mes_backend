@@ -11,7 +11,13 @@
     </select>
 
     <select id="selectTrackHeadCurrentRouter" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT th.*, ti.product_no item_product_no, ti.opt_id, ti.opt_name, ti.id ti_id, ti.sequence_order_by
+        SELECT th.*,
+               ti.product_no item_product_no,
+               ti.number     item_number,
+               ti.opt_id,
+               ti.opt_name,
+               ti.id         ti_id,
+               ti.sequence_order_by
         FROM mes_produce.produce_track_head th
                  LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id AND ti.is_current = 1
             ${ew.customSqlSegment}
