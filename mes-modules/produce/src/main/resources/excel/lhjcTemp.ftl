@@ -44,7 +44,7 @@
                                 <w:rFonts w:hint="eastAsia" />
                                 <w:sz w:val="24" />
                             </w:rPr>
-                            <w:t>附录A</w:t>
+                            <w:t>{附录A}</w:t>
                         </w:r>
                         <w:r>
                             <w:rPr>

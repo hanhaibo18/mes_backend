@@ -154,7 +154,7 @@ public class PhyChemTestService{
         //根据id查询试验数据
         QueryWrapper<PhysChemResult> physChemResultQueryWrapper = new QueryWrapper<>();
         physChemResultQueryWrapper.eq("item_id",itemId);
-        List<PhysChemResult> results = physChemResultService.list(physChemResultQueryWrapper);
+        //List<PhysChemResult> results = physChemResultService.list(physChemResultQueryWrapper);
         //根据跟单工序id查询委托单
         QueryWrapper<PhysChemOrder> physChemOrderQueryWrapper = new QueryWrapper<>();
         physChemOrderQueryWrapper.eq("item_id",itemId);

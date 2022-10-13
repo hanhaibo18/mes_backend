@@ -103,7 +103,7 @@ public class PhysChemTestController extends BaseController {
     @GetMapping("/queryResultByBatchNo")
     public CommonResult<IPage<PhysChemResult>> queryResultByItemId(int page,int limit,String batchNo,String branchCode){
         QueryWrapper<PhysChemResult> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("batchNo",batchNo)
+        queryWrapper.eq("batch_no",batchNo)
                 .eq("branch_code", branchCode)
                 .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(physChemResultService.page(new Page<>(page, limit), queryWrapper));
