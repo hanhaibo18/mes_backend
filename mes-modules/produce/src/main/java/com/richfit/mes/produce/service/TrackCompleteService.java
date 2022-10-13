@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackComplete;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 
@@ -60,4 +61,13 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @return: CommonResult<Boolean>
      **/
     CommonResult<Boolean> rollBack(String id);
+
+    /**
+     * 功能描述: 校验前端输入字符的合法性
+     *
+     * @param trackComplete（报工实体信息），trackItem(跟单工序信息),companyCode(当前登录用户的公司信息)
+     * @return
+     * @Author: panshi.zhang
+     */
+    String verifyTrackComplete(TrackComplete trackComplete, TrackItem trackItem, String companyCode);
 }

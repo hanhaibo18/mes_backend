@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -58,6 +59,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
+        //获取用户所属公司
+        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         for (CompleteDto completeDto : completeDtoList) {
             if (StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
                 return CommonResult.failed("质检人员不能为空");
@@ -78,9 +81,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.eq("ti_id", completeDto.getTiId());
             double numDouble = 0.00;
             for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                    return CommonResult.failed("报工工时不能大于额定工时");
+                //验证输入值是否合法
+                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
+                //如果返回值不等于空则代表验证不通过，将提示信息返回
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
+                    return CommonResult.failed(s);
                 }
+
                 trackComplete.setId(null);
                 trackComplete.setAssignId(completeDto.getAssignId());
                 trackComplete.setTiId(completeDto.getTiId());
@@ -125,6 +132,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             log.error(completeDto.getTrackCompleteList().toString());
             this.saveBatch(completeDto.getTrackCompleteList());
+
         }
         return CommonResult.success(true);
     }
@@ -192,6 +200,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult<Boolean> updateComplete(CompleteDto completeDto) {
+        //获取用户所属公司
+        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         if (StringUtils.isNullOrEmpty(completeDto.getTiId())) {
             return CommonResult.failed("工序Id不能为空");
         }
@@ -213,8 +223,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         Assign assign = trackAssignService.getById(completeDto.getAssignId());
         double intervalNumber = assign.getQty() + 0.0;
         for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-            if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                return CommonResult.failed("报工工时不能大于额定工时");
+            //验证输入值是否合法
+            String s = trackCompleteService.verifyTrackComplete(trackComplete, trackItem, companyCode);
+            //如果返回值不等于空则代表验证不通过，将提示信息返回
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
+                return CommonResult.failed(s);
             }
             trackComplete.setAssignId(completeDto.getAssignId());
             trackComplete.setTiId(completeDto.getTiId());
@@ -328,6 +341,41 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             return CommonResult.failed("操作失败，请重试！" + msg);
         }
+    }
+
+    @Override
+    public String verifyTrackComplete(TrackComplete trackComplete, TrackItem trackItem, String companyCode) {
+        StringBuffer massage = new StringBuffer();
+        //根据数据字段配置，判断走那一套验证逻辑，宝石与北石字段不同
+        if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {
+            //北石验证
+            //验证实用固定机时是否填写正常,固定机时不能大于准结工时
+            if (trackComplete.getActualFixHours() > trackItem.getPrepareEndHours()) {
+                return massage.append("固定机时不能大于准结工时").toString();
+            }
+            //验证实用变动机时（正常班），实用变动机时（正常班）不能大于准结工时+额定工时
+            if (trackComplete.getActualNomalHours() > trackItem.getPrepareEndHours() + trackItem.getSinglePieceHours()) {
+                return massage.append("实用变动机时（正常班）不能大于准结工时+额定工时").toString();
+            }
+            //验证实用变动机时（加班），实用变动机时（加班）不能大于准结工时+额定工时
+            if (trackComplete.getActualOverHours() > trackItem.getPrepareEndHours() + trackItem.getSinglePieceHours()) {
+                return massage.append("实用变动机时（加班）不能大于准结工时+额定工时").toString();
+            }
+            //验证完成固定机时,完成固定机时不能大于准结工时
+            if (trackComplete.getCompletedFixHours() > trackItem.getPrepareEndHours()) {
+                return massage.append("完成固定机时不能大于准结工时").toString();
+            }
+            //验证完成变动机时，验证完成变动机时不能大于准结工时+额定工时
+            if (trackComplete.getCompletedChangeHours() > trackItem.getPrepareEndHours() + trackItem.getSinglePieceHours()) {
+                return massage.append("完成变动机时不能大于准结工时+额定工时").toString();
+            }
+        } else if (Tenant.COMPANYCODE_BAOSHI.equals(companyCode)) {
+            //宝石验证
+            if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
+                return massage.append("报工工时不能大于额定工时").toString();
+            }
+        }
+        return massage.toString();
     }
 
 

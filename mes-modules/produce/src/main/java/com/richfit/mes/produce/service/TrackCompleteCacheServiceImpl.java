@@ -9,6 +9,7 @@ import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteCacheMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,10 +29,15 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
 
     @Resource
     private TrackItemService trackItemService;
+    @Autowired
+    private TrackCompleteService trackCompleteService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveCompleteCache(List<CompleteDto> completeDtoList) {
+        //获取用户所属公司
+        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         for (CompleteDto completeDto : completeDtoList) {
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
             //检验人
@@ -41,11 +47,13 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
             QueryWrapper<TrackCompleteCache> removeCache = new QueryWrapper<>();
             removeCache.eq("ti_id", completeDto.getTiId());
             this.remove(removeCache);
-
             List<TrackCompleteCache> trackCompleteCacheList = new ArrayList<>();
             for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                    return CommonResult.failed("报工工时不能大于额定工时");
+                //验证输入值是否合法
+                String s = trackCompleteService.verifyTrackComplete(trackComplete, trackItem, companyCode);
+                //如果返回值不等于空则代表验证不通过，将提示信息返回
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
+                    return CommonResult.failed(s);
                 }
                 TrackCompleteCache trackCompleteCache = new TrackCompleteCache();
                 trackCompleteCache.setAssignId(completeDto.getAssignId());
@@ -64,6 +72,15 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
                 trackCompleteCache.setCompletedQty(trackComplete.getCompletedQty());
                 trackCompleteCache.setRejectQty(trackComplete.getRejectQty());
                 trackCompleteCache.setDetectionResult(trackComplete.getDetectionResult());
+                //北石报工字段
+                trackCompleteCache.setActualFixHours(trackComplete.getActualFixHours());
+                trackCompleteCache.setActualNomalHours(trackComplete.getActualNomalHours());
+                trackCompleteCache.setActualOverHours(trackComplete.getActualOverHours());
+                trackCompleteCache.setCompletedChangeHours(trackComplete.getCompletedChangeHours());
+                trackCompleteCache.setCompletedFixHours(trackComplete.getCompletedFixHours());
+                trackCompleteCache.setSingleAddHours(trackComplete.getSingleAddHours());
+                trackCompleteCache.setAuxiliaryHours(trackComplete.getAuxiliaryHours());
+
                 trackCompleteCacheList.add(trackCompleteCache);
             }
             trackItemService.updateById(trackItem);
