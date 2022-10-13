@@ -199,6 +199,19 @@ public class TrackCompleteController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "报工详情查询", notes = "报工详情查询")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "order", value = "排序", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "页码", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "orderCol", value = "排序", paramType = "query", dataType = "string")
+
+    })
+    @GetMapping("/queryList")
+    public CommonResult<List<TrackComplete>> queryList(String tiId, String branchCode, String order, String orderCol) {
+        return CommonResult.success(trackCompleteService.queryList(tiId, branchCode, order, orderCol));
+    }
+
     @ApiOperation(value = "新增派工", notes = "新增派工")
     @ApiImplicitParam(name = "complete", value = "派工", required = true, dataType = "Complete", paramType = "path")
     @PostMapping("/add")

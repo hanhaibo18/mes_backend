@@ -19,6 +19,8 @@ import java.util.List;
 public interface TrackCompleteService extends IService<TrackComplete> {
     IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query);
 
+    List<TrackComplete> queryList(String tiId, String branchCode, String order, String orderCol);
+
     /**
      * 功能描述: 新增报工
      *

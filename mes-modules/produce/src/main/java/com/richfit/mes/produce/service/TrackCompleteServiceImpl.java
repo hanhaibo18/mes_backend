@@ -1,13 +1,18 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -16,6 +21,8 @@ import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
+import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,12 +56,68 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private TrackCompleteService trackCompleteService;
     @Resource
     private TrackHeadService trackHeadService;
+    @Resource
+    private TrackHeadFlowService trackFlowService;
+    @Resource
+    private SystemServiceClient systemServiceClient;
+    @Resource
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
-
         return trackCompleteMapper.queryPage(page, query);
     }
+
+    @Override
+    public List<TrackComplete> queryList(String tiId, String branchCode, String order, String orderCol) {
+        try {
+            QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+            if (!StringUtils.isNullOrEmpty(tiId)) {
+                queryWrapper.eq("ti_id", tiId);
+            }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+
+            //外协报工判断过滤，外协报工类型是3
+            queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type not in (3) )");
+            if (!StringUtils.isNullOrEmpty(orderCol)) {
+                if (!StringUtils.isNullOrEmpty(order)) {
+                    if (order.equals("desc")) {
+                        queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                    } else if (order.equals("asc")) {
+                        queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                    }
+                } else {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc("modify_time");
+            }
+            List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
+            try {
+                for (TrackComplete track : completes) {
+                    CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
+                    track.setUserName(tenantUserVo.getData().getEmplName());
+                    CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
+                    track.setDeviceName(device.getData().getName());
+                    TrackItem trackItem = trackItemService.getById(track.getTiId());
+                    //查询产品编号
+                    TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
+                    track.setProdNo(trackFlow.getProductNo());
+                    //查询产品名称
+                    TrackHead trackHead = trackHeadService.getById(track.getTrackId());
+                    track.setProductName(trackHead.getProductName());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return completes;
+        } catch (Exception e) {
+            throw new GlobalException("信息获取异常", ResultCode.FAILED);
+        }
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
