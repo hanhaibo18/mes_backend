@@ -9,6 +9,7 @@ import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 
 import java.util.List;
 
@@ -126,4 +127,16 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return: ItemMessageDto
      **/
     ItemMessageDto queryItemMessageDto(String itemId);
+
+    /**
+     * 功能描述: 不合格品查询工序详情
+     *
+     * @param tiId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/10/13 14:43
+     * @return: DisqualificationItemVO
+     **/
+    DisqualificationItemVo queryItem(String tiId, String branchCode);
+
 }

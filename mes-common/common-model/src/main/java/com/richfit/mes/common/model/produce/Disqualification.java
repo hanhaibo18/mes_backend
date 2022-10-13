@@ -46,6 +46,12 @@ public class Disqualification extends BaseEntity<Disqualification> {
     private String workNo;
 
     /**
+     * 产品编号
+     */
+    @ApiModelProperty(value = "产品编号", dataType = "String")
+    private String productNo;
+
+    /**
      * 产品名称
      */
     @ApiModelProperty(value = "产品名称", dataType = "String")

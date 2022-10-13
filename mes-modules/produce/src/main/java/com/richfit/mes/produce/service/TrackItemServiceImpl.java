@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
 import com.richfit.mes.common.model.produce.*;
@@ -17,7 +19,9 @@ import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.utils.Code;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +75,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Resource
     private TrackAssignMapper trackAssignMapper;
+
+    @Resource
+    private CodeRuleService codeRuleService;
 
     @Override
     public List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query) {
@@ -519,6 +526,37 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             itMessage.setIsDrawingNo(option.getData().getDrawing());
         }
         return itMessage;
+    }
+
+    @Override
+    public DisqualificationItemVo queryItem(String tiId, String branchCode) {
+        DisqualificationItemVo item = new DisqualificationItemVo();
+        TrackItem trackItem = this.getById(tiId);
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        //跟单号
+        item.setTrackNo(trackHead.getTrackNo());
+        //产品名称
+        item.setProductName(trackItem.getProductName());
+        //产品编号
+        item.setProductNo(trackHead.getProductNo());
+        //零部件名称
+        item.setPartName(trackHead.getMaterialName());
+        //零部件材料
+        item.setPartMaterials(trackHead.getTexture());
+        //零部件图号
+        item.setPartDrawingNo(trackHead.getDrawingNo());
+        //不合格品数量
+        item.setDisqualificationNum(trackItem.getQualityUnqty());
+        //车间类型
+        item.setClasses(item.getClasses());
+        //获取申请单编号
+        try {
+            String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+            item.setProcessSheetNo(disqualificationNo);
+        } catch (Exception e) {
+            throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
+        }
+        return item;
     }
 
 }
