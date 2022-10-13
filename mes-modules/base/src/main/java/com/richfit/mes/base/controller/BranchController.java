@@ -59,7 +59,7 @@ public class BranchController extends BaseController {
                 branch.setBranchCode(branchCode);
                 branch.setBranchName(branchName);
                 branch.setTenantId(tenantId);
-                branch.setBranchType("0");
+                branch.setBranchType("A");
                 branch.setOrderNo(0);
                 branch.setIsUse("1");
                 boolean bool = branchService.save(branch);

@@ -309,13 +309,11 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         List<TrackItem> items = this.list(queryWrapper);
         boolean isComplete = true;
         for (TrackItem item : items) {
-            if (item != null && "0".equals(item.getIsFinalComplete())) {
+            if (item != null && item.getIsOperationComplete() == 0) {
                 isComplete = false;
                 break;
             }
         }
-
-        System.out.println(items.size());
         if (!isComplete) {
             return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
         } else if (items.size() > 0) {

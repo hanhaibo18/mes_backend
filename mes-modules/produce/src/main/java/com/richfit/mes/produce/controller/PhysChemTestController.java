@@ -93,17 +93,18 @@ public class PhysChemTestController extends BaseController {
     }
 
 
-   @ApiOperation(value = "根据跟单工序id分页查询试验结果", notes = "根据跟单工序id分页查询试验结果")
+   @ApiOperation(value = "根据炉批号查询实验结果", notes = "根据炉批号查询实验结果")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "itemId", value = "跟单工序id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构code", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "batchNo", value = "跟单炉批号", required = true, paramType = "query", dataType = "string"),
     })
-    @GetMapping("/queryResultByItemId")
-    public CommonResult<IPage<PhysChemResult>> queryResultByItemId(int page,int limit,String itemId){
+    @GetMapping("/queryResultByBatchNo")
+    public CommonResult<IPage<PhysChemResult>> queryResultByItemId(int page,int limit,String batchNo,String branchCode){
         QueryWrapper<PhysChemResult> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id",itemId)
-                .eq("branch_code", SecurityUtils.getCurrentUser().getBelongOrgId())
+        queryWrapper.eq("batchNo",batchNo)
+                .eq("branch_code", branchCode)
                 .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(physChemResultService.page(new Page<>(page, limit), queryWrapper));
     }
