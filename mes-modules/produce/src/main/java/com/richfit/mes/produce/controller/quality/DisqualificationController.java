@@ -4,10 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
+import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +31,9 @@ public class DisqualificationController extends BaseController {
 
     @Resource
     private DisqualificationService disqualificationService;
+
+    @Resource
+    private TrackItemService trackItemService;
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
     @PostMapping("/queryInspector")
@@ -59,5 +65,15 @@ public class DisqualificationController extends BaseController {
     @GetMapping("/closeApplication")
     public CommonResult<Boolean> closeApplication(String id) {
         return CommonResult.success(disqualificationService.updateIsIssue(id, "2"));
+    }
+
+    @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+    })
+    @GetMapping("/queryItem")
+    public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode) {
+        return CommonResult.success(trackItemService.queryItem(tiId, branchCode));
     }
 }

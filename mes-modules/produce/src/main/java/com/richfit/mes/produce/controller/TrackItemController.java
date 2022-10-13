@@ -6,11 +6,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.ItemMessageDto;
-import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -311,16 +308,6 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询工序信息", notes = "根据工序Id查询工序信息")
     public CommonResult<ItemMessageDto> queryItemMessageDto(String tiId) {
         return CommonResult.success(trackItemService.queryItemMessageDto(tiId));
-    }
-
-    @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
-    })
-    @GetMapping("/queryItem")
-    public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode) {
-        return CommonResult.success(trackItemService.queryItem(tiId, branchCode));
     }
 
 }
