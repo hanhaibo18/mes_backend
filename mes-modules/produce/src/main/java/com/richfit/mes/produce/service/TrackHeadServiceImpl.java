@@ -704,6 +704,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 t.setWorkNo(plan.getWorkNo());
                 t.setProductionOrder(plan.getOrderNo());
+                t.setProductionOrderId(plan.getOrderId());
                 t.setProjectBomId(plan.getProjectBom());
                 t.setProjectBomName(plan.getProjectBomName());
                 t.setProjectBomWork(plan.getProjectBomWork());
