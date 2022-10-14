@@ -214,12 +214,11 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
-                queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%')')");
+                queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%')");
             }
             if (!StringUtils.isNullOrEmpty(productNo)) {
-                queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where product_no ='" + productNo + "')");
+                queryWrapper.inSql("ti_id", "select id from  produce_track_item where product_no ='" + productNo + "'");
             }
-
 
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
