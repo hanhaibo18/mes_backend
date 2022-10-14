@@ -130,5 +130,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public String queryTenantIdByBranchCode(String branchCode) {
+        return null;
+    }
+
 
 }

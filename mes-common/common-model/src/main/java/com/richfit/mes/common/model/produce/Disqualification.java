@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -140,7 +141,7 @@ public class Disqualification extends BaseEntity<Disqualification> {
      */
     @TableField(exist = false)
     @ApiModelProperty(value = "检验人员", dataType = "List<DisqualificationUserOpinion>")
-    private List<DisqualificationUserOpinion> userList;
+    private List<TenantUserVo> userList;
 
     private static final long serialVersionUID = 1L;
 }

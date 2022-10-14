@@ -80,4 +80,15 @@ public interface SystemServiceClient {
      **/
     @GetMapping(value = "/api/sys/user/queryByUserId")
     public CommonResult<TenantUserVo> queryByUserId(@RequestParam("userId") String userId);
+
+    /**
+     * 功能描述:根据租户Id查询人员
+     *
+     * @param tenantId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 16:27
+     * @return: List<TenantUserVo>
+     **/
+    @GetMapping(value = "/api/sys/user/queryUserByTenantId")
+    public List<TenantUserVo> queryUserByTenantId(@RequestParam("tenantId") String tenantId);
 }

@@ -3,7 +3,10 @@ package com.richfit.mes.produce.service.quality;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
+
+import java.util.List;
 
 /**
  * @ClassName: DisqualificationService.java
@@ -53,4 +56,15 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: Boolean
      **/
     Boolean updateIsIssue(String id, String state);
+
+    /**
+     * 功能描述: 查询质量检测部质检人员
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 15:12
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryUser();
+
+
 }

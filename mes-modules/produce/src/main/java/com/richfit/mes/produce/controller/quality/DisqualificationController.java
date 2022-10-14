@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 import com.richfit.mes.produce.service.TrackItemService;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @ClassName: DisqualificationController.java
@@ -75,5 +77,11 @@ public class DisqualificationController extends BaseController {
     @GetMapping("/queryItem")
     public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode) {
         return CommonResult.success(trackItemService.queryItem(tiId, branchCode));
+    }
+
+    @ApiOperation(value = "查询质量检测部", notes = "第一次提交申请单查询质量检测部人员")
+    @GetMapping("/queryUser")
+    public CommonResult<List<TenantUserVo>> queryUser() {
+        return CommonResult.success(disqualificationService.queryUser());
     }
 }

@@ -125,4 +125,15 @@ public interface BaseServiceClient {
      **/
     @GetMapping("/api/base/routerCheck/select_by_id")
     public CommonResult<RouterCheck> routerCheckSelectById(@ApiParam(value = "id", required = true) @RequestParam String id);
+
+    /**
+     * 功能描述: 根据组织结构查询租户Id
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 15:44
+     * @return: String
+     **/
+    @GetMapping(value = "/api/base/branch/queryTenantIdByBranchCode")
+    public String queryTenantIdByBranchCode(@RequestParam("branchCode") String branchCode);
 }

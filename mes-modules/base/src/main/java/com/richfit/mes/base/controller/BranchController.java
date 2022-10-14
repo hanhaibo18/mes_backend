@@ -295,4 +295,14 @@ public class BranchController extends BaseController {
     public CommonResult<List<Branch>> queryBranchCodeList(@RequestBody List<String> branchCodeList) {
         return CommonResult.success(branchService.queryBranchCodeList(branchCodeList));
     }
+
+    @ApiOperation(value = "查询tenantId", notes = "根据BranchCode查询租户Id")
+    @GetMapping("/queryTenantIdByBranchCode")
+    public String queryTenantIdByBranchCode(String branchCode) {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        Branch branch = branchService.getOne(queryWrapper);
+        return branch.getTenantId();
+    }
+
 }

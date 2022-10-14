@@ -262,5 +262,12 @@ public class TenantUserController extends BaseController {
     public CommonResult<TenantUserVo> queryByUserId(String userId) {
         return CommonResult.success(tenantUserService.queryByUserId(userId));
     }
+
+    @ApiOperation(value = "根据tenantId查询用户信息", notes = "根据租户id获取人员信息")
+    @ApiImplicitParam(name = "tenantId", value = "租户id", required = true, dataType = "query")
+    @GetMapping("/queryUserByTenantId")
+    public List<TenantUserVo> queryUserByTenantId(String tenantId) {
+        return tenantUserService.queryUserByTenantId(tenantId);
+    }
 }
 

@@ -13,6 +13,12 @@ import lombok.Data;
 
 public class DisqualificationItemVo {
 
+
+    /**
+     * 工作号
+     */
+    @ApiModelProperty(value = "工作号", dataType = "String")
+    private String workNo;
     /**
      * 申请单编号
      */

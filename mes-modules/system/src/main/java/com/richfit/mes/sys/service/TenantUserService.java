@@ -130,4 +130,14 @@ public interface TenantUserService {
      * @return: TenantUserVo
      **/
     TenantUserVo queryByUserId(String userId);
+
+    /**
+     * 功能描述: 根据租户Id查询租户下人员
+     *
+     * @param tenantId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 15:57
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryUserByTenantId(String tenantId);
 }

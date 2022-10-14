@@ -547,6 +547,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         item.setDisqualificationNum(trackItem.getQualityUnqty());
         //车间类型
         item.setClasses(trackHead.getClasses());
+        //工作号
+        item.setWorkNo(trackHead.getWorkNo());
         //获取申请单编号
         try {
             String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);

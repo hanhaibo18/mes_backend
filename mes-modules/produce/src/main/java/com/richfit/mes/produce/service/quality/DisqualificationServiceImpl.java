@@ -6,20 +6,23 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
+import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 /**
  * @ClassName: DisqualificationServiceImpl.java
@@ -29,8 +32,14 @@ import java.util.GregorianCalendar;
 @Service
 public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMapper, Disqualification> implements DisqualificationService {
 
-    @Autowired
+    @Resource
     private DisqualificationUserOpinionService userOpinionService;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
@@ -72,10 +81,17 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     public Boolean saveDisqualification(Disqualification disqualification) {
         this.save(disqualification);
-        for (DisqualificationUserOpinion operator : disqualification.getUserList()) {
-            operator.setDisqualificationId(disqualification.getId());
+        List<DisqualificationUserOpinion> userOpinions = new ArrayList<>();
+        for (TenantUserVo user : disqualification.getUserList()) {
+            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
+            opinion.setDisqualificationId(disqualification.getId());
+            //赋值用户唯一Id
+            opinion.setUserId(user.getId());
+            //赋值用户车间
+            opinion.setUserBranch(user.getBelongOrgId());
+            userOpinions.add(opinion);
         }
-        return userOpinionService.saveBatch(disqualification.getUserList());
+        return userOpinionService.saveBatch(userOpinions);
     }
 
     @Override
@@ -95,5 +111,34 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return this.update(updateWrapper);
     }
 
+    @Override
+    public List<TenantUserVo> queryUser() {
+        System.out.println(SecurityUtils.getCurrentUser().getUserId());
+        //获取branchCode
+        String value = value("qualityManagement");
+        //获取TenantId
+        String tenantId = baseServiceClient.queryTenantIdByBranchCode(value);
+        //根据租户Id查询人员列表
+        return systemServiceClient.queryUserByTenantId(tenantId);
+    }
+
+    /**
+     * 功能描述: 获取字典
+     *
+     * @param code
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 15:16
+     * @return: String
+     **/
+    private String value(String code) {
+        try {
+            CommonResult<List<ItemParam>> result = systemServiceClient.selectItemClass(code, null);
+            ItemParam itemParam = result.getData().get(0);
+            return itemParam.getCode();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException("获取检测部门错误", ResultCode.FAILED);
+        }
+    }
 
 }
