@@ -409,14 +409,18 @@ public class TrackCompleteController extends BaseController {
             trackItem.setIsDoing(2);
             trackItem.setQualityCheckBy(complete.getQualityCheckBy());
             trackItem.setQualityCheckBranch(complete.getQualityCheckBranch());
-            if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
+            boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
+            if (next) {
                 trackItem.setIsFinalComplete(String.valueOf(1));
             }
             trackCompleteService.save(complete);
             trackItemService.updateById(trackItem);
-            Map<String, String> map = new HashMap<String, String>(1);
-            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-            publicService.activationProcess(map);
+            //判断是否需要质检和调度审核 再激活下工序
+            if (next) {
+                Map<String, String> map = new HashMap<String, String>(1);
+                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                publicService.activationProcess(map);
+            }
 
         }
 
