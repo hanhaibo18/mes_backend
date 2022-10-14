@@ -25,6 +25,7 @@ import com.richfit.mes.produce.entity.QueryQualityTestingDetailsVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,7 +202,7 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/pageCheck")
-    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo) {
+    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -229,7 +230,7 @@ public class TrackCheckController extends BaseController {
 
             }
             queryWrapper.and(wrapper -> wrapper.eq("is_show", "1").or().isNull("is_show"));
-            queryWrapper.orderByDesc("modify_time");
+            OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackCheck> checks = trackCheckService.page(new Page<TrackCheck>(page, limit), queryWrapper);
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
