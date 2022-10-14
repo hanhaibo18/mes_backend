@@ -85,12 +85,9 @@ public class CodeRuleController extends BaseController {
     public CommonResult<CodeRule> gerCode(String code, String name, String[] inputs, String tenantId, String branchCode) {
         try {
             return CommonResult.success(codeRuleService.gerCode(code, name, inputs, tenantId, branchCode), SUCCESS_MESSAGE);
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
-
-
     }
 
     @ApiOperation(value = "更新编码值，流水号自增", notes = "更新编码值，流水号自增")
@@ -101,16 +98,11 @@ public class CodeRuleController extends BaseController {
     })
     @GetMapping("/updateCode")
     public CommonResult<CodeRule> updateCode(String code, String name, String value, String input, String tenantId, String branchCode) {
-
         try {
-
             return CommonResult.success(codeRuleService.updateCode(code, name, value, input, tenantId, branchCode));
-
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
-
     }
 
     @ApiOperation(value = "新增编码规则", notes = "新增编码规则")
@@ -161,7 +153,6 @@ public class CodeRuleController extends BaseController {
         for (int i = 0; i < items.size(); i++) {
             codeRuleItemService.removeById(items.get(i));
         }
-
         return CommonResult.success(codeRuleService.removeById(id));
     }
 

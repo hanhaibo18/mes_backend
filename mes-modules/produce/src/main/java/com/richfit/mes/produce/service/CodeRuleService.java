@@ -24,6 +24,15 @@ public interface CodeRuleService extends IService<CodeRule> {
      * @param
      * @return
      */
+    public CodeRule updateCodeOld(String code, String name, String value, String input, String tenantId, String branchCode);
+
+
+    /**
+     * 重写编码更新功能（主要重写流水号根据日期重置功能）
+     *
+     * @author zhiqiang.lu
+     * @date 2022.10.14
+     */
     public CodeRule updateCode(String code, String name, String value, String input, String tenantId, String branchCode);
 
     /**

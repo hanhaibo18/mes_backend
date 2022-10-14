@@ -293,7 +293,7 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
      * @return
      */
     @Override
-    public CodeRule updateCode(String code, String name, String value, String input, String tenantId, String branchCode) {
+    public CodeRule updateCodeOld(String code, String name, String value, String input, String tenantId, String branchCode) {
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
         if (!StringUtils.isNullOrEmpty(name)) {
             queryWrapper.eq("name", name);
@@ -342,7 +342,6 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                     } else {
                         //如果当前值是空，则读取重置值，写入
                         list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault())));
-
                     }
                     codeRuleItemService.updateById(list2.get(i));
                 } else {
@@ -408,6 +407,79 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
             codeRuleService.updateById(item);
             return item;
 
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 更新编码，以便自增
+     *
+     * @param
+     * @return
+     */
+    @Override
+    public CodeRule updateCode(String code, String name, String value, String input, String tenantId, String branchCode) {
+        QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(name)) {
+            queryWrapper.eq("name", name);
+        }
+        if (!StringUtils.isNullOrEmpty(code)) {
+            queryWrapper.eq("code", code);
+        }
+        queryWrapper.eq("status", 1);
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        // 获取编码项列表
+        List<CodeRule> items = codeRuleService.list(queryWrapper);
+        CodeRule item = null;
+        if (items.size() > 0) {
+            item = items.get(0);
+            // 获取编码项
+            List<CodeRuleItem> list2 = codeRuleItemService.list(new QueryWrapper<CodeRuleItem>().eq("code_rule_id", item.getId()));
+            for (int i = 0; i < list2.size(); i++) {
+                //如果当前编码项是流水号，且重置依赖是空，则当前编码项的流水号自增
+                if ("2".equals(list2.get(i).getType())) {
+                    if (!StringUtils.isNullOrEmpty(list2.get(i).getSnCurrentValue())) {
+                        if ("year".equals(list2.get(i).getSnResetDependency())) {
+                            if (new Date().getYear() > list2.get(i).getSnCurrentDate().getYear()) {
+                                list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault())));
+                            } else {
+                                list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
+                            }
+                        } else if ("quarter".equals(list2.get(i).getSnResetDependency())) {
+                        } else if ("month".equals(list2.get(i).getSnResetDependency())) {
+                            if (new Date().getMonth() > list2.get(i).getSnCurrentDate().getMonth()) {
+                                list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault())));
+                            } else {
+                                list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
+                            }
+                        } else if ("date".equals(list2.get(i).getSnResetDependency())) {
+                            if (new Date().getDay() > list2.get(i).getSnCurrentDate().getDay()) {
+                                list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault())));
+                            } else {
+                                list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
+                            }
+                        } else if ("input".equals(list2.get(i).getSnResetDependency())) {
+
+                        } else {
+                            list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnCurrentValue()) + Integer.parseInt(list2.get(i).getSnStep())));
+                        }
+                    } else {
+                        //如果当前值是空，则读取重置值，写入
+                        list2.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(list2.get(i).getSnDefault()) + Integer.parseInt(list2.get(i).getSnStep())));
+                    }
+                    list2.get(i).setSnCurrentDate(new Date());
+                    codeRuleItemService.updateById(list2.get(i));
+                }
+            }
+            item.setCurValue(value);
+            codeRuleService.updateById(item);
+            return item;
         } else {
             return null;
         }
