@@ -59,7 +59,7 @@ public class BranchController extends BaseController {
                 branch.setBranchCode(branchCode);
                 branch.setBranchName(branchName);
                 branch.setTenantId(tenantId);
-                branch.setBranchType("0");
+                branch.setBranchType("A");
                 branch.setOrderNo(0);
                 branch.setIsUse("1");
                 boolean bool = branchService.save(branch);
@@ -127,7 +127,7 @@ public class BranchController extends BaseController {
             queryWrapper.eq("branch_code", branchCode);
 
             if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.ne("tenant_id", tenantId);
+                queryWrapper.eq("tenant_id", tenantId);
             }
             queryWrapper.orderByAsc("order_no");
 
@@ -295,4 +295,14 @@ public class BranchController extends BaseController {
     public CommonResult<List<Branch>> queryBranchCodeList(@RequestBody List<String> branchCodeList) {
         return CommonResult.success(branchService.queryBranchCodeList(branchCodeList));
     }
+
+    @ApiOperation(value = "查询tenantId", notes = "根据BranchCode查询租户Id")
+    @GetMapping("/queryTenantIdByBranchCode")
+    public String queryTenantIdByBranchCode(String branchCode) {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        Branch branch = branchService.getOne(queryWrapper);
+        return branch.getTenantId();
+    }
+
 }

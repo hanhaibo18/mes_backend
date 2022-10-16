@@ -629,6 +629,14 @@ public class LineStoreController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "flowid查询产品信息", notes = "通过flowid查询产品信息")
+    @GetMapping("/list_flowid")
+    public CommonResult<List<LineStore>> listByFlowId(@ApiParam(value = "flowId", required = true) @RequestParam String flowId,
+                                                      @ApiParam(value = "追溯类型，0物料，1产品") @RequestParam(required = false) String type) throws Exception {
+        List<LineStore> fileIdList = lineStoreService.listByFlowId(flowId, type);
+        return CommonResult.success(fileIdList);
+
+    }
 
     @ApiOperation(value = "下载质量资料id", notes = "通过料单Id，查询质量资料Id")
     @GetMapping("/query_quality_file_ids/{id}")

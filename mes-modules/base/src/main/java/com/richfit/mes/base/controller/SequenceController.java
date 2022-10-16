@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.enmus.MessageEnum;
 import com.richfit.mes.base.enmus.OptTypeEnum;
+import com.richfit.mes.base.entity.SequenceExportVo;
 import com.richfit.mes.base.service.*;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -28,10 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author 马峰
@@ -441,10 +439,7 @@ public class SequenceController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
     public CommonResult importExcel(HttpServletRequest request, @RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
-        //导入文件名校验
-        if(!file.getOriginalFilename().equals("工艺导入模板.xls")){
-            return CommonResult.failed("导入模板错误!，请重新校验模板");
-        }
+
         CommonResult result = null;
         String msg = "";
         String[] fieldNames = {"status", "content", "remark", "versionCode", "optName", "opNo", "optType", "singlePieceHours", "prepareEndHours", "isQualityCheck", "isScheduleCheck"};
@@ -456,6 +451,23 @@ public class SequenceController extends BaseController {
             excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
 
+            List<SequenceExportVo> headCheck = ExcelUtils.importExcel(excelFile, SequenceExportVo.class, fieldNames, 0, 1, 0, 0, tempName.toString());
+            if(headCheck.size()>0
+                    && "是否导入".equals(headCheck.get(0).getStatus())
+                    && "工艺号".equals(headCheck.get(0).getContent())
+                    && "工艺描述".equals(headCheck.get(0).getRemark())
+                    && "版本号".equals(headCheck.get(0).getVersionCode())
+                    && "工序名".equals(headCheck.get(0).getOptName())
+                    && "工序号".equals(headCheck.get(0).getOpNo())
+                    && "工序类型".equals(headCheck.get(0).getOptType())
+                    && "单件".equals(headCheck.get(0).getSinglePieceHours())
+                    && "准结".equals(headCheck.get(0).getPrepareEndHours())
+                    && "质检确认".equals(headCheck.get(0).getIsQualityCheck())
+                    && "调度确认".equals(headCheck.get(0).getIsScheduleCheck())){
+
+            }else{
+                return CommonResult.failed("导入模板错误!，请重新校验模板");
+            }
             //将导入的excel数据生成证件实体类list
             List<Sequence> list = ExcelUtils.importExcel(excelFile, Sequence.class, fieldNames, 1, 0, 0, tempName.toString());
             List<Sequence> list2 = new ArrayList<>();

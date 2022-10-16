@@ -175,9 +175,9 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "classes", value = "跟单类型", required = true, paramType = "query", dataType = "String"),
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes, String order, String orderCol) {
         try {
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes, order, orderCol);
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }
@@ -308,6 +308,8 @@ public class TrackAssignController extends BaseController {
                         assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                         assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
                     }
+                    CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
+                    assign.setAssignName(user.getData().getEmplName());
 
                     assign.setAssignTime(new Date());
                     assign.setModifyTime(new Date());

@@ -261,4 +261,11 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         return tenantUserVo;
     }
 
+    @Override
+    public List<TenantUserVo> queryUserByTenantId(String tenantId) {
+        QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", tenantId);
+        return tenantUserMapper.queryUserList(queryWrapper);
+    }
+
 }

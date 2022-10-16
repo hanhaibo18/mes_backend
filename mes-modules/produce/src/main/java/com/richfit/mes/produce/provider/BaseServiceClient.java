@@ -27,6 +27,9 @@ public interface BaseServiceClient {
     @GetMapping(value = "/api/base/branch/select_branch_children_by_code")
     public CommonResult<List<Branch>> selectBranchChildByCode(@RequestParam("branchCode") String branchCode);
 
+    @GetMapping(value = "/api/base/branch/branch/one")
+    public CommonResult<Branch> selectBranchByCodeAndTenantId(@RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
+
     @GetMapping("/api/base/product/product/listByNo")
     public CommonResult<List<Product>> selectProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
 
@@ -122,4 +125,15 @@ public interface BaseServiceClient {
      **/
     @GetMapping("/api/base/routerCheck/select_by_id")
     public CommonResult<RouterCheck> routerCheckSelectById(@ApiParam(value = "id", required = true) @RequestParam String id);
+
+    /**
+     * 功能描述: 根据组织结构查询租户Id
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 15:44
+     * @return: String
+     **/
+    @GetMapping(value = "/api/base/branch/queryTenantIdByBranchCode")
+    public String queryTenantIdByBranchCode(@RequestParam("branchCode") String branchCode);
 }

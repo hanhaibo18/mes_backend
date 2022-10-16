@@ -158,7 +158,11 @@ public class ItemController extends BaseController {
         }
         // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByAsc("order_num");
-        return CommonResult.success(itemParamService.page(new Page<ItemParam>(page, limit), queryWrapper), ITEM_SUCCESS_MESSAGE);
+        IPage<ItemParam> itemParamIPage = itemParamService.page(new Page<ItemParam>(page, limit), queryWrapper);
+        for (ItemParam itemParam : itemParamIPage.getRecords()) {
+            itemParam.setValue(itemParam.getCode());
+        }
+        return CommonResult.success(itemParamIPage, ITEM_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询字典参数", notes = "根据参数类别和参数名称查询字典参数")

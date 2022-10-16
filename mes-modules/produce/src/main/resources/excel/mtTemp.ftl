@@ -1914,7 +1914,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>${fluorescent!""}{、退磁}</w:t>
+                                        <w:t>${fluorescent!""}<#if isMagnetic?? && isMagnetic == "是"> 、退磁</#if></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

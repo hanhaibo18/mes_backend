@@ -1,6 +1,7 @@
 package com.richfit.mes.sys.service;
 
 import com.alibaba.nacos.common.utils.UuidUtils;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -123,6 +124,15 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
             }
 
             // 开始初始化字典数据
+            // 删除原字典class数据
+            QueryWrapper<ItemClass> itemClassQueryWrapper = new QueryWrapper<>();
+            itemClassQueryWrapper.eq("tenant_id", tenantId);
+            itemClassService.remove(itemClassQueryWrapper);
+            // 删除原字典内容数据
+            QueryWrapper<ItemParam> itemParamQueryWrapper = new QueryWrapper<>();
+            itemParamQueryWrapper.eq("tenant_id", tenantId);
+            itemParamService.remove(itemParamQueryWrapper);
+
             List<ItemClassTemp> itemClassTemps = itemClassTempService.list();
             List<ItemParamTemp> itemParamTemps = itemParamTempService.list();
 
@@ -156,6 +166,8 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                     classes.add(itemClass);
                 }
             }
+            System.out.println("--------");
+            System.out.println(params.size());
 
             if (classes.size() > 0) {
                 result = itemClassService.saveBatch(classes);

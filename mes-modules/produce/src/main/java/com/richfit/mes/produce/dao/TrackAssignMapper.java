@@ -9,6 +9,7 @@ import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.QueryProcessVo;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -83,4 +84,14 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
 
     IPage<TrackHead> getPageTrackHeadByType(Page page, @Param(Constants.WRAPPER) Wrapper<TrackHead> wrapper);
 
+    /**
+     * 功能描述: 派工和派工人员级联删除
+     *
+     * @param itemId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/11 11:32
+     * @return: boolean
+     **/
+    @Delete("DELETE assign,person FROM produce_assign AS assign LEFT JOIN produce_assign_person AS person ON assign.id = person.assign_id WHERE assign.ti_id = #{itemId}")
+    boolean deleteAssignAndPerson(String itemId);
 }

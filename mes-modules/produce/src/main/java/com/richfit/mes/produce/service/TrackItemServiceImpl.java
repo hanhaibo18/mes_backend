@@ -7,16 +7,21 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.utils.Code;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +72,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Resource
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private TrackAssignMapper trackAssignMapper;
+
+    @Resource
+    private CodeRuleService codeRuleService;
 
     @Override
     public List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query) {
@@ -209,9 +220,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                         && (item.getIsQualityComplete() != null && item.getIsQualityComplete() != 0)) {
                     return "质检已完成，报工记录不可重置！";
                 }
-                // 无质检，有调度审核并审核完成
+                // 第一行:是否质检确认 不确认为true 第二行:是否调度确认 确认为true 第三行 是否调度完成,完成为true
                 else if ((item.getIsExistQualityCheck() != null && item.getIsExistQualityCheck() == 0)
-                        && (item.getIsExistScheduleCheck() != null && item.getIsExistScheduleCheck() != 0)) {
+                        && (item.getIsScheduleComplete() != null && item.getIsScheduleComplete() != 0)) {
                     return "调度审核已完成,报工记录不可重置！";
                 } else {
                     item.setIsDoing(0);
@@ -256,19 +267,22 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     trackHeadService.update(updateWrapper);
                 }*/
                 item.setIsSchedule(0);
+                item.setAssignableQty(item.getNumber());
 
-                QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
-                assignQueryWrapper.eq("ti_id", tiId);
-                Assign assign = trackAssignService.getOne(assignQueryWrapper);
-                if (assign != null && !StringUtils.isNullOrEmpty(assign.getId())) {
-                    item.setAssignableQty(item.getAssignableQty() + assign.getQty());
-                    QueryWrapper<AssignPerson> personQueryWrapper = new QueryWrapper<>();
-                    personQueryWrapper.eq("assign_id", assign.getId());
-                    trackAssignPersonService.remove(personQueryWrapper);
-                    trackAssignService.removeById(assign.getId());
-                } else {
-                    item.setAssignableQty(item.getBatchQty());
-                }
+                //TODO:一条工序会存在多条派工记录,重构一下代码
+                trackAssignMapper.deleteAssignAndPerson(tiId);
+//
+//                QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+//                assignQueryWrapper.eq("ti_id", tiId);
+//                Assign assign = trackAssignService.getOne(assignQueryWrapper);
+//                if (assign != null && !StringUtils.isNullOrEmpty(assign.getId())) {
+//                    QueryWrapper<AssignPerson> personQueryWrapper = new QueryWrapper<>();
+//                    personQueryWrapper.eq("assign_id", assign.getId());
+//                    trackAssignPersonService.remove(personQueryWrapper);
+//                    trackAssignService.removeById(assign.getId());
+//                } else {
+//                    item.setAssignableQty(item.getBatchQty());
+//                }
                 //补充当工序顺序为1时进行跟单状态处理接口调用
                 if (item.getOptSequence() == 1) {
                     UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
@@ -295,13 +309,11 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         List<TrackItem> items = this.list(queryWrapper);
         boolean isComplete = true;
         for (TrackItem item : items) {
-            if (item != null && "0".equals(item.getIsFinalComplete())) {
+            if (item != null && item.getIsOperationComplete() == 0) {
                 isComplete = false;
                 break;
             }
         }
-
-        System.out.println(items.size());
         if (!isComplete) {
             return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
         } else if (items.size() > 0) {
@@ -512,6 +524,42 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             itMessage.setIsDrawingNo(option.getData().getDrawing());
         }
         return itMessage;
+    }
+
+    @Override
+    public DisqualificationItemVo queryItem(String tiId, String branchCode) {
+        DisqualificationItemVo item = new DisqualificationItemVo();
+        TrackItem trackItem = this.getById(tiId);
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        //跟单号
+        item.setTrackNo(trackHead.getTrackNo());
+        //产品名称
+        item.setProductName(trackItem.getProductName());
+        //产品编号
+        item.setProductNo(trackHead.getProductNo());
+        //零部件名称
+        item.setPartName(trackHead.getMaterialName());
+        //零部件材料
+        item.setPartMaterials(trackHead.getTexture());
+        //零部件图号
+        item.setPartDrawingNo(trackHead.getDrawingNo());
+        //不合格品数量
+        item.setDisqualificationNum(trackItem.getQualityUnqty());
+        //车间类型
+        item.setClasses(trackHead.getClasses());
+        //工作号
+        item.setWorkNo(trackHead.getWorkNo());
+        //获取申请单编号
+        try {
+            String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+            item.setProcessSheetNo(disqualificationNo);
+            Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
+        }
+        return item;
     }
 
 }

@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.sys;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +21,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class ItemParam extends BaseEntity<ItemParam> {
 
+    private static final long serialVersionUID = 6196172312945451861L;
     private String tenantId;
 
     /**
@@ -51,5 +53,12 @@ public class ItemParam extends BaseEntity<ItemParam> {
      * 排序
      */
     private Integer orderNum;
+
+
+    /**
+     * 同code的value
+     */
+    @TableField(exist = false)
+    private String value;
 
 }

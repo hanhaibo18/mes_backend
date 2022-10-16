@@ -129,9 +129,6 @@ public class PublicServiceImpl implements PublicService {
 
         int isComplete = 1;
 
-        //派工状态设置为完成
-        assignById.setState(2);
-        trackAssignService.updateById(assignById);
 
         Boolean activationProcess = false;
         boolean isNext = false;
@@ -390,12 +387,14 @@ public class PublicServiceImpl implements PublicService {
         assign.setAssignPersons(list);
         CommonResult<Assign[]> commonResult = trackAssignController.batchAssign(new Assign[]{assign});
         trackItem.setIsSchedule(1);
+//        trackItem.setAssignableQty(trackItem.getAssignableQty() - trackItem.getNumber());
         trackItemService.updateById(trackItem);
         //查询下工序,是否为并行工序依据并行工序来判断下工序是否激活
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("flow_id", trackItem.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
+        //TODO: 自动派工未消耗可派工数量!!!!!!
         if (null != trackItemEntity && 1 == trackItemEntity.getOptParallelType()) {
             activation(trackItem);
         }
@@ -416,14 +415,13 @@ public class PublicServiceImpl implements PublicService {
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
         trackItemEntity.setIsCurrent(1);
         trackItemEntity.setModifyTime(new Date());
+        boolean update = trackItemService.updateById(trackItemEntity);
         if (1 == trackItemEntity.getIsAutoSchedule()) {
             Map<String, String> map = new HashMap<>(2);
             map.put("trackItemId", trackItemEntity.getId());
             map.put("trackHeadId", trackItemEntity.getTrackHeadId());
             automaticProcess(map);
-            trackItemEntity.setIsSchedule(1);
         }
-        boolean update = trackItemService.updateById(trackItemEntity);
         if (trackItemEntity.getOptParallelType() == 1 && trackItemEntity.getNextOptSequence() != 0) {
             queryTrackItemList(trackItemEntity);
         }

@@ -102,6 +102,12 @@ public class Assign extends BaseEntity<Assign> {
     protected String assignBy;
 
     /**
+     * 派工人名称
+     */
+    @ApiModelProperty(value = "派工人名称", dataType = "String")
+    protected String assignName;
+
+    /**
      * 派工时间
      */
     @ApiModelProperty(value = "派工时间", dataType = "Date")

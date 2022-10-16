@@ -140,4 +140,15 @@ public interface LineStoreService extends IService<LineStore> {
      * @Date: 2022/8/23 10:59
      **/
     LineStore addCpStoreByTrackHead(TrackHead trackHead, String productsNo, Integer number);
+
+
+    /**
+     * 功能描述: 通过flowId查询库存信息
+     *
+     * @param flowId
+     * @Author: zhiqiang.lu
+     * @Date: 2022/10/9 16:59
+     * @return: List<String>
+     **/
+    List<LineStore> listByFlowId(String flowId, String type);
 }

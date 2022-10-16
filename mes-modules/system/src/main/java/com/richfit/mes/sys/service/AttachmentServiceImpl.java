@@ -52,7 +52,12 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
 
     @Override
     public List<Attachment> selectAttachmentsList(List<String> idList) {
-        return this.listByIds(idList);
+        List<Attachment> attachments = this.listByIds(idList);
+        for (Attachment attachment : attachments) {
+            String tokenUrl = this.getTokenUrl(attachment);
+            attachment.setPreviewUrl(tokenUrl);
+        }
+        return attachments;
     }
 
     @Override

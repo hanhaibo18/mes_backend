@@ -3,9 +3,12 @@
 <mapper namespace="com.richfit.mes.produce.dao.LineStoreMapper">
     <select id="selectGroup" resultType="com.richfit.mes.common.model.produce.store.LineStoreSum">
         SELECT c.drawing_no,
-        (select s.product_name from
-        mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
-        c.branch_code limit 1) material_name,
+               (select s.product_name
+                from mes_produce.produce_line_store s
+                where s.drawing_no = c.drawing_no
+                  and tenant_id = c.tenant_id
+                  and branch_code =
+                      c.branch_code limit 1) material_name,
         (select s.material_no from
         mes_produce.produce_line_store s where s.drawing_no = c.drawing_no and tenant_id = c.tenant_id and branch_code =
         c.branch_code limit 1) material_no,
@@ -28,16 +31,17 @@
         ) comp_number
 
         from (
-        select distinct(drawing_no) drawing_no ,tenant_id,branch_code FROM mes_produce.produce_line_store
-        ${ew.customSqlSegment}
-        ) c
+            select distinct (drawing_no) drawing_no, tenant_id, branch_code FROM mes_produce.produce_line_store
+            ${ew.customSqlSegment}
+            ) c
 
     </select>
     <select id="selectLineStoreByProduce" resultType="com.richfit.mes.common.model.produce.LineStore">
         SELECT ls.*, ta.id assemblyId
         FROM produce_line_store ls
-        left join mes_produce.produce_track_assembly ta on ls.workblank_no = ta.product_no and ls.track_type = '0'
-        ${ew.customSqlSegment}
+                 left join mes_produce.produce_track_assembly ta
+                           on ls.workblank_no = ta.product_no and ls.track_type = '0'
+            ${ew.customSqlSegment}
     </select>
 
     <!-- 查询装配库存 库存量-->
@@ -104,7 +108,7 @@
     <!-- 查询装配库存 跟单已装量-->
     <select id="selectAssemblyNum" resultType="com.richfit.mes.common.model.produce.store.LineStoreSumZp">
         select drawing_no drawing_no,
-        sum(ifnull(number,0)) assembly_number
+        sum(ifnull(number_install,0)) assembly_number
         from produce_track_assembly
         where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
         <trim suffixOverrides=",">

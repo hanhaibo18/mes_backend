@@ -13,6 +13,7 @@ import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -55,6 +56,9 @@ public class TrackCompleteController extends BaseController {
     private PlanService planService;
     @Autowired
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private PublicService publicService;
 
     @Resource
     private SystemServiceClient systemServiceClient;
@@ -193,6 +197,19 @@ public class TrackCompleteController extends BaseController {
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
+    }
+
+    @ApiOperation(value = "报工详情查询", notes = "报工详情查询")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "order", value = "排序", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "页码", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "orderCol", value = "排序", paramType = "query", dataType = "string")
+
+    })
+    @GetMapping("/queryList")
+    public CommonResult<List<TrackComplete>> queryList(String tiId, String branchCode, String order, String orderCol) {
+        return CommonResult.success(trackCompleteService.queryList(tiId, branchCode, order, orderCol));
     }
 
     @ApiOperation(value = "新增派工", notes = "新增派工")
@@ -381,7 +398,7 @@ public class TrackCompleteController extends BaseController {
             int sum = complete.getCompletedQty().intValue();
             trackItem.setCompleteQty(trackItem.getCompleteQty() + sum);
             trackItem.setAssignableQty(trackItem.getAssignableQty() - sum);
-            complete.setAssignId(complete.getTiId());
+            complete.setTiId(complete.getTiId());
             complete.setModifyTime(new Date());
             complete.setCreateTime(new Date());
             complete.setCompleteBy(complete.getUserId());
@@ -392,12 +409,18 @@ public class TrackCompleteController extends BaseController {
             trackItem.setIsDoing(2);
             trackItem.setQualityCheckBy(complete.getQualityCheckBy());
             trackItem.setQualityCheckBranch(complete.getQualityCheckBranch());
-            if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
+            boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
+            if (next) {
                 trackItem.setIsFinalComplete(String.valueOf(1));
             }
             trackCompleteService.save(complete);
             trackItemService.updateById(trackItem);
-            this.activeTrackItem(trackItem);
+            //判断是否需要质检和调度审核 再激活下工序
+            if (next) {
+                Map<String, String> map = new HashMap<String, String>(1);
+                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                publicService.activationProcess(map);
+            }
 
         }
 

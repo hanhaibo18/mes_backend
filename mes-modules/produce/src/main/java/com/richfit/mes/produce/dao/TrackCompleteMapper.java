@@ -22,6 +22,10 @@ public interface TrackCompleteMapper extends BaseMapper<TrackComplete> {
     @Select("select * from v_produce_complete a ${ew.customSqlSegment}")
     IPage<TrackComplete> queryPage(Page page, @Param(Constants.WRAPPER) Wrapper<TrackComplete> wrapper);
 
+
+    @Select("select * from v_produce_complete a ${ew.customSqlSegment}")
+    List<TrackComplete> queryList(@Param(Constants.WRAPPER) Wrapper<TrackComplete> wrapper);
+
     /**
      * 功能描述: 查询报工缓存表
      *

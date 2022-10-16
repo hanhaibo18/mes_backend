@@ -290,7 +290,12 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "更新至下工序", notes = "根据跟单ID更新至下工序")
     @GetMapping("/nextSequence")
     public CommonResult<String> nextSequence(String flowId) {
-        return CommonResult.success(trackItemService.nextSequence(flowId));
+        String error = trackItemService.nextSequence(flowId);
+        if ("success".equals(error)) {
+            return CommonResult.success(trackItemService.nextSequence(flowId));
+        } else {
+            return CommonResult.failed(error);
+        }
     }
 
     @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")

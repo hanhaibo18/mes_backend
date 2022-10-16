@@ -490,15 +490,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             relation.setType("0");
             relation.setNumber(number);
             trackHeadRelationMapper.insert(relation);
-            System.out.println("---------------------");
-            System.out.println(productsNo);
             //料单添加成品信息
             LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
 
             //添加跟单-分流-料单的关联信息
             TrackHeadRelation relationCp = new TrackHeadRelation();
             relationCp.setThId(trackHead.getId());
-            relation.setFlowId(flowId);
+            relationCp.setFlowId(flowId);
             relationCp.setLsId(lineStoreCp.getId());
             relationCp.setType("1");
             relationCp.setNumber(number);
@@ -534,11 +532,22 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //工序批量修改（单件跟单多生产线、普通跟单判断）
             if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) > 0) {
                 //多生产线工序修改
-                //删除所有为派工的跟单工序
+                //工序顺序降序查询以派工的工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
-                queryWrapperTrackItem.eq("is_schedule", "0");
-                trackItemService.remove(queryWrapperTrackItem);
+                queryWrapperTrackItem.eq("is_schedule", 1);
+                queryWrapperTrackItem.orderByDesc("opt_sequence");
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                //取出最大的顺序数
+                int optSequence = 0;
+                if (trackItemList != null && trackItemList.size() > 0) {
+                    optSequence = trackItemList.get(0).getOptSequence();
+                }
+                //删除大于最大顺序数的工序信息
+                QueryWrapper<TrackItem> queryWrapperTrackItem2 = new QueryWrapper<>();
+                queryWrapperTrackItem2.eq("track_head_id", trackHead.getId());
+                queryWrapperTrackItem2.gt("opt_sequence", optSequence);
+                trackItemService.remove(queryWrapperTrackItem2);
                 //跟单工序添加
                 if (trackItems != null && trackItems.size() > 0) {
                     for (TrackItem item : trackItems) {
@@ -695,6 +704,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 t.setWorkNo(plan.getWorkNo());
                 t.setProductionOrder(plan.getOrderNo());
+                t.setProductionOrderId(plan.getOrderId());
                 t.setProjectBomId(plan.getProjectBom());
                 t.setProjectBomName(plan.getProjectBomName());
                 t.setProjectBomWork(plan.getProjectBomWork());
@@ -735,8 +745,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.updateById(trackFlow);
 
             //跟单完成数量，状态更新
+            int num = 0;
             TrackHead trackHead = trackHeadMapper.selectById(trackFlow.getTrackHeadId());
-            trackHead.setNumberComplete(trackHead.getNumberComplete() + trackFlow.getNumber());
+            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+            queryWrapperTrackFlow.eq("track_head_id", trackFlow.getTrackHeadId());
+            List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapperTrackFlow);
+            for (TrackFlow tf : trackFlowList) {
+                if (TrackHead.STATUS_2.equals(tf.getStatus()) || TrackHead.STATUS_8.equals(tf.getStatus()) || TrackHead.STATUS_9.equals(tf.getStatus())) {
+                    num += trackFlow.getNumber();
+                }
+            }
+
+            trackHead.setNumberComplete(num);
             if (trackHead.getNumber().equals(trackHead.getNumberComplete())) {
                 trackHead.setStatus("2");
             }
@@ -1182,15 +1202,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         boolean isSchedule = true;
         boolean isFinish = true;
         for (TrackFlow trackFlow : trackFlowList) {
-            if (!"0".equals(trackFlow.getStatus())) {
+            if (!TrackHead.STATUS_0.equals(trackFlow.getStatus())) {
                 isNotSchedule = false;
             }
-            if (!"1".equals(trackFlow.getStatus())) {
-                isSchedule = false;
-            }
-            if (!"2".equals(trackFlow.getStatus())) {
+            if (!TrackHead.STATUS_2.equals(trackFlow.getStatus())) {
                 isFinish = false;
             }
+        }
+        //当存非全部未派工，或者非全部完工显示为在制
+        if (isNotSchedule || isFinish) {
+            isSchedule = false;
         }
         if (isNotSchedule) {
             UpdateWrapper<TrackHead> updateWrapperTrackHead = new UpdateWrapper<>();
@@ -1233,6 +1254,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.update(updateWrapperTrackFlow);
 
             //更新跟单状态动作
+            System.out.println("-------------------");
+            System.out.println(id);
             TrackHead trackHead = trackHeadMapper.selectById(id);
             trackHead.setStatus("9");
             trackHeadMapper.updateById(trackHead);

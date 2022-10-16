@@ -67,6 +67,9 @@ public interface SystemServiceClient {
     @PostMapping(value = "/api/sys/attachment/download/getBase64Code")
     public CommonResult<Object> getBase64Code(@RequestParam String id) throws GlobalException, IOException;
 
+    @GetMapping(value = "/api/sys/attachment/url")
+    public CommonResult getPreviewUrl(@RequestParam String id) throws GlobalException;
+
     /**
      * 功能描述: 根据UserId查询用户信息
      *
@@ -77,4 +80,15 @@ public interface SystemServiceClient {
      **/
     @GetMapping(value = "/api/sys/user/queryByUserId")
     public CommonResult<TenantUserVo> queryByUserId(@RequestParam("userId") String userId);
+
+    /**
+     * 功能描述:根据租户Id查询人员
+     *
+     * @param tenantId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 16:27
+     * @return: List<TenantUserVo>
+     **/
+    @GetMapping(value = "/api/sys/user/queryUserByTenantId")
+    public List<TenantUserVo> queryUserByTenantId(@RequestParam("tenantId") String tenantId);
 }

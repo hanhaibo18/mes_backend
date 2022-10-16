@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,9 +19,14 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @NoArgsConstructor
+@ApiModel("PhysChemOrder")
 public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
-    @ApiModelProperty(value = "跟单工序id")
-    private String itemId;
+    @ApiModelProperty(value = "炉批号")
+    private String batchNo;
+    @ApiModelProperty(value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）")
+    private String status;
+    @ApiModelProperty(value = "委托人")
+    private String consignor;
     @ApiModelProperty(value = "化学分析->全分析")
     private String chemicalAnalysis;
     @ApiModelProperty(value = "化学分析->碳硫")

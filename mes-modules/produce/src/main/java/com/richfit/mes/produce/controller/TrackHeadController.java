@@ -230,7 +230,8 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
 
                                                           @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
-                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanId,
+                                                          @ApiParam(value = "工作计划id") @RequestParam(required = false) String workPlanId,
+                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
                                                           @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
                                                           @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
                                                           @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
@@ -268,6 +269,9 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(workPlanId)) {
             queryWrapper.like("work_plan_id", workPlanId);
+        }
+        if (!StringUtils.isNullOrEmpty(workPlanNo)) {
+            queryWrapper.like("work_plan_No", workPlanNo);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no_desc", productNo);

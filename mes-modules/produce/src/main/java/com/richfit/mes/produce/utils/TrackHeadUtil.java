@@ -67,7 +67,7 @@ public class TrackHeadUtil {
      */
     public static List<TrackHead> flowInfo(TrackHead trackHead) throws Exception {
         List<TrackHead> trackHeadList = new ArrayList<>();
-        if (TrackHead.TRACKHEAD_BATCH_NO.equals(trackHead.getIsBatch()) && !trackHead.getStoreList().isEmpty()) {
+        if (TrackHead.TRACKHEAD_BATCH_NO.equals(trackHead.getIsBatch()) && trackHead.getStoreList() != null) {
             //单件多数量（多生产线）
             for (Map m : trackHead.getStoreList()) {
                 TrackHead th = JSON.parseObject(JSON.toJSONString(trackHead), TrackHead.class);

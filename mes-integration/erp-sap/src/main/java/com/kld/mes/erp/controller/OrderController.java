@@ -1,7 +1,5 @@
 package com.kld.mes.erp.controller;
 
-import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
-import com.kld.mes.erp.entity.order.ZPPS0008;
 import com.kld.mes.erp.service.OrderService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
@@ -10,7 +8,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
  * @description: ERP生产订单接口
  * @author: 王瑞
  * @create: 2022-08-01 15:02
- **/
+ */
 @Slf4j
 @Api(value = "ERP接口封装", tags = {"生产订单接口"})
 @RestController
@@ -37,7 +38,6 @@ public class OrderController {
                                                  @ApiParam(value = "控制者") @RequestParam(required = false) String controller) throws Exception {
 
         return CommonResult.success(orderService.getErpCode(erpCode, selectDate, controller, orderNo));
-
     }
 
 }

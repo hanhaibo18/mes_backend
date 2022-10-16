@@ -93,8 +93,8 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
 
                     //更新跟单状态到 9 "已交"
-                    trackHeadService.trackHeadDelivery(track.getId());
-                    
+                    trackHeadService.trackHeadDelivery(track.getThId());
+
                     //半成品 成品更新状态及合格证号
                     TrackHead th = trackHeadService.getById(track.getThId());
                     lineStoreService.updateCertNoByCertTrack(th);

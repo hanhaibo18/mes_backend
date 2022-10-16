@@ -121,7 +121,7 @@ public class InspectionDictionaryController {
                     for (InspectionDictionary inspectionDictionary : valuesMap.get(key)) {
                         //将下拉列表构造为lable value形式 便于前端取值
                         Map<String, String> map = new HashMap<>();
-                        map.put("lable", inspectionDictionary.getDicCode());
+                        map.put("label", inspectionDictionary.getDicCode());
                         map.put("value", inspectionDictionary.getDicValue());
                         maps.add(map);
                     }

@@ -8,7 +8,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
-import com.richfit.mes.common.model.produce.TrackItemInspection;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.PhyChemTestService;
 import com.richfit.mes.produce.service.PhysChemOrderService;
@@ -45,13 +45,29 @@ public class PhysChemTestController extends BaseController {
     private PhysChemResultService physChemResultService;
 
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
+    @ApiImplicitParam(name = "physChemOrder", value = "委托单", paramType = "body", dataType = "PhysChemOrder")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> saveOrUpdate(@RequestBody PhysChemOrder physChemOrder){
         return CommonResult.success(physChemOrderService.saveOrUpdate(physChemOrder));
     }
 
+    @ApiOperation(value = "查询委托单列表", notes = "查询委托单列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "batchNo", value = "炉批号", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "status", value = "状态", paramType = "query", dataType = "string"),
+    })
+    @PostMapping("/producePhysChemOrder/selectOrderList")
+    public CommonResult selectOrderList(int page,int limit,String branchCode,String startTime,String endTime,String batchNo,String status){
+        return CommonResult.success(physChemOrderService.selectOrderList(page,limit,startTime,endTime,batchNo,status));
+    }
 
-    @ApiOperation(value = "分页查询检测工序", notes = "分页查询检测工序")
+
+    @ApiOperation(value = "分页查询检测任务列表", notes = "分页查询检测任务列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -61,12 +77,11 @@ public class PhysChemTestController extends BaseController {
             @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isAudit", value = "审核状态（false、待审核 true、已审核）", required = true, paramType = "query", dataType = "boolean"),
+            @ApiImplicitParam(name = "status", value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）", paramType = "query", dataType = "string"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo,String drawingNo, String productName, String branchCode, String tenantId, Boolean isAudit) {
-        return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,drawingNo,branchCode,tenantId,isAudit));
+    public CommonResult<IPage<TrackHead>> page(int page, int limit, String startTime, String endTime, String trackNo, String drawingNo, String productName, String branchCode, String tenantId, String status) {
+        return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,drawingNo,branchCode,tenantId,status));
     }
 
 
@@ -78,23 +93,24 @@ public class PhysChemTestController extends BaseController {
     }
 
 
-   @ApiOperation(value = "根据跟单工序id分页查询试验结果", notes = "根据跟单工序id分页查询试验结果")
+   @ApiOperation(value = "根据炉批号查询实验结果", notes = "根据炉批号查询实验结果")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "itemId", value = "跟单工序id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构code", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "batchNo", value = "跟单炉批号", required = true, paramType = "query", dataType = "string"),
     })
-    @GetMapping("/queryResultByItemId")
-    public CommonResult<IPage<PhysChemResult>> queryResultByItemId(int page,int limit,String itemId){
+    @GetMapping("/queryResultByBatchNo")
+    public CommonResult<IPage<PhysChemResult>> queryResultByItemId(int page,int limit,String batchNo,String branchCode){
         QueryWrapper<PhysChemResult> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id",itemId)
-                .eq("branch_code", SecurityUtils.getCurrentUser().getBelongOrgId())
+        queryWrapper.eq("batch_no",batchNo)
+                .eq("branch_code", branchCode)
                 .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(physChemResultService.page(new Page<>(page, limit), queryWrapper));
     }
 
     @ApiOperation(value = "理化检测报告导出", notes = "理化检测报告导出")
-    @GetMapping("/exoprtReport")
+    @GetMapping("/exportReport")
     public void exoprtReport(HttpServletResponse response, String itemId) throws IOException, TemplateException, GlobalException {
         phyChemTestService.exoprtReport(response,itemId);
     }

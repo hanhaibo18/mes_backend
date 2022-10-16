@@ -25,10 +25,8 @@ import com.richfit.mes.produce.entity.QueryQualityTestingDetailsVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import com.richfit.mes.produce.utils.OrderUtil;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -156,7 +154,7 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.like("product_no", productNo);
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
                 Calendar calendar = new GregorianCalendar();
@@ -204,7 +202,7 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/pageCheck")
-    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo) {
+    public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -217,13 +215,11 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
-                queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where track_no ='" + trackNo + "')");
-
+                queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%')");
             }
             if (!StringUtils.isNullOrEmpty(productNo)) {
-                queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where product_no ='" + productNo + "')");
+                queryWrapper.inSql("ti_id", "select id from  produce_track_item where product_no ='" + productNo + "'");
             }
-
 
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
@@ -234,7 +230,7 @@ public class TrackCheckController extends BaseController {
 
             }
             queryWrapper.and(wrapper -> wrapper.eq("is_show", "1").or().isNull("is_show"));
-            queryWrapper.orderByDesc("modify_time");
+            OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackCheck> checks = trackCheckService.page(new Page<TrackCheck>(page, limit), queryWrapper);
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
@@ -839,5 +835,16 @@ public class TrackCheckController extends BaseController {
         //未派工
         num.put("dispatchingNumber", trackAssignService.queryDispatchingNumber(branchCode));
         return CommonResult.success(num);
+    }
+
+    @ApiOperation(value = "质检信息查询", notes = "质检信息查询")
+    @GetMapping("/find")
+    public CommonResult<List<TrackCheck>> find(@ApiParam(value = "跟单工序项ID") @RequestParam(required = false) String tiId) {
+
+        QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(!StrUtil.isBlank(tiId), "ti_id", tiId);
+        queryWrapper.orderByAsc("modify_time");
+        List<TrackCheck> result = trackCheckService.list(queryWrapper);
+        return CommonResult.success(result, "操作成功！");
     }
 }

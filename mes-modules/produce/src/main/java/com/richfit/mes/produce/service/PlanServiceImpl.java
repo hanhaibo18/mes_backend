@@ -12,6 +12,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
@@ -251,7 +252,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
                 pbc.setStoreNumber(totalStore / unit);
             }
-            totalMiss = pbc.getPlanNeedNumber() * unit + pbc.getInstallNumber() * unit - totalWms - totalStore;
+            totalMiss = pbc.getPlanNeedNumber() * unit - totalWms - totalStore;
             if (totalMiss > 0) {
                 pbc.setMissingNumber(totalMiss / unit);
             } else {
@@ -410,8 +411,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 }
             }
         }
-
-        return CommonResult.success(this.save(plan));
+        boolean f = this.save(plan);
+        this.planData(plan.getId());
+        return CommonResult.success(f);
     }
 
     @Override
@@ -602,6 +604,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
             for (Plan plan : sheetList) {
                 plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                //车间代码判断，并取中文名称
+                CommonResult<Branch> result = baseServiceClient.selectBranchByCodeAndTenantId(plan.getInchargeOrg(), plan.getTenantId());
+                if (result.getData() == null) {
+                    throw new GlobalException("加工车间代码错误:" + plan.getInchargeOrg(), ResultCode.FAILED);
+                }
+                plan.setInchargeOrgName(result.getData().getBranchName());
                 //设置优先级 默认为1
                 plan.setPriority("1");
                 if (!ObjectUtil.isEmpty(plan.getDrawNo()) && plan.getDrawNo().equals("0")) {
@@ -640,16 +648,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setOptNumber(0);
                 plan.setOptFinishNumber(0);
                 plan.setDeliveryNum(0);
-                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? 0 : plan.getMissingNum());
+                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
             }
-
-
             //保存计划列表
             this.saveBatch(sheetList);
-
         } catch (Exception e) {
             e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 
@@ -666,7 +672,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
         if (!StrUtil.isBlank(drawNos)) {
             CommonResult<List<Router>> result = baseServiceClient.getByRouterNos(drawNos.substring(1), branchCode);
-            if (result != null) {
+            if (result != null && result.getData() != null) {
                 for (Plan plan : planList) {
                     for (Router router : result.getData()) {
                         if (plan.getDrawNo().equals(router.getRouterNo())) {
