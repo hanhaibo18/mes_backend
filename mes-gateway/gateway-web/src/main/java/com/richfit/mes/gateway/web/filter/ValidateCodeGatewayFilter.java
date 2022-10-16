@@ -69,7 +69,8 @@ public class ValidateCodeGatewayFilter extends AbstractGatewayFilterFactory {
             if (!captchaService.verification(vo).isSuccess()) {
                 throw new ValidateCodeException("验证码不合法");
             }
-            return;
+        }else{
+            throw new ValidateCodeException("验证码不合法");
         }
 
     }

@@ -1,10 +1,15 @@
 package com.richfit.mes.gateway.web.filter;
 
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.crypto.Mode;
+import cn.hutool.crypto.Padding;
+import cn.hutool.crypto.symmetric.AES;
+import cn.hutool.http.HttpUtil;
 import com.richfit.mes.gateway.web.constants.GatewayConstant;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.util.encoders.Base64;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.rewrite.CachedBodyOutputMessage;
@@ -24,11 +29,11 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -37,19 +42,16 @@ import java.util.function.Function;
  */
 @Slf4j
 @Component
-public class PasswordDecoderFilter extends AbstractGatewayFilterFactory {
+public class PasswordDecoderFilter extends AbstractGatewayFilterFactory<PasswordDecoderFilter.Config> {
 
     private final List<HttpMessageReader<?>> messageReaders = HandlerStrategies.withDefaults().messageReaders();
-
-    @Value("${security.encode.key:1234567812345678}")
-    private String encodeKey;
-
     private static final String KEY_ALGORITHM = "AES";
-    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final String PASSWORD = "password";
-
+    public PasswordDecoderFilter() {
+        super(PasswordDecoderFilter.Config.class);
+    }
     @Override
-    public GatewayFilter apply(Object config) {
+    public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
 
@@ -68,7 +70,7 @@ public class PasswordDecoderFilter extends AbstractGatewayFilterFactory {
             ServerRequest serverRequest = ServerRequest.create(exchange, messageReaders);
 
             // 解密生成新的报文
-            Mono<?> modifiedBody = serverRequest.bodyToMono(inClass).flatMap(decryptAES());
+            Mono<?> modifiedBody = serverRequest.bodyToMono(inClass).flatMap(decryptAes(config.getEncodeKey()));
 
             BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, outClass);
             HttpHeaders headers = new HttpHeaders();
@@ -83,23 +85,29 @@ public class PasswordDecoderFilter extends AbstractGatewayFilterFactory {
             }));
         };
     }
-    private static String decryptAES(String data, String pass)throws Exception  {
-        Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(pass.getBytes(), KEY_ALGORITHM), new IvParameterSpec(pass.getBytes()));
-        byte[] result = cipher.doFinal(Base64.decode(data.getBytes(StandardCharsets.UTF_8)));
-        return new String(result, StandardCharsets.UTF_8);
-    }
 
     /**
      * 原文解密
      * @return
      */
-    private Function decryptAES() {
+    private Function decryptAes(String encodeKey) {
         return s -> {
             // 构建前端对应解密AES 因子
-            // TODO
-            log.info("{}",s);
-            return s;
+            AES aes = new AES(Mode.CFB, Padding.NoPadding,
+                    new SecretKeySpec(encodeKey.getBytes(), KEY_ALGORITHM),
+                    new IvParameterSpec(encodeKey.getBytes()));
+
+            // 获取请求密码并解密
+            Map<String, String> inParamsMap = HttpUtil.decodeParamMap((String) s, CharsetUtil.CHARSET_UTF_8);
+            if (inParamsMap.containsKey(PASSWORD)) {
+                String password = aes.decryptStr(inParamsMap.get(PASSWORD));
+                inParamsMap.put(PASSWORD, password);
+            }
+            else {
+                log.error("非法请求数据:{}", s);
+            }
+            return Mono.just(HttpUtil.toParams(inParamsMap, Charset.defaultCharset()));
+
         };
     }
 
@@ -129,5 +137,12 @@ public class PasswordDecoderFilter extends AbstractGatewayFilterFactory {
                 return outputMessage.getBody();
             }
         };
+
+    }
+
+    @Getter
+    @Setter
+    public static class Config {
+        private String  encodeKey;
     }
 }
