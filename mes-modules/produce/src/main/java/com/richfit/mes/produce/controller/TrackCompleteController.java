@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -153,10 +154,23 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.orderByDesc("modify_time");
             }
             IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
+            //总工时累计额值
+            Double sumTotalHours=0.00;
+            //准结工时累计值
+            Double sumPrepareEndHours=0.00;
+            //额定工时累计值
+            Double sumSinglePieceHours=0.00;
             try {
+                TrackComplete track0=new TrackComplete();
                 for (TrackComplete track : completes.getRecords()) {
+                    //计算总工时
+                    sumPrepareEndHours=sumPrepareEndHours+track.getPrepareEndHours();
+                    sumSinglePieceHours=sumSinglePieceHours+track.getSinglePieceHours();
+                    sumTotalHours=sumTotalHours+track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours();
+                    track.setTotalHours(track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours());
                     CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
                     track.setUserName(tenantUserVo.getData().getEmplName());
+                    track0.setUserName(tenantUserVo.getData().getEmplName());
                     CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
                     track.setDeviceName(device.getData().getName());
                     TrackItem trackItem = trackItemService.getById(track.getTiId());
@@ -190,6 +204,11 @@ public class TrackCompleteController extends BaseController {
                         track.setIsUpdate(0);
                     }
                 }
+                track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
+                track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
+                track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                List<TrackComplete> records = completes.getRecords();
+                records.add(0,track0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
