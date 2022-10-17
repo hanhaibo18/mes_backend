@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 import com.richfit.mes.common.model.sys.ItemParam;
@@ -18,6 +19,7 @@ import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
 import com.richfit.mes.produce.entity.quality.QueryCheckDto;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
+import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
@@ -95,6 +97,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveDisqualification(Disqualification disqualification) {
+        if (1 == disqualification.getIsIssue()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            disqualification.setOrderTime(sdf.format(new Date()));
+        }
         this.save(disqualification);
         savePerson(disqualification.getUserList(), disqualification.getId());
         return true;
@@ -123,8 +129,13 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 opinion.setDisqualificationId(id);
                 //赋值用户唯一Id
                 opinion.setUserId(user.getId());
+                //赋值用户姓名
+                opinion.setUserName(user.getEmplName());
                 //赋值用户车间
                 opinion.setUserBranch(user.getBelongOrgId());
+                //查询车间姓名并赋值
+                String branchCodeName = baseServiceClient.queryTenantIdByBranchCode(user.getBelongOrgId());
+                opinion.setUserBranchName(branchCodeName);
                 userOpinions.add(opinion);
             }
             userOpinionService.saveBatch(userOpinions);
@@ -200,6 +211,25 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         }
         queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUserId());
         return userOpinionMapper.queryCheck(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+    @Override
+    public List<SignedRecordsVo> querySignedRecordsList(String disqualificationId) {
+        //查询意见表
+        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("disqualification_id", disqualificationId);
+        List<SignedRecordsVo> recordsVoList = SignedRecordsVo.list(userOpinionService.list(queryWrapper));
+        //单查询开单时间
+        Disqualification disqualification = this.getById(disqualificationId);
+        SignedRecordsVo signedRecordsVo = new SignedRecordsVo();
+        //查询姓名
+        CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(disqualification.getCreateBy());
+        signedRecordsVo.setUserName(userAccount.getData().getEmplName());
+        //查询车间名称
+        CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(disqualification.getBranchCode(), disqualification.getTenantId());
+        signedRecordsVo.setBranchCodeName(branch.getData().getBranchName());
+        recordsVoList.add(0, signedRecordsVo);
+        return recordsVoList;
     }
 
     /**

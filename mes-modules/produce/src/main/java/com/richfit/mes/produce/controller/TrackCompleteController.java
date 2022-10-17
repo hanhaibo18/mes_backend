@@ -157,13 +157,13 @@ public class TrackCompleteController extends BaseController {
             IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
             if(!CollectionUtils.isEmpty(completes.getRecords())){
             //总工时累计额值
-            Double sumTotalHours=0.00;
+            Double sumTotalHours = 0.00;
             //准结工时累计值
-            Double sumPrepareEndHours=0.00;
+            Double sumPrepareEndHours = 0.00;
             //额定工时累计值
-            Double sumSinglePieceHours=0.00;
+            Double sumSinglePieceHours = 0.00;
             try {
-                TrackComplete track0=new TrackComplete();
+                TrackComplete track0 = new TrackComplete();
                 TrackComplete trackComplete = completes.getRecords().get(0);
                 CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(trackComplete.getUserId());
                 CommonResult<Device> device = baseServiceClient.getDeviceById(trackComplete.getDeviceId());
@@ -174,10 +174,10 @@ public class TrackCompleteController extends BaseController {
                 TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
                 for (TrackComplete track : completes.getRecords()) {
                     //计算总工时
-                    sumPrepareEndHours=sumPrepareEndHours+track.getPrepareEndHours();
-                    sumSinglePieceHours=sumSinglePieceHours+track.getSinglePieceHours();
-                    sumTotalHours=sumTotalHours+track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours();
-                    track.setTotalHours(track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours());
+                    sumPrepareEndHours = sumPrepareEndHours + track.getPrepareEndHours();
+                    sumSinglePieceHours = sumSinglePieceHours + track.getSinglePieceHours();
+                    sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours();
+                    track.setTotalHours(track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours());
                     track.setUserName(tenantUserVo.getData().getEmplName());
                     track0.setUserName(tenantUserVo.getData().getEmplName());
                     track.setDeviceName(device.getData().getName());
@@ -211,7 +211,7 @@ public class TrackCompleteController extends BaseController {
                 track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
                 track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
                 List<TrackComplete> records = completes.getRecords();
-                records.add(0,track0);
+                records.add(0, track0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -444,9 +444,7 @@ public class TrackCompleteController extends BaseController {
                 map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
                 publicService.activationProcess(map);
             }
-
         }
-
         if (bool) {
             return CommonResult.success(completes, "操作成功！");
         } else {

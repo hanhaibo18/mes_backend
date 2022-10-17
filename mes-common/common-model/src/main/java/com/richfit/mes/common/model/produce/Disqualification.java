@@ -134,7 +134,7 @@ public class Disqualification extends BaseEntity<Disqualification> {
      * 所属租户
      */
     @ApiModelProperty(value = "所属租户", dataType = "Date")
-    private Date tenantId;
+    private String tenantId;
 
     /**
      * 检验人员

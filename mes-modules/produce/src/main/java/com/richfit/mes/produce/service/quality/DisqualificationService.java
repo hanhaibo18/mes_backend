@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.QueryCheckDto;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
+import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
 
 import java.util.List;
 
@@ -68,7 +69,7 @@ public interface DisqualificationService extends IService<Disqualification> {
     List<TenantUserVo> queryUser();
 
     /**
-     * 功能描述: 查询
+     * 功能描述: 查询不合格质检信息分页接口
      *
      * @param queryCheckDto
      * @Author: xinYu.hou
@@ -76,4 +77,14 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: IPage<Disqualification>
      **/
     IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto);
+
+    /**
+     * 功能描述: 查询签核记录列表
+     *
+     * @param disqualificationId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/17 17:04
+     * @return: List<SignedRecordsVo>
+     **/
+    List<SignedRecordsVo> querySignedRecordsList(String disqualificationId);
 }

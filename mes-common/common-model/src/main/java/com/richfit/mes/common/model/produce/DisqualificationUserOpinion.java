@@ -22,9 +22,19 @@ public class DisqualificationUserOpinion extends BaseEntity<DisqualificationUser
     private String userId;
 
     /**
+     * 审核人员姓名
+     */
+    private String userName;
+
+    /**
      * 审核人员车间
      */
     private String userBranch;
+
+    /**
+     * 审核人员车间名称
+     */
+    private String userBranchName;
 
     /**
      * 意见
