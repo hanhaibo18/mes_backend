@@ -104,6 +104,8 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String forceBendType;
     @ApiModelProperty(value = "力学性能->硬度->试验位置")
     private String forceBendPart;
+    @ApiModelProperty(value = "委托人")
+    private String consignor;
 
 
     @TableField(exist = false)

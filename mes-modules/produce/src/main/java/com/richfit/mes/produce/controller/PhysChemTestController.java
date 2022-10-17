@@ -52,18 +52,10 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "查询委托单列表", notes = "查询委托单列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "batchNo", value = "炉批号", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "status", value = "状态", paramType = "query", dataType = "string"),
-    })
+    @ApiImplicitParam(name = "phyChemTaskVo", value = "检验任务查询实体", paramType = "body", dataType = "PhyChemTaskVo")
     @PostMapping("/producePhysChemOrder/selectOrderList")
-    public CommonResult selectOrderList(int page,int limit,String branchCode,String startTime,String endTime,String batchNo,String status){
-        return CommonResult.success(physChemOrderService.selectOrderList(page,limit,startTime,endTime,batchNo,status));
+    public CommonResult selectOrderList(@RequestBody PhyChemTaskVo phyChemTaskVo){
+        return CommonResult.success(physChemOrderService.selectOrderList(phyChemTaskVo));
     }
 
 

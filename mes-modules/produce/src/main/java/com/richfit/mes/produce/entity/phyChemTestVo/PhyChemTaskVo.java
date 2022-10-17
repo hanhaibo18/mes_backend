@@ -30,6 +30,8 @@ public class PhyChemTaskVo{
     private String productName;
     @ApiModelProperty(value = "送样单位")
     private String sampleDept;
+    @ApiModelProperty(value = "炉批号")
+    private String batchNo;
     @ApiModelProperty(value = "branchCode")
     private String branchCode;
     @ApiModelProperty(value = "tenantId")
