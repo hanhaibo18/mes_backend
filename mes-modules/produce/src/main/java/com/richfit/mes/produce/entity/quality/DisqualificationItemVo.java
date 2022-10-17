@@ -68,4 +68,7 @@ public class DisqualificationItemVo {
     private Integer disqualificationNum;
 
     private String classes;
+
+    @ApiModelProperty(value = "处理单状态")
+    private Integer isIssue;
 }

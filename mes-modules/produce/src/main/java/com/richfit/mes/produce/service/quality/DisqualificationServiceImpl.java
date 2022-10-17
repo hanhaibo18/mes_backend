@@ -19,6 +19,7 @@ import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -79,24 +80,45 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean saveDisqualification(Disqualification disqualification) {
         this.save(disqualification);
-        List<DisqualificationUserOpinion> userOpinions = new ArrayList<>();
-        for (TenantUserVo user : disqualification.getUserList()) {
-            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
-            opinion.setDisqualificationId(disqualification.getId());
-            //赋值用户唯一Id
-            opinion.setUserId(user.getId());
-            //赋值用户车间
-            opinion.setUserBranch(user.getBelongOrgId());
-            userOpinions.add(opinion);
-        }
-        return userOpinionService.saveBatch(userOpinions);
+        savePerson(disqualification.getUserList(), disqualification.getId());
+        return true;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateDisqualification(Disqualification disqualification) {
         return this.updateById(disqualification);
+    }
+
+    /**
+     * 功能描述: 保存派工人员接口
+     *
+     * @param userList
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 17:04
+     * @return: void
+     **/
+    private void savePerson(List<TenantUserVo> userList, String id) {
+        try {
+            List<DisqualificationUserOpinion> userOpinions = new ArrayList<>();
+            for (TenantUserVo user : userList) {
+                DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
+                opinion.setDisqualificationId(id);
+                //赋值用户唯一Id
+                opinion.setUserId(user.getId());
+                //赋值用户车间
+                opinion.setUserBranch(user.getBelongOrgId());
+                userOpinions.add(opinion);
+            }
+            userOpinionService.saveBatch(userOpinions);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException("保存人员失败!", ResultCode.FAILED);
+        }
     }
 
     @Override
