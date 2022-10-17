@@ -26,6 +26,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -154,6 +155,7 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.orderByDesc("modify_time");
             }
             IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
+            if(!CollectionUtils.isEmpty(completes.getRecords())){
             //总工时累计额值
             Double sumTotalHours=0.00;
             //准结工时累计值
@@ -162,23 +164,24 @@ public class TrackCompleteController extends BaseController {
             Double sumSinglePieceHours=0.00;
             try {
                 TrackComplete track0=new TrackComplete();
+                TrackComplete trackComplete = completes.getRecords().get(0);
+                CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(trackComplete.getUserId());
+                CommonResult<Device> device = baseServiceClient.getDeviceById(trackComplete.getDeviceId());
+                TrackItem trackItem = trackItemService.getById(trackComplete.getTiId());
+                //增加判断返回是否能修改
+                TrackHead trackHead = trackHeadService.getById(trackComplete.getTrackId());
+                //查询产品编号
+                TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
                 for (TrackComplete track : completes.getRecords()) {
                     //计算总工时
                     sumPrepareEndHours=sumPrepareEndHours+track.getPrepareEndHours();
                     sumSinglePieceHours=sumSinglePieceHours+track.getSinglePieceHours();
                     sumTotalHours=sumTotalHours+track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours();
                     track.setTotalHours(track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours());
-                    CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
                     track.setUserName(tenantUserVo.getData().getEmplName());
                     track0.setUserName(tenantUserVo.getData().getEmplName());
-                    CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
                     track.setDeviceName(device.getData().getName());
-                    TrackItem trackItem = trackItemService.getById(track.getTiId());
-                    //查询产品编号
-                    TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
                     track.setProdNo(trackFlow.getProductNo());
-                    //增加判断返回是否能修改
-                    TrackHead trackHead = trackHeadService.getById(track.getTrackId());
                     track.setProductName(trackHead.getProductName());
                     //条件一 需要质检 并且已质检
                     if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
@@ -211,6 +214,7 @@ public class TrackCompleteController extends BaseController {
                 records.add(0,track0);
             } catch (Exception e) {
                 e.printStackTrace();
+            }
             }
             return CommonResult.success(completes);
         } catch (Exception e) {
