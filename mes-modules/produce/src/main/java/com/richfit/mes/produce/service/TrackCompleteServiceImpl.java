@@ -78,9 +78,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
-
-            //外协报工判断过滤，外协报工类型是3
-            queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type not in (3) )");
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
                     if (order.equals("desc")) {
