@@ -8,8 +8,8 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
-import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.entity.phyChemTestVo.PhyChemTaskVo;
 import com.richfit.mes.produce.service.PhyChemTestService;
 import com.richfit.mes.produce.service.PhysChemOrderService;
 import com.richfit.mes.produce.service.PhysChemResultService;
@@ -68,20 +68,10 @@ public class PhysChemTestController extends BaseController {
 
 
     @ApiOperation(value = "分页查询检测任务列表", notes = "分页查询检测任务列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "tenantId", value = "组织机构id", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "status", value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）", paramType = "query", dataType = "string"),
-    })
-    @GetMapping("/page")
-    public CommonResult<IPage<TrackHead>> page(int page, int limit, String startTime, String endTime, String trackNo, String drawingNo, String productName, String branchCode, String tenantId, String status) {
-        return CommonResult.success(phyChemTestService.page(page,limit,startTime,endTime,trackNo,productName,drawingNo,branchCode,tenantId,status));
+    @ApiImplicitParam(name = "phyChemTaskVo", value = "检验任务查询实体", paramType = "body", dataType = "PhyChemTaskVo")
+    @PostMapping("/page")
+    public CommonResult<IPage<PhysChemOrder>> page(@RequestBody PhyChemTaskVo phyChemTaskVo) {
+        return CommonResult.success(phyChemTestService.page(phyChemTaskVo));
     }
 
 

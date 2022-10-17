@@ -1,15 +1,15 @@
 package com.richfit.mes.produce.service;
 
-import cn.hutool.core.util.ObjectUtil;
+
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItemInspection;
-import com.richfit.mes.produce.dao.TrackItemInspectionMapper;
+import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.PhysChemOrderMapper;
+import com.richfit.mes.produce.entity.phyChemTestVo.PhyChemTaskVo;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -34,74 +33,42 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PhyChemTestService{
 
-    @Autowired
-    private TrackHeadService trackHeadService;
+
     @Autowired
     private PhysChemOrderService physChemOrderService;
     @Autowired
     private PhysChemResultService physChemResultService;
     @Autowired
     private WordUtil wordUtil;
+    @Autowired
+    private PhysChemOrderMapper physChemOrderMapper;
 
     /**
      * 查询跟单工序发起委托列表
-     * @param page
-     * @param limit
-     * @param startTime
-     * @param endTime
-     * @param trackNo
-     * @param productName
-     * @param branchCode
-     * @param tenantId
-     * @param status
+     * @param phyChemTaskVo
      * @return
      */
-    public IPage<TrackHead> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String drawingNo, String branchCode, String tenantId, String status) {
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
-        if (!StringUtils.isEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
-        if (!StringUtils.isEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id", tenantId);
-        }
-        if (!StringUtils.isEmpty(trackNo)) {
-            queryWrapper.eq("track_no",trackNo);
-        }
-        if (!StringUtils.isEmpty(productName)) {
-            queryWrapper.eq("product_name",productName);
-        }
-        if (!StringUtils.isEmpty(drawingNo)) {
-            queryWrapper.eq("drawing_no", drawingNo);
-        }
-        if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.gt("modify_time",startTime);
-        }
-        if (!StringUtils.isEmpty(endTime)) {
-            queryWrapper.lt("modify_time",endTime);
-        }
-        //委托单状态
-        if(!StringUtils.isEmpty(status)){
-            queryWrapper.inSql("id", "select id from  produce_track_head where batch_no in ( select batch_no from produce_phys_chem_order where status ='" + status + "')");
-        }
-        //炉批号不为空
-        queryWrapper.isNotNull("batch_no");
-        queryWrapper.orderByDesc("modify_time");
-        IPage<TrackHead> trackHeads = trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper);
-        //处理map
-        Map<String, TrackHead> trackHeadMap =
-                trackHeads.getRecords().stream().collect(Collectors.toMap(TrackHead::getBatchNo, Function.identity(),(map1,map2)->map1));
-        //查询委托单
-        if(trackHeadMap.keySet().size()>0){
-            List<PhysChemOrder> physChemOrders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().in("batch_no", trackHeadMap.keySet()));
-            Map<String, PhysChemOrder> physChemOrderMap = physChemOrders.stream().collect(Collectors.toMap(PhysChemOrder::getBatchNo, Function.identity()));
-            for (TrackHead trackHead : trackHeads.getRecords()) {
-                //委托单赋值
-                if(!ObjectUtil.isEmpty(physChemOrderMap.get(trackHead.getBatchNo()))){
-                    trackHead.setPhysChemOrder(physChemOrderMap.get(trackHead.getBatchNo()));
-                }
+    public IPage<PhysChemOrder> page(PhyChemTaskVo phyChemTaskVo) {
+        phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        //对应mapper文件中的别名
+        String orderTableName = null;
+        //跟单排序字段
+        List<String> list = new ArrayList<>();
+        list.add("product_name");
+        list.add("drawing_no");
+        list.add("track_no");
+        if(!StringUtils.isEmpty(phyChemTaskVo.getOrderCol()) && !StringUtils.isEmpty(phyChemTaskVo.getOrder())){
+            if(list.contains(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()))){
+                orderTableName = "head";
+            }else{
+                orderTableName = "py_order";
             }
+            phyChemTaskVo.setOrderCol(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()));
         }
-        return trackHeads;
+
+        IPage<PhysChemOrder> physChemOrderIPage = physChemOrderMapper.queryTestPageList(new Page(phyChemTaskVo.getPage(), phyChemTaskVo.getLimit()), phyChemTaskVo,orderTableName);
+
+        return physChemOrderIPage;
     }
 
 
@@ -159,6 +126,7 @@ public class PhyChemTestService{
         QueryWrapper<PhysChemOrder> physChemOrderQueryWrapper = new QueryWrapper<>();
         physChemOrderQueryWrapper.eq("item_id",itemId);
         List<PhysChemOrder> orders = physChemOrderService.list(physChemOrderQueryWrapper);
+
         //构造填充数据
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("rel","Rel");

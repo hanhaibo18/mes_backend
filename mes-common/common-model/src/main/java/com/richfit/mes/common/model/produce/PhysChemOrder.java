@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,8 +26,22 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String batchNo;
     @ApiModelProperty(value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）")
     private String status;
-    @ApiModelProperty(value = "委托人")
-    private String consignor;
+    @ApiModelProperty(value = "委托单号")
+    private String orderNo;
+    @ApiModelProperty(value = "材料牌号")
+    private String materialMark;
+    @ApiModelProperty(value = "送样单位")
+    private String sampleDept;
+    @ApiModelProperty(value = "送样人")
+    private String sampleBy;
+    @ApiModelProperty(value = "送样时间")
+    private String sampleTime;
+    @ApiModelProperty(value = "报告号")
+    private String reportNo;
+    @ApiModelProperty(value = "同步状态（0未同步，1已经同步）")
+    private String syncStatus;
+    @ApiModelProperty(value = "报告状态（0未生成,1以生成）")
+    private String reportStatus;
     @ApiModelProperty(value = "化学分析->全分析")
     private String chemicalAnalysis;
     @ApiModelProperty(value = "化学分析->碳硫")
@@ -35,6 +50,8 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String chemicalClean;
     @ApiModelProperty(value = "化学分析->其他")
     private String chemicalOther;
+    @ApiModelProperty(value = "化学分析->其他(值)")
+    private String chemicalOtherVal;
     @ApiModelProperty(value = "金相分析->低倍")
     private String metallLowPower;
     @ApiModelProperty(value = "金相分析->组织")
@@ -49,20 +66,26 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String metallGraphite;
     @ApiModelProperty(value = "金相分析->其他")
     private String metallOther;
-    @ApiModelProperty(value = "力学性能->拉伸数量")
-    private String forceTensileNumber;
-    @ApiModelProperty(value = "力学性能->冲击数量")
-    private String forceImpactNumber;
-    @ApiModelProperty(value = "力学性能->弯曲数量")
-    private String forceBendNumber;
-    @ApiModelProperty(value = "力学性能->硬度数量")
-    private String forceHardnessNumber;
-    @ApiModelProperty(value = "力学性能->剪切数量")
-    private String forceShearNumber;
-    @ApiModelProperty(value = "力学性能->压扁数量")
-    private String forceFlaserNumber;
-    @ApiModelProperty(value = "力学性能->其他数量")
-    private String forceOtherNumber;
+    @ApiModelProperty(value = "金相分析->其他(值)")
+    private String metallOtherVal;
+    @ApiModelProperty(value = "力学性能->拉伸")
+    private String forceTensile;
+    @ApiModelProperty(value = "力学性能->冲击")
+    private String forceImpact;
+    @ApiModelProperty(value = "力学性能->弯曲")
+    private String forceBend;
+    @ApiModelProperty(value = "力学性能->硬度")
+    private String forceHardness;
+    @ApiModelProperty(value = "力学性能->剪切")
+    private String forceShear;
+    @ApiModelProperty(value = "力学性能->压扁")
+    private String forceFlaser;
+    @ApiModelProperty(value = "力学性能->残余应力")
+    private String residual;
+    @ApiModelProperty(value = "力学性能->其他")
+    private String forceOther;
+    @ApiModelProperty(value = "力学性能->其他(值)")
+    private String forceOtherVal;
     @ApiModelProperty(value = "力学性能->拉伸->屈服强度")
     private String forceTensileStrength;
     @ApiModelProperty(value = "力学性能->拉伸->伸长率")
@@ -81,6 +104,15 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String forceBendType;
     @ApiModelProperty(value = "力学性能->硬度->试验位置")
     private String forceBendPart;
-    @ApiModelProperty(value = "残余应力->数量")
-    private String residualNumber;
+
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品名称")
+    private String productName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "图号")
+    private String drawingNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单号")
+    private String trackNo;
 }
