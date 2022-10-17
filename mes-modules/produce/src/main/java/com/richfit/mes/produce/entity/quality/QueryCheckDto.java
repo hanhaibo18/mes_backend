@@ -5,12 +5,14 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @ClassName: queryInspectorDto.java
+ * @ClassName: QueryCheckDto.java
  * @Author: Hou XinYu
- * @CreateTime: 2022年09月29日 16:01:00
+ * @Description: 查询意见填报人
+ * @CreateTime: 2022年10月17日 11:23:00
  */
 @Data
-public class QueryInspectorDto extends QueryPageDto {
+public class QueryCheckDto extends QueryPageDto {
+
     @ApiModelProperty(value = "跟单号", dataType = "String")
     private String trackNo;
     @ApiModelProperty(value = "产品名称", dataType = "String")
@@ -23,6 +25,6 @@ public class QueryInspectorDto extends QueryPageDto {
     private String endTime;
     @ApiModelProperty(value = "不合格品申请单", dataType = "String")
     private String processSheetNo;
-    @ApiModelProperty(value = "是否发布", dataType = "String")
-    private Integer isIssue;
+    @ApiModelProperty(value = "是否处理", dataType = "Boolean", required = true)
+    private Boolean isDispose;
 }

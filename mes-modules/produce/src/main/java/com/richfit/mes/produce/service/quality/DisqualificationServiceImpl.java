@@ -15,10 +15,13 @@ import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
+import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
+import com.richfit.mes.produce.entity.quality.QueryCheckDto;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -34,6 +37,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private DisqualificationUserOpinionService userOpinionService;
+
+    @Resource
+    private DisqualificationUserOpinionMapper userOpinionMapper;
 
     @Resource
     private SystemServiceClient systemServiceClient;
@@ -57,6 +63,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             queryInspectorDto.setTrackNo(queryInspectorDto.getTrackNo().replaceAll(" ", ""));
             queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryInspectorDto.getTrackNo() + "%'");
         }
+        //申请单号
+        if (StrUtil.isNotBlank(queryInspectorDto.getProcessSheetNo())) {
+            queryWrapper.like("process_sheet_no", queryInspectorDto.getProcessSheetNo());
+        }
+        // 发布/未发布
+        if (null != queryInspectorDto.getIsIssue()) {
+            queryWrapper.eq("is_issue", queryInspectorDto.getIsIssue());
+        }
         try {
             //开始时间
             if (StrUtil.isNotBlank(queryInspectorDto.getStartTime())) {
@@ -79,24 +93,45 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean saveDisqualification(Disqualification disqualification) {
         this.save(disqualification);
-        List<DisqualificationUserOpinion> userOpinions = new ArrayList<>();
-        for (TenantUserVo user : disqualification.getUserList()) {
-            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
-            opinion.setDisqualificationId(disqualification.getId());
-            //赋值用户唯一Id
-            opinion.setUserId(user.getId());
-            //赋值用户车间
-            opinion.setUserBranch(user.getBelongOrgId());
-            userOpinions.add(opinion);
-        }
-        return userOpinionService.saveBatch(userOpinions);
+        savePerson(disqualification.getUserList(), disqualification.getId());
+        return true;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateDisqualification(Disqualification disqualification) {
         return this.updateById(disqualification);
+    }
+
+    /**
+     * 功能描述: 保存派工人员接口
+     *
+     * @param userList
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/10/14 17:04
+     * @return: void
+     **/
+    private void savePerson(List<TenantUserVo> userList, String id) {
+        try {
+            List<DisqualificationUserOpinion> userOpinions = new ArrayList<>();
+            for (TenantUserVo user : userList) {
+                DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
+                opinion.setDisqualificationId(id);
+                //赋值用户唯一Id
+                opinion.setUserId(user.getId());
+                //赋值用户车间
+                opinion.setUserBranch(user.getBelongOrgId());
+                userOpinions.add(opinion);
+            }
+            userOpinionService.saveBatch(userOpinions);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException("保存人员失败!", ResultCode.FAILED);
+        }
     }
 
     @Override
@@ -120,6 +155,51 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         String tenantId = baseServiceClient.queryTenantIdByBranchCode(value);
         //根据租户Id查询人员列表
         return systemServiceClient.queryUserByTenantId(tenantId);
+    }
+
+    @Override
+    public IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        //图号查询
+        if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
+            queryWrapper.like("dis.drawing_no", queryCheckDto.getDrawingNo());
+        }
+        //产品名称
+        if (StrUtil.isNotBlank(queryCheckDto.getProductName())) {
+            queryWrapper.like("dis.product_name", queryCheckDto.getProductName());
+        }
+        //跟单号
+        if (StrUtil.isNotBlank(queryCheckDto.getTrackNo())) {
+            queryCheckDto.setTrackNo(queryCheckDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(dis.track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryCheckDto.getTrackNo() + "%'");
+        }
+        //申请单号
+        if (StrUtil.isNotBlank(queryCheckDto.getProcessSheetNo())) {
+            queryWrapper.like("dis.process_sheet_no", queryCheckDto.getProcessSheetNo());
+        }
+        // 处理/未处理
+        if (null != queryCheckDto.getIsDispose()) {
+            queryWrapper.apply(Boolean.TRUE.equals(queryCheckDto.getIsDispose()), "opinion.opinion IS NOT NULL");
+            queryWrapper.apply(Boolean.FALSE.equals(queryCheckDto.getIsDispose()), "opinion.opinion IS NULL");
+        }
+        try {
+            //开始时间
+            if (StrUtil.isNotBlank(queryCheckDto.getStartTime())) {
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + queryCheckDto.getStartTime() + " 00:00:00')");
+            }
+            //结束时间
+            if (StrUtil.isNotBlank(queryCheckDto.getEndTime())) {
+                Calendar calendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                calendar.setTime(sdf.parse(queryCheckDto.getEndTime()));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+            }
+        } catch (Exception e) {
+            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
+        }
+        queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUserId());
+        return userOpinionMapper.queryCheck(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
     /**

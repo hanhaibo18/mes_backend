@@ -15,6 +15,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.QueryDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
@@ -78,6 +79,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Resource
     private CodeRuleService codeRuleService;
+
+    @Resource
+    private DisqualificationMapper disqualificationMapper;
 
     @Override
     public List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query) {
@@ -528,6 +532,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Override
     public DisqualificationItemVo queryItem(String tiId, String branchCode) {
+        DisqualificationItemVo disqualification = disqualificationMapper.queryDisqualificationByItemId(tiId);
+        if (null != disqualification) {
+            return disqualification;
+        }
         DisqualificationItemVo item = new DisqualificationItemVo();
         TrackItem trackItem = this.getById(tiId);
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.produce.entity.quality.QueryCheckDto;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 
 import java.util.List;
@@ -66,5 +67,13 @@ public interface DisqualificationService extends IService<Disqualification> {
      **/
     List<TenantUserVo> queryUser();
 
-
+    /**
+     * 功能描述: 查询
+     *
+     * @param queryCheckDto
+     * @Author: xinYu.hou
+     * @Date: 2022/10/17 10:44
+     * @return: IPage<Disqualification>
+     **/
+    IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto);
 }
