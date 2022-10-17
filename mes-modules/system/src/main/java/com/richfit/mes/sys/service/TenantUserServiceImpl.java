@@ -86,7 +86,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         QueryWrapper<UserRole> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", tenantUserVo.getId());
         List<UserRole> roleList = userRoleService.list(wrapper);
-        tenantUserVo.setUserRoleType(roleList.get(0).getUserType());
+        if (roleList != null && roleList.size() > 0) {
+            tenantUserVo.setUserRoleType(roleList.get(0).getUserType());
+        }
         TenantUserDetails tenantUserDetails = SecurityUtils.getCurrentUser();
         tenantUserVo.setTenantErpCode(tenantUserDetails.getTenantErpCode());
         tenantUserVo.setCompanyCode(tenantUserDetails.getCompanyCode());
