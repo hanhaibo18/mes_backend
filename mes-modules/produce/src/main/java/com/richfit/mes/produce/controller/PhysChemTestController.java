@@ -92,9 +92,10 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "理化检测报告导出", notes = "理化检测报告导出")
+    @ApiImplicitParam(name = "hid", value = "跟单id", required = true, paramType = "query", dataType = "String")
     @GetMapping("/exportReport")
-    public void exoprtReport(HttpServletResponse response, String itemId) throws IOException, TemplateException, GlobalException {
-        phyChemTestService.exoprtReport(response,itemId);
+    public void exoprtReport(HttpServletResponse response, String hid) throws IOException, TemplateException, GlobalException {
+        phyChemTestService.exoprtReport(response,hid);
     }
 
 }

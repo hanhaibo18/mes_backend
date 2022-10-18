@@ -34,6 +34,10 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String sampleDept;
     @ApiModelProperty(value = "送样人")
     private String sampleBy;
+    @ApiModelProperty(value = "收样人")
+    private String sampleReceive;
+    @ApiModelProperty(value = "收样日期")
+    private String receiveTime;
 
     @ApiModelProperty(value = "制造厂家")
     private String manufacturer;
@@ -131,4 +135,7 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     @TableField(exist = false)
     @ApiModelProperty(value = "跟单号")
     private String trackNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单id")
+    private String hid;
 }
