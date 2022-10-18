@@ -49,9 +49,9 @@ public class OrderUtil {
         if (!StrUtil.isBlank(orderCol)) {
             if (!StrUtil.isBlank(order)) {
                 if (ORDER_ASC.equals(order)) {
-                    queryWrapper.orderByDesc(table + StrUtil.toUnderlineCase(orderCol));
-                } else if (ORDER_DESC.equals(order)) {
                     queryWrapper.orderByAsc(table + StrUtil.toUnderlineCase(orderCol));
+                } else if (ORDER_DESC.equals(order)) {
+                    queryWrapper.orderByDesc(table + StrUtil.toUnderlineCase(orderCol));
                 }
             } else {
                 queryWrapper.orderByDesc(table + StrUtil.toUnderlineCase(orderCol));
