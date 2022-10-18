@@ -16,6 +16,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.CodeRuleItemService;
 import com.richfit.mes.produce.service.CodeRuleService;
 import com.richfit.mes.produce.service.CodeRuleValueService;
+import com.richfit.mes.produce.utils.Code;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -294,5 +295,18 @@ public class CodeRuleController extends BaseController {
         return CommonResult.success(codeRuleValueService.removeById(id));
     }
 
-
+    @ApiOperation(value = "获取编码默认值", notes = "获取编码默认值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tenantId", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "编码名称", required = true, paramType = "query", dataType = "string"),
+    })
+    @GetMapping("/get_code")
+    public CommonResult<String> getCode(String code, String tenantId, String branchCode) {
+        try {
+            return CommonResult.success(Code.valueOnUpdate(code, tenantId, branchCode, codeRuleService));
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 }

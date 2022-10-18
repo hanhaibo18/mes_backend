@@ -22,7 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -74,9 +77,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         boolean bool = this.save(certificate);
 
         // 更新最大合格证编号
-        codeRuleService.updateCode("hege_no", "合格证编号", certificate.getCertificateNo(),
-                Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(),
-                certificate.getBranchCode());
+//        codeRuleService.updateCode("hege_no", "合格证编号", certificate.getCertificateNo(),
+//                Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(),
+//                certificate.getBranchCode());
 
         //2 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
         additionalBsns(certificate);
