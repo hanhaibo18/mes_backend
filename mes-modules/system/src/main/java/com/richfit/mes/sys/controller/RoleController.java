@@ -124,9 +124,9 @@ public class RoleController extends BaseController {
     public CommonResult saveRoleMenus(@RequestBody List<RoleMenu> menus) {
         return CommonResult.success(roleMenuService.saveRoleMenus(menus));
     }
+
     @ApiOperation(value = "查询用户角色列表", notes = "查询用户角色列表")
     @GetMapping(value = "/queryRolesByUserId/{userId}")
-    @Inner
     public CommonResult queryRolesByUserId(@PathVariable String userId) {
         return CommonResult.success(roleService.queryRolesByUserId(userId));
     }
