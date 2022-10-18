@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Component;
@@ -106,7 +107,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
-    public CommonResult queryRolesByUserId(String userId) {
-        return CommonResult.success(null);
+    public  List<Role> queryRolesByUserId(String userId) {
+        return null;
     }
 }

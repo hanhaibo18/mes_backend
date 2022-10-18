@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.constant.SecurityConstants;
@@ -93,5 +94,5 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/queryUserByTenantId")
     public List<TenantUserVo> queryUserByTenantId(@RequestParam("tenantId") String tenantId);
     @GetMapping(value = "/api/sys/role/queryRolesByUserId/{userId}")
-    public CommonResult queryRolesByUserId(@PathVariable String userId);
+    public  List<Role> queryRolesByUserId(@PathVariable String userId);
 }

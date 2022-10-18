@@ -13,6 +13,7 @@ import com.richfit.mes.sys.service.RoleMenuService;
 import com.richfit.mes.sys.service.RoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,9 +127,12 @@ public class RoleController extends BaseController {
     }
 
     @ApiOperation(value = "查询用户角色列表", notes = "查询用户角色列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "userId", value = "用户ID", dataType = "string")
+    })
     @GetMapping(value = "/queryRolesByUserId/{userId}")
-    public CommonResult queryRolesByUserId(@PathVariable String userId) {
-        return CommonResult.success(roleService.queryRolesByUserId(userId));
+    public List<Role> queryRolesByUserId(@PathVariable String userId) {
+        return roleService.queryRolesByUserId(userId);
     }
 
 }

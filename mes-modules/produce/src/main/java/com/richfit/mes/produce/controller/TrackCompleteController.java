@@ -124,8 +124,7 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
 
             }
-            CommonResult<TenantUserVo> tenantUser = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
-            List<Role> roleList = tenantUser.getData().getRoleList();
+            List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
             List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
 //            BOMCO_ZF_JMAQ_LDGL;//领导
 //            role_tenant_admin;//租户管理员
