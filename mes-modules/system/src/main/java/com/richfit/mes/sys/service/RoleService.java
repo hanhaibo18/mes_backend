@@ -84,4 +84,6 @@ public interface RoleService {
     Role getAdminRole(String tenantId);
 
     boolean isTenantAdminRole(String roleId);
+
+    List<Role> queryRolesByUserId(String userId);
 }

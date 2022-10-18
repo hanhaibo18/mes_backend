@@ -138,4 +138,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         }
         return roleIPage;
     }
+
+    @Override
+    public List<Role> queryRolesByUserId(String userId) {
+        return userRoleService.queryRolesByUserId(userId);
+    }
+
+
 }

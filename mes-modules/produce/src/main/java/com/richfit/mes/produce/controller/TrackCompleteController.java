@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.enmus.IdEnum;
@@ -33,6 +34,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -122,12 +124,18 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
 
             }
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
+            CommonResult<TenantUserVo> tenantUser = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
+            List<Role> roleList = tenantUser.getData().getRoleList();
+            List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
+//            BOMCO_ZF_JMAQ_LDGL;//领导
+//            role_tenant_admin;//租户管理员
+            if(roleCodeList.contains("BOMCO_ZF_JMAQ_LDGL") || roleCodeList.contains("role_tenant_admin")){
+                if (!StringUtils.isNullOrEmpty(branchCode)) {
+                    queryWrapper.eq("branch_code", branchCode);
+                }
+            }else {
+                queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
             }
-
-            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
-
             //外协报工判断过滤，外协报工类型是4
             if (!StringUtils.isNullOrEmpty(optType)) {
                 queryWrapper.apply("ti_id in (select id from produce_track_item where opt_type = '" + optType + "')");
@@ -213,11 +221,13 @@ public class TrackCompleteController extends BaseController {
                 List<TrackComplete> records = completes.getRecords();
                 records.add(0, track0);
             } catch (Exception e) {
+                log.error("异常了",e);
                 e.printStackTrace();
             }
             }
             return CommonResult.success(completes);
         } catch (Exception e) {
+            log.error("异常了",e);
             return CommonResult.failed(e.getMessage());
         }
     }

@@ -104,4 +104,9 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     public List<TenantUserVo> queryUserByTenantId(String tenantId) {
         return null;
     }
+
+    @Override
+    public CommonResult queryRolesByUserId(String userId) {
+        return CommonResult.success(null);
+    }
 }

@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.SystemServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -91,4 +92,6 @@ public interface SystemServiceClient {
      **/
     @GetMapping(value = "/api/sys/user/queryUserByTenantId")
     public List<TenantUserVo> queryUserByTenantId(@RequestParam("tenantId") String tenantId);
+    @GetMapping(value = "/api/sys/role/queryRolesByUserId/{userId}")
+    public CommonResult queryRolesByUserId(@PathVariable String userId);
 }
