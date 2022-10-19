@@ -103,46 +103,46 @@ public class Sequence extends BaseEntity<Sequence> {
     /**
      * 是否有工序图（PDM新增）
      */
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "是否有工序图（PDM新增）", dataType = "String")
     private String drawing;
 
     /**
      * 工序类型PDM
      */
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "工序类型PDM", dataType = "String")
     private String type;
 
 
     /**
      * 工序序号pdm
      */
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "工序序号pdm", dataType = "String")
     private String opNo;
 
 
     /**
      * 关/重/试件（PDM新增）
      */
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "关/重/试件（PDM新增）", dataType = "String")
     private String gzs;
 
 
     /**
      * 工序内容（PDM新增）
      */
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "工序内容（PDM新增）", dataType = "String")
     private String content;
 
     /**
      * 版本号
      */
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "版本号", dataType = "String")
     private String versionCode;
 
 
     /**
      * 注意事项
      */
-    @ApiModelProperty(value = "工序Id", dataType = "String")
+    @ApiModelProperty(value = "注意事项", dataType = "String")
     private String notice;
 }

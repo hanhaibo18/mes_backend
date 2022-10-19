@@ -96,8 +96,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 for (TrackComplete track : completes) {
                     CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
                     track.setUserName(tenantUserVo.getData().getEmplName());
-                    CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
-                    track.setDeviceName(device.getData().getName());
+                    //外协没有设备
+                    if (StrUtil.isNotBlank(track.getDeviceId())) {
+                        CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
+                        if (null != device.getData()) {
+                            track.setDeviceName(device.getData().getName());
+                        }
+                    }
                     TrackItem trackItem = trackItemService.getById(track.getTiId());
                     //查询产品编号
                     TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());

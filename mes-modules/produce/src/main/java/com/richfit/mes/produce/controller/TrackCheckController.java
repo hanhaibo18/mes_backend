@@ -215,6 +215,7 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
+                trackNo = trackNo.replaceAll(" ", "");
                 queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%')");
             }
             if (!StringUtils.isNullOrEmpty(productNo)) {
