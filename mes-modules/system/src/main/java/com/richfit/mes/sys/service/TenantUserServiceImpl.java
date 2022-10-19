@@ -19,6 +19,7 @@ import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
 import com.richfit.mes.sys.provider.BaseServiceClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     @Autowired
     private TenantService tenantService;
+
+    @Value("${password.default:mes@123456}")
+    private String defaultPassword;
 
     @Override
     //@Cacheable(value = CacheConstant.SYS_USER_DETAILS, key = "#uniqueId")
@@ -277,6 +281,20 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", tenantId);
         return tenantUserMapper.queryUserList(queryWrapper);
+    }
+
+    @Override
+    public boolean defaultPassword(List<String> userIds) {
+        if(userIds.size()>0){
+            QueryWrapper<TenantUser> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("id",userIds);
+            List<TenantUser> tenantUsers = this.list(queryWrapper);
+            for (TenantUser tenantUser : tenantUsers) {
+                tenantUser.setPasswd(passwordEncoder.encode(defaultPassword));
+            }
+            this.updateBatchById(tenantUsers);
+        }
+       return true;
     }
 
 }

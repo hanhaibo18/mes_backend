@@ -143,4 +143,11 @@ public interface TenantUserService {
      * @return: List<TenantUserVo>
      **/
     List<TenantUserVo> queryUserByTenantId(String tenantId);
+
+    /**
+     * 重置默认密码
+     * @param userIds
+     * @return
+     */
+    boolean defaultPassword(List<String> userIds);
 }

@@ -275,5 +275,18 @@ public class TenantUserController extends BaseController {
     public List<TenantUserVo> queryUserByTenantId(String tenantId) {
         return tenantUserService.queryUserByTenantId(tenantId);
     }
+
+
+    /**
+     * 重置默认密码
+     **/
+    @ApiOperation(value = "重置默认密码", notes = "重置默认密码")
+    @ApiImplicitParam(name = "userIds", value = "用户Id集合", paramType = "query", allowMultiple = true, dataType = "List<String>")
+    @PostMapping("/defaultPassword")
+    public CommonResult<Boolean> defaultPassword(@RequestBody List<String> userIds) throws GlobalException {
+        return CommonResult.success(tenantUserService.defaultPassword(userIds));
+    }
+
+
 }
 
