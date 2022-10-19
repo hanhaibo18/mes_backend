@@ -26,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -234,7 +236,14 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         queryWrapper.eq("user_account", userAccount);
         return tenantUserMapper.queryUser(queryWrapper);
     }
-
+    @Override
+    public Map<String,TenantUserVo> queryByUserAccountList(List<String> userAccountList) {
+        QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("user_account", userAccountList);
+        List<TenantUserVo> tenantUserVos = tenantUserMapper.queryUserList(queryWrapper);
+        Map<String, TenantUserVo> tenantUserVoMap = tenantUserVos.stream().collect(Collectors.toMap(x -> x.getUserAccount(), x -> x));
+        return tenantUserVoMap;
+    }
     @Override
     public List<TenantUserVo> queryByBranchCode(String branchCode) {
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();

@@ -6,6 +6,8 @@ import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -35,6 +37,9 @@ public interface BaseServiceClient {
 
     @GetMapping(value = "/api/base/device/find_one")
     public CommonResult<Device> getDeviceById(@RequestParam("id") String id);
+
+    @PostMapping("/api/base/device/findByIds")
+    public List<Device> getDeviceByIdList(@RequestBody List<String> idList);
 
     @GetMapping(value = "/api/base/calendar/class")
     public CommonResult<List<CalendarClass>> selectCalendarClass(@RequestParam("name") String name);

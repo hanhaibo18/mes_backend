@@ -39,6 +39,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public List<Device> getDeviceByIdList(List<String> idList) {
+        return null;
+    }
+    @Override
     public CommonResult<List<CalendarClass>> selectCalendarClass(String name) {
         return CommonResult.success(null);
     }

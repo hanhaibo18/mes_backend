@@ -267,7 +267,13 @@ public class DeviceController extends BaseController {
         Device result = deviceService.getById(id);
         return CommonResult.success(result, "操作成功！");
     }
-
+    @ApiOperation(value = "根据idList获得设备", notes = "根据idList获得设备")
+    @ApiImplicitParam(name = "idList", required = true, dataType = "String[]", paramType = "path")
+    @PostMapping("/findByIds")
+    public List<Device> findByIdList(@RequestBody List<String> idList) {
+        List<Device> devices = deviceService.queryDeviceByIdList(idList);
+        return devices;
+    }
 
     @ApiOperation(value = "删除设备", notes = "根据id删除设备")
     @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "path")

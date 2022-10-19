@@ -27,6 +27,7 @@ import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -248,7 +249,12 @@ public class TenantUserController extends BaseController {
     public CommonResult<TenantUserVo> queryByUserAccount(String userAccount) {
         return CommonResult.success(tenantUserService.queryByUserAccount(userAccount));
     }
-
+    @ApiOperation(value = "根据用户编码List获取人员信息", notes = "根据用户编码List获取人员信息")
+    @ApiImplicitParam(name = "userAccountList", value = "用户编码List", required = true, dataType = "List<String>")
+    @PostMapping("/queryByUserAccountList")
+    public Map<String,TenantUserVo> queryByUserAccountList (@RequestBody List<String> userAccountList) {
+        return tenantUserService.queryByUserAccountList(userAccountList);
+    }
     @ApiOperation(value = "根据组织机构获取质检人员", notes = "根据组织机构获取质检人员")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
     @GetMapping("/queryByBranchCode")

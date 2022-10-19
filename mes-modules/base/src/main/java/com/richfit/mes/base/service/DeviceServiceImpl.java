@@ -183,5 +183,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
     }
 
+    @Override
+    public List<Device> queryDeviceByIdList(List<String> idList){
+       return deviceMapper.selectBatchIds(idList);
+    }
 
 }

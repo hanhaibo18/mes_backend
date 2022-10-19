@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -32,6 +33,9 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/user/queryByUserAccount")
     public CommonResult<TenantUserVo> queryByUserAccount(@RequestParam("userAccount") String userAccount);
+
+    @PostMapping("/api/sys/user/queryByUserAccountList")
+    public Map<String,TenantUserVo> queryByUserAccountList (@RequestBody List<String> userAccountList);
 
     @DeleteMapping("/api/sys/attachment/{id}")
     public CommonResult<Boolean> delete(@PathVariable String id);

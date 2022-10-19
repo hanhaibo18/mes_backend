@@ -8,6 +8,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Device;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * @author 马峰
  * @Description 工艺服务
@@ -20,4 +22,6 @@ public interface DeviceService extends IService<Device> {
     Boolean delete(String id, QueryWrapper<Device> queryWrapper);
 
     CommonResult importExcel(MultipartFile file, String branchCode, String tenantId);
+
+    List<Device> queryDeviceByIdList(List<String> idList);
 }

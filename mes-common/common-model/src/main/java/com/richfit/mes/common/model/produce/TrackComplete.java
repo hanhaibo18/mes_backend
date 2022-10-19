@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author 马峰
@@ -211,4 +212,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @ApiModelProperty(value = "总工时", dataType = "Double")
     @TableField(exist = false)
     protected Double totalHours;
+
+    @TableField(exist = false)
+    private List<TrackComplete> trackCompleteList;
 }

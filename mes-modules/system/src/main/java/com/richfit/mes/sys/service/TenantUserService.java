@@ -7,6 +7,7 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -110,6 +111,8 @@ public interface TenantUserService {
      * @return: TenantUserVo
      **/
     TenantUserVo queryByUserAccount(String userAccount);
+
+    Map<String,TenantUserVo> queryByUserAccountList(List<String> userAccountList);
 
     /**
      * 功能描述: 根据车间code查询人员列表

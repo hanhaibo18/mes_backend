@@ -88,7 +88,7 @@ public class TrackCompleteController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String productNo, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol) {
+    public CommonResult<Map<String, Object>> page(int page, int limit, String productNo, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -164,74 +164,177 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.orderByDesc("modify_time");
             }
             IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
-            if(!CollectionUtils.isEmpty(completes.getRecords())){
-            //总工时累计额值
-            Double sumTotalHours = 0.00;
-            //准结工时累计值
-            Double sumPrepareEndHours = 0.00;
-            //额定工时累计值
-            Double sumSinglePieceHours = 0.00;
-            try {
-                TrackComplete track0 = new TrackComplete();
-                TrackComplete trackComplete = completes.getRecords().get(0);
-                CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(trackComplete.getUserId());
-                CommonResult<Device> device = baseServiceClient.getDeviceById(trackComplete.getDeviceId());
-                TrackItem trackItem = trackItemService.getById(trackComplete.getTiId());
-                //增加判断返回是否能修改
-                TrackHead trackHead = trackHeadService.getById(trackComplete.getTrackId());
-                //查询产品编号
-                TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
-                for (TrackComplete track : completes.getRecords()) {
-                    //计算总工时
-                    sumPrepareEndHours = sumPrepareEndHours + track.getPrepareEndHours();
-                    sumSinglePieceHours = sumSinglePieceHours + track.getSinglePieceHours();
-                    sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours();
-                    track.setTotalHours(track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours());
-                    track.setUserName(tenantUserVo.getData().getEmplName());
-                    track0.setUserName(tenantUserVo.getData().getEmplName());
-                    track.setDeviceName(device.getData().getName());
-                    track.setProdNo(trackFlow.getProductNo());
-                    track.setProductName(trackHead.getProductName());
-                    //条件一 需要质检 并且已质检
-                    if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
-                        track.setIsUpdate(1);
-                        continue;
-                    }
-                    //条件二 需要调度 并且以调度
-                    if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
-                        track.setIsUpdate(1);
-                        continue;
-                    }
-                    //条件三 不质检 不调度
-                    if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
-                        track.setIsUpdate(1);
-                        continue;
-                    }
-                    //条件四 当前操作人不是开工人
-                    if (!SecurityUtils.getCurrentUser().getUsername().equals(trackItem.getStartDoingUser())) {
-                        track.setIsUpdate(1);
-                        continue;
-                    }
-                    if (null == track.getIsUpdate()) {
-                        track.setIsUpdate(0);
+            //返回列表的第0坐标元素
+          //  TrackComplete tc=new TrackComplete();
+            List<TrackComplete> emptyTrackComplete=new ArrayList<>();
+            List<TrackComplete> dbRecords=completes.getRecords();
+
+            if (!CollectionUtils.isEmpty(dbRecords)) {
+                //获取设备信息
+                Set<String> deviceIds = dbRecords.stream().map(x -> x.getDeviceId()).collect(Collectors.toSet());
+                List<Device> deviceByIdList = baseServiceClient.getDeviceByIdList(new ArrayList<>(deviceIds));
+                Map<String, Device> deviceMap = deviceByIdList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+                //根据跟单id获取跟单数据
+                Set<String> trackIdList = dbRecords.stream().map(x -> x.getTrackId()).collect(Collectors.toSet());
+                List<TrackHead> trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
+                Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+                //根据跟单工序id获取跟单工序
+                Set<String> tiIdList = dbRecords.stream().map(x -> x.getTiId()).collect(Collectors.toSet());
+                List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
+                Map<String, TrackItem> trackMap = trackItems.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+                List<String> flowIdList = trackItems.stream().map(x -> x.getFlowId()).collect(Collectors.toList());
+                List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
+                Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+                //根据员工分组
+                Map<String, List<TrackComplete>> completesMap = completes.getRecords().stream().collect(Collectors.groupingBy(TrackComplete::getUserId));
+                ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
+                Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
+                for (String id : userIdList) {
+                    List<TrackComplete> trackCompletes = completesMap.get(id);
+                    //统计每个员工
+                    if (!CollectionUtils.isEmpty(trackCompletes)) {
+                        //总工时累计额值
+                        Double sumTotalHours = 0.00;
+                        //准结工时累计值
+                        Double sumPrepareEndHours = 0.00;
+                        //额定工时累计值
+                        Double sumSinglePieceHours = 0.00;
+                        TrackComplete track0 = new TrackComplete();
+                        TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
+                        for (TrackComplete track : trackCompletes) {
+                            //计算总工时
+                            sumPrepareEndHours = sumPrepareEndHours + track.getPrepareEndHours();
+                            sumSinglePieceHours = sumSinglePieceHours + track.getSinglePieceHours();
+                            sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours();
+                            track.setTotalHours(track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours());
+//                                CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
+                            track.setUserName(tenantUserVo.getEmplName());
+                            track0.setUserName(tenantUserVo.getEmplName());
+                            //CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
+                            track.setDeviceName(deviceMap.get(track.getDeviceId())==null?"":deviceMap.get(track.getDeviceId()).getName());
+                            // TrackItem trackItem = trackItemService.getById(track.getTiId());
+                            TrackItem trackItem = trackMap.get(track.getTiId());
+                            //查询产品编号
+                            //TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
+                            TrackFlow trackFlow = trackFlowMap.get(trackItem==null?"":trackItem.getFlowId());
+                            track.setProdNo(trackFlow==null?"":trackFlow.getProductNo());
+                            //增加判断返回是否能修改
+                            //TrackHead trackHead = trackHeadService.getById(track.getTrackId());
+                            track.setProductName(trackHeadMap.get(track.getTrackId())==null?"":trackHeadMap.get(track.getTrackId()).getProductName());
+                            //条件一 需要质检 并且已质检
+                            if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
+                                track.setIsUpdate(1);
+                                continue;
+                            }
+                            //条件二 需要调度 并且以调度
+                            if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
+                                track.setIsUpdate(1);
+                                continue;
+                            }
+                            //条件三 不质检 不调度
+                            if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+                                track.setIsUpdate(1);
+                                continue;
+                            }
+                            //条件四 当前操作人不是开工人
+                            if (!SecurityUtils.getCurrentUser().getUsername().equals(trackItem.getStartDoingUser())) {
+                                track.setIsUpdate(1);
+                                continue;
+                            }
+                            if (null == track.getIsUpdate()) {
+                                track.setIsUpdate(0);
+                            }
+                        }
+                        track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
+                        track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
+                        track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                        track0.setUserName(tenantUserVo.getEmplName());
+                        track0.setTrackCompleteList(trackCompletes);
+                        emptyTrackComplete.add(track0);
                     }
                 }
-                track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
-                track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
-                track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
-                List<TrackComplete> records = completes.getRecords();
-                records.add(0, track0);
-            } catch (Exception e) {
-                log.error("异常了",e);
-                e.printStackTrace();
+//            //总工时累计额值
+//            Double sumTotalHours = 0.00;
+//            //准结工时累计值
+//            Double sumPrepareEndHours = 0.00;
+//            //额定工时累计值
+//            Double sumSinglePieceHours = 0.00;
+//            try {
+//                TrackComplete track0 = new TrackComplete();
+////                //TrackComplete trackComplete = completes.getRecords().get(0);
+////                CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(trackComplete.getUserId());
+////                CommonResult<Device> device = baseServiceClient.getDeviceById(trackComplete.getDeviceId());
+////                TrackItem trackItem = trackItemService.getById(trackComplete.getTiId());
+////                //增加判断返回是否能修改
+////                TrackHead trackHead = trackHeadService.getById(trackComplete.getTrackId());
+////                //查询产品编号
+////                TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
+//                for (TrackComplete track : completes.getRecords()) {
+//                    //计算总工时
+//                    sumPrepareEndHours=sumPrepareEndHours+track.getPrepareEndHours();
+//                    sumSinglePieceHours=sumSinglePieceHours+track.getSinglePieceHours();
+//                    sumTotalHours=sumTotalHours+track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours();
+//                    track.setTotalHours(track.getCompletedQty()*track.getSinglePieceHours()+track.getPrepareEndHours());
+//                    CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
+//                    track.setUserName(tenantUserVo.getData().getEmplName());
+//                    track0.setUserName(tenantUserVo.getData().getEmplName());
+//                    CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
+//                    track.setDeviceName(device.getData().getName());
+//                    TrackItem trackItem = trackItemService.getById(track.getTiId());
+//                    //查询产品编号
+//                    TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
+//                    track.setProdNo(trackFlow.getProductNo());
+//                    //增加判断返回是否能修改
+//                    TrackHead trackHead = trackHeadService.getById(track.getTrackId());
+//                    track.setProductName(trackHead.getProductName());
+//                    //条件一 需要质检 并且已质检
+//                    if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
+//                        track.setIsUpdate(1);
+//                        continue;
+//                    }
+//                    //条件二 需要调度 并且以调度
+//                    if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
+//                        track.setIsUpdate(1);
+//                        continue;
+//                    }
+//                    //条件三 不质检 不调度
+//                    if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+//                        track.setIsUpdate(1);
+//                        continue;
+//                    }
+//                    //条件四 当前操作人不是开工人
+//                    if (!SecurityUtils.getCurrentUser().getUsername().equals(trackItem.getStartDoingUser())) {
+//                        track.setIsUpdate(1);
+//                        continue;
+//                    }
+//                    if (null == track.getIsUpdate()) {
+//                        track.setIsUpdate(0);
+//                    }
+//                }
+//                track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
+//                track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
+//                track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+//                List<TrackComplete> records = completes.getRecords();
+//                records.add(0, track0);
+//            } catch (Exception e) {
+//                log.error("异常了",e);
+//                e.printStackTrace();
+//            }
             }
-            }
-            return CommonResult.success(completes);
+            List<TrackComplete> records = completes.getRecords();
+//            tc.setTrackCompleteList(emptyTrackComplete);
+//            records.set(0,tc);
+            completes.setRecords(records);
+            Map<String, Object> stringObjectHashMap = new HashMap<>();
+            stringObjectHashMap.put("records",records);
+            stringObjectHashMap.put("TrackComplete",emptyTrackComplete);
+            return CommonResult.success(stringObjectHashMap);
         } catch (Exception e) {
             log.error("异常了",e);
             return CommonResult.failed(e.getMessage());
         }
     }
+
 
     @ApiOperation(value = "报工详情查询", notes = "报工详情查询")
     @ApiImplicitParams({

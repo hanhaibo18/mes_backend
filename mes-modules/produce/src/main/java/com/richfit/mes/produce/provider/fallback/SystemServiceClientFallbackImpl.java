@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -33,6 +34,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     @Override
     public CommonResult<TenantUserVo> queryByUserAccount(String userAccount) {
         return CommonResult.success(null);
+    }
+
+    @Override
+    public Map<String, TenantUserVo> queryByUserAccountList(List<String> userAccountList) {
+        return null;
     }
 
     @Override
