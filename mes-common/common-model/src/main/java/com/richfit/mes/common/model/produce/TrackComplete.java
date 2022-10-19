@@ -214,5 +214,12 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     protected Double totalHours;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "叶子结点数据", dataType = "List<TrackComplete>")
     private List<TrackComplete> trackCompleteList;
+    /**
+     * 叶子结点数据
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否叶子结点", dataType = "Boolean")
+    private Boolean isLeafNodes;
 }

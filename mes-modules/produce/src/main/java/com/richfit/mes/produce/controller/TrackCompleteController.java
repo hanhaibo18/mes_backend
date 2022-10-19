@@ -250,6 +250,8 @@ public class TrackCompleteController extends BaseController {
                         track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
                         track0.setUserName(tenantUserVo.getEmplName());
                         track0.setTrackCompleteList(trackCompletes);
+                        //判断是否包含叶子结点
+                        track0.setIsLeafNodes(trackCompletes!=null&&!CollectionUtils.isEmpty(trackCompletes));
                         emptyTrackComplete.add(track0);
                     }
                 }
