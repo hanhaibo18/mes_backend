@@ -67,7 +67,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     public void release(PdmMesProcess pdmMesProcess) throws Exception {
         try {
             TenantUserDetails user = SecurityUtils.getCurrentUser();
-            String routerId = pdmMesProcess.getDrawIdGroup();
+            String routerId = UUID.randomUUID().toString();
             // MES数据中工序
             QueryWrapper<PdmMesOption> queryWrapperPdmMesOption = new QueryWrapper<>();
             queryWrapperPdmMesOption.eq("process_id", pdmMesProcess.getDrawIdGroup());
@@ -210,6 +210,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             routerService.update(router, queryWrapperRouter);
             //添加新工艺模块
             router.setId(routerId);
+            router.setPdmDrawIdGroup(pdmMesProcess.getDrawIdGroup());
             router.setVersion(pdmMesProcess.getRev());
             router.setRouterName(pdmMesProcess.getName());
             router.setRouterNo(pdmMesProcess.getDrawNo());
