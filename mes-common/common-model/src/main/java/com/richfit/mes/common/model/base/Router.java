@@ -14,6 +14,7 @@ import java.util.List;
 @Data
 public class Router extends BaseEntity<Router> {
 
+    private static final long serialVersionUID = -3275178843268370454L;
     /**
      * 租户ID
      */
@@ -81,6 +82,11 @@ public class Router extends BaseEntity<Router> {
      * 是否推送ERP 1已推送
      */
     private Integer isSendErp;
+
+    /**
+     * pdm 工艺id
+     */
+    private String pdmDrawIdGroup;
 
     @ApiModelProperty(value = "该工艺历史版本")
     @TableField(exist = false)
