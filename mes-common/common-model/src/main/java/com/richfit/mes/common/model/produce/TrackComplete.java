@@ -16,6 +16,7 @@ import java.util.Date;
 @Data
 public class TrackComplete extends BaseEntity<TrackComplete> {
 
+    private static final long serialVersionUID = 2731220432204410300L;
     /**
      * 租户ID
      */
@@ -110,10 +111,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 备注
      */
     protected String remarks;
-    /**
-     * 总工时
-     */
-    protected Double totalHours;
+
 
     //北石新增报工字段
     /**
@@ -145,7 +143,6 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 辅助工时
      */
     protected Double auxiliaryHours;
-
 
     /**
      * 探伤结果
@@ -206,4 +203,12 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @ApiModelProperty(value = "optId", dataType = "String")
     @TableField(exist = false)
     private String optId;
+
+
+    /**
+     * 工时查询总工时
+     */
+    @ApiModelProperty(value = "总工时", dataType = "Double")
+    @TableField(exist = false)
+    protected Double totalHours;
 }

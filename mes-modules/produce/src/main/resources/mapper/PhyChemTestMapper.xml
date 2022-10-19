@@ -5,6 +5,7 @@
     <select id="queryTestPageList" resultType="com.richfit.mes.common.model.produce.PhysChemOrder">
         SELECT
         head.track_no as trackNo,
+        head.id as hid,
         head.drawing_no as drawingNo,
         head.product_name as productName,
         py_order.*

@@ -11,6 +11,7 @@ import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.UUID;
  * @date 2022-06-29 13:27
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, PdmMesProcess> implements PdmMesProcessService {
 
     @Autowired

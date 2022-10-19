@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PhysChemOrderMapper;
 import com.richfit.mes.produce.entity.phyChemTestVo.PhyChemTaskVo;
@@ -42,6 +43,8 @@ public class PhyChemTestService{
     private WordUtil wordUtil;
     @Autowired
     private PhysChemOrderMapper physChemOrderMapper;
+    @Autowired
+    private TrackHeadService trackHeadService;
 
     /**
      * 查询跟单工序发起委托列表
@@ -117,15 +120,17 @@ public class PhyChemTestService{
      * @throws IOException
      * @throws TemplateException
      */
-    public void exoprtReport(HttpServletResponse response,String itemId) throws IOException, TemplateException {
-        //根据id查询试验数据
-        QueryWrapper<PhysChemResult> physChemResultQueryWrapper = new QueryWrapper<>();
-        physChemResultQueryWrapper.eq("item_id",itemId);
-        //List<PhysChemResult> results = physChemResultService.list(physChemResultQueryWrapper);
-        //根据跟单工序id查询委托单
+    public void exoprtReport(HttpServletResponse response,String hid) throws IOException, TemplateException {
+        //跟单数据
+        TrackHead trackHead = trackHeadService.getById(hid);
+        //委托单数据 根据batch_no查询
         QueryWrapper<PhysChemOrder> physChemOrderQueryWrapper = new QueryWrapper<>();
-        physChemOrderQueryWrapper.eq("item_id",itemId);
+        physChemOrderQueryWrapper.eq("batch_no",trackHead.getBatchNo());
         List<PhysChemOrder> orders = physChemOrderService.list(physChemOrderQueryWrapper);
+        //试验结果数据
+        QueryWrapper<PhysChemResult> physChemResultQueryWrapper = new QueryWrapper<>();
+        physChemResultQueryWrapper.eq("batch_no",trackHead.getBatchNo());
+        List<PhysChemResult> results = physChemResultService.list(physChemResultQueryWrapper);
 
         //构造填充数据
         Map<String, Object> dataMap = new HashMap<>();
