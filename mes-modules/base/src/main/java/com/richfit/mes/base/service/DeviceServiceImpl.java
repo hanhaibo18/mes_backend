@@ -1,5 +1,6 @@
 package com.richfit.mes.base.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -339,6 +342,83 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
         return message.toString();
 
+    }
+
+    @Override
+    public void exportExcel(String parentId, String branchCode, HttpServletResponse rsp) {
+        try {
+            QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            //根据设备导出所有当前设备下的所有信息
+            if (!StringUtils.isNullOrEmpty(parentId)) {
+                queryWrapper.eq("parent_id", parentId);
+            }
+            queryWrapper.orderByDesc("modify_time");
+            List<Device> list = this.list(queryWrapper);
+
+            //人员信息校验
+            List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCode(branchCode).getData();
+            Map<String, TenantUserVo> tenantUserVosMap = tenantUserVos.stream().collect(Collectors.toMap(TenantUserVo::getUserAccount, Function.identity()));
+
+            for (Device device : list) {
+                if ("0".equals(device.getType()) && device.getType() != null) {
+                    device.setType("设备");
+                } else if ("1".equals(device.getType()) && device.getType() != null) {
+                    device.setType("设备组");
+                }
+                if ("0".equals(device.getStatus()) && device.getStatus() != null) {
+                    device.setStatus("否");
+                } else if ("1".equals(device.getStatus()) && device.getStatus() != null) {
+                    device.setStatus("是");
+                }
+                if ("0".equals(device.getRunStatus()) && device.getRunStatus() != null) {
+                    device.setRunStatus("否");
+                } else if ("1".equals(device.getRunStatus()) && device.getRunStatus() != null) {
+                    device.setRunStatus("是");
+                }
+                //人员信息
+                List<DevicePerson> devicePerson = devicePersonService.list(new QueryWrapper<DevicePerson>().eq("device_id", device.getId()));
+                //管理人员（：隔开）
+                StringBuilder userAccount = new StringBuilder();
+                //管理人员名称
+                StringBuilder userName = new StringBuilder();
+                //派工默认人员（：隔开）
+                StringBuilder task = new StringBuilder();
+                for (DevicePerson person : devicePerson) {
+                    if(!StringUtils.isNullOrEmpty(userAccount.toString())){
+                        userAccount.append(":");
+                    }
+                    userAccount.append(person.getUserId());
+                    if(1 == person.getIsDefault()){
+                        if(!StringUtils.isNullOrEmpty(task.toString())){
+                            task.append(":");
+                        }
+                        task.append(person.getUserId());
+                    }
+                    if(!StringUtils.isNullOrEmpty(userName.toString())){
+                        userName.append(":");
+                    }
+                    userName.append(ObjectUtil.isEmpty(tenantUserVosMap.get(person.getUserId()))?" ":tenantUserVosMap.get(person.getUserId()).getEmplName());
+                }
+                device.setUserAccount(userAccount.toString());
+                device.setUserName(userName.toString());
+                device.setTask(task.toString());
+            }
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName = "设备列表_" + format.format(new Date()) + ".xlsx";
+
+            String[] columnHeaders = {"设备编码", "设备名称", "型号", "类型(设备或设备组)", "制造商", "入库时间", "出库时间", "是否启用(是或否)", "运行状态(是或否)", "修改时间", "修改人","关联设备人员账号(:隔开)","人员名称","派工默认人员"};
+
+            String[] fieldNames = {"code", "name", "model", "type", "maker", "inTime", "outTime", "status", "runStatus", "modifyTime", "modifyBy","userAccount","userName","task"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     @Override

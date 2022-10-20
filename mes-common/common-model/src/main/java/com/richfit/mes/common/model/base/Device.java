@@ -58,16 +58,18 @@ public class Device extends BaseEntity<Device> {
      */
     @TableField(exist = false)
     private String userAccount;
-    /**
-     * 人员名称
-     */
-    @TableField(exist = false)
-    private String userName;
+
     /**
      * 派工默认
      */
     @TableField(exist = false)
     private String task;
+
+    /**
+     * 人员名称
+     */
+    @TableField(exist = false)
+    private String userName;
 
     /**
      * 租户ID
