@@ -15,9 +15,12 @@ import com.richfit.mes.common.model.base.DrawingApply;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,9 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -77,6 +78,35 @@ public class DrawingApplyController extends BaseController {
 
         }
     }
+//    @ApiOperation(value = "批量新增图纸申请", notes = "批量新增图纸申请")
+//    @PostMapping("/manage_batch")
+//    public CommonResult<DrawingApply> batchAddDrawingApply(@RequestBody List<DrawingApply> drawingApplyList) {
+//
+//        if (StringUtils.isNullOrEmpty(drawingApply.getDrawingNo())) {
+//            return CommonResult.failed(DRAWING_APPLY_NO_NULL_MESSAGE);
+//        } else {
+//            QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
+//            queryWrapper.eq("drawing_no", drawingApply.getDrawingNo());
+//            queryWrapper.eq("branch_code", drawingApply.getBranchCode());
+//            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+//            DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
+//            if (oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())) {
+//                return CommonResult.failed("已有该图号的申请！");
+//            } else {
+//                drawingApply.setStatus("0");
+//                drawingApply.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+//                drawingApply.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+//                boolean bool = drawingApplyService.save(drawingApply);
+//                if (bool) {
+//                    return CommonResult.success(drawingApply, DRAWING_APPLY_SUCCESS_MESSAGE);
+//                } else {
+//                    return CommonResult.failed(DRAWING_APPLY_FAILED_MESSAGE);
+//                }
+//            }
+//
+//        }
+//
+//    }
 
     @ApiOperation(value = "修改图纸申请", notes = "修改图纸申请")
     @PutMapping("/manage")
@@ -123,6 +153,28 @@ public class DrawingApplyController extends BaseController {
 
             boolean bool = drawingApplyService.update(wrapper);
             return CommonResult.success(bool, DRAWING_APPLY_SUCCESS_MESSAGE);
+        }
+    }
+    @ApiOperation(value = "审批图纸申请批量处理", notes = "审批图纸申请批量处理")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "id的list集合", required = true, paramType = "query", dataType = "List<String>"),
+            @ApiImplicitParam(name = "status", value = "审批状态 0待审核 1通过 2驳回", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "reason", value = "驳回原因", paramType = "query", dataType = "string")
+    })
+    @PostMapping("/examineBatch")
+    public CommonResult examineDrawingApplyBatch(@RequestBody Map<String,Object> paramMap) {
+        List<String> ids=(List)paramMap.get("idList");
+        if (ObjectUtils.isEmpty(ids)) {
+            return CommonResult.failed(DRAWING_APPLY_ID_NULL_MESSAGE);
+        } else {
+                UpdateWrapper<DrawingApply> wrapper = new UpdateWrapper<>();
+                wrapper.set("status", paramMap.get("status").toString());
+                wrapper.set("reason", paramMap.get("reason").toString());
+                wrapper.set("review_by", SecurityUtils.getCurrentUser().getUsername());
+                wrapper.set("review_time", new Date());
+                wrapper.in("id", ids);
+                boolean bool = drawingApplyService.update(wrapper);
+            return CommonResult.success(DRAWING_APPLY_SUCCESS_MESSAGE);
         }
     }
 
