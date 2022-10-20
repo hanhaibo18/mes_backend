@@ -621,6 +621,7 @@ public class TrackCompleteController extends BaseController {
                                 track.setIsUpdate(0);
                             }
                         }
+                        track0.setId(id);
                         track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
                         track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
                         track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
