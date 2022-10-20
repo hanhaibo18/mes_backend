@@ -233,59 +233,60 @@ public class SequenceController extends BaseController {
     }
 
     @ApiOperation(value = "修改工序", notes = "修改工序")
-    @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "path")
+    @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "body")
     @PostMapping("/update")
-    public CommonResult<Sequence> updateSequence(@RequestBody Sequence sequence) {
+    public CommonResult updateSequence(@RequestBody List<Sequence> sequences) {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
-        if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
-            return CommonResult.failed("机构编码不能为空！");
-        } else {
-            sequence.setModifyBy(user.getUsername());
-            sequence.setModifyTime(new Date());
-            Sequence sequenceOld = sequenceService.getById(sequence.getId());
-            if (!sequence.getOptType().equals(sequenceOld.getOptType())) {
-                //删除工序已关联的质量资料历史数据
-                QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
-                queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
-                queryWrapperRouterCheck.eq("type", "质量资料");
-                queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
-                queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
-                routerCheckService.remove(queryWrapperRouterCheck);
+        for (Sequence sequence : sequences) {
+            if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
+                return CommonResult.failed("机构编码不能为空！");
+            } else {
+                sequence.setModifyBy(user.getUsername());
+                sequence.setModifyTime(new Date());
+                Sequence sequenceOld = sequenceService.getById(sequence.getId());
+                if (!sequence.getOptType().equals(sequenceOld.getOptType())) {
+                    //删除工序已关联的质量资料历史数据
+                    QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
+                    queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
+                    queryWrapperRouterCheck.eq("type", "质量资料");
+                    queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
+                    queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
+                    routerCheckService.remove(queryWrapperRouterCheck);
 
-                //工序质量资料
-                //查询类型关联的质量资料
-                QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
-                queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
-                queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
-                queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
-                List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
-                for (OperationTypeSpec dts : operationTypeSpecs) {
-                    RouterCheck routerCheck = new RouterCheck();
-                    routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    routerCheck.setSequenceId(sequence.getId());
-                    routerCheck.setRouterId(sequence.getRouterId());
-                    routerCheck.setName(dts.getPropertyName());
-                    routerCheck.setType("质量资料");
-                    routerCheck.setStatus("1");
-                    routerCheck.setDefualtValue(dts.getPropertyValue());
-                    routerCheck.setPropertyObjectname(dts.getPropertyName());
+                    //工序质量资料
+                    //查询类型关联的质量资料
+                    QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
+                    queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
+                    queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
+                    queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
+                    List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
+                    for (OperationTypeSpec dts : operationTypeSpecs) {
+                        RouterCheck routerCheck = new RouterCheck();
+                        routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                        routerCheck.setSequenceId(sequence.getId());
+                        routerCheck.setRouterId(sequence.getRouterId());
+                        routerCheck.setName(dts.getPropertyName());
+                        routerCheck.setType("质量资料");
+                        routerCheck.setStatus("1");
+                        routerCheck.setDefualtValue(dts.getPropertyValue());
+                        routerCheck.setPropertyObjectname(dts.getPropertyName());
 
-                    routerCheck.setBranchCode(sequence.getBranchCode());
-                    routerCheck.setTenantId(user.getTenantId());
-                    routerCheck.setCreateTime(new Date());
-                    routerCheck.setCreateBy(user.getUsername());
-                    routerCheck.setModifyTime(new Date());
-                    routerCheck.setModifyBy(user.getUsername());
-                    routerCheckService.save(routerCheck);
+                        routerCheck.setBranchCode(sequence.getBranchCode());
+                        routerCheck.setTenantId(user.getTenantId());
+                        routerCheck.setCreateTime(new Date());
+                        routerCheck.setCreateBy(user.getUsername());
+                        routerCheck.setModifyTime(new Date());
+                        routerCheck.setModifyBy(user.getUsername());
+                        routerCheckService.save(routerCheck);
+                    }
+                }
+                boolean bool = sequenceService.update(sequence, new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code", sequence.getBranchCode()));
+                if (!bool) {
+                    return CommonResult.failed("操作失败，请重试！");
                 }
             }
-            boolean bool = sequenceService.update(sequence, new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code", sequence.getBranchCode()));
-            if (bool) {
-                return CommonResult.success(sequence, "操作成功！");
-            } else {
-                return CommonResult.failed("操作失败，请重试！");
-            }
         }
+        return CommonResult.success("操作成功！");
     }
 
 
