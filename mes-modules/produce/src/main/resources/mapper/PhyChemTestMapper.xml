@@ -21,13 +21,10 @@
             and head.tenant_id = '${param.tenantId}'
         </if>
         <if test="param.startTime != null and param.startTime != ''">
-            and py_order.modify_time &gt; '${param.startTime}'
-        </if>
-        <if test="param.startTime != null and param.startTime != ''">
-            and py_order.modify_time &gt; '${param.startTime}'
+            and DATE_FORMAT(py_order.modify_time,'%Y-%m-%d') &gt; '${param.startTime}'
         </if>
         <if test="param.endTime != null and param.endTime != ''">
-            and py_order.modify_time &lt; '${param.endTime}'
+            and DATE_FORMAT(py_order.modify_time,'%Y-%m-%d') &lt;  '${param.endTime}'
         </if>
         <if test="param.orderNo != null and param.orderNo != ''">
             and py_order.order_no like '%${param.orderNo}%'
