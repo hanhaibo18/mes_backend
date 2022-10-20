@@ -313,48 +313,7 @@ public class DeviceController extends BaseController {
     @ApiOperation(value = "导出设备", notes = "通过Excel文档导出设备信息")
     @GetMapping("/export_excel")
     public void exportExcel(String parentId, String branchCode, HttpServletResponse rsp) {
-        try {
-            QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
-            }
-            //根据设备导出所有当前设备下的所有信息
-            if (!StringUtils.isNullOrEmpty(parentId)) {
-                queryWrapper.eq("parent_id", parentId);
-            }
-            queryWrapper.orderByDesc("modify_time");
-            List<Device> list = deviceService.list(queryWrapper);
-
-            for (Device device : list) {
-                if ("0".equals(device.getType()) && device.getType() != null) {
-                    device.setType("设备");
-                } else if ("1".equals(device.getType()) && device.getType() != null) {
-                    device.setType("设备组");
-                }
-                if ("0".equals(device.getStatus()) && device.getStatus() != null) {
-                    device.setStatus("否");
-                } else if ("1".equals(device.getStatus()) && device.getStatus() != null) {
-                    device.setStatus("是");
-                }
-                if ("0".equals(device.getRunStatus()) && device.getRunStatus() != null) {
-                    device.setRunStatus("否");
-                } else if ("1".equals(device.getRunStatus()) && device.getRunStatus() != null) {
-                    device.setRunStatus("是");
-                }
-            }
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
-
-            String fileName = "设备列表_" + format.format(new Date()) + ".xlsx";
-
-            String[] columnHeaders = {"设备编码", "设备名称", "型号", "类型(设备或设备组)", "制造商", "入库时间", "出库时间", "是否启用(是或否)", "运行状态(是或否)", "修改时间", "修改人"};
-
-            String[] fieldNames = {"code", "name", "model", "type", "maker", "inTime", "outTime", "status", "runStatus", "modifyTime", "modifyBy"};
-
-            //export
-            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+        deviceService.exportExcel(parentId,branchCode,rsp);
     }
 
     @ApiOperation(value = "导出设备", notes = "通过Excel文档导出设备信息")

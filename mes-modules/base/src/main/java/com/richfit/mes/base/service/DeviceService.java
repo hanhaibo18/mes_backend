@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Device;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -24,4 +25,6 @@ public interface DeviceService extends IService<Device> {
     CommonResult importExcel(MultipartFile file, String branchCode, String tenantId);
 
     List<Device> queryDeviceByIdList(List<String> idList);
+
+   void exportExcel(String parentId, String branchCode, HttpServletResponse rsp);
 }
