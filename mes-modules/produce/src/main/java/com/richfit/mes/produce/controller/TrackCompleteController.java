@@ -496,7 +496,7 @@ public class TrackCompleteController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
                 Calendar calendar = new GregorianCalendar();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 calendar.setTime(sdf.parse(endTime));
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
                 queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
