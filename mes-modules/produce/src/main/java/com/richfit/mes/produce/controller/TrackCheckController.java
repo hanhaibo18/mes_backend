@@ -4,12 +4,15 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.base.DevicePerson;
+import com.richfit.mes.common.model.base.OperationTypeSpec;
+import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -760,15 +763,28 @@ public class TrackCheckController extends BaseController {
     @ApiOperation(value = "查询质检审核条件详情信息(新)", notes = "查询质检审核条件详情信息(新)")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "optId", value = "工序Id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "optType", value = "工序Id", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/queryQualityTestingDetails")
-    public CommonResult<QueryQualityTestingDetailsVo> queryQualityTestingDetails(String optId, String branchCode) {
+    public CommonResult<QueryQualityTestingDetailsVo> queryQualityTestingDetails(String optId, String optType, String branchCode) {
         //检查内容 质量资料
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         QueryQualityTestingDetailsVo queryQualityTestingDetailsVo = new QueryQualityTestingDetailsVo();
         queryQualityTestingDetailsVo.setRouterCheckList(baseServiceClient.queryRouterList(optId, "检查内容", branchCode, tenantId));
-        queryQualityTestingDetailsVo.setOperationTypeSpecs(baseServiceClient.queryRouterList(optId, "质量资料", branchCode, tenantId));
+        List<OperationTypeSpec> operationTypeSpecs = baseServiceClient.queryOperationTypeSpecByType(optType, branchCode, tenantId);
+        if (CollectionUtils.isNotEmpty(operationTypeSpecs)) {
+            List<RouterCheck> routerList = new ArrayList<>();
+            for (OperationTypeSpec operationTypeSpec : operationTypeSpecs) {
+                RouterCheck routerCheck = new RouterCheck();
+                routerCheck.setName(operationTypeSpec.getPropertyName());
+                routerCheck.setDefualtValue(operationTypeSpec.getPropertyValue());
+                routerList.add(routerCheck);
+            }
+            queryQualityTestingDetailsVo.setOperationTypeSpecs(routerList);
+        } else {
+            queryQualityTestingDetailsVo.setOperationTypeSpecs(baseServiceClient.queryRouterList(optId, "质量资料", branchCode, tenantId));
+        }
         return CommonResult.success(queryQualityTestingDetailsVo);
     }
 

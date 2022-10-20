@@ -1,5 +1,6 @@
 package com.richfit.mes.sys.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -240,14 +241,16 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         queryWrapper.eq("user_account", userAccount);
         return tenantUserMapper.queryUser(queryWrapper);
     }
+
     @Override
-    public Map<String,TenantUserVo> queryByUserAccountList(List<String> userAccountList) {
+    public Map<String, TenantUserVo> queryByUserAccountList(List<String> userAccountList) {
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("user_account", userAccountList);
         List<TenantUserVo> tenantUserVos = tenantUserMapper.queryUserList(queryWrapper);
         Map<String, TenantUserVo> tenantUserVoMap = tenantUserVos.stream().collect(Collectors.toMap(x -> x.getUserAccount(), x -> x));
         return tenantUserVoMap;
     }
+
     @Override
     public List<TenantUserVo> queryByBranchCode(String branchCode) {
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
@@ -285,16 +288,35 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     @Override
     public boolean defaultPassword(List<String> userIds) {
-        if(userIds.size()>0){
+        if (userIds.size() > 0) {
             QueryWrapper<TenantUser> queryWrapper = new QueryWrapper<>();
-            queryWrapper.in("id",userIds);
+            queryWrapper.in("id", userIds);
             List<TenantUser> tenantUsers = this.list(queryWrapper);
             for (TenantUser tenantUser : tenantUsers) {
                 tenantUser.setPasswd(passwordEncoder.encode(defaultPassword));
             }
             this.updateBatchById(tenantUsers);
         }
-       return true;
+        return true;
+    }
+
+    @Override
+    public List<TenantUserVo> queryQualityInspectionDepartment(String classes) {
+        String userBranchCode = SecurityUtils.getCurrentUser().getOrgId();
+        //组装角色标识 1机加  2装配 3热处理 4钢结构
+        if ("1".equals(classes) || StrUtil.isBlank(classes)) {
+            String machiningRole = userBranchCode + "_JMAQ_JJZJ";
+        }
+        if ("2".equals(classes) || StrUtil.isBlank(classes)) {
+            String assembleRole = userBranchCode + "_JMAQ_ZPZJ";
+        }
+        if ("3".equals(classes) || StrUtil.isBlank(classes)) {
+            String heatTreatmentRole = userBranchCode + "_JMAQ_JJZJ";
+        }
+        if ("4".equals(classes) || StrUtil.isBlank(classes)) {
+            String steelworkRole = userBranchCode + "_JMAQ_JJZJ";
+        }
+        return null;
     }
 
 }

@@ -42,6 +42,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     public List<Device> getDeviceByIdList(List<String> idList) {
         return null;
     }
+
     @Override
     public CommonResult<List<CalendarClass>> selectCalendarClass(String name) {
         return CommonResult.success(null);
@@ -136,6 +137,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @Override
     public String queryTenantIdByBranchCode(String branchCode) {
+        return null;
+    }
+
+    @Override
+    public List<OperationTypeSpec> queryOperationTypeSpecByType(String type, String branchCode, String tenantId) {
         return null;
     }
 

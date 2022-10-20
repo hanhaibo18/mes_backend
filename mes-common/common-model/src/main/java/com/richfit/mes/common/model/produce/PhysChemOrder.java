@@ -58,6 +58,8 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String reportNo;
     @ApiModelProperty(value = "同步状态（0未同步，1已经同步）")
     private String syncStatus;
+    @ApiModelProperty(value = "同步时间")
+    private String syncTime;
     @ApiModelProperty(value = "报告状态（0未生成,1以生成）")
     private String reportStatus;
     @ApiModelProperty(value = "化学分析->全分析")

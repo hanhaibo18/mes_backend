@@ -1,9 +1,8 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import java.util.Date;
 
 /**
@@ -54,6 +53,24 @@ public class Device extends BaseEntity<Device> {
      * 运行状态
      */
     private String runStatus;
+    /**
+     * 关联设备人员账号(:隔开)
+     */
+    @TableField(exist = false)
+    private String userAccount;
+
+    /**
+     * 派工默认
+     */
+    @TableField(exist = false)
+    private String task;
+
+    /**
+     * 人员名称
+     */
+    @TableField(exist = false)
+    private String userName;
+
     /**
      * 租户ID
      */

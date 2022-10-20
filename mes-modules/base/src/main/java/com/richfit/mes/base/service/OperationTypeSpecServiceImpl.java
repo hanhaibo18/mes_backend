@@ -1,5 +1,7 @@
 package com.richfit.mes.base.service;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.OperationTypeSpecMapper;
 import com.richfit.mes.common.model.base.OperationTypeSpec;
@@ -39,5 +41,20 @@ public class OperationTypeSpecServiceImpl extends ServiceImpl<OperationTypeSpecM
             this.save(operationTypeSpec);
         }
 
+    }
+
+    @Override
+    public List<OperationTypeSpec> queryOperationTypeSpecByType(String type, String branchCode, String tenantId) {
+        QueryWrapper<OperationTypeSpec> queryWrapper = new QueryWrapper<>();
+        if (StrUtil.isNotBlank(type)) {
+            queryWrapper.eq("opt_type", type);
+        }
+        if (StrUtil.isNotBlank(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if (StrUtil.isNotBlank(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        return this.list(queryWrapper);
     }
 }

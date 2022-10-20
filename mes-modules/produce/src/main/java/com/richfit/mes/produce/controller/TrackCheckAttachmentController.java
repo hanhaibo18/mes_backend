@@ -7,6 +7,7 @@ import com.richfit.mes.produce.service.TrackCheckAttachmentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +33,7 @@ public class TrackCheckAttachmentController extends BaseController {
 
     @ApiOperation(value = "文件上传用接口", notes = "文件上传用接口")
     @PostMapping("/saveCheckFile")
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveCheckFile(@RequestBody CheckAttachment checkAttachment) {
         return CommonResult.success(checkAttachmentService.save(checkAttachment));
     }

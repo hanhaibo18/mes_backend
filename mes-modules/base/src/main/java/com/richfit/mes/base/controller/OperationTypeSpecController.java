@@ -187,4 +187,10 @@ public class OperationTypeSpecController extends BaseController {
         }
 
     }
+
+    @ApiOperation(value = "根据工序类型查询质检资料", notes = "根据工序类型查询质检资料")
+    @GetMapping("/queryOperationTypeSpecByType")
+    public List<OperationTypeSpec> queryOperationTypeSpecByType(String type, String branchCode, String tenantId) {
+        return operatiponTypeSpecService.queryOperationTypeSpecByType(type, branchCode, tenantId);
+    }
 }

@@ -377,7 +377,7 @@ public class ProductionBomController extends BaseController {
     }
 
     @ApiOperation(value = "导出产品BOM(ERP)", notes = "导出产品BOM(ERP)")
-    @ApiImplicitParam(name = "id", value = "id", paramType = "query", allowMultiple = true, dataType = "String")
+    @ApiImplicitParam(name = "id", value = "id", paramType = "query", dataType = "String")
     @GetMapping("/exportExcelERP")
     public void exportExcelERP(String id, HttpServletResponse rsp) {
         productionBomService.exportExcelERP(id, rsp);
