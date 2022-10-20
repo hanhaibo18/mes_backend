@@ -1,5 +1,6 @@
 package com.richfit.mes.base.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
@@ -84,10 +85,10 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
     @Override
     public List<TenantUserVo> queryUsers(String auditBy) {
         List<TenantUserVo> tenantUserVo = new ArrayList<>();
-        if(!StringUtils.isNullOrEmpty(auditBy)){
+        if (!StringUtils.isNullOrEmpty(auditBy)) {
             TenantUserVo user = systemServiceClient.getUserById(auditBy).getData();
             tenantUserVo.add(user);
-        }else{
+        } else {
             //先获取所有车间
             tenantUserVo.addAll(systemServiceClient.queryUserByBranchCode(BOMCO_ZJ).getData());
         }
@@ -157,11 +158,16 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         //对总公司下存储车间结点
         List<Branch> list = new ArrayList<>();
         for (String code : branchCodeList) {
+            if (StrUtil.isBlank(code)) {
+                continue;
+            }
             //查询车间
             QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("branch_code", code);
             Branch branchEntity = this.getOne(queryWrapper);
-            queryByBranchCode(branchEntity);
+            if (null != branchEntity) {
+                queryByBranchCode(branchEntity);
+            }
             list.add(branchEntity);
         }
         branch.setBranchList(list);
@@ -172,8 +178,10 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("main_branch_code", branch.getBranchCode());
         List<Branch> branches = this.list(queryWrapper);
-        for (Branch branch1 : branches) {
-            queryByBranchCode(branch1);
+        if (null != branches) {
+            for (Branch branch1 : branches) {
+                queryByBranchCode(branch1);
+            }
         }
         branch.setBranchList(branches);
     }
