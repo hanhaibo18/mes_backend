@@ -142,7 +142,7 @@ public class AttachmentController extends BaseController {
                 } catch (Exception e) {
                     log.error("upload attachment error: {}", e.getMessage(), e);
                     e.printStackTrace();
-                    return CommonResult.failed(e.getMessage());
+                    throw new GlobalException("上传文件失败", ResultCode.FAILED);
                 }
             } else {
                 return CommonResult.failed("请上传文件");
@@ -249,7 +249,7 @@ public class AttachmentController extends BaseController {
     @PostMapping("/download/getBase64Code")
     @ApiOperation(value = "获取图片base64编码", notes = "获取图片base64编码")
     @ApiImplicitParam(name = "id", value = "附件ID", required = true, dataType = "String")
-    public CommonResult<Object> getBase64Code(@RequestParam String id) throws GlobalException{
+    public CommonResult<Object> getBase64Code(@RequestParam String id) throws GlobalException {
         return CommonResult.success(attachmentService.getImageStr(id));
     }
 

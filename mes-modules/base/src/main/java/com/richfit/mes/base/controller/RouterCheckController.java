@@ -4,16 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.base.entity.RouterCheckDto;
-import com.richfit.mes.base.entity.RouterCheckQualityDto;
 import com.richfit.mes.base.service.RouterCheckService;
 import com.richfit.mes.base.service.SequenceService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.RouterCheck;
-import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.*;
@@ -23,12 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -274,7 +266,7 @@ public class RouterCheckController extends BaseController {
     @PostMapping("/import_excel_check")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult importExcelCheck(@RequestParam("file") MultipartFile file, String tenantId, String branchCode) {
-        return routerCheckService.importExcelCheck(file,tenantId,branchCode);
+        return routerCheckService.importExcelCheck(file, tenantId, branchCode);
     }
 
     @ApiOperation(value = "查询质量资料列表", notes = "查询质量资料列表")
@@ -289,4 +281,5 @@ public class RouterCheckController extends BaseController {
         return routerCheckService.queryRouterList(optId, type, branchCode, tenantId);
     }
 
+    
 }

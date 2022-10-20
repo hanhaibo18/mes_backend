@@ -141,4 +141,18 @@ public interface BaseServiceClient {
      **/
     @GetMapping(value = "/api/base/branch/queryTenantIdByBranchCode")
     public String queryTenantIdByBranchCode(@RequestParam("branchCode") String branchCode);
+
+
+    /**
+     * 功能描述: 查询质检上传文件列表
+     *
+     * @param type
+     * @param branchCode
+     * @param tenantId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/20 14:13
+     * @return: List<OperationTypeSpec>
+     **/
+    @GetMapping("/api/base/opttypespec/queryOperationTypeSpecByType")
+    public List<OperationTypeSpec> queryOperationTypeSpecByType(@RequestParam("type") String type, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 }

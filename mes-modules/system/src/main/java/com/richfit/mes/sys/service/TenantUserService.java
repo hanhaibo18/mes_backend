@@ -112,7 +112,7 @@ public interface TenantUserService {
      **/
     TenantUserVo queryByUserAccount(String userAccount);
 
-    Map<String,TenantUserVo> queryByUserAccountList(List<String> userAccountList);
+    Map<String, TenantUserVo> queryByUserAccountList(List<String> userAccountList);
 
     /**
      * 功能描述: 根据车间code查询人员列表
@@ -146,8 +146,19 @@ public interface TenantUserService {
 
     /**
      * 重置默认密码
+     *
      * @param userIds
      * @return
      */
     boolean defaultPassword(List<String> userIds);
+
+    /**
+     * 功能描述: 查询质量检测部质检人员
+     *
+     * @param classes
+     * @Author: xinYu.hou
+     * @Date: 2022/10/19 17:34
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryQualityInspectionDepartment(String classes);
 }
