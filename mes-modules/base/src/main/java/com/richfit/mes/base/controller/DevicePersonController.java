@@ -59,7 +59,8 @@ public class DevicePersonController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(deviceId)) {
 
-                queryWrapper.apply("(device_id = '" + deviceId + "' or device_id = '" + code + "') ");
+                //queryWrapper.apply("(device_id = '" + deviceId + "' or device_id = '" + code + "') ");
+                queryWrapper.eq("device_id",deviceId);
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);

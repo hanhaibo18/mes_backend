@@ -7,19 +7,22 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Strings;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.DeviceMapper;
+import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Device;
+import com.richfit.mes.common.model.base.DevicePerson;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -32,10 +35,23 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
     @Autowired
     private DeviceMapper deviceMapper;
 
+    @Autowired
+    private SystemServiceClient systemServiceClient;
+
+    @Autowired
+    private DevicePersonService devicePersonService;
+
     @Override
     public IPage<Device> selectPage(Page page, QueryWrapper<Device> qw) {
         return deviceMapper.selectPage(page, qw);
     }
+
+
+
+    //设备组
+    private static final String GROUP = "1";
+    //设备
+    private static final String DEVICE = "0";
 
 
     @Override
@@ -51,6 +67,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult importExcel(MultipartFile file, String branchCode, String tenantId) {
         CommonResult result = null;
         //封装证件信息实体类
@@ -69,6 +86,12 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
             file.transferTo(excelFile);
             //将导入的excel数据生成证件实体类list
             List<Device> list = ExcelUtils.importExcel(excelFile, Device.class, fieldNames, 1, 0, 0, tempName.toString());
+
+            //校验数据
+            String message = checkExportInfo(list, branchCode);
+            if(!StringUtils.isNullOrEmpty(message)){
+                return CommonResult.failed("设备导入失败原因如下：</br>"+message);
+            }
             //获取设备组的map集合
             QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
             List<Device> deviceGroup = this.list(deviceQueryWrapper.eq("type", 1).eq("branch_code",branchCode));
@@ -118,6 +141,10 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
                 queryWrapper.eq("code",exportDevice.getCode()).eq("branch_code",branchCode);
                 if(this.list(queryWrapper).size()>0){
                     exportDevice.setId(this.list(queryWrapper).get(0).getId());
+                }else{
+                    //生成32位uuid
+                    String id = UUID.randomUUID().toString().replaceAll("-", "");
+                    exportDevice.setId(id);
                 }
             }
 
@@ -131,7 +158,37 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
             } else if ("否".equals(exportDevice.getStatus())) {
                 exportDevice.setStatus("0");
             }
+            //保存人员
+            if(!StringUtils.isNullOrEmpty(exportDevice.getUserAccount())){
+                //查询原有的人员（有的跟新，没有的新增）
+                QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("device_id",exportDevice.getId());
+                List<DevicePerson> oldDevicePerson = devicePersonService.list(queryWrapper);
+                Map<String, DevicePerson> oldDevicePersonMap = oldDevicePerson.stream().collect(Collectors.toMap(DevicePerson::getUserId,Function.identity(),(x1,x2)->x2));
 
+                    for (String s : exportDevice.getUserAccount().split(":")) {
+                    DevicePerson devicePerson = new DevicePerson();
+                    if(oldDevicePersonMap.containsKey(s)){
+                        devicePerson = oldDevicePersonMap.get(s);
+                    }
+                    devicePerson.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    devicePerson.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    devicePerson.setCreateTime(new Date());
+                    devicePerson.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    devicePerson.setModifyTime(new Date());
+                    devicePerson.setBranchCode(branchCode);
+                    devicePerson.setDeviceId(exportDevice.getId());
+                    devicePerson.setUserId(s);
+                    //派工默认
+                    if(!StringUtils.isNullOrEmpty(exportDevice.getTask())){
+                        List<String> defautUser = Arrays.asList(exportDevice.getTask().split(":"));
+                        devicePerson.setIsDefault(defautUser.contains(s)?1:0);
+                    }else{
+                        devicePerson.setIsDefault(0);
+                    }
+                    devicePersonService.saveOrUpdate(devicePerson);
+                }
+            }
         }
         //保存设备
         return this.saveOrUpdateBatch(exportDevices);
@@ -183,9 +240,112 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
     }
 
+    //设备导入校验
+    private String checkExportInfo(List<Device> list,String branchCode){
+        StringBuilder message = new StringBuilder();
+
+        //类型为空的数据
+        List<Device> typeNullList = list.stream().filter(item -> StringUtils.isNullOrEmpty(item.getType())).collect(Collectors.toList());
+
+        //设备组数据
+        List<Device> groups = list.stream().filter(item -> GROUP.equals(item.getType())).collect(Collectors.toList());
+
+        //设备数据
+        List<Device> devices = list.stream().filter(item -> DEVICE.equals(item.getType())).collect(Collectors.toList());
+
+        //类型不为0，1的数据
+        List<Device> others = list.stream().filter(item -> !DEVICE.equals(item.getType()) && !GROUP.equals(item.getType()) && !StringUtils.isNullOrEmpty(item.getType())).collect(Collectors.toList());
+
+       if(typeNullList.size()>0){
+           message.append("类型为必填</br>");
+       }
+        if(others.size()>0){
+            message.append("类型必须为0或1</br>");
+        }
+
+        //设备组校验
+        for (Device device : groups) {
+            String oneMessage =  "";
+            if (StringUtils.isNullOrEmpty(device.getCode())) {
+                oneMessage += "设备编码";
+            }
+            if (StringUtils.isNullOrEmpty(device.getName())) {
+                if(!StringUtils.isNullOrEmpty(oneMessage)){
+                    oneMessage+="、";
+                }
+                oneMessage += "设备名称";
+            }
+            if (StringUtils.isNullOrEmpty(device.getRunStatus())) {
+                if(!StringUtils.isNullOrEmpty(oneMessage)){
+                    oneMessage+="、";
+                }
+                oneMessage += "运行状态";
+            }
+            if(!StringUtils.isNullOrEmpty(oneMessage)){
+                message.append("设备组："+device.getName()+","+oneMessage+"不能为空</br>");
+            }
+        }
+
+        //设备校验
+        for (Device device : devices) {
+            String oneMessage =  "";
+            if (StringUtils.isNullOrEmpty(device.getRunStatus())) {
+                oneMessage += "设备组";
+            }
+            if (StringUtils.isNullOrEmpty(device.getCode())) {
+                if(!StringUtils.isNullOrEmpty(oneMessage)){
+                    oneMessage+="、";
+                }
+                oneMessage += "设备编码";
+            }
+            if (StringUtils.isNullOrEmpty(device.getName())) {
+                if(!StringUtils.isNullOrEmpty(oneMessage)){
+                    oneMessage+="、";
+                }
+                oneMessage += "设备名称";
+            }
+            if (StringUtils.isNullOrEmpty(device.getRunStatus())) {
+                if(!StringUtils.isNullOrEmpty(oneMessage)){
+                    oneMessage+="、";
+                }
+                oneMessage += "运行状态";
+            }
+            if(!StringUtils.isNullOrEmpty(oneMessage)){
+                message.append("设备："+device.getName()+","+oneMessage+"不能为空</br>");
+            }
+        }
+
+        //人员信息校验
+        List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCode(branchCode).getData();
+        Map<String, TenantUserVo> tenantUserVosMap = tenantUserVos.stream().collect(Collectors.toMap(TenantUserVo::getUserAccount, Function.identity()));
+
+        for (Device device : list) {
+            String oneMessage =  "";
+            if(!StringUtils.isNullOrEmpty(device.getUserAccount())){
+                List<String> userAccounts = Arrays.asList(device.getUserAccount().split(":"));
+                for (String userAccount : userAccounts) {
+                    if(!tenantUserVosMap.containsKey(userAccount)){
+                        if(!StringUtils.isNullOrEmpty(oneMessage)){
+                            oneMessage+="、";
+                        }
+                        oneMessage+=userAccount;
+                    }
+                }
+            }
+            if(!StringUtils.isNullOrEmpty(oneMessage)){
+                message.append("设备名称："+device.getName()+","+oneMessage+"人员信息不正确</br>");
+            }
+        }
+
+        return message.toString();
+
+    }
+
     @Override
     public List<Device> queryDeviceByIdList(List<String> idList){
-       return deviceMapper.selectBatchIds(idList);
+        return deviceMapper.selectBatchIds(idList);
     }
+
+
 
 }
