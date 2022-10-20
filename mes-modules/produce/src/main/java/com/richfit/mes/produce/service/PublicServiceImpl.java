@@ -256,11 +256,16 @@ public class PublicServiceImpl implements PublicService {
             trackHeadService.trackHeadFinish(map.get("flowId"));
             return true;
         }
+        //判断所有并行工序是否全部完成
+        for (TrackItem trackItem : currentTrackItemList) {
+            if (2 != trackItem.getIsDoing()) {
+                return false;
+            }
+        }
         for (TrackItem trackItem : currentTrackItemList) {
             trackItem.setIsCurrent(0);
             trackItemService.updateById(trackItem);
         }
-
         boolean activation = false;
         if (!currentTrackItemList.isEmpty() && currentTrackItemList.get(0).getNextOptSequence() != 0) {
             //激活下工序
@@ -387,14 +392,12 @@ public class PublicServiceImpl implements PublicService {
         assign.setAssignPersons(list);
         CommonResult<Assign[]> commonResult = trackAssignController.batchAssign(new Assign[]{assign});
         trackItem.setIsSchedule(1);
-//        trackItem.setAssignableQty(trackItem.getAssignableQty() - trackItem.getNumber());
         trackItemService.updateById(trackItem);
         //查询下工序,是否为并行工序依据并行工序来判断下工序是否激活
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("flow_id", trackItem.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
-        //TODO: 自动派工未消耗可派工数量!!!!!!
         if (null != trackItemEntity && 1 == trackItemEntity.getOptParallelType()) {
             activation(trackItem);
         }
