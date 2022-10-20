@@ -75,38 +75,15 @@ public class DrawingApplyController extends BaseController {
                     return CommonResult.failed(DRAWING_APPLY_FAILED_MESSAGE);
                 }
             }
-
         }
     }
-//    @ApiOperation(value = "批量新增图纸申请", notes = "批量新增图纸申请")
-//    @PostMapping("/manage_batch")
-//    public CommonResult<DrawingApply> batchAddDrawingApply(@RequestBody List<DrawingApply> drawingApplyList) {
-//
-//        if (StringUtils.isNullOrEmpty(drawingApply.getDrawingNo())) {
-//            return CommonResult.failed(DRAWING_APPLY_NO_NULL_MESSAGE);
-//        } else {
-//            QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
-//            queryWrapper.eq("drawing_no", drawingApply.getDrawingNo());
-//            queryWrapper.eq("branch_code", drawingApply.getBranchCode());
-//            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-//            DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
-//            if (oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())) {
-//                return CommonResult.failed("已有该图号的申请！");
-//            } else {
-//                drawingApply.setStatus("0");
-//                drawingApply.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-//                drawingApply.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-//                boolean bool = drawingApplyService.save(drawingApply);
-//                if (bool) {
-//                    return CommonResult.success(drawingApply, DRAWING_APPLY_SUCCESS_MESSAGE);
-//                } else {
-//                    return CommonResult.failed(DRAWING_APPLY_FAILED_MESSAGE);
-//                }
-//            }
-//
-//        }
-//
-//    }
+
+    @ApiOperation(value = "导入图纸申请", notes = "根据Excel文档导入导入图纸申请")
+    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
+    @PostMapping("/importExcelDrawingApply")
+    public CommonResult importExcelDrawingApply(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+        return  drawingApplyService.importExcelDrawingApply(file);
+    }
 
     @ApiOperation(value = "修改图纸申请", notes = "修改图纸申请")
     @PutMapping("/manage")
