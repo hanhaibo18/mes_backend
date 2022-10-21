@@ -43,15 +43,15 @@ public class OrderServiceImpl implements OrderService {
                 //公司
                 String company = MapUtils.getString(map, "COMPANY");
                 //工单单别
-                String ta001 = MapUtils.getString(map,"TA001");
+                String ta001 = MapUtils.getString(map,"TA001").trim();
                 //工单单号
-                String ta002 = MapUtils.getString(map,"TA002");
+                String ta002 = MapUtils.getString(map,"TA002").trim();
                 //开单日期
                 String ta003 = MapUtils.getString(map,"TA003");
                 //产品品号
-                String ta006 = MapUtils.getString(map,"TA006");
+                String ta006 = MapUtils.getString(map,"TA006").trim();
                 //预计产量
-                String ta015 = MapUtils.getString(map,"TA015");
+                String ta015 = MapUtils.getString(map,"TA015").trim();
                 //审核者
                 String ta041 = MapUtils.getString(map,"TA041");
                 //预计开工
