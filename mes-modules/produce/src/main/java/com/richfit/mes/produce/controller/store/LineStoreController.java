@@ -243,6 +243,81 @@ public class LineStoreController extends BaseController {
         return CommonResult.success(fillBranchName(lineStoreService.page(new Page<LineStore>(page, limit), queryWrapper)), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "分页查询入库信息", notes = "根据图号、合格证号、物料编号分页查询入库信息")
+    @GetMapping("/line_store_use")
+    public CommonResult<IPage<LineStore>> selectLineStoreByUse(@ApiParam(value = "料单Id") @RequestParam(required = false) String id,
+                                                               @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
+                                                               @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
+                                                               @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                               @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+                                                               @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                               @ApiParam(value = "入库时间(起)") @RequestParam(required = false) String startTime,
+                                                               @ApiParam(value = "入库时间(止)") @RequestParam(required = false) String endTime,
+                                                               @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
+                                                               @ApiParam(value = "料单状态") @RequestParam(required = false) String status,
+                                                               @ApiParam(value = "数量") @RequestParam(required = false) Integer number,
+                                                               @ApiParam(value = "跟踪方式") @RequestParam(required = false) String trackType,
+                                                               @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                               @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
+                                                               @ApiParam(value = "页码") @RequestParam int page,
+                                                               @ApiParam(value = "每页记录数") @RequestParam int limit,
+                                                               @ApiParam(value = "分公司") @RequestParam String branchCode) {
+        QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
+            queryWrapper.like("material_no", materialNo);
+        }
+        if (!StringUtils.isNullOrEmpty(materialType)) {
+            queryWrapper.eq("material_type", materialType);
+        }
+        if (!StringUtils.isNullOrEmpty(id)) {
+            queryWrapper.eq("id", id);
+        }
+        if (!StringUtils.isNullOrEmpty(status)) {
+            queryWrapper.eq("status", status);
+        }
+        if (number != null) {
+            queryWrapper.eq("number", number);
+        }
+        if (!StringUtils.isNullOrEmpty(trackType)) {
+            queryWrapper.eq("track_type", trackType);
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.like("drawing_no", drawingNo);
+        }
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.like("work_no", workNo);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.ge("in_Time", startTime);
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            queryWrapper.le("in_Time", endTime);
+        }
+        if (!StringUtils.isNullOrEmpty(certificateNo)) {
+            queryWrapper.like("certificate_no", certificateNo);
+        }
+        if (!StringUtils.isNullOrEmpty(workblankNo)) {
+            queryWrapper.like("workblank_no", workblankNo);
+        }
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.apply("number > use_num");
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if ("desc".equals(order)) {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                } else if ("asc".equals(order)) {
+                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+            }
+        } else {
+            queryWrapper.orderByDesc("modify_time");
+        }
+        return CommonResult.success(fillBranchName(lineStoreService.page(new Page<LineStore>(page, limit), queryWrapper)), SUCCESS_MESSAGE);
+    }
+
     private IPage<LineStore> fillBranchName(IPage<LineStore> certificateIPage) {
 
         List<ItemParam> itemParamList = systemServiceClient.selectItemClass("stockFrom", "").getData();
