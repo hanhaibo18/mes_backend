@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.entity.param.ExamineDrawingApplyParam;
 import com.richfit.mes.base.service.DrawingApplyService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
@@ -134,25 +135,28 @@ public class DrawingApplyController extends BaseController {
     }
     @ApiOperation(value = "审批图纸申请批量处理", notes = "审批图纸申请批量处理")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "idList", value = "id的list集合", required = true, paramType = "query", dataType = "List<String>"),
-            @ApiImplicitParam(name = "status", value = "审批状态 0待审核 1通过 2驳回", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "reason", value = "驳回原因", paramType = "query", dataType = "string")
     })
     @PostMapping("/examineBatch")
-    public CommonResult examineDrawingApplyBatch(@RequestBody Map<String,Object> paramMap) {
-        List<String> ids=(List)paramMap.get("idList");
-        if (ObjectUtils.isEmpty(ids)) {
-            return CommonResult.failed(DRAWING_APPLY_ID_NULL_MESSAGE);
-        } else {
+    public CommonResult examineDrawingApplyBatch(@RequestBody ExamineDrawingApplyParam param) {
+        try {
+            List<String> ids=(List)param.getIdList();
+            if (ObjectUtils.isEmpty(ids)) {
+                return CommonResult.failed(DRAWING_APPLY_ID_NULL_MESSAGE);
+            } else {
                 UpdateWrapper<DrawingApply> wrapper = new UpdateWrapper<>();
-                wrapper.set("status", paramMap.get("status").toString());
-                wrapper.set("reason", paramMap.get("reason").toString());
+                wrapper.set("status", param.getStatus());
+                wrapper.set("reason", param.getReason());
                 wrapper.set("review_by", SecurityUtils.getCurrentUser().getUsername());
                 wrapper.set("review_time", new Date());
                 wrapper.in("id", ids);
                 boolean bool = drawingApplyService.update(wrapper);
-            return CommonResult.success(DRAWING_APPLY_SUCCESS_MESSAGE);
+
+            }
+        }catch (Exception e){
+            log.error("批量审核异常了",e);
         }
+        return CommonResult.success(DRAWING_APPLY_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "删除物料", notes = "根据物料ID删除图纸申请")
