@@ -181,6 +181,10 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
 
     @Override
     public boolean saveBom(ProjectBom projectBom) {
+        projectBom.setGrade("L");
+        QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("work_plan_no", projectBom.getWorkPlanNo());
+        projectBom.setOrderNo(this.count(queryWrapper));
         return this.save(projectBom);
     }
 

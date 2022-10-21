@@ -348,8 +348,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
                 trackAssembly.setUnit(pb.getUnit());
                 trackAssembly.setSourceType(pb.getSourceType());
-                if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                    if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                if (!StringUtil.isNullOrEmpty(pb.getBomGrouping())) {
+                    if (pb.getId().equals(group.get(pb.getBomGrouping()))) {
                         trackAssemblyList.add(trackAssembly);
                     }
                 } else {

@@ -165,8 +165,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //过滤H零件、齐套检查
                 if ("L".equals(pb.getGrade()) && "1".equals(pb.getIsCheck())) {
                     //处理分组信息
-                    if (!StringUtil.isNullOrEmpty(pb.getGroupBy())) {
-                        if (pb.getId().equals(group.get(pb.getGroupBy()))) {
+                    if (!StringUtil.isNullOrEmpty(pb.getBomGrouping())) {
+                        if (pb.getId().equals(group.get(pb.getBomGrouping()))) {
                             ProjectBomComplete pbc = JSON.parseObject(JSON.toJSONString(pb), ProjectBomComplete.class);
                             pbc.setPlanNumber(plan.getProjNum());
                             pbc.setPlanNeedNumber(plan.getProjNum() * pb.getNumber());
