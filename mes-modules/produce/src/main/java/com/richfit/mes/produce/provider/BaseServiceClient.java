@@ -155,4 +155,15 @@ public interface BaseServiceClient {
      **/
     @GetMapping("/api/base/opttypespec/queryOperationTypeSpecByType")
     public List<OperationTypeSpec> queryOperationTypeSpecByType(@RequestParam("type") String type, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
+
+    /**
+     * 功能描述: 通过物料号码查询物流信息
+     *
+     * @param materialNo
+     * @Author: zhiqiang.lu
+     * @Date: 2022/10/21 11:09
+     * @return: String
+     **/
+    @GetMapping(value = "/api/base/product/list_by_material_no")
+    public List<Product> listByMaterialNo(@RequestParam String materialNo);
 }

@@ -11,6 +11,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.code.StoreItemStatusEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
@@ -20,6 +23,7 @@ import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.FilesUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +65,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Resource
     private RequestNoteService requestNoteService;
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
 
     @Resource
     private TrackHeadService trackHeadService;
@@ -165,18 +172,24 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Override
     public LineStore autoInAndOutStoreByTrackHead(int num, TrackHead trackHead, String workblankNo) {
+        List<Product> productList = baseServiceClient.listByMaterialNo(trackHead.getSelectedMaterialNo());
+        if (productList == null || productList.size() == 0) {
+            throw new GlobalException("没有匹配到选择的物料信息", ResultCode.FAILED);
+        }
+        Product product = productList.get(0);
         //自动料单入库 再出库的逻辑
         LineStore lineStore = new LineStore();
         lineStore.setBranchCode(trackHead.getBranchCode());
         lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
 
-        lineStore.setDrawingNo(trackHead.getDrawingNo());
-        lineStore.setMaterialNo(trackHead.getSelectedMaterialNo());
-        lineStore.setMaterialName(trackHead.getMaterialName());
-        lineStore.setMaterialType("0");
         lineStore.setCertificateNo(trackHead.getMaterialCertificateNo());
-        lineStore.setWeight(trackHead.getWeight());
-        lineStore.setTexture(trackHead.getTexture());
+        lineStore.setDrawingNo(trackHead.getDrawingNo());
+        lineStore.setMaterialNo(product.getMaterialNo());
+        lineStore.setMaterialName(product.getMaterialDesc());
+        lineStore.setMaterialType("0");
+
+        lineStore.setWeight(product.getWeight());
+        lineStore.setTexture(product.getTexture());
 
         lineStore.setWorkNo(trackHead.getWorkNo());
         lineStore.setProdNo(trackHead.getProductNo());
@@ -663,8 +676,13 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             //校验是否存在重复的产品编码
             throw new RuntimeException("产品编号已存在！");
         } else {
+            List<Product> productList = baseServiceClient.listByMaterialNo(trackHead.getSelectedMaterialNo());
+            if (productList == null || productList.size() == 0) {
+                throw new GlobalException("没有匹配到选择的物料信息", ResultCode.FAILED);
+            }
+            Product product = productList.get(0);
             //新增一条半成品/成品信息
-            LineStore lineStoreCp = getLineStore(trackHead, productsNo, number);
+            LineStore lineStoreCp = getLineStore(trackHead, productsNo, number, product);
             lineStoreMapper.insert(lineStoreCp);
             return lineStoreCp;
         }
@@ -685,7 +703,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return lineStoreList;
     }
 
-    private static LineStore getLineStore(TrackHead trackHead, String productsNo, Integer number) {
+    private static LineStore getLineStore(TrackHead trackHead, String productsNo, Integer number, Product product) {
         LineStore lineStoreCp = new LineStore();
         lineStoreCp.setId(UUID.randomUUID().toString().replace("-", ""));
         lineStoreCp.setTenantId(trackHead.getTenantId());
@@ -696,6 +714,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreCp.setWorkNo(trackHead.getWorkNo());
         lineStoreCp.setProdNo(trackHead.getProductNo());
         lineStoreCp.setProductName(trackHead.getProductName());
+        lineStoreCp.setBatchNo(trackHead.getBatchNo());
+        lineStoreCp.setWeight(trackHead.getWeight());
+        lineStoreCp.setTexture(trackHead.getTexture());
         //添加单件多个产品
         lineStoreCp.setNumber(number);
         lineStoreCp.setUseNum(0);

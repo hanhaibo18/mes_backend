@@ -145,5 +145,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public List<Product> listByMaterialNo(String materialNo) {
+        return null;
+    }
+
 
 }
