@@ -29,7 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author 马峰
@@ -147,30 +150,30 @@ public class SequenceController extends BaseController {
             sequence.setTenantId(sequence.getTenantId());
             // 根据工序的工序类型添加质量资料
             //查询类型关联的质量资料
-            QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
-            queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
-            queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
-            queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
-            List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
-            for (OperationTypeSpec dts : operationTypeSpecs) {
-                RouterCheck routerCheck = new RouterCheck();
-                routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                routerCheck.setSequenceId(sequence.getId());
-                routerCheck.setRouterId(sequence.getRouterId());
-                routerCheck.setName(dts.getPropertyName());
-                routerCheck.setType("质量资料");
-                routerCheck.setStatus("1");
-                routerCheck.setDefualtValue(dts.getPropertyValue());
-                routerCheck.setPropertyObjectname(dts.getPropertyName());
-
-                routerCheck.setBranchCode(sequence.getBranchCode());
-                routerCheck.setTenantId(user.getTenantId());
-                routerCheck.setCreateTime(new Date());
-                routerCheck.setCreateBy(user.getUsername());
-                routerCheck.setModifyTime(new Date());
-                routerCheck.setModifyBy(user.getUsername());
-                routerCheckService.save(routerCheck);
-            }
+//            QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
+//            queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
+//            queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
+//            queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
+//            List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
+//            for (OperationTypeSpec dts : operationTypeSpecs) {
+//                RouterCheck routerCheck = new RouterCheck();
+//                routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+//                routerCheck.setSequenceId(sequence.getId());
+//                routerCheck.setRouterId(sequence.getRouterId());
+//                routerCheck.setName(dts.getPropertyName());
+//                routerCheck.setType("质量资料");
+//                routerCheck.setStatus("1");
+//                routerCheck.setDefualtValue(dts.getPropertyValue());
+//                routerCheck.setPropertyObjectname(dts.getPropertyName());
+//
+//                routerCheck.setBranchCode(sequence.getBranchCode());
+//                routerCheck.setTenantId(user.getTenantId());
+//                routerCheck.setCreateTime(new Date());
+//                routerCheck.setCreateBy(user.getUsername());
+//                routerCheck.setModifyTime(new Date());
+//                routerCheck.setModifyBy(user.getUsername());
+//                routerCheckService.save(routerCheck);
+//            }
             boolean bool = sequenceService.save(sequence);
             if (bool) {
                 return CommonResult.success(sequence, "操作成功！");
@@ -202,30 +205,30 @@ public class SequenceController extends BaseController {
                 sequence.setBranchCode(branchCode);
                 // 根据工序的工序类型添加质量资料
                 //查询类型关联的质量资料
-                QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
-                queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
-                queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
-                queryWrapperOperationTypeSpec.eq("tenant_id", sequence.getTenantId());
-                List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
-                for (OperationTypeSpec dts : operationTypeSpecs) {
-                    RouterCheck routerCheck = new RouterCheck();
-                    routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                    routerCheck.setSequenceId(sequence.getId());
-                    routerCheck.setRouterId(sequence.getRouterId());
-                    routerCheck.setName(dts.getPropertyName());
-                    routerCheck.setType("质量资料");
-                    routerCheck.setStatus("1");
-                    routerCheck.setDefualtValue(dts.getPropertyValue());
-                    routerCheck.setPropertyObjectname(dts.getPropertyName());
-
-                    routerCheck.setBranchCode(sequence.getBranchCode());
-                    routerCheck.setTenantId(user.getTenantId());
-                    routerCheck.setCreateTime(new Date());
-                    routerCheck.setCreateBy(user.getUsername());
-                    routerCheck.setModifyTime(new Date());
-                    routerCheck.setModifyBy(user.getUsername());
-                    routerCheckService.save(routerCheck);
-                }
+//                QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
+//                queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
+//                queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
+//                queryWrapperOperationTypeSpec.eq("tenant_id", sequence.getTenantId());
+//                List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
+//                for (OperationTypeSpec dts : operationTypeSpecs) {
+//                    RouterCheck routerCheck = new RouterCheck();
+//                    routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+//                    routerCheck.setSequenceId(sequence.getId());
+//                    routerCheck.setRouterId(sequence.getRouterId());
+//                    routerCheck.setName(dts.getPropertyName());
+//                    routerCheck.setType("质量资料");
+//                    routerCheck.setStatus("1");
+//                    routerCheck.setDefualtValue(dts.getPropertyValue());
+//                    routerCheck.setPropertyObjectname(dts.getPropertyName());
+//
+//                    routerCheck.setBranchCode(sequence.getBranchCode());
+//                    routerCheck.setTenantId(user.getTenantId());
+//                    routerCheck.setCreateTime(new Date());
+//                    routerCheck.setCreateBy(user.getUsername());
+//                    routerCheck.setModifyTime(new Date());
+//                    routerCheck.setModifyBy(user.getUsername());
+//                    routerCheckService.save(routerCheck);
+//                }
                 sequenceService.save(sequence);
             }
         }
@@ -243,43 +246,43 @@ public class SequenceController extends BaseController {
             } else {
                 sequence.setModifyBy(user.getUsername());
                 sequence.setModifyTime(new Date());
-                Sequence sequenceOld = sequenceService.getById(sequence.getId());
-                if (!sequence.getOptType().equals(sequenceOld.getOptType())) {
-                    //删除工序已关联的质量资料历史数据
-                    QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
-                    queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
-                    queryWrapperRouterCheck.eq("type", "质量资料");
-                    queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
-                    queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
-                    routerCheckService.remove(queryWrapperRouterCheck);
-
-                    //工序质量资料
-                    //查询类型关联的质量资料
-                    QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
-                    queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
-                    queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
-                    queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
-                    List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
-                    for (OperationTypeSpec dts : operationTypeSpecs) {
-                        RouterCheck routerCheck = new RouterCheck();
-                        routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                        routerCheck.setSequenceId(sequence.getId());
-                        routerCheck.setRouterId(sequence.getRouterId());
-                        routerCheck.setName(dts.getPropertyName());
-                        routerCheck.setType("质量资料");
-                        routerCheck.setStatus("1");
-                        routerCheck.setDefualtValue(dts.getPropertyValue());
-                        routerCheck.setPropertyObjectname(dts.getPropertyName());
-
-                        routerCheck.setBranchCode(sequence.getBranchCode());
-                        routerCheck.setTenantId(user.getTenantId());
-                        routerCheck.setCreateTime(new Date());
-                        routerCheck.setCreateBy(user.getUsername());
-                        routerCheck.setModifyTime(new Date());
-                        routerCheck.setModifyBy(user.getUsername());
-                        routerCheckService.save(routerCheck);
-                    }
-                }
+//                Sequence sequenceOld = sequenceService.getById(sequence.getId());
+//                if (!sequence.getOptType().equals(sequenceOld.getOptType())) {
+//                    //删除工序已关联的质量资料历史数据
+//                    QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
+//                    queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
+//                    queryWrapperRouterCheck.eq("type", "质量资料");
+//                    queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
+//                    queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
+//                    routerCheckService.remove(queryWrapperRouterCheck);
+//
+//                    //工序质量资料
+//                    //查询类型关联的质量资料
+//                    QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
+//                    queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
+//                    queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
+//                    queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
+//                    List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
+//                    for (OperationTypeSpec dts : operationTypeSpecs) {
+//                        RouterCheck routerCheck = new RouterCheck();
+//                        routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+//                        routerCheck.setSequenceId(sequence.getId());
+//                        routerCheck.setRouterId(sequence.getRouterId());
+//                        routerCheck.setName(dts.getPropertyName());
+//                        routerCheck.setType("质量资料");
+//                        routerCheck.setStatus("1");
+//                        routerCheck.setDefualtValue(dts.getPropertyValue());
+//                        routerCheck.setPropertyObjectname(dts.getPropertyName());
+//
+//                        routerCheck.setBranchCode(sequence.getBranchCode());
+//                        routerCheck.setTenantId(user.getTenantId());
+//                        routerCheck.setCreateTime(new Date());
+//                        routerCheck.setCreateBy(user.getUsername());
+//                        routerCheck.setModifyTime(new Date());
+//                        routerCheck.setModifyBy(user.getUsername());
+//                        routerCheckService.save(routerCheck);
+//                    }
+//                }
                 boolean bool = sequenceService.update(sequence, new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code", sequence.getBranchCode()));
                 if (!bool) {
                     return CommonResult.failed("操作失败，请重试！");
@@ -418,10 +421,10 @@ public class SequenceController extends BaseController {
     @PostMapping("/delete")
     public CommonResult<Sequence> deleteById(@RequestBody String[] ids) {
         for (String id : ids) {
+            //删除工序检查内容和质量资料
             Sequence sequence = sequenceService.getById(id);
             QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
             queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
-            queryWrapperRouterCheck.eq("type", "质量资料");
             queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
             queryWrapperRouterCheck.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             routerCheckService.remove(queryWrapperRouterCheck);
@@ -453,7 +456,7 @@ public class SequenceController extends BaseController {
             file.transferTo(excelFile);
 
             List<SequenceExportVo> headCheck = ExcelUtils.importExcel(excelFile, SequenceExportVo.class, fieldNames, 0, 1, 0, 0, tempName.toString());
-            if(headCheck.size()>0
+            if (headCheck.size() > 0
                     && "是否导入".equals(headCheck.get(0).getStatus())
                     && "工艺号".equals(headCheck.get(0).getContent())
                     && "工艺描述".equals(headCheck.get(0).getRemark())
@@ -464,9 +467,9 @@ public class SequenceController extends BaseController {
                     && "单件".equals(headCheck.get(0).getSinglePieceHours())
                     && "准结".equals(headCheck.get(0).getPrepareEndHours())
                     && "质检确认".equals(headCheck.get(0).getIsQualityCheck())
-                    && "调度确认".equals(headCheck.get(0).getIsScheduleCheck())){
+                    && "调度确认".equals(headCheck.get(0).getIsScheduleCheck())) {
 
-            }else{
+            } else {
                 return CommonResult.failed("导入模板错误!，请重新校验模板");
             }
             //将导入的excel数据生成证件实体类list
