@@ -319,7 +319,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
         }
 
         //人员信息校验
-        List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCode(branchCode).getData();
+        List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCodeList(branchCode).getData();
         Map<String, TenantUserVo> tenantUserVosMap = tenantUserVos.stream().collect(Collectors.toMap(TenantUserVo::getUserAccount, Function.identity()));
 
         for (Device device : list) {
@@ -359,7 +359,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
             List<Device> list = this.list(queryWrapper);
 
             //人员信息校验
-            List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCode(branchCode).getData();
+            List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCodeList(branchCode).getData();
             Map<String, TenantUserVo> tenantUserVosMap = tenantUserVos.stream().collect(Collectors.toMap(TenantUserVo::getUserAccount, Function.identity()));
 
             for (Device device : list) {

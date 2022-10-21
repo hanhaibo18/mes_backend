@@ -29,6 +29,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public CommonResult<List<TenantUserVo>> queryUserByBranchCodeList(String branchCode) {
+        return null;
+    }
+
+    @Override
     public CommonResult<List<ItemParam>> selectItemClass(String name, String code, String header) {
         return CommonResult.success(null);
     }

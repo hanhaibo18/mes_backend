@@ -1,5 +1,6 @@
 package com.richfit.mes.sys.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -241,6 +242,32 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         }
         return tenantUserList;
     }
+
+    @Override
+    public List<TenantUserVo> queryUserByBranchCodePage(String branchCode) {
+        CommonResult<List<Branch>> queryCode = baseServiceClient.queryCode(branchCode);
+        List<TenantUserVo> tenantUserList = new ArrayList<>();
+        for (Branch branch : queryCode.getData()) {
+            QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("belong_org_id", branch.getBranchCode());
+            tenantUserList.addAll(tenantUserMapper.queryUserList(queryWrapper));
+            queryUserListByBranchCode(branch,tenantUserList);
+        }
+        return tenantUserList;
+    }
+
+    //递归向下查询机构人员
+    public void queryUserListByBranchCode(Branch branch,List<TenantUserVo> tenantUserList){
+        if(!ObjectUtil.isEmpty(branch.getBranchList()) && branch.getBranchList().size()>0){
+            for (Branch child : branch.getBranchList()) {
+                QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("belong_org_id", child.getBranchCode());
+                tenantUserList.addAll(tenantUserMapper.queryUserList(queryWrapper));
+                queryUserListByBranchCode(child,tenantUserList);
+            }
+        }
+    }
+
 
     @Override
     public TenantUserVo queryByUserAccount(String userAccount) {

@@ -183,4 +183,6 @@ public interface TenantUserService {
      * @return: List<TenantUserVo>
      **/
     List<TenantUserVo> queryQualityInspectionUser(String classes);
+
+    List<TenantUserVo> queryUserByBranchCodePage(String branchCode);
 }

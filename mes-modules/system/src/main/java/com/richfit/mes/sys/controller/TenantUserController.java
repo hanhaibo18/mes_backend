@@ -3,10 +3,12 @@ package com.richfit.mes.sys.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.constant.CommonConstant;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.dto.TenantUserDto;
@@ -15,6 +17,7 @@ import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.entity.dto.TenantUpdateUserDto;
 import com.richfit.mes.sys.entity.param.TenantUserQueryParam;
+import com.richfit.mes.sys.provider.BaseServiceClient;
 import com.richfit.mes.sys.service.RoleService;
 import com.richfit.mes.sys.service.TenantService;
 import com.richfit.mes.sys.service.TenantUserService;
@@ -24,10 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -51,6 +52,9 @@ public class TenantUserController extends BaseController {
 
     @Autowired
     RoleService roleService;
+
+    @Autowired
+    BaseServiceClient baseServiceClient;
 
     /**
      * 新增用户
@@ -240,6 +244,52 @@ public class TenantUserController extends BaseController {
     @GetMapping("/queryUserByBranchCode")
     public CommonResult<List<TenantUserVo>> queryUserByBranchCode(String branchCode) {
         return CommonResult.success(tenantUserService.queryUserByBranchCode(branchCode));
+    }
+
+    @ApiOperation(value = "根据组织机构获取用户列表List", notes = "根据组织机构获取用户列表List")
+    @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
+    @GetMapping("/queryUserByBranchCodeList")
+    public CommonResult<List<TenantUserVo>> queryUserByBranchCodeList(String branchCode) {
+        return CommonResult.success(tenantUserService.queryUserByBranchCodePage(branchCode));
+    }
+
+    @ApiOperation(value = "分页查询根据组织机构获取用户列表", notes = "分页查询根据组织机构获取用户列表")
+    @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
+    @GetMapping("/queryUserByBranchCode/page")
+    public CommonResult<Map<String, Object>> queryUserByBranchCodePage(String userAccount,String emplName,String branchCode,int page,int limit) {
+        Map<String, Object> returnMap = new HashMap<>();
+        List<TenantUserVo> tenantUserVos = tenantUserService.queryUserByBranchCodePage(branchCode);
+
+        if(!StringUtils.isNullOrEmpty(userAccount)){
+            tenantUserVos = tenantUserVos.stream().filter(item->item.getUserAccount().equals(userAccount)).collect(Collectors.toList());
+        }
+        if(!StringUtils.isNullOrEmpty(emplName)){
+            tenantUserVos = tenantUserVos.stream().filter(item->item.getEmplName().equals(emplName)).collect(Collectors.toList());
+        }
+
+        tenantUserVos.sort((t1, t2) -> t2.getBelongOrgId().compareTo(t1.getBelongOrgId()));
+        List<TenantUserVo> subList = tenantUserVos.stream().skip((page - 1) * limit).limit(limit).
+                collect(Collectors.toList());
+
+        List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
+        for (TenantUserVo user : subList) {
+            for (Branch b : branchList) {
+                if (b.getBranchCode().equals(user.getBelongOrgId())) {
+                    user.setBelongOrgName(b.getBranchName());
+                }
+                if (b.getBranchCode().equals(user.getOrgId())) {
+                    user.setOrgName(b.getBranchName());
+                }
+            }
+        }
+        //总页数
+        int pages = tenantUserVos.size() % limit == 0 ? tenantUserVos.size() / limit : tenantUserVos.size() / limit + 1;
+        //总数
+        int total = tenantUserVos.size();
+        returnMap.put("records", subList);
+        returnMap.put("pages", pages);
+        returnMap.put("total", total);
+        return CommonResult.success(returnMap);
     }
 
 
