@@ -374,6 +374,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 }
 
                 QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("drawing_no", lineStore.getDrawingNo());
                 queryWrapper.eq("workblank_no", workblankNo);
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 List<LineStore> result = this.list(queryWrapper);
@@ -385,6 +386,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             //单件编号
         } else {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("drawing_no", lineStore.getDrawingNo());
             queryWrapper.eq("workblank_no", lineStore.getWorkblankNo());
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<LineStore> result = this.list(queryWrapper);
