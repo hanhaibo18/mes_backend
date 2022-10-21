@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -665,6 +666,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         } else {
             //新增一条半成品/成品信息
             LineStore lineStoreCp = getLineStore(trackHead, productsNo, number);
+            System.out.println("------");
+            System.out.println(JSON.toJSONString(lineStoreCp));
             lineStoreMapper.insert(lineStoreCp);
             return lineStoreCp;
         }
@@ -691,7 +694,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreCp.setTenantId(trackHead.getTenantId());
         lineStoreCp.setDrawingNo(trackHead.getDrawingNo());
         lineStoreCp.setMaterialNo(trackHead.getMaterialNo());
+        lineStoreCp.setMaterialName(trackHead.getMaterialName());
         lineStoreCp.setWorkblankNo(trackHead.getDrawingNo() + " " + productsNo);
+        lineStoreCp.setWorkNo(trackHead.getWorkNo());
+        lineStoreCp.setProdNo(trackHead.getProductNo());
+        lineStoreCp.setProductName(trackHead.getProductName());
         //添加单件多个产品
         lineStoreCp.setNumber(number);
         lineStoreCp.setUseNum(0);
@@ -705,6 +712,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreCp.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //录入类型 系统自动生成
         lineStoreCp.setInputType("2");
+        lineStoreCp.setStockType("1");
         return lineStoreCp;
     }
 }

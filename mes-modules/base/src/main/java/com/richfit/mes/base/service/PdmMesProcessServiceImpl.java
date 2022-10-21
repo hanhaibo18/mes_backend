@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.PdmMesProcessMapper;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
@@ -136,42 +135,42 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 sequence.setModifyBy(user.getUsername());
                 sequenceService.saveOrUpdate(sequence);
 
-                //删除工序已关联的质量资料历史数据
-                QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
-                queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
-                queryWrapperRouterCheck.eq("type", "质量资料");
-                queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
-                queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
-                routerCheckService.remove(queryWrapperRouterCheck);
-
-                //工序质量资料
-                if (!StringUtils.isNullOrEmpty(sequence.getOptType())) {
-                    //查询类型关联的质量资料
-                    QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
-                    queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
-                    queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
-                    queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
-                    List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
-                    for (OperationTypeSpec dts : operationTypeSpecs) {
-                        RouterCheck routerCheck = new RouterCheck();
-                        routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                        routerCheck.setSequenceId(sequence.getId());
-                        routerCheck.setRouterId(sequence.getRouterId());
-                        routerCheck.setName(dts.getPropertyName());
-                        routerCheck.setType("质量资料");
-                        routerCheck.setStatus("1");
-                        routerCheck.setDefualtValue(dts.getPropertyValue());
-                        routerCheck.setPropertyObjectname(dts.getPropertyName());
-
-                        routerCheck.setBranchCode(sequence.getBranchCode());
-                        routerCheck.setTenantId(user.getTenantId());
-                        routerCheck.setCreateTime(new Date());
-                        routerCheck.setCreateBy(user.getUsername());
-                        routerCheck.setModifyTime(new Date());
-                        routerCheck.setModifyBy(user.getUsername());
-                        routerCheckService.save(routerCheck);
-                    }
-                }
+//                //删除工序已关联的质量资料历史数据
+//                QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
+//                queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
+//                queryWrapperRouterCheck.eq("type", "质量资料");
+//                queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
+//                queryWrapperRouterCheck.eq("tenant_id", user.getTenantId());
+//                routerCheckService.remove(queryWrapperRouterCheck);
+//
+//                //工序质量资料
+//                if (!StringUtils.isNullOrEmpty(sequence.getOptType())) {
+//                    //查询类型关联的质量资料
+//                    QueryWrapper<OperationTypeSpec> queryWrapperOperationTypeSpec = new QueryWrapper<OperationTypeSpec>();
+//                    queryWrapperOperationTypeSpec.eq("opt_type", sequence.getOptType());
+//                    queryWrapperOperationTypeSpec.eq("branch_code", sequence.getBranchCode());
+//                    queryWrapperOperationTypeSpec.eq("tenant_id", user.getTenantId());
+//                    List<OperationTypeSpec> operationTypeSpecs = operatiponTypeSpecService.list(queryWrapperOperationTypeSpec);
+//                    for (OperationTypeSpec dts : operationTypeSpecs) {
+//                        RouterCheck routerCheck = new RouterCheck();
+//                        routerCheck.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+//                        routerCheck.setSequenceId(sequence.getId());
+//                        routerCheck.setRouterId(sequence.getRouterId());
+//                        routerCheck.setName(dts.getPropertyName());
+//                        routerCheck.setType("质量资料");
+//                        routerCheck.setStatus("1");
+//                        routerCheck.setDefualtValue(dts.getPropertyValue());
+//                        routerCheck.setPropertyObjectname(dts.getPropertyName());
+//
+//                        routerCheck.setBranchCode(sequence.getBranchCode());
+//                        routerCheck.setTenantId(user.getTenantId());
+//                        routerCheck.setCreateTime(new Date());
+//                        routerCheck.setCreateBy(user.getUsername());
+//                        routerCheck.setModifyTime(new Date());
+//                        routerCheck.setModifyBy(user.getUsername());
+//                        routerCheckService.save(routerCheck);
+//                    }
+//                }
 
                 // MES数据中工序的工装
 //                    QueryWrapper<PdmMesObject> queryWrapperPdmMesObject = new QueryWrapper<>();
