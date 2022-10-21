@@ -61,4 +61,15 @@ public interface TenantUserMapper extends BaseMapper<TenantUser> {
      **/
     @Select("SELECT DISTINCT(role.user_id),users.*,role.user_type user_role_type FROM sys_tenant_user users LEFT JOIN sys_user_role role ON role.user_id = users.id ${ew.customSqlSegment}")
     List<TenantUserVo> queryByBranchCode(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
+
+    /**
+     * 功能描述: 根据条件级联查询
+     *
+     * @param queryWrapper
+     * @Author: xinYu.hou
+     * @Date: 2022/7/8 15:49
+     * @return: List<TenantUserVo>
+     **/
+    @Select("SELECT DISTINCT(role.user_id),users.* FROM sys_tenant_user users LEFT JOIN sys_user_role role ON role.user_id = users.id ${ew.customSqlSegment}")
+    List<TenantUserVo> queryByCondition(@Param(Constants.WRAPPER) QueryWrapper<TenantUserVo> queryWrapper);
 }

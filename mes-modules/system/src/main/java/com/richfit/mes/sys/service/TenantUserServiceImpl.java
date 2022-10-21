@@ -3,15 +3,15 @@ package com.richfit.mes.sys.service;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.sys.Tenant;
-import com.richfit.mes.common.model.sys.TenantUser;
-import com.richfit.mes.common.model.sys.UserRole;
+import com.richfit.mes.common.model.sys.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,12 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     @Autowired
     private TenantService tenantService;
+
+    @Resource
+    private RoleService roleService;
+    @Resource
+    private ItemParamService itemParamService;
+
 
     @Value("${password.default:mes@123456}")
     private String defaultPassword;
@@ -301,22 +308,77 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
-    public List<TenantUserVo> queryQualityInspectionDepartment(String classes) {
-        String userBranchCode = SecurityUtils.getCurrentUser().getOrgId();
+    public List<TenantUserVo> queryQualityInspectionDepartment(String classes, String branchCode, String tenantId) {
         //组装角色标识 1机加  2装配 3热处理 4钢结构
+        List<String> codeList = new ArrayList<>();
         if ("1".equals(classes) || StrUtil.isBlank(classes)) {
-            String machiningRole = userBranchCode + "_JMAQ_JJZJ";
+            String machiningRole = branchCode + "_JMAQ_JJZJ";
+            codeList.add(machiningRole);
         }
         if ("2".equals(classes) || StrUtil.isBlank(classes)) {
-            String assembleRole = userBranchCode + "_JMAQ_ZPZJ";
+            String assembleRole = branchCode + "_JMAQ_ZPZJ";
+            codeList.add(assembleRole);
         }
         if ("3".equals(classes) || StrUtil.isBlank(classes)) {
-            String heatTreatmentRole = userBranchCode + "_JMAQ_JJZJ";
+            String heatTreatmentRole = branchCode + "_JMAQ_JJZJ";
         }
         if ("4".equals(classes) || StrUtil.isBlank(classes)) {
-            String steelworkRole = userBranchCode + "_JMAQ_JJZJ";
+            String steelworkRole = branchCode + "_JMAQ_JJZJ";
         }
-        return null;
+        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("role_code", codeList);
+        queryWrapper.eq("tenant_id", tenantId);
+        List<Role> roleList = roleService.list(queryWrapper);
+        List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
+        QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
+        queryUser.in("role_id", roleIdList);
+        return tenantUserMapper.queryByCondition(queryUser);
+    }
+
+    @Override
+    public List<TenantUserVo> queryAllQualityUser(String classes) {
+        Tenant tenant = tenantService.getById(SecurityUtils.getCurrentUser().getTenantId());
+        //获取当前登录人公司所有质检人员
+        List<TenantUserVo> userList = new ArrayList<>(this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId()));
+        //获取质检公司
+        List<ItemParam> item = null;
+        try {
+            item = itemParamService.queryItemByCode("qualityManagement");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException("质检检测部门查询失败", ResultCode.FAILED);
+        }
+        if (CollectionUtils.isEmpty(item)) {
+            throw new GlobalException("未查询到质量检测部门", ResultCode.FAILED);
+        }
+        //根据租户code 查询tenantId
+        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_code", item.get(0).getCode());
+        Tenant tenantServiceOne = tenantService.getOne(queryWrapper);
+        //获取质检租户下所有质检人员
+        userList.addAll(this.queryQualityInspectionDepartment(classes, tenantServiceOne.getTenantCode(), tenantServiceOne.getId()));
+        return userList;
+    }
+
+    @Override
+    public List<TenantUserVo> queryQualityInspectionUser(String classes) {
+        //获取质检公司
+        List<ItemParam> item = null;
+        try {
+            item = itemParamService.queryItemByCode("qualityManagement");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException("质检检测部门查询失败", ResultCode.FAILED);
+        }
+        if (CollectionUtils.isEmpty(item)) {
+            throw new GlobalException("未查询到质量检测部门", ResultCode.FAILED);
+        }
+        //根据租户code 查询tenantId
+        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_code", item.get(0).getCode());
+        Tenant tenantServiceOne = tenantService.getOne(queryWrapper);
+        //获取质检租户下所有质检人员
+        return this.queryQualityInspectionDepartment(classes, tenantServiceOne.getTenantCode(), tenantServiceOne.getId());
     }
 
 }

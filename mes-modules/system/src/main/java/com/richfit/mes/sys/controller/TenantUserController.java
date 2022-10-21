@@ -249,12 +249,14 @@ public class TenantUserController extends BaseController {
     public CommonResult<TenantUserVo> queryByUserAccount(String userAccount) {
         return CommonResult.success(tenantUserService.queryByUserAccount(userAccount));
     }
+
     @ApiOperation(value = "根据用户编码List获取人员信息", notes = "根据用户编码List获取人员信息")
     @ApiImplicitParam(name = "userAccountList", value = "用户编码List", required = true, dataType = "List<String>")
     @PostMapping("/queryByUserAccountList")
-    public Map<String,TenantUserVo> queryByUserAccountList (@RequestBody List<String> userAccountList) {
+    public Map<String, TenantUserVo> queryByUserAccountList(@RequestBody List<String> userAccountList) {
         return tenantUserService.queryByUserAccountList(userAccountList);
     }
+
     @ApiOperation(value = "根据组织机构获取质检人员", notes = "根据组织机构获取质检人员")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
     @GetMapping("/queryByBranchCode")
@@ -287,6 +289,18 @@ public class TenantUserController extends BaseController {
         return CommonResult.success(tenantUserService.defaultPassword(userIds));
     }
 
+    @ApiOperation(value = "查询质量检测部质检人员", notes = "为空查询全部质检人员,1查询机加质检人员,2查询调度质检人员")
+    @ApiImplicitParam(name = "classes", value = "车间分类", paramType = "query", dataType = "String")
+    @GetMapping("/queryQualityInspectionUser")
+    public CommonResult<List<TenantUserVo>> queryQualityInspectionUser(String classes) {
+        return CommonResult.success(tenantUserService.queryQualityInspectionUser(classes));
+    }
 
+    @ApiOperation(value = "查询所有质检人员", notes = "为空查询全部质检人员,1查询机加质检人员,2查询调度质检人员")
+    @ApiImplicitParam(name = "classes", value = "车间分类", paramType = "query", dataType = "String")
+    @GetMapping("/queryAllQualityUser")
+    public CommonResult<List<TenantUserVo>> queryAllQualityUser(String classes) {
+        return CommonResult.success(tenantUserService.queryAllQualityUser(classes));
+    }
 }
 

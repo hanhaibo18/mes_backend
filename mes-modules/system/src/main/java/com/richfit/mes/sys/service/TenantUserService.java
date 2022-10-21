@@ -156,9 +156,31 @@ public interface TenantUserService {
      * 功能描述: 查询质量检测部质检人员
      *
      * @param classes
+     * @param branchCode
+     * @param tenantId
      * @Author: xinYu.hou
      * @Date: 2022/10/19 17:34
      * @return: List<TenantUserVo>
      **/
-    List<TenantUserVo> queryQualityInspectionDepartment(String classes);
+    List<TenantUserVo> queryQualityInspectionDepartment(String classes, String branchCode, String tenantId);
+
+    /**
+     * 功能描述:查询所有本公司和质检租户质检人员
+     *
+     * @param classes
+     * @Author: xinYu.hou
+     * @Date: 2022/10/21 10:00
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryAllQualityUser(String classes);
+
+    /**
+     * 功能描述:查询质量检测部门质检人员
+     *
+     * @param classes
+     * @Author: xinYu.hou
+     * @Date: 2022/10/21 10:00
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryQualityInspectionUser(String classes);
 }

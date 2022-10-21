@@ -237,7 +237,6 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         } else {
             queryWrapper.orderByDesc("u.modify_time");
         }
-        OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.orderByDesc("u.assign_time");
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         if (null != queryPage.getRecords()) {
