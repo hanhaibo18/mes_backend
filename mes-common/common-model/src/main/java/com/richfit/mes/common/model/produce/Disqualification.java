@@ -121,8 +121,8 @@ public class Disqualification extends BaseEntity<Disqualification> {
     /**
      * 开单时间
      */
-    @ApiModelProperty(value = "开单时间", dataType = "String")
-    private String orderTime;
+    @ApiModelProperty(value = "开单时间", dataType = "Date")
+    private Date orderTime;
 
     /**
      * 所属机构

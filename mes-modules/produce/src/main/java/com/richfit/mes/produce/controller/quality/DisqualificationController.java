@@ -8,6 +8,7 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.entity.quality.QueryCheckDto;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
+import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
 import io.swagger.annotations.Api;
@@ -90,5 +91,11 @@ public class DisqualificationController extends BaseController {
     @PostMapping("/queryCheck")
     public CommonResult<IPage<Disqualification>> queryCheck(@RequestBody QueryCheckDto queryCheckDto) {
         return CommonResult.success(disqualificationService.queryCheck(queryCheckDto));
+    }
+
+    @ApiOperation(value = "查询意见列表", notes = "质检人员查询不合格品处理单查询接口")
+    @GetMapping(value = "/querySignedRecordsList")
+    public CommonResult<List<SignedRecordsVo>> querySignedRecordsList(String disqualificationId) {
+        return CommonResult.success(disqualificationService.querySignedRecordsList(disqualificationId));
     }
 }
