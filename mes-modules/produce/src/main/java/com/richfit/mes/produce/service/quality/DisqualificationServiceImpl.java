@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -97,26 +96,23 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean saveDisqualification(Disqualification disqualification) {
-        if (1 == disqualification.getIsIssue()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            try {
-                disqualification.setOrderTime(sdf.parse(String.valueOf(new Date())));
-            } catch (ParseException e) {
-                e.printStackTrace();
-                throw new GlobalException("时间格式处理异常", ResultCode.FAILED);
+    public Boolean saveOrUpdateDisqualification(Disqualification disqualification) {
+        if (StrUtil.isNotBlank(disqualification.getId())) {
+            this.updateById(disqualification);
+            QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("disqualification_id", disqualification.getId());
+            userOpinionService.remove(queryWrapper);
+            savePerson(disqualification.getUserList(), disqualification.getId());
+        } else {
+            if (1 == disqualification.getIsIssue()) {
+                disqualification.setOrderTime(new Date());
             }
+            this.save(disqualification);
+            savePerson(disqualification.getUserList(), disqualification.getId());
         }
-        this.save(disqualification);
-        savePerson(disqualification.getUserList(), disqualification.getId());
         return true;
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean updateDisqualification(Disqualification disqualification) {
-        return this.updateById(disqualification);
-    }
 
     /**
      * 功能描述: 保存派工人员接口

@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.entity.quality.QueryCheckDto;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
 import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.service.quality.DisqualificationAttachmentService;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -37,6 +39,9 @@ public class DisqualificationController extends BaseController {
     private DisqualificationService disqualificationService;
 
     @Resource
+    private DisqualificationAttachmentService attachmentService;
+
+    @Resource
     private TrackItemService trackItemService;
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
@@ -45,16 +50,10 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryInspector(queryInspectorDto));
     }
 
-    @ApiOperation(value = "创建申请单", notes = "创建不合格品申请单")
+    @ApiOperation(value = "创建/修改申请单", notes = "创建或修改不合格申请单接口")
     @PostMapping("/saveDisqualification")
     public CommonResult<Boolean> saveDisqualification(@RequestBody Disqualification disqualification) {
-        return CommonResult.success(disqualificationService.saveDisqualification(disqualification));
-    }
-
-    @ApiOperation(value = "修改申请单", notes = "修改不合格品申请单")
-    @PostMapping("/updateDisqualification")
-    public CommonResult<Boolean> updateDisqualification(@RequestBody Disqualification disqualification) {
-        return CommonResult.success(disqualificationService.updateDisqualification(disqualification));
+        return CommonResult.success(disqualificationService.saveOrUpdateDisqualification(disqualification));
     }
 
     @ApiOperation(value = "开单", notes = "发布申请单")
@@ -93,9 +92,15 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryCheck(queryCheckDto));
     }
 
-    @ApiOperation(value = "查询意见列表", notes = "质检人员查询不合格品处理单查询接口")
+    @ApiOperation(value = "查询意见列表", notes = "查询意见列表")
     @GetMapping(value = "/querySignedRecordsList")
     public CommonResult<List<SignedRecordsVo>> querySignedRecordsList(String disqualificationId) {
         return CommonResult.success(disqualificationService.querySignedRecordsList(disqualificationId));
+    }
+
+    @ApiOperation(value = "保存文件中间表数据", notes = "保存文件中间表数据")
+    @PostMapping("/saveAttachment")
+    public CommonResult<Boolean> saveAttachment(List<DisqualificationAttachment> attachments) {
+        return CommonResult.success(attachmentService.saveAttachment(attachments));
     }
 }

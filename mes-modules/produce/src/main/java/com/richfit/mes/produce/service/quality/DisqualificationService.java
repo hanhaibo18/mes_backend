@@ -36,17 +36,8 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @Date: 2022/9/30 9:29
      * @return: Boolean
      **/
-    Boolean saveDisqualification(Disqualification disqualification);
+    Boolean saveOrUpdateDisqualification(Disqualification disqualification);
 
-    /**
-     * 功能描述: 修改申请单
-     *
-     * @param disqualification
-     * @Author: xinYu.hou
-     * @Date: 2022/9/30 9:30
-     * @return: Boolean
-     **/
-    Boolean updateDisqualification(Disqualification disqualification);
 
     /**
      * 功能描述: 修改不合格申请单
