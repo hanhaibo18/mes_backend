@@ -222,6 +222,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if (!StrUtil.isBlank(trackHead.getCertificateNo())) {
                 templateService.certByNo(trackHead.getCertificateNo(), trackFlow.getBranchCode(), path + "/合格证/");
             }
+            //跟单附件信息下载
+            if (!StrUtil.isBlank(trackHead.getFilesId())) {
+                String[] filesId = trackHead.getFilesId().split(",");
+                for (String fileId : filesId) {
+                    //通过文件id下载附件
+                    downloads(fileId, path + "/附件/");
+                }
+            }
             ZipUtil.zip(path);
             return path + ".zip";
         } catch (Exception e) {
