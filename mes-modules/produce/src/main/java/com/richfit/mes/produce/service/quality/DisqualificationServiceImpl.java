@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -99,7 +100,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean saveDisqualification(Disqualification disqualification) {
         if (1 == disqualification.getIsIssue()) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            disqualification.setOrderTime(sdf.format(new Date()));
+            try {
+                disqualification.setOrderTime(sdf.parse(String.valueOf(new Date())));
+            } catch (ParseException e) {
+                e.printStackTrace();
+                throw new GlobalException("时间格式处理异常", ResultCode.FAILED);
+            }
         }
         this.save(disqualification);
         savePerson(disqualification.getUserList(), disqualification.getId());
@@ -209,7 +215,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } catch (Exception e) {
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
         }
-        queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUserId());
+        queryWrapper.eq("dis.is_issue", 1);
+        queryWrapper.eq("opinion.user_id", SecurityUtils.getCurrentUser().getUserId());
         return userOpinionMapper.queryCheck(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
@@ -222,12 +229,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //单查询开单时间
         Disqualification disqualification = this.getById(disqualificationId);
         SignedRecordsVo signedRecordsVo = new SignedRecordsVo();
+        signedRecordsVo.setHandlingTime(disqualification.getOrderTime());
         //查询姓名
         CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(disqualification.getCreateBy());
         signedRecordsVo.setUserName(userAccount.getData().getEmplName());
         //查询车间名称
         CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(disqualification.getBranchCode(), disqualification.getTenantId());
         signedRecordsVo.setBranchCodeName(branch.getData().getBranchName());
+        signedRecordsVo.setOpinion("开单时间");
         recordsVoList.add(0, signedRecordsVo);
         return recordsVoList;
     }
