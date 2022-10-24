@@ -102,24 +102,31 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
             }
 
             // 开始初始化角色数据
-            List<RoleTemp> roleTemps = roleTempService.list();
-            List<Role> roles = new ArrayList<>();
-            for (RoleTemp temp : roleTemps) {
-                Role role = new Role();
-                role.setRoleName(temp.getRoleName());
-                role.setRoleCode(tenant.getTenantCode() + "_" + temp.getRoleCode());
-                role.setRoleDesc(temp.getRoleDesc());
-                role.setEnabled(temp.getEnabled());
-                role.setRemark(temp.getRemark());
-                role.setRoleType(temp.getRoleType());
-                role.setTenantId(tenantId);
-                role.setOrgId(branch.getBranchCode());
-                roles.add(role);
-            }
-            if (roles.size() > 0) {
-                result = roleService.batchAdd(roles);
-                if (!result) {
-                    return "初始化角色数据失败！";
+            // 判断是否初始话过角色
+            QueryWrapper<Role> roleQueryWrapper = new QueryWrapper<>();
+            roleQueryWrapper.eq("tenant_id", tenantId);
+            List<Role> roleList = roleService.list(roleQueryWrapper);
+            //当没有找到角色数据的时候才能进行角色初始化
+            if (roleList == null || roleList.size() == 0) {
+                List<RoleTemp> roleTemps = roleTempService.list();
+                List<Role> roles = new ArrayList<>();
+                for (RoleTemp temp : roleTemps) {
+                    Role role = new Role();
+                    role.setRoleName(temp.getRoleName());
+                    role.setRoleCode(tenant.getTenantCode() + "_" + temp.getRoleCode());
+                    role.setRoleDesc(temp.getRoleDesc());
+                    role.setEnabled(temp.getEnabled());
+                    role.setRemark(temp.getRemark());
+                    role.setRoleType(temp.getRoleType());
+                    role.setTenantId(tenantId);
+                    role.setOrgId(branch.getBranchCode());
+                    roles.add(role);
+                }
+                if (roles.size() > 0) {
+                    result = roleService.batchAdd(roles);
+                    if (!result) {
+                        return "初始化角色数据失败！";
+                    }
                 }
             }
 
