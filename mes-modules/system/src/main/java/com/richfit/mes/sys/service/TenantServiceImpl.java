@@ -105,6 +105,8 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
             // 判断是否初始话过角色
             QueryWrapper<Role> roleQueryWrapper = new QueryWrapper<>();
             roleQueryWrapper.eq("tenant_id", tenantId);
+            //role_code 不等于 role_tenant_admin  去掉管理员的租户代码
+            roleQueryWrapper.ne("role_code", "role_tenant_admin");
             List<Role> roleList = roleService.list(roleQueryWrapper);
             //当没有找到角色数据的时候才能进行角色初始化
             if (roleList == null || roleList.size() == 0) {
