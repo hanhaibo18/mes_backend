@@ -77,6 +77,13 @@ public class MaterialServiceImpl implements MaterialService {
                     p.setMaterialType(type.getNewCode());
                     p.setMaterialTypeName(type.getDesc());
                 }
+                if ("DZJZ/".contains(data[data.length - 1])) {
+                    name = "";
+                    for (int n = 0; n < data.length - 1; n++) {
+                        name += " " + data[n];
+                    }
+                    name = name.replaceFirst(" ", "");
+                }
                 p.setMaterialDesc(name);
                 p.setDrawingNo(o.getTMARA().getItem().get(i).getZEINR());
                 p.setMaterialNo(trimStringWith(o.getTMARA().getItem().get(i).getMATNR(), zero));
