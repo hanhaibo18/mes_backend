@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.ProductMapper;
 import com.richfit.mes.base.entity.MaterialSyncDto;
-import com.richfit.mes.base.entity.MaterialTypeDto;
 import com.richfit.mes.base.provider.ErpServiceClient;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -12,26 +11,17 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @ClassName: MaterialSyncServiceImpl.java
@@ -75,6 +65,11 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
         boolean data = false;
         String message = "操作失败";
         for (Product product : productList) {
+            //同步时数据存在空格，会导致查不到图号
+            if (StringUtils.isNotBlank(product.getMaterialNo())) {
+                product.setMaterialNo(product.getMaterialNo().trim());
+            }
+            product.setDrawingNo(product.getDrawingNo().trim());
             QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("material_no", product.getMaterialNo());
             boolean remove = materialSyncService.remove(queryWrapper);

@@ -74,6 +74,8 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             order.setPriority("1");
             order.setStatus(0);
             order.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            //同步时数据存在空格，会导致查不到图号
+            order.setMaterialCode(order.getMaterialCode().trim());
             orderSyncService.remove(queryWrapper);
             orderSyncService.save(order);
         }
