@@ -23,7 +23,8 @@
 
     <!-- 通用查询结果列 -->
     <sql id="BaseColumnList">
-        draw_id_group,id,rev,process_user,name,item_status,release_time,process_type,blank_type,ty_item_id,substitute_mat
+        draw_id_group
+        ,id,rev,process_user,name,item_status,release_time,process_type,blank_type,ty_item_id,substitute_mat
         ,reserve1,reserve2,reserve3,draw_no,syc_time,dataGroup
     </sql>
 
@@ -39,12 +40,12 @@
                     AND item_status = #{pageVO.itemStatus}
                 </if>
             </if>
-            and process_type not in ('下料工艺','铆工工艺','油漆工艺')
+            -- and process_type not in ('下料工艺','铆工工艺','油漆工艺')
             and dataGroup = #{pageVO.dataGroup}
         </where>
     </sql>
 
-    <select id="queryList"  resultMap="pdmProcessResultMap">
+    <select id="queryList" resultMap="pdmProcessResultMap">
         select
         <include refid="BaseColumnList"/>
         from base_i_pdm_process
@@ -52,7 +53,7 @@
         order by syc_time DESC
     </select>
 
-    <select id="queryPageList"  resultMap="pdmProcessResultMap">
+    <select id="queryPageList" resultMap="pdmProcessResultMap">
         select
         <include refid="BaseColumnList"/>
         from base_i_pdm_process
