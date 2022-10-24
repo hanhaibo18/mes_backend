@@ -80,10 +80,13 @@ public class DrawingApplyController extends BaseController {
     }
 
     @ApiOperation(value = "导入图纸申请", notes = "根据Excel文档导入导入图纸申请")
-    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
     @PostMapping("/importExcelDrawingApply")
-    public CommonResult importExcelDrawingApply(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
-        return  drawingApplyService.importExcelDrawingApply(file);
+    public CommonResult importExcelDrawingApply(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
+        return  drawingApplyService.importExcelDrawingApply(file,branchCode);
     }
 
     @ApiOperation(value = "修改图纸申请", notes = "修改图纸申请")

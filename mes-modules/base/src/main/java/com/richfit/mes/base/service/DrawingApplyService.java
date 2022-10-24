@@ -12,5 +12,5 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface DrawingApplyService extends IService<DrawingApply> {
     @Transactional
-    public CommonResult importExcelDrawingApply(MultipartFile file);
+    public CommonResult importExcelDrawingApply(MultipartFile file,String branchCode);
 }

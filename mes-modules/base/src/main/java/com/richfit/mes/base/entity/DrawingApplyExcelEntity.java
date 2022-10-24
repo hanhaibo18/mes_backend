@@ -21,8 +21,5 @@ public class DrawingApplyExcelEntity {
      * 描述
      */
     private String drawingDesc;
-    /**
-     * 组织结构编码
-     */
-    private String branchCode;
+
 }
