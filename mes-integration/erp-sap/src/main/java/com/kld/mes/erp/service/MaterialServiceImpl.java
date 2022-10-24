@@ -106,8 +106,8 @@ public class MaterialServiceImpl implements MaterialService {
 
     public static Map<String, MaterialTypeDto> materialType() {
         Map<String, MaterialTypeDto> map = new HashMap<>(4);
-        map.put("Z", new MaterialTypeDto("Z", "0", "铸件"));
-        map.put("D", new MaterialTypeDto("D", "1", "锻件"));
+        map.put("D", new MaterialTypeDto("D", "0", "锻件"));
+        map.put("Z", new MaterialTypeDto("Z", "1", "铸件"));
         map.put("JZ", new MaterialTypeDto("JZ", "2", "精铸件"));
         map.put("/", new MaterialTypeDto("/", "3", "成品/半成品"));
         return map;
