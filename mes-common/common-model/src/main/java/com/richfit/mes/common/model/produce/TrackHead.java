@@ -270,6 +270,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "选择的毛胚物料号码", dataType = "String")
     private String selectedMaterialNo;
 
+    @ApiModelProperty(value = "跟单附件id，多个用，隔开", dataType = "String")
+    private String filesId;
+
     /**
      * 跟单分流表开始
      */
