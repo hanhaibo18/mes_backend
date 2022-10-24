@@ -77,6 +77,7 @@ public class MaterialServiceImpl implements MaterialService {
                     p.setMaterialType(type.getNewCode());
                     p.setMaterialTypeName(type.getDesc());
                 }
+                //描述结尾去掉D Z JZ /信息
                 if ("DZJZ/".contains(data[data.length - 1])) {
                     name = "";
                     for (int n = 0; n < data.length - 1; n++) {
