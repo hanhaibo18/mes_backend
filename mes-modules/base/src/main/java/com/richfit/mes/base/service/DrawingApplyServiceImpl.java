@@ -36,7 +36,7 @@ public class DrawingApplyServiceImpl extends ServiceImpl<DrawingApplyMapper, Dra
     @Autowired
     private DrawingApplyMapper drawingApplyMapper;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult importExcelDrawingApply(MultipartFile file) {
         CommonResult result = null;
