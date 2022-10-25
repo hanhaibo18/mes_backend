@@ -538,6 +538,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
         DisqualificationItemVo item = new DisqualificationItemVo();
         TrackItem trackItem = this.getById(tiId);
+        if (null == trackItem) {
+            return null;
+        }
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
         item.trackHead(trackHead);
         //产品名称
