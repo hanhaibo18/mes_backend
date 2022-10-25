@@ -452,16 +452,34 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     public void autoSchedule(TrackHead trackHead) {
         if ("0".equals(trackHead.getStatus()) || "1".equals(trackHead.getStatus())) {
-            //通过跟单ID查询所有第一道工序需要派工的
+            //获取当前跟单下所有第一道工序
             QueryWrapper<TrackItem> queryWrapperItem = new QueryWrapper<>();
             queryWrapperItem.eq("track_head_id", trackHead.getId());
-            queryWrapperItem.eq("is_auto_schedule", 1);
             queryWrapperItem.eq("sequence_order_by", 1);
-            //外协工序不进行自动派工
-            queryWrapperItem.notIn("opt_type", 3);
             List<TrackItem> trackItemList = trackItemService.list(queryWrapperItem);
+            //自动派工工序
+            List<TrackItem> trackItemAutoList = new ArrayList<>();
+            List<TrackItem> trackItemNotAutoList = new ArrayList<>();
+            for (TrackItem trackItemEntity : trackItemList) {
+                QueryWrapper<TrackItem> queryWrapperAuto = new QueryWrapper<>();
+                //查询自动派工的并行工序
+                queryWrapperAuto.eq("flow_id", trackItemEntity.getFlowId());
+                queryWrapperAuto.eq("is_auto_schedule", 1);
+                queryWrapperAuto.eq("original_opt_sequence", trackItemEntity.getOriginalOptSequence());
+                queryWrapperAuto.notIn("opt_type", 3);
+                trackItemAutoList.addAll(trackItemService.list(queryWrapperAuto));
+                //获取到并行的不自动派工的工序
+                QueryWrapper<TrackItem> queryWrapperNotAuto = new QueryWrapper<>();
+                queryWrapperNotAuto.eq("flow_id", trackItemEntity.getFlowId());
+                queryWrapperNotAuto.eq("is_auto_schedule", 0);
+                queryWrapperNotAuto.eq("original_opt_sequence", trackItemEntity.getOriginalOptSequence());
+                queryWrapperNotAuto.notIn("opt_type", 3);
+                trackItemService.list(queryWrapperNotAuto);
+            }
+            trackItemNotAutoList.forEach(item -> item.setIsCurrent(1));
+            trackItemService.updateBatchById(trackItemNotAutoList);
             //循环工序
-            for (TrackItem trackItem : trackItemList) {
+            for (TrackItem trackItem : trackItemAutoList) {
                 Map<String, String> map = new HashMap<>(4);
                 map.put("trackItemId", trackItem.getId());
                 map.put("trackHeadId", trackHead.getId());
