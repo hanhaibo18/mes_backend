@@ -448,7 +448,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 assign.setTotalQuantity(trackItem.getNumber());
                 assign.setDispatchingNumber(trackItem.getAssignableQty());
                 assign.setWorkPlanNo(trackHead.getWorkPlanNo());
-                //todo 添加 派工人员返回
+                //添加 派工人员返回
                 QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
                 assignPersonQueryWrapper.eq("assign_id", assign.getId());
                 assign.setAssignPersons(trackAssignPersonService.list(assignPersonQueryWrapper));

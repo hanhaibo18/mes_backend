@@ -437,7 +437,9 @@ public class TrackHeadController extends BaseController {
             queryWrapper.le("th.create_time", endDate);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("th.track_no", trackNo);
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.apply("replace(replace(replace(th.track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'").or().apply("replace(replace(replace(th.original_track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+//            queryWrapper.like("th.track_no", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("th.status", status);
