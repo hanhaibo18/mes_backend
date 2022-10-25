@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.produce.entity.quality.QueryCheckDto;
-import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
-import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
+import com.richfit.mes.produce.entity.quality.*;
 
 import java.util.List;
 
@@ -36,17 +34,8 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @Date: 2022/9/30 9:29
      * @return: Boolean
      **/
-    Boolean saveDisqualification(Disqualification disqualification);
+    Boolean saveOrUpdateDisqualification(Disqualification disqualification);
 
-    /**
-     * 功能描述: 修改申请单
-     *
-     * @param disqualification
-     * @Author: xinYu.hou
-     * @Date: 2022/9/30 9:30
-     * @return: Boolean
-     **/
-    Boolean updateDisqualification(Disqualification disqualification);
 
     /**
      * 功能描述: 修改不合格申请单
@@ -76,7 +65,7 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @Date: 2022/10/17 10:44
      * @return: IPage<Disqualification>
      **/
-    IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto);
+    IPage<DisqualificationVo> queryCheck(QueryCheckDto queryCheckDto);
 
     /**
      * 功能描述: 查询签核记录列表
@@ -87,4 +76,16 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: List<SignedRecordsVo>
      **/
     List<SignedRecordsVo> querySignedRecordsList(String disqualificationId);
+
+    /**
+     * 功能描述: 查询申请单信息
+     *
+     * @param tiId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/10/24 16:54
+     * @return: DisqualificationItemVo
+     **/
+    DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode);
+
 }

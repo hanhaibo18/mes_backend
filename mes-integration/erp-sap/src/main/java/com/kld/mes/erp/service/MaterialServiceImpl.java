@@ -77,6 +77,14 @@ public class MaterialServiceImpl implements MaterialService {
                     p.setMaterialType(type.getNewCode());
                     p.setMaterialTypeName(type.getDesc());
                 }
+                //描述结尾去掉D Z JZ /信息
+                if ("DZJZ/".contains(data[data.length - 1])) {
+                    name = "";
+                    for (int n = 0; n < data.length - 1; n++) {
+                        name += " " + data[n];
+                    }
+                    name = name.replaceFirst(" ", "");
+                }
                 p.setMaterialDesc(name);
                 p.setDrawingNo(o.getTMARA().getItem().get(i).getZEINR());
                 p.setMaterialNo(trimStringWith(o.getTMARA().getItem().get(i).getMATNR(), zero));
@@ -106,8 +114,8 @@ public class MaterialServiceImpl implements MaterialService {
 
     public static Map<String, MaterialTypeDto> materialType() {
         Map<String, MaterialTypeDto> map = new HashMap<>(4);
-        map.put("Z", new MaterialTypeDto("Z", "0", "铸件"));
-        map.put("D", new MaterialTypeDto("D", "1", "锻件"));
+        map.put("D", new MaterialTypeDto("D", "0", "锻件"));
+        map.put("Z", new MaterialTypeDto("Z", "1", "铸件"));
         map.put("JZ", new MaterialTypeDto("JZ", "2", "精铸件"));
         map.put("/", new MaterialTypeDto("/", "3", "成品/半成品"));
         return map;

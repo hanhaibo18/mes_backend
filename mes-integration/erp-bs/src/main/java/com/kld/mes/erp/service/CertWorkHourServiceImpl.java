@@ -49,7 +49,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
                 double singlePieceHours = trackItemList.get(i).getSinglePieceHours();   //单件工时
 
                 String id = trackItemList.get(i).getId();                           //主键 对应报工表
-                CommonResult<List<TrackComplete>> trackCompletes = produceServiceClient.trackCompleteFindByTiId(id, SecurityConstants.FROM);
+                CommonResult<List<TrackComplete>> trackCompletes = produceServiceClient.trackCompleteFindByTiId(id, SecurityConstants.FROM_INNER);
 
                 trackCompletes.getData().forEach(x -> {                             //遍历该跟单-该产品工序-报工人工时
 
@@ -66,14 +66,14 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
 
                     //设置请求参数
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("XB007", branchCode);                 //员工所属部门
+                    jsonObject.put("XB007", branchCode);                 //员工所属部门----车间branchCode
                     jsonObject.put("XC003", userId);                     //员工编码
                     jsonObject.put("XC004", deviceId);                   //设备编码
                     jsonObject.put("XC005", xc005);                      //单别
                     jsonObject.put("XC006", xc006);                      //单号
                     jsonObject.put("XC007", operationId);                //每道跟单工序对应的工序字典表id----工序编吗
                     jsonObject.put("XC008", optSequence);                //工序顺序
-                    jsonObject.put("XC010", qty);                        //合格证中数量（单件---合格跟单数，批次---最终质检合格产品个数）
+                    jsonObject.put("XC010", qty);                        //合格证中数量（单件---合格产品数，批次---最终质检合格产品个数）
                     jsonObject.put("XC016", materialNo);                 //物料编码--品号
                     jsonObject.put("XC021", prepareEndHours);            //准结工时
                     jsonObject.put("XC022", singlePieceHours);           //单件工时
@@ -87,6 +87,8 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
                     retHour.add(jsonObject);
                 });
             }
+
+            log.info("跟单推送{}"+retHour);
 
             //发送post请求
             String postResult = HttpRequest.post(URL)
@@ -140,6 +142,35 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
         }
 
         return s;
+    }
+
+    public static void main(String[] args) {
+        JSONArray retHour = new JSONArray();
+        for (int i = 0;i<2;i++){
+            //设置请求参数
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("XB007", "branchCode");                 //员工所属部门
+            jsonObject.put("XC003", "userId");                     //员工编码
+            jsonObject.put("XC004", "deviceId");                   //设备编码
+            jsonObject.put("XC005", "xc005");                      //单别
+            jsonObject.put("XC006", "xc006");                      //单号
+            jsonObject.put("XC007", "operationId");                //每道跟单工序对应的工序字典表id----工序编吗
+            jsonObject.put("XC008", "optSequence");                //工序顺序
+            jsonObject.put("XC010", "qty");                        //合格证中数量（单件---合格跟单数，批次---最终质检合格产品个数）
+            jsonObject.put("XC016", "materialNo");                 //物料编码--品号
+            jsonObject.put("XC021", "prepareEndHours");            //准结工时
+            jsonObject.put("XC022", "singlePieceHours");           //单件工时
+            jsonObject.put("XC023", "actualFixHours");             //实用固定机时
+            jsonObject.put("XC024", "actualNomalHours");           //实用变动机时（正常班）
+            jsonObject.put("XC025", "actualOverHours");            //实用变动机时（加班）
+            jsonObject.put("XC026", "completedFixHours");          //完成固定机时
+            jsonObject.put("XC027", "completedChangeHours");       //完成变动机时
+            jsonObject.put("XC028", "singleAddHours");             //单件补付机时
+            jsonObject.put("XC031", "auxiliaryHours");             //辅助工时
+            retHour.add(jsonObject);
+        }
+
+        System.out.println(retHour);
     }
 
 

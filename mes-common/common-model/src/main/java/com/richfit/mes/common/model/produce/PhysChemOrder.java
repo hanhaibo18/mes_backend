@@ -63,47 +63,47 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     @ApiModelProperty(value = "报告状态（0未生成,1以生成）")
     private String reportStatus;
     @ApiModelProperty(value = "化学分析->全分析")
-    private String chemicalAnalysis;
+    private int chemicalAnalysis;
     @ApiModelProperty(value = "化学分析->碳硫")
-    private String chemicalCarbonSulfur;
+    private int chemicalCarbonSulfur;
     @ApiModelProperty(value = "化学分析->清洁度")
-    private String chemicalClean;
+    private int chemicalClean;
     @ApiModelProperty(value = "化学分析->其他")
-    private String chemicalOther;
+    private int chemicalOther;
     @ApiModelProperty(value = "化学分析->其他(值)")
     private String chemicalOtherVal;
     @ApiModelProperty(value = "金相分析->低倍")
-    private String metallLowPower;
+    private int metallLowPower;
     @ApiModelProperty(value = "金相分析->组织")
-    private String metallTexture;
+    private int metallTexture;
     @ApiModelProperty(value = "金相分析->晶粒度")
-    private String metallGrainSize;
+    private int metallGrainSize;
     @ApiModelProperty(value = "金相分析->碳化物")
-    private String metallCarbide;
+    private int metallCarbide;
     @ApiModelProperty(value = "金相分析->夹杂物")
-    private String metallInclusions;
+    private int metallInclusions;
     @ApiModelProperty(value = "金相分析->石墨")
-    private String metallGraphite;
+    private int metallGraphite;
     @ApiModelProperty(value = "金相分析->其他")
-    private String metallOther;
+    private int metallOther;
     @ApiModelProperty(value = "金相分析->其他(值)")
-    private String metallOtherVal;
+    private int metallOtherVal;
     @ApiModelProperty(value = "力学性能->拉伸")
     private String forceTensile;
     @ApiModelProperty(value = "力学性能->冲击")
-    private String forceImpact;
+    private int forceImpact;
     @ApiModelProperty(value = "力学性能->弯曲")
-    private String forceBend;
+    private int forceBend;
     @ApiModelProperty(value = "力学性能->硬度")
-    private String forceHardness;
+    private int forceHardness;
     @ApiModelProperty(value = "力学性能->剪切")
-    private String forceShear;
+    private int forceShear;
     @ApiModelProperty(value = "力学性能->压扁")
-    private String forceFlaser;
+    private int forceFlaser;
     @ApiModelProperty(value = "力学性能->残余应力")
-    private String residual;
+    private int residual;
     @ApiModelProperty(value = "力学性能->其他")
-    private String forceOther;
+    private int forceOther;
     @ApiModelProperty(value = "力学性能->其他(值)")
     private String forceOtherVal;
     @ApiModelProperty(value = "力学性能->拉伸->屈服强度")

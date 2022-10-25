@@ -218,8 +218,6 @@ public class PublicServiceImpl implements PublicService {
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
         if (0 == trackItem.getNextOptSequence()) {
             trackHeadService.trackHeadFinish(trackItem.getFlowId());
-            //设置产品完工
-            lineStoreService.changeStatus(trackHead);
             trackItem.setIsFinalComplete("1");
         }
         trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
@@ -326,8 +324,6 @@ public class PublicServiceImpl implements PublicService {
         TrackHead trackHead = trackHeadService.getById(trackHeadId);
         //没有下工序设置完工
         if (lastTrackItem.getNextOptSequence() == 0) {
-            //设置产品完工
-            lineStoreService.changeStatus(trackHead);
             //跟单完成
             trackHeadService.trackHeadFinish(trackHeadId);
             //设置计划状态
@@ -393,14 +389,14 @@ public class PublicServiceImpl implements PublicService {
         CommonResult<Assign[]> commonResult = trackAssignController.batchAssign(new Assign[]{assign});
         trackItem.setIsSchedule(1);
         trackItemService.updateById(trackItem);
-        //查询下工序,是否为并行工序依据并行工序来判断下工序是否激活
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("flow_id", trackItem.getFlowId());
-        queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
-        TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
-        if (null != trackItemEntity && 1 == trackItemEntity.getOptParallelType()) {
-            activation(trackItem);
-        }
+//        //查询下工序,是否为并行工序依据并行工序来判断下工序是否激活
+//        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("flow_id", trackItem.getFlowId());
+//        queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
+//        TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
+//        if (null != trackItemEntity && 1 == trackItemEntity.getOptParallelType()) {
+//            activation(trackItem);
+//        }
         return null != commonResult.getData();
     }
 
@@ -415,19 +411,22 @@ public class PublicServiceImpl implements PublicService {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("flow_id", trackItem.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
-        TrackItem trackItemEntity = trackItemService.getOne(queryWrapper);
-        trackItemEntity.setIsCurrent(1);
-        trackItemEntity.setModifyTime(new Date());
-        boolean update = trackItemService.updateById(trackItemEntity);
-        if (1 == trackItemEntity.getIsAutoSchedule()) {
-            Map<String, String> map = new HashMap<>(2);
-            map.put("trackItemId", trackItemEntity.getId());
-            map.put("trackHeadId", trackItemEntity.getTrackHeadId());
-            automaticProcess(map);
+        List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+        boolean update = false;
+        for (TrackItem trackItemEntity : trackItemList) {
+            trackItemEntity.setIsCurrent(1);
+            trackItemEntity.setModifyTime(new Date());
+            update = trackItemService.updateById(trackItemEntity);
+            if (1 == trackItemEntity.getIsAutoSchedule()) {
+                Map<String, String> map = new HashMap<>(2);
+                map.put("trackItemId", trackItemEntity.getId());
+                map.put("trackHeadId", trackItemEntity.getTrackHeadId());
+                automaticProcess(map);
+            }
         }
-        if (trackItemEntity.getOptParallelType() == 1 && trackItemEntity.getNextOptSequence() != 0) {
-            queryTrackItemList(trackItemEntity);
-        }
+//        if (trackItemEntity.getOptParallelType() == 1 && trackItemEntity.getNextOptSequence() != 0) {
+//            queryTrackItemList(trackItemEntity);
+//        }
         return update;
     }
 

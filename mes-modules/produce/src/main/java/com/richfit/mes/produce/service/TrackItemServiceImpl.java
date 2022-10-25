@@ -538,25 +538,23 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
         DisqualificationItemVo item = new DisqualificationItemVo();
         TrackItem trackItem = this.getById(tiId);
+        if (null == trackItem) {
+            return null;
+        }
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-        //跟单号
-        item.setTrackNo(trackHead.getTrackNo());
+        item.trackHead(trackHead);
         //产品名称
         item.setProductName(trackItem.getProductName());
-        //产品编号
-        item.setProductNo(trackHead.getProductNo());
-        //零部件名称
-        item.setPartName(trackHead.getMaterialName());
-        //零部件材料
-        item.setPartMaterials(trackHead.getTexture());
-        //零部件图号
-        item.setPartDrawingNo(trackHead.getDrawingNo());
         //不合格品数量
         item.setDisqualificationNum(trackItem.getQualityUnqty());
-        //车间类型
-        item.setClasses(trackHead.getClasses());
-        //工作号
-        item.setWorkNo(trackHead.getWorkNo());
+        //工序名称
+        item.setItemName(trackItem.getOptName());
+        //工序类型
+        item.setItemType(trackItem.getOptType());
+        //不合格产品送出车间
+        item.setMissiveBranch(trackItem.getBranchCode());
+        item.setBranchCode(trackItem.getBranchCode());
+        item.setTenantId(trackItem.getTenantId());
         //获取申请单编号
         try {
             String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);

@@ -34,7 +34,7 @@ public interface ProduceServiceClient {
 
     @GetMapping(value = "/api/produce/trackcomplete/find")
     public CommonResult<List<TrackComplete>> trackCompleteFindByTiId(@RequestParam("tiId") String tiId,
-                                                                     @RequestHeader(value = SecurityConstants.FROM) String header);
+                                                                     @RequestHeader(value = SecurityConstants.FROM_INNER) String header);
 
 
 }

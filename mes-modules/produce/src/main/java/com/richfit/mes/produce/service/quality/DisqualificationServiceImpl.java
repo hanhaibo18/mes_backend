@@ -11,24 +11,24 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
-import com.richfit.mes.produce.entity.quality.QueryCheckDto;
-import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
-import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
+import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.TrackItemService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: DisqualificationServiceImpl.java
@@ -49,6 +49,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private TrackItemService trackItemService;
+
+    @Resource
+    private DisqualificationAttachmentService attachmentService;
 
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
@@ -97,26 +103,23 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean saveDisqualification(Disqualification disqualification) {
-        if (1 == disqualification.getIsIssue()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            try {
-                disqualification.setOrderTime(sdf.parse(String.valueOf(new Date())));
-            } catch (ParseException e) {
-                e.printStackTrace();
-                throw new GlobalException("时间格式处理异常", ResultCode.FAILED);
+    public Boolean saveOrUpdateDisqualification(Disqualification disqualification) {
+        if (StrUtil.isNotBlank(disqualification.getId())) {
+            this.updateById(disqualification);
+            QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("disqualification_id", disqualification.getId());
+            userOpinionService.remove(queryWrapper);
+            savePerson(disqualification.getUserList(), disqualification.getId());
+        } else {
+            if (1 == disqualification.getIsIssue()) {
+                disqualification.setOrderTime(new Date());
             }
+            this.save(disqualification);
+            savePerson(disqualification.getUserList(), disqualification.getId());
         }
-        this.save(disqualification);
-        savePerson(disqualification.getUserList(), disqualification.getId());
         return true;
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean updateDisqualification(Disqualification disqualification) {
-        return this.updateById(disqualification);
-    }
 
     /**
      * 功能描述: 保存派工人员接口
@@ -175,8 +178,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto) {
-        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+    public IPage<DisqualificationVo> queryCheck(QueryCheckDto queryCheckDto) {
+        QueryWrapper<DisqualificationVo> queryWrapper = new QueryWrapper<>();
         //图号查询
         if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
             queryWrapper.like("dis.drawing_no", queryCheckDto.getDrawingNo());
@@ -239,6 +242,33 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         signedRecordsVo.setOpinion("开单时间");
         recordsVoList.add(0, signedRecordsVo);
         return recordsVoList;
+    }
+
+    @Override
+    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode) {
+        DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
+        if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
+            List<SignedRecordsVo> signedRecordsList = this.querySignedRecordsList(disqualificationItemVo.getId());
+            List<DisqualificationAttachment> attachmentList = attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId());
+            List<TenantUserVo> tenantUserVos = queryOpinionUser(disqualificationItemVo.getId());
+            disqualificationItemVo.setAttachmentList(attachmentList);
+            disqualificationItemVo.setSignedRecordsList(signedRecordsList);
+            disqualificationItemVo.setTenantUserList(tenantUserVos);
+        }
+        return disqualificationItemVo;
+    }
+
+    private List<TenantUserVo> queryOpinionUser(String disqualificationId) {
+        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("disqualification_id", disqualificationId);
+        List<DisqualificationUserOpinion> opinions = userOpinionService.list(queryWrapper);
+        return opinions.stream().map(user -> {
+            TenantUserVo tenantUserVo = new TenantUserVo();
+            tenantUserVo.setId(user.getId());
+            tenantUserVo.setEmplName(user.getUserName());
+            tenantUserVo.setBelongOrgId(user.getUserBranch());
+            return tenantUserVo;
+        }).collect(Collectors.toList());
     }
 
     /**

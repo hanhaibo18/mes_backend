@@ -30,13 +30,13 @@ public class PhysChemOrderServiceImpl extends ServiceImpl<PhysChemOrderMapper, P
     public IPage<PhysChemOrder> selectOrderList(PhyChemTaskVo phyChemTaskVo){
         QueryWrapper<PhysChemOrder> queryWrapper = new QueryWrapper<>();
         if(!StringUtils.isEmpty(phyChemTaskVo.getStartTime())){
-            queryWrapper.gt("DATE_FORMAT(modify_time,'%Y-%m-%d')",phyChemTaskVo.getStartTime());
+            queryWrapper.ge("DATE_FORMAT(modify_time,'%Y-%m-%d')",phyChemTaskVo.getStartTime());
         }
         if(!StringUtils.isEmpty(phyChemTaskVo.getEndTime())){
-            queryWrapper.lt("DATE_FORMAT(modify_time,'%Y-%m-%d')",phyChemTaskVo.getEndTime());
+            queryWrapper.le("DATE_FORMAT(modify_time,'%Y-%m-%d')",phyChemTaskVo.getEndTime());
         }
         if(!StringUtils.isEmpty(phyChemTaskVo.getBatchNo())){
-            queryWrapper.likeLeft("batch_no",phyChemTaskVo.getBatchNo());
+            queryWrapper.likeRight("batch_no",phyChemTaskVo.getBatchNo());
         }
         if(!StringUtils.isEmpty(phyChemTaskVo.getStatus())){
             queryWrapper.eq("status",phyChemTaskVo.getStatus());
