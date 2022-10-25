@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service.quality;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.produce.dao.quality.DisqualificationAttachmentMapper;
@@ -19,5 +20,12 @@ public class DisqualificationAttachmentServiceImpl extends ServiceImpl<Disqualif
     @Override
     public Boolean saveAttachment(List<DisqualificationAttachment> attachments) {
         return this.saveBatch(attachments);
+    }
+
+    @Override
+    public List<DisqualificationAttachment> queryAttachmentsByDisqualificationId(String disqualificationId) {
+        QueryWrapper<DisqualificationAttachment> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("disqualification_id", disqualificationId);
+        return this.list(queryWrapper);
     }
 }

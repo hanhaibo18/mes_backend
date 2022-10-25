@@ -6,11 +6,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
-import com.richfit.mes.produce.entity.quality.QueryCheckDto;
-import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
-import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
-import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.service.quality.DisqualificationAttachmentService;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
 import io.swagger.annotations.Api;
@@ -41,8 +37,6 @@ public class DisqualificationController extends BaseController {
     @Resource
     private DisqualificationAttachmentService attachmentService;
 
-    @Resource
-    private TrackItemService trackItemService;
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
     @PostMapping("/queryInspector")
@@ -77,7 +71,7 @@ public class DisqualificationController extends BaseController {
     })
     @GetMapping("/queryItem")
     public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode) {
-        return CommonResult.success(trackItemService.queryItem(tiId, branchCode));
+        return CommonResult.success(disqualificationService.inquiryRequestForm(tiId, branchCode));
     }
 
     @ApiOperation(value = "查询质量检测部", notes = "第一次提交申请单查询质量检测部人员")
@@ -88,7 +82,7 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "查询未处理/已处理申请单", notes = "质检人员查询不合格品处理单查询接口")
     @PostMapping("/queryCheck")
-    public CommonResult<IPage<Disqualification>> queryCheck(@RequestBody QueryCheckDto queryCheckDto) {
+    public CommonResult<IPage<DisqualificationVo>> queryCheck(@RequestBody QueryCheckDto queryCheckDto) {
         return CommonResult.success(disqualificationService.queryCheck(queryCheckDto));
     }
 

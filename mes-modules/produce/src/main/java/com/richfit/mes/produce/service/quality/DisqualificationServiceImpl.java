@@ -11,17 +11,17 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
-import com.richfit.mes.produce.entity.quality.QueryCheckDto;
-import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
-import com.richfit.mes.produce.entity.quality.SignedRecordsVo;
+import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.TrackItemService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +48,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private TrackItemService trackItemService;
+
+    @Resource
+    private DisqualificationAttachmentService attachmentService;
 
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
@@ -171,8 +177,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto) {
-        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+    public IPage<DisqualificationVo> queryCheck(QueryCheckDto queryCheckDto) {
+        QueryWrapper<DisqualificationVo> queryWrapper = new QueryWrapper<>();
         //图号查询
         if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
             queryWrapper.like("dis.drawing_no", queryCheckDto.getDrawingNo());
@@ -235,6 +241,18 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         signedRecordsVo.setOpinion("开单时间");
         recordsVoList.add(0, signedRecordsVo);
         return recordsVoList;
+    }
+
+    @Override
+    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode) {
+        DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
+        if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
+            List<SignedRecordsVo> signedRecordsList = this.querySignedRecordsList(disqualificationItemVo.getId());
+            List<DisqualificationAttachment> attachmentList = attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId());
+            disqualificationItemVo.setAttachmentList(attachmentList);
+            disqualificationItemVo.setSignedRecordsList(signedRecordsList);
+        }
+        return disqualificationItemVo;
     }
 
     /**

@@ -1,7 +1,13 @@
 package com.richfit.mes.produce.entity.quality;
 
+import com.richfit.mes.common.model.produce.DisqualificationAttachment;
+import com.richfit.mes.common.model.produce.TrackHead;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * @ClassName: DisqualificationItemVO.java
@@ -10,9 +16,12 @@ import lombok.Data;
  * @CreateTime: 2022年10月13日 14:48:00
  */
 @Data
-
+@NoArgsConstructor
+@AllArgsConstructor
 public class DisqualificationItemVo {
 
+    @ApiModelProperty(value = "不合格品主键Id")
+    private String id;
 
     /**
      * 工作号
@@ -71,4 +80,30 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "处理单状态")
     private Integer isIssue;
+
+    @ApiModelProperty(value = "审核意见列表")
+    private List<SignedRecordsVo> signedRecordsList;
+    @ApiModelProperty(value = "文件列表")
+    private List<DisqualificationAttachment> attachmentList;
+
+    public void trackHead(TrackHead trackHead) {
+        //跟单号
+        this.setTrackNo(trackHead.getTrackNo());
+        //产品名称
+//        item.setProductName(trackItem.getProductName());
+        //产品编号
+        this.setProductNo(trackHead.getProductNo());
+        //零部件名称
+        this.setPartName(trackHead.getMaterialName());
+        //零部件材料
+        this.setPartMaterials(trackHead.getTexture());
+        //零部件图号
+        this.setPartDrawingNo(trackHead.getDrawingNo());
+        //不合格品数量
+//        this.setDisqualificationNum(trackItem.getQualityUnqty());
+        //车间类型
+        this.setClasses(trackHead.getClasses());
+        //工作号
+        this.setWorkNo(trackHead.getWorkNo());
+    }
 }

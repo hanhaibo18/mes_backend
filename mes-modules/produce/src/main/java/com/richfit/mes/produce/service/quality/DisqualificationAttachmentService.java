@@ -23,4 +23,13 @@ public interface DisqualificationAttachmentService extends IService<Disqualifica
      **/
     Boolean saveAttachment(List<DisqualificationAttachment> attachments);
 
+    /**
+     * 功能描述: 查询文件列表
+     *
+     * @param disqualificationId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/24 17:03
+     * @return: List<DisqualificationAttachment>
+     **/
+    List<DisqualificationAttachment> queryAttachmentsByDisqualificationId(String disqualificationId);
 }
