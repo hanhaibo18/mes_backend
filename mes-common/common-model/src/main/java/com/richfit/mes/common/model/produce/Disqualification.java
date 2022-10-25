@@ -143,5 +143,9 @@ public class Disqualification extends BaseEntity<Disqualification> {
     @ApiModelProperty(value = "检验人员", dataType = "List<DisqualificationUserOpinion>")
     private List<TenantUserVo> userList;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "文件列表", dataType = "List<DisqualificationAttachment>")
+    private List<DisqualificationAttachment> attachmentList;
+
     private static final long serialVersionUID = 1L;
 }

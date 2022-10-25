@@ -22,6 +22,7 @@ import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,11 +111,19 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             queryWrapper.eq("disqualification_id", disqualification.getId());
             userOpinionService.remove(queryWrapper);
             savePerson(disqualification.getUserList(), disqualification.getId());
+            //删除文件列表
+            if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
+                QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
+                queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
+                attachmentService.remove(queryWrapperAttachment);
+                attachmentService.saveAttachment(disqualification.getAttachmentList());
+            }
         } else {
             if (1 == disqualification.getIsIssue()) {
                 disqualification.setOrderTime(new Date());
             }
             this.save(disqualification);
+            attachmentService.saveAttachment(disqualification.getAttachmentList());
             savePerson(disqualification.getUserList(), disqualification.getId());
         }
         return true;
