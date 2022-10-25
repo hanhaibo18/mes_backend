@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: DisqualificationServiceImpl.java
@@ -249,10 +250,25 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
             List<SignedRecordsVo> signedRecordsList = this.querySignedRecordsList(disqualificationItemVo.getId());
             List<DisqualificationAttachment> attachmentList = attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId());
+            List<TenantUserVo> tenantUserVos = queryOpinionUser(disqualificationItemVo.getId());
             disqualificationItemVo.setAttachmentList(attachmentList);
             disqualificationItemVo.setSignedRecordsList(signedRecordsList);
+            disqualificationItemVo.setTenantUserList(tenantUserVos);
         }
         return disqualificationItemVo;
+    }
+
+    private List<TenantUserVo> queryOpinionUser(String disqualificationId) {
+        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("disqualification_id", disqualificationId);
+        List<DisqualificationUserOpinion> opinions = userOpinionService.list(queryWrapper);
+        return opinions.stream().map(user -> {
+            TenantUserVo tenantUserVo = new TenantUserVo();
+            tenantUserVo.setId(user.getId());
+            tenantUserVo.setEmplName(user.getUserName());
+            tenantUserVo.setBelongOrgId(user.getUserBranch());
+            return tenantUserVo;
+        }).collect(Collectors.toList());
     }
 
     /**

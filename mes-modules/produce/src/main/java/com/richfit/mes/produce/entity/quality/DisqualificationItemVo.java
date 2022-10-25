@@ -2,6 +2,7 @@ package com.richfit.mes.produce.entity.quality;
 
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -79,6 +80,12 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "不合格数量", dataType = "String")
     private Integer disqualificationNum;
 
+    /**
+     * 不合格情况
+     */
+    @ApiModelProperty(value = "不合格情况", dataType = "String")
+    private String disqualificationCondition;
+
     private String classes;
 
     @ApiModelProperty(value = "处理单状态")
@@ -99,6 +106,8 @@ public class DisqualificationItemVo {
     private List<SignedRecordsVo> signedRecordsList;
     @ApiModelProperty(value = "文件列表")
     private List<DisqualificationAttachment> attachmentList;
+    @ApiModelProperty(value = "用户列表")
+    private List<TenantUserVo> tenantUserList;
 
     public void trackHead(TrackHead trackHead) {
         //跟单号
