@@ -547,6 +547,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         item.setProductName(trackItem.getProductName());
         //不合格品数量
         item.setDisqualificationNum(trackItem.getQualityUnqty());
+        //工序名称
+        item.setItemName(trackItem.getOptName());
+        //工序类型
+        item.setItemType(trackItem.getOptType());
+        //不合格产品送出车间
+        item.setMissiveBranch(trackItem.getBranchCode());
         //获取申请单编号
         try {
             String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);

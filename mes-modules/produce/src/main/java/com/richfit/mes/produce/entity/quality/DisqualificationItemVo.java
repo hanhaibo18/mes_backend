@@ -64,6 +64,9 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "零部件图号", dataType = "String")
     private String partDrawingNo;
 
+    @ApiModelProperty(value = "送出的车间", dataType = "String")
+    private String missiveBranch;
+
     /**
      * 跟单号
      */
@@ -80,6 +83,13 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "处理单状态")
     private Integer isIssue;
+
+    @ApiModelProperty(value = "工序名称")
+    private String itemName;
+
+    @ApiModelProperty(value = "工序类型")
+    private String itemType;
+
 
     @ApiModelProperty(value = "审核意见列表")
     private List<SignedRecordsVo> signedRecordsList;
