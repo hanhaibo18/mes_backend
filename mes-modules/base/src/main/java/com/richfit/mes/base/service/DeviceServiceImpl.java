@@ -55,6 +55,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
     private static final String GROUP = "1";
     //设备
     private static final String DEVICE = "0";
+    //默认派工
+    private static final int IS_DEFAULT = 1;
 
 
     @Override
@@ -363,19 +365,19 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
             Map<String, TenantUserVo> tenantUserVosMap = tenantUserVos.stream().collect(Collectors.toMap(TenantUserVo::getUserAccount, Function.identity()));
 
             for (Device device : list) {
-                if ("0".equals(device.getType()) && device.getType() != null) {
+                if (DEVICE.equals(device.getType()) && device.getType() != null) {
                     device.setType("设备");
-                } else if ("1".equals(device.getType()) && device.getType() != null) {
+                } else if (GROUP.equals(device.getType()) && device.getType() != null) {
                     device.setType("设备组");
                 }
-                if ("0".equals(device.getStatus()) && device.getStatus() != null) {
+                if (DEVICE.equals(device.getStatus()) && device.getStatus() != null) {
                     device.setStatus("否");
-                } else if ("1".equals(device.getStatus()) && device.getStatus() != null) {
+                } else if (GROUP.equals(device.getStatus()) && device.getStatus() != null) {
                     device.setStatus("是");
                 }
-                if ("0".equals(device.getRunStatus()) && device.getRunStatus() != null) {
+                if (DEVICE.equals(device.getRunStatus()) && device.getRunStatus() != null) {
                     device.setRunStatus("否");
-                } else if ("1".equals(device.getRunStatus()) && device.getRunStatus() != null) {
+                } else if (GROUP.equals(device.getRunStatus()) && device.getRunStatus() != null) {
                     device.setRunStatus("是");
                 }
                 //人员信息
@@ -391,7 +393,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
                         userAccount.append(":");
                     }
                     userAccount.append(person.getUserId());
-                    if(1 == person.getIsDefault()){
+                    if(IS_DEFAULT == person.getIsDefault()){
                         if(!StringUtils.isNullOrEmpty(task.toString())){
                             task.append(":");
                         }

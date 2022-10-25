@@ -290,7 +290,6 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                     QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                     queryWrapper2.eq("opt_name", routerCheckDto.getOptName().trim());
                     queryWrapper2.eq("op_no", routerCheckDto.getOptNo().trim());
-                    //queryWrapper2.eq("tenant_id", tenantId);
                     queryWrapper2.eq("branch_code", branchCode);
                     queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + routerCheckDto.getRouterNo() + "' and branch_code='" + branchCode + "'");
                     List<Sequence> sequences = sequenceService.list(queryWrapper2);
