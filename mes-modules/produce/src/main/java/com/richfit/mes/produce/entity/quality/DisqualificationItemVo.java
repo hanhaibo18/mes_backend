@@ -90,6 +90,10 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "工序类型")
     private String itemType;
 
+    @ApiModelProperty(value = "车间")
+    private String branchCode;
+    @ApiModelProperty(value = "租户")
+    private String tenantId;
 
     @ApiModelProperty(value = "审核意见列表")
     private List<SignedRecordsVo> signedRecordsList;

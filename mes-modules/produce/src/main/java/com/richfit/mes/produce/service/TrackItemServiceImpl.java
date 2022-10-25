@@ -553,6 +553,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         item.setItemType(trackItem.getOptType());
         //不合格产品送出车间
         item.setMissiveBranch(trackItem.getBranchCode());
+
         //获取申请单编号
         try {
             String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
