@@ -8,8 +8,7 @@
         head.id as hid,
         head.drawing_no as drawingNo,
         head.product_name as productName,
-        py_order.*,
-        ifnull(py_order.status,0) as status2
+        py_order.*
         FROM
         produce_track_head head
         left join produce_phys_chem_order py_order on py_order.batch_no = head.batch_no
