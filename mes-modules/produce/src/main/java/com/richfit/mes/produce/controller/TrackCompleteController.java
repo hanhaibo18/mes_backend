@@ -582,8 +582,8 @@ public class TrackCompleteController extends BaseController {
                             sumPrepareEndHours = sumPrepareEndHours + track.getPrepareEndHours();
                             sumSinglePieceHours = sumSinglePieceHours + track.getSinglePieceHours();
                             sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours();
-                            track.setTotalHours(track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours());
-//                                CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
+                            track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+//                          CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
                             track.setUserName(tenantUserVo.getEmplName());
                             track0.setUserName(tenantUserVo.getEmplName());
                             //CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
