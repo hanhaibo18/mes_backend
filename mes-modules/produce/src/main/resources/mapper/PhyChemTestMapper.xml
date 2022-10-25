@@ -8,7 +8,8 @@
         head.id as hid,
         head.drawing_no as drawingNo,
         head.product_name as productName,
-        py_order.*
+        py_order.*,
+        ifnull(py_order.status,0) as status2
         FROM
         produce_track_head head
         left join produce_phys_chem_order py_order on py_order.batch_no = head.batch_no
@@ -16,9 +17,6 @@
         1=1
         <if test="param.branchCode != null and param.branchCode != ''">
             and head.branch_code = '${param.branchCode}'
-        </if>
-        <if test="param.tenantId != null and param.tenantId != ''">
-            and head.tenant_id = '${param.tenantId}'
         </if>
         <if test="param.startTime != null and param.startTime != ''">
             and DATE_FORMAT(py_order.modify_time,'%Y-%m-%d') &gt; '${param.startTime}'
@@ -32,11 +30,21 @@
         <if test="param.sampleDept != null and param.sampleDept != ''">
             and py_order.sample_dept like '%${param.sampleDept}%'
         </if>
+        <if test="param.status != null and param.status != ''">
+            and ifnull( py_order.STATUS, 0 ) in (
+            <foreach collection="param.status.split(',')" item="item" index="index" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
         <if test="param.productName != null and param.productName != ''">
             and head.product_name like '%${param.productName}%'
         </if>
         <if test="param.drawingNo != null and param.drawingNo != ''">
             and head.drawing_no like '%${param.drawingNo}%'
+        </if>
+        <if test="param.batchNo != null and param.batchNo != ''">
+            and head.batch_no like '%${param.batchNo}%'
         </if>
         <if test="orderTableName != null and orderTableName != ''">
             order by ${orderTableName}.${param.orderCol} ${param.order}
