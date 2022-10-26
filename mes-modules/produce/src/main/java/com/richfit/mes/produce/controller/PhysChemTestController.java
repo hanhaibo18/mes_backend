@@ -47,8 +47,8 @@ public class PhysChemTestController extends BaseController {
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
     @ApiImplicitParam(name = "physChemOrder", value = "委托单", paramType = "body", dataType = "PhysChemOrder")
     @PostMapping("/producePhysChemOrder/save")
-    public CommonResult<Boolean> saveOrUpdate(@RequestBody PhysChemOrder physChemOrder){
-        return CommonResult.success(physChemOrderService.saveOrUpdate(physChemOrder));
+    public CommonResult<Boolean> save(@RequestBody PhysChemOrder physChemOrder){
+        return phyChemTestService.save(physChemOrder);
     }
 
     @ApiOperation(value = "查询委托单列表", notes = "查询委托单列表")
@@ -56,6 +56,25 @@ public class PhysChemTestController extends BaseController {
     @PostMapping("/producePhysChemOrder/selectOrderList")
     public CommonResult selectOrderList(@RequestBody PhyChemTaskVo phyChemTaskVo){
         return CommonResult.success(physChemOrderService.selectOrderList(phyChemTaskVo));
+    }
+
+    @ApiOperation(value = "分公司发送委托单接口", notes = "分公司发送委托单接口")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "orderId", value = "委托单id", paramType = "query", dataType = "String")
+    })
+    @GetMapping("/producePhysChemOrder/sendOrderToZj")
+    public CommonResult sendOrderToZj(String id){
+        return CommonResult.success(phyChemTestService.sendOrderToZj(id));
+    }
+
+    @ApiOperation(value = "材料质检部确认或者拒绝委托单接口", notes = "材料质检部确认或者拒绝委托单接口")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "orderId", value = "委托单id", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "status", value = "委托单状态（2、确认,3、拒绝）", paramType = "query", dataType = "String")
+    })
+    @GetMapping("/producePhysChemOrder/zJConfirm")
+    public CommonResult zJConfirm(String id,String status){
+        return CommonResult.success(phyChemTestService.zJConfirm(id,status));
     }
 
 
@@ -67,11 +86,11 @@ public class PhysChemTestController extends BaseController {
     }
 
 
-    @ApiOperation(value = "根据跟单工序ids同步试验结果", notes = "根据跟单工序ids同步试验结果")
-    @ApiImplicitParam(name = "itemIds", value = "跟单工序ids", required = true,allowMultiple = true, paramType = "body", dataType = "String")
+    @ApiOperation(value = "根据炉批号同步试验结果", notes = "根据炉批号同步试验结果")
+    @ApiImplicitParam(name = "batchNos", value = "炉批号", required = true, paramType = "body", dataType = "list")
     @PostMapping("/syncResult")
-    public void syncResult(@RequestBody List<String> itemIds){
-        phyChemTestService.syncResult(itemIds);
+    public void syncResult(@RequestBody List<String> batchNos){
+        phyChemTestService.syncResult(batchNos);
     }
 
 
@@ -85,9 +104,9 @@ public class PhysChemTestController extends BaseController {
     @GetMapping("/queryResultByBatchNo")
     public CommonResult<IPage<PhysChemResult>> queryResultByItemId(int page,int limit,String batchNo,String branchCode){
         QueryWrapper<PhysChemResult> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("batch_no",batchNo)
-                .eq("branch_code", branchCode)
-                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
+           queryWrapper.eq("batch_no",batchNo)
+                   .eq("branch_code", branchCode)
+                   .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(physChemResultService.page(new Page<>(page, limit), queryWrapper));
     }
 

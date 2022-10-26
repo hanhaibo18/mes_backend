@@ -1,12 +1,17 @@
 package com.richfit.mes.produce.service;
 
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemResult;
+import com.richfit.mes.common.model.produce.PhysChemResultInter;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PhysChemOrderMapper;
@@ -45,7 +50,28 @@ public class PhyChemTestService{
     private PhysChemOrderMapper physChemOrderMapper;
     @Autowired
     private TrackHeadService trackHeadService;
-
+    @Autowired
+    private PhysChemResultInterService physChemResultInterService;
+    //历史状态
+    private final static String IS_HISTORY = "1";
+    //历史状态
+    private final static String NO_HISTORY = "0";
+    //同步状态
+    private final static String SYNC_STATUS = "1";
+    //未同步状态
+    private final static String NO_SYNC_STATUS = "0";
+    //委托单拒绝
+    private final static String BACK_STATUS = "3";
+    //委托单确认
+    private final static String YES_STATUS = "2";
+    //委托单已发起
+    private final static String GOING_STATUS = "1";
+    //委托单待发起
+    private final static String GO_UP_STATUS = "0";
+    //材料检测部门生成报告
+    private final static String YES_REPORT_STATUS = "1";
+    //材料检测部门未生成报告
+    private final static String NO_REPORT_STATUS = "0";
     /**
      * 查询跟单工序发起委托列表
      * @param phyChemTaskVo
@@ -74,44 +100,130 @@ public class PhyChemTestService{
         return physChemOrderIPage;
     }
 
+    /**
+     * 修改委托单
+     * @param physChemOrder
+     * @return
+     */
+    public CommonResult save(PhysChemOrder physChemOrder){
+        //校验修改
+        if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(physChemOrder.getId())){
+            PhysChemOrder order = physChemOrderService.getById(physChemOrder.getId());
+            String status = order.getStatus();
+            if(YES_STATUS.equals(status)){
+                return CommonResult.failed("材料实验室已经确认委托，无法被修改");
+            }
+        }else{
+            //设置委托单状态为待发起、报告生成、实验数据未同步
+            physChemOrder.setStatus(GO_UP_STATUS);
+            physChemOrder.setSyncStatus(NO_SYNC_STATUS);
+            physChemOrder.setReportStatus(NO_REPORT_STATUS);
+        }
+        //委托人
+        physChemOrder.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        return CommonResult.success(physChemOrderService.saveOrUpdate(physChemOrder));
+    }
+
+    /**
+     * 发送委托单到材料质检部
+     * @param orderId
+     * @return
+     */
+    public boolean sendOrderToZj(String orderId){
+        //设置委托单发起状态
+        return changeOrderStaus(GOING_STATUS, orderId);
+    }
+
+
+    /**
+     * 材料质检部确认或者拒绝委托单
+     * @param orderId
+     * @return
+     */
+    public boolean zJConfirm(String orderId,String status){
+        //设置委托单确认状态
+        return changeOrderStaus(status, orderId);
+    }
+
+
 
     /**
      * 修改委托单状态
      * @param status
      * @param id
      */
-    public void changeOrderStaus(String status,String id){
+    public boolean changeOrderStaus(String status,String id){
         PhysChemOrder physChemOrder = new PhysChemOrder();
         physChemOrder.setId(id);
         physChemOrder.setStatus(status);
-        physChemOrderService.updateById(physChemOrder);
+        return physChemOrderService.updateById(physChemOrder);
     }
 
     /**
      * 同步试验结果
-     * @param itemIds
+     * @param batchNos
      */
     @Transactional(rollbackFor = Exception.class)
-    public void syncResult(List<String> itemIds){
-        //构造存储本地理化试验结果数据
+    public CommonResult<Boolean> syncResult(List<String> batchNos){
+        //委托单数据
+        QueryWrapper<PhysChemOrder> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("batch_no",batchNos);
+        List<PhysChemOrder> orders = physChemOrderService.list(queryWrapper);
+        //校验是否能执行同步操作
+        List<PhysChemOrder> checkList = orders.stream().filter(order ->
+                //非确认委托状态
+                !YES_STATUS.equals(order.getStatus())
+                        //未生成报告的
+                        || NO_REPORT_STATUS.equals(order.getReportStatus())).collect(Collectors.toList());
+        if (checkList.size()>0) {
+            return CommonResult.failed("请确认所选数据'确认委托并且已生成报告数据'");
+        }
+
+        //本地已经同步的数据
+        QueryWrapper<PhysChemResult> localWrapper = new QueryWrapper<>();
+        localWrapper.eq("batch_no",batchNos);
+        List<PhysChemResult> localInfos = physChemResultService.list(localWrapper);
+        Map<String, PhysChemResult> localInfosMap = localInfos.stream().collect(Collectors.toMap(item -> item.getBatchNo() + "-" + item.getSerialNo(), item -> item));
+
+
+        //从中间表同步数据
+        QueryWrapper<PhysChemResultInter> intercationWrapper = new QueryWrapper<>();
+        intercationWrapper.eq("batch_no",batchNos)
+                //非历史数据
+                .eq("is_history",NO_HISTORY);
+        List<PhysChemResultInter> intercationInfos = physChemResultInterService.list(intercationWrapper);
+        //"炉批号-试验结果编号" =>key
+        Map<String, PhysChemResultInter> intercationMap = intercationInfos.stream().collect(Collectors.toMap(item -> item.getBatchNo() + "-" + item.getSerialNo(),item->item));
+
+
+        //合并数据
         List<PhysChemResult> physChemResults = new ArrayList<>();
-        for (String itemId : itemIds) {
-            //调用理化试验接口获取试验结果数据
-            try {
-
-            }catch (Exception e){
-                log.error("调用化验同步数据接口错误！", e);
+        intercationMap.forEach((key,value)->{
+            PhysChemResult physChemResult = new PhysChemResult();
+            BeanUtil.copyProperties(value,physChemResult,new String[]{"id"});
+            //包含就修改
+            if(localInfosMap.containsKey(key)){
+                physChemResult.setId(localInfosMap.get(key).getId());
             }
-        }
+            physChemResults.add(physChemResult);
+        });
 
-        //删除旧的实验结果数据(调试时需要确定重复同步情况是否更新)
-        List<PhysChemResult> oldResults = physChemResultService.list(new QueryWrapper<PhysChemResult>().in("item_id", itemIds));
-        if(oldResults.size()>0){
-            List<String> oldResultsIds = oldResults.stream().map(PhysChemResult::getId).collect(Collectors.toList());
-            physChemResultService.removeByIds(oldResultsIds);
+        //保存到本地
+        physChemResultService.saveOrUpdateBatch(physChemResults);
+
+        //修改中间表的数据状态为"历史"
+        for (PhysChemResultInter intercationInfo : intercationInfos) {
+            intercationInfo.setIsHistory(IS_HISTORY);
         }
-        //保存新的测试结果数据
-        physChemResultService.saveBatch(physChemResults);
+        physChemResultInterService.updateBatchById(intercationInfos);
+        //修改委托单同步接口状态"已同步"
+        UpdateWrapper<PhysChemOrder> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.in("batch_no",batchNos)
+                .set("sync_status",SYNC_STATUS)
+                .set("sync_time", DateUtil.date());
+        physChemOrderService.update(updateWrapper);
+
+        return CommonResult.success(true);
     }
 
     /**
@@ -162,5 +274,4 @@ public class PhyChemTestService{
 
 
     }
-
 }
