@@ -397,5 +397,12 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "探伤审核人")
     private String auditBy;
 
+    @ApiModelProperty(value = "是否发起委托")
+    private String isEntrust;
+
+    @ApiModelProperty(value = "材料委托单")
+    @TableField(exist = false)
+    private PhysChemOrder physChemOrder;
+
 
 }

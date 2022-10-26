@@ -144,4 +144,7 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     @TableField(exist = false)
     @ApiModelProperty(value = "跟单id")
     private String hid;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序id")
+    private String itemId;
 }

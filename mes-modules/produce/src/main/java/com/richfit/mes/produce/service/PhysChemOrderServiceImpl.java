@@ -45,7 +45,7 @@ public class PhysChemOrderServiceImpl extends ServiceImpl<PhysChemOrderMapper, P
         if(!StringUtils.isEmpty(phyChemTaskVo.getBranchCode())){
             queryWrapper.eq("branchCode",phyChemTaskVo.getBranchCode());
         }
-        queryWrapper.eq("tenantId",SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         //只查当前登陆人创建的委托单
         queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         //排序

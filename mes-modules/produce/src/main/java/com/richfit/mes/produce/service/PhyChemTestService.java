@@ -9,10 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.PhysChemOrder;
-import com.richfit.mes.common.model.produce.PhysChemResult;
-import com.richfit.mes.common.model.produce.PhysChemResultInter;
-import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PhysChemOrderMapper;
 import com.richfit.mes.produce.entity.phyChemTestVo.PhyChemTaskVo;
@@ -52,6 +49,8 @@ public class PhyChemTestService{
     private TrackHeadService trackHeadService;
     @Autowired
     private PhysChemResultInterService physChemResultInterService;
+    @Autowired
+    private TrackItemService trackItemService;
     //历史状态
     private final static String IS_HISTORY = "1";
     //历史状态
@@ -78,24 +77,35 @@ public class PhyChemTestService{
      * @return
      */
     public IPage<PhysChemOrder> page(PhyChemTaskVo phyChemTaskVo) {
-        phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        //对应mapper文件中的别名
-        String orderTableName = null;
-        //跟单排序字段
-        List<String> list = new ArrayList<>();
-        list.add("product_name");
-        list.add("drawing_no");
-        list.add("track_no");
-        if(!StringUtils.isEmpty(phyChemTaskVo.getOrderCol()) && !StringUtils.isEmpty(phyChemTaskVo.getOrder())){
-            if(list.contains(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()))){
-                orderTableName = "head";
-            }else{
-                orderTableName = "py_order";
+        //待检验任务跟单
+        List<TrackItem> trackItems = trackItemService.list(new QueryWrapper<TrackItem>().eq("is_entrust", GOING_STATUS));
+        //获取跟单ids
+        List<String> headIds = trackItems.stream().map(item -> item.getTrackHeadId()).collect(Collectors.toList());
+
+        IPage<PhysChemOrder> physChemOrderIPage =null;
+
+        if(headIds.size()>0){
+            phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            //对应mapper文件中的别名
+            String orderTableName = null;
+            //跟单排序字段
+            List<String> list = new ArrayList<>();
+            list.add("product_name");
+            list.add("drawing_no");
+            list.add("track_no");
+            if(!StringUtils.isEmpty(phyChemTaskVo.getOrderCol()) && !StringUtils.isEmpty(phyChemTaskVo.getOrder())){
+                if(list.contains(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()))){
+                    orderTableName = "head";
+                }else{
+                    orderTableName = "py_order";
+                }
+                phyChemTaskVo.setOrderCol(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()));
             }
-            phyChemTaskVo.setOrderCol(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()));
+
+            physChemOrderIPage = physChemOrderMapper.queryTestPageList(new Page(phyChemTaskVo.getPage(), phyChemTaskVo.getLimit()), phyChemTaskVo,orderTableName,headIds);
+
         }
 
-        IPage<PhysChemOrder> physChemOrderIPage = physChemOrderMapper.queryTestPageList(new Page(phyChemTaskVo.getPage(), phyChemTaskVo.getLimit()), phyChemTaskVo,orderTableName);
 
         return physChemOrderIPage;
     }
@@ -118,9 +128,14 @@ public class PhyChemTestService{
             physChemOrder.setStatus(GO_UP_STATUS);
             physChemOrder.setSyncStatus(NO_SYNC_STATUS);
             physChemOrder.setReportStatus(NO_REPORT_STATUS);
+            //设置工序为发起委托单工序
+            TrackItem trackItem = new TrackItem();
+            trackItem.setId(GOING_STATUS);
+            trackItemService.updateById(trackItem);
         }
         //委托人
         physChemOrder.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        physChemOrder.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(physChemOrderService.saveOrUpdate(physChemOrder));
     }
 

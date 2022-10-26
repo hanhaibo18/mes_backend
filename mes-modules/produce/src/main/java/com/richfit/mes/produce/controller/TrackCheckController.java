@@ -79,6 +79,8 @@ public class TrackCheckController extends BaseController {
     private TrackCompleteService trackCompleteService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
+    @Autowired
+    private PhysChemOrderService physChemOrderService;
 
     /**
      * ***
@@ -183,6 +185,11 @@ public class TrackCheckController extends BaseController {
                 item.setTrackType(trackHead.getTrackType());
                 item.setTexture(trackHead.getTexture());
                 item.setPartsName(trackHead.getMaterialName());
+                //查询理化委托单
+                List<PhysChemOrder> physChemOrder = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("batch_no", trackHead.getBatchNo()));
+                if(physChemOrder.size()>0){
+                    item.setPhysChemOrder(physChemOrder.get(0));
+                }
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {

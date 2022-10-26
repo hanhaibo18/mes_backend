@@ -8,6 +8,8 @@ import com.richfit.mes.produce.entity.phyChemTestVo.PhyChemTaskVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author renzewen
  */
@@ -20,5 +22,5 @@ public interface PhysChemOrderMapper extends BaseMapper<PhysChemOrder> {
      * @param param
      * @return
      */
-    IPage<PhysChemOrder> queryTestPageList(@Param("page") Page page, PhyChemTaskVo param,@Param("orderTableName") String orderTableName);
+    IPage<PhysChemOrder> queryTestPageList(@Param("page") Page page, PhyChemTaskVo param, @Param("orderTableName") String orderTableName,@Param("headIds") List<String> headIds);
 }
