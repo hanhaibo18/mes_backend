@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.produce.dao.CertificateMapper">
     <select id="selectCertificate" resultType="com.richfit.mes.common.model.produce.Certificate">
-        SELECT pc.*, track.*
+        SELECT pc.*, track.*, SUBSTRING_INDEX( track.item_product_no, ' ',- 1 ) AS select_product_no
         FROM produce_certificate pc
                  left join (
             select tc.certificate_id,
