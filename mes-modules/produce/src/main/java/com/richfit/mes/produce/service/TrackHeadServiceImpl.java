@@ -1020,6 +1020,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         TrackHead trackHead = new TrackHead();
         trackHead.setId(thId);
         trackHead.setCertificateNo(null);
+        trackHead.setStatus("2");
         return this.updateById(trackHead);
     }
 
