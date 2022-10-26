@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.PhysChemOrder;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PhysChemOrderMapper;
 import com.richfit.mes.produce.entity.phyChemTestVo.PhyChemTaskVo;
 import com.richfit.mes.produce.utils.OrderUtil;
@@ -41,6 +42,12 @@ public class PhysChemOrderServiceImpl extends ServiceImpl<PhysChemOrderMapper, P
         if(!StringUtils.isEmpty(phyChemTaskVo.getStatus())){
             queryWrapper.eq("status",phyChemTaskVo.getStatus());
         }
+        if(!StringUtils.isEmpty(phyChemTaskVo.getBranchCode())){
+            queryWrapper.eq("branchCode",phyChemTaskVo.getBranchCode());
+        }
+        queryWrapper.eq("tenantId",SecurityUtils.getCurrentUser().getTenantId());
+        //只查当前登陆人创建的委托单
+        queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         //排序
         if(!StringUtils.isEmpty(phyChemTaskVo.getOrderCol()) && !StringUtils.isEmpty(phyChemTaskVo.getOrder())){
             OrderUtil.query(queryWrapper,phyChemTaskVo.getOrderCol(),phyChemTaskVo.getOrder());

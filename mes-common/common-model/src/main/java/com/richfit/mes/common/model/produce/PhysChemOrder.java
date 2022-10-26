@@ -126,6 +126,10 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String forceBendPart;
     @ApiModelProperty(value = "委托人")
     private String consignor;
+    @ApiModelProperty(value = "branchCode")
+    private String branchCode;
+    @ApiModelProperty(value = "租户id")
+    private String tenantId;
 
 
     @TableField(exist = false)

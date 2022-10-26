@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 
 
 /**
- * 理化检验试验结果
+ * 理化检验试验结果中间表
  *
  * @author renzewen
  * @since 2022-9-20
@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 @NoArgsConstructor
-public class PhysChemResult extends BaseEntity<PhysChemResult> {
+public class PhysChemResultInter extends BaseEntity<PhysChemResultInter> {
     @ApiModelProperty(value = "炉批号")
     private String batchNo;
     @ApiModelProperty(value = "编号")
@@ -85,4 +85,6 @@ public class PhysChemResult extends BaseEntity<PhysChemResult> {
     private String other;
     @ApiModelProperty(value = "金相检验结果")
     private String resultsMetal;
+    @ApiModelProperty(value = "是否历史数据（0否，1是）")
+    private String isHistory;
 }
