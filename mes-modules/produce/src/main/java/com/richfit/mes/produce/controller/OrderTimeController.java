@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Slf4j
-@Api("工时统计")
+@Api(value = "工时统计", tags = {"工时统计"})
 @RestController
 @RequestMapping("/api/produce/ordertime")
 public class OrderTimeController extends BaseController {

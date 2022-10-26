@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * @Author: 王瑞
  */
 @Slf4j
-@Api("操作信息")
+@Api(value = "操作信息", tags = {"操作信息"})
 @RestController
 @RequestMapping("/api/produce/action")
 public class ActionController {

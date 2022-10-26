@@ -88,4 +88,14 @@ public interface DisqualificationService extends IService<Disqualification> {
      **/
     DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode);
 
+    /**
+     * 功能描述: 提交意见
+     *
+     * @param opinionId
+     * @param opinion
+     * @Author: xinYu.hou
+     * @Date: 2022/10/26 10:10
+     * @return: Boolean
+     **/
+    Boolean submitOpinions(String opinionId, String opinion);
 }

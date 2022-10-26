@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * @Description 跟单工序Controller
  */
 @Slf4j
-@Api("跟单工序管理")
+@Api(value = "跟单工序管理", tags = {"跟单工序管理"})
 @RestController
 @RequestMapping("/api/produce/track_item")
 public class TrackItemController extends BaseController {
@@ -153,6 +153,7 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询跟单分流合并工序", notes = "根据跟单ID查询跟单分流合并的工序")
     @GetMapping("/track_flow_item_merge")
     public CommonResult<List<TrackItem>> trackFlowItemMerge(String trackId) {
+        List<TrackItem> trackItemList = new ArrayList<>();
         List<TrackItem> trackItemScheduleList = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         if (!StringUtils.isNullOrEmpty(trackId)) {
@@ -160,8 +161,6 @@ public class TrackItemController extends BaseController {
         }
         queryWrapper.orderByAsc("sequence_order_by");
         List<TrackItem> trackItems = trackItemService.list(queryWrapper);
-        queryWrapper.eq("is_current", 1);
-        List<TrackItem> trackItemList = new ArrayList<>(trackItemService.list(queryWrapper));
         //将相同的工序进行合并
         for (TrackItem trackItem : trackItems) {
             boolean flag = true;
@@ -170,7 +169,6 @@ public class TrackItemController extends BaseController {
                     flag = false;
                 }
             }
-            //trackItemList集合中没有的工序添加进来
             if (flag) {
                 trackItemList.add(trackItem);
             }

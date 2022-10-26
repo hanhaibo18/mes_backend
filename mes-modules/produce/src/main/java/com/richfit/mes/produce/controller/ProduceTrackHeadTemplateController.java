@@ -28,7 +28,7 @@ import java.util.List;
  * @since 2022-01-10
  */
 @Slf4j
-@Api("接口")
+@Api(value = "跟单模板", tags = {"跟单模板"})
 @RestController
 @RequestMapping("/api/produce/produce-track-head-template")
 public class ProduceTrackHeadTemplateController {

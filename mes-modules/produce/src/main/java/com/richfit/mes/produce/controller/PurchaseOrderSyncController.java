@@ -38,7 +38,7 @@ import java.util.List;
  * @CreateTime: 2022年01月07日 15:46:00
  */
 @Slf4j
-@Api("计划管理")
+@Api(value = "采购订单", tags = {"采购订单"})
 @RestController
 @RequestMapping("/api/produce/PurchaseOrderSync")
 public class PurchaseOrderSyncController {

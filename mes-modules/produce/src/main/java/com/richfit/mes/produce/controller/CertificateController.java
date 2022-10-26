@@ -28,7 +28,7 @@ import java.util.List;
  * @Description 合格证Controller
  */
 @Slf4j
-@Api("合格证管理")
+@Api(value = "合格证管理", tags = {"合格证管理"})
 @RestController
 @RequestMapping("/api/produce/certificate")
 public class CertificateController {

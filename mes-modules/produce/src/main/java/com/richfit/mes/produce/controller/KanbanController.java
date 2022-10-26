@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Date: 2020/10/16 10:36
  */
 @Slf4j
-@Api("看板管理")
+@Api(value = "看板管理", tags = {"看板管理"})
 @RestController
 @RequestMapping("/api/produce/kanban")
 public class KanbanController {

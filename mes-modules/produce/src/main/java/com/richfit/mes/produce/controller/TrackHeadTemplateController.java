@@ -25,7 +25,7 @@ import java.util.List;
  * @Description 跟单Controller
  */
 @Slf4j
-@Api("跟单模板管理")
+@Api(value = "跟单模板管理", tags = {"跟单模板管理"})
 @RestController
 @RequestMapping("/api/produce/track_head_template")
 public class TrackHeadTemplateController {

@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
 import com.richfit.mes.produce.service.OrderSyncService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import java.util.Map;
  * @CreateTime: 2022年01月19日 10:21:00
  */
 @Slf4j
+@Api(value = "订单同步接口", tags = {"订单同步接口"})
 @RestController
 @RequestMapping("/api/produce/orderSync")
 public class OrderSyncController {
