@@ -37,7 +37,7 @@ import java.util.List;
  * @since 2020-09-07
  */
 @Slf4j
-@Api("编码规则")
+@Api(value = "编码规则", tags = {"编码规则"})
 @RestController
 @RequestMapping("/api/produce/coderule")
 public class CodeRuleController extends BaseController {

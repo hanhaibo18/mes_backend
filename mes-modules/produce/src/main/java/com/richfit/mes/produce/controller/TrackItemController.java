@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * @Description 跟单工序Controller
  */
 @Slf4j
-@Api("跟单工序管理")
+@Api(value = "跟单工序管理", tags = {"跟单工序管理"})
 @RestController
 @RequestMapping("/api/produce/track_item")
 public class TrackItemController extends BaseController {

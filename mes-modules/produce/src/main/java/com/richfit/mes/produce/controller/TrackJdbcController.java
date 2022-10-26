@@ -36,7 +36,7 @@ import java.util.*;
  * @since 2022-2-14
  */
 @Slf4j
-@Api("跟单模板打印")
+@Api(value = "跟单模板打印", tags = {"跟单模板打印"})
 @RestController
 @RequestMapping("/api/produce/jdbc")
 public class TrackJdbcController extends BaseController {

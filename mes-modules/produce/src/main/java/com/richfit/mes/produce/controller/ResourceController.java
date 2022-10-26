@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * @Description 资源负荷Controller
  */
 @Slf4j
-@Api("资源负荷")
+@Api(value = "资源负荷", tags = {"资源负荷"})
 @RestController
 @RequestMapping("/api/produce/resource")
 public class ResourceController {

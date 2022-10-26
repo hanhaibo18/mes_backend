@@ -20,7 +20,7 @@ import java.util.List;
  */
 
 @Slf4j
-@Api("接口")
+@Api(value = "公共接口", tags = {"公共接口"})
 @RestController
 @RequestMapping("/api/produce/public")
 public class PublicController {

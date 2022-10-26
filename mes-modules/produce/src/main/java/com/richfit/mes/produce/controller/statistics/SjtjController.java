@@ -19,7 +19,7 @@ import java.util.List;
  * @author 马峰
  */
 @Slf4j
-@Api("数据统计")
+@Api(value = "数据统计", tags = {"数据统计"})
 @RestController
 @RequestMapping("/api/produce/sjtj")
 public class SjtjController extends BaseController {

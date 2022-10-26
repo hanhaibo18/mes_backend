@@ -29,7 +29,7 @@ import java.util.Date;
  * @since 2020-11-12
  */
 @Slf4j
-@Api("异常管理")
+@Api(value = "异常管理", tags = {"异常管理"})
 @RestController
 @RequestMapping("/api/produce/abnormal")
 public class AbnormalController extends BaseController {
