@@ -438,8 +438,9 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
-            queryWrapper.apply("replace(replace(replace(th.track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'").or().apply("replace(replace(replace(th.original_track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+//            queryWrapper.apply("replace(replace(replace(th.track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'").or().apply("replace(replace(replace(th.original_track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
 //            queryWrapper.like("th.track_no", trackNo);
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') = '" + trackNo + "'");
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("th.status", status);
@@ -477,6 +478,9 @@ public class TrackHeadController extends BaseController {
         }*/
         queryWrapper.eq("th.tenant_id", tenantId);
         queryWrapper.eq("th.branch_code", branchCode);
+        System.out.println(queryWrapper.getCustomSqlSegment());
+
+
         return CommonResult.success(trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
