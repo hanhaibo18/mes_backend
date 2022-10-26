@@ -98,7 +98,7 @@ public class TrackCompleteController extends BaseController {
 //                queryWrapper.apply("(user_id='" + userId + "' or user_name='" + userName + "')");
 //            }
             if (!StringUtils.isNullOrEmpty(productNo)) {
-                queryWrapper.eq("product_no", productNo);
+                queryWrapper.like("prod_no", productNo);
             }
             if (!StringUtils.isNullOrEmpty(workNo)) {
                 queryWrapper.eq("work_no", workNo);
@@ -455,7 +455,6 @@ public class TrackCompleteController extends BaseController {
 //    }
 
     /**
-     *
      * @return
      */
     @ApiOperation(value = "派工分页查询优化接口", notes = "派工分页查询优化接口")
@@ -508,11 +507,11 @@ public class TrackCompleteController extends BaseController {
 //            BOMCO_ZF_JMAQ_LDGL;//领导
 //            role_tenant_admin;//租户管理员
             //查询权限控制
-            if(roleCodeList.contains("BOMCO_ZF_JMAQ_LDGL") || roleCodeList.contains("role_tenant_admin")){
+            if (roleCodeList.contains("BOMCO_ZF_JMAQ_LDGL") || roleCodeList.contains("role_tenant_admin")) {
                 if (!StringUtils.isNullOrEmpty(branchCode)) {
                     queryWrapper.eq("branch_code", branchCode);
                 }
-            }else {
+            } else {
                 queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
             }
             //外协报工判断过滤，外协报工类型是4
@@ -542,8 +541,8 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.orderByDesc("modify_time");
             }
             IPage<TrackComplete> completes = trackCompleteService.queryPage(new Page<TrackComplete>(page, limit), queryWrapper);
-            List<TrackComplete> emptyTrackComplete=new ArrayList<>();
-            List<TrackComplete> dbRecords=completes.getRecords();
+            List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+            List<TrackComplete> dbRecords = completes.getRecords();
 
             if (!CollectionUtils.isEmpty(dbRecords)) {
                 //获取设备信息
@@ -587,16 +586,16 @@ public class TrackCompleteController extends BaseController {
                             track.setUserName(tenantUserVo.getEmplName());
                             track0.setUserName(tenantUserVo.getEmplName());
                             //CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
-                            track.setDeviceName(deviceMap.get(track.getDeviceId())==null?"":deviceMap.get(track.getDeviceId()).getName());
+                            track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                             // TrackItem trackItem = trackItemService.getById(track.getTiId());
                             TrackItem trackItem = trackMap.get(track.getTiId());
                             //查询产品编号
                             //TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());
-                            TrackFlow trackFlow = trackFlowMap.get(trackItem==null?"":trackItem.getFlowId());
-                            track.setProdNo(trackFlow==null?"":trackFlow.getProductNo());
+                            TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
+                            track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                             //增加判断返回是否能修改
                             //TrackHead trackHead = trackHeadService.getById(track.getTrackId());
-                            track.setProductName(trackHeadMap.get(track.getTrackId())==null?"":trackHeadMap.get(track.getTrackId()).getProductName());
+                            track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
                             //条件一 需要质检 并且已质检
                             if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
                                 track.setIsUpdate(1);
@@ -628,7 +627,7 @@ public class TrackCompleteController extends BaseController {
                         track0.setUserName(tenantUserVo.getEmplName());
                         track0.setTrackCompleteList(trackCompletes);
                         //判断是否包含叶子结点
-                        track0.setIsLeafNodes(trackCompletes!=null&&!CollectionUtils.isEmpty(trackCompletes));
+                        track0.setIsLeafNodes(trackCompletes != null && !CollectionUtils.isEmpty(trackCompletes));
                         emptyTrackComplete.add(track0);
                     }
                 }
@@ -636,11 +635,11 @@ public class TrackCompleteController extends BaseController {
             List<TrackComplete> records = completes.getRecords();
             completes.setRecords(records);
             Map<String, Object> stringObjectHashMap = new HashMap<>();
-            stringObjectHashMap.put("records",records);
-            stringObjectHashMap.put("TrackComplete",emptyTrackComplete);
+            stringObjectHashMap.put("records", records);
+            stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
             return CommonResult.success(stringObjectHashMap);
         } catch (Exception e) {
-            log.error("异常了",e);
+            log.error("异常了", e);
             return CommonResult.failed(e.getMessage());
         }
     }
