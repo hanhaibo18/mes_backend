@@ -267,6 +267,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return disqualificationItemVo;
     }
 
+    @Override
+    public Boolean submitOpinions(String opinionId, String opinion) {
+        UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", opinionId);
+        updateWrapper.set("opinion", opinion);
+        return userOpinionService.update(updateWrapper);
+    }
+
     private List<TenantUserVo> queryOpinionUser(String disqualificationId) {
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("disqualification_id", disqualificationId);
