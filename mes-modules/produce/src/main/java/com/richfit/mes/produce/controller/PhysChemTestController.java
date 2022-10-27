@@ -47,7 +47,7 @@ public class PhysChemTestController extends BaseController {
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
     @ApiImplicitParam(name = "physChemOrder", value = "委托单", paramType = "body", dataType = "PhysChemOrder")
     @PostMapping("/producePhysChemOrder/save")
-    public CommonResult<Boolean> save(@RequestBody PhysChemOrder physChemOrder){
+    public CommonResult<Boolean> save(@RequestBody PhysChemOrder physChemOrder) throws Exception{
         return phyChemTestService.save(physChemOrder);
     }
 

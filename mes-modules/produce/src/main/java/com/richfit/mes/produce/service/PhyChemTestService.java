@@ -13,6 +13,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PhysChemOrderMapper;
 import com.richfit.mes.produce.entity.phyChemTestVo.PhyChemTaskVo;
+import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,8 @@ public class PhyChemTestService{
     private PhysChemResultInterService physChemResultInterService;
     @Autowired
     private TrackItemService trackItemService;
+    @Autowired
+    private CodeRuleService codeRuleService;
     //历史状态
     private final static String IS_HISTORY = "1";
     //历史状态
@@ -115,7 +118,7 @@ public class PhyChemTestService{
      * @param physChemOrder
      * @return
      */
-    public CommonResult save(PhysChemOrder physChemOrder){
+    public CommonResult save(PhysChemOrder physChemOrder) throws Exception {
         //校验修改
         if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(physChemOrder.getId())){
             PhysChemOrder order = physChemOrderService.getById(physChemOrder.getId());
@@ -132,6 +135,8 @@ public class PhyChemTestService{
             TrackItem trackItem = new TrackItem();
             trackItem.setId(GOING_STATUS);
             trackItemService.updateById(trackItem);
+            //保存委托单号
+            Code.update("order_no",physChemOrder.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrder.getBranchCode(),codeRuleService);
         }
         //委托人
         physChemOrder.setConsignor(SecurityUtils.getCurrentUser().getUserId());
@@ -176,13 +181,13 @@ public class PhyChemTestService{
 
     /**
      * 同步试验结果
-     * @param batchNos
+     * @param orderNos
      */
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> syncResult(List<String> batchNos){
+    public CommonResult<Boolean> syncResult(List<String> orderNos){
         //委托单数据
         QueryWrapper<PhysChemOrder> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("batch_no",batchNos);
+        queryWrapper.in("order_no",orderNos);
         List<PhysChemOrder> orders = physChemOrderService.list(queryWrapper);
         //校验是否能执行同步操作
         List<PhysChemOrder> checkList = orders.stream().filter(order ->
@@ -196,19 +201,19 @@ public class PhyChemTestService{
 
         //本地已经同步的数据
         QueryWrapper<PhysChemResult> localWrapper = new QueryWrapper<>();
-        localWrapper.eq("batch_no",batchNos);
+        localWrapper.eq("order_no",orderNos);
         List<PhysChemResult> localInfos = physChemResultService.list(localWrapper);
-        Map<String, PhysChemResult> localInfosMap = localInfos.stream().collect(Collectors.toMap(item -> item.getBatchNo() + "-" + item.getSerialNo(), item -> item));
+        Map<String, PhysChemResult> localInfosMap = localInfos.stream().collect(Collectors.toMap(item -> item.getOrderNo() + "-" + item.getSerialNo(), item -> item));
 
 
         //从中间表同步数据
         QueryWrapper<PhysChemResultInter> intercationWrapper = new QueryWrapper<>();
-        intercationWrapper.eq("batch_no",batchNos)
+        intercationWrapper.eq("order_no",orderNos)
                 //非历史数据
                 .eq("is_history",NO_HISTORY);
         List<PhysChemResultInter> intercationInfos = physChemResultInterService.list(intercationWrapper);
         //"炉批号-试验结果编号" =>key
-        Map<String, PhysChemResultInter> intercationMap = intercationInfos.stream().collect(Collectors.toMap(item -> item.getBatchNo() + "-" + item.getSerialNo(),item->item));
+        Map<String, PhysChemResultInter> intercationMap = intercationInfos.stream().collect(Collectors.toMap(item -> item.getOrderNo()+ "-" + item.getSerialNo(),item->item));
 
 
         //合并数据
@@ -233,7 +238,7 @@ public class PhyChemTestService{
         physChemResultInterService.updateBatchById(intercationInfos);
         //修改委托单同步接口状态"已同步"
         UpdateWrapper<PhysChemOrder> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.in("batch_no",batchNos)
+        updateWrapper.in("order_no",orderNos)
                 .set("sync_status",SYNC_STATUS)
                 .set("sync_time", DateUtil.date());
         physChemOrderService.update(updateWrapper);
