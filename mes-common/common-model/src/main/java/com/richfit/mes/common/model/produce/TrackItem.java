@@ -398,6 +398,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String auditBy;
 
     @ApiModelProperty(value = "是否发起委托")
+    @TableField(exist = false)
     private String isEntrust;
 
     @ApiModelProperty(value = "材料委托单")

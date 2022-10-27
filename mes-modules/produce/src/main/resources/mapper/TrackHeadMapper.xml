@@ -31,7 +31,7 @@
     </select>
 
     <select id="queryListByCertId" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id, ti.sequence_order_by
+        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id, ti.sequence_order_by,ti.product_no as item_product_no,ti.number as item_number
         FROM mes_produce.produce_track_certificate tc
                  left join mes_produce.produce_track_head th on tc.th_id = th.id
                  LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id and ti.id = tc.ti_id
