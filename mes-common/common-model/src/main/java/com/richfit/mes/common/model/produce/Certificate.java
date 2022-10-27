@@ -100,6 +100,7 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "材质")
     private String texture;
     @ApiModelProperty(value = "待用材质")
+    @TableField(exist = false)
     private String replaceMaterial;
 
     @ApiModelProperty(value = "单重")
