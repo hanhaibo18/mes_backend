@@ -11,17 +11,17 @@
         py_order.*
         FROM
         produce_phys_chem_order py_order
-        left join produce_track_head head on py_order.batch_no = head.batch_no and
+        left join produce_track_head head on py_order.batch_no = head.batch_no
         <if test="headIds != null and headIds.size>0">
-            head.id in (<foreach collection="headIds" item="headId" index="index" separator=",">
+            and head.id in (<foreach collection="headIds" item="headId" index="index" separator=",">
             #{headId}
         </foreach>)
         </if>
-        <if test="headIds == null and headIds.size==0">
-            1=0
+        <if test="headIds == null or headIds.size==0">
+            and 1=0
         </if>
         where
-        1=1
+        py_order.consignor = #{param.consignor}
         <if test="param.branchCode != null and param.branchCode != ''">
             and head.branch_code = '${param.branchCode}'
         </if>

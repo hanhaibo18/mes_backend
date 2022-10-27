@@ -18,6 +18,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -118,6 +119,9 @@ public class ProduceInspectionRecordService {
 
         //跟单工序查询
         QueryWrapper<TrackItemInspection> queryWrapper = getTrackItemInspectionQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit);
+        String username = SecurityUtils.getCurrentUser().getUsername();
+
+
         queryWrapper.inSql("id", "select id from  produce_track_item_inspection where id in ( select ti_id from produce_assign where user_id like'%" + SecurityUtils.getCurrentUser().getUsername() + "%')");
 
         IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
@@ -156,7 +160,7 @@ public class ProduceInspectionRecordService {
             queryWrapper.isNotNull("audit_by");
         } else if ("0".equals(isAudit)) {
             //未审核
-            queryWrapper.isNull("audit_by");
+            queryWrapper.eq("audit_by","");
         }
 
         if (!StringUtils.isEmpty(trackNo)) {
@@ -414,9 +418,13 @@ public class ProduceInspectionRecordService {
             produceItemInspectInfo.setTrackItemId(itemId);
             produceItemInspectInfo.setInspectRecordId(recordId);
             produceItemInspectInfo.setTempType(tempType);
+
             produceItemInspectInfo.setAuditBy(String.valueOf(jsonObject.get("auditBy")));
             produceItemInspectInfo.setCheckBy(SecurityUtils.getCurrentUser().getUserId());
-            produceItemInspectInfo.setIsAudit(String.valueOf(jsonObject.get("isAudit")));
+            if(!ObjectUtil.isEmpty(jsonObject.get("isAudit"))){
+                produceItemInspectInfo.setIsAudit(String.valueOf(jsonObject.get("isAudit")));
+            }
+
             produceItemInspectInfos.add(produceItemInspectInfo);
         }
         produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
@@ -932,13 +940,17 @@ public class ProduceInspectionRecordService {
 
         if (!ObjectUtil.isEmpty(jsonObject.get("auditBy"))) {
             String auditBy = jsonObject.get("auditBy").toString();
-            TenantUserVo data = systemServiceClient.getUserById(auditBy).getData();
-            jsonObject.put("auditByInfo", data);
+            if(!"/".equals(auditBy)){
+                TenantUserVo data = systemServiceClient.getUserById(auditBy).getData();
+                jsonObject.put("auditByInfo", data);
+            }
         }
         if (!ObjectUtil.isEmpty(jsonObject.get("checkBy"))) {
             String checkBy = jsonObject.get("checkBy").toString();
-            TenantUserVo data = systemServiceClient.getUserById(checkBy).getData();
-            jsonObject.put("checkByInfo", data);
+            if(!"/".equals(checkBy)){
+                TenantUserVo data = systemServiceClient.getUserById(checkBy).getData();
+                jsonObject.put("checkByInfo", data);
+            }
         }
 
         return jsonObject;

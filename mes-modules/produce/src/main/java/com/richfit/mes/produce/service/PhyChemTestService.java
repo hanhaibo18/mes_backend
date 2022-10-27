@@ -85,29 +85,26 @@ public class PhyChemTestService{
         //获取跟单ids
         List<String> headIds = trackItems.stream().map(item -> item.getTrackHeadId()).collect(Collectors.toList());
 
-        IPage<PhysChemOrder> physChemOrderIPage =null;
-
-        if(headIds.size()>0){
-            phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            //对应mapper文件中的别名
-            String orderTableName = null;
-            //跟单排序字段
-            List<String> list = new ArrayList<>();
-            list.add("product_name");
-            list.add("drawing_no");
-            list.add("track_no");
-            if(!StringUtils.isEmpty(phyChemTaskVo.getOrderCol()) && !StringUtils.isEmpty(phyChemTaskVo.getOrder())){
-                if(list.contains(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()))){
-                    orderTableName = "head";
-                }else{
-                    orderTableName = "py_order";
-                }
-                phyChemTaskVo.setOrderCol(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()));
+        phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        phyChemTaskVo.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        //对应mapper文件中的别名
+        String orderTableName = null;
+        //跟单排序字段
+        List<String> list = new ArrayList<>();
+        list.add("product_name");
+        list.add("drawing_no");
+        list.add("track_no");
+        if(!StringUtils.isEmpty(phyChemTaskVo.getOrderCol()) && !StringUtils.isEmpty(phyChemTaskVo.getOrder())){
+            if(list.contains(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()))){
+                orderTableName = "head";
+            }else{
+                orderTableName = "py_order";
             }
-
-            physChemOrderIPage = physChemOrderMapper.queryTestPageList(new Page(phyChemTaskVo.getPage(), phyChemTaskVo.getLimit()), phyChemTaskVo,orderTableName,headIds);
-
+            phyChemTaskVo.setOrderCol(StrUtil.toUnderlineCase(phyChemTaskVo.getOrderCol()));
         }
+
+        IPage<PhysChemOrder> physChemOrderIPage = physChemOrderMapper.queryTestPageList(new Page(phyChemTaskVo.getPage(), phyChemTaskVo.getLimit()), phyChemTaskVo,orderTableName,headIds);
+
 
 
         return physChemOrderIPage;
@@ -212,7 +209,7 @@ public class PhyChemTestService{
                 //非历史数据
                 .eq("is_history",NO_HISTORY);
         List<PhysChemResultInter> intercationInfos = physChemResultInterService.list(intercationWrapper);
-        //"炉批号-试验结果编号" =>key
+        //"委托单号-试验结果编号" =>key
         Map<String, PhysChemResultInter> intercationMap = intercationInfos.stream().collect(Collectors.toMap(item -> item.getOrderNo()+ "-" + item.getSerialNo(),item->item));
 
 

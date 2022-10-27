@@ -38,6 +38,8 @@ public class PhyChemTaskVo{
     private String tenantId;
     @ApiModelProperty(value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）")
     private String status;
+    @ApiModelProperty(value = "委托人")
+    private String consignor;
     private String order;
     private String orderCol;
 }
