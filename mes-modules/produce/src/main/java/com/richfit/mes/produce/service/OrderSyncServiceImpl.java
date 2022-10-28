@@ -14,7 +14,7 @@ import com.richfit.mes.produce.provider.ErpServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,8 +39,6 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     @Resource
     private SystemServiceClient systemServiceClient;
 
-    @Value("${interface.erp.orders-synchronization}")
-    private String url;
 
     @Autowired
     private ErpServiceClient erpServiceClient;
@@ -90,9 +88,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
      * @return: CommonResult<Boolean>
      **/
     @Override
-//    @Scheduled(cron = "0 30 23 * * ? ")
-    //"*/10 * * * * ? "
-//    @Scheduled(cron = "${time.order}")
+    @Scheduled(cron = "${time.order}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingOrderSync() {
         //拿到今天的同步数据

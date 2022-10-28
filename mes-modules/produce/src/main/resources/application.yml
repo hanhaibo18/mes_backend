@@ -42,12 +42,8 @@ security:
       token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
 interface:
   erp:
-    #订单同步
-    orders-synchronization: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
     #采购订单
     purchase-order-synchronization: http://emaip.erp.cnpc:80/ZBZZ/HTXT/GetPurchaseInfoByTime/service/PS/GetPurchaseInfoService
-    #物料同步
-    material-synchronization: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase
   wms:
     #物料库存
     material-remaining-number: http://10.134.100.21:908/getapi.php?page=1&token=66da1b74a0f22adadc4a865e00435e72
@@ -63,7 +59,7 @@ fdfs:
   http:
     secret_key: FastDFS12345678900
 time:
-  order: "0 30 23 * * ? "
+  order: "0 30 0 * * ? "
   ourchase_order: "0 30 23 * * ? "
   push_work_hour: "0 48 15 * * ? "
 task-date:

@@ -59,6 +59,7 @@ interface:
     material-remaining-number: http://10.134.100.21:908/getapi.php?page=1&token=66da1b74a0f22adadc4a865e00435e72
 
 time:
+  material: "0 0 0 * * ? "
   push_router: "0 12 10 * * ? "
   push_router_enabled: false
 task-date:

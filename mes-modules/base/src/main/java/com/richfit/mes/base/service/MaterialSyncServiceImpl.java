@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,7 +91,7 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
      * @return: CommonResult<Boolean>
      **/
     @Override
-//    @Scheduled(cron = "*/5 * * * * ?")
+    @Scheduled(cron = "${time.material}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingProductSync() {
         boolean data = false;
