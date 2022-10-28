@@ -470,7 +470,7 @@ public class ProduceInspectionRecordService {
             itemInspectInfoQueryWrapper.eq("check_by", SecurityUtils.getCurrentUser().getUserId());
         } else if (AUDIT.equals(checkOrAudit)) {
             //探伤记录审核页面 根据登陆人 = 审核人查询
-            itemInspectInfoQueryWrapper.eq("audit_by", SecurityUtils.getCurrentUser().getUserId());
+            itemInspectInfoQueryWrapper.and(wrapper->wrapper.eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(wrapper2->wrapper2.eq("audit_by","/")));
         }
 
 
