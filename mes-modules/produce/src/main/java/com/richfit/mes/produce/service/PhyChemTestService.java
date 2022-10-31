@@ -80,7 +80,7 @@ public class PhyChemTestService{
      * @return
      */
     public IPage<PhysChemOrder> page(PhyChemTaskVo phyChemTaskVo) {
-        //待检验任务跟单
+        //需要理化检测的
         List<TrackItem> trackItems = trackItemService.list(new QueryWrapper<TrackItem>().eq("is_entrust", GOING_STATUS));
         //获取跟单ids
         List<String> headIds = trackItems.stream().map(item -> item.getTrackHeadId()).collect(Collectors.toList());
@@ -124,13 +124,24 @@ public class PhyChemTestService{
                 return CommonResult.failed("材料实验室已经确认委托，无法被修改");
             }
         }else{
+            //质检发起委托操作
+            //判断委托单状态
+            if(!StringUtils.isEmpty(physChemOrder.getBatchNo())){
+                List<PhysChemOrder> orders = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("batch_no", physChemOrder.getBatchNo()).orderByDesc("modify_time"));
+                if(orders.size()>0){
+                    //未生成报告
+                    if(NO_REPORT_STATUS.equals(orders.get(0).getStatus()) && YES_STATUS.equals(orders.get(0).getStatus())){
+                        return CommonResult.failed("炉批号:"+physChemOrder.getBatchNo()+",委托单已经在检验流程中,无法发起新的委托");
+                    }
+                }
+            }
             //设置委托单状态为待发起、报告生成、实验数据未同步
             physChemOrder.setStatus(GO_UP_STATUS);
             physChemOrder.setSyncStatus(NO_SYNC_STATUS);
             physChemOrder.setReportStatus(NO_REPORT_STATUS);
             //设置工序为发起委托单工序
             TrackItem trackItem = new TrackItem();
-            trackItem.setId(GOING_STATUS);
+            trackItem.setIsEntrust(GOING_STATUS);
             trackItemService.updateById(trackItem);
             //保存委托单号
             Code.update("order_no",physChemOrder.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrder.getBranchCode(),codeRuleService);
@@ -192,54 +203,49 @@ public class PhyChemTestService{
                 !YES_STATUS.equals(order.getStatus())
                         //未生成报告的
                         || NO_REPORT_STATUS.equals(order.getReportStatus())).collect(Collectors.toList());
+        List<PhysChemOrder> checkList2 = orders.stream().filter(order ->
+                //同步成功的数据
+                SYNC_STATUS.equals(order.getSyncStatus())).collect(Collectors.toList());
         if (checkList.size()>0) {
             return CommonResult.failed("请确认所选数据'确认委托并且已生成报告数据'");
         }
-
-        //本地已经同步的数据
-        QueryWrapper<PhysChemResult> localWrapper = new QueryWrapper<>();
-        localWrapper.eq("order_no",orderNos);
-        List<PhysChemResult> localInfos = physChemResultService.list(localWrapper);
-        Map<String, PhysChemResult> localInfosMap = localInfos.stream().collect(Collectors.toMap(item -> item.getOrderNo() + "-" + item.getSerialNo(), item -> item));
-
-
-        //从中间表同步数据
-        QueryWrapper<PhysChemResultInter> intercationWrapper = new QueryWrapper<>();
-        intercationWrapper.eq("order_no",orderNos)
-                //非历史数据
-                .eq("is_history",NO_HISTORY);
-        List<PhysChemResultInter> intercationInfos = physChemResultInterService.list(intercationWrapper);
-        //"委托单号-试验结果编号" =>key
-        Map<String, PhysChemResultInter> intercationMap = intercationInfos.stream().collect(Collectors.toMap(item -> item.getOrderNo()+ "-" + item.getSerialNo(),item->item));
-
-
-        //合并数据
-        List<PhysChemResult> physChemResults = new ArrayList<>();
-        intercationMap.forEach((key,value)->{
-            PhysChemResult physChemResult = new PhysChemResult();
-            BeanUtil.copyProperties(value,physChemResult,new String[]{"id"});
-            //包含就修改
-            if(localInfosMap.containsKey(key)){
-                physChemResult.setId(localInfosMap.get(key).getId());
-            }
-            physChemResults.add(physChemResult);
-        });
-
-        //保存到本地
-        physChemResultService.saveOrUpdateBatch(physChemResults);
-
-        //修改中间表的数据状态为"历史"
-        for (PhysChemResultInter intercationInfo : intercationInfos) {
-            intercationInfo.setIsHistory(IS_HISTORY);
+        if(checkList2.size()>0){
+            return CommonResult.failed("所选数据有已同步的数据");
         }
-        physChemResultInterService.updateBatchById(intercationInfos);
-        //修改委托单同步接口状态"已同步"
-        UpdateWrapper<PhysChemOrder> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.in("order_no",orderNos)
-                .set("sync_status",SYNC_STATUS)
-                .set("sync_time", DateUtil.date());
-        physChemOrderService.update(updateWrapper);
 
+        //同步数据的的炉批号集合
+        List<String> batchNos = orders.stream().map(item -> item.getBatchNo()).collect(Collectors.toList());
+
+        if(batchNos.size()>0){
+
+            //从中间表同步数据
+            QueryWrapper<PhysChemResultInter> intercationWrapper = new QueryWrapper<>();
+            intercationWrapper.eq("batch_no",batchNos);
+            List<PhysChemResultInter> intercationInfos = physChemResultInterService.list(intercationWrapper);
+            //新增数据
+            List<PhysChemResult> physChemResults = new ArrayList<>();
+            for (PhysChemResultInter intercationInfo : intercationInfos) {
+                PhysChemResult physChemResult = new PhysChemResult();
+                BeanUtil.copyProperties(intercationInfo,physChemResult,new String[]{"id"});
+                physChemResults.add(physChemResult);
+            }
+            //本地已经同步的数据
+            QueryWrapper<PhysChemResult> localWrapper = new QueryWrapper<>();
+            localWrapper.in("batch_no",batchNos);
+            List<PhysChemResult> localInfos = physChemResultService.list(localWrapper);
+            //删除本地已同步的数据
+            physChemResultService.removeByIds(localInfos.stream().map(PhysChemResult::getId).collect(Collectors.toList()));
+
+            //保存新数据
+            physChemResultService.saveBatch(physChemResults);
+
+            //修改委托单同步接口状态"已同步"
+            UpdateWrapper<PhysChemOrder> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.in("order_no",orderNos)
+                    .set("sync_status",SYNC_STATUS)
+                    .set("sync_time", DateUtil.date());
+            physChemOrderService.update(updateWrapper);
+        }
         return CommonResult.success(true);
     }
 

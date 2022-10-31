@@ -400,9 +400,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "是否发起委托")
     private String isEntrust;
 
-    @ApiModelProperty(value = "材料委托单")
+    @ApiModelProperty(value = "材料委托单状态")
     @TableField(exist = false)
-    private PhysChemOrder physChemOrder;
+    private String orderStatus;
 
 
 }

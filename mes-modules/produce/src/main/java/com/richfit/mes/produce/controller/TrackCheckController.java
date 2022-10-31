@@ -185,10 +185,15 @@ public class TrackCheckController extends BaseController {
                 item.setTrackType(trackHead.getTrackType());
                 item.setTexture(trackHead.getTexture());
                 item.setPartsName(trackHead.getMaterialName());
-                //查询理化委托单
-                List<PhysChemOrder> physChemOrder = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("batch_no", trackHead.getBatchNo()));
+                //查询理化委托单,查询委托单号最大的数据
+                List<PhysChemOrder> physChemOrder = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("batch_no", trackHead.getBatchNo()).orderByDesc("modify_time"));
                 if(physChemOrder.size()>0){
-                    item.setPhysChemOrder(physChemOrder.get(0));
+                    //根据委托单号排序
+                    physChemOrder.sort((t1,t2)->t1.getOrderNo().compareTo(t2.getOrderNo()));
+                    //委托单状态,根据最新的走
+                    item.setOrderStatus(physChemOrder.get(0).getStatus());
+                    //是否有报告 （执行同步操作之后才能有报告）
+                    item.setOrderStatus(physChemOrder.get(0).getSyncStatus());
                 }
             }
             return CommonResult.success(assigns);
