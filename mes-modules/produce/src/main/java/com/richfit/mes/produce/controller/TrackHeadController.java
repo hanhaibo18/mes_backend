@@ -478,9 +478,6 @@ public class TrackHeadController extends BaseController {
         }*/
         queryWrapper.eq("th.tenant_id", tenantId);
         queryWrapper.eq("th.branch_code", branchCode);
-        System.out.println(queryWrapper.getCustomSqlSegment());
-
-
         return CommonResult.success(trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
