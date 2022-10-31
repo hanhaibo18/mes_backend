@@ -116,6 +116,69 @@ public class TemplatePrintController extends BaseController {
     }
 
     /**
+     * 功能描述: 按跟单模板编码批量生成跟单模板EXCEL   批量生成打印文件
+     *
+     * @Author: panshi.zhang
+     * @Date: 2022-2-14
+     **/
+    @ApiOperation(value = "根据跟单id批量生成跟单模板EXCEL", notes = "根据跟单id批量生成跟单模板EXCEL")
+    @GetMapping("/createDocumentaryExcelList")
+    public void createDocumentaryExcelList(@ApiParam(value = "跟单ids", required = true) @RequestParam List<String> ids,
+                                           @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                           @ApiIgnore HttpServletResponse rsp) throws IOException {
+        try {
+            int i = 1;
+            File file = FilesUtil.createRandomTempDirectory();
+            for (String id : ids) {
+                // 获取跟单
+                TrackHead trackHead = trackHeadService.getById(id);
+                QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
+                queryWrapper.like("template_code", trackHead.getTemplateCode());
+                if (!StringUtils.isNullOrEmpty(branchCode)) {
+                    queryWrapper.like("branch_code", branchCode);
+                }
+                //获取跟单模板配置信息
+                List<ProduceTrackHeadTemplate> trackHeadTemplates = produceTrackHeadTemplateService.list(queryWrapper);
+                ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
+
+                List<List<Map<String, Object>>> sheets = new ArrayList();
+
+                // 根据配置SQL，获取SHEET1、2、3表数据
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet1(), jdbcTemplate));
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet2(), jdbcTemplate));
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet3(), jdbcTemplate));
+                // 生成EXCEL文件，并输出文件流
+                try {
+                    // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
+                    //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
+                    String templateFileId = p.getFileId();
+                    CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
+                    InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
+//                    ExcelUtils.exportExcelOnSheetsData("跟单", inputStream, sheets, rsp);
+                    ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo() + "_跟单(" + i + ")", inputStream, sheets);
+                    i++;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log.error(e.getMessage());
+                }
+            }
+
+            //打包压缩包，下载输出
+            try {
+                FilesUtil.zip(file.getAbsolutePath());
+                FilesUtil.downloads(rsp, file.getAbsolutePath() + ".zip");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                file.delete();
+                new File(file.getAbsolutePath() + ".zip").delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * @param id
      * @param branchCode
      * @param rsp

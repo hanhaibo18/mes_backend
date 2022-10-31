@@ -10,8 +10,6 @@ import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -167,7 +165,6 @@ public class ProductionBomController extends BaseController {
     @ApiOperation(value = "分页查询产品Bom历史版本", notes = "根据图号查询产品Bom历史版本")
     @GetMapping("/production_bom/history")
     public CommonResult<IPage<ProductionBom>> getProductionBomHistory(String materialNo, String drawingNo, String mainDrawingNo, String branchCode, String bomKey, int page, int limit) {
-
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             query.eq("pb.material_no", materialNo);
@@ -200,7 +197,6 @@ public class ProductionBomController extends BaseController {
             query.eq("pb.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         query.orderByDesc("pb.modify_time");
-
         return CommonResult.success(productionBomService.getProductionBomHistory(new Page<ProductionBom>(page, limit), query), BOM_SUCCESS_MESSAGE);
 
     }
@@ -365,7 +361,7 @@ public class ProductionBomController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
     public CommonResult newImportExcel(@ApiIgnore HttpServletRequest request, @RequestParam("file") MultipartFile file) throws IOException {
-       return  productionBomService.newImportExcel(file);
+        return productionBomService.newImportExcel(file);
     }
 
 

@@ -82,15 +82,15 @@ public class ExcelUtils {
      * @throws IOException IO异常
      */
     public static <T> List<T> importExcel(File file, Class<T> type, String[] fieldNames,
-                                           int beginRow, int endRow, int beginColumn,
-                                           int sheetIndex, String fileName) throws IOException {
+                                          int beginRow, int endRow, int beginColumn,
+                                          int sheetIndex, String fileName) throws IOException {
         // 创建文件输入流
         FileInputStream in = new FileInputStream(file);
         // 创建Excel工作簿（包括2003和2007版）
         Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(fileName), in);
         // 根据下标获取Excel工作表
         Sheet sheet = workbook.getSheetAt(sheetIndex);
-        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet,workbook);
+        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet, workbook);
     }
 
     /**
@@ -147,7 +147,7 @@ public class ExcelUtils {
         Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(fileName), inputStream);
         // 根据下标获取Excel工作表
         Sheet sheet = workbook.getSheetAt(sheetIndex);
-        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet,workbook);
+        return importExcel(type, fieldNames, beginRow, endRow, beginColumn, -1, sheet, workbook);
     }
 
     /**
@@ -184,7 +184,7 @@ public class ExcelUtils {
      * @return 集合
      */
     private static <T> List<T> importExcel(Class<T> type, String[] fieldNames, int beginRow,
-                                           int endRow, int beginColumn, int endColumn, Sheet sheet,Workbook workbook) {
+                                           int endRow, int beginColumn, int endColumn, Sheet sheet, Workbook workbook) {
         // 验证起始行是否符合标准
         if (0 > beginRow) {
             beginRow = sheet.getFirstRowNum();
@@ -235,7 +235,7 @@ public class ExcelUtils {
                 }
                 String propertyName = fieldNames[index];
                 try {
-                    Object value = getCellValue(cell, getPropertyType(t, propertyName),workbook);
+                    Object value = getCellValue(cell, getPropertyType(t, propertyName), workbook);
                     if (value != null) {
                         setPropertyValue(t, propertyName, value);
                     }
@@ -259,13 +259,13 @@ public class ExcelUtils {
      * @param type 属性的返回类型Class
      * @return obj
      */
-    private static Object getCellValue(Cell cell, Class<?> type,Workbook workbook) {
+    private static Object getCellValue(Cell cell, Class<?> type, Workbook workbook) {
         Object value;
         try {
             if (type == Date.class) {
                 value = cell.getDateCellValue();
             } else {
-                value = getCellValue(cell, cell.getCellTypeEnum(),workbook);
+                value = getCellValue(cell, cell.getCellTypeEnum(), workbook);
 
                 if (null == value) {
                     return null;
@@ -316,13 +316,14 @@ public class ExcelUtils {
      * @param cellType excel单元格类型
      * @return obj
      */
-    private static Object getCellValue(Cell cell, CellType cellType,Workbook workbook) {
+    private static Object getCellValue(Cell cell, CellType cellType, Workbook workbook) {
         Object value = null;
         switch (cellType) {
             case BLANK:
                 return null;
             case FORMULA:
-                CellType cacheCellType = cell.getCachedFormulaResultTypeEnum();{
+                CellType cacheCellType = cell.getCachedFormulaResultTypeEnum();
+            {
                 switch (cacheCellType) {
                     case STRING:
                         value = cell.getStringCellValue();
@@ -481,9 +482,7 @@ public class ExcelUtils {
             }
         }
         write(response, workbook, "跟单模板.xls");
-
     }
-
 
     public static void exportExcelToFile(String fileName, InputStream inputStream, List<List<Map<String, Object>>> sheets) throws IOException {
 
