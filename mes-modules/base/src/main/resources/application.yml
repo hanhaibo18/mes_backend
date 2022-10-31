@@ -46,18 +46,6 @@ feign.client.config:
     connect-timeout: 100000
     read-timeout: 300000
 
-interface:
-  erp:
-    #订单同步
-    orders-synchronization: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
-    #采购订单
-    purchase-order-synchronization: http://emaip.erp.cnpc:80/ZBZZ/HTXT/GetPurchaseInfoByTime/service/PS/GetPurchaseInfoService
-    #物料同步
-    material-synchronization: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase
-  wms:
-    #物料库存
-    material-remaining-number: http://10.134.100.21:908/getapi.php?page=1&token=66da1b74a0f22adadc4a865e00435e72
-
 time:
   material: "0 0 0 * * ? "
   push_router: "0 12 10 * * ? "

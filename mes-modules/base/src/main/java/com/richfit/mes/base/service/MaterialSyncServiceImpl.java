@@ -33,8 +33,7 @@ import java.util.List;
 @Service
 @EnableScheduling
 public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product> implements MaterialSyncService {
-
-
+    
     @Resource
     private MaterialSyncService materialSyncService;
 

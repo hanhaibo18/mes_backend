@@ -37,9 +37,9 @@ public class Product extends BaseEntity<Product> {
     private Date materialDate;
 
     /**
-     * 物料类型 0铸件 1锻件 2精铸件 3成品/半成品
+     * 物料类型
      */
-    @ApiModelProperty(value = "物料类型 0铸件 1锻件 2精铸件 3成品/半成品")
+    @ApiModelProperty(value = "物料类型 0铸件 1锻件 2精铸件 3成品 4下料 5模型 6半成品")
     private String materialType;
 
     /**

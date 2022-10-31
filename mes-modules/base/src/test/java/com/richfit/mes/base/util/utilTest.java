@@ -1,5 +1,6 @@
 package com.richfit.mes.base.util;
 
+import cn.hutool.core.util.IdUtil;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
@@ -35,6 +36,12 @@ public class utilTest {
         Assert.assertEquals(false, result);
     }
 
+    @Test
+    public void testSnowFlake() throws Exception {
+
+        System.out.println(IdUtil.simpleUUID());
+
+    }
    
 }
 

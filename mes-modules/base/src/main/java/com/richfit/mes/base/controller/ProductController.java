@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.base.enmus.MaterialTypeEnum;
 import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
 import com.richfit.mes.base.service.RouterService;
@@ -399,24 +400,26 @@ public class ProductController extends BaseController {
             List<Product> list = productService.list(queryWrapper);
 
             for (Product product : list) {
-                if ("0".equals(product.getObjectType()) && product.getObjectType() != null) {
-                    product.setObjectType("自制");
+                if (product.getObjectType() != null) {
+                    switch (product.getObjectType()) {
+                        case "0":
+                            product.setObjectType("自制");
+                            break;
+                        case "1":
+                            product.setObjectType("外购");
+                            break;
+                        case "2":
+                            product.setObjectType("外协");
+                            break;
+                        default:
+                            product.setObjectType("--");
+                            break;
+                    }
 
-                } else if ("1".equals(product.getObjectType()) && product.getObjectType() != null) {
-                    product.setObjectType("外购");
-                } else if ("2".equals(product.getObjectType()) && product.getObjectType() != null) {
-                    product.setObjectType("外协");
                 }
-
-                if ("0".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
-                    product.setMaterialType("铸件");
-                } else if ("1".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
-                    product.setMaterialType("锻件");
-                } else if ("2".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
-                    product.setMaterialType("精铸件");
-                } else if ("3".equals(product.getMaterialType()) && product.getMaterialNo() != null) {
-                    product.setMaterialType("成品/半成品");
-                }
+                
+                //物料类型编码转文字
+                product.setMaterialType(MaterialTypeEnum.getName(product.getMaterialType()));
 
             }
 

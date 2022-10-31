@@ -66,25 +66,43 @@ public class MaterialServiceImpl implements MaterialService {
             for (int i = 0; i < o.getTMARA().getItem().size(); i++) {
                 Product p = new Product();
                 String name = o.getTMARA().getItem().get(i).getMAKTX();
-                String[] data = name.split("\\s+");
-                if (data.length > 3) {
-                    p.setProductName(data[1] + " " + data[2]);
+
+                /*
+                 *   ERP返回的物料名称多为  图号+空格+物料名称+空格+D/JZ格式 或 物料名称+空格+D/JZ  或直接中文名称格式，
+                 *   以下逻辑为对物料名称根据空格分割，然后封装名称，转换为系统内的物料类型编码，
+                 *   \\S+ 表示空格的正则表达式。
+                 *   如果返回物料描述不规范，则只能手动处理，代码无法处理全面形式
+                 *
+                 */
+
+                if (isChinese(name.charAt(0))) {
+                    p.setProductName(name);
                 } else {
-                    p.setProductName(data[1]);
-                }
-                if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
-                    MaterialTypeDto type = materialType().get(data[data.length - 1]);
-                    p.setMaterialType(type.getNewCode());
-                    p.setMaterialTypeName(type.getDesc());
-                }
-                //描述结尾去掉D Z JZ /信息
-                if ("DZJZ/".contains(data[data.length - 1])) {
-                    name = "";
-                    for (int n = 0; n < data.length - 1; n++) {
-                        name += " " + data[n];
+                    String[] data = name.split("\\s+");
+                    if (data.length >= 3) {
+                        p.setProductName(data[1] + " " + data[2]);
+                    } else {
+                        p.setProductName(data[1]);
                     }
-                    name = name.replaceFirst(" ", "");
+                    if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
+                        MaterialTypeDto type = materialType().get(data[data.length - 1]);
+                        if (type != null) {
+                            p.setMaterialType(type.getNewCode());
+                            p.setMaterialTypeName(type.getDesc());
+                        }
+                    }
+
+                    //描述结尾去掉D Z JZ /信息
+                    if ("DZJZ/".contains(data[data.length - 1])) {
+                        name = "";
+                        for (int n = 0; n < data.length - 1; n++) {
+                            name += " " + data[n];
+                        }
+                        name = name.replaceFirst(" ", "");
+                    }
                 }
+
+
                 p.setMaterialDesc(name);
                 p.setDrawingNo(o.getTMARA().getItem().get(i).getZEINR());
                 p.setMaterialNo(trimStringWith(o.getTMARA().getItem().get(i).getMATNR(), zero));
@@ -112,13 +130,26 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
 
+    /**
+     * 成品、半成品（半）、下料件（X），锻件（D）、铸件（Z）、精铸件（JZ）、模型件（MX）这七种物料类型
+     *
+     * @return
+     */
     public static Map<String, MaterialTypeDto> materialType() {
         Map<String, MaterialTypeDto> map = new HashMap<>(4);
         map.put("D", new MaterialTypeDto("D", "0", "锻件"));
         map.put("Z", new MaterialTypeDto("Z", "1", "铸件"));
         map.put("JZ", new MaterialTypeDto("JZ", "2", "精铸件"));
-        map.put("/", new MaterialTypeDto("/", "3", "成品/半成品"));
+        map.put("/", new MaterialTypeDto("/", "3", "成品"));
+        map.put("X", new MaterialTypeDto("X", "4", "下料件"));
+        map.put("MX", new MaterialTypeDto("MX", "5", "模型件"));
+        map.put("半", new MaterialTypeDto("半", "6", "半成品"));
         return map;
+    }
+
+    private static boolean isChinese(char c) {
+        // 根据字节码判断
+        return c >= 0x4E00 && c <= 0x9FA5;
     }
 
 }
