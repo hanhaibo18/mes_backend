@@ -241,7 +241,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             queryWrapperNote.likeRight("request_note_number", trackItem.getId());
             int count = requestNoteService.count(queryWrapperNote);
             //申请单号
-            ingredient.setSqd(trackItem.getId() + "@" + count);
+            String id = trackItem.getId().substring(0, trackItem.getId().length() - 3);
+            ingredient.setSqd(id + "@" + count);
             //车间编码
             ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
             //车间code

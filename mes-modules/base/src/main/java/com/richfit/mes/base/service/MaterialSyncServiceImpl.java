@@ -13,7 +13,6 @@ import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -35,8 +34,6 @@ import java.util.List;
 @EnableScheduling
 public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product> implements MaterialSyncService {
 
-    @Value("${interface.erp.material-synchronization}")
-    private String url;
 
     @Resource
     private MaterialSyncService materialSyncService;

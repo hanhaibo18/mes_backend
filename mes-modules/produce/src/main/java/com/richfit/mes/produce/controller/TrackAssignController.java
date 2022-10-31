@@ -373,7 +373,8 @@ public class TrackAssignController extends BaseController {
         queryWrapperNote.likeLeft("request_note_number", trackItem.getId());
         int count = requestNoteService.count(queryWrapperNote);
         //申请单号
-        ingredient.setSqd(trackItem.getId() + "@" + count);
+        String id = trackItem.getId().substring(0, trackItem.getId().length() - 3);
+        ingredient.setSqd(id + "@" + count);
         //工厂编码
         ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
         //车间
