@@ -193,7 +193,7 @@ public class TrackCheckController extends BaseController {
                     //委托单状态,根据最新的走
                     item.setOrderStatus(physChemOrder.get(0).getStatus());
                     //是否有报告 （执行同步操作之后才能有报告）
-                    item.setOrderStatus(physChemOrder.get(0).getSyncStatus());
+                    item.setSyncStatus(physChemOrder.get(0).getSyncStatus());
                 }
             }
             return CommonResult.success(assigns);
