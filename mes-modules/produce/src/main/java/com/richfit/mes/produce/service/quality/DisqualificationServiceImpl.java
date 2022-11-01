@@ -256,13 +256,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode) {
         DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
+        //对象不为空
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
             List<SignedRecordsVo> signedRecordsList = this.querySignedRecordsList(disqualificationItemVo.getId());
             List<DisqualificationAttachment> attachmentList = attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId());
             List<TenantUserVo> tenantUserVos = queryOpinionUser(disqualificationItemVo.getId());
             disqualificationItemVo.setAttachmentList(attachmentList);
             disqualificationItemVo.setSignedRecordsList(signedRecordsList);
-            disqualificationItemVo.setTenantUserList(tenantUserVos);
+            disqualificationItemVo.setUserList(tenantUserVos);
         }
         return disqualificationItemVo;
     }

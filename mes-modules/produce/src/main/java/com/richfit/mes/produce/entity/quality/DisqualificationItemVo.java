@@ -107,7 +107,7 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "文件列表")
     private List<DisqualificationAttachment> attachmentList;
     @ApiModelProperty(value = "用户列表")
-    private List<TenantUserVo> tenantUserList;
+    private List<TenantUserVo> userList;
 
     public void trackHead(TrackHead trackHead) {
         //跟单号
