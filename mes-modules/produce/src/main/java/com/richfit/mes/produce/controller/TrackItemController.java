@@ -1,16 +1,11 @@
 package com.richfit.mes.produce.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.base.OperationTypeSpec;
-import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.produce.TrackItem;
-import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ItemMessageDto;
-import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,9 +29,6 @@ public class TrackItemController extends BaseController {
 
     @Autowired
     public TrackItemService trackItemService;
-
-    @Autowired
-    public BaseServiceClient baseServiceClient;
 
     public static String TRACK_HEAD_ID_NULL_MESSAGE = "跟单ID不能为空！";
     public static String TRACK_ITEM_ID_NULL_MESSAGE = "跟单工序ID不能为空！";
@@ -161,7 +153,6 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询跟单分流合并工序", notes = "根据跟单ID查询跟单分流合并的工序")
     @GetMapping("/track_flow_item_merge")
     public CommonResult<List<TrackItem>> trackFlowItemMerge(String trackId) {
-        List<TrackItem> trackItemList = new ArrayList<>();
         List<TrackItem> trackItemScheduleList = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         if (!StringUtils.isNullOrEmpty(trackId)) {
@@ -169,52 +160,7 @@ public class TrackItemController extends BaseController {
         }
         queryWrapper.orderByAsc("sequence_order_by");
         List<TrackItem> trackItems = trackItemService.list(queryWrapper);
-        //将相同的工序进行合并
-        for (TrackItem trackItem : trackItems) {
-            boolean flag = true;
-            for (TrackItem ti : trackItemList) {
-                if (ti.getOptSequence() == trackItem.getOptSequence()) {
-                    flag = false;
-                }
-            }
-            if (flag) {
-                trackItemList.add(trackItem);
-            }
-            if (trackItem.getIsSchedule() != null && trackItem.getIsSchedule() == 1) {
-                trackItemScheduleList.add(trackItem);
-            }
-        }
-
-        for (TrackItem ti : trackItemList) {
-            //找出派工工序进行状态修改
-            ti.setIsSchedule(0);
-            for (TrackItem tsi : trackItemScheduleList) {
-                if (ti.getOptSequence() == tsi.getOptSequence()) {
-                    ti.setIsSchedule(1);
-                }
-            }
-            //是否需要理化检测状态值赋值
-            String isEntrust = "0";
-            List<OperationTypeSpec> operationTypeSpecs = baseServiceClient.queryOperationTypeSpecByType(ti.getOptType(), ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
-            if (CollectionUtils.isNotEmpty(operationTypeSpecs)) {
-                for (OperationTypeSpec operationTypeSpec : operationTypeSpecs) {
-                   if("qualityFileType-10".equals(operationTypeSpec.getPropertyValue())){
-                       isEntrust = "1";
-                   }
-                }
-            } else {
-                List<RouterCheck> routerChecks = baseServiceClient.queryRouterList(ti.getOptId(), "质量资料", ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
-                List<RouterCheck> filters = routerChecks.stream().filter(item -> ("qualityFileType-10").equals(item.getPropertyDefaultvalue())).collect(Collectors.toList());
-                if(filters.size()>0){
-                    isEntrust = "1";
-                }
-            }
-            //材料委托单只有第一次查询的时候赋值，如果被修改过直接查item中的值
-            if(StringUtils.isNullOrEmpty(ti.getIsEntrust())){
-                ti.setIsEntrust(isEntrust);
-            }
-        }
-
+        List<TrackItem> trackItemList = new ArrayList<>(trackItemService.queryItemByTrackHeadId(trackId));
         return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
     }
 
