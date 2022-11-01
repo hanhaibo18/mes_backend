@@ -74,14 +74,30 @@ public class PhyChemTestService{
     private final static String YES_REPORT_STATUS = "1";
     //材料检测部门未生成报告
     private final static String NO_REPORT_STATUS = "0";
+    //已经完工
+    private final static int YES_DOING = 2;
+    //工序完成
+    private final static int ITEM_END = 1;
+
     /**
      * 查询跟单工序发起委托列表
      * @param phyChemTaskVo
      * @return
      */
     public IPage<PhysChemOrder> page(PhyChemTaskVo phyChemTaskVo) {
-        //需要理化检测的
-        List<TrackItem> trackItems = trackItemService.list(new QueryWrapper<TrackItem>().eq("is_entrust", GOING_STATUS));
+        //需要理化检测的工序
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+
+        trackItemQueryWrapper.eq("is_entrust", GOING_STATUS) //需要理化检测的工序
+                             .eq("is_doing", YES_DOING)      //已经完工
+                             .eq("is_operation_complete", ITEM_END)  //工序完成
+                             .isNotNull("quality_check_by")  //指定了质检人的
+                             .eq("is_exist_quality_check", 1)
+                             .and(
+                                     wrapper->wrapper.eq("is_recheck", 1).or(
+                                             wrapper2->wrapper2.eq("is_quality_complete",0))); //需要复检或者质检未完成
+
+        List<TrackItem> trackItems = trackItemService.list(trackItemQueryWrapper);
         //获取跟单ids
         List<String> headIds = trackItems.stream().map(item -> item.getTrackHeadId()).collect(Collectors.toList());
 
@@ -141,7 +157,6 @@ public class PhyChemTestService{
             physChemOrder.setReportStatus(NO_REPORT_STATUS);
             //设置工序为发起委托单工序
             TrackItem trackItem = new TrackItem();
-            trackItem.setIsEntrust(GOING_STATUS);
             trackItemService.updateById(trackItem);
             //保存委托单号
             Code.update("order_no",physChemOrder.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrder.getBranchCode(),codeRuleService);
