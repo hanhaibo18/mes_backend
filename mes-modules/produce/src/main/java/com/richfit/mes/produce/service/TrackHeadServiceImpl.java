@@ -19,10 +19,7 @@ import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.CodeRuleController;
-import com.richfit.mes.produce.dao.LineStoreMapper;
-import com.richfit.mes.produce.dao.StoreAttachRelMapper;
-import com.richfit.mes.produce.dao.TrackHeadMapper;
-import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
+import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
@@ -103,6 +100,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Autowired
     private ProduceInspectionRecordCardService produceInspectionRecordCardService;
+
+    @Resource
+    private TrackItemMapper trackItemMapper;
 
     /**
      * 功能描述: 工序资料下载指定位置
@@ -559,14 +559,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if ("N".equals(trackHead.getIsBatch()) && trackHead.getFlowNumber().compareTo(1) > 0) {
                 //多生产线工序修改
                 //工序顺序降序查询以派工的工序
-                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
-                queryWrapperTrackItem.eq("is_schedule", 1);
-                queryWrapperTrackItem.orderByDesc("opt_sequence");
-                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+//                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+//                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+//                queryWrapperTrackItem.eq("is_schedule", 1);
+//                queryWrapperTrackItem.orderByDesc("opt_sequence");
+//                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                //查询已派工最大工序顺序下所有工序
+                List<TrackItem> trackItemList = trackItemMapper.getTrackItems(trackHead.getId());
                 //取出最大的顺序数
                 int optSequence = 0;
-                if (trackItemList != null && trackItemList.size() > 0) {
+                if (!trackItemList.isEmpty()) {
                     optSequence = trackItemList.get(0).getOptSequence();
                 }
                 //删除大于最大顺序数的工序信息
@@ -574,29 +576,54 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 queryWrapperTrackItem2.eq("track_head_id", trackHead.getId());
                 queryWrapperTrackItem2.gt("opt_sequence", optSequence);
                 trackItemService.remove(queryWrapperTrackItem2);
-                //跟单工序添加
-                if (trackItems != null && trackItems.size() > 0) {
-                    for (TrackItem item : trackItems) {
-                        //批量添加未派工的工序
-                        if (item.getIsSchedule() == 0) {
-                            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
-                            queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
-                            List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
-                            for (TrackFlow trackFlow : trackFlows) {
-                                item.setId(UUID.randomUUID().toString().replace("-", ""));
-                                item.setFlowId(trackFlow.getId());
-                                item.setTrackHeadId(trackHead.getId());
-                                item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                                item.setModifyTime(new Date());
-                                item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                                //可分配数量
-                                item.setAssignableQty(trackFlow.getNumber());
-                                item.setNumber(trackFlow.getNumber());
-                                trackItemService.saveOrUpdate(item);
-                            }
+                //过滤掉小于或等于最大顺序数的工序
+                int finalOptSequence = optSequence;
+                List<TrackItem> itemList = trackItems.stream().filter(item -> (finalOptSequence < item.getOptSequence())).collect(Collectors.toList());
+                Map<String, TrackItem> map = trackItemList.stream().collect(Collectors.groupingBy(TrackItem::getFlowId, Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
+                //循环根据那个分流ID创建工序
+                for (TrackItem item : map.values()) {
+                    TrackFlow trackFlow = trackHeadFlowService.getById(item.getFlowId());
+                    for (TrackItem trackItem : itemList) {
+                        //分流Id不一样 往后所有的当前工序全部为否
+                        if (!item.getFlowId().equals(trackItem.getFlowId())) {
+                            trackItem.setIsCurrent(0);
                         }
+                        trackItem.setId(UUID.randomUUID().toString().replace("-", ""));
+                        trackItem.setFlowId(trackFlow.getId());
+                        trackItem.setTrackHeadId(trackHead.getId());
+                        trackItem.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                        trackItem.setModifyTime(new Date());
+                        trackItem.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                        //可分配数量
+                        trackItem.setAssignableQty(trackFlow.getNumber());
+                        trackItem.setNumber(trackFlow.getNumber());
+                        trackItem.setProductNo(trackFlow.getProductNo());
+                        trackItemService.saveOrUpdate(trackItem);
                     }
                 }
+                
+
+                //跟单工序添加
+//                if (!trackItems.isEmpty()) {
+//                    for (TrackItem item : itemList) {
+//                        //批量添加未派工的工序
+//                        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+//                        queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
+//                        List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
+//                        for (TrackFlow trackFlow : trackFlows) {
+//                            item.setId(UUID.randomUUID().toString().replace("-", ""));
+//                            item.setFlowId(trackFlow.getId());
+//                            item.setTrackHeadId(trackHead.getId());
+//                            item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+//                            item.setModifyTime(new Date());
+//                            item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+//                            //可分配数量
+//                            item.setAssignableQty(trackFlow.getNumber());
+//                            item.setNumber(trackFlow.getNumber());
+//                            trackItemService.saveOrUpdate(item);
+//                        }
+//                    }
+//                }
             } else {
                 //普通跟单工序添加与修改
                 if (trackItems != null && trackItems.size() > 0) {
