@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.CodeRuleService;
@@ -67,7 +68,8 @@ public class TrackHeadUtil {
      */
     public static List<TrackHead> flowInfo(TrackHead trackHead) throws Exception {
         List<TrackHead> trackHeadList = new ArrayList<>();
-        if (TrackHead.TRACKHEAD_BATCH_NO.equals(trackHead.getIsBatch()) && trackHead.getStoreList() != null) {
+        //IsBatch类型为N(是否批次：Y是 N否), StoreList 不为空 进行创建
+        if (TrackHead.TRACKHEAD_BATCH_NO.equals(trackHead.getIsBatch()) && CollectionUtils.isNotEmpty(trackHead.getStoreList())) {
             //单件多数量（多生产线）
             for (Map m : trackHead.getStoreList()) {
                 TrackHead th = JSON.parseObject(JSON.toJSONString(trackHead), TrackHead.class);

@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * @ClassName: DisqualificationController.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 不合格品处理流程
  * @CreateTime: 2022年09月30日 14:40:00
  */
 @Slf4j
