@@ -10,7 +10,7 @@
                    ti.number                 item_number,
                    ti.opt_id,
                    ti.opt_ver,
-                   th.replace_material,
+                   any_value(th.replace_material),
                    max(ti.sequence_order_by) sequence_order_by
             from produce_track_certificate tc
                      left join produce_track_head th on tc.th_id = th.id
