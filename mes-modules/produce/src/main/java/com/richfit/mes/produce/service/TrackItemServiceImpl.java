@@ -568,4 +568,40 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         return item;
     }
 
+    @Override
+    public List<TrackItem> queryItemByTrackHeadId(String trackHeadId) {
+        TrackItem item = trackItemMapper.getTrackItemByHeadId(trackHeadId);
+        if (item != null) {
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("flow_id", item.getFlowId());
+            queryWrapper.orderByAsc("sequence_order_by");
+            return this.list(queryWrapper);
+        } else {
+            List<TrackItem> trackItemScheduleList = new ArrayList<>();
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            if (!StringUtils.isNullOrEmpty(trackHeadId)) {
+                queryWrapper.eq("track_head_id", trackHeadId);
+            }
+            queryWrapper.orderByAsc("sequence_order_by");
+            List<TrackItem> trackItems = this.list(queryWrapper);
+            List<TrackItem> trackItemList = new ArrayList<>();
+            //将相同的工序进行合并
+            for (TrackItem trackItem : trackItems) {
+                boolean flag = true;
+                for (TrackItem ti : trackItemList) {
+                    if (ti.getOptSequence().equals(trackItem.getOptSequence())) {
+                        flag = false;
+                    }
+                }
+                //trackItemList集合中没有的工序添加进来
+                if (flag) {
+                    trackItemList.add(trackItem);
+                }
+                if (trackItem.getIsSchedule() != null && trackItem.getIsSchedule() == 1) {
+                    trackItemScheduleList.add(trackItem);
+                }
+            }
+            return trackItemList;
+        }
+    }
 }

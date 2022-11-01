@@ -139,4 +139,13 @@ public interface TrackItemService extends IService<TrackItem> {
      **/
     DisqualificationItemVo queryItem(String tiId, String branchCode);
 
+    /**
+     * 功能描述: 根据跟单号查询当前跟单号下工序序号最大一条已派工的工序 并根据flow_id 查询全部工序
+     *
+     * @param trackHeadId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/27 9:57
+     * @return: List<TrackItem>
+     **/
+    List<TrackItem> queryItemByTrackHeadId(String trackHeadId);
 }
