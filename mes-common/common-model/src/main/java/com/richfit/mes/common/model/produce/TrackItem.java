@@ -404,5 +404,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String orderStatus;
 
+    @ApiModelProperty(value = "是否生成理化报告")
+    @TableField(exist = false)
+    private String syncStatus;
+
 
 }
