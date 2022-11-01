@@ -45,7 +45,7 @@ public class MaterialServiceImpl implements MaterialService {
     @Override
     public List<Product> getMaterial(@ApiParam(value = "日期") @RequestBody String date,
                                      @ApiParam(value = "erp代号") @RequestParam String erpCode) {
-
+        log.debug("begin sync erp material,date [{}],erpCode [{}]", date, erpCode);
         try {
             //生成报文主体
             ZPPFM0004 ZPPFM0004 = new ZPPFM0004();
@@ -63,6 +63,8 @@ public class MaterialServiceImpl implements MaterialService {
 
             List<Product> products = new ArrayList<>();
             char zero = 48;
+            log.debug("receive erp return materialDate,size [{}]", o.getTMARA().getItem().size());
+            
             for (int i = 0; i < o.getTMARA().getItem().size(); i++) {
                 Product p = new Product();
                 String name = o.getTMARA().getItem().get(i).getMAKTX();
@@ -113,8 +115,8 @@ public class MaterialServiceImpl implements MaterialService {
             }
             return products;
         } catch (Exception e) {
+            log.error("sync material error:[{}]", e);
             return null;
-
         }
     }
 
