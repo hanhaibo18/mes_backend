@@ -16,6 +16,9 @@ import java.util.Date;
 public class TrackItem extends BaseEntity<TrackItem> {
 
     private static final long serialVersionUID = -7319209148899298755L;
+    @ApiModelProperty(value = "主键")
+    private String id;
+
     /**
      * 跟单ID
      */

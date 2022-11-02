@@ -174,19 +174,19 @@ public class TrackItemController extends BaseController {
             List<OperationTypeSpec> operationTypeSpecs = baseServiceClient.queryOperationTypeSpecByType(ti.getOptType(), ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
             if (CollectionUtils.isNotEmpty(operationTypeSpecs)) {
                 for (OperationTypeSpec operationTypeSpec : operationTypeSpecs) {
-                    if("qualityFileType-10".equals(operationTypeSpec.getPropertyValue())){
+                    if ("qualityFileType-10".equals(operationTypeSpec.getPropertyValue())) {
                         isEntrust = "1";
                     }
                 }
             } else {
                 List<RouterCheck> routerChecks = baseServiceClient.queryRouterList(ti.getOptId(), "质量资料", ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
                 List<RouterCheck> filters = routerChecks.stream().filter(item -> ("qualityFileType-10").equals(item.getPropertyDefaultvalue())).collect(Collectors.toList());
-                if(filters.size()>0){
+                if (filters.size() > 0) {
                     isEntrust = "1";
                 }
             }
             //材料委托单只有第一次查询的时候赋值，如果被修改过直接查item中的值
-            if(StringUtils.isNullOrEmpty(ti.getIsEntrust())){
+            if (StringUtils.isNullOrEmpty(ti.getIsEntrust())) {
                 ti.setIsEntrust(isEntrust);
                 trackItemService.updateById(ti);
             }
@@ -304,11 +304,12 @@ public class TrackItemController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")
+    @ApiOperation(value = "回滚至上工序", notes = "根据工序ID回滚至上工序")
     @GetMapping("/backSequence")
-    public CommonResult<String> backSequence(String flowId) {
-        return CommonResult.success(trackItemService.backSequence(flowId));
+    public CommonResult<String> backSequence(String id) throws Exception {
+        return CommonResult.success(trackItemService.backSequence(id));
     }
+
 
     @GetMapping("/queryItemMessageDto")
     @ApiOperation(value = "查询工序信息", notes = "根据工序Id查询工序信息")
