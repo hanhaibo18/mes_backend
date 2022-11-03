@@ -94,7 +94,13 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "保存文件中间表数据", notes = "保存文件中间表数据")
     @PostMapping("/saveAttachment")
-    public CommonResult<Boolean> saveAttachment(List<DisqualificationAttachment> attachments) {
+    public CommonResult<Boolean> saveAttachment(@RequestBody List<DisqualificationAttachment> attachments) {
         return CommonResult.success(attachmentService.saveAttachment(attachments));
+    }
+
+    @ApiOperation(value = "保存意见", notes = "质检人员保存审核意见并增加质检人员")
+    @PostMapping("/submitOpinions")
+    public CommonResult<Boolean> submitOpinions(@RequestBody SaveOpinionDto saveOpinionDto) {
+        return CommonResult.success(disqualificationService.submitOpinions(saveOpinionDto));
     }
 }

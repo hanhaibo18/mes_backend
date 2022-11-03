@@ -269,10 +269,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public Boolean submitOpinions(String opinionId, String opinion) {
+    public Boolean submitOpinions(SaveOpinionDto saveOpinionDto) {
+        savePerson(saveOpinionDto.getUserList(), saveOpinionDto.getId());
         UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id", opinionId);
-        updateWrapper.set("opinion", opinion);
+        updateWrapper.eq("id", saveOpinionDto.getOpinionId());
+        updateWrapper.set("opinion", saveOpinionDto.getOpinion());
         return userOpinionService.update(updateWrapper);
     }
 
