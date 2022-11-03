@@ -403,6 +403,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "是否发起委托")
     private String isEntrust;
 
+    @ApiModelProperty(value = "炉批号")
+    @TableField(exist = false)
+    private String batchNo;
+
     @ApiModelProperty(value = "材料委托单状态")
     @TableField(exist = false)
     private String orderStatus;
