@@ -29,6 +29,8 @@ public class AdditionalMaterialDto {
     private String isNeedPicking;
     @ApiModelProperty(value = "实物配送区分", dataType = "String")
     private String isEdgeStore;
+    @ApiModelProperty(value = "单位")
+    private String unit;
 
     private String trackHeadId;
     private String tiId;
