@@ -104,11 +104,11 @@ public interface TrackItemService extends IService<TrackItem> {
     /**
      * 回退工序
      *
-     * @param flowId
+     * @param id
      * @return
      * @Author WangRui
      */
-    String backSequence(String flowId);
+    String backSequence(String id) throws Exception;
 
     /**
      * 功能描述: 添加跟单 生产线工序信息添加
