@@ -3,10 +3,12 @@ package com.richfit.mes.produce.service.quality;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: DisqualificationService.java
@@ -82,11 +84,12 @@ public interface DisqualificationService extends IService<Disqualification> {
      *
      * @param tiId
      * @param branchCode
+     * @param opinionId
      * @Author: xinYu.hou
      * @Date: 2022/10/24 16:54
      * @return: DisqualificationItemVo
      **/
-    DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode);
+    DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String opinionId);
 
     /**
      * 功能描述: 提交意见
@@ -97,4 +100,26 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: Boolean
      **/
     Boolean submitOpinions(SaveOpinionDto saveOpinionDto);
+
+    /**
+     * 功能描述:保存最终结果
+     *
+     * @param disqualificationFinalResult
+     * @Author: xinYu.hou
+     * @Date: 2022/11/3 11:18
+     * @return: Boolean
+     **/
+    Boolean saveFinalResult(DisqualificationFinalResult disqualificationFinalResult);
+
+    /**
+     * 功能描述:根据跟单Id查询分流表中产品编号
+     *
+     * @param trackHeadId
+     * @Author: xinYu.hou
+     * @Date: 2022/11/3 15:53
+     * @return: List<Map < String, String>>
+     **/
+    List<Map<String, String>> queryProductNoList(String trackHeadId);
+
+
 }

@@ -10,9 +10,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.produce.Disqualification;
-import com.richfit.mes.common.model.produce.DisqualificationAttachment;
-import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -21,6 +19,7 @@ import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
 import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -40,6 +39,9 @@ import java.util.stream.Collectors;
 public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMapper, Disqualification> implements DisqualificationService {
 
     @Resource
+    private TrackHeadFlowService trackHeadFlowService;
+
+    @Resource
     private DisqualificationUserOpinionService userOpinionService;
 
     @Resource
@@ -56,6 +58,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private DisqualificationAttachmentService attachmentService;
+
+    @Resource
+    private DisqualificationFinalResultService finalResultService;
 
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
@@ -111,13 +116,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             queryWrapper.eq("disqualification_id", disqualification.getId());
             userOpinionService.remove(queryWrapper);
             savePerson(disqualification.getUserList(), disqualification.getId());
-            //删除文件列表
-            if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
-                QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
-                queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
-                attachmentService.remove(queryWrapperAttachment);
-                attachmentService.saveAttachment(disqualification.getAttachmentList());
-            }
         } else {
             if (1 == disqualification.getIsIssue()) {
                 disqualification.setOrderTime(new Date());
@@ -125,6 +123,22 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             this.save(disqualification);
             attachmentService.saveAttachment(disqualification.getAttachmentList());
             savePerson(disqualification.getUserList(), disqualification.getId());
+        }
+        if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
+            disqualification.getAttachmentList().forEach(attachment -> {
+                attachment.setDisqualificationId(disqualification.getId());
+                attachment.setBranchCode(disqualification.getBranchCode());
+                attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                attachment.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                attachment.setCreateTime(new Date());
+                attachment.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                attachment.setModifyTime(new Date());
+            });
+            //删除文件列表
+            QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
+            queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
+            attachmentService.remove(queryWrapperAttachment);
+            attachmentService.saveAttachment(disqualification.getAttachmentList());
         }
         return true;
     }
@@ -177,7 +191,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Override
     public List<TenantUserVo> queryUser() {
-        System.out.println(SecurityUtils.getCurrentUser().getUserId());
         //获取branchCode
         String value = value("qualityManagement");
         //获取TenantId
@@ -254,21 +267,27 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode) {
+    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String opinionId) {
         DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
         //对象不为空
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
             List<SignedRecordsVo> signedRecordsList = this.querySignedRecordsList(disqualificationItemVo.getId());
             List<DisqualificationAttachment> attachmentList = attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId());
             List<TenantUserVo> tenantUserVos = queryOpinionUser(disqualificationItemVo.getId());
-            disqualificationItemVo.setAttachmentList(attachmentList);
+            if (CollectionUtils.isNotEmpty(attachmentList)) {
+                disqualificationItemVo.setAttachmentList(attachmentList);
+            } else {
+                disqualificationItemVo.setAttachmentList(new ArrayList<>());
+            }
             disqualificationItemVo.setSignedRecordsList(signedRecordsList);
             disqualificationItemVo.setUserList(tenantUserVos);
+            disqualificationItemVo.setOpinionId(opinionId);
         }
         return disqualificationItemVo;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean submitOpinions(SaveOpinionDto saveOpinionDto) {
         savePerson(saveOpinionDto.getUserList(), saveOpinionDto.getId());
         UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
@@ -277,13 +296,33 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return userOpinionService.update(updateWrapper);
     }
 
+    @Override
+    public Boolean saveFinalResult(DisqualificationFinalResult disqualificationFinalResult) {
+        return finalResultService.save(disqualificationFinalResult);
+    }
+
+    @Override
+    public List<Map<String, String>> queryProductNoList(String trackHeadId) {
+        QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        List<TrackFlow> list = trackHeadFlowService.list(queryWrapper);
+        List<Map<String, String>> flowList = new ArrayList<>();
+        for (TrackFlow trackFlow : list) {
+            Map<String, String> map = new HashMap<>(1);
+            map.put("label", trackFlow.getProductNo());
+            map.put("value", trackFlow.getProductNo());
+            flowList.add(map);
+        }
+        return flowList;
+    }
+
     private List<TenantUserVo> queryOpinionUser(String disqualificationId) {
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("disqualification_id", disqualificationId);
         List<DisqualificationUserOpinion> opinions = userOpinionService.list(queryWrapper);
         return opinions.stream().map(user -> {
             TenantUserVo tenantUserVo = new TenantUserVo();
-            tenantUserVo.setId(user.getId());
+            tenantUserVo.setId(user.getUserId());
             tenantUserVo.setEmplName(user.getUserName());
             tenantUserVo.setBelongOrgId(user.getUserBranch());
             return tenantUserVo;
