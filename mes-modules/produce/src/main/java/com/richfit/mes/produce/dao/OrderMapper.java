@@ -17,4 +17,8 @@ public interface OrderMapper extends BaseMapper<Order> {
     IPage<Order> queryOrderList(Page<Order> orderPage, @Param("param") OrderDto orderDto);
 
     Order queryOrder(@Param("id") String id);
+
+
+    //精准匹配MaterialCode
+    IPage<Order> queryOrderListEqMaterialCode(Page<Order> orderPage, @Param("param") OrderDto orderDto);
 }
