@@ -1,5 +1,7 @@
 package com.richfit.mes.base.service;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.ProductMapper;
@@ -13,15 +15,19 @@ import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: MaterialSyncServiceImpl.java
@@ -33,7 +39,7 @@ import java.util.List;
 @Service
 @EnableScheduling
 public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product> implements MaterialSyncService {
-    
+
     @Resource
     private MaterialSyncService materialSyncService;
 
@@ -43,9 +49,12 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
     @Autowired
     private ErpServiceClient erpServiceClient;
 
+    @Value("${time.execute:false}")
+    private Boolean execute;
+
     @Override
     public List<Product> queryProductSync(MaterialSyncDto materialSyncDto) {
-        return erpServiceClient.getMaterial(materialSyncDto.getDate(), materialSyncDto.getCode()).getData();
+        return erpServiceClient.getMaterial(materialSyncDto.getDate(), materialSyncDto.getCode(),SecurityConstants.FROM_INNER).getData();
     }
 
     /**
@@ -90,32 +99,50 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
     @Scheduled(cron = "${time.material}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingProductSync() {
-        boolean data = false;
-        //获取所有工厂信息
-        MaterialSyncDto materialSyncDto = new MaterialSyncDto();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        materialSyncDto.setDate(format.format(date));
-        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
-        for (ItemParam itemParam : listCommonResult.getData()) {
-            materialSyncDto.setCode(itemParam.getCode());
-            List<Product> productList = materialSyncService.queryProductSync(materialSyncDto);
-            for (Product product : productList) {
-                product.setCreateBy("System");
-                product.setModifyBy("System");
-                product.setCreateTime(date);
-                product.setModifyTime(date);
-                product.setBranchCode(itemParam.getLabel());
-                product.setTenantId(itemParam.getTenantId());
-                QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("material_no", product.getMaterialNo());
-                boolean remove = materialSyncService.remove(queryWrapper);
-                boolean save = materialSyncService.save(product);
-                if (remove && save) {
-                    data = true;
+        if(execute){
+            //日期集合（前八天的日期YYYY-MM-dd）
+            List<String> dates = new ArrayList<>();
+            for(int i=0;i<=7;i++){
+                dates.add(DateUtil.format(DateUtil.offsetDay(new Date(),-i),"yyyy-MM-dd"));
+            }
+            //根据日期升序排列（保证同步跟新的数据为最新数据）
+            dates.sort((t1,t2)->t1.compareTo(t2));
+
+            //获取所有工厂信息
+            MaterialSyncDto materialSyncDto = new MaterialSyncDto();
+            CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
+
+            for (ItemParam itemParam : listCommonResult.getData()) {
+                materialSyncDto.setCode(itemParam.getCode());
+                log.debug("工厂代码："+itemParam.getCode()+"开始同步");
+                //同步前七天（包括今天）
+                for (String date : dates) {
+                    materialSyncDto.setDate(date);
+                    List<Product> productList = materialSyncService.queryProductSync(materialSyncDto);
+                    log.debug("日期："+date+",同步"+productList.size()+"条数据");
+                    for (Product product : productList) {
+                        product.setCreateBy("System");
+                        product.setModifyBy("System");
+                        product.setCreateTime(DateUtil.date());
+                        product.setModifyTime(DateUtil.date());
+                        product.setBranchCode(itemParam.getLabel());
+                        product.setTenantId(itemParam.getTenantId());
+                        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+                        queryWrapper.eq("material_no", product.getMaterialNo());
+                        //本地存在的物料
+                        List<Product> list = materialSyncService.list(queryWrapper);
+                        Map<String, Product> existPorduct = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
+                        //不存在才去新增
+                        if(ObjectUtil.isEmpty(existPorduct.get(product.getMaterialNo()))){
+                            materialSyncService.save(product);
+                        }
+                    }
                 }
+                log.debug("工厂代码："+itemParam.getCode()+"同步结束");
+
             }
         }
-        return CommonResult.success(data);
+
+        return CommonResult.success(true);
     }
 }

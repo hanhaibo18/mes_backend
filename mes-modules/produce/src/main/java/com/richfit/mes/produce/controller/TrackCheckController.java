@@ -185,6 +185,7 @@ public class TrackCheckController extends BaseController {
                 item.setTrackType(trackHead.getTrackType());
                 item.setTexture(trackHead.getTexture());
                 item.setPartsName(trackHead.getMaterialName());
+                item.setBatchNo(trackHead.getBatchNo());
                 //查询理化委托单,查询委托单号最大的数据
                 List<PhysChemOrder> physChemOrder = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("batch_no", trackHead.getBatchNo()).orderByDesc("modify_time"));
                 if(physChemOrder.size()>0){

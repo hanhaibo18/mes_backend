@@ -47,9 +47,10 @@ feign.client.config:
     read-timeout: 300000
 
 time:
-  material: "0 0 0 * * ? "
+  material: "0 57 17 * * ? "
   push_router: "0 12 10 * * ? "
   push_router_enabled: false
+  execute: false
 task-date:
   start_router: "2022-01-01"
 secure:

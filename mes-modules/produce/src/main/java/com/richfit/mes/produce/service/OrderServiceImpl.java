@@ -61,6 +61,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
+    //精准匹配MaterialCode
+    public IPage<Order> queryPageEqMaterialCode(Page<Order> orderPage, OrderDto orderDto) {
+
+        IPage<Order> planList = orderMapper.queryOrderListEqMaterialCode(orderPage, orderDto);
+
+        List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
+
+        for (Order order : planList.getRecords()) {
+            findBranchName(order, branchList);
+            if (order.getProjNum() == null) {
+                order.setProjNum(0);
+            }
+            if (order.getStoreNum() == null) {
+                order.setStoreNum(0);
+            }
+        }
+
+        return planList;
+    }
+
+    @Override
     public Order queryOrder(String id) {
         return orderMapper.queryOrder(id);
     }
