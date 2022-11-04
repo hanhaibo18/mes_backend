@@ -64,7 +64,7 @@ public class MaterialServiceImpl implements MaterialService {
             List<Product> products = new ArrayList<>();
             char zero = 48;
             log.debug("receive erp return materialDate,size [{}]", o.getTMARA().getItem().size());
-            
+
             for (int i = 0; i < o.getTMARA().getItem().size(); i++) {
                 Product p = new Product();
                 String name = o.getTMARA().getItem().get(i).getMAKTX();
@@ -79,19 +79,23 @@ public class MaterialServiceImpl implements MaterialService {
 
                 if (isChinese(name.charAt(0))) {
                     p.setProductName(name);
+                    p.setMaterialType("3");
+                    p.setMaterialTypeName("成品");
                 } else {
                     String[] data = name.split("\\s+");
-                    if (data.length >= 3) {
-                        p.setProductName(data[1] + " " + data[2]);
-                    } else {
-                        p.setProductName(data[1]);
-                    }
+                    
+                    p.setProductName(data[1]);
+
                     if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
                         MaterialTypeDto type = materialType().get(data[data.length - 1]);
                         if (type != null) {
                             p.setMaterialType(type.getNewCode());
                             p.setMaterialTypeName(type.getDesc());
                         }
+                        //如果不是标准格式或者没有结尾字段  默认为成品
+                    } else {
+                        p.setMaterialType("3");
+                        p.setMaterialTypeName("成品");
                     }
 
                     //描述结尾去掉D Z JZ /信息
