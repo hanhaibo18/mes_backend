@@ -61,6 +61,7 @@ public class ProduceTrackHeadTemplateController {
             if(SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             }
+            queryWrapper.orderByAsc("LENGTH(template_name)");
             IPage<ProduceTrackHeadTemplate> trackHeadTemplate = produceTrackHeadTemplateService.page(new Page<ProduceTrackHeadTemplate>(page, limit), queryWrapper);
             return CommonResult.success(trackHeadTemplate);
         } catch (Exception e) {

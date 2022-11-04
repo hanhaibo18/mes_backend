@@ -101,8 +101,8 @@ public class PhyChemTestService{
         //获取跟单ids
         List<String> headIds = trackItems.stream().map(item -> item.getTrackHeadId()).collect(Collectors.toList());
 
-        phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        phyChemTaskVo.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        //phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        //phyChemTaskVo.setConsignor(SecurityUtils.getCurrentUser().getUserId());
         //对应mapper文件中的别名
         String orderTableName = null;
         //跟单排序字段
@@ -155,9 +155,6 @@ public class PhyChemTestService{
             physChemOrder.setStatus(GO_UP_STATUS);
             physChemOrder.setSyncStatus(NO_SYNC_STATUS);
             physChemOrder.setReportStatus(NO_REPORT_STATUS);
-            //设置工序为发起委托单工序
-            TrackItem trackItem = new TrackItem();
-            trackItemService.updateById(trackItem);
             //保存委托单号
             Code.update("order_no",physChemOrder.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrder.getBranchCode(),codeRuleService);
         }
