@@ -89,6 +89,7 @@ secure:
       - /api/sys/attachment/selectAttachmentsList
       - /api/sys/item/param/find_by_code/inner
       - /api/sys/item/item/param/list/inner
+      - /api/sys/item/item/param/find_by_code
       - /api/sys/role
 logging:
   level:
