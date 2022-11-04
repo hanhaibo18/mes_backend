@@ -84,6 +84,12 @@ public class LineStoreController extends BaseController {
                                                 @ApiParam(value = "自动匹配生产订单") @RequestParam Boolean isAutoMatchProd,
                                                 @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
                                                 @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
+
+        //前端不需要校验endNo有没有填写 如果没有填写endNo 则吧startNo给到endNo
+        if (endNo == null) {
+            endNo = startNo;
+        }
+
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(lineStore.getMaterialNo())) {
