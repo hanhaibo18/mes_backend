@@ -104,4 +104,6 @@ public class DisqualificationFinalResultDto {
     @ApiModelProperty(value = "所属租户")
     private String tenantId;
 
+    @ApiModelProperty(value = "意见Id")
+    private String opinionId;
 }

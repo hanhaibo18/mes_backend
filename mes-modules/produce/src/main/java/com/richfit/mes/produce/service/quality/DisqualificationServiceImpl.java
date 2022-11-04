@@ -121,7 +121,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 disqualification.setOrderTime(new Date());
             }
             this.save(disqualification);
-            attachmentService.saveAttachment(disqualification.getAttachmentList());
             savePerson(disqualification.getUserList(), disqualification.getId());
         }
         if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
@@ -251,6 +250,32 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("disqualification_id", disqualificationId);
         List<SignedRecordsVo> recordsVoList = SignedRecordsVo.list(userOpinionService.list(queryWrapper));
+        DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationId);
+        if (null != finalResult) {
+            recordsVoList.forEach(records -> {
+                //意见ID相同 再去拼接最终结果
+                if (records.getId().equals(finalResult.getOperationId())) {
+                    StringBuilder sb = new StringBuilder();
+                    //让步接收数量
+                    if (finalResult.getAcceptDeviation() != null) {
+                        sb.append("让步接收数量:").append(finalResult.getAcceptDeviation());
+                    }
+                    //返修合格数量
+                    if (finalResult.getRepairQualified() != null) {
+                        sb.append(",返修合格数量:").append(finalResult.getRepairQualified());
+                    }
+                    //报废数量
+                    if (finalResult.getScrap() != null) {
+                        sb.append(",报废数量:").append(finalResult.getScrap());
+                    }
+                    //退货数量
+                    if (finalResult.getSalesReturn() != null) {
+                        sb.append(",退货数量:").append(finalResult.getSalesReturn());
+                    }
+                    records.setFinalResult(sb.toString());
+                }
+            });
+        }
         //单查询开单时间
         Disqualification disqualification = this.getById(disqualificationId);
         SignedRecordsVo signedRecordsVo = new SignedRecordsVo();
@@ -269,19 +294,16 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String opinionId) {
         DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
-        //对象不为空
+        //对象不为空,ID不为空
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
-            List<SignedRecordsVo> signedRecordsList = this.querySignedRecordsList(disqualificationItemVo.getId());
-            List<DisqualificationAttachment> attachmentList = attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId());
-            List<TenantUserVo> tenantUserVos = queryOpinionUser(disqualificationItemVo.getId());
-            if (CollectionUtils.isNotEmpty(attachmentList)) {
-                disqualificationItemVo.setAttachmentList(attachmentList);
-            } else {
-                disqualificationItemVo.setAttachmentList(new ArrayList<>());
-            }
-            disqualificationItemVo.setSignedRecordsList(signedRecordsList);
-            disqualificationItemVo.setUserList(tenantUserVos);
+            disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
+            disqualificationItemVo.setSignedRecordsList(this.querySignedRecordsList(disqualificationItemVo.getId()));
+            disqualificationItemVo.setUserList(queryOpinionUser(disqualificationItemVo.getId()));
             disqualificationItemVo.setOpinionId(opinionId);
+        } else if (null != disqualificationItemVo) {
+            disqualificationItemVo.setAttachmentList(Collections.emptyList());
+            disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
+            disqualificationItemVo.setUserList(Collections.emptyList());
         }
         return disqualificationItemVo;
     }

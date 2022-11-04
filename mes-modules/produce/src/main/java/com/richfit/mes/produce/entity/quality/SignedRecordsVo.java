@@ -16,6 +16,8 @@ import java.util.List;
  */
 @Data
 public class SignedRecordsVo {
+    @ApiModelProperty(value = "意见Id", dataType = "String")
+    private String id;
     @ApiModelProperty(value = "单位名称", dataType = "String")
     private String branchCodeName;
     @ApiModelProperty(value = "办理人", dataType = "String")
@@ -24,11 +26,14 @@ public class SignedRecordsVo {
     private Date handlingTime;
     @ApiModelProperty(value = "处理意见")
     private String opinion;
+    @ApiModelProperty(value = "最终结果")
+    private String finalResult;
 
     public static List<SignedRecordsVo> list(List<DisqualificationUserOpinion> userOpinions) {
         List<SignedRecordsVo> list = new ArrayList<>();
         for (DisqualificationUserOpinion opinion : userOpinions) {
             SignedRecordsVo signedRecordsVo = new SignedRecordsVo();
+            signedRecordsVo.setId(opinion.getId());
             signedRecordsVo.setUserName(opinion.getUserName());
             signedRecordsVo.setBranchCodeName(opinion.getUserBranchName());
             signedRecordsVo.setHandlingTime(opinion.getCreateTime());

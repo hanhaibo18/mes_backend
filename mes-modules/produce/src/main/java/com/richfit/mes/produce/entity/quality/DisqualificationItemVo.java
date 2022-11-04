@@ -106,10 +106,12 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "跟单Id")
     private String trackHeadId;
 
-    @ApiModelProperty(value = "审核意见列表")
+    @ApiModelProperty(value = "审核意见列表", dataType = "List<SignedRecordsVo>")
     private List<SignedRecordsVo> signedRecordsList;
+
     @ApiModelProperty(value = "文件列表")
     private List<DisqualificationAttachment> attachmentList;
+
     @ApiModelProperty(value = "用户列表")
     private List<TenantUserVo> userList;
 
