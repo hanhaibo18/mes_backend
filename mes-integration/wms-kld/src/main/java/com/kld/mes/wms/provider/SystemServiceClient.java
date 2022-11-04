@@ -2,8 +2,6 @@ package com.kld.mes.wms.provider;
 
 import com.kld.mes.wms.provider.fallback.SystemServiceClientFallbackImpl;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.MaterialReceive;
-import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -20,10 +18,13 @@ import java.util.List;
 @FeignClient(name = "system-service", decode404 = true, fallback = SystemServiceClientFallbackImpl.class)
 public interface SystemServiceClient {
 
-    @GetMapping(value = "/api/sys/item/param/find_by_code")
-    public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code);
+    @GetMapping(value = "/api/sys/item/param/find_by_code/inner")
+    public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code, @RequestHeader(value = SecurityConstants.FROM) String header);
+
+    @GetMapping(value = "/api/sys/item/param/find_by_code/inner")
+    public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code, @RequestParam("tenantId") String tenantId, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping(value = "/api/sys/item/item/param/list/inner")
-    public CommonResult<List<ItemParam>> selectItemParamByCodeInner(@RequestParam("code") String code, @RequestParam("label") String label, @RequestParam("tenantId") String tenantId,  @RequestHeader(value = SecurityConstants.FROM) String header);
+    public CommonResult<List<ItemParam>> selectItemParamByCodeInner(@RequestParam("code") String code, @RequestParam("label") String label, @RequestParam("tenantId") String tenantId, @RequestHeader(value = SecurityConstants.FROM) String header);
 
 }
