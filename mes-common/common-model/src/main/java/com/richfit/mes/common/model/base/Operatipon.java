@@ -43,6 +43,10 @@ public class Operatipon extends BaseEntity<Operatipon> {
      * 类型
      */
     private int optOrder;
+    /*
+    *是否关键工序
+     */
+    private int isKey;
 
     /**
      * 是否绑定工序（用于前端判断是否可以修改编码和名称）
