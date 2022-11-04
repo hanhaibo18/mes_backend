@@ -83,7 +83,7 @@ public class MaterialServiceImpl implements MaterialService {
                     p.setMaterialTypeName("成品");
                 } else {
                     String[] data = name.split("\\s+");
-                    
+
                     p.setProductName(data[1]);
 
                     if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
@@ -99,13 +99,13 @@ public class MaterialServiceImpl implements MaterialService {
                     }
 
                     //描述结尾去掉D Z JZ /信息
-                    if ("DZJZ/".contains(data[data.length - 1])) {
-                        name = "";
-                        for (int n = 0; n < data.length - 1; n++) {
-                            name += " " + data[n];
-                        }
-                        name = name.replaceFirst(" ", "");
-                    }
+                    //if ("DZJZ/".contains(data[data.length - 1])) {
+                    //    name = "";
+                    //    for (int n = 0; n < data.length - 1; n++) {
+                    //        name += " " + data[n];
+                    //    }
+                    //    name = name.replaceFirst(" ", "");
+                    //}
                 }
 
 
