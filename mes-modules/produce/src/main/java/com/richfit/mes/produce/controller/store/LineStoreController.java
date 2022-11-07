@@ -97,9 +97,12 @@ public class LineStoreController extends BaseController {
         StringBuilder strartSuffix = new StringBuilder();
         String[] split = startNo.split("");
         List<String> strings = Arrays.asList(split);
+        //判断第一位是不是0，如果不是直接跳出
         for (String string : strings) {
             if ("0".equals(string)) {
                 strartSuffix.append(string);
+            } else {
+                break;
             }
         }
 
