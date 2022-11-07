@@ -119,8 +119,6 @@ public class ProductToWmsService {
             init();
         }
         //转换json串
-        //TODO:测试固定工厂编码为X088
-        ingredientApplicationDto.setGc("X088");
         String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
         //加密后的16进制字符串
         String ingredientApplicationDtoEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
