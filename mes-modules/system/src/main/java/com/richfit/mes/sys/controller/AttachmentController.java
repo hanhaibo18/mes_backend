@@ -341,7 +341,7 @@ public class AttachmentController extends BaseController {
 
     @PostMapping("update")
     @ApiOperation(value = "更新", notes = "更新")
-    public int update(@RequestParam("id") String id, @RequestParam("attachName") String attachName, @RequestParam("classify") String classify, @RequestParam("status") String status, @RequestParam("previewUrl") String previewUrl, @RequestParam("relationName") String relationName, @RequestParam("relationType") String relationType) {
+    public int update(@RequestParam("id") String id, @RequestParam("attachName") String attachName, @RequestParam("classify") String classify, @RequestParam("status") String status, @RequestParam("previewUrl") String previewUrl, @RequestParam("relationName") String relationName, @RequestParam("relationType") String relationType, @RequestParam("remark") String remark) {
         Attachment oldAttachment = attachmentService.get(id);
         oldAttachment.setAttachName(attachName);
         oldAttachment.setClassify(classify);
@@ -349,6 +349,7 @@ public class AttachmentController extends BaseController {
         oldAttachment.setPreviewUrl(previewUrl);
         oldAttachment.setRelationName(relationName);
         oldAttachment.setRelationType(relationType);
+        oldAttachment.setRemark(remark);
         return attachmentService.update(oldAttachment);
 
     }
