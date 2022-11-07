@@ -155,7 +155,7 @@ public class TemplatePrintController extends BaseController {
                     CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
                     InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
 //                    ExcelUtils.exportExcelOnSheetsData("跟单", inputStream, sheets, rsp);
-                    ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo() + "_跟单(" + i + ")", inputStream, sheets);
+                    ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo(), inputStream, sheets);
                     i++;
                 } catch (Exception e) {
                     e.printStackTrace();
