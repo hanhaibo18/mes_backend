@@ -86,7 +86,7 @@ public class LineStoreController extends BaseController {
                                                 @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
 
         //前端不需要校验endNo有没有填写 如果没有填写endNo 则吧startNo给到endNo
-        if (endNo == null) {
+        if (endNo == null || org.apache.commons.lang3.StringUtils.isEmpty(endNo)) {
             endNo = startNo;
         }
         //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
