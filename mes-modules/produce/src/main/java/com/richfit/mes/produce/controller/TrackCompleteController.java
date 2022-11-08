@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -162,7 +163,9 @@ public class TrackCompleteController extends BaseController {
                     CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
                     track.setUserName(tenantUserVo.getData().getEmplName());
                     CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
-                    track.setDeviceName(device.getData().getName());
+                    if(!ObjectUtil.isEmpty(device.getData())){
+                        track.setDeviceName(device.getData().getName());
+                    }
                     TrackItem trackItem = trackItemService.getById(track.getTiId());
                     //查询产品编号
                     TrackFlow trackFlow = trackFlowService.getById(trackItem.getFlowId());

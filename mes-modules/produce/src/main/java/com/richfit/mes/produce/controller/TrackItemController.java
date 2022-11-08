@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -36,6 +37,8 @@ public class TrackItemController extends BaseController {
     public TrackItemService trackItemService;
     @Autowired
     public BaseServiceClient baseServiceClient;
+    @Autowired
+    public TrackHeadService trackHeadService;
 
     public static String TRACK_HEAD_ID_NULL_MESSAGE = "跟单ID不能为空！";
     public static String TRACK_ITEM_ID_NULL_MESSAGE = "跟单工序ID不能为空！";
@@ -138,6 +141,27 @@ public class TrackItemController extends BaseController {
         }
         queryWrapper.orderByAsc("sequence_order_by");
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "查询跟单工序(当前外协工序)", notes = "根据跟单ID查询跟单工序(当前外协工序)")
+    @PostMapping("/track_item/wxItems")
+    public CommonResult<List<TrackItem>> selectTrackItemByIds(@RequestBody List<String> headIds) {
+        List<TrackItem> trackItems = new ArrayList<>();
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        if(headIds.size()>0){
+            queryWrapper.in("track_head_id",headIds)
+                    .eq("opt_type","3")
+                    .eq("is_operation_complete",0)
+                    .eq("is_current",1)
+                    .orderByAsc("product_no");
+            trackItems = trackItemService.list(queryWrapper);
+        }
+        if(trackItems.size()>0){
+            for (TrackItem trackItem : trackItems) {
+                trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+            }
+        }
+        return CommonResult.success(trackItems, SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询跟单分流工序", notes = "根据跟单ID查询跟单分流工序")

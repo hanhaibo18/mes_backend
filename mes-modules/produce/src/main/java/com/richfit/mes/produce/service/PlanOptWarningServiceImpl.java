@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.PlanOptWarning;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -12,6 +13,7 @@ import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.dao.PlanMapper;
 import com.richfit.mes.produce.dao.PlanOptWarningMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,8 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
 
     @Autowired
     private PlanOptWarningMapper planOptWarningMapper;
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     /**
      * 功能描述: 通过计划id查询预警工序数据
@@ -107,6 +111,10 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             planOptWarning.setCompleteQty(trackItem.getCompleteQty());
             planOptWarning.setProductNo(trackItem.getProductNo());
             planOptWarning.setTrackItemId(trackItem.getId());
+            List<Operatipon> data = baseServiceClient.find(trackItem.getOperatiponId(), null, null, null, null, null).getData();
+            if(data.size()>0){
+                planOptWarning.setIsKey(data.get(0).getIsKey());
+            }
             planOptWarningList.add(planOptWarning);
         }
 

@@ -63,6 +63,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return CommonResult.success(null);
     }
 
+    @Override
+    public CommonResult<List<Operatipon>> find(String id, String optCode, String optName, String routerId, String branchCode, String tenantId) {
+        return null;
+    }
+
 
     @Override
     public CommonResult<List<SequenceSite>> getSequenceDevice(String sequenceId, String siteId, String siteCode, String branchCode, String isDefault) {
