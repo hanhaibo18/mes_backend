@@ -451,4 +451,16 @@ public class ProductController extends BaseController {
         queryWrapper.orderByDesc("create_time");
         return productService.list(queryWrapper);
     }
+
+    @ApiOperation(value = "查询物料材质", notes = "查询物料材质")
+    @GetMapping("/getProductTexture")
+    public CommonResult<List<String>> selectProductTexture() {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        queryWrapper.select("texture");
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.groupBy("texture");
+        List<Product> productList = productService.list(queryWrapper);
+        List<String> textureList = productList.stream().filter(x ->x!=null).map(x -> x.getTexture()).collect(Collectors.toList());
+        return CommonResult.success(textureList, PRODUCT_SUCCESS_MESSAGE);
+    }
 }
