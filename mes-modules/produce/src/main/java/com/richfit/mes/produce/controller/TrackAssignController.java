@@ -11,6 +11,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -20,6 +21,7 @@ import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
@@ -76,7 +78,8 @@ public class TrackAssignController extends BaseController {
     private TrackItemInspectionService inspectionService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
-
+    @Resource
+    private BaseServiceClient baseServiceClient;
     @Value("${switch}")
     private String off;
 
@@ -331,12 +334,8 @@ public class TrackAssignController extends BaseController {
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
                         requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
                         ApplicationResult application = new ApplicationResult();
-                        try {
-                            application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                        application = wmsServiceClient.anApplicationForm(ingredient).getData();
 
-                        } catch (Exception e) {
-                            throw new GlobalException("申请单发送失败!", ResultCode.FAILED);
-                        }
                         if ("N".equals(application.getRetCode())) {
                             throw new GlobalException(application.getRetMsg(), ResultCode.FAILED);
                         }
@@ -380,6 +379,8 @@ public class TrackAssignController extends BaseController {
         //车间
         ingredient.setCj(branchCode);
         //车间名称
+        CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(branchCode, null);
+        ingredient.setCjName(branch.getData().getBranchName());
         //工位
         ingredient.setGw(assign.getSiteId());
         //工位名称

@@ -4,7 +4,6 @@ import com.richfit.mes.base.provider.ErpServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.Router;
-import com.richfit.mes.common.model.produce.TrackItem;
 
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> getMaterial(String date, String erpCode) {
+    public CommonResult<List<Product>> getMaterial(String date, String erpCode,String header) {
         return null;
     }
 }

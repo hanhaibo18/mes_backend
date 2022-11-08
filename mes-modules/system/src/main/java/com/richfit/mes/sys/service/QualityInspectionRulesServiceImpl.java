@@ -60,7 +60,6 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
         if (!StringUtils.isNullOrEmpty(stateName)) {
             queryWrapper.eq("state_name", stateName);
         }
-        queryWrapper.orderByDesc("branch_code");
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
                 if ("desc".equals(order)) {

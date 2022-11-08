@@ -1,11 +1,17 @@
 package com.richfit.mes.produce.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.model.base.OperationTypeSpec;
+import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ItemMessageDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +35,10 @@ public class TrackItemController extends BaseController {
 
     @Autowired
     public TrackItemService trackItemService;
+    @Autowired
+    public BaseServiceClient baseServiceClient;
+    @Autowired
+    public TrackHeadService trackHeadService;
 
     public static String TRACK_HEAD_ID_NULL_MESSAGE = "跟单ID不能为空！";
     public static String TRACK_ITEM_ID_NULL_MESSAGE = "跟单工序ID不能为空！";
@@ -133,6 +143,27 @@ public class TrackItemController extends BaseController {
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "查询跟单工序(当前外协工序)", notes = "根据跟单ID查询跟单工序(当前外协工序)")
+    @PostMapping("/track_item/wxItems")
+    public CommonResult<List<TrackItem>> selectTrackItemByIds(@RequestBody List<String> headIds) {
+        List<TrackItem> trackItems = new ArrayList<>();
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        if(headIds.size()>0){
+            queryWrapper.in("track_head_id",headIds)
+                    .eq("opt_type","3")
+                    .eq("is_operation_complete",0)
+                    .eq("is_current",1)
+                    .orderByAsc("product_no");
+            trackItems = trackItemService.list(queryWrapper);
+        }
+        if(trackItems.size()>0){
+            for (TrackItem trackItem : trackItems) {
+                trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+            }
+        }
+        return CommonResult.success(trackItems, SUCCESS_MESSAGE);
+    }
+
     @ApiOperation(value = "查询跟单分流工序", notes = "根据跟单ID查询跟单分流工序")
     @GetMapping("/track_flow_item")
     public CommonResult<List<TrackItem>> trackFlowItem(String id, String flowId, String optVer) {
@@ -161,6 +192,29 @@ public class TrackItemController extends BaseController {
         queryWrapper.orderByAsc("sequence_order_by");
         List<TrackItem> trackItems = trackItemService.list(queryWrapper);
         List<TrackItem> trackItemList = new ArrayList<>(trackItemService.queryItemByTrackHeadId(trackId));
+        for (TrackItem ti : trackItemList) {
+            //是否需要理化检测状态值赋值
+            String isEntrust = "0";
+            List<OperationTypeSpec> operationTypeSpecs = baseServiceClient.queryOperationTypeSpecByType(ti.getOptType(), ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
+            if (CollectionUtils.isNotEmpty(operationTypeSpecs)) {
+                for (OperationTypeSpec operationTypeSpec : operationTypeSpecs) {
+                    if ("qualityFileType-10".equals(operationTypeSpec.getPropertyValue())) {
+                        isEntrust = "1";
+                    }
+                }
+            } else {
+                List<RouterCheck> routerChecks = baseServiceClient.queryRouterList(ti.getOptId(), "质量资料", ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
+                List<RouterCheck> filters = routerChecks.stream().filter(item -> ("qualityFileType-10").equals(item.getPropertyDefaultvalue())).collect(Collectors.toList());
+                if (filters.size() > 0) {
+                    isEntrust = "1";
+                }
+            }
+            //材料委托单只有第一次查询的时候赋值，如果被修改过直接查item中的值
+            if (StringUtils.isNullOrEmpty(ti.getIsEntrust())) {
+                ti.setIsEntrust(isEntrust);
+                trackItemService.updateById(ti);
+            }
+        }
         return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
     }
 
@@ -274,11 +328,12 @@ public class TrackItemController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")
+    @ApiOperation(value = "回滚至上工序", notes = "根据工序ID回滚至上工序")
     @GetMapping("/backSequence")
-    public CommonResult<String> backSequence(String flowId) {
-        return CommonResult.success(trackItemService.backSequence(flowId));
+    public CommonResult<String> backSequence(String id) throws Exception {
+        return CommonResult.success(trackItemService.backSequence(id));
     }
+
 
     @GetMapping("/queryItemMessageDto")
     @ApiOperation(value = "查询工序信息", notes = "根据工序Id查询工序信息")

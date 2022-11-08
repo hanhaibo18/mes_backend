@@ -13,6 +13,9 @@ import com.richfit.mes.produce.entity.OrderDto;
 public interface OrderService extends IService<Order> {
     IPage<Order> queryPage(Page<Order> planPage, OrderDto orderDto);
 
+    //精准匹配MaterialCode
+    IPage<Order> queryPageEqMaterialCode(Page<Order> planPage, OrderDto orderDto);
+
     Order queryOrder(String id);
 
     void findBranchName(Order order);

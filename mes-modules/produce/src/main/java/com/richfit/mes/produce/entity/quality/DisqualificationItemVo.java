@@ -101,11 +101,17 @@ public class DisqualificationItemVo {
     private String branchCode;
     @ApiModelProperty(value = "租户")
     private String tenantId;
+    @ApiModelProperty(value = "意见Id")
+    private String opinionId;
+    @ApiModelProperty(value = "跟单Id")
+    private String trackHeadId;
 
-    @ApiModelProperty(value = "审核意见列表")
+    @ApiModelProperty(value = "审核意见列表", dataType = "List<SignedRecordsVo>")
     private List<SignedRecordsVo> signedRecordsList;
+
     @ApiModelProperty(value = "文件列表")
     private List<DisqualificationAttachment> attachmentList;
+
     @ApiModelProperty(value = "用户列表")
     private List<TenantUserVo> userList;
 
@@ -128,5 +134,7 @@ public class DisqualificationItemVo {
         this.setClasses(trackHead.getClasses());
         //工作号
         this.setWorkNo(trackHead.getWorkNo());
+        //跟单Id
+        this.setTrackHeadId(trackHead.getId());
     }
 }

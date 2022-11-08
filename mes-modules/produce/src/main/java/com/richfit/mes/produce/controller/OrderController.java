@@ -85,6 +85,34 @@ public class OrderController extends BaseController {
         IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
 
         return CommonResult.success(orderList);
+    }
+
+    @GetMapping("/query/pageEqMaterialCode")
+    public CommonResult pageEqMaterialCode(BasePageDto<String> queryDto) throws GlobalException {
+
+        OrderDto orderDto = null;
+        try {
+            orderDto = objectMapper.readValue(queryDto.getParam(), OrderDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        if (null == orderDto) {
+            orderDto = new OrderDto();
+        }
+
+//        orderDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        if (StringUtils.hasText(orderDto.getOrderCol())) {
+            orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
+        } else {
+            orderDto.setOrderCol("modify_time");
+            orderDto.setOrder("desc");
+        }
+
+
+        IPage<Order> orderList = orderService.queryPageEqMaterialCode(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
+
+        return CommonResult.success(orderList);
 
     }
 

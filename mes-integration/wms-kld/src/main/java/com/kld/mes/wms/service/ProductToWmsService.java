@@ -10,6 +10,7 @@ import com.kld.mes.wms.utils.AESUtil;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +51,11 @@ public class ProductToWmsService {
     private String mesUrlQueryMaterialCountApi = "";
 
     private void init() {
-        mesUploadApi = systemServiceClient.findItemParamByCode(mesUploadAPiKey).getData().getLabel();
-        mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey).getData().getLabel();
-        mesScddUploadApi = systemServiceClient.findItemParamByCode(mesScddUploadKey).getData().getLabel();
-        mesUrlToken = systemServiceClient.findItemParamByCode(mesUrlTokenKey).getData().getLabel();
-        mesUrlQueryMaterialCountApi = systemServiceClient.findItemParamByCode(mesUrlQueryMaterialCountApiKey).getData().getLabel();
+        mesUploadApi = systemServiceClient.findItemParamByCode(mesUploadAPiKey, SecurityConstants.FROM_INNER).getData().getLabel();
+        mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey, SecurityConstants.FROM_INNER).getData().getLabel();
+        mesScddUploadApi = systemServiceClient.findItemParamByCode(mesScddUploadKey, SecurityConstants.FROM_INNER).getData().getLabel();
+        mesUrlToken = systemServiceClient.findItemParamByCode(mesUrlTokenKey, SecurityConstants.FROM_INNER).getData().getLabel();
+        mesUrlQueryMaterialCountApi = systemServiceClient.findItemParamByCode(mesUrlQueryMaterialCountApiKey, SecurityConstants.FROM_INNER).getData().getLabel();
     }
 
     //接口格式，详见条码-mes接口文档
@@ -125,7 +126,7 @@ public class ProductToWmsService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", ingredientApplicationDtoEncrpy);
         //调用上传接口
-        String s = HttpUtil.get(mesScddUploadApi, params, 120000);
+        String s = HttpUtil.post(mesScddUploadApi, params, 120000);
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         //返回上传信息
         return applicationResult;

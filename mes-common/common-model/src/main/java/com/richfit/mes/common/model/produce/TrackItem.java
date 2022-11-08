@@ -16,6 +16,9 @@ import java.util.Date;
 public class TrackItem extends BaseEntity<TrackItem> {
 
     private static final long serialVersionUID = -7319209148899298755L;
+    @ApiModelProperty(value = "主键")
+    private String id;
+
     /**
      * 跟单ID
      */
@@ -399,6 +402,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "是否发起委托")
     private String isEntrust;
+
+    @ApiModelProperty(value = "炉批号")
+    @TableField(exist = false)
+    private String batchNo;
 
     @ApiModelProperty(value = "材料委托单状态")
     @TableField(exist = false)

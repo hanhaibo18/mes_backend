@@ -25,6 +25,7 @@ public interface ErpServiceClient {
 
     @GetMapping("/api/integration/erp/material/getMaterial")
     public CommonResult<List<Product>> getMaterial(@ApiParam(value = "日期") @RequestParam String date,
-                                                   @ApiParam(value = "erp代号") @RequestParam String erpCode);
+                                                   @ApiParam(value = "erp代号") @RequestParam String erpCode,
+                                                   @RequestHeader(value = SecurityConstants.FROM) String header);
 
 }

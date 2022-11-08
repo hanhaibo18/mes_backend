@@ -8,6 +8,7 @@ import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.service.quality.DisqualificationAttachmentService;
+import com.richfit.mes.produce.service.quality.DisqualificationFinalResultService;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: DisqualificationController.java
@@ -36,6 +38,9 @@ public class DisqualificationController extends BaseController {
 
     @Resource
     private DisqualificationAttachmentService attachmentService;
+
+    @Resource
+    private DisqualificationFinalResultService finalResultService;
 
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
@@ -67,11 +72,12 @@ public class DisqualificationController extends BaseController {
     @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string")
     })
     @GetMapping("/queryItem")
-    public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode) {
-        return CommonResult.success(disqualificationService.inquiryRequestForm(tiId, branchCode));
+    public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode, String opinionId) {
+        return CommonResult.success(disqualificationService.inquiryRequestForm(tiId, branchCode, opinionId));
     }
 
     @ApiOperation(value = "查询质量检测部", notes = "第一次提交申请单查询质量检测部人员")
@@ -94,7 +100,25 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "保存文件中间表数据", notes = "保存文件中间表数据")
     @PostMapping("/saveAttachment")
-    public CommonResult<Boolean> saveAttachment(List<DisqualificationAttachment> attachments) {
+    public CommonResult<Boolean> saveAttachment(@RequestBody List<DisqualificationAttachment> attachments) {
         return CommonResult.success(attachmentService.saveAttachment(attachments));
+    }
+
+    @ApiOperation(value = "保存意见", notes = "质检人员保存审核意见并增加质检人员")
+    @PostMapping("/submitOpinions")
+    public CommonResult<Boolean> submitOpinions(@RequestBody SaveOpinionDto saveOpinionDto) {
+        return CommonResult.success(disqualificationService.submitOpinions(saveOpinionDto));
+    }
+
+    @ApiOperation(value = "保存最终结果", notes = "保存最终结果")
+    @PostMapping("/saveFinalResult")
+    public CommonResult<Boolean> saveFinalResult(@RequestBody DisqualificationFinalResultDto disqualificationFinalResult) {
+        return CommonResult.success(finalResultService.saveDisqualificationFinalResult(disqualificationFinalResult));
+    }
+
+    @ApiOperation(value = "查询产品编号列表", notes = "查询产品编号列表")
+    @GetMapping("/queryProductNoList")
+    public CommonResult<List<Map<String, String>>> queryProductNoList(String trackHeadId) {
+        return CommonResult.success(disqualificationService.queryProductNoList(trackHeadId));
     }
 }

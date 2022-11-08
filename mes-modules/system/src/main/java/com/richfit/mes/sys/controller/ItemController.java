@@ -1,5 +1,6 @@
 package com.richfit.mes.sys.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -171,12 +173,16 @@ public class ItemController extends BaseController {
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.eq("code", code);
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            }
         }
         List<ItemClass> iClasses = itemClassService.list(queryWrapper);
-        if (iClasses.size() > 0) {
+        //获取字典工厂代码id
+        List<String> classIds = iClasses.stream().map(ItemClass::getId).collect(Collectors.toList());
+        if (classIds.size() > 0) {
             QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
-            wrapper.eq("class_id", iClasses.get(0).getId());
+            wrapper.in("class_id", classIds);
             if (!StringUtils.isNullOrEmpty(label)) {
                 wrapper.like("label", label);
             }
@@ -262,8 +268,10 @@ public class ItemController extends BaseController {
 
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("code", code);
-        wrapper.eq("tenant_id", tenantId);
-
+        //补充,定时任务没有租户ID
+        if (StrUtil.isNotBlank(tenantId)) {
+            wrapper.eq("tenant_id", tenantId);
+        }
         return CommonResult.success(itemParamService.getOne(wrapper));
     }
 

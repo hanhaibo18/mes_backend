@@ -57,6 +57,10 @@ public interface BaseServiceClient {
                                                      @RequestParam("branchCode") String branchCode
     );
 
+    @GetMapping(value = "/api/base/opt/find")
+    public CommonResult<List<Operatipon>> find(@RequestParam("id") String id, @RequestParam("optCode") String optCode, @RequestParam("optName") String optName, @RequestParam("routerId") String routerId, @RequestParam("branchCode") String branchCode,@RequestParam("tenantId") String tenantId);
+
+
     @GetMapping(value = "/api/base/sequencesite/find")
     public CommonResult<List<SequenceSite>> getSequenceDevice(@RequestParam("sequenceId") String sequenceId, @RequestParam("siteId") String siteId, @RequestParam("siteCode") String siteCode, @RequestParam("branchCode") String branchCode, @RequestParam("isDefault") String isDefault);
 

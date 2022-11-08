@@ -41,6 +41,9 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
 
     @ApiModelProperty(value = "track_item表id", dataType = "String")
     private String trackItemId;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否为关键工序", dataType = "int")
+    private int isKey;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "工序是否完工", dataType = "Integer")

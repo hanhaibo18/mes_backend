@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.base.Product;
-import com.richfit.mes.common.model.produce.Certificate;
 
 /**
  * @author 王瑞

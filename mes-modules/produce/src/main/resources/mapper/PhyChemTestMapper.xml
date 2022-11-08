@@ -21,7 +21,7 @@
             and 1=0
         </if>
         where
-        py_order.consignor = #{param.consignor}
+        1=1
         <if test="param.branchCode != null and param.branchCode != ''">
             and head.branch_code = '${param.branchCode}'
         </if>

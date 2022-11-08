@@ -305,4 +305,12 @@ public class BranchController extends BaseController {
         return branch.getTenantId();
     }
 
+    @ApiOperation(value = "查询所有分公司", notes = "查询所有分公司")
+    @GetMapping("/queryControlledCorporation")
+    public CommonResult<List<Branch>> queryControlledCorporation() {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.isNull("main_branch_code");
+        return CommonResult.success(branchService.list(queryWrapper));
+    }
+
 }

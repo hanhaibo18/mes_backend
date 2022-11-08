@@ -42,6 +42,10 @@ interface:
     router: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF026/service/PS/PS_ZC80_PPIF026
     # 查询ERP库存
     storage: http://10.30.47.134:8000/ZBZZ/MES/ZC80_MMIF015/service/PS/PS_ZC80_MMIF015
+secure:
+  ignore:
+    urls:
+      - /api/integration/erp/material/getMaterial
 
 feign.client.config:
   default:

@@ -78,12 +78,34 @@ public class LineStoreController extends BaseController {
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
     @PostMapping("/line_store")
     public CommonResult<LineStore> addLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore,
-                                                @ApiParam(value = "启始序列号") @RequestParam(required = false) Integer startNo,
-                                                @ApiParam(value = "终止序列号") @RequestParam(required = false) Integer endNo,
+                                                @ApiParam(value = "启始序列号") @RequestParam(required = false) String startNo,
+                                                @ApiParam(value = "终止序列号") @RequestParam(required = false) String endNo,
                                                 @ApiParam(value = "前缀字段") @RequestParam(required = false) String suffixNo,
                                                 @ApiParam(value = "自动匹配生产订单") @RequestParam Boolean isAutoMatchProd,
                                                 @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
                                                 @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
+
+        //前端不需要校验endNo有没有填写 如果没有填写endNo 则吧startNo给到endNo
+        if (endNo == null) {
+            endNo = startNo;
+        }
+        //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
+        // 则会将0给省略掉，所以换成用String，将0截取出来然后在拼接到开始编号前面
+        Integer startNoOld = Integer.valueOf(startNo);
+        Integer endNoOld = Integer.valueOf(endNo);
+        //用来存放开始编号前缀为0
+        StringBuilder strartSuffix = new StringBuilder();
+        String[] split = startNo.split("");
+        List<String> strings = Arrays.asList(split);
+        //判断第一位是不是0，如果不是直接跳出
+        for (String string : strings) {
+            if ("0".equals(string)) {
+                strartSuffix.append(string);
+            } else {
+                break;
+            }
+        }
+
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(lineStore.getMaterialNo())) {
@@ -94,13 +116,13 @@ public class LineStoreController extends BaseController {
         } else if (!isMaterialNoExist(lineStore.getMaterialNo())) {
             return CommonResult.failed(MATERIAL_NO_NOT_EXIST);
             //校验编号是否已存在，如存在，返回报错信息
-        } else if (lineStoreService.checkCodeExist(lineStore, startNo, endNo, suffixNo)) {
+        } else if (lineStoreService.checkCodeExist(lineStore, startNoOld, endNoOld, suffixNo, strartSuffix.toString())) {
             String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
             return CommonResult.failed(message + CODE_EXITS);
         } else if (!isMaterialTypeMatch(lineStore.getMaterialNo(), lineStore.getMaterialType())) {
             return CommonResult.failed(MATERIAL_TYPE_NOT_MATCH);
         } else {
-            boolean bool = lineStoreService.addStore(lineStore, startNo, endNo, suffixNo, isAutoMatchProd, isAutoMatchPur, branchCode);
+            boolean bool = lineStoreService.addStore(lineStore, startNoOld, endNoOld, suffixNo, isAutoMatchProd, isAutoMatchPur, branchCode, strartSuffix.toString());
             if (bool) {
                 return CommonResult.success(lineStore, SUCCESS_MESSAGE);
             } else {

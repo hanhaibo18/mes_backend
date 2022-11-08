@@ -303,7 +303,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     // 材料入库
     @Override
     public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
-                            Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode) {
+                            Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) {
 
         lineStore.setUseNum(0);
         lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
@@ -326,8 +326,15 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 if (isAutoMatchProd) {
                     entity.setProductionOrder(matchProd(entity.getMaterialNo(), entity.getNumber()));
                 }
-
-                String workblankNo = oldWorkblankNo + "" + i;
+                StringBuilder stringBuilder = new StringBuilder(strartSuffix);
+                //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
+                if (!StringUtils.isNullOrEmpty(strartSuffix)) {
+                    stringBuilder.append(i);
+                } else {
+                    stringBuilder = new StringBuilder(i);
+                }
+                String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
+//                String workblankNo = oldWorkblankNo + "" + i;
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
                     workblankNo += "_" + suffixNo;
                 }
@@ -359,7 +366,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     //校验编号是否存在
     @Override
-    public boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo) {
+    public boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo, String strartSuffix) {
         boolean codeExist = false;
 
         //循环编号
@@ -367,8 +374,14 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
             for (int i = startNo; i <= endNo; i++) {
                 String oldWorkblankNo = lineStore.getWorkblankNo();
-
-                String workblankNo = oldWorkblankNo + "" + i;
+                StringBuilder stringBuilder = new StringBuilder(strartSuffix);
+                //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
+                if (!StringUtils.isNullOrEmpty(strartSuffix)) {
+                    stringBuilder.append(i);
+                } else {
+                    stringBuilder = new StringBuilder(i);
+                }
+                String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
                     workblankNo += "_" + suffixNo;
                 }
