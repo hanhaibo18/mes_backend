@@ -363,11 +363,13 @@ public class ProduceInspectionRecordService {
         JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
         //检验员赋值（当前登陆人）
         jsonObject.put("check_by", SecurityUtils.getCurrentUser().getUserId());
-
-        jsonObject.remove("modify_time");
-        jsonObject.remove("modify_by");
-        jsonObject.remove("create_time");
-        jsonObject.remove("create_by");
+        //使用上一次数据的情况过滤数据
+        jsonObject.remove("modifyTime");
+        jsonObject.remove("modifyBy");
+        jsonObject.remove("createTime");
+        jsonObject.remove("createBy");
+        jsonObject.remove("isAudit");
+        jsonObject.remove("auditRemark");
         //缺陷记录
         List<ProduceDefectsInfo> produceDefectsInfos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("defectsInfoList")), ProduceDefectsInfo.class);
         //探头信息
