@@ -158,11 +158,12 @@ public class ProduceInspectionRecordService {
             queryWrapper.isNotNull("audit_by");
         } else if ("0".equals(isAudit)) {
             //未审核
-            queryWrapper.eq("audit_by","");
+            queryWrapper.isNull("audit_by");
         }
 
         if (!StringUtils.isEmpty(trackNo)) {
-            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') LIKE '" + trackNo + '%' + "')");
         }
         if (!StringUtils.isEmpty(productName)) {
             queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
@@ -203,7 +204,8 @@ public class ProduceInspectionRecordService {
         }
 
         if (!StringUtils.isEmpty(trackNo)) {
-            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where track_no LIKE '" + trackNo + '%' + "')");
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') LIKE '" + trackNo + '%' + "')");
         }
         if (!StringUtils.isEmpty(productName)) {
             queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
@@ -224,7 +226,7 @@ public class ProduceInspectionRecordService {
         List<String> itemIds = trackItemInspections.getRecords().stream().map(TrackItemInspection::getId).collect(Collectors.toList());
 
         if (itemIds.size() > 0) {
-            IPage<Assign> assigns = trackAssignMapper.queryPageNew(new Page<Assign>(page, limit), new QueryWrapper<Assign>().in("ti_id", itemIds));
+            IPage<Assign> assigns = trackAssignMapper.queryPageNew(new Page<Assign>(page, limit), new QueryWrapper<Assign>().in("ti_id", itemIds).notIn("state",2));
             for (int i = 0; i < assigns.getRecords().size(); i++) {
                 assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
             }
@@ -591,6 +593,11 @@ public class ProduceInspectionRecordService {
         trackItemInspection.setCheckBy(checkBy);
         trackItemInspection.setAuditBy(auditBy);
         //这里生成报告号
+
+        trackItemInspectionService.updateById(trackItemInspection);
+
+        //同步回跟单工序表
+        TrackItem trackItem = new TrackItem();
 
         return trackItemInspectionService.updateById(trackItemInspection);
     }
