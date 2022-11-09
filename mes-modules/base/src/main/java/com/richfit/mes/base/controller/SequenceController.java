@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.enmus.MessageEnum;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -59,6 +61,10 @@ public class SequenceController extends BaseController {
 
     @Autowired
     private OperationAssignService operationAssignService;
+
+
+    @Autowired
+    private OperationTypeSpecService operationTypeSpecService;
 
 
     /**
@@ -348,6 +354,27 @@ public class SequenceController extends BaseController {
         queryWrapper.orderByAsc("opt_order");
         List<Sequence> result = sequenceService.list(queryWrapper);
         result = setOptCodeAndName(result);
+
+        for (Sequence ti : result) {
+            //是否需要理化检测状态值赋值
+            String isEntrust = "0";
+            List<OperationTypeSpec> operationTypeSpecs = operationTypeSpecService.queryOperationTypeSpecByType(ti.getOptType(), ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
+            if (CollectionUtils.isNotEmpty(operationTypeSpecs)) {
+                for (OperationTypeSpec operationTypeSpec : operationTypeSpecs) {
+                    if ("qualityFileType-10".equals(operationTypeSpec.getPropertyValue())) {
+                        isEntrust = "1";
+                    }
+                }
+            } else {
+                List<RouterCheck> routerChecks = routerCheckService.queryRouterList(ti.getOptId(), "质量资料", ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
+                List<RouterCheck> filters = routerChecks.stream().filter(item -> ("qualityFileType-10").equals(item.getPropertyDefaultvalue())).collect(Collectors.toList());
+                if (filters.size() > 0) {
+                    isEntrust = "1";
+                }
+            }
+            ti.setIsEntrust(isEntrust);
+        }
+
         return CommonResult.success(result, "操作成功！");
     }
 
