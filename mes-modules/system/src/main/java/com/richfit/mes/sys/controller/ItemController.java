@@ -269,8 +269,10 @@ public class ItemController extends BaseController {
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("code", code);
         //补充,定时任务没有租户ID
-        if (StrUtil.isNotBlank(tenantId)) {
+        if (StringUtils.isNullOrEmpty(tenantId)) {
             wrapper.eq("tenant_id", tenantId);
+        }else{
+            wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         return CommonResult.success(itemParamService.getOne(wrapper));
     }
