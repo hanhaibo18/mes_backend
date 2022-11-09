@@ -29,7 +29,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean saveRequestNote(IngredientApplicationDto ingredient, List<LineList> lineLists) {
+    public boolean saveRequestNote(IngredientApplicationDto ingredient, List<LineList> lineLists, String branchCode) {
         RequestNote requestNote = new RequestNote();
         requestNote.setId(UUID.randomUUID().toString().replace("-", ""));
         //跟单Id
@@ -42,7 +42,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
         //申请单号
         requestNote.setRequestNoteNumber(ingredient.getSqd());
         //所属机构
-        requestNote.setBranchCode(SecurityUtils.getCurrentUser().getBelongOrgId());
+        requestNote.setBranchCode(branchCode);
         //所属租户
         requestNote.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         boolean save = this.save(requestNote);

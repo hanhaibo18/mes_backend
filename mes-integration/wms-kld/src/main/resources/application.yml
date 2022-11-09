@@ -24,7 +24,9 @@ security:
     resource:
       loadBalanced: true
       token-info-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/check_token
-
+ribbon:
+  ConnectTimeout: 10000 #ribbon 链接超时时长
+  ReadTimeout: 10000 #ribbon 读取超时时长
 tenant:
   tenantIds: 12345678901234567890123456789003 , 12345678901234567890123456789004
 

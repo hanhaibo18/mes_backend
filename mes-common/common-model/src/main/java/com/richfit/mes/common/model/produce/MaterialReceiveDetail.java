@@ -5,7 +5,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
 /**
- * @Description TODO
+ * @Description
  * @Author ang
  * @Date 2022/7/29 17:42
  */

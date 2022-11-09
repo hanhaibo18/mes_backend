@@ -57,6 +57,7 @@ public class ProjectBomController {
         return CommonResult.success(deleteBom);
     }
 
+
     @ApiOperation(value = "分页查询项目Bom", notes = "根据图号、状态等分页查询项目Bom")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "String"),

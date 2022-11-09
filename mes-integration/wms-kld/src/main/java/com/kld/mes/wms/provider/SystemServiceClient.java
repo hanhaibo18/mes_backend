@@ -18,8 +18,8 @@ import java.util.List;
 @FeignClient(name = "system-service", decode404 = true, fallback = SystemServiceClientFallbackImpl.class)
 public interface SystemServiceClient {
 
-    @GetMapping(value = "/api/sys/item/param/find_by_code/inner")
-    public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code, @RequestHeader(value = SecurityConstants.FROM) String header);
+    @GetMapping(value = "/api/sys/item/param/find_by_code")
+    public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code);
 
     @GetMapping(value = "/api/sys/item/param/find_by_code/inner")
     public CommonResult<ItemParam> findItemParamByCode(@RequestParam("code") String code, @RequestParam("tenantId") String tenantId, @RequestHeader(value = SecurityConstants.FROM) String header);
