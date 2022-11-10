@@ -85,26 +85,34 @@ public class LineStoreController extends BaseController {
                                                 @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
                                                 @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
 
-        //前端不需要校验endNo有没有填写 如果没有填写endNo 则吧startNo给到endNo
-        if (endNo == null || org.apache.commons.lang3.StringUtils.isEmpty(endNo)) {
-            endNo = startNo;
-        }
-        //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
-        // 则会将0给省略掉，所以换成用String，将0截取出来然后在拼接到开始编号前面
-        Integer startNoOld = Integer.valueOf(startNo);
-        Integer endNoOld = Integer.valueOf(endNo);
         //用来存放开始编号前缀为0
         StringBuilder strartSuffix = new StringBuilder();
-        String[] split = startNo.split("");
-        List<String> strings = Arrays.asList(split);
-        //判断第一位是不是0，如果不是直接跳出
-        for (String string : strings) {
-            if ("0".equals(string)) {
-                strartSuffix.append(string);
-            } else {
-                break;
+        Integer startNoOld = 0;
+        Integer endNoOld = 0;
+
+        //只有单件的时候才会使用启始序列号，只要是单件  则启始序列号必有
+        if(lineStore!=null&& org.apache.commons.lang3.StringUtils.isNotEmpty(lineStore.getTrackType())&&"0".equals(lineStore.getTrackType())){
+            //前端不需要校验endNo有没有填写 如果没有填写endNo 则吧startNo给到endNo
+            if (endNo == null || org.apache.commons.lang3.StringUtils.isEmpty(endNo)) {
+                endNo = startNo;
+            }
+            //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
+            // 则会将0给省略掉，所以换成用String，将0截取出来然后在拼接到开始编号前面
+            startNoOld = Integer.valueOf(startNo);
+            endNoOld = Integer.valueOf(endNo);
+
+            String[] split = startNo.split("");
+            List<String> strings = Arrays.asList(split);
+            //判断第一位是不是0，如果不是直接跳出
+            for (String string : strings) {
+                if ("0".equals(string)) {
+                    strartSuffix.append(string);
+                } else {
+                    break;
+                }
             }
         }
+
 
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
