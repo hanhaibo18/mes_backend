@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -460,7 +461,7 @@ public class ProductController extends BaseController {
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.groupBy("texture");
         List<Product> productList = productService.list(queryWrapper);
-        List<String> textureList = productList.stream().filter(x ->x!=null).map(x -> x.getTexture()).collect(Collectors.toList());
+        List<String> textureList = productList.stream().filter(x ->x!=null && !x.getTexture().equals("")).map(x -> x.getTexture()).collect(Collectors.toList());
         return CommonResult.success(textureList, PRODUCT_SUCCESS_MESSAGE);
     }
 }
