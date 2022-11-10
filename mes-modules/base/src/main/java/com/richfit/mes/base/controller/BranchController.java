@@ -249,6 +249,12 @@ public class BranchController extends BaseController {
         return CommonResult.success(branchService.queryUsers(auditBy));
     }
 
+    @ApiOperation(value = "获取质量检测部门和本公司及其子部门的质检人员", notes = "获取质量检测部门和本公司及其子部门的质检人员")
+    @GetMapping("/queryZjAndBranchCodeUsers")
+    public CommonResult<List<TenantUserVo>> queryZjAndBranchCodeUsers() {
+        return CommonResult.success(branchService.queryZjAndBranchCodeUsers());
+    }
+
     @ApiOperation(value = "查询所有组织机构", notes = "查询所有组织机构")
     @GetMapping("/queryAllCode")
     public CommonResult<List<Branch>> queryAllCode() {

@@ -90,9 +90,26 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
             tenantUserVo.add(user);
         } else {
             //先获取所有车间
-            tenantUserVo.addAll(systemServiceClient.queryUserByBranchCode(BOMCO_ZJ).getData());
+            tenantUserVo.addAll(systemServiceClient.queryUserByBranchCodeList(BOMCO_ZJ).getData());
         }
         return tenantUserVo;
+    }
+
+    /**
+     * 获取质量检测部门和本公司及其子部门的质检人员
+     * @return
+     */
+    @Override
+    public List<TenantUserVo> queryZjAndBranchCodeUsers(){
+        List<TenantUserVo> tenantUserList = new ArrayList<>();
+
+        //本公司的质检
+        tenantUserList.addAll(systemServiceClient.queryByTendId().getData());
+
+        //获取质量检测部门的人员
+        //tenantUserList.addAll(queryUsers(null));
+
+        return tenantUserList;
     }
 
     @Override
