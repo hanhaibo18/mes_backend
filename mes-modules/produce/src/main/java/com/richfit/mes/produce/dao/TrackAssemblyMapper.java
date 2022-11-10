@@ -15,14 +15,14 @@ public interface TrackAssemblyMapper extends BaseMapper<TrackAssembly> {
 
     @Select("SELECT\n" +
             "\tpta.drawing_no,\n" +
-            "\tpta.NAME,\n" +
+            "\tpta.NAME AS name,\n" +
             "\tpta.material_no,\n" +
             "\tpta.unit,\n" +
             "\tmrd.quantity,\n" +
-            "\tmrd.order_quantity \n" +
+            "\tmrd.order_quantity AS orderQuantity \n" +
             "FROM\n" +
             "\tproduce_track_assembly AS pta\n" +
-            "\tLEFT JOIN ( SELECT material_num, sum( quantity ) AS quantity, sum( order_quantity ) AS order_quantity FROM produce_material_receive_detail WHERE state = '0' GROUP BY material_num ) mrd ON pta.material_no = mrd.material_num \n" +
+            "\tLEFT JOIN ( SELECT material_num, sum( quantity ) AS quantity, sum( order_quantity ) AS order_quantity FROM produce_material_receive_detail WHERE state = '1' GROUP BY material_num ) mrd ON pta.material_no = mrd.material_num \n" +
             "WHERE\n" +
             "\tpta.track_head_id = #{id} AND pta.material_no IS NOT NULL AND mrd.material_num IS NOT NULL \n" +
             "ORDER BY\n" +

@@ -49,6 +49,12 @@ public interface BranchService extends IService<Branch> {
     List<TenantUserVo> queryUsers(String auditBy);
 
     /**
+     * 获取质量检测部门和本公司及其子部门的质检人员
+     * @return
+     */
+    List<TenantUserVo> queryZjAndBranchCodeUsers();
+
+    /**
      * 功能描述: 获取所有车间
      *
      * @Author: xinYu.hou

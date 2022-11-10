@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -145,4 +146,13 @@ public class Sequence extends BaseEntity<Sequence> {
      */
     @ApiModelProperty(value = "注意事项", dataType = "String")
     private String notice;
+
+
+    /**
+     * 注意事项
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否理化委托", dataType = "String")
+    private String isEntrust;
+
 }

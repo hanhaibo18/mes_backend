@@ -55,6 +55,9 @@ public interface SystemServiceClient {
     @GetMapping("/api/sys/user/queryByBranchCode")
     public List<TenantUserVo> queryByBranchCode(@RequestParam("branchCode") String branchCode);
 
+    @GetMapping("/api/sys/user/queryByTendId")
+    public CommonResult<List<TenantUserVo>> queryByTendId();
+
 
     @GetMapping("/api/sys/user/queryUserByTenantId")
     public List<TenantUserVo> queryUserByTenantId(@RequestParam("tenantId") String tenantId);

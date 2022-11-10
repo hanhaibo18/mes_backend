@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -20,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMapper, MaterialReceive> implements MaterialReceiveService{
+public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMapper, MaterialReceive> implements MaterialReceiveService {
 
     @Autowired
     MaterialReceiveMapper materialReceiveMapper;
@@ -30,12 +31,16 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
 
     @Override
     public String getlastTime(String tenantId) {
-       return materialReceiveMapper.getlastTime(tenantId);
+        Date date = materialReceiveMapper.getlastTime(tenantId);
+        if (null != date) {
+            return date.toString();
+        }
+        return null;
     }
 
     @Override
     public Page<MaterialReceive> getPage(Page<MaterialReceive> materialReceivePage, QueryWrapper<MaterialReceive> queryWrapper) {
-        return materialReceiveMapper.getPage(materialReceivePage,queryWrapper);
+        return materialReceiveMapper.getPage(materialReceivePage, queryWrapper);
     }
 
     @Override
@@ -46,13 +51,13 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
         QueryWrapper<MaterialReceive> queryWrapper = new QueryWrapper();
         queryWrapper.eq("delivery_no", deliveryNo);
         List<MaterialReceive> list = this.list(queryWrapper);
-        if (list.size()>0){
+        if (list.size() > 0) {
             materialReceiveList = null;
         } else {
             QueryWrapper<RequestNote> wrapper = new QueryWrapper();
-            wrapper.eq("request_note_number",aplyNum);
+            wrapper.eq("request_note_number", aplyNum);
             List<RequestNote> requestNotes = requestNoteService.list(wrapper);
-            if (!requestNotes.isEmpty()){
+            if (!requestNotes.isEmpty()) {
                 for (MaterialReceive materialReceive : list) {
                     materialReceive.setBranchCode(requestNotes.get(0).getBranchCode());
                     materialReceive.setTenantId(requestNotes.get(0).getTenantId());

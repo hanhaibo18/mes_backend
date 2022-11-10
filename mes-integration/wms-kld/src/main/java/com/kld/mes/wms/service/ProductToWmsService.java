@@ -10,7 +10,6 @@ import com.kld.mes.wms.utils.AESUtil;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
-import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,11 +50,11 @@ public class ProductToWmsService {
     private String mesUrlQueryMaterialCountApi = "";
 
     private void init() {
-        mesUploadApi = systemServiceClient.findItemParamByCode(mesUploadAPiKey, SecurityConstants.FROM_INNER).getData().getLabel();
-        mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey, SecurityConstants.FROM_INNER).getData().getLabel();
-        mesScddUploadApi = systemServiceClient.findItemParamByCode(mesScddUploadKey, SecurityConstants.FROM_INNER).getData().getLabel();
-        mesUrlToken = systemServiceClient.findItemParamByCode(mesUrlTokenKey, SecurityConstants.FROM_INNER).getData().getLabel();
-        mesUrlQueryMaterialCountApi = systemServiceClient.findItemParamByCode(mesUrlQueryMaterialCountApiKey, SecurityConstants.FROM_INNER).getData().getLabel();
+        mesUploadApi = systemServiceClient.findItemParamByCode(mesUploadAPiKey).getData().getLabel();
+        mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey).getData().getLabel();
+        mesScddUploadApi = systemServiceClient.findItemParamByCode(mesScddUploadKey).getData().getLabel();
+        mesUrlToken = systemServiceClient.findItemParamByCode(mesUrlTokenKey).getData().getLabel();
+        mesUrlQueryMaterialCountApi = systemServiceClient.findItemParamByCode(mesUrlQueryMaterialCountApiKey).getData().getLabel();
     }
 
     //接口格式，详见条码-mes接口文档
@@ -119,6 +118,8 @@ public class ProductToWmsService {
             init();
         }
         //转换json串
+        //TODO:测试固定工厂编码为X088
+        ingredientApplicationDto.setGc("X088");
         String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
         //加密后的16进制字符串
         String ingredientApplicationDtoEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);

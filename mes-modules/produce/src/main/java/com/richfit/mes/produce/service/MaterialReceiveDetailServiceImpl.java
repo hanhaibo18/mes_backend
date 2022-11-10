@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Service
 @Transactional
-public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiveDetailMapper, MaterialReceiveDetail> implements MaterialReceiveDetailService{
+public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiveDetailMapper, MaterialReceiveDetail> implements MaterialReceiveDetailService {
 
     @Resource
     MaterialReceiveDetailMapper materialReceiveDetailMapper;
@@ -39,19 +39,20 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateState(String deliveryNo, String branchCode) {
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
-        wrapper.eq("delivery_no",deliveryNo);
+        wrapper.eq("delivery_no", deliveryNo);
         List<MaterialReceiveDetail> list = materialReceiveDetailService.list(wrapper);
         boolean b = lineStoreService.addStoreByWmsSend(list, branchCode);
-        if (b){
+        if (b) {
             UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.set("state",1);
-            updateWrapper.eq("delivery_no",list.get(0).getDeliveryNo());
+            updateWrapper.set("state", 1);
+            updateWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
             materialReceiveService.update(updateWrapper);
             UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
-            detailWrapper.set("state",1);
-            detailWrapper.eq("delivery_no",list.get(0).getDeliveryNo());
+            detailWrapper.set("state", 1);
+            detailWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
             this.update(detailWrapper);
             return true;
         } else {
@@ -65,7 +66,7 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
             QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper();
             queryWrapper.eq("delivery_no", materialReceiveDetail);
             List<MaterialReceiveDetail> list = this.list(queryWrapper);
-            if (list.size()>0){
+            if (list.size() > 0) {
                 detailList.remove(materialReceiveDetail);
             }
         }

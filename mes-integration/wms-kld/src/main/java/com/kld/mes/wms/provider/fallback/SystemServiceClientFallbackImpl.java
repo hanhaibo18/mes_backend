@@ -15,7 +15,7 @@ import java.util.List;
 public class SystemServiceClientFallbackImpl implements SystemServiceClient {
 
     @Override
-    public CommonResult<ItemParam> findItemParamByCode(String code, String header) {
+    public CommonResult<ItemParam> findItemParamByCode(String code) {
         return CommonResult.success(null);
     }
 

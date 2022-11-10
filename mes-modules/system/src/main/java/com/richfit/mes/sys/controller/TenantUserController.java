@@ -253,6 +253,7 @@ public class TenantUserController extends BaseController {
         return CommonResult.success(tenantUserService.queryUserByBranchCodePage(branchCode));
     }
 
+
     @ApiOperation(value = "分页查询根据组织机构获取用户列表", notes = "分页查询根据组织机构获取用户列表")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
     @GetMapping("/queryUserByBranchCode/page")
@@ -312,6 +313,12 @@ public class TenantUserController extends BaseController {
     @GetMapping("/queryByBranchCode")
     public CommonResult<List<TenantUserVo>> queryByBranchCode(String branchCode) {
         return CommonResult.success(tenantUserService.queryByBranchCode(branchCode));
+    }
+
+    @ApiOperation(value = "获取本公司质检员", notes = "获取本公司质检员")
+    @GetMapping("/queryByTendId")
+    public CommonResult<List<TenantUserVo>> queryByTendId() {
+        return CommonResult.success(tenantUserService.queryByTendId());
     }
 
     @ApiOperation(value = "根据userId查询用户信息", notes = "根据用户Id获取人员信息")

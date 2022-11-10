@@ -51,6 +51,11 @@ public class MaterialReceive extends BaseEntity<MaterialReceive> {
      */
     private String tenantId;
 
+    /**
+     * 跟单id
+     */
+    @TableField(exist = false)
+    private String trackHeadId;
 
 
     @TableField(exist = false)

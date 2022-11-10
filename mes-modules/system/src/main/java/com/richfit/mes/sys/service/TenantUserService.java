@@ -125,6 +125,12 @@ public interface TenantUserService {
     List<TenantUserVo> queryByBranchCode(String BranchCode);
 
     /**
+     * 获取本公司下的所以质检人员信息
+     * @return
+     */
+    List<TenantUserVo> queryByTendId();
+
+    /**
      * 功能描述: 根据UserId查询用户
      *
      * @param userId

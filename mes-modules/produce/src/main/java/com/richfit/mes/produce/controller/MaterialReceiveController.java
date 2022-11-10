@@ -72,9 +72,9 @@ public class MaterialReceiveController extends BaseController {
             queryWrapper.like("pth.track_no", trackNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("mr.branch_code", branchCode);
+            queryWrapper.eq("pth.branch_code", branchCode);
         }
-        queryWrapper.eq("mr.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("pth.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("outbound_date");
         return CommonResult.success(materialReceiveService.getPage(new Page<MaterialReceive>(page, limit), queryWrapper));
     }
@@ -112,7 +112,6 @@ public class MaterialReceiveController extends BaseController {
         return materialReceiveService.getlastTime(tenantId);
     }
 
-    ;
 
     @ApiOperation(value = "批量接收wms视图物料物料接收", notes = "批量接收物料")
     @ApiImplicitParam(name = "materialReceiveList", value = "materialReceiveList", paramType = "query", allowMultiple = true, dataType = "List<MaterialReceive>")

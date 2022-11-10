@@ -331,8 +331,8 @@ public class TrackAssignController extends BaseController {
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
-                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, assign.getBranchCode());
-                        requestNoteService.saveRequestNote(ingredient, ingredient.getLineList());
+                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
+                        requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
                         ApplicationResult application = new ApplicationResult();
                         application = wmsServiceClient.anApplicationForm(ingredient).getData();
 

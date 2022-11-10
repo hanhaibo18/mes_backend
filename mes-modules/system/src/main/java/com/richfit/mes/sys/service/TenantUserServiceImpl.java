@@ -295,6 +295,16 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
+    public List<TenantUserVo> queryByTendId() {
+        QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+        //0 = 普通用户 1 = 本公司质检用户 2 = 租户质检用户
+        queryWrapper.notIn("role.user_type", "0");
+        queryWrapper.eq("users.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return tenantUserMapper.queryZjUserByTendId(queryWrapper);
+    }
+
+
+    @Override
     public TenantUserVo queryByUserId(String userId) {
         TenantUser tenantUser = this.getById(userId);
         if (null == tenantUser) {
