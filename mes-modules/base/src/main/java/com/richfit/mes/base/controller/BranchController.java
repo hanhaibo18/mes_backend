@@ -308,7 +308,7 @@ public class BranchController extends BaseController {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", branchCode);
         Branch branch = branchService.getOne(queryWrapper);
-        return branch.getTenantId();
+        return branch.getBranchName();
     }
 
     @ApiOperation(value = "查询所有分公司", notes = "查询所有分公司")

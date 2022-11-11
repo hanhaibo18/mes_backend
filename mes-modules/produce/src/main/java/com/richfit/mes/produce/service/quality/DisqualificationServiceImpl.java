@@ -203,7 +203,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         QueryWrapper<DisqualificationVo> queryWrapper = new QueryWrapper<>();
         //图号查询
         if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
-            queryWrapper.like("dis.drawing_no", queryCheckDto.getDrawingNo());
+            queryWrapper.like("dis.part_drawing_no", queryCheckDto.getDrawingNo());
         }
         //产品名称
         if (StrUtil.isNotBlank(queryCheckDto.getProductName())) {
@@ -301,7 +301,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //查询车间名称
         CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(disqualification.getBranchCode(), disqualification.getTenantId());
         signedRecordsVo.setBranchCodeName(branch.getData().getBranchName());
-        signedRecordsVo.setOpinion("开单时间");
+        signedRecordsVo.setOpinion("提报不合格品申请单");
         recordsVoList.add(0, signedRecordsVo);
         return recordsVoList;
     }
