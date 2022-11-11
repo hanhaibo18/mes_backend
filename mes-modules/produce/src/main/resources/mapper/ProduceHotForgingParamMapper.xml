@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.ProduceHotForgingParamMapper">
+  <resultMap id="BaseResultMap" type="com.richfit.mes.common.model.produce.HotForgingParam">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="forging_store_id" jdbcType="VARCHAR" property="forgingStoreId" />
+    <result column="param_name" jdbcType="VARCHAR" property="paramName" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, forging_store_id, param_name, create_by, create_time, modify_by, modify_time, 
+    remark
+  </sql>
+
+</mapper>
