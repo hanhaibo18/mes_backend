@@ -418,7 +418,7 @@ public class ProductController extends BaseController {
                     }
 
                 }
-                
+
                 //物料类型编码转文字
                 product.setMaterialType(MaterialTypeEnum.getName(product.getMaterialType()));
 

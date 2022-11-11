@@ -329,9 +329,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
                 //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
                 if (!StringUtils.isNullOrEmpty(strartSuffix)) {
-                    stringBuilder.append(i);
+                    stringBuilder.append(i + "");
                 } else {
-                    stringBuilder = new StringBuilder(i);
+                    stringBuilder = new StringBuilder(i + "");
                 }
                 String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
 //                String workblankNo = oldWorkblankNo + "" + i;
@@ -377,9 +377,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
                 //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
                 if (!StringUtils.isNullOrEmpty(strartSuffix)) {
-                    stringBuilder.append(i);
+                    stringBuilder.append(i + "");
                 } else {
-                    stringBuilder = new StringBuilder(i);
+                    stringBuilder = new StringBuilder(i + "");
                 }
                 String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
