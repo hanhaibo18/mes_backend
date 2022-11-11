@@ -4,12 +4,14 @@ import com.kld.mes.wms.provider.ProduceServiceClient;
 import com.kld.mes.wms.provider.SystemServiceClient;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.model.produce.RequestNoteDetail;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -59,7 +61,7 @@ public class TaskUtils {
         }
     }
 
-
+    @Transactional(rollbackFor = Exception.class)
     public void jdbcMaterialOutView(String userName, String password, String url, String time) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection conn = DriverManager.getConnection("jdbc:mysql://" + url + "/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
@@ -68,15 +70,16 @@ public class TaskUtils {
         conn.close();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void saveMaterialReceive(String time, Connection conn) throws SQLException {
         List<MaterialReceive> materialReceiveList = new ArrayList<>();
         String sql = null;
         if (StringUtils.isEmpty(time)) {
             //查所有
-            sql = "select * from v_mes_out_headers";
+            sql = "select * from v_mes_out_headers order by CREATE_TIME desc";
         } else {
             //查上次最后一条时间之后所有
-            sql = "select * from v_mes_out_headers where CREATE_TIME >" + "' " + time + "'";
+            sql = "select * from v_mes_out_headers where CREATE_TIME >" + "' " + time + "' order by CREATE_TIME desc";
         }
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
@@ -99,16 +102,17 @@ public class TaskUtils {
         stmt.close();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void saveMaterialReceiveDetail(String time, Connection conn) throws SQLException {
         String sql2 = null;
         if (StringUtils.isEmpty(time)) {
             //查所有
 //            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM";
-            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM";
+            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM order by voh.CREATE_TIME desc";
         } else {
             //查上次最后一条时间之后所有
 //            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,voh.WORK_CODE,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + "' " + time + "'";
-            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + "'" + time + "'";
+            sql2 = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + "'" + time + "' order by voh.CREATE_TIME desc";
 
         }
         Statement stmt2 = conn.createStatement();
@@ -135,6 +139,9 @@ public class TaskUtils {
             materialReceiveDetail.setQuantity(quantity);
             materialReceiveDetail.setUnit(unit);
             materialReceiveDetail.setState("0");
+            //根据申请单和物料号查询图号
+            List<RequestNoteDetail> requestNoteDetailList = produceServiceClient.queryRequestNoteDetailDetails(materialNum, aplyNum, SecurityConstants.FROM_INNER);
+            materialReceiveDetail.setDrawingNo(requestNoteDetailList.get(0).getDrawingNo());
             detailList.add(materialReceiveDetail);
         }
         if (!ObjectUtils.isEmpty(detailList)) {

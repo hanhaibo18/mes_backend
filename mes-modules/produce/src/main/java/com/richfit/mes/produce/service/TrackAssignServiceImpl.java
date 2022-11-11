@@ -202,7 +202,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("u.product_no", productNo);
         }
-        if (!StrUtil.isBlank(userId)) {
+        if (StrUtil.isNotBlank(userId)) {
             queryWrapper.likeRight("u.user_id", userId + ",");
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
@@ -237,7 +237,6 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         } else {
             queryWrapper.orderByDesc("u.modify_time");
         }
-        queryWrapper.orderByDesc("u.assign_time");
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {

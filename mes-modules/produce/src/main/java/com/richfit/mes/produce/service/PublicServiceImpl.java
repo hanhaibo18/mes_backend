@@ -12,13 +12,13 @@ import com.richfit.mes.common.model.produce.AssignPerson;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.controller.TrackAssignController;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.richfit.mes.produce.controller.*;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -366,7 +366,7 @@ public class PublicServiceImpl implements PublicService {
         assign.setBranchCode(trackItem.getBranchCode());
         assign.setTiId(trackItem.getId());
         assign.setTrackId(trackItem.getTrackHeadId());
-        assign.setUserId(assignGet.getData().getUserId());
+        assign.setUserId(assignGet.getData().getUserId() + ",");
         assign.setEmplName(assignGet.getData().getUserName());
         assign.setSiteId(assignGet.getData().getSiteId());
         assign.setSiteName(assignGet.getData().getSiteName());

@@ -73,9 +73,9 @@ public class ProductToWmsService {
         if (!"".equals(cert.getProductNo()) && cert.getProductNo().split(spitStr).length > 1) {
             prodNo = cert.getProductNo().split(spitStr)[1];
         }
-
+        gc = "X088";
         String json = "{\"sqd\":\"" + sqd + "\",\"gc\":\"" + gc + "\",\"scdd\":\""
-                + cert.getProductNo() + "\",\"materialNum\":\"" + cert.getMaterialNo()
+                + cert.getProductionOrder() + "\",\"materialNum\":\"" + cert.getMaterialNo()
                 + "\",\"quantity\":" + cert.getNumber() + ",\"cp\":\"" + prodNo + "\",\"batchNum\":\"\",\"hgz\":\""
                 + cert.getCertificateNo() + "\",\"swFlag\":\"1\"}";
 

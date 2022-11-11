@@ -510,6 +510,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
         queryWrapper.eq("drawing_no", drawingNo);

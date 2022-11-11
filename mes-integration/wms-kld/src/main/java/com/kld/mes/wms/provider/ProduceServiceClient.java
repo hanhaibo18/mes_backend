@@ -1,9 +1,9 @@
 package com.kld.mes.wms.provider;
 
 import com.kld.mes.wms.provider.fallback.ProduceServiceClientFallBackImpl;
-import com.kld.mes.wms.provider.fallback.SystemServiceClientFallbackImpl;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.model.produce.RequestNoteDetail;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -27,4 +27,17 @@ public interface ProduceServiceClient {
 
     @PostMapping(value = "/api/produce/material_receive/detail/save_batch")
     public Boolean detailSaveBatch(@RequestBody List<MaterialReceiveDetail> detailList, @RequestHeader(value = SecurityConstants.FROM) String header);
+
+    /**
+     * 功能描述: 根据申请单号 和 物料号 查询物料
+     *
+     * @param materialNo
+     * @param requestNoteNo
+     * @param header
+     * @Author: xinYu.hou
+     * @Date: 2022/11/10 13:43
+     * @return: List<RequestNoteDetail>
+     **/
+    @GetMapping(value = "/api/produce/request_note/queryRequestNoteDetailDetails/inner")
+    public List<RequestNoteDetail> queryRequestNoteDetailDetails(@RequestParam("materialNo") String materialNo, @RequestParam("requestNoteNo") String requestNoteNo, @RequestHeader(value = SecurityConstants.FROM) String header);
 }

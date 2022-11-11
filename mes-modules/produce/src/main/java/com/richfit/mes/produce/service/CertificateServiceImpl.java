@@ -75,7 +75,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setIsPush("0");
         //1 保存合格证
         boolean bool = this.save(certificate);
-
         // 更新最大合格证编号
 //        codeRuleService.updateCode("hege_no", "合格证编号", certificate.getCertificateNo(),
 //                Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(),

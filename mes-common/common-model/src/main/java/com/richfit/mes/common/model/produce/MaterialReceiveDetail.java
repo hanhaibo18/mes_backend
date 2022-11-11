@@ -65,7 +65,6 @@ public class MaterialReceiveDetail extends BaseEntity<MaterialReceiveDetail> {
     /**
      * 图号
      */
-    @TableField(exist = false)
     private String drawingNo;
 
     /**

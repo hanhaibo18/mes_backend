@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.RequestNote;
 import com.richfit.mes.common.model.produce.RequestNoteDetail;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.RequestNoteDetailService;
 import com.richfit.mes.produce.service.RequestNoteService;
@@ -74,5 +75,12 @@ public class ProduceRequestNoteController extends BaseController {
             requestNoteDetail.setNumberMissing(requestNoteDetail.getNumber() - requestNoteDetail.getNumberDelivery());
         }
         return CommonResult.success(requestNoteDetailList);
+    }
+
+    @ApiOperation(value = "查询申请单列表", notes = "根据物料号,申请单号查询申请单列表(WMS服务用)")
+    @GetMapping("/queryRequestNoteDetailDetails/inner")
+    @Inner
+    public List<RequestNoteDetail> queryRequestNoteDetailDetails(String materialNo, String requestNoteNo) {
+        return requestNoteDetailService.queryRequestNoteDetailDetails(materialNo, requestNoteNo);
     }
 }

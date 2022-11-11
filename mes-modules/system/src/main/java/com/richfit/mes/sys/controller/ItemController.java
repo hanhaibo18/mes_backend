@@ -1,6 +1,5 @@
 package com.richfit.mes.sys.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -268,12 +267,7 @@ public class ItemController extends BaseController {
 
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("code", code);
-        //补充,定时任务没有租户ID
-        if (StringUtils.isNullOrEmpty(tenantId)) {
-            wrapper.eq("tenant_id", tenantId);
-        }else{
-            wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        }
+        wrapper.eq("tenant_id", tenantId);
         return CommonResult.success(itemParamService.getOne(wrapper));
     }
 

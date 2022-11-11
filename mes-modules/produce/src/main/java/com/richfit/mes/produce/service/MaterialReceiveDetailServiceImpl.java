@@ -64,9 +64,9 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
     public Boolean saveDetailList(List<MaterialReceiveDetail> detailList) {
         for (MaterialReceiveDetail materialReceiveDetail : detailList) {
             QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper();
-            queryWrapper.eq("delivery_no", materialReceiveDetail);
+            queryWrapper.eq("delivery_no", materialReceiveDetail.getDeliveryNo());
             List<MaterialReceiveDetail> list = this.list(queryWrapper);
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 detailList.remove(materialReceiveDetail);
             }
         }
