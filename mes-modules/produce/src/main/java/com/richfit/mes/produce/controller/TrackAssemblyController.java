@@ -135,7 +135,7 @@ public class TrackAssemblyController extends BaseController {
 
     @ApiOperation(value = "发送申请单", notes = "发送申请单")
     @PostMapping("/application")
-    public ApplicationResult application(@RequestBody AdditionalMaterialDto additionalMaterialDto) {
-        return trackAssemblyService.application(additionalMaterialDto);
+    public CommonResult<ApplicationResult> application(@RequestBody AdditionalMaterialDto additionalMaterialDto) {
+        return CommonResult.success(trackAssemblyService.application(additionalMaterialDto));
     }
 }

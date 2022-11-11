@@ -73,6 +73,7 @@ public class ProductToWmsService {
         if (!"".equals(cert.getProductNo()) && cert.getProductNo().split(spitStr).length > 1) {
             prodNo = cert.getProductNo().split(spitStr)[1];
         }
+        //TODO:测试工厂指定编号为X088
         gc = "X088";
         String json = "{\"sqd\":\"" + sqd + "\",\"gc\":\"" + gc + "\",\"scdd\":\""
                 + cert.getProductionOrder() + "\",\"materialNum\":\"" + cert.getMaterialNo()
