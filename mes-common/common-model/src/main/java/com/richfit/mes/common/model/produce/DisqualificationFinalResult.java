@@ -103,5 +103,5 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private String tenantId;
 
     @ApiModelProperty(value = "意见Id")
-    private String operationId;
+    private String opinionId;
 }

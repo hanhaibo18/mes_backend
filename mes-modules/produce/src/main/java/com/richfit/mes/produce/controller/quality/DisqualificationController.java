@@ -45,7 +45,7 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
     @PostMapping("/queryInspector")
-    private CommonResult<IPage<Disqualification>> queryInspector(@RequestBody QueryInspectorDto queryInspectorDto) {
+    public CommonResult<IPage<Disqualification>> queryInspector(@RequestBody QueryInspectorDto queryInspectorDto) {
         return CommonResult.success(disqualificationService.queryInspector(queryInspectorDto));
     }
 

@@ -250,32 +250,47 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("disqualification_id", disqualificationId);
         List<SignedRecordsVo> recordsVoList = SignedRecordsVo.list(userOpinionService.list(queryWrapper));
-        DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationId);
-        if (null != finalResult) {
-            recordsVoList.forEach(records -> {
-                //意见ID相同 再去拼接最终结果
-                if (records.getId().equals(finalResult.getOperationId())) {
-                    StringBuilder sb = new StringBuilder();
-                    //让步接收数量
-                    if (finalResult.getAcceptDeviation() != null) {
-                        sb.append("让步接收数量:").append(finalResult.getAcceptDeviation());
-                    }
-                    //返修合格数量
-                    if (finalResult.getRepairQualified() != null) {
-                        sb.append(",返修合格数量:").append(finalResult.getRepairQualified());
-                    }
-                    //报废数量
-                    if (finalResult.getScrap() != null) {
-                        sb.append(",报废数量:").append(finalResult.getScrap());
-                    }
-                    //退货数量
-                    if (finalResult.getSalesReturn() != null) {
-                        sb.append(",退货数量:").append(finalResult.getSalesReturn());
-                    }
-                    records.setFinalResult(sb.toString());
+        recordsVoList.forEach(records -> {
+            QueryWrapper<DisqualificationFinalResult> queryWrapperFinalResult = new QueryWrapper<>();
+            queryWrapperFinalResult.eq("opinion_id", records.getId());
+            DisqualificationFinalResult finalResult = finalResultService.getOne(queryWrapperFinalResult);
+            if (null == finalResult) {
+                return;
+            }
+            //意见ID相同 再去拼接最终结果
+            if (records.getId().equals(finalResult.getOpinionId())) {
+                StringBuilder sb = new StringBuilder();
+                //让步接收数量
+                sb.append("让步接收数量:");
+                if (finalResult.getAcceptDeviation() != null) {
+                    sb.append(finalResult.getAcceptDeviation());
+                } else {
+                    sb.append(0);
                 }
-            });
-        }
+                //返修合格数量
+                sb.append(",返修合格数量:");
+                if (finalResult.getRepairQualified() != null) {
+                    sb.append(finalResult.getRepairQualified());
+                } else {
+                    sb.append(0);
+                }
+                //报废数量
+                sb.append(",报废数量:");
+                if (finalResult.getScrap() != null) {
+                    sb.append(finalResult.getScrap());
+                } else {
+                    sb.append(0);
+                }
+                //退货数量
+                sb.append(",退货数量:");
+                if (finalResult.getSalesReturn() != null) {
+                    sb.append(finalResult.getSalesReturn());
+                } else {
+                    sb.append(0);
+                }
+                records.setFinalResult(sb.toString());
+            }
+        });
         //单查询开单时间
         Disqualification disqualification = this.getById(disqualificationId);
         SignedRecordsVo signedRecordsVo = new SignedRecordsVo();
