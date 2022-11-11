@@ -857,7 +857,7 @@ public class TrackCompleteController extends BaseController {
             trackItem.setIsDoing(2);
             trackItem.setQualityCheckBy(complete.getQualityCheckBy());
             trackItem.setQualityCheckBranch(complete.getQualityCheckBranch());
-            boolean next = trackItem.getIsExistQualityCheck().equals(1) && trackItem.getIsExistScheduleCheck().equals(1);
+            boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
             if (next) {
                 trackItem.setIsFinalComplete(String.valueOf(1));
             }
