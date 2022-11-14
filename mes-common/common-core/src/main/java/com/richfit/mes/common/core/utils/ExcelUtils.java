@@ -94,6 +94,32 @@ public class ExcelUtils {
     }
 
     /**
+     * 获取单元格值
+     * @param file
+     * @param type
+     * @param sheetIndex
+     * @param rowIndex
+     * @param elIndex
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public static <T> Object getCellValue(File file, Class<T> type, int sheetIndex, int rowIndex,int elIndex, String fileName) throws IOException {
+        // 创建文件输入流
+        FileInputStream in = new FileInputStream(file);
+        // 创建Excel工作簿（包括2003和2007版）
+        Workbook workbook = createWorkbook(FileUtils.getFilenameExtension(fileName), in);
+        // 根据下标获取Excel工作表
+        Sheet sheet = workbook.getSheetAt(sheetIndex);
+        //行数
+        Row row = sheet.getRow(rowIndex);
+        //行的莫一个单元格
+        Cell cell = row.getCell(elIndex);
+
+        return getCellValue(cell,type,workbook);
+    }
+
+    /**
      * 从Excel中导入内容到List集合
      *
      * @param inputStream 待处理的Excel文件

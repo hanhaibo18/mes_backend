@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -125,4 +126,11 @@ public class ProductionBom extends BaseEntity<ProductionBom> {
      */
     @ApiModelProperty(value = "配料工序名", dataType = "String")
     private String optName;
+
+    /**
+     * 配料工序名
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否导入", dataType = "String")
+    private String isImport;
 }
