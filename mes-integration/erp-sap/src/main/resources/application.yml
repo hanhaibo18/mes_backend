@@ -44,6 +44,7 @@ secure:
   ignore:
     urls:
       - /api/integration/erp/router/push
+      - /api/integration/erp/material/getMaterial
 
 feign.client.config:
   default:
