@@ -70,7 +70,7 @@ public class MaterialSyncController {
     @ApiOperation(value = "保存物料", notes = "保存物料信息")
     @PostMapping("/synchronization_save")
     public CommonResult<Boolean> saveProductSync(@RequestBody List<Product> productList) {
-        return materialSyncService.saveTimingProductSync();
+        return materialSyncService.saveProductSync(productList);
     }
 
     @ApiOperation(value = "导出物料信息", notes = "通过Excel文档导出订单信息")
