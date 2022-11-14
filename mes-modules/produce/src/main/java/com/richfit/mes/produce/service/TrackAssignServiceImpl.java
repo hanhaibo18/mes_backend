@@ -8,10 +8,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
-import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
@@ -21,6 +19,7 @@ import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.OrderUtil;
+import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,6 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -221,6 +219,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if ("2".equals(state)) {
             queryWrapper.in("u.state", 2);
         }
+        //增加工序过滤
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("u.classes", classes);
         queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -373,15 +373,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     public Integer queryDispatchingNumber(String branchCode) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         //增加工序过滤
-        CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
-        QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
-        List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
-        queryWrapperRole.in("role_id", roleId);
-        List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
-        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
-        if (!set.isEmpty()) {
-            queryWrapper.in("operatipon_id", set);
-        }
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("is_current", 1);
         queryWrapper.eq("branch_code", branchCode);
         return trackAssignMapper.queryDispatchingNumber(queryWrapper);
@@ -428,6 +420,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if (StrUtil.isNotBlank(dispatchingDto.getState())) {
             queryWrapper.in("u.state", dispatchingDto.getState());
         }
+        //增加工序过滤
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("u.classes", dispatchingDto.getClasses());
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -491,6 +485,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if ("2".equals(dispatchingDto.getState())) {
             queryWrapper.in("u.state", 2);
         }
+        //增加工序过滤
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("u.classes", dispatchingDto.getClasses());
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());

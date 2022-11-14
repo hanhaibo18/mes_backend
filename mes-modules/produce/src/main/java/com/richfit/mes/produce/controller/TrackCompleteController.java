@@ -21,6 +21,7 @@ import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -61,6 +62,8 @@ public class TrackCompleteController extends BaseController {
     private PlanService planService;
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Resource
+    private ProduceRoleOperationService roleOperationService;
 
     @Resource
     private PublicService publicService;
@@ -143,7 +146,8 @@ public class TrackCompleteController extends BaseController {
 
                 //queryWrapper.apply("(complete_by ='" + user.getUserId() + "' || complete_by is null || complete_by ='' || user_id ='" + user.getUserId() + "' || user_id is null || user_id ='' )");
             }
-
+            //增加工序过滤
+            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
                     if (order.equals("desc")) {
@@ -163,7 +167,7 @@ public class TrackCompleteController extends BaseController {
                     CommonResult<TenantUserVo> tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId());
                     track.setUserName(tenantUserVo.getData().getEmplName());
                     CommonResult<Device> device = baseServiceClient.getDeviceById(track.getDeviceId());
-                    if(!ObjectUtil.isEmpty(device.getData())){
+                    if (!ObjectUtil.isEmpty(device.getData())) {
                         track.setDeviceName(device.getData().getName());
                     }
                     TrackItem trackItem = trackItemService.getById(track.getTiId());

@@ -9,7 +9,6 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.*;
@@ -24,6 +23,7 @@ import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -38,7 +38,6 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -543,6 +542,9 @@ public class TrackAssignController extends BaseController {
             routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        //增加工序过滤
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null )");
             Calendar calendar = new GregorianCalendar();
@@ -552,16 +554,16 @@ public class TrackAssignController extends BaseController {
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "') or a.modify_time is null)");
         }
 
-        //增加工序过滤
-        CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
-        QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
-        List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
-        queryWrapperRole.in("role_id", roleId);
-        List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
-        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
-        if (!set.isEmpty()) {
-            queryWrapper.in("operatipon_id", set);
-        }
+
+//        CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
+//        QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
+//        List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
+//        queryWrapperRole.in("role_id", roleId);
+//        List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
+//        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
+//        if (!set.isEmpty()) {
+//            queryWrapper.in("operatipon_id", set);
+//        }
 
         // 如果工序类型不为空，则按类型获取，没有类型查询所有类型工序
         if (!StringUtils.isNullOrEmpty(optType)) {

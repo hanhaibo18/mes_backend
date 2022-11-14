@@ -94,6 +94,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     /**
      * 报工人
      */
+    //报工人
     protected String completeBy;
 
     /**

@@ -15,6 +15,8 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProductionBomMapper;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.ProductionBom;
@@ -149,6 +151,13 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteBom(String drawingNo, String tenantId, String branchCode) {
+        QueryWrapper<ProjectBom> query = new QueryWrapper<>();
+        query.eq("drawing_no", drawingNo);
+        query.eq("branch_code", branchCode);
+        int count = projectBomService.count(query);
+        if (count > 0) {
+            throw new GlobalException("该BOM已被发布,删除失败!", ResultCode.FAILED);
+        }
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.eq("branch_code", branchCode);

@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.OperationTypeSpec;
 import com.richfit.mes.common.model.base.RouterCheck;
@@ -17,7 +16,6 @@ import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
@@ -29,6 +27,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.OrderUtil;
+import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -123,17 +121,6 @@ public class TrackCheckController extends BaseController {
             if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
                 //质检页面只查询指派给自己的质检信息
                 queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
-                //查询用户信息 组装过滤数据
-                CommonResult<TenantUserVo> result = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
-                QueryWrapper<ProduceRoleOperation> queryWrapperRole = new QueryWrapper<>();
-                List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
-                queryWrapperRole.in("role_id", roleId);
-                List<ProduceRoleOperation> operationList = roleOperationService.list(queryWrapperRole);
-                Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
-                if (!set.isEmpty()) {
-                    queryWrapper.in("operatipon_id", set);
-                }
-
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
             //是否调度
@@ -171,6 +158,8 @@ public class TrackCheckController extends BaseController {
             if ("1".equals(isExistScheduleCheck)) {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
+            //增加工序过滤
+            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             queryWrapper.eq("is_doing", 2);
             queryWrapper.eq("is_operation_complete", 1);
             queryWrapper.orderByDesc("modify_time");
@@ -188,9 +177,9 @@ public class TrackCheckController extends BaseController {
                 item.setBatchNo(trackHead.getBatchNo());
                 //查询理化委托单,查询委托单号最大的数据
                 List<PhysChemOrder> physChemOrder = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("batch_no", trackHead.getBatchNo()).orderByDesc("modify_time"));
-                if(physChemOrder.size()>0){
+                if (physChemOrder.size() > 0) {
                     //根据委托单号排序
-                    physChemOrder.sort((t1,t2)->t1.getOrderNo().compareTo(t2.getOrderNo()));
+                    physChemOrder.sort((t1, t2) -> t1.getOrderNo().compareTo(t2.getOrderNo()));
                     //委托单状态,根据最新的走
                     item.setOrderStatus(physChemOrder.get(0).getStatus());
                     //是否有报告 （执行同步操作之后才能有报告）
@@ -247,6 +236,8 @@ public class TrackCheckController extends BaseController {
 
             }
             queryWrapper.and(wrapper -> wrapper.eq("is_show", "1").or().isNull("is_show"));
+            //增加工序过滤
+            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackCheck> checks = trackCheckService.page(new Page<TrackCheck>(page, limit), queryWrapper);
             for (TrackCheck check : checks.getRecords()) {
@@ -592,7 +583,7 @@ public class TrackCheckController extends BaseController {
                         items.get(i).setIsDoing(0);
                         activeItems.add(items.get(i));
                         trackItemService.updateById(items.get(i));
-                        // todo 如果自动派工，那么执行派工操作
+                        //如果自动派工，那么执行派工操作
                         if (null != items.get(i - 1) && null != items.get(i - 1).getIsAutoSchedule() && items.get(i - 1).getIsAutoSchedule() == 1) {
                             String deviceId = "";
                             String userId = "ba7dd26f0a669f9e09343f9b579b0321";
