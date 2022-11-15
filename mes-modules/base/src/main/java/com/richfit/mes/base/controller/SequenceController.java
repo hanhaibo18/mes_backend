@@ -253,13 +253,16 @@ public class SequenceController extends BaseController {
         String routerId = jsonObject.getString("routerId");
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         for (Sequence sequence : sequenceList) {
-            if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
-                return CommonResult.failed("机构编码不能为空！");
+            if (StringUtils.isNullOrEmpty(sequence.getOptCode()) && !StringUtils.isNullOrEmpty(sequence.getId())) {
+                return CommonResult.failed("工序code不能为空！");
             } else {
                 sequence.setModifyBy(user.getUsername());
                 sequence.setModifyTime(new Date());
 
                 if(StringUtils.isNullOrEmpty(sequence.getId())){
+                    if(StringUtils.isNullOrEmpty(sequence.getOptName())){
+                        return CommonResult.failed("工序名称不能为空！");
+                    }
                     sequence.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                     sequence.setCreateBy(user.getUsername());
                     sequence.setCreateTime(new Date());
