@@ -244,9 +244,13 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "保存工序", notes = "保存工序")
     @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "body")
     @PostMapping("/update")
-    public CommonResult updateSequence(@RequestBody List<Sequence> sequences,String branchCode) {
+    public CommonResult updateSequence(@RequestBody JSONObject jsonObject) {
+        //保存的工序
+        List<Sequence> sequenceList = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("list")), Sequence.class);
+        //组织机构
+        String branchCode = jsonObject.getString("branchCode");
         TenantUserDetails user = SecurityUtils.getCurrentUser();
-        for (Sequence sequence : sequences) {
+        for (Sequence sequence : sequenceList) {
             if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
                 return CommonResult.failed("机构编码不能为空！");
             } else {
@@ -259,6 +263,7 @@ public class SequenceController extends BaseController {
                     sequence.setCreateTime(new Date());
                     sequence.setTenantId(user.getTenantId());
                     sequence.setBranchCode(branchCode);
+                    sequence.setOptCode(sequence.getOptName());
                 }
 //                Sequence sequenceOld = sequenceService.getById(sequence.getId());
 //                if (!sequence.getOptType().equals(sequenceOld.getOptType())) {
