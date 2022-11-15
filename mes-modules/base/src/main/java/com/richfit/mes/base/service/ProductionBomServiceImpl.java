@@ -486,39 +486,39 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         //1、空值校验
         nullValueCheck(list, message);
         if(StringUtils.isEmpty(drawingNo)){
-            message.append("产品图号不能为空</br>");
+            message.append("产品图号不能为空；</br>");
         }
         if(StringUtils.isEmpty(materialNo)){
-            message.append("物料编码不能为空</br>");
+            message.append("物料编码不能为空；</br>");
         }
         //2、校验H层行数
         List<ProductionBom> hCheckList = list.stream().filter(item -> {
             return "H".equals(item.getGrade());
         }).collect(Collectors.toList());
         if(hCheckList.size()!=1){
-            message.append("级别为H的行数不是一行，导入失败</br>");
+            message.append("级别为H的行数不是一行，导入失败；</br>");
         }
         //3、校验L层行数
         List<ProductionBom> lCheckList = list.stream().filter(item -> {
             return "L".equals(item.getGrade());
         }).collect(Collectors.toList());
         if(lCheckList.size()==0){
-            message.append("导入文件没有级别为L的行，导入失败</br>");
+            message.append("导入文件没有级别为L的行，导入失败；</br>");
         }
         //4、校验表头信息与H层一致
         if(hCheckList.size()>0){
             if(!StringUtils.equals(drawingNo,hCheckList.get(0).getDrawingNo())){
-                message.append("表头产品图号与H层零部件图号不符，导入失败</br>");
+                message.append("表头产品图号与H层零部件图号不符，导入失败；</br>");
             }
             if(!StringUtils.equals(materialNo,hCheckList.get(0).getMaterialNo())){
-                message.append("表头物料编码与H层物料编码不符，导入失败</br>");
+                message.append("表头物料编码与H层物料编码不符，导入失败；</br>");
             }
         }
         //5、上级图号取表头产品图号或H层的物料图号校验
         if(hCheckList.size()>0 && lCheckList.size()>0){
             List<ProductionBom> collect = lCheckList.stream().filter(item -> !StringUtils.equals(hCheckList.get(0).getDrawingNo(), hCheckList.get(0).getMainDrawingNo())).collect(Collectors.toList());
             if(collect.size()!=lCheckList.size()){
-                message.append("上级图号需要取表头产品图号或H层的物料图号，导入失败</br>");
+                message.append("上级图号需要取表头产品图号或H层的物料图号，导入失败；</br>");
             }
         }
         //6、零部件校验
@@ -539,11 +539,11 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 if(!StringUtils.isEmpty(String.valueOf(materialExitInfo))){
                     materialExitInfo.append("、");
                 }
-                materialExitInfo.append(drawNoAndMaterNo.split("&")[1]);
+                materialExitInfo.append(drawNoAndMaterNo.split("&")[0]);
             }
         }
         if(!StringUtils.isEmpty(String.valueOf(materialExitInfo))){
-            message.append("图号："+materialExitInfo+" 的零部件不存在");
+            message.append("图号："+materialExitInfo+" 的零部件不存在；");
         }
 
         return String.valueOf(message);
@@ -578,7 +578,8 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 }
             });
         }
-
-        message.append(String.join(",", nullStringList)+"</br>");
+        if(nullStringList.size()>0){
+            message.append(String.join(",", nullStringList)+"；</br>");
+        }
     }
 }

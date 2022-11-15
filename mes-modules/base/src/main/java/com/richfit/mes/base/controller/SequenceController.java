@@ -241,10 +241,10 @@ public class SequenceController extends BaseController {
         return null;
     }
 
-    @ApiOperation(value = "修改工序", notes = "修改工序")
+    @ApiOperation(value = "保存工序", notes = "保存工序")
     @ApiImplicitParam(name = "sequence", value = "工序", required = true, dataType = "Sequence", paramType = "body")
     @PostMapping("/update")
-    public CommonResult updateSequence(@RequestBody List<Sequence> sequences) {
+    public CommonResult updateSequence(@RequestBody List<Sequence> sequences,String branchCode) {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         for (Sequence sequence : sequences) {
             if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
@@ -252,6 +252,14 @@ public class SequenceController extends BaseController {
             } else {
                 sequence.setModifyBy(user.getUsername());
                 sequence.setModifyTime(new Date());
+
+                if(StringUtils.isNullOrEmpty(sequence.getId())){
+                    sequence.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    sequence.setCreateBy(user.getUsername());
+                    sequence.setCreateTime(new Date());
+                    sequence.setTenantId(user.getTenantId());
+                    sequence.setBranchCode(branchCode);
+                }
 //                Sequence sequenceOld = sequenceService.getById(sequence.getId());
 //                if (!sequence.getOptType().equals(sequenceOld.getOptType())) {
 //                    //删除工序已关联的质量资料历史数据
@@ -289,7 +297,7 @@ public class SequenceController extends BaseController {
 //                        routerCheckService.save(routerCheck);
 //                    }
 //                }
-                boolean bool = sequenceService.update(sequence, new QueryWrapper<Sequence>().eq("id", sequence.getId()).eq("branch_code", sequence.getBranchCode()));
+                boolean bool = sequenceService.saveOrUpdate(sequence);
                 if (!bool) {
                     return CommonResult.failed("操作失败，请重试！");
                 }
