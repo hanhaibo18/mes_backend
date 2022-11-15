@@ -257,15 +257,15 @@ public class TenantUserController extends BaseController {
     @ApiOperation(value = "分页查询根据组织机构获取用户列表", notes = "分页查询根据组织机构获取用户列表")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
     @GetMapping("/queryUserByBranchCode/page")
-    public CommonResult<Map<String, Object>> queryUserByBranchCodePage(String userAccount,String emplName,String branchCode,int page,int limit) {
+    public CommonResult<Map<String, Object>> queryUserByBranchCodePage(String userAccount, String emplName, String branchCode, int page, int limit) {
         Map<String, Object> returnMap = new HashMap<>();
         List<TenantUserVo> tenantUserVos = tenantUserService.queryUserByBranchCodePage(branchCode);
 
-        if(!StringUtils.isNullOrEmpty(userAccount)){
-            tenantUserVos = tenantUserVos.stream().filter(item->item.getUserAccount().equals(userAccount)).collect(Collectors.toList());
+        if (!StringUtils.isNullOrEmpty(userAccount)) {
+            tenantUserVos = tenantUserVos.stream().filter(item -> item.getUserAccount().equals(userAccount)).collect(Collectors.toList());
         }
-        if(!StringUtils.isNullOrEmpty(emplName)){
-            tenantUserVos = tenantUserVos.stream().filter(item->item.getEmplName().equals(emplName)).collect(Collectors.toList());
+        if (!StringUtils.isNullOrEmpty(emplName)) {
+            tenantUserVos = tenantUserVos.stream().filter(item -> item.getEmplName().equals(emplName)).collect(Collectors.toList());
         }
 
         tenantUserVos.sort((t1, t2) -> t2.getBelongOrgId().compareTo(t1.getBelongOrgId()));
@@ -346,14 +346,14 @@ public class TenantUserController extends BaseController {
         return CommonResult.success(tenantUserService.defaultPassword(userIds));
     }
 
-    @ApiOperation(value = "查询质量检测部质检人员", notes = "为空查询全部质检人员,1查询机加质检人员,2查询调度质检人员")
+    @ApiOperation(value = "查询质量检测部质检人员", notes = "为空查询全部质检人员,1查询机加质检人员,2查询调度质检人员(不带本公司)")
     @ApiImplicitParam(name = "classes", value = "车间分类", paramType = "query", dataType = "String")
     @GetMapping("/queryQualityInspectionUser")
     public CommonResult<List<TenantUserVo>> queryQualityInspectionUser(String classes) {
         return CommonResult.success(tenantUserService.queryQualityInspectionUser(classes));
     }
 
-    @ApiOperation(value = "查询所有质检人员", notes = "为空查询全部质检人员,1查询机加质检人员,2查询调度质检人员")
+    @ApiOperation(value = "查询质检人员", notes = "为空查询全部质检人员,1查询机加质检人员,2查询调度质检人员(带本公司)")
     @ApiImplicitParam(name = "classes", value = "车间分类", paramType = "query", dataType = "String")
     @GetMapping("/queryAllQualityUser")
     public CommonResult<List<TenantUserVo>> queryAllQualityUser(String classes) {
