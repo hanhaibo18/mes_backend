@@ -249,6 +249,8 @@ public class SequenceController extends BaseController {
         List<Sequence> sequenceList = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("list")), Sequence.class);
         //组织机构
         String branchCode = jsonObject.getString("branchCode");
+        //工艺id
+        String routerId = jsonObject.getString("routerId");
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         for (Sequence sequence : sequenceList) {
             if (StringUtils.isNullOrEmpty(sequence.getOptCode())) {
@@ -264,6 +266,7 @@ public class SequenceController extends BaseController {
                     sequence.setTenantId(user.getTenantId());
                     sequence.setBranchCode(branchCode);
                     sequence.setOptCode(sequence.getOptName());
+                    sequence.setRouterId(routerId);
                 }
 //                Sequence sequenceOld = sequenceService.getById(sequence.getId());
 //                if (!sequence.getOptType().equals(sequenceOld.getOptType())) {
