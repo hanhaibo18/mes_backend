@@ -23,7 +23,6 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.utils.Code;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -424,138 +423,48 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String backSequence(String id) throws Exception {
-        log.debug("进入跟单工序回滚流程");
-        //根据id查询出该道工序
-        TrackItem item = this.getById(id);
-        if (item == null) {
-            return "找不到该工序！";
+    public String backSequence(String flowId) {
+
+        QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
+        wrapper.eq("flow_id", flowId);
+        List<TrackItem> items = this.list(wrapper);
+        TrackItem item = new TrackItem();
+        if (items.size() > 0) {
+            for (TrackItem ti : items) {
+                if (ti.getIsCurrent() != null && ti.getIsCurrent() == 1) {
+                    item = ti;
+                    break;
+                }
+            }
         }
-        //根据该道工序的工序顺序和flowid找出“上道”工序的一道或多道工序。
-        List<TrackItem> trackItemNextOptSequence = this.getTrackItemByFlowIdAndNextOptSequence(item.getFlowId(), item.getOriginalOptSequence());
 
-        //根据该道工序的工序顺序和flowid找出跟“此工序”并行的工序。
-        List<TrackItem> trackItemOriginalOptSequence = this.getTrackItemByFlowIdAndOriginalOptSequence(item.getFlowId(), item.getOriginalOptSequence());
+        if (item.getId() == null) {
+            return "该跟单没有当前工序！";
+        }
 
-        //如果上道工序没有查出来表明 该工序就是第一条工序，这种情况无需回滚上道工序
-        if (trackItemNextOptSequence == null || CollectionUtils.isEmpty(trackItemNextOptSequence)) {
+        if (item.getOptSequence() == 1) {
             return "当前工序已是跟单第一步有效工序,不可回退！";
         }
-        //将此工序（包含此工序和此工序的并行工序）的 是否当前工序(is_current)设为0
-        this.updateIsCurrent(trackItemNextOptSequence, 0);
-        log.debug("修改当前工序的iscurrent为0成功");
 
-        //将上工序（包含上工序和上工序的并行工序）的是否当前工序(is_current)设为1
-        this.updateIsCurrent(trackItemOriginalOptSequence, 1);
-        log.debug("修改上道工序的iscurrent为1成功");
+        // 将当前工序is_current设为0
+        item.setIsCurrent(0);
+        this.updateById(item);
 
+        // 将上道工序is_current设为1
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.set("is_current", 1);
+        updateWrapper.set("is_track_sequence_complete", 0);
+        updateWrapper.eq("flow_id", flowId);
+        updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
+        this.update(updateWrapper);
         //生产线状态改为在制
         UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
         updateWrapperTrackFlow.set("status", "1");
         updateWrapperTrackFlow.eq("id", item.getFlowId());
         trackHeadFlowService.update(updateWrapperTrackFlow);
-        log.debug("修改生产线状态改为在制成功");
-
         //重置跟单状态
         trackHeadService.trackHeadData(item.getTrackHeadId());
-        log.debug("重置跟单状态成功");
-
-//        QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
-//        wrapper.eq("flow_id", Id);
-//        List<TrackItem> items = this.list(wrapper);
-//        TrackItem item = new TrackItem();
-//        if (items.size() > 0) {
-//            for (TrackItem ti : items) {
-//                if (ti.getIsCurrent() != null && ti.getIsCurrent() == 1) {
-//                    item = ti;
-//                    break;
-//                }
-//            }
-//        }
-//
-//        if (item.getId() == null) {
-//            return "该跟单没有当前工序！";
-//        }
-//
-//        if (item.getOptSequence() == 1) {
-//            return "当前工序已是跟单第一步有效工序,不可回退！";
-//        }
-//
-//        // 将当前工序is_current设为0
-//        item.setIsCurrent(0);
-//        this.updateById(item);
-//
-//        // 将上道工序is_current设为1
-//        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
-//        updateWrapper.set("is_current", 1);
-//        updateWrapper.set("is_track_sequence_complete", 0);
-//        updateWrapper.eq("flow_id", flowId);
-//        updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
-//        this.update(updateWrapper);
-//        //生产线状态改为在制
-//        UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
-//        updateWrapperTrackFlow.set("status", "1");
-//        updateWrapperTrackFlow.eq("id", item.getFlowId());
-//        trackHeadFlowService.update(updateWrapperTrackFlow);
-//        //重置跟单状态
-//        trackHeadService.trackHeadData(item.getTrackHeadId());
-
-        log.debug("准备清除该工序的所有操作包括（派工、报工、质检、调度）");
-        for (TrackItem trackItem : trackItemOriginalOptSequence) {
-            //清除该工序的所有操作包括（派工、报工、质检、调度） resetType设为5代表清除全部记录
-            String s = this.resetStatus(trackItem.getId(), 5);
-            if (!"success".equals(s)) {
-                //如果不是success   则回滚将信息抛出
-                throw new GlobalException(s, ResultCode.FAILED);
-            }
-        }
-        log.debug("清除该工序的所有操作成功，跟单工序回滚流程 执行成功");
         return "success";
-    }
-
-    /**
-     * 根据flowid 和OriginalOptSequence查询出“上”工序的所有工序
-     * panshi.zhang
-     *
-     * @return
-     */
-    private List<TrackItem> getTrackItemByFlowIdAndNextOptSequence(String flowId, Integer OriginalOptSequence) {
-        QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
-        wrapper.eq("flow_id", flowId);
-        wrapper.eq("next_opt_sequence", OriginalOptSequence);
-        return this.list(wrapper);
-    }
-
-
-    /**
-     * 根据flowid 和OriginalOptSequence查询出“本”工序的所有工序
-     * panshi.zhang
-     *
-     * @return
-     */
-    private List<TrackItem> getTrackItemByFlowIdAndOriginalOptSequence(String flowId, Integer OriginalOptSequence) {
-        QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
-        wrapper.eq("flow_id", flowId);
-        wrapper.eq("original_opt_sequence", OriginalOptSequence);
-        return this.list(wrapper);
-    }
-
-    /**
-     * 修改工序的is_current
-     * panshi.zhang
-     *
-     * @return
-     */
-    private boolean updateIsCurrent(List<TrackItem> trackItemList, Integer isCurrnet) {
-        for (TrackItem trackItem : trackItemList) {
-            trackItem.setIsCurrent(isCurrnet);
-            if (isCurrnet == 1) {
-                //由于回滚至上道工序，所以将跟单顺利完成状态改为0：未顺利完成
-                trackItem.setIsTrackSequenceComplete(0);
-            }
-        }
-        return this.updateBatchById(trackItemList);
     }
 
     @Override
