@@ -22,4 +22,16 @@ import java.util.List;
 public interface ProduceServiceClient {
     @GetMapping(value = "/api/produce/track_head/select_by_routerid")
     CommonResult<List<TrackHead>> selectByRouterId(@ApiParam(value = "工艺id") @RequestParam(required = false) String routerId);
+
+    /**
+     * 功能描述:根据项目BOM工作号,车间查询是否被跟单使用,有返回数量已被使用
+     *
+     * @param workNo
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/11/15 17:40
+     * @return: int
+     **/
+    @GetMapping(value = "/api/produce/track_head/queryCountByWorkNo")
+    int queryCountByWorkNo(@RequestParam("workNo") String workNo, @RequestParam("branchCode") String branchCode);
 }

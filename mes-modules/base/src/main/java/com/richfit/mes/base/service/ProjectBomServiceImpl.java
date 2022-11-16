@@ -10,13 +10,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProjectBomMapper;
+import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProjectBom;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -30,8 +34,15 @@ import java.util.stream.Collectors;
 @Service
 public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, ProjectBom> implements ProjectBomService {
 
+    @Resource
+    private ProduceServiceClient produceService;
+
     @Override
     public boolean deleteBom(String workPlanNo, String tenantId, String branchCode) {
+        int count = produceService.queryCountByWorkNo(workPlanNo, branchCode);
+        if (count > 0) {
+            throw new GlobalException("BOM已被使用", ResultCode.FAILED);
+        }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", workPlanNo)
                 .eq("tenant_id", tenantId)
