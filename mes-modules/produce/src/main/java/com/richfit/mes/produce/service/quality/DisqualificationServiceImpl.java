@@ -165,8 +165,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 //赋值用户车间
                 opinion.setUserBranch(user.getBelongOrgId());
                 //查询车间姓名并赋值
-                String branchCodeName = baseServiceClient.queryTenantIdByBranchCode(user.getBelongOrgId());
-                opinion.setUserBranchName(branchCodeName);
+                Branch branch = baseServiceClient.queryTenantIdByBranchCode(user.getBelongOrgId());
+                opinion.setUserBranchName(branch.getBranchName());
                 userOpinions.add(opinion);
             }
             userOpinionService.saveBatch(userOpinions);
@@ -193,9 +193,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //获取branchCode
         String value = value("qualityManagement");
         //获取TenantId
-        String tenantId = baseServiceClient.queryTenantIdByBranchCode(value);
+        Branch branch = baseServiceClient.queryTenantIdByBranchCode(value);
         //根据租户Id查询人员列表
-        return systemServiceClient.queryUserByTenantId(tenantId);
+        return systemServiceClient.queryUserByTenantId(branch.getTenantId());
     }
 
     @Override
