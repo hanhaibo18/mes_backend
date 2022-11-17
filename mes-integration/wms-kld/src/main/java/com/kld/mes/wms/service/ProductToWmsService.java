@@ -73,8 +73,6 @@ public class ProductToWmsService {
         if (!"".equals(cert.getProductNo()) && cert.getProductNo().split(spitStr).length > 1) {
             prodNo = cert.getProductNo().split(spitStr)[1];
         }
-        //TODO:测试工厂指定编号为X088
-        gc = "X088";
         String json = "{\"sqd\":\"" + sqd + "\",\"gc\":\"" + gc + "\",\"scdd\":\""
                 + cert.getProductionOrder() + "\",\"materialNum\":\"" + cert.getMaterialNo()
                 + "\",\"quantity\":" + cert.getNumber() + ",\"cp\":\"" + prodNo + "\",\"batchNum\":\"\",\"hgz\":\""
@@ -119,8 +117,6 @@ public class ProductToWmsService {
             init();
         }
         //转换json串
-        //TODO:测试固定工厂编码为X088
-        ingredientApplicationDto.setGc("X088");
         String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
         //加密后的16进制字符串
         String ingredientApplicationDtoEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);

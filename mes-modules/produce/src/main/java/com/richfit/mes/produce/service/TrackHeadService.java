@@ -290,4 +290,15 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @return: void
      **/
     void trackHeadDelivery(String id);
+
+    /**
+     * 功能描述:根据项目BOM工作号,车间查询是否被跟单使用,有返回数量已被使用
+     *
+     * @param workNo
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2022/11/15 17:29
+     * @return: int
+     **/
+    int queryCountByWorkNo(String workNo, String branchCode);
 }

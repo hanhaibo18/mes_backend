@@ -597,7 +597,41 @@ public class ProduceInspectionRecordService {
         trackItemInspectionService.updateById(trackItemInspection);
 
         //同步回跟单工序表
-        TrackItem trackItem = new TrackItem();
+        TrackItem trackItem = trackItemService.getById(itemId);
+        trackItem.setFlawDetectionRemark(flawDetectioRemark);
+        trackItem.setFlawDetection(flawDetection);
+        trackItem.setTempType(tempType);
+        trackItem.setInspectRecordNo(recordNo);
+        trackItem.setCheckBy(checkBy);
+        trackItem.setAuditBy(auditBy);
+        //质检字段赋值
+        //探伤工序不需要质检  有调度直接走调度
+        trackItem.setIsExistQualityCheck(0);
+        //更改状态 标识当前工序完成
+        trackItem.setIsDoing(2);
+        trackItem.setIsOperationComplete(1);
+        trackItem.setIsQualityComplete(1);
+
+        //调用工序激活方法
+        boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
+        if (next) {
+            trackItem.setIsFinalComplete(String.valueOf(1));
+        }
+        trackItemService.updateById(trackItem);
+
+        //派工状态设置为完成
+        UpdateWrapper<Assign> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("ti_id", trackItem.getId());
+        //state = 2 (已完工)
+        updateWrapper.set("state", 2);
+        trackAssignService.update(updateWrapper);
+
+        //判断是否需要质检和调度审核 再激活下工序
+        if (next) {
+            Map<String, String> map = new HashMap<String, String>(1);
+            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+            publicService.activationProcess(map);
+        }
 
         return trackItemInspectionService.updateById(trackItemInspection);
     }

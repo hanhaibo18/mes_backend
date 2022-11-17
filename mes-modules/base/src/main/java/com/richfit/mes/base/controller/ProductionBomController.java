@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author 王瑞
- * @Description 组织结构Controller
+ * @Description 产品Bom管理Controller
  */
 @Slf4j
 @Api(value = "产品Bom管理", tags = {"产品Bom管理"})

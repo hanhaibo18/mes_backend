@@ -22,4 +22,9 @@ public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
     public CommonResult<List<TrackHead>> selectByRouterId(String routerId) {
         return null;
     }
+
+    @Override
+    public int queryCountByWorkNo(String workNo, String branchCode) {
+        return 0;
+    }
 }

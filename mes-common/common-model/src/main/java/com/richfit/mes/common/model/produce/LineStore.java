@@ -86,6 +86,9 @@ public class LineStore extends BaseEntity<LineStore> {
     @ApiModelProperty(value = "生产订单编号")
     private String productionOrder;
 
+    @ApiModelProperty(value = "生产订单ID")
+    private String productionOrderId;
+
     @ApiModelProperty(value = "采购订单编号")
     private String purchaseOrder;
 
