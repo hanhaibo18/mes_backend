@@ -252,6 +252,17 @@ public class SequenceController extends BaseController {
         //工艺id
         String routerId = jsonObject.getString("routerId");
         TenantUserDetails user = SecurityUtils.getCurrentUser();
+
+        //查询修改前的所有工序
+        CommonResult<List<Sequence>> list = this.list(routerId);
+        List<Sequence> dbSequenceList = list.getData();
+        //修改后的idlist
+        List<String> idList = sequenceList.stream().filter(s-> !StringUtils.isNullOrEmpty(s.getId())).map(s -> s.getId()).collect(Collectors.toList());
+        //修改前的所有工序idlist
+        List<String> dbIdList = dbSequenceList.stream().map(s -> s.getId()).collect(Collectors.toList());
+        //已经删除掉订单工序id
+        List<String> ids = dbIdList.stream().filter(id -> !idList.contains(id)).collect(Collectors.toList());
+        sequenceService.removeByIds(ids);
         for (Sequence sequence : sequenceList) {
             if (StringUtils.isNullOrEmpty(sequence.getOptCode()) && !StringUtils.isNullOrEmpty(sequence.getId())) {
                 return CommonResult.failed("工序code不能为空！");
