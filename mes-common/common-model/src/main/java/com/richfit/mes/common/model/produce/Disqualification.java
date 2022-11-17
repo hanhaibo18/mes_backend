@@ -137,6 +137,12 @@ public class Disqualification extends BaseEntity<Disqualification> {
     private String tenantId;
 
     /**
+     * 所属租户
+     */
+    @ApiModelProperty(value = "跟单号", dataType = "String")
+    private String trackNo;
+
+    /**
      * 检验人员
      */
     @TableField(exist = false)

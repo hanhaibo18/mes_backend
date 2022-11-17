@@ -58,7 +58,7 @@ public interface BaseServiceClient {
     );
 
     @GetMapping(value = "/api/base/opt/find")
-    public CommonResult<List<Operatipon>> find(@RequestParam("id") String id, @RequestParam("optCode") String optCode, @RequestParam("optName") String optName, @RequestParam("routerId") String routerId, @RequestParam("branchCode") String branchCode,@RequestParam("tenantId") String tenantId);
+    public CommonResult<List<Operatipon>> find(@RequestParam("id") String id, @RequestParam("optCode") String optCode, @RequestParam("optName") String optName, @RequestParam("routerId") String routerId, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 
 
     @GetMapping(value = "/api/base/sequencesite/find")
@@ -144,7 +144,7 @@ public interface BaseServiceClient {
      * @return: String
      **/
     @GetMapping(value = "/api/base/branch/queryTenantIdByBranchCode")
-    public String queryTenantIdByBranchCode(@RequestParam("branchCode") String branchCode);
+    public Branch queryTenantIdByBranchCode(@RequestParam("branchCode") String branchCode);
 
 
     /**

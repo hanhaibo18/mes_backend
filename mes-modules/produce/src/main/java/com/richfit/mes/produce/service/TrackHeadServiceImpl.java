@@ -601,7 +601,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         trackItemService.saveOrUpdate(trackItem);
                     }
                 }
-                
+
 
                 //跟单工序添加
 //                if (!trackItems.isEmpty()) {
@@ -1324,5 +1324,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+    }
+
+    @Override
+    public int queryCountByWorkNo(String workNo, String branchCode) {
+        QueryWrapper<TrackHead> query = new QueryWrapper<>();
+        query.eq("project_bom_work", workNo);
+        query.eq("branch_code", branchCode);
+        return this.count(query);
     }
 }

@@ -676,4 +676,10 @@ public class TrackHeadController extends BaseController {
         }
         return CommonResult.success(trackHeadService.list(queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
+
+    @ApiOperation(value = "查询BOM是否被使用", notes = "查询项目BOM是否被使用(项目BOM删除查询使用)")
+    @GetMapping("/queryCountByWorkNo")
+    public int queryCountByWorkNo(String workNo, String branchCode) {
+        return trackHeadService.queryCountByWorkNo(workNo, branchCode);
+    }
 }

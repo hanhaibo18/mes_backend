@@ -304,11 +304,11 @@ public class BranchController extends BaseController {
 
     @ApiOperation(value = "查询tenantId", notes = "根据BranchCode查询租户Id")
     @GetMapping("/queryTenantIdByBranchCode")
-    public String queryTenantIdByBranchCode(String branchCode) {
+    public Branch queryTenantIdByBranchCode(String branchCode) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", branchCode);
         Branch branch = branchService.getOne(queryWrapper);
-        return branch.getBranchName();
+        return branch;
     }
 
     @ApiOperation(value = "查询所有分公司", notes = "查询所有分公司")
