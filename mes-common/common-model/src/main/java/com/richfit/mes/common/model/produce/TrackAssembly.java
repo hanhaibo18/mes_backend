@@ -164,6 +164,12 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     private String isNumFrom;
 
     /**
+     * 跟单号
+     */
+    @ApiModelProperty(value = "跟单号", dataType = "String")
+    private String trackNo;
+
+    /**
      * 配送数量
      */
     @TableField(exist = false)
