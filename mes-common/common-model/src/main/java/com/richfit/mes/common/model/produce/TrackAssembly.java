@@ -158,6 +158,12 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
     private String isEdgeStore;
 
     /**
+     * 是否是编号来源
+     */
+    @ApiModelProperty(value = "是否是编号来源", dataType = "String")
+    private String isNumFrom;
+
+    /**
      * 配送数量
      */
     @TableField(exist = false)
