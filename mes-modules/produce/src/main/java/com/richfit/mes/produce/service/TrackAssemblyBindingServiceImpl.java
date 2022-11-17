@@ -105,9 +105,15 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
 
     @Override
     public List<TrackAssemblyBinding> queryBindingList(String assemblyIdList) {
-        List<String> id = Arrays.asList(assemblyIdList.split(","));
+        boolean contains = assemblyIdList.contains(",");
+        List<String> idList = new ArrayList<>();
+        if (contains) {
+            idList = Arrays.asList(assemblyIdList.split(","));
+        } else {
+            idList.add(assemblyIdList);
+        }
         List<TrackAssemblyBinding> list = new ArrayList<>();
-        id.forEach(assemblyId -> {
+        idList.forEach(assemblyId -> {
             list.addAll(trackAssemblyBindingMapper.selectAssemblyBindingList(assemblyId));
         });
         return list;

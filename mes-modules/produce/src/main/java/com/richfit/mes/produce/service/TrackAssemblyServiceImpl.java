@@ -240,6 +240,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         Assign assign = trackAssignService.getOne(queryWrapper);
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
         //申请单号保持唯一
+        //TODO:修改跟单号 重复发送跟单号后面数量变更
         String id = trackItem.getId().substring(0, trackItem.getId().length() - 3);
         QueryWrapper<RequestNote> queryWrapperNote = new QueryWrapper<>();
         queryWrapperNote.likeRight("request_note_number", id);

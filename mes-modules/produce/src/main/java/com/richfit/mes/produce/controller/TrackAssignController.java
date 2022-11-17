@@ -79,6 +79,8 @@ public class TrackAssignController extends BaseController {
     private ProduceRoleOperationService roleOperationService;
     @Resource
     private BaseServiceClient baseServiceClient;
+    @Resource
+    private ApplicationNumberService numberService;
     @Value("${switch}")
     private String off;
 
@@ -366,13 +368,11 @@ public class TrackAssignController extends BaseController {
         Assign assign = trackAssignService.getOne(queryWrapper);
         //组装申请单信息
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
-        //申请单号保持唯一
-        QueryWrapper<RequestNote> queryWrapperNote = new QueryWrapper<>();
-        queryWrapperNote.likeLeft("request_note_number", trackItem.getId());
-        int count = requestNoteService.count(queryWrapperNote);
         //申请单号
-        String id = trackItem.getId().substring(0, trackItem.getId().length() - 3);
-        ingredient.setSqd(id + "@" + count);
+        ApplicationNumber applicationNumber = new ApplicationNumber();
+        applicationNumber.applicationNumber(trackItem.getId(), branchCode, SecurityUtils.getCurrentUser().getUserId(), SecurityUtils.getCurrentUser().getTenantId());
+        numberService.save(applicationNumber);
+        ingredient.setSqd(applicationNumber.getId() + "@0");
         //工厂编码
         ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
         //车间
