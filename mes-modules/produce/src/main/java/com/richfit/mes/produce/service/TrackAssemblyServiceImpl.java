@@ -308,6 +308,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     public void addTrackAssemblyByTrackHead(TrackHead trackHead) {
         List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
         for (TrackAssembly trackAssembly : trackAssemblyList) {
+            trackAssembly.setTrackHeadId(trackHead.getTrackHeadId());
+            trackAssembly.setTrackNo(trackHead.getTrackNo());
             trackAssembly.setBranchCode(trackHead.getBranchCode());
             trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -349,6 +351,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
                 trackAssembly.setUnit(pb.getUnit());
                 trackAssembly.setSourceType(pb.getSourceType());
+                trackAssembly.setIsNumFrom(pb.getIsNumFrom());
                 if (!StringUtil.isNullOrEmpty(pb.getBomGrouping())) {
                     if (pb.getId().equals(group.get(pb.getBomGrouping()))) {
                         trackAssemblyList.add(trackAssembly);
