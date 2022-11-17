@@ -56,4 +56,13 @@ public interface TrackAssemblyBindingService extends IService<TrackAssemblyBindi
      **/
     List<TrackAssemblyBinding> queryAssemblyBindingList(String assemblyId);
 
+    /**
+     * 功能描述: 查询已绑定信息
+     *
+     * @param assemblyIdList
+     * @Author: xinYu.hou
+     * @Date: 2022/11/17 16:46
+     * @return: List<TrackAssemblyBinding>
+     **/
+    List<TrackAssemblyBinding> queryBindingList(String assemblyIdList);
 }

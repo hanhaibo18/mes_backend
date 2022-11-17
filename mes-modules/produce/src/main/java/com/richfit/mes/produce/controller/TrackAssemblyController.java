@@ -138,4 +138,8 @@ public class TrackAssemblyController extends BaseController {
     public CommonResult<ApplicationResult> application(@RequestBody AdditionalMaterialDto additionalMaterialDto) {
         return CommonResult.success(trackAssemblyService.application(additionalMaterialDto));
     }
+
+    public CommonResult<List<TrackAssemblyBinding>> queryBindingList(String assemblyIdList) {
+        return CommonResult.success(assemblyBingService.queryBindingList(assemblyIdList));
+    }
 }
