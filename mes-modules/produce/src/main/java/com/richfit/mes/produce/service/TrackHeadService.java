@@ -230,7 +230,7 @@ public interface TrackHeadService extends IService<TrackHead> {
     List<TrackHead> queryTrackAssemblyByTrackNo(String flowId);
 
     /**
-     * 功能描述: 跟单拆分
+     * 功能描述: 单件跟单拆分
      *
      * @param trackHead    原跟单号信息
      * @param trackNoNew   新跟单号
@@ -238,6 +238,16 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @param trackFlowNew 新跟单产品列表
      */
     void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
+
+    /**
+     * 功能描述: 批次跟单拆分
+     *
+     * @param trackHead    原跟单号信息
+     * @param trackNoNew   新跟单号
+     * @param trackFlow    原跟单产品列表
+     * @param trackFlowNew 新跟单产品列表
+     */
+    void trackHeadBatchSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
 
     /**
      * 功能描述: 跟单id查询分流（生产线）List
