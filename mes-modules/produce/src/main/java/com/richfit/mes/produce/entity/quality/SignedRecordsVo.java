@@ -36,7 +36,7 @@ public class SignedRecordsVo {
             signedRecordsVo.setId(opinion.getId());
             signedRecordsVo.setUserName(opinion.getUserName());
             signedRecordsVo.setBranchCodeName(opinion.getUserBranchName());
-            signedRecordsVo.setHandlingTime(opinion.getCreateTime());
+            signedRecordsVo.setHandlingTime(opinion.getModifyTime());
             signedRecordsVo.setOpinion(opinion.getOpinion());
             list.add(signedRecordsVo);
         }
