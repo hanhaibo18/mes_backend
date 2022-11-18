@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * @since 2020-08-05
  */
 @Slf4j
-@Api("字典管理")
+@Api(value = "字典管理", tags = {"字典管理"})
 @RestController
 @RequestMapping("/api/sys/item")
 public class ItemController extends BaseController {
@@ -164,6 +164,24 @@ public class ItemController extends BaseController {
             itemParam.setValue(itemParam.getCode());
         }
         return CommonResult.success(itemParamIPage, ITEM_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "查询字典参数(下拉框值)", notes = "根据分类id查询字典参数")
+    @GetMapping("/item/paramList")
+    public CommonResult<List<ItemParam>> paramList( String classId) {
+        QueryWrapper<ItemParam> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(classId)) {
+            queryWrapper.eq("class_id", classId);
+        }
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
+        queryWrapper.orderByAsc("order_num");
+        List<ItemParam> itemParamList = itemParamService.list( queryWrapper);
+        for (ItemParam itemParam : itemParamList) {
+            itemParam.setValue(itemParam.getCode());
+        }
+        return CommonResult.success(itemParamList, ITEM_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询字典参数", notes = "根据参数类别和参数名称查询字典参数")

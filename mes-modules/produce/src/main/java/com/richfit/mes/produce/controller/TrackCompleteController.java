@@ -1270,7 +1270,7 @@ public class TrackCompleteController extends BaseController {
                         items.get(i).setIsDoing(0);
                         activeItems.add(items.get(i));
                         trackItemService.updateById(items.get(i));
-                        // todo 如果自动派工，那么执行派工操作
+                        // 如果自动派工，那么执行派工操作
                         if (null != items.get(i - 1) && null != items.get(i - 1).getIsAutoSchedule() && items.get(i - 1).getIsAutoSchedule() == 1) {
                             String deviceId = "";
                             String userId = "ba7dd26f0a669f9e09343f9b579b0321";

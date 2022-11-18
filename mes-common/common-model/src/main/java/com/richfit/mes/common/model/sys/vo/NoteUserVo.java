@@ -8,7 +8,6 @@ import java.util.Date;
 /**
  * @ClassName: NoteVo.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年02月15日 15:45:00
  */
 @Data

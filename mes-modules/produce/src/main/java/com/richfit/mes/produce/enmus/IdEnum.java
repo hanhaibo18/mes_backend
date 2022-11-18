@@ -3,7 +3,6 @@ package com.richfit.mes.produce.enmus;
 /**
  * @ClassName: IdEnum.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年07月13日 11:07:00
  */
 public enum IdEnum {

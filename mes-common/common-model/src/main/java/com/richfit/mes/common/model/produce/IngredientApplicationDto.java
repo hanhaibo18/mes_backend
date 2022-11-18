@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @ClassName: IngredientApplicationDto.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 申请单上传对象
  * @CreateTime: 2022年07月26日 15:50:00
  */
 @Data

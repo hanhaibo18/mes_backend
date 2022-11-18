@@ -16,7 +16,6 @@ public class QueryWork {
     private Date endDate;
     private String workId;
     private String drawingNo;
-    //TODO:编号是什么
     private String numberNo;
     private String trackNo;
 }

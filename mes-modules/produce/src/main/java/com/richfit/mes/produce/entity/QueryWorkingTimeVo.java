@@ -10,7 +10,6 @@ import java.util.List;
 /**
  * @ClassName: QueryWorkingTimeVo.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年07月13日 09:52:00
  */
 @Data
