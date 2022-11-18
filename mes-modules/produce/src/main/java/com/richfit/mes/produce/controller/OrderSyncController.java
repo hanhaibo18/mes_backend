@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * @ClassName: OrderSyncController.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 订单同步
  * @CreateTime: 2022年01月19日 10:21:00
  */
 @Slf4j

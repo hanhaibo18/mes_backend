@@ -1070,12 +1070,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> TrackFlowNew) {
+    public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
         trackHeadMapper.updateById(trackHead);
         //添加新的跟单
-        TrackHead trackHeadNew = trackHeadData(trackHead, TrackFlowNew);
+        TrackHead trackHeadNew = trackHeadData(trackHead, trackFlowNew);
         //优先赋值
         trackHeadNew.setOriginalTrackId(trackHead.getId());
         trackHeadNew.setOriginalTrackNo(trackHead.getTrackNo());
@@ -1083,9 +1083,34 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         trackHeadNew.setTrackNo(trackNoNew);
         trackHeadMapper.insert(trackHead);
-        codeRuleController.updateCode("track_no", "跟单编号", trackHeadNew.getTrackNo(), Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(), trackHeadNew.getBranchCode());
         //生产线迁移新跟单
-        trackFlowMigrations(trackHeadNew.getId(), TrackFlowNew);
+        trackFlowMigrations(trackHeadNew.getId(), trackFlowNew);
+        //计划数据更新
+        planService.planData(trackHead.getWorkPlanId());
+    }
+
+    @Override
+    public void trackHeadBatchSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
+        //更新原跟单
+        for (TrackFlow tf : trackFlow) {
+            trackHeadFlowService.updateById(tf);
+        }
+        trackHeadData(trackHead, trackFlow);
+        trackHeadMapper.updateById(trackHead);
+        //添加新的跟单
+        TrackHead trackHeadNew = trackHeadData(trackHead, trackFlowNew);
+        //优先赋值
+        trackHeadNew.setOriginalTrackId(trackHead.getId());
+        trackHeadNew.setOriginalTrackNo(trackHead.getTrackNo());
+        //更改为新值
+        trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        trackHeadNew.setTrackNo(trackNoNew);
+        trackHeadMapper.insert(trackHead);
+        //添加新批次生产线
+        for (TrackFlow tfn : trackFlowNew) {
+            tfn.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            trackHeadFlowService.updateById(tfn);
+        }
         //计划数据更新
         planService.planData(trackHead.getWorkPlanId());
     }

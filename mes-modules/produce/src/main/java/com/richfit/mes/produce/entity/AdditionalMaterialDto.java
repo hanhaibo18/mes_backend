@@ -6,7 +6,6 @@ import lombok.Data;
 /**
  * @ClassName: AdditionalMaterialDto.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年07月26日 17:54:00
  */
 @Data

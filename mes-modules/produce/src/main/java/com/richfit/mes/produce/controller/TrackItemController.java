@@ -148,15 +148,15 @@ public class TrackItemController extends BaseController {
     public CommonResult<List<TrackItem>> selectTrackItemByIds(@RequestBody List<String> headIds) {
         List<TrackItem> trackItems = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        if(headIds.size()>0){
-            queryWrapper.in("track_head_id",headIds)
-                    .eq("opt_type","3")
-                    .eq("is_operation_complete",0)
-                    .eq("is_current",1)
+        if (headIds.size() > 0) {
+            queryWrapper.in("track_head_id", headIds)
+                    .eq("opt_type", "3")
+                    .eq("is_operation_complete", 0)
+                    .eq("is_current", 1)
                     .orderByAsc("product_no");
             trackItems = trackItemService.list(queryWrapper);
         }
-        if(trackItems.size()>0){
+        if (trackItems.size() > 0) {
             for (TrackItem trackItem : trackItems) {
                 trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
             }
@@ -328,10 +328,10 @@ public class TrackItemController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "回滚至上工序", notes = "根据工序ID回滚至上工序")
+    @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")
     @GetMapping("/backSequence")
-    public CommonResult<String> backSequence(String id) throws Exception {
-        return CommonResult.success(trackItemService.backSequence(id));
+    public CommonResult<String> backSequence(String flowId) {
+        return CommonResult.success(trackItemService.backSequence(flowId));
     }
 
 

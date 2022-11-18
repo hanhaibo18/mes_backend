@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 /**
  * @ClassName: MaterialSyncServiceImpl.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 物料同步
  * @CreateTime: 2022年02月10日 09:07:00
  */
 @Slf4j
@@ -54,7 +54,7 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
 
     @Override
     public List<Product> queryProductSync(MaterialSyncDto materialSyncDto) {
-        return erpServiceClient.getMaterial(materialSyncDto.getDate(), materialSyncDto.getCode(),SecurityConstants.FROM_INNER).getData();
+        return erpServiceClient.getMaterial(materialSyncDto.getDate(), materialSyncDto.getCode(), SecurityConstants.FROM_INNER).getData();
     }
 
     /**
@@ -99,14 +99,14 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
     @Scheduled(cron = "${time.material}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingProductSync() {
-        if(execute){
+        if (execute) {
             //日期集合（前八天的日期YYYY-MM-dd）
             List<String> dates = new ArrayList<>();
-            for(int i=0;i<=7;i++){
-                dates.add(DateUtil.format(DateUtil.offsetDay(new Date(),-i),"yyyy-MM-dd"));
+            for (int i = 0; i <= 7; i++) {
+                dates.add(DateUtil.format(DateUtil.offsetDay(new Date(), -i), "yyyy-MM-dd"));
             }
             //根据日期升序排列（保证同步跟新的数据为最新数据）
-            dates.sort((t1,t2)->t1.compareTo(t2));
+            dates.sort((t1, t2) -> t1.compareTo(t2));
 
             //获取所有工厂信息
             MaterialSyncDto materialSyncDto = new MaterialSyncDto();
@@ -114,12 +114,12 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
 
             for (ItemParam itemParam : listCommonResult.getData()) {
                 materialSyncDto.setCode(itemParam.getCode());
-                log.debug("工厂代码："+itemParam.getCode()+"开始同步");
+                log.debug("工厂代码：" + itemParam.getCode() + "开始同步");
                 //同步前七天（包括今天）
                 for (String date : dates) {
                     materialSyncDto.setDate(date);
                     List<Product> productList = materialSyncService.queryProductSync(materialSyncDto);
-                    log.debug("日期："+date+",同步"+productList.size()+"条数据");
+                    log.debug("日期：" + date + ",同步" + productList.size() + "条数据");
                     for (Product product : productList) {
                         product.setCreateBy("System");
                         product.setModifyBy("System");
@@ -133,12 +133,12 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                         List<Product> list = materialSyncService.list(queryWrapper);
                         Map<String, Product> existPorduct = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
                         //不存在才去新增
-                        if(ObjectUtil.isEmpty(existPorduct.get(product.getMaterialNo()))){
+                        if (ObjectUtil.isEmpty(existPorduct.get(product.getMaterialNo()))) {
                             materialSyncService.save(product);
                         }
                     }
                 }
-                log.debug("工厂代码："+itemParam.getCode()+"同步结束");
+                log.debug("工厂代码：" + itemParam.getCode() + "同步结束");
 
             }
         }

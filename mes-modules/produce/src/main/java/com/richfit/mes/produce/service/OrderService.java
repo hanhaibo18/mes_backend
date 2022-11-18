@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.produce.entity.OrderDto;
 
+import java.util.List;
+
 /**
  * @Author: GaoLiang
  * @Date: 2020/8/11 9:08
@@ -13,8 +15,10 @@ import com.richfit.mes.produce.entity.OrderDto;
 public interface OrderService extends IService<Order> {
     IPage<Order> queryPage(Page<Order> planPage, OrderDto orderDto);
 
+    List<Order> queryList(OrderDto orderDto);
+
     //精准匹配MaterialCode
-    IPage<Order> queryPageEqMaterialCode(Page<Order> planPage, OrderDto orderDto);
+    List<Order> queryPageEqMaterialCode(OrderDto orderDto);
 
     Order queryOrder(String id);
 

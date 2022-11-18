@@ -427,18 +427,16 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
         QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
         wrapper.eq("flow_id", flowId);
+        wrapper.eq("is_current", 1);
+        wrapper.orderByDesc("opt_sequence");
         List<TrackItem> items = this.list(wrapper);
+
         TrackItem item = new TrackItem();
         if (items.size() > 0) {
-            for (TrackItem ti : items) {
-                if (ti.getIsCurrent() != null && ti.getIsCurrent() == 1) {
-                    item = ti;
-                    break;
-                }
-            }
+            item = items.get(0);
         }
 
-        if (item.getId() == null) {
+        if (item == null) {
             return "该跟单没有当前工序！";
         }
 
@@ -447,8 +445,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
 
         // 将当前工序is_current设为0
-        item.setIsCurrent(0);
-        this.updateById(item);
+        UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
+        updateWrapperOld.eq("flow_id", flowId);
+        updateWrapperOld.eq("is_current", 1);
+        updateWrapperOld.orderByDesc("opt_sequence");
+        updateWrapperOld.set("is_current", 0);
+        this.update(updateWrapperOld);
 
         // 将上道工序is_current设为1
         UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();

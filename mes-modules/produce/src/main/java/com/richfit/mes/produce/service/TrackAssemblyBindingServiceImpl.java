@@ -2,11 +2,9 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
 import com.richfit.mes.common.model.produce.TrackFlow;
@@ -18,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,6 +39,8 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
     private BaseServiceClient baseServiceClient;
     @Resource
     private TrackFlowMapper trackFlowMapper;
+    @Resource
+    private TrackAssemblyBindingMapper trackAssemblyBindingMapper;
 
 
     @Override
@@ -57,21 +59,15 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         TrackHead trackHead = trackHeadService.getById(trackAssembly.getTrackHeadId());
         if (1 == isBinding) {
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() + 1);
-            if (null != trackHead && StringUtils.isNullOrEmpty(trackHead.getProductNo())) {
-                //生成产品编号
-                ProjectBom projectBom = baseServiceClient.queryBom(trackHead.getProjectBomWork(), trackAssembly.getBranchCode());
+            //判断是否是编号来源
+            if ("1".equals(trackAssembly.getIsNumFrom())) {
+                //生成产品编
                 QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("track_head_id", trackHead.getId());
                 TrackFlow trackFlow = trackFlowMapper.selectOne(queryWrapper);
-                if (projectBom != null) {
-                    String produceNo = projectBom.getDrawingNo() + " " + assemblyBinding.getNumber();
-                    trackHead.setProductNo(produceNo);
-                    trackFlow.setProductNo(produceNo);
-                } else {
-                    String produceNo = trackHead.getDrawingNo() + " " + assemblyBinding.getNumber();
-                    trackHead.setProductNo(trackHead.getDrawingNo() + " " + assemblyBinding.getNumber());
-                    trackFlow.setProductNo(produceNo);
-                }
+                String produceNo = trackAssembly.getDrawingNo() + " " + assemblyBinding.getNumber();
+                trackHead.setProductNo(produceNo);
+                trackFlow.setProductNo(produceNo);
             }
         } else {
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - 1);
@@ -94,8 +90,9 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         TrackAssemblyBinding assemblyBinding = this.getById(id);
         if (null != assemblyBinding.getIsBinding() && 1 == assemblyBinding.getIsBinding()) {
             TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
-            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - 1);
+            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - assemblyBinding.getQuantity());
             trackAssemblyService.updateById(trackAssembly);
+            lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getNumber(), assemblyBinding.getQuantity(), 0);
         }
         return CommonResult.success(removeById(id));
     }
@@ -105,6 +102,22 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("assembly_id", assemblyId);
         return this.list(queryWrapper);
+    }
+
+    @Override
+    public List<TrackAssemblyBinding> queryBindingList(String assemblyIdList) {
+        boolean contains = assemblyIdList.contains(",");
+        List<String> idList = new ArrayList<>();
+        if (contains) {
+            idList = Arrays.asList(assemblyIdList.split(","));
+        } else {
+            idList.add(assemblyIdList);
+        }
+        List<TrackAssemblyBinding> list = new ArrayList<>();
+        idList.forEach(assemblyId -> {
+            list.addAll(trackAssemblyBindingMapper.selectAssemblyBindingList(assemblyId));
+        });
+        return list;
     }
 
 }

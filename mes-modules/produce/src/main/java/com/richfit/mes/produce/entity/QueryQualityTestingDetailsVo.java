@@ -9,7 +9,6 @@ import java.util.List;
 /**
  * @ClassName: QueryQualityTestingDetailsVo.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年06月29日 17:33:00
  */
 @Data

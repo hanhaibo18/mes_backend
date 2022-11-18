@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -43,6 +44,8 @@ public class TrackAssemblyBinding extends BaseEntity<TrackAssemblyBinding> {
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String itemId;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单号")
     private String trackNo;
 
     /**

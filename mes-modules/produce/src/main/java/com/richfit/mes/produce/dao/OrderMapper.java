@@ -8,6 +8,8 @@ import com.richfit.mes.produce.entity.OrderDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @Author: GaoLiang
  * @Date: 2020/8/11 9:16
@@ -16,9 +18,11 @@ import org.apache.ibatis.annotations.Param;
 public interface OrderMapper extends BaseMapper<Order> {
     IPage<Order> queryOrderList(Page<Order> orderPage, @Param("param") OrderDto orderDto);
 
+    List<Order> queryOrderListNoPage(@Param("param") OrderDto orderDto);
+
     Order queryOrder(@Param("id") String id);
 
 
     //精准匹配MaterialCode
-    IPage<Order> queryOrderListEqMaterialCode(Page<Order> orderPage, @Param("param") OrderDto orderDto);
+    List<Order> queryOrderListEqMaterialCode(@Param("param") OrderDto orderDto);
 }

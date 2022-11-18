@@ -27,6 +27,11 @@ public class ProjectBomComplete extends ProjectBom {
      * 计划所需数量
      */
     private int planNeedNumber;
+
+    /**
+     * 已安装trackAssembly id 逗号隔开
+     */
+    private String installIds;
     /**
      * 已安装数量
      */

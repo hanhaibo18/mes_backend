@@ -8,7 +8,6 @@ import java.util.List;
 /**
  * @ClassName: BatchAddScheduleDto.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年07月06日 11:53:00
  */
 @Data

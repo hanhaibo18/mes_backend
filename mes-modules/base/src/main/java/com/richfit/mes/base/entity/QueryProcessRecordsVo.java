@@ -11,7 +11,6 @@ import java.util.List;
 /**
  * @ClassName: queryProcessRecordsVo.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年06月24日 09:25:00
  */
 @Data

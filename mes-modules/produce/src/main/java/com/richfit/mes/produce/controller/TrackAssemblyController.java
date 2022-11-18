@@ -138,4 +138,10 @@ public class TrackAssemblyController extends BaseController {
     public CommonResult<ApplicationResult> application(@RequestBody AdditionalMaterialDto additionalMaterialDto) {
         return CommonResult.success(trackAssemblyService.application(additionalMaterialDto));
     }
+
+    @ApiOperation(value = "查询绑定信息", notes = "根据装配Id查询已绑定信息")
+    @GetMapping("/queryBindingList")
+    public CommonResult<List<TrackAssemblyBinding>> queryBindingList(String assemblyIdList) {
+        return CommonResult.success(assemblyBingService.queryBindingList(assemblyIdList));
+    }
 }

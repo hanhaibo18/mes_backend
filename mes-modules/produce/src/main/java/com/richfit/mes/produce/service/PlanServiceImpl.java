@@ -207,7 +207,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         if (trackAssembly.getMaterialNo().equals(projectBomComplete.getMaterialNo())) {
                             flag = false;
                             projectBomComplete.setNumber(trackAssembly.getNumber() + projectBomComplete.getNumber());
-                            projectBomComplete.setInstallNumber(trackAssembly.getNumber() + projectBomComplete.getInstallNumber());
+                            projectBomComplete.setInstallIds(trackAssembly.getId() + "," + projectBomComplete.getInstallIds());
+                            projectBomComplete.setInstallNumber(trackAssembly.getNumberInstall() + projectBomComplete.getInstallNumber());
                         }
                     }
                     if (flag) {
@@ -215,6 +216,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         projectBomComplete.setPlanNumber(plan.getProjNum());
                         projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
                         projectBomComplete.setNumber(trackAssembly.getNumber());
+                        projectBomComplete.setInstallIds(trackAssembly.getId());
                         projectBomComplete.setInstallNumber(trackAssembly.getNumberInstall());
                         projectBomComplete.setProdDesc(trackAssembly.getName());
                         projectBomComplete.setMaterialNo(trackAssembly.getMaterialNo());
@@ -349,7 +351,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //工序完成数量
                 plan.setOptFinishNumber(optNumber - optProcessNumber);
                 //计划数量、已交数量判断用来处理计划状态
-                if (plan.getDeliveryNum().compareTo(plan.getProjNum()) > 0) {
+                if (plan.getDeliveryNum().compareTo(plan.getProjNum()) == 0) {
                     plan.setStatus(3);
                 } else {
                     if (trackHeadList.size() > 0) {
