@@ -55,6 +55,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private RequestNoteService requestNoteService;
     @Resource
     private TrackAssemblyMapper trackAssemblyMapper;
+    @Resource
+    private ApplicationNumberService numberService;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -240,13 +242,12 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         Assign assign = trackAssignService.getOne(queryWrapper);
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
         //申请单号保持唯一
-        //TODO:修改跟单号 重复发送跟单号后面数量变更
-        String id = trackItem.getId().substring(0, trackItem.getId().length() - 3);
+        int number = numberService.queryApplicationNumber(trackItem.getId());
         QueryWrapper<RequestNote> queryWrapperNote = new QueryWrapper<>();
-        queryWrapperNote.likeRight("request_note_number", id);
+        queryWrapperNote.likeRight("request_note_number", number);
         int count = requestNoteService.count(queryWrapperNote);
         //申请单号
-        ingredient.setSqd(id + "@" + count);
+        ingredient.setSqd(number + "@" + count);
         //车间编码
         ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
         //车间code

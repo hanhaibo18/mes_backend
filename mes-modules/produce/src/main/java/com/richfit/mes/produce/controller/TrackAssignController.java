@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -335,9 +336,11 @@ public class TrackAssignController extends BaseController {
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
                         requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
                         ApplicationResult application = new ApplicationResult();
-                        application = wmsServiceClient.anApplicationForm(ingredient).getData();
-
+                        if (CollectionUtils.isNotEmpty(ingredient.getLineList())) {
+                            application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                        }
                         if ("N".equals(application.getRetCode())) {
+                            numberService.deleteApplicationNumberByItemId(trackItem.getId());
                             throw new GlobalException(application.getRetMsg(), ResultCode.FAILED);
                         }
                     }
@@ -369,10 +372,8 @@ public class TrackAssignController extends BaseController {
         //组装申请单信息
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
         //申请单号
-        ApplicationNumber applicationNumber = new ApplicationNumber();
-        applicationNumber.applicationNumber(trackItem.getId(), branchCode, SecurityUtils.getCurrentUser().getUserId(), SecurityUtils.getCurrentUser().getTenantId());
-        numberService.save(applicationNumber);
-        ingredient.setSqd(applicationNumber.getId() + "@0");
+        int applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
+        ingredient.setSqd(applicationNumber + "@0");
         //工厂编码
         ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
         //车间
