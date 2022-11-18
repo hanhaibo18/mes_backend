@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.entity.phyChemTestVo;
+package com.richfit.mes.common.model.produce;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +13,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel("PhyChemTaskVo")
-public class PhyChemTaskVo{
+public class PhyChemTaskVo {
     @ApiModelProperty(value = "page")
     private int page;
     @ApiModelProperty(value = "limit")
@@ -36,7 +36,7 @@ public class PhyChemTaskVo{
     private String branchCode;
     @ApiModelProperty(value = "tenantId")
     private String tenantId;
-    @ApiModelProperty(value = "委托单状态（0待发起、1已发起、2质检确认、3质检拒绝）")
+    @ApiModelProperty(value = "委托单状态（1待确认、2质检确认、3质检拒绝）")
     private String status;
     @ApiModelProperty(value = "委托人")
     private String consignor;

@@ -24,6 +24,7 @@ import com.richfit.mes.produce.entity.BatchAddScheduleDto;
 import com.richfit.mes.produce.entity.CountDto;
 import com.richfit.mes.produce.entity.QueryQualityTestingDetailsVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.OrderUtil;
@@ -79,6 +80,8 @@ public class TrackCheckController extends BaseController {
     private ProduceRoleOperationService roleOperationService;
     @Autowired
     private PhysChemOrderService physChemOrderService;
+    @Autowired
+    private MaterialInspectionServiceClient materialInspectionServiceClient;
 
     /**
      * ***
@@ -176,14 +179,14 @@ public class TrackCheckController extends BaseController {
                 item.setPartsName(trackHead.getMaterialName());
                 item.setBatchNo(trackHead.getBatchNo());
                 //查询理化委托单,查询委托单号最大的数据
-                List<PhysChemOrder> physChemOrder = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("batch_no", trackHead.getBatchNo()).orderByDesc("modify_time"));
-                if (physChemOrder.size() > 0) {
+                List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.getListByBatchNo(trackHead.getBatchNo());
+                if (physChemOrderInners.size() > 0) {
                     //根据委托单号排序
-                    physChemOrder.sort((t1, t2) -> t1.getOrderNo().compareTo(t2.getOrderNo()));
+                    physChemOrderInners.sort((t1, t2) -> t1.getOrderNo().compareTo(t2.getOrderNo()));
                     //委托单状态,根据最新的走
-                    item.setOrderStatus(physChemOrder.get(0).getStatus());
+                    item.setOrderStatus(physChemOrderInners.get(0).getStatus());
                     //是否有报告 （执行同步操作之后才能有报告）
-                    item.setSyncStatus(physChemOrder.get(0).getSyncStatus());
+                    item.setSyncStatus(physChemOrderInners.get(0).getSyncStatus());
                 }
             }
             return CommonResult.success(assigns);

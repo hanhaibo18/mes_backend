@@ -17,12 +17,8 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 public class PhysChemResult extends BaseEntity<PhysChemResult> {
-    @ApiModelProperty(value = "委托单号")
-    private String orderNo;
-    @ApiModelProperty(value = "炉批号")
-    private String batchNo;
-    @ApiModelProperty(value = "编号")
-    private String serialNo;
+    @ApiModelProperty(value = "报告号")
+    private String reportNo;
     @ApiModelProperty(value = "组织机构")
     private String branchCode;
     @ApiModelProperty(value = "租户id")

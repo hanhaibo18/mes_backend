@@ -1,6 +1,5 @@
 package com.richfit.mes.common.model.produce;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,7 +10,7 @@ import lombok.experimental.Accessors;
 
 
 /**
- * 理化检验委托单
+ * 理化委托单中间表
  *
  * @author renzewen
  * @since 2022-9-5
@@ -20,10 +19,8 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @NoArgsConstructor
-@ApiModel("PhysChemOrder")
-public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
-    @ApiModelProperty(value = "报告号")
-    private String reportNo;
+@ApiModel("PhysChemOrderInner")
+public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "炉批号")
     private String batchNo;
     @ApiModelProperty(value = "委托单状态（1已发起、2质检确认、3质检拒绝）")
@@ -32,7 +29,7 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String orderNo;
     @ApiModelProperty(value = "材料牌号")
     private String materialMark;
-    @ApiModelProperty(value = "产品名称")
+    @ApiModelProperty(value = "零件名称")
     private String productName;
     @ApiModelProperty(value = "图号")
     private String drawNo;
@@ -60,6 +57,8 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
 
     @ApiModelProperty(value = "送样时间")
     private String sampleTime;
+    @ApiModelProperty(value = "报告号")
+    private String reportNo;
     @ApiModelProperty(value = "同步状态（0未同步，1已经同步）")
     private String syncStatus;
     @ApiModelProperty(value = "同步时间")
