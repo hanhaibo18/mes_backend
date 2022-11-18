@@ -90,8 +90,9 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         TrackAssemblyBinding assemblyBinding = this.getById(id);
         if (null != assemblyBinding.getIsBinding() && 1 == assemblyBinding.getIsBinding()) {
             TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
-            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - 1);
+            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - assemblyBinding.getQuantity());
             trackAssemblyService.updateById(trackAssembly);
+            lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getNumber(), assemblyBinding.getQuantity(), 0);
         }
         return CommonResult.success(removeById(id));
     }
