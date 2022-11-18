@@ -7,7 +7,6 @@ import lombok.Data;
 /**
  * @ClassName: queryProcessVo.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年06月15日
  */
 @Data

@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * @ClassName: MaterialSyncController.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 物料
  * @CreateTime: 2022年02月10日 17:10:00
  */
 @Slf4j

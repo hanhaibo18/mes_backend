@@ -3,7 +3,6 @@ package com.richfit.mes.produce.enmus;
 /**
  * @ClassName: PublicCodeEnum.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年07月12日 16:35:00
  */
 public enum PublicCodeEnum {

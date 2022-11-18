@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 /**
  * @ClassName: QueryIsHistory.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年06月24日 11:13:00
  */
 @Data

@@ -8,7 +8,6 @@ import java.util.List;
 /**
  * @ClassName: DeleteProjectBomVo.java
  * @Author: Hou XinYu
- * @Description: TODO
  * @CreateTime: 2022年06月07日 06:42:00
  */
 @Data

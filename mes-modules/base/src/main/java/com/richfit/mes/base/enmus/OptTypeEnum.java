@@ -3,7 +3,7 @@ package com.richfit.mes.base.enmus;
 /**
  * @ClassName: RecipientsEnum.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 工序类型枚举
  * @CreateTime: 2022年02月16日 13:58:00
  */
 public enum OptTypeEnum {
