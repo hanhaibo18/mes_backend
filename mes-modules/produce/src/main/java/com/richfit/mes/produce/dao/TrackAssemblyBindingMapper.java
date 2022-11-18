@@ -34,6 +34,6 @@ public interface TrackAssemblyBindingMapper extends BaseMapper<TrackAssemblyBind
      * @Date: 2022/11/17 17:00
      * @return: List<TrackAssemblyBinding>
      **/
-    @Select("SELECT bind.*,track.track_no FROM produce_track_assembly_binding bind LEFT JOIN produce_track_assembly track ON track.id = bind.assembly_id WHERE bind.is_binding = 1 AND bind.assembly_id = #{assemblyId}}")
+    @Select("SELECT bind.*,track.track_no FROM produce_track_assembly_binding bind LEFT JOIN produce_track_assembly track ON track.id = bind.assembly_id WHERE bind.is_binding = 1 AND bind.assembly_id = #{assemblyId}")
     List<TrackAssemblyBinding> selectAssemblyBindingList(@Param("assemblyId") String assemblyId);
 }
