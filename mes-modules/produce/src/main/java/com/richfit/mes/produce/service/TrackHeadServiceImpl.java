@@ -1091,12 +1091,43 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public void trackHeadBatchSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
+        if (trackFlow.size() != 1) {
+            throw new GlobalException("批次跟单只能有一个生产线", ResultCode.FAILED);
+        }
+        if (trackFlowNew.size() != 1) {
+            throw new GlobalException("批次跟单只能有一个生产线", ResultCode.FAILED);
+        }
+
+        //老工序工序查询
+        QueryWrapper<TrackItem> wrapperTrackItem = new QueryWrapper();
+        wrapperTrackItem.eq("track_head_id", trackHead.getId());
+        wrapperTrackItem.orderByAsc("opt_sequence");
+        List<TrackItem> trackItemListOld = trackItemService.list(wrapperTrackItem);
+        //获取当前工序中的顺序最大值（包括并行工序）
+        int optSequence = 0;
+        for (TrackItem trackItem : trackItemListOld) {
+            if (trackItem.getIsCurrent() == 0) {
+                optSequence = trackItem.getOptSequence();
+            }
+        }
         //更新原跟单
         for (TrackFlow tf : trackFlow) {
             trackHeadFlowService.updateById(tf);
         }
+        //更新未开工的工序的数量
+        for (TrackItem trackItem : trackItemListOld) {
+            //工序顺序大于等于当前工序且未开工的工序数量才能修改
+            if (trackItem.getOptSequence() >= optSequence && trackItem.getIsDoing() == 0) {
+                trackItem.setNumber(trackHead.getNumber());
+                trackItem.setAssignableQty(trackHead.getNumber());
+                trackItem.setBatchQty(trackHead.getNumber());
+                trackItemService.updateById(trackItem);
+            }
+        }
         trackHeadData(trackHead, trackFlow);
         trackHeadMapper.updateById(trackHead);
+
+
         //添加新的跟单
         TrackHead trackHeadNew = trackHeadData(trackHead, trackFlowNew);
         //优先赋值
@@ -1105,14 +1136,28 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //更改为新值
         trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         trackHeadNew.setTrackNo(trackNoNew);
-        trackHeadMapper.insert(trackHead);
+        trackHeadMapper.insert(trackHeadNew);
         //添加新批次生产线
         for (TrackFlow tfn : trackFlowNew) {
             tfn.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-            trackHeadFlowService.updateById(tfn);
+            tfn.setTrackHeadId(trackHeadNew.getId());
+            trackHeadFlowService.saveOrUpdate(tfn);
+
+            //添加新生产线的工序
+            for (TrackItem trackItem : trackItemListOld) {
+                //工序顺序大于等于当前工序且未开工的工序数量才能修改
+                trackItem.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                trackItem.setTrackHeadId(trackHeadNew.getTrackHeadId());
+                trackItem.setFlowId(tfn.getId());
+                trackItem.setNumber(trackHeadNew.getNumber());
+                trackItem.setAssignableQty(trackHeadNew.getNumber());
+                trackItem.setBatchQty(trackHeadNew.getNumber());
+                trackItemService.save(trackItem);
+            }
         }
+
         //计划数据更新
-        planService.planData(trackHead.getWorkPlanId());
+        planService.planData(trackHeadNew.getWorkPlanId());
     }
 
     @Override
