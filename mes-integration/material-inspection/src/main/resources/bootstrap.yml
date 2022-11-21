@@ -2,7 +2,7 @@ server:
   port: 8015
 spring:
   application:
-    name: erp
+    name: material-inspection
   cloud:
     nacos:
       username: nacos_user01
