@@ -1,5 +1,6 @@
 package com.kld.mes.material.controller;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kld.mes.material.service.PhysChemOrderInnerService;
@@ -14,7 +15,6 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,10 +61,10 @@ public class PhysChemOrderInnerController extends BaseController {
             queryWrapper.eq("sample_dept",phyChemTaskVo.getSampleDept());
         }
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getStartTime())){
-            queryWrapper.ge("modify_time",phyChemTaskVo.getStartTime());
+            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')",phyChemTaskVo.getStartTime());
         }
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getEndTime())){
-            queryWrapper.le("modify_time",phyChemTaskVo.getEndTime());
+            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')",phyChemTaskVo.getEndTime());
         }
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getStatus())){
             queryWrapper.in("status",phyChemTaskVo.getStatus().split(","));
@@ -84,6 +84,10 @@ public class PhysChemOrderInnerController extends BaseController {
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单实体", paramType = "body", dataType = "physChemOrderInner")
     @PostMapping("/saveOrder")
     public boolean saveOrder(@RequestBody PhysChemOrderInner physChemOrderInner){
+        if(StringUtils.isNullOrEmpty(physChemOrderInner.getId())){
+            physChemOrderInner.setCreateTime(DateUtil.date());
+        }
+        physChemOrderInner.setModifyTime(DateUtil.date());
         //在试验结果为生成之前 中间表该报告号只会有一条数据 且是只有委托单的数据
         return physChemOrderInnerService.saveOrUpdate(physChemOrderInner);
     }

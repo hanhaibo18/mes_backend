@@ -3,6 +3,7 @@ package com.richfit.mes.produce.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -43,6 +44,10 @@ public class PhysChemTestController extends BaseController {
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单", paramType = "body", dataType = "physChemOrderInner")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> save(@RequestBody PhysChemOrderInner physChemOrderInner) throws Exception{
+        if(StringUtils.isNullOrEmpty(physChemOrderInner.getId())){
+            physChemOrderInner.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+        }
+        physChemOrderInner.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
         return phyChemTestService.saveOrder(physChemOrderInner);
     }
 

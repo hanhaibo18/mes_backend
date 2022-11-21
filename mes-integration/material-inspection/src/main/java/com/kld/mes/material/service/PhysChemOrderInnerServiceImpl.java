@@ -33,7 +33,8 @@ public class PhysChemOrderInnerServiceImpl extends ServiceImpl<PhysChemOrderInne
        //修改委托单状态
        UpdateWrapper<PhysChemOrderInner> updateWrapper = new UpdateWrapper<>();
        updateWrapper.eq("report_no",reportNo)
-               .set("report_status",reportStatus);
+               .set("report_status",reportStatus)
+               .set("modify_time",DateUtil.date());
        return this.update(updateWrapper);
    }
 
@@ -49,7 +50,8 @@ public class PhysChemOrderInnerServiceImpl extends ServiceImpl<PhysChemOrderInne
         UpdateWrapper<PhysChemOrderInner> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("report_no",reportNo)
                 .set("sync_status",syncStatus)
-                .set("sync_time", DateUtil.date());
+                .set("sync_time", DateUtil.date())
+                .set("modify_time",DateUtil.date());
         return this.update(updateWrapper);
     }
 
