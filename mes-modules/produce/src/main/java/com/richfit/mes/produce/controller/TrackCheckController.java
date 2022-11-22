@@ -179,7 +179,7 @@ public class TrackCheckController extends BaseController {
                 item.setPartsName(trackHead.getMaterialName());
                 item.setBatchNo(trackHead.getBatchNo());
                 //查询理化委托单,查询委托单号最大的数据
-                List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.getListByBatchNo(trackHead.getBatchNo());
+               /* List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.getListByBatchNo(trackHead.getBatchNo());
                 if (physChemOrderInners.size() > 0) {
                     //根据委托单号排序
                     physChemOrderInners.sort((t1, t2) -> t1.getOrderNo().compareTo(t2.getOrderNo()));
@@ -187,7 +187,7 @@ public class TrackCheckController extends BaseController {
                     item.setOrderStatus(physChemOrderInners.get(0).getStatus());
                     //是否有报告 （执行同步操作之后才能有报告）
                     item.setSyncStatus(physChemOrderInners.get(0).getSyncStatus());
-                }
+                }*/
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {
