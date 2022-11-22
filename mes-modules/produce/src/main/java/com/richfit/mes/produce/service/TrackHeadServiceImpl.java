@@ -1213,6 +1213,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapperTrackFlow);
         for (TrackFlow trackFlow : trackFlowList) {
             trackFlow.setNumber(number);
+            trackHeadFlowService.updateById(trackFlow);
         }
         originalTrackHead = this.trackHeadData(originalTrackHead, trackFlowList);
         this.updateById(originalTrackHead);
@@ -1235,7 +1236,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadFlowService.remove(queryWrapperTrackFlowSplit);
         //删除跟单
         this.removeById(trackHead);
-        
+
         //计划订单数据更新
         planService.planData(originalTrackHead.getWorkPlanId());
         orderService.orderData(originalTrackHead.getProductionOrderId());
