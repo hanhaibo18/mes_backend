@@ -33,7 +33,6 @@ public class OrderController {
 
     @ApiOperation(value = "查询订单", notes = "查询ERP生产订单")
     @GetMapping("/get")
-    @Inner
     public CommonResult<List<Order>> getErpOrder(@ApiParam(value = "erp代号") @RequestParam String erpCode,
                                                  @ApiParam(value = "订单日期") @RequestParam String selectDate,
                                                  @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,
@@ -42,4 +41,14 @@ public class OrderController {
         return CommonResult.success(orderService.getErpCode(erpCode, selectDate, controller, orderNo));
     }
 
+    @ApiOperation(value = "查询订单", notes = "查询ERP生产订单")
+    @GetMapping("/get/inner")
+    @Inner
+    public CommonResult<List<Order>> getErpOrderInner(@ApiParam(value = "erp代号") @RequestParam String erpCode,
+                                                      @ApiParam(value = "订单日期") @RequestParam String selectDate,
+                                                      @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,
+                                                      @ApiParam(value = "控制者") @RequestParam(required = false) String controller) throws Exception {
+
+        return CommonResult.success(orderService.getErpCode(erpCode, selectDate, controller, orderNo));
+    }
 }

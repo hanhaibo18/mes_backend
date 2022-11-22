@@ -59,7 +59,8 @@ fdfs:
   http:
     secret_key: FastDFS12345678900
 time:
-  order: "0 30 0 * * ? "
+  order: "0 0/1 * * * ? "
+  ##"0 30 0 * * ? "
   ourchase_order: "0 30 23 * * ? "
   push_work_hour: "0 48 15 * * ? "
 task-date:

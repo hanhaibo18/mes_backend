@@ -51,7 +51,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
 
     @Override
     public List<Order> queryOrderSynchronization(OrdersSynchronizationDto orderSynchronizationDto) {
-        return erpServiceClient.getErpOrder(orderSynchronizationDto.getCode(), orderSynchronizationDto.getDate(), orderSynchronizationDto.getOrderSn(), orderSynchronizationDto.getController(), SecurityConstants.FROM_INNER).getData();
+        return erpServiceClient.getErpOrder(orderSynchronizationDto.getCode(), orderSynchronizationDto.getDate(), orderSynchronizationDto.getOrderSn(), orderSynchronizationDto.getController()).getData();
     }
 
     /**
@@ -120,7 +120,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                         continue;
                     }
                     ordersSynchronization.setCode(itemParam.getCode());
-                    List<Order> orderList = erpServiceClient.getErpOrder(ordersSynchronization.getCode(), ordersSynchronization.getDate(), null, "", SecurityConstants.FROM_INNER).getData();
+                    List<Order> orderList = erpServiceClient.getErpOrderInner(ordersSynchronization.getCode(), ordersSynchronization.getDate(), null, "", SecurityConstants.FROM_INNER).getData();
                     for (Order order : orderList) {
                         //order.setBranchCode(itemParam.getLabel());
                         order.setTenantId(itemParam.getTenantId());
