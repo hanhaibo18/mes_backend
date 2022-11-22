@@ -230,6 +230,8 @@ public class LineStoreController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("status", status);
+        }else {
+            queryWrapper.notIn("status", 3);
         }
         if (number != null) {
             queryWrapper.eq("number", number);
