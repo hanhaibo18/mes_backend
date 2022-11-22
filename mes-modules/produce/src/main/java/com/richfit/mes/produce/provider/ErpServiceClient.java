@@ -40,7 +40,13 @@ public interface ErpServiceClient {
     public CommonResult<List<Order>> getErpOrder(@RequestParam String erpCode,
                                                  @RequestParam String selectDate,
                                                  @RequestParam String orderNo,
-                                                 @RequestParam String controller, @RequestHeader(SecurityConstants.FROM) String from);
+                                                 @RequestParam String controller);
+
+    @GetMapping("/api/integration/erp/order/get/inner")
+    public CommonResult<List<Order>> getErpOrderInner(@RequestParam String erpCode,
+                                                      @RequestParam String selectDate,
+                                                      @RequestParam String orderNo,
+                                                      @RequestParam String controller, @RequestHeader(SecurityConstants.FROM) String from);
 
     /**
      * 功能描述: ERP库存查询
