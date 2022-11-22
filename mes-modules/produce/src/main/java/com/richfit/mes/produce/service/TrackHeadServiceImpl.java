@@ -682,7 +682,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
             }).map(trackHead -> trackHead.getId()).collect(Collectors.toList());
             int result = trackHeadMapper.deleteBatchIds(ids);
-            if (result > 0) {
+            if (result > 0 && ids != null && ids.size() > 0) {
                 //删除分流数据、工序垃圾数据等信息，避免数据库垃圾数据，料单数据处理
                 for (String id : ids) {
                     //删除分流表数据
@@ -1106,7 +1106,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //获取当前工序中的顺序最大值（包括并行工序）
         int optSequence = 0;
         for (TrackItem trackItem : trackItemListOld) {
-            if (trackItem.getIsCurrent() == 0) {
+            if (trackItem.getIsCurrent() == 1) {
+                //找到最大的当前工序序号
                 optSequence = trackItem.getOptSequence();
             }
         }
@@ -1114,17 +1115,24 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         for (TrackFlow tf : trackFlow) {
             trackHeadFlowService.updateById(tf);
         }
+        //原跟单数据处理
+        trackHeadData(trackHead, trackFlow);
         //更新未开工的工序的数量
         for (TrackItem trackItem : trackItemListOld) {
-            //工序顺序大于等于当前工序且未开工的工序数量才能修改
-            if (trackItem.getOptSequence() >= optSequence && trackItem.getIsDoing() == 0) {
+            if (trackItem.getOptSequence() == optSequence && trackItem.getIsDoing() == 0 && trackItem.getOptParallelType() == 0) {
+                //工序顺序等于当前工序且未开工且是非并行的工序数量才能修改
+                trackItem.setNumber(trackHead.getNumber());
+                trackItem.setAssignableQty(trackHead.getNumber());
+                trackItem.setBatchQty(trackHead.getNumber());
+                trackItemService.updateById(trackItem);
+            } else if (trackItem.getOptSequence() > optSequence && trackItem.getIsDoing() == 0) {
+                //工序顺序大于当前工序且未开工的工序数量才能修改
                 trackItem.setNumber(trackHead.getNumber());
                 trackItem.setAssignableQty(trackHead.getNumber());
                 trackItem.setBatchQty(trackHead.getNumber());
                 trackItemService.updateById(trackItem);
             }
         }
-        trackHeadData(trackHead, trackFlow);
         trackHeadMapper.updateById(trackHead);
 
 
