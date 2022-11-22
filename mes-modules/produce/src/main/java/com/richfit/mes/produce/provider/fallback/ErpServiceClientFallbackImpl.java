@@ -24,7 +24,7 @@ public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     }
 
     @Override
-    public CommonResult<List<Order>> getErpOrder(String erpCode, String selectDate, String orderNo, String controller) {
+    public CommonResult<List<Order>> getErpOrder(String erpCode, String selectDate, String orderNo, String controller, String header) {
         return CommonResult.success(null);
     }
 

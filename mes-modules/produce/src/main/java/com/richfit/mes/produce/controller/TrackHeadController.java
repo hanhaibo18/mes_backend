@@ -31,10 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -644,6 +641,8 @@ public class TrackHeadController extends BaseController {
     public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHead> trackHeadList) throws
             Exception {
         try {
+            //跟单号长度降序排序，避免批量还原时候出现中间跟单丢失问题，从最后一个处理
+            Collections.sort(trackHeadList, new TrackHeadComparator());
             for (TrackHead trackHead : trackHeadList) {
                 if (TrackHead.TRACK_TYPE_0.equals(trackHead.getTrackType())) {
                     trackHeadService.trackHeadSplitBack(trackHead);
@@ -654,6 +653,15 @@ public class TrackHeadController extends BaseController {
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("跟单回收出现异常");
+        }
+    }
+
+    //跟单号List排序
+    class TrackHeadComparator implements Comparator<TrackHead> {
+
+        @Override
+        public int compare(TrackHead o1, TrackHead o2) {
+            return o2.getTrackNo().length() - o1.getTrackNo().length();
         }
     }
 

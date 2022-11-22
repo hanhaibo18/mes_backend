@@ -2,12 +2,12 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
-import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
@@ -21,9 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: OrderSyncServiceImpl.java
@@ -45,12 +46,12 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     @Autowired
     private ErpServiceClient erpServiceClient;
 
-    @Value("${time.execute:false}")
+    @Value("${time.execute:true}")
     private Boolean execute;
 
     @Override
     public List<Order> queryOrderSynchronization(OrdersSynchronizationDto orderSynchronizationDto) {
-        return erpServiceClient.getErpOrder(orderSynchronizationDto.getCode(), orderSynchronizationDto.getDate(), orderSynchronizationDto.getOrderSn(), orderSynchronizationDto.getController()).getData();
+        return erpServiceClient.getErpOrder(orderSynchronizationDto.getCode(), orderSynchronizationDto.getDate(), orderSynchronizationDto.getOrderSn(), orderSynchronizationDto.getController(), SecurityConstants.FROM_INNER).getData();
     }
 
     /**
@@ -68,10 +69,6 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             if (order.getMaterialCode() == null) {
                 continue;
             }
-            QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
-            if (order.getOrderSn() != null) {
-                queryWrapper.eq("order_sn", order.getOrderSn());
-            }
             order.setOrderDate(order.getStartTime());
             order.setDeliveryDate(order.getEndTime());
             order.setPriority("1");
@@ -79,7 +76,15 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             order.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             //同步时数据存在空格，会导致查不到图号
             order.setMaterialCode(order.getMaterialCode().trim());
-            orderSyncService.remove(queryWrapper);
+            List<Order> orders = new ArrayList<>();
+            QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+            if (order.getOrderSn() != null) {
+                queryWrapper.eq("order_sn", order.getOrderSn());
+                orders.addAll(orderSyncService.list(queryWrapper));
+            }
+            if (CollectionUtils.isNotEmpty(orders)) {
+                continue;
+            }
             orderSyncService.save(order);
         }
         return CommonResult.success(true, "操作成功!");
@@ -96,7 +101,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     @Scheduled(cron = "${time.order}")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingOrderSync() {
-        if(execute){
+        if (execute) {
             //拿到今天的同步数据
             OrdersSynchronizationDto ordersSynchronization = new OrdersSynchronizationDto();
             //由于零点半同步所以同步当天的数据需要取前一天的时间
@@ -106,10 +111,16 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             Boolean saveData = false;
             try {
                 CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
-                TenantUserDetails user = SecurityUtils.getCurrentUser();
                 for (ItemParam itemParam : listCommonResult.getData()) {
+                    CommonResult<List<ItemParam>> controllerCodeList = systemServiceClient.selectItemClass("controllerCode", "", SecurityConstants.FROM_INNER);
+                    //只通过KEY取值未隔离车间,通过erpCode的租户ID进行过滤 并返回Map
+                    Map<String, String> collectCode = controllerCodeList.getData().stream().filter(item -> itemParam.getTenantId().equals(item.getTenantId())).collect(Collectors.toMap(ItemParam::getLabel, ItemParam::getCode));
+                    //如果过滤之后没有数据,不进行同步
+                    if (CollectionUtils.isEmpty(collectCode)) {
+                        continue;
+                    }
                     ordersSynchronization.setCode(itemParam.getCode());
-                    List<Order> orderList = orderSyncService.queryOrderSynchronization(ordersSynchronization);
+                    List<Order> orderList = erpServiceClient.getErpOrder(ordersSynchronization.getCode(), ordersSynchronization.getDate(), null, "", SecurityConstants.FROM_INNER).getData();
                     for (Order order : orderList) {
                         //order.setBranchCode(itemParam.getLabel());
                         order.setTenantId(itemParam.getTenantId());
@@ -121,13 +132,16 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                         order.setDeliveryDate(order.getEndTime());
                         order.setPriority("1");
                         order.setStatus(0);
-                        order.setInChargeOrg(user.getBelongOrgId());
+                        order.setInChargeOrg(collectCode.get(order.getController()));
                         if (order.getMaterialCode() == null) {
                             continue;
                         }
                         QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
                         queryWrapper.eq("order_sn", order.getOrderSn());
-                        orderSyncService.remove(queryWrapper);
+                        List<Order> orders = orderSyncService.list(queryWrapper);
+                        if (CollectionUtils.isNotEmpty(orders)) {
+                            continue;
+                        }
                         saveData = orderSyncService.save(order);
                     }
                 }

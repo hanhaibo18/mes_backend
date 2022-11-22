@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -143,7 +144,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public void orderData(String orderId) {
+    public void orderDataTrackHead(TrackHead trackHead) {
+        String orderId = trackHead.getProductionOrderId();
+        String orderNo = trackHead.getProductionOrder();
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderId)) {
             Map map = new HashMap();
             map.put("production_order_id", orderId);
@@ -162,11 +165,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 }
             }
             Order order = orderMapper.queryOrder(orderId);
-            order.setStoreNum(numberComplete);
+            //由于之前订单同步删除订单流程bug会导致订单编码的id变更，故加入订单号码查询的流程
+            if (order == null) {
+                QueryWrapper<Order> queryWrapperOrder = new QueryWrapper<>();
+                queryWrapperOrder.eq("order_sn", orderNo);
+                queryWrapperOrder.eq("branch_code", trackHead.getBranchCode());
+                List<Order> orderList = this.list(queryWrapperOrder);
+                if (orderList != null && orderList.size() > 0) {
+                    order = orderList.get(0);
+                }
+            }
+            if (order != null) {
+                order.setStoreNum(numberComplete);
 //            if (order.getOrderNum().equals(order.getStoreNum())) {
 //                //数量完成时，老mes没有关于这部分的状态管理，新mes根据后期业务是否加入
 //            }
-            orderMapper.updateById(order);
+                orderMapper.updateById(order);
+            }
         }
     }
 
