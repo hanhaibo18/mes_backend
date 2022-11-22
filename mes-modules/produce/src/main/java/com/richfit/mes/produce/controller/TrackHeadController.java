@@ -628,7 +628,11 @@ public class TrackHeadController extends BaseController {
             List<TrackFlow> trackFlow = JSON.parseArray(JSON.toJSONString(map.get("trackList")), TrackFlow.class);
             List<TrackFlow> trackFlowNew = JSON.parseArray(JSON.toJSONString(map.get("trackListNew")), TrackFlow.class);
             TrackHead trackHead = trackHeadService.getById(id);
-            trackHeadService.trackHeadSplit(trackHead, trackNoNew, trackFlow, trackFlowNew);
+            if (TrackHead.TRACK_TYPE_0.equals(trackHead.getTrackType())) {
+                trackHeadService.trackHeadSplit(trackHead, trackNoNew, trackFlow, trackFlowNew);
+            } else {
+                trackHeadService.trackHeadBatchSplit(trackHead, trackNoNew, trackFlow, trackFlowNew);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("跟单拆分出现异常");
@@ -641,7 +645,11 @@ public class TrackHeadController extends BaseController {
             Exception {
         try {
             for (TrackHead trackHead : trackHeadList) {
-                trackHeadService.trackHeadSplitBack(trackHead);
+                if (TrackHead.TRACK_TYPE_0.equals(trackHead.getTrackType())) {
+                    trackHeadService.trackHeadSplitBack(trackHead);
+                } else {
+                    trackHeadService.trackHeadSplitBatchBack(trackHead);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,6 +1,5 @@
 package com.richfit.mes.common.model.produce;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,7 +10,7 @@ import lombok.experimental.Accessors;
 
 
 /**
- * 理化检验委托单
+ * 理化委托单中间表
  *
  * @author renzewen
  * @since 2022-9-5
@@ -20,10 +19,8 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @NoArgsConstructor
-@ApiModel("PhysChemOrder")
-public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
-    @ApiModelProperty(value = "报告号")
-    private String reportNo;
+@ApiModel("PhysChemOrderInner")
+public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "炉批号")
     private String batchNo;
     @ApiModelProperty(value = "委托单状态（1已发起、2质检确认、3质检拒绝）")
@@ -32,7 +29,7 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String orderNo;
     @ApiModelProperty(value = "材料牌号")
     private String materialMark;
-    @ApiModelProperty(value = "产品名称")
+    @ApiModelProperty(value = "零件名称")
     private String productName;
     @ApiModelProperty(value = "图号")
     private String drawNo;
@@ -60,6 +57,8 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
 
     @ApiModelProperty(value = "送样时间")
     private String sampleTime;
+    @ApiModelProperty(value = "报告号")
+    private String reportNo;
     @ApiModelProperty(value = "同步状态（0未同步，1已经同步）")
     private String syncStatus;
     @ApiModelProperty(value = "同步时间")
@@ -134,4 +133,65 @@ public class PhysChemOrder extends BaseEntity<PhysChemOrder> {
     private String branchCode;
     @ApiModelProperty(value = "租户id")
     private String tenantId;
+    //试验数据结果字段
+    @ApiModelProperty(value = "c")
+    private String c;
+    @ApiModelProperty(value = "si")
+    private String si;
+    @ApiModelProperty(value = "mn")
+    private String mn;
+    @ApiModelProperty(value = "p")
+    private String p;
+    @ApiModelProperty(value = "s")
+    private String s;
+    @ApiModelProperty(value = "cr")
+    private String cr;
+    @ApiModelProperty(value = "mo")
+    private String mo;
+    @ApiModelProperty(value = "ni")
+    private String ni;
+    @ApiModelProperty(value = "cu")
+    private String cu;
+    @ApiModelProperty(value = "v")
+    private String v;
+    @ApiModelProperty(value = "ti")
+    private String ti;
+    @ApiModelProperty(value = "nb")
+    private String nb;
+    @ApiModelProperty(value = "al")
+    private String al;
+    @ApiModelProperty(value = "fe")
+    private String fe;
+    @ApiModelProperty(value = "sn")
+    private String sn;
+    @ApiModelProperty(value = "zn")
+    private String zn;
+    @ApiModelProperty(value = "pb")
+    private String pb;
+    @ApiModelProperty(value = "w")
+    private String w;
+    @ApiModelProperty(value = "rm")
+    private String rm;
+    @ApiModelProperty(value = "rel")
+    private String rel;
+    @ApiModelProperty(value = "a")
+    private String a;
+    @ApiModelProperty(value = "z")
+    private String z;
+    @ApiModelProperty(value = "ak")
+    private String ak;
+    @ApiModelProperty(value = "弯曲Bend")
+    private String bend;
+    @ApiModelProperty(value = "硬度Hardness")
+    private String hardness;
+    @ApiModelProperty(value = "压扁Flattening")
+    private String flattening;
+    @ApiModelProperty(value = "一般疏松")
+    private String geneLoose;
+    @ApiModelProperty(value = "中心疏松")
+    private String centerLoose;
+    @ApiModelProperty(value = "低倍其它")
+    private String other;
+    @ApiModelProperty(value = "金相检验结果")
+    private String resultsMetal;
 }

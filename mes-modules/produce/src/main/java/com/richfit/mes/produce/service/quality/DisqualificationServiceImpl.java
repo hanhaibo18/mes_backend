@@ -111,17 +111,16 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveOrUpdateDisqualification(Disqualification disqualification) {
         if (StrUtil.isNotBlank(disqualification.getId())) {
+            if (1 == disqualification.getIsIssue()) {
+                disqualification.setOrderTime(new Date());
+            }
             this.updateById(disqualification);
-            QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("disqualification_id", disqualification.getId());
-            userOpinionService.remove(queryWrapper);
-            savePerson(disqualification.getUserList(), disqualification.getId());
         } else {
             if (1 == disqualification.getIsIssue()) {
                 disqualification.setOrderTime(new Date());
             }
             this.save(disqualification);
-            savePerson(disqualification.getUserList(), disqualification.getId());
+
         }
         if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
             disqualification.getAttachmentList().forEach(attachment -> {
@@ -139,6 +138,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             attachmentService.remove(queryWrapperAttachment);
             attachmentService.saveAttachment(disqualification.getAttachmentList());
         }
+        //删除人员意见,重新新增
+        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("disqualification_id", disqualification.getId());
+        userOpinionService.remove(queryWrapper);
+        savePerson(disqualification.getUserList(), disqualification.getId());
         return true;
     }
 
@@ -330,6 +334,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", saveOpinionDto.getOpinionId());
         updateWrapper.set("opinion", saveOpinionDto.getOpinion());
+        updateWrapper.set("modify_time", new Date());
         return userOpinionService.update(updateWrapper);
     }
 
