@@ -30,7 +30,7 @@ public class TrackHeadUtil {
         List<TrackHead> trackHeadList = new ArrayList<>();
         //用于区分是否单件、批量
         if (TrackHead.TRACKHEAD_BATCH_YES.equals(trackHead.getIsBatch())) {
-            if (trackHead.getStoreList() == null) {
+            if (trackHead.getStoreList() == null || trackHead.getStoreList().size() == 0) {
                 //单件装配批量根据数量拆分跟单数量
                 int number = trackHead.getNumber();
                 for (int i = 0; i < number; i++) {
