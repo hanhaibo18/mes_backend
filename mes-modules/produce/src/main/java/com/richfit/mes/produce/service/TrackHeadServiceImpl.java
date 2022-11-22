@@ -715,7 +715,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     //处理计划细节状态等、计划通用计算方法
                     planService.planData(trackHead.getWorkPlanId());
                     //处理订单细节状态等、计划通用计算方法
-                    orderService.orderData(trackHead.getProductionOrderId());
+                    orderService.orderDataTrackHead(trackHead);
                     //取消跟单关联
                     UpdateWrapper<LineStore> lineStoreUpdateWrapper = new UpdateWrapper<>();
                     lineStoreUpdateWrapper.eq("track_no", trackHead.getTrackNo());
@@ -830,7 +830,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //计划数据更新
             planService.planData(trackHead.getWorkPlanId());
             //订单数据更新
-            orderService.orderData(trackHead.getProductionOrderId());
+            orderService.orderDataTrackHead(trackHead);
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -877,7 +877,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //计划数据更新
             planService.planData(trackHead.getWorkPlanId());
             //订单数据更新
-            orderService.orderData(trackHead.getProductionOrderId());
+            orderService.orderDataTrackHead(trackHead);
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -1183,7 +1183,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         //计划订单数据更新
         planService.planData(trackHead.getWorkPlanId());
-        orderService.orderData(trackHead.getProductionOrderId());
+        orderService.orderDataTrackHead(trackHead);
     }
 
     @Override
@@ -1239,7 +1239,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         //计划订单数据更新
         planService.planData(originalTrackHead.getWorkPlanId());
-        orderService.orderData(originalTrackHead.getProductionOrderId());
+        orderService.orderDataTrackHead(originalTrackHead);
     }
 
     public void trackHeadSplitBatchBackCheck(TrackHead trackHead) {
@@ -1439,7 +1439,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         //计划数据更新
         planService.planData(trackHead.getWorkPlanId());
-        orderService.orderData(trackHead.getProductionOrderId());
+        orderService.orderDataTrackHead(trackHead);
     }
 
     /**
@@ -1470,7 +1470,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             planService.planData(trackHead.getWorkPlanId());
 
             //订单数据更新
-            orderService.orderData(trackHead.getProductionOrderId());
+            orderService.orderDataTrackHead(trackHead);
         } catch (Exception e) {
             log.error("跟单交库方法 error [{}]", e);
             e.printStackTrace();
