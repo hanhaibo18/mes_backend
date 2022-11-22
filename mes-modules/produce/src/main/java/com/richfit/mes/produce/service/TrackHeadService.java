@@ -250,11 +250,18 @@ public interface TrackHeadService extends IService<TrackHead> {
     void trackHeadBatchSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
 
     /**
-     * 功能描述: 跟单id查询分流（生产线）List
+     * 功能描述: 单价跟单拆分回收
      *
      * @param trackHead 回收的跟单信息
      */
     void trackHeadSplitBack(TrackHead trackHead);
+
+    /**
+     * 功能描述: 批次跟单拆分回收
+     *
+     * @param trackHead 回收的跟单信息
+     */
+    void trackHeadSplitBatchBack(TrackHead trackHead);
 
     /**
      * 功能描述: 跟单id查询分流（生产线）List

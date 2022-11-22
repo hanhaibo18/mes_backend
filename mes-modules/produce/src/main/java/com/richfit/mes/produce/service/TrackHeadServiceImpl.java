@@ -1144,6 +1144,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //更改为新值
         trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         trackHeadNew.setTrackNo(trackNoNew);
+        trackHeadNew.setWorkPlanId(null);
+        trackHeadNew.setWorkPlanEndTime(null);
+        trackHeadNew.setWorkPlanProjectNo(null);
+        trackHeadNew.setWorkPlanNo(null);
+        trackHeadNew.setProductionOrderId(null);
+        trackHeadNew.setProductionOrder(null);
         trackHeadMapper.insert(trackHeadNew);
         //添加新批次生产线
         for (TrackFlow tfn : trackFlowNew) {
@@ -1160,12 +1166,24 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackItem.setNumber(trackHeadNew.getNumber());
                 trackItem.setAssignableQty(trackHeadNew.getNumber());
                 trackItem.setBatchQty(trackHeadNew.getNumber());
+                trackItem.setIsDoing(0);
+                trackItem.setIsQualityComplete(0);
+                trackItem.setQualityCheckBy(null);
+                trackItem.setQualityCheckBranch(null);
+                trackItem.setQualityCompleteTime(null);
+                trackItem.setQualityResult(null);
+                trackItem.setScheduleCompleteBy(null);
+                trackItem.setScheduleCompleteTime(null);
+                trackItem.setScheduleCompleteResult(null);
+                trackItem.setIsFinalComplete(null);
+                trackItem.setIsTrackSequenceComplete(0);
                 trackItemService.save(trackItem);
             }
         }
 
-        //计划数据更新
-        planService.planData(trackHeadNew.getWorkPlanId());
+        //计划订单数据更新
+        planService.planData(trackHead.getWorkPlanId());
+        orderService.orderData(trackHead.getProductionOrderId());
     }
 
     @Override
@@ -1181,6 +1199,61 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackHeadMapper.updateById(originalTrackHead);
         //删除回收的跟单
         trackHeadMapper.deleteById(trackHead);
+    }
+
+    @Override
+    public void trackHeadSplitBatchBack(TrackHead trackHead) {
+        //是否可以还原功能检测
+        trackHeadSplitBatchBackCheck(trackHead);
+        TrackHead originalTrackHead = this.getById(trackHead.getOriginalTrackId());
+        trackHeadSplitBatchBackCheck(originalTrackHead);
+        int number = originalTrackHead.getNumber() + trackHead.getNumber();
+        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+        queryWrapperTrackFlow.eq("track_head_id", originalTrackHead.getId());
+        List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapperTrackFlow);
+        for (TrackFlow trackFlow : trackFlowList) {
+            trackFlow.setNumber(number);
+        }
+        originalTrackHead = this.trackHeadData(originalTrackHead, trackFlowList);
+        this.updateById(originalTrackHead);
+
+        //原跟单工序数量修改
+        UpdateWrapper<TrackItem> updateWrapperTrackItem = new UpdateWrapper();
+        updateWrapperTrackItem.eq("track_head_id", originalTrackHead.getId());
+        updateWrapperTrackItem.set("number", number);
+        updateWrapperTrackItem.set("assignable_qty", number);
+        updateWrapperTrackItem.set("batch_qty", number);
+        trackItemService.update(updateWrapperTrackItem);
+
+        //删除拆分的生产线
+        QueryWrapper<TrackFlow> queryWrapperTrackFlowSplit = new QueryWrapper<>();
+        queryWrapperTrackFlowSplit.eq("track_head_id", trackHead.getId());
+        trackHeadFlowService.remove(queryWrapperTrackFlowSplit);
+        //删除拆分的工序
+        QueryWrapper<TrackItem> queryWrapperTrackItemSplit = new QueryWrapper<>();
+        queryWrapperTrackItemSplit.eq("track_head_id", trackHead.getId());
+        trackHeadFlowService.remove(queryWrapperTrackFlowSplit);
+        //删除跟单
+        this.removeById(trackHead);
+        
+        //计划订单数据更新
+        planService.planData(originalTrackHead.getWorkPlanId());
+        orderService.orderData(originalTrackHead.getProductionOrderId());
+    }
+
+    public void trackHeadSplitBatchBackCheck(TrackHead trackHead) {
+        QueryWrapper<TrackItem> wrapperTrackItem = new QueryWrapper();
+        wrapperTrackItem.eq("track_head_id", trackHead.getId());
+        wrapperTrackItem.eq("number", trackHead.getNumber());
+        List<Integer> isDoing = new ArrayList<>();
+        isDoing.add(1);
+        isDoing.add(2);
+        wrapperTrackItem.in("is_doing", isDoing);
+        wrapperTrackItem.orderByAsc("opt_sequence");
+        List<TrackItem> trackItemList = trackItemService.list(wrapperTrackItem);
+        if (trackItemList != null && trackItemList.size() > 0) {
+            throw new GlobalException("当前跟单或者原跟单已开工，不能还原跟单。", ResultCode.FAILED);
+        }
     }
 
     /**

@@ -645,7 +645,11 @@ public class TrackHeadController extends BaseController {
             Exception {
         try {
             for (TrackHead trackHead : trackHeadList) {
-                trackHeadService.trackHeadSplitBack(trackHead);
+                if (TrackHead.TRACK_TYPE_0.equals(trackHead.getTrackType())) {
+                    trackHeadService.trackHeadSplitBack(trackHead);
+                } else {
+                    trackHeadService.trackHeadSplitBatchBack(trackHead);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
