@@ -4,13 +4,11 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.ErpServiceClientFallbackImpl;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -41,8 +39,8 @@ public interface ErpServiceClient {
     @GetMapping("/api/integration/erp/order/get")
     public CommonResult<List<Order>> getErpOrder(@RequestParam String erpCode,
                                                  @RequestParam String selectDate,
-                                                 @RequestParam(required = false) String orderNo,
-                                                 @RequestParam(required = false) String controller);
+                                                 @RequestParam String orderNo,
+                                                 @RequestParam String controller, @RequestHeader(SecurityConstants.FROM) String from);
 
     /**
      * 功能描述: ERP库存查询

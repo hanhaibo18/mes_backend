@@ -3,6 +3,7 @@ package com.kld.mes.erp.controller;
 import com.kld.mes.erp.service.OrderService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.security.annotation.Inner;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -32,6 +33,7 @@ public class OrderController {
 
     @ApiOperation(value = "查询订单", notes = "查询ERP生产订单")
     @GetMapping("/get")
+    @Inner
     public CommonResult<List<Order>> getErpOrder(@ApiParam(value = "erp代号") @RequestParam String erpCode,
                                                  @ApiParam(value = "订单日期") @RequestParam String selectDate,
                                                  @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,

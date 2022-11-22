@@ -43,6 +43,7 @@ interface:
 secure:
   ignore:
     urls:
+      - /api/integration/erp/order/get
       - /api/integration/erp/router/push
       - /api/integration/erp/material/getMaterial
 
