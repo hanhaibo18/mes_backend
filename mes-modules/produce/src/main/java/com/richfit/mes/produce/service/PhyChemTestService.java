@@ -89,6 +89,9 @@ public class PhyChemTestService{
             physChemOrderInner.setReportStatus(NO_REPORT_STATUS);
             //保存委托单号
             Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+            //保存报告号
+            Code.update("report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+
         }
         //委托人
         physChemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
