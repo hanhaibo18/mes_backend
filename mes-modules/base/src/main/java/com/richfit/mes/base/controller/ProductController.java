@@ -2,6 +2,7 @@ package com.richfit.mes.base.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -22,8 +23,10 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,10 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -464,4 +464,64 @@ public class ProductController extends BaseController {
         List<String> textureList = productList.stream().filter(x ->x!=null && !x.getTexture().equals("")).map(x -> x.getTexture()).collect(Collectors.toList());
         return CommonResult.success(textureList, PRODUCT_SUCCESS_MESSAGE);
     }
+
+    @ApiOperation(value = "修复物料数据列表中的物料类型错乱问题", notes = "修复物料数据列表中的物料类型错乱问题")
+    @GetMapping("/renovateData")
+    public CommonResult renovateData() {
+        HashMap<String, String> paramMap = new HashMap<>();
+        paramMap.put("0", " D");
+        paramMap.put("1", " Z");
+        paramMap.put("2", " JZ");
+        paramMap.put("4", " X");
+        paramMap.put("5", " MX");
+        paramMap.put("6", " 半");
+        Set<String> strings = paramMap.keySet();
+        for (String s : strings) {
+            QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+            queryWrapper.select("id");
+            queryWrapper.likeLeft("material_desc", paramMap.get(s));
+            queryWrapper.notIn("material_type", s);
+            //查出错乱数据的id
+            List<Object> idList = productService.listObjs(queryWrapper);
+            //大于一千条分页操作
+            if (idList.size() > 1000) {
+                int page = idList.size() / 1000;
+                int oldPage = idList.size() / 1000;
+                if (idList.size() % 1000 > 0) page += 1;//不能整除页数加1
+                for (int i = 0; i < page; i++) {
+                    int index = i == 0 ? i : 1000 * i;//起始下标
+                    int toIndex = i == 0 ? 999 : 1000 * i + 999;//结尾下标
+                    System.out.println(index + "  index-----------------  toindex" + toIndex);
+                    List<Object> objects = null;
+                    if (i < oldPage) {
+                        objects = idList.subList(index, toIndex);
+                    } else if (i == oldPage) {//尾页
+                        objects = idList.subList(index, idList.size());
+                    }
+                    if (!CollectionUtils.isEmpty(objects)){
+                        UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
+                        updateWrapper.set("material_type", s);
+                        updateWrapper.in("id", objects);
+                        System.out.println(objects + "-----------------" + i);
+                        productService.update(updateWrapper);//修改错乱数据
+                    }
+                }
+            } else {
+                //小于一千条直接修改
+               if (!CollectionUtils.isEmpty(idList)){
+                   UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
+                   updateWrapper.set("material_type", s);
+                   updateWrapper.in("id", idList);
+                   System.out.println(idList + "-----------------aaaaa");
+                   productService.update(updateWrapper);//修改错乱数据
+               }
+            }
+        }
+        return CommonResult.success("操作成功");
+    }
+
+
+
+
+
 }
