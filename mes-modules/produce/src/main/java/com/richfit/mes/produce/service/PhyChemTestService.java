@@ -150,12 +150,12 @@ public class PhyChemTestService{
                 PhysChemOrder physChemOrder = new PhysChemOrder();
                 BeanUtil.copyProperties(value.get(0),physChemOrder);
                 physChemOrder.setSyncStatus(SYNC_STATUS);
-                physChemOrder.setSyncTime(DateUtil.formatTime(DateUtil.date()));
+                physChemOrder.setSyncTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd hh:mm:ss "));
                 physChemOrders.add(physChemOrder);
                 //实验数据
                 for (PhysChemOrderInner physChemOrderInner : value) {
                     PhysChemResult physChemResult = new PhysChemResult();
-                    BeanUtil.copyProperties(physChemOrderInner,physChemOrder);
+                    BeanUtil.copyProperties(physChemOrderInner,physChemResult);
                     physChemResults.add(physChemResult);
                 }
             });
@@ -179,16 +179,14 @@ public class PhyChemTestService{
      * @throws IOException
      * @throws TemplateException
      */
-    public void exoprtReport(HttpServletResponse response,String hid) throws IOException, TemplateException {
-        //跟单数据
-        TrackHead trackHead = trackHeadService.getById(hid);
-        //委托单数据 根据batch_no查询
+    public void exoprtReport(HttpServletResponse response,String reportNo) throws IOException, TemplateException {
+        //委托单数据
         QueryWrapper<PhysChemOrder> physChemOrderQueryWrapper = new QueryWrapper<>();
-        physChemOrderQueryWrapper.eq("batch_no",trackHead.getBatchNo());
-        List<PhysChemOrder> orders = physChemOrderService.list(physChemOrderQueryWrapper);
+        physChemOrderQueryWrapper.eq("report_no",reportNo);
+        PhysChemOrder orders = physChemOrderService.list(physChemOrderQueryWrapper).get(0);
         //试验结果数据
         QueryWrapper<PhysChemResult> physChemResultQueryWrapper = new QueryWrapper<>();
-        physChemResultQueryWrapper.eq("batch_no",trackHead.getBatchNo());
+        physChemResultQueryWrapper.eq("report_no",reportNo);
         List<PhysChemResult> results = physChemResultService.list(physChemResultQueryWrapper);
 
         //构造填充数据

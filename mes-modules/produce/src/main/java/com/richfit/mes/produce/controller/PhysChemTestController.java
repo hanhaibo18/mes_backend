@@ -71,23 +71,20 @@ public class PhysChemTestController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "branchCode", value = "组织结构code", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "reportNo", value = "报告号", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/queryResultByReportNo")
-    public CommonResult<IPage<PhysChemResult>> queryResultByReportNo(int page,int limit,String reportNo,String branchCode){
+    public CommonResult<IPage<PhysChemResult>> queryResultByReportNo(int page,int limit,String reportNo){
         QueryWrapper<PhysChemResult> queryWrapper = new QueryWrapper<>();
-           queryWrapper.eq("report_no",reportNo)
-                   .eq("branch_code", branchCode)
-                   .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
+           queryWrapper.eq("report_no",reportNo);
         return CommonResult.success( physChemResultService.page(new Page<>(page, limit), queryWrapper));
     }
 
     @ApiOperation(value = "理化检测报告导出", notes = "理化检测报告导出")
-    @ApiImplicitParam(name = "hid", value = "跟单id", required = true, paramType = "query", dataType = "String")
+    @ApiImplicitParam(name = "reportNo", value = "报告号", required = true, paramType = "query", dataType = "String")
     @GetMapping("/exportReport")
-    public void exoprtReport(HttpServletResponse response, String hid) throws IOException, TemplateException, GlobalException {
-        phyChemTestService.exoprtReport(response,hid);
+    public void exoprtReport(HttpServletResponse response, String reportNo) throws IOException, TemplateException, GlobalException {
+        phyChemTestService.exoprtReport(response,reportNo);
     }
 
 }
