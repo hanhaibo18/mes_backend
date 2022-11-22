@@ -169,6 +169,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             if (order == null) {
                 QueryWrapper<Order> queryWrapperOrder = new QueryWrapper<>();
                 queryWrapperOrder.eq("order_sn", orderNo);
+                queryWrapperOrder.eq("branch_code", trackHead.getBranchCode());
                 List<Order> orderList = this.list(queryWrapperOrder);
                 if (orderList != null && orderList.size() > 0) {
                     order = orderList.get(0);
