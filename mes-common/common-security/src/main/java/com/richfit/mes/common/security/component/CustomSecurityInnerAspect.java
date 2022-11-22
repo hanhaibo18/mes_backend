@@ -1,6 +1,8 @@
 package com.richfit.mes.common.security.component;
 
+import cn.hutool.core.util.StrUtil;
 import com.richfit.mes.common.security.annotation.Inner;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.core.Ordered;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.file.AccessDeniedException;
 
 /**
  * @author sun
@@ -24,12 +27,11 @@ public class CustomSecurityInnerAspect implements Ordered {
     @SneakyThrows
     @Around("@annotation(inner)")
     public Object around(ProceedingJoinPoint point, Inner inner) {
-        //测试时发现该接口屏蔽订单同步功能，明天与同事核对后再放开
-//        String header = request.getHeader(SecurityConstants.FROM);
-//        if (inner.value() && !StrUtil.equals(SecurityConstants.FROM_INNER, header)) {
-//            log.warn("访问接口 {} 没有权限", point.getSignature().getName());
-//            throw new AccessDeniedException("访问接口 " + point.getSignature().getName() + " 没有权限");
-//        }
+        String header = request.getHeader(SecurityConstants.FROM);
+        if (inner.value() && !StrUtil.equals(SecurityConstants.FROM_INNER, header)) {
+            log.warn("访问接口 {} 没有权限", point.getSignature().getName());
+            throw new AccessDeniedException("访问接口 " + point.getSignature().getName() + " 没有权限");
+        }
         return point.proceed();
     }
 
