@@ -150,12 +150,12 @@ public class PhyChemTestService{
                 PhysChemOrder physChemOrder = new PhysChemOrder();
                 BeanUtil.copyProperties(value.get(0),physChemOrder);
                 physChemOrder.setSyncStatus(SYNC_STATUS);
-                physChemOrder.setSyncTime(DateUtil.formatTime(DateUtil.date()));
+                physChemOrder.setSyncTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd hh:mm:ss "));
                 physChemOrders.add(physChemOrder);
                 //实验数据
                 for (PhysChemOrderInner physChemOrderInner : value) {
                     PhysChemResult physChemResult = new PhysChemResult();
-                    BeanUtil.copyProperties(physChemOrderInner,physChemOrder);
+                    BeanUtil.copyProperties(physChemOrderInner,physChemResult);
                     physChemResults.add(physChemResult);
                 }
             });
