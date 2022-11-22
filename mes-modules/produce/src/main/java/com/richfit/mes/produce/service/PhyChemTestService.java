@@ -3,9 +3,15 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
@@ -13,10 +19,16 @@ import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
@@ -96,7 +108,12 @@ public class PhyChemTestService{
         //委托人
         physChemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
         physChemOrderInner.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-
+        //本地保存一份委托单用于委托单打印
+        PhysChemOrder physChemOrder = new PhysChemOrder();
+        BeanUtil.copyProperties(physChemOrderInner,physChemOrder);
+        physChemOrderService.saveOrUpdate(physChemOrder);
+        //为了委托单本地和中间表id保持一致
+        physChemOrderInner.setId(physChemOrder.getId());
         return CommonResult.success(materialInspectionServiceClient.saveOrder(physChemOrderInner));
     }
 
@@ -140,18 +157,11 @@ public class PhyChemTestService{
         if(reportNos.size()>0){
             //key->报告号   value—>实验结果
             Map<String, List<PhysChemOrderInner>> results = physChemOrderInners.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getReportNo));
-            //保存的委托单
-            List<PhysChemOrder> physChemOrders = new ArrayList<>();
+
             //保存的试验结果数据
             List<PhysChemResult> physChemResults = new ArrayList<>();
 
             results.forEach((key,value)->{
-                //委托单
-                PhysChemOrder physChemOrder = new PhysChemOrder();
-                BeanUtil.copyProperties(value.get(0),physChemOrder);
-                physChemOrder.setSyncStatus(SYNC_STATUS);
-                physChemOrder.setSyncTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd hh:mm:ss "));
-                physChemOrders.add(physChemOrder);
                 //实验数据
                 for (PhysChemOrderInner physChemOrderInner : value) {
                     PhysChemResult physChemResult = new PhysChemResult();
@@ -160,7 +170,6 @@ public class PhyChemTestService{
                 }
             });
             //保存同步的数据
-            physChemOrderService.saveBatch(physChemOrders);
             physChemResultService.saveBatch(physChemResults);
 
             //修改委托单同步接口状态"已同步"
@@ -183,7 +192,7 @@ public class PhyChemTestService{
         //委托单数据
         QueryWrapper<PhysChemOrder> physChemOrderQueryWrapper = new QueryWrapper<>();
         physChemOrderQueryWrapper.eq("report_no",reportNo);
-        PhysChemOrder orders = physChemOrderService.list(physChemOrderQueryWrapper).get(0);
+        PhysChemOrder physChemOrder = physChemOrderService.list(physChemOrderQueryWrapper).get(0);
         //试验结果数据
         QueryWrapper<PhysChemResult> physChemResultQueryWrapper = new QueryWrapper<>();
         physChemResultQueryWrapper.eq("report_no",reportNo);
@@ -191,13 +200,15 @@ public class PhyChemTestService{
 
         //构造填充数据
         Map<String, Object> dataMap = new HashMap<>();
+        //委托单数据
+        dataMap.putAll(JSON.parseObject(JSON.toJSONString(physChemOrder), Map.class));
         dataMap.put("rel","Rel");
         dataMap.put("forceTensileElongation","A50mm");
         dataMap.put("forceBendDirection","横向");
         dataMap.put("forceImpactDirection","横向");
         dataMap.put("forceTensileDirection","纵向");
-        dataMap.put("forceBendType","截面1/2");
-        dataMap.put("forceFlaserNumber","1232");
+        dataMap.put("forceBendType","截面1/2"); //硬度
+        dataMap.put("forceFlaser","1232"); //压扁
         dataMap.put("w","10mm");
         dataMap.put("kp","300j");
         dataMap.put("kv2","kv2");
@@ -219,4 +230,45 @@ public class PhyChemTestService{
 
 
     }
+
+    //导出理化委托单
+    public void exportExcel(HttpServletResponse rsp,String orderNo) {
+        PhysChemOrder physChemOrder = new PhysChemOrder();
+        //查询委托单
+        List<PhysChemOrder> list = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("order_no",orderNo));
+        if(list.size()>0){
+            physChemOrder = list.get(0);
+        }
+        int sheetNum = 0;
+        try {
+            ExcelWriter writer = ExcelUtil.getReader(ResourceUtil.getStream("excel/" + "PhyChemOrderTemplate.xlsx")).getWriter();
+            HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
+
+            if (sheetNum > 0) {
+                writer.setSheet(wk.cloneSheet(0));
+            }
+            //回车
+            CellStyle cellStyle = writer.getCellStyle();
+            cellStyle.setWrapText(true);
+            //向左对齐
+
+            writer.renameSheet(physChemOrder.getOrderNo());
+            writer.writeCellValue("A3", physChemOrder.getOrderNo());
+            writer.writeCellValue("C4", physChemOrder.getSampleTime());
+            writer.writeCellValue("F4", physChemOrder.getManufacturer());
+            writer.writeCellValue("I4", physChemOrder.getManufacturer());
+
+            ServletOutputStream outputStream = rsp.getOutputStream();
+            rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
+            rsp.setHeader("Content-disposition", "attachment; filename=" + new String("理化检测委托单".getBytes("utf-8"),
+                    "ISO-8859-1") + ".xlsx");
+            writer.flush(outputStream, true);
+            IoUtil.close(outputStream);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
 }

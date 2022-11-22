@@ -651,7 +651,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{送检单位}</w:t>
+                                        <w:t>${sampleDept!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -741,7 +741,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{样品名称}</w:t>
+                                        <w:t>${productName!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -833,7 +833,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{材料牌号}</w:t>
+                                        <w:t>${materialMark!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1352,7 +1352,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{号}</w:t>
+                                        <w:t>${reportNo!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -1430,7 +1430,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{图号}</w:t>
+                                        <w:t>${drawNo!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

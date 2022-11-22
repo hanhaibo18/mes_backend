@@ -87,4 +87,11 @@ public class PhysChemTestController extends BaseController {
         phyChemTestService.exoprtReport(response,reportNo);
     }
 
+    @ApiOperation(value = "理化检测委托单导出", notes = "理化检测委托单导出")
+    @ApiImplicitParam(name = "orderNo", value = "委托单号", required = true, paramType = "query", dataType = "String")
+    @GetMapping("/exportExcel")
+    public void exportExcel(HttpServletResponse response, String orderNo) throws IOException, TemplateException, GlobalException {
+        phyChemTestService.exportExcel(response,orderNo);
+    }
+
 }

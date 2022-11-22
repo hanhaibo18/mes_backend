@@ -45,7 +45,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     @Autowired
     private ErpServiceClient erpServiceClient;
 
-    @Value("${time.execute:false}")
+    @Value("${time.execute:true}")
     private Boolean execute;
 
     @Override
