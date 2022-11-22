@@ -162,11 +162,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 }
             }
             Order order = orderMapper.queryOrder(orderId);
-            order.setStoreNum(numberComplete);
+            if (order != null) {
+                order.setStoreNum(numberComplete);
 //            if (order.getOrderNum().equals(order.getStoreNum())) {
 //                //数量完成时，老mes没有关于这部分的状态管理，新mes根据后期业务是否加入
 //            }
-            orderMapper.updateById(order);
+                orderMapper.updateById(order);
+            }
         }
     }
 
