@@ -154,8 +154,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             map.put("tenantId", trackHead.getTenantId());
             List<TrackHead> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
             int numberComplete = 0;
+            int numberDoing = 0;
             for (TrackHead trackFlow : trackFlowList) {
-                if ("2".equals(trackFlow.getStatus())) {
+                if ("1".equals(trackFlow.getStatus())) {
+                    //完成
+                    numberDoing += trackFlow.getNumber();
+                } else if ("2".equals(trackFlow.getStatus())) {
                     //完成
                     numberComplete += trackFlow.getNumber();
                 } else if ("8".equals(trackFlow.getStatus())) {
@@ -178,7 +182,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 int i = order.getStoreNum().compareTo(order.getOrderNum());
                 if (order.getStoreNum() == 0) {
                     order.setProduction(0);
-                } else if (i < 0) {
+                }
+                if (numberDoing > 0) {
                     order.setProduction(1);
                 }
                 if (i >= 0) {
