@@ -49,6 +49,7 @@ public class PdmSchedulerTask {
             try {
                 processService.getPdmData();
             } catch (Exception e) {
+                log.error(e.getMessage());
                 e.printStackTrace();
             }finally {
                 processService.clearCache();

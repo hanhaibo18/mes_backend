@@ -1,22 +1,30 @@
 package com.richfit.mes.produce.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
+import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
+import com.richfit.mes.produce.service.quality.InspectionPowerService;
+import com.richfit.mes.produce.utils.OrderUtil;
 import freemarker.template.TemplateException;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -34,8 +42,13 @@ public class ProduceInspectionRecordController extends BaseController {
     private static final Integer YES_OPERA = 1; //已报工
     private static final Integer NO_OPERA = 0; //未报工
 
+    private final static int IS_STATUS = 1;
+    private final static int NO_STATUS = 0;
+
     @Autowired
     private ProduceInspectionRecordService produceInspectionRecordService;
+    @Autowired
+    private InspectionPowerService inspectionPowerService;
 
 
     /**
@@ -211,5 +224,119 @@ public class ProduceInspectionRecordController extends BaseController {
     @GetMapping("auditRecord")
     public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark) {
         return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark));
+    }
+
+    @ApiOperation(value = "分页查询委托单", notes = "分页查询委托单")
+    @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
+    @PostMapping("/inspectionPower/page")
+    public CommonResult<IPage> queryPowerOrderPage(@RequestBody InspectionPowerVo inspectionPowerVo) throws Exception {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
+            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
+            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
+            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
+        }
+        if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
+            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getStatus())){
+            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("modify_time");
+        }
+
+
+
+        return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
+    }
+
+    @ApiOperation(value = "探伤站派工页面分页查询委托单", notes = "探伤站派工页面分页查询委托单")
+    @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
+    @PostMapping("/inspectionPower/pageZj")
+    public CommonResult<IPage> queryPowerOrderPageZj(@RequestBody InspectionPowerVo inspectionPowerVo) throws Exception {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
+            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
+            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
+            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
+        }
+        if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
+            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getStatus())){
+            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
+            queryWrapper.eq("tenant_id",inspectionPowerVo.getTenantId());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("modify_time");
+        }
+
+        return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
+    }
+
+    @ApiOperation(value = "保存委托单", notes = "保存委托单")
+    @ApiImplicitParam(name = "inspectionPower", value = "委托单", paramType = "body", dataType = "InspectionPower")
+    @PostMapping("inspectionPower/saveInspectionPower")
+    public CommonResult<Boolean> saveInspectionPower(@RequestBody InspectionPower inspectionPower) throws Exception {
+        return produceInspectionRecordService.saveInspectionPower(inspectionPower);
+    }
+
+    @ApiOperation(value = "批量委托", notes = "批量委托")
+    @ApiImplicitParam(name = "ids", value = "委托单", paramType = "body", dataType = "List")
+    @PostMapping("inspectionPower/powerOrder")
+    public CommonResult<Boolean> powerOrder(@RequestBody List<String> ids) throws Exception {
+        return CommonResult.success(produceInspectionRecordService.powerOrder(ids));
+    }
+
+    @ApiOperation(value = "批量委托撤回", notes = "批量委托撤回")
+    @ApiImplicitParam(name = "id", value = "委托单id", paramType = "body", dataType = "List")
+    @PostMapping("inspectionPower/backOutOrder")
+    public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids) throws Exception {
+        return CommonResult.success(produceInspectionRecordService.powerOrder(ids));
+    }
+
+    @ApiOperation(value = "删除委托单", notes = "删除委托单")
+    @ApiImplicitParam(name = "id", value = "委托单id", paramType = "path", dataType = "String")
+    @DeleteMapping("inspectionPower/delete/{id}")
+    public CommonResult<Boolean> powerOrder(@PathVariable String id) throws Exception {
+        InspectionPower inspectionPower = inspectionPowerService.getById(id);
+        if(inspectionPower.getStatus() == IS_STATUS){
+            return CommonResult.failed("该委托单已经委托，不能删除");
+        }
+        return CommonResult.success(inspectionPowerService.removeById(id));
     }
 }

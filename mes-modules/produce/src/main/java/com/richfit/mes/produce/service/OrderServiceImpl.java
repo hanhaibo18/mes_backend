@@ -177,9 +177,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             }
             if (order != null) {
                 order.setStoreNum(numberComplete);
-//            if (order.getOrderNum().equals(order.getStoreNum())) {
-//                //数量完成时，老mes没有关于这部分的状态管理，新mes根据后期业务是否加入
-//            }
+                int i = order.getStoreNum().compareTo(order.getOrderNum());
+                if (order.getStoreNum() == 0) {
+                    order.setProduction(0);
+                } else if (i < 0) {
+                    order.setProduction(1);
+                }
+                if (i >= 0) {
+                    order.setProduction(2);
+                }
                 orderMapper.updateById(order);
             }
         }

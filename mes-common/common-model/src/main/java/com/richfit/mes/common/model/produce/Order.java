@@ -71,11 +71,12 @@ public class Order extends BaseEntity<Order> {
     @ApiModelProperty(value = "已计划数量")
     private Integer projNum;
 
-    @TableField(exist = false)
     @ApiModelProperty(value = "已交数量")
     private Integer storeNum;
 
     @ApiModelProperty(value = "控制者")
     private String controller;
 
+    @ApiModelProperty(value = "生产状态（0未开始，1以开始，2已完成）")
+    private Integer production;
 }

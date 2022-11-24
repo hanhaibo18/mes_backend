@@ -71,11 +71,12 @@ public class ProcessServiceImpl implements ProcessService {
     private PdmTaskRepository pdmTaskRepository;
 
     private static Map<String, Object> bomCacheMap = new ConcurrentHashMap<String, Object>();
+
     public ProcessServiceImpl() {
     }
 
     @Override
-    public void clearCache(){
+    public void clearCache() {
         log.info("清理BOM缓存......");
         bomCacheMap.clear();
     }
@@ -84,38 +85,44 @@ public class ProcessServiceImpl implements ProcessService {
     public void executeMonitorTask() {
         Pageable pageable = PageRequest.of(0, pageSize);
         Page<PdmTask> pdmTasks = pdmTaskRepository.findByStatus("0", pageable);
-        log.info("MonitorTask size:{}",pdmTasks.getTotalElements());
-        executeMonitorTask(pdmTasks);
+        log.info("MonitorTask size:{}", pdmTasks.getTotalElements());
+        try {
+            executeMonitorTask(pdmTasks);
+        }catch (Exception e){
+            log.error("ExecuteMonitorTask Exception:{}",e.getMessage());
+        }
+
         for (int i = 1; i < pdmTasks.getTotalPages(); i++) {
             try {
                 Thread.sleep(interval);
                 pageable = PageRequest.of(i, pageSize);
                 pdmTasks = pdmTaskRepository.findByStatus("0", pageable);
                 executeMonitorTask(pdmTasks);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error("ExecuteMonitorTask Exception:{}",e.getMessage());
             }
         }
     }
-    public void executeMonitorTask(Page<PdmTask> pdmTasks){
+
+    public void executeMonitorTask(Page<PdmTask> pdmTasks) {
         for (PdmTask pdmTask : pdmTasks) {
-            log.info("DrawNo:{},PdmDraw:{}",pdmTask.getPdmDrawNo(),pdmTask.getDataGroup());
-            String drawNoVer="01";
+            log.info("DrawNo:{},PdmDraw:{}", pdmTask.getPdmDrawNo(), pdmTask.getDataGroup());
+            String drawNoVer = "01";
             boolean result = false;
             //BOM
-            if("1".equals(pdmTask.getReqBom())){
+            if ("1".equals(pdmTask.getReqBom())) {
                 List<PdmBom> pdmBomList = getBomInfo(pdmTask.getPdmDrawNo(), pdmTask.getDataGroup());
-                if(!pdmBomList.isEmpty()){
+                if (!pdmBomList.isEmpty()) {
                     result = true;
                 }
                 //是否继续获取工艺和图纸
-                if("1".equals(pdmTask.getReqProcess()) || "1".equals(pdmTask.getReqDraw())){
+                if ("1".equals(pdmTask.getReqProcess()) || "1".equals(pdmTask.getReqDraw())) {
                     pdmBomList = pdmBomList.stream().filter(pdmBom -> "自制件".equals(pdmBom.getObjectType())).collect(Collectors.toList());
                     List<PdmBom> uniqueBomList = pdmBomList.stream().collect(
                             collectingAndThen(
                                     toCollection(() -> new TreeSet<>(comparing(o -> o.getId() + ";" + o.getRev()))), ArrayList::new)
                     );
-                    log.info("uniqueBomList:{}",uniqueBomList.isEmpty()?"0":uniqueBomList.size());
+                    log.info("uniqueBomList:{}", uniqueBomList.isEmpty() ? "0" : uniqueBomList.size());
                     for (PdmBom pdmBom : uniqueBomList) {
                         if (pdmBom.getId().equals(pdmTask.getPdmDrawNo())) {
                             //请求列表里的bomId获取工艺（getProcessInfo）和图纸（getDocumentURL）由外层处理
@@ -127,11 +134,11 @@ public class ProcessServiceImpl implements ProcessService {
                         try {
                             Thread.sleep(interval);
                             //Process
-                            if("1".equals(pdmTask.getReqProcess())) {
+                            if ("1".equals(pdmTask.getReqProcess())) {
                                 getProcessInfo(pdmBom.getId(), pdmBom.getDataGroup());
                             }
                             //document
-                            if("1".equals(pdmTask.getReqDraw())) {
+                            if ("1".equals(pdmTask.getReqDraw())) {
                                 getDocumentURL(pdmBom.getId(), pdmBom.getRev(), pdmBom.getDataGroup());
                             }
                         } catch (InterruptedException e) {
@@ -139,30 +146,34 @@ public class ProcessServiceImpl implements ProcessService {
                         }
                     }
                 }
-           }
+            }
 
             //Process
-            if("1".equals(pdmTask.getReqProcess())) {
+            if ("1".equals(pdmTask.getReqProcess())) {
                 result = getProcessInfo(pdmTask.getPdmDrawNo(), pdmTask.getDataGroup());
             }
             //document
-            if("1".equals(pdmTask.getReqDraw())) {
+            if ("1".equals(pdmTask.getReqDraw())) {
                 result = getDocumentURL(pdmTask.getPdmDrawNo(), drawNoVer, pdmTask.getDataGroup());
             }
             //更新任务
             pdmTask.setChangeOn(new Date());
-            pdmTask.setResult(result?"1":"0");
+            pdmTask.setResult(result ? "1" : "0");
             pdmTask.setStatus("1");
             pdmTaskRepository.save(pdmTask);
         }
     }
 
     @Override
-    public void getPdmData() throws Exception{
+    public void getPdmData() throws Exception {
         Pageable pageable = PageRequest.of(0, pageSize);
         Page<DrawingApply> drawingApplys = drawingApplyRepository.findByStatus("1", pageable);
-        log.info("ReqList size:{}",drawingApplys.getTotalElements());
-        getPdmDataFromReqList(drawingApplys);
+        log.info("ReqList size:{}", drawingApplys.getTotalElements());
+        try {
+            getPdmDataFromReqList(drawingApplys);
+        }catch (Exception e){
+            log.error("GetPdmDataFromReqList Exception:{}",e.getMessage());
+        }
 
         for (int i = 1; i < drawingApplys.getTotalPages(); i++) {
             try {
@@ -170,8 +181,8 @@ public class ProcessServiceImpl implements ProcessService {
                 pageable = PageRequest.of(i, pageSize);
                 drawingApplys = drawingApplyRepository.findByStatus("1", pageable);
                 getPdmDataFromReqList(drawingApplys);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error("Page {}, getPdmDataFromReqList exception:",i,e.getMessage());
             }
         }
     }
@@ -193,18 +204,18 @@ public class ProcessServiceImpl implements ProcessService {
     private void getPdmDataFromReqList(Page<DrawingApply> drawingApplys) {
 
         for (DrawingApply drawingApply : drawingApplys) {
-            log.info("DrawNo:{},PdmDraw:{}",drawingApply.getDrawingNo(),drawingApply.getPdmDrawingNo());
+            log.info("DrawNo:{},PdmDraw:{}", drawingApply.getDrawingNo(), drawingApply.getPdmDrawingNo());
             boolean updateReqList = false;
-            if(drawingApply.getPdmDrawingNo()==null || drawingApply.getPdmDrawingNo().isEmpty()){
+            if (drawingApply.getPdmDrawingNo() == null || drawingApply.getPdmDrawingNo().isEmpty()) {
                 //needQuery标识，使用MES图号代替PDM图号
-                if(drawingApply.getNeedQuery()==null || "0".equals(drawingApply.getNeedQuery())){
+                if (drawingApply.getNeedQuery() == null || "0".equals(drawingApply.getNeedQuery())) {
                     continue;
-                }else{
+                } else {
                     updateReqList = true;
                     drawingApply.setPdmDrawingNo(drawingApply.getDrawingNo());
                 }
             }
-            log.info("DrawNo:{},PdmDraw:{}",drawingApply.getDrawingNo(),drawingApply.getPdmDrawingNo());
+            log.info("DrawNo:{},PdmDraw:{}", drawingApply.getDrawingNo(), drawingApply.getPdmDrawingNo());
 
             try {
                 Thread.sleep(interval);
@@ -216,10 +227,10 @@ public class ProcessServiceImpl implements ProcessService {
                 List<PdmBom> pdmBomList = getBomInfo(drawingApply.getPdmDrawingNo(), drawingApply.getDataGroup());
 
                 //updateReqList标识，使用MES图号查询到PDM图号更新数据库
-                if(updateReqList && !pdmBomList.isEmpty()){
+                if (updateReqList && !pdmBomList.isEmpty()) {
                     drawingApply.setNeedQuery("0");
                     drawingApplyRepository.save(drawingApply);
-                    log.info("Update ReqList,Id:{},pdmDraw:{},ver:{},dataGroup:{}",drawingApply.getId(),drawingApply.getPdmDrawingNo(), drawingApply.getVer(), drawingApply.getDataGroup());
+                    log.info("Update ReqList,Id:{},pdmDraw:{},ver:{},dataGroup:{}", drawingApply.getId(), drawingApply.getPdmDrawingNo(), drawingApply.getVer(), drawingApply.getDataGroup());
                 }
 
                 pdmBomList = pdmBomList.stream().filter(pdmBom -> ("自制件").equals(pdmBom.getObjectType())).collect(Collectors.toList());
@@ -228,7 +239,7 @@ public class ProcessServiceImpl implements ProcessService {
                         collectingAndThen(
                                 toCollection(() -> new TreeSet<>(comparing(o -> o.getId() + ";" + o.getRev()))), ArrayList::new)
                 );
-                log.info("uniqueBomList:{}",uniqueBomList.isEmpty()?"0":uniqueBomList.size());
+                log.info("uniqueBomList:{}", uniqueBomList.isEmpty() ? "0" : uniqueBomList.size());
                 for (PdmBom pdmBom : uniqueBomList) {
 
                     if (pdmBom.getId().equals(drawingApply.getPdmDrawingNo())) {
@@ -259,7 +270,7 @@ public class ProcessServiceImpl implements ProcessService {
 
                 //document
                 //请求列表中版本号容错处理
-                if(drawingApply.getVer()==null || (drawingApply.getVer()!=null && drawingApply.getVer().length()!=2)){
+                if (drawingApply.getVer() == null || (drawingApply.getVer() != null && drawingApply.getVer().length() != 2)) {
                     drawingApply.setVer("01");
                 }
                 getDocumentURL(drawingApply.getPdmDrawingNo(), drawingApply.getVer(), drawingApply.getDataGroup());
@@ -279,11 +290,12 @@ public class ProcessServiceImpl implements ProcessService {
         getProcessInfo.setItemID(drawNo);
 
         String xml = convertObjToXML(GetProcessInfo.class, getProcessInfo);
-        String getProcessInfoReturn = pdmClient.getProcessInfo(xml);
-        ProcessInfoResponseXml processInfoResponse;
 
-        //返回值转换对象异常
+        String getProcessInfoReturn ;
+        ProcessInfoResponseXml processInfoResponse;
+        //请求pdm或返回值转换对象异常
         try {
+            getProcessInfoReturn = pdmClient.getProcessInfo(xml);
             processInfoResponse = (ProcessInfoResponseXml) xmlStrToObj(ProcessInfoResponseXml.class, getProcessInfoReturn);
         } catch (Exception e) {
             log.error("Exception:{},getProcessInfo:drawNo:{}", e.getMessage(), drawNo);
@@ -293,7 +305,7 @@ public class ProcessServiceImpl implements ProcessService {
 
         //PLM系统中没有该对象
         if (processInfoResponse.getMEProcesses() == null || processInfoResponse.getMEProcesses().getMEProcess() == null || processInfoResponse.getMEProcesses().getMEProcess().isEmpty()) {
-            log.error("GetProcessInfo {},return:{}", drawNo,getProcessInfoReturn);
+            log.error("GetProcessInfo {},return:{}", drawNo, getProcessInfoReturn);
             String remark = getProcessInfoReturn;
             if (processInfoResponse.getMessage() != null) {
                 remark = processInfoResponse.getMessage();
@@ -352,8 +364,8 @@ public class ProcessServiceImpl implements ProcessService {
                     pdmOption.setProcessId(drawNo + "@" + meProcess.getID() + "@" + dataGroup);
                     pdmOption.setDataGroup(dataGroup);
 
-                    pdmStepRepository.deleteByOpId(op.getID()+ "@" + dataGroup, dataGroup);
-                    pdmObjectRepository.deleteByOpId(op.getID()+ "@" + dataGroup, dataGroup);
+                    pdmStepRepository.deleteByOpId(op.getID() + "@" + dataGroup, dataGroup);
+                    pdmObjectRepository.deleteByOpId(op.getID() + "@" + dataGroup, dataGroup);
 
                     return pdmOption;
                 })).collect(Collectors.toList());
@@ -365,7 +377,7 @@ public class ProcessServiceImpl implements ProcessService {
                         op.getMESteps().getMEStep().stream().map(meStep -> {
                             PdmStep pdmStep = new PdmStep();
                             BeanUtils.copyProperties(meStep, pdmStep);
-                            pdmStep.setOpId(op.getID()+ "@" + dataGroup);
+                            pdmStep.setOpId(op.getID() + "@" + dataGroup);
                             pdmStep.setDataGroup(dataGroup);
                             return pdmStep;
                         }))).collect(Collectors.toList());
@@ -376,7 +388,7 @@ public class ProcessServiceImpl implements ProcessService {
                         op.getItems().getItem().stream().map(item -> {
                             PdmObject pdmObject = new PdmObject();
                             BeanUtils.copyProperties(item, pdmObject);
-                            pdmObject.setOpId(op.getID()+ "@" + dataGroup);
+                            pdmObject.setOpId(op.getID() + "@" + dataGroup);
                             pdmObject.setId(item.getID());
                             pdmObject.setDataGroup(dataGroup);
                             return pdmObject;
@@ -400,12 +412,12 @@ public class ProcessServiceImpl implements ProcessService {
         getDocumentURLXml.setReqItems(items);
 
         String xml = convertObjToXML(GetDocumentURLXml.class, getDocumentURLXml);
-        String getDocumentURLReturn = pdmClient.getDocumentURL(xml);
-
+        String getDocumentURLReturn;
         GetDatasetURL getDatasetURL;
 
-        //返回值转换对象异常
+        //请求PDM或返回值转换对象异常
         try {
+            getDocumentURLReturn = pdmClient.getDocumentURL(xml);
             getDatasetURL = (GetDatasetURL) xmlStrToObj(GetDatasetURL.class, getDocumentURLReturn);
         } catch (Exception e) {
             log.error("Exception:{},getDocumentURL:drawId:{},revId:{}", e.getMessage(), id, revId);
@@ -415,7 +427,7 @@ public class ProcessServiceImpl implements ProcessService {
 
         //PLM系统中没有该对象
         if (getDatasetURL.getItems().getItem() == null || getDatasetURL.getItems().getItem().getFiles() == null) {
-            log.error("GetDocumentURL {} {}, return:{}", id,revId,getDocumentURLReturn);
+            log.error("GetDocumentURL {} {}, return:{}", id, revId, getDocumentURLReturn);
             String remark = getDocumentURLReturn;
             if (getDatasetURL.getItems().getItem().getMessage() != null) {
                 remark = getDatasetURL.getItems().getItem().getMessage();
@@ -443,10 +455,10 @@ public class ProcessServiceImpl implements ProcessService {
             pdmDraw.setFileUrl(file.getFileURL());
             pdmDraw.setOp(file.getIsOP());
             //pdmDraw.setOpId(file.getFileRelID());
-            if("1".equals(file.getIsOP())){
-                pdmDraw.setOpId(id+"@"+file.getFileRelID()+"@"+dataGroup);
-            }else{
-                pdmDraw.setOpId(file.getFileRelID()+"@"+dataGroup);
+            if ("1".equals(file.getIsOP())) {
+                pdmDraw.setOpId(id + "@" + file.getFileRelID() + "@" + dataGroup);
+            } else {
+                pdmDraw.setOpId(file.getFileRelID() + "@" + dataGroup);
             }
             pdmDraw.setOpVer(file.getFileRelRev());
             pdmDraw.setItemId(id);
@@ -469,8 +481,8 @@ public class ProcessServiceImpl implements ProcessService {
         bom.setId(id);
         List<PdmBom> pdmBomList = getPdmBomInfo("0", 1, bom, dataGroup);
 
-        if(pdmBomList.isEmpty()){
-            log.info("PdmBomList is Empty,id:{},dataGroup:{}",id,dataGroup);
+        if (pdmBomList.isEmpty()) {
+            log.info("PdmBomList is Empty,id:{},dataGroup:{}", id, dataGroup);
             return pdmBomList;
         }
 
@@ -488,12 +500,11 @@ public class ProcessServiceImpl implements ProcessService {
         getBomInfoXml.setID(id);
 
         String xml = convertObjToXML(GetBomInfoXml.class, getBomInfoXml);
-        String getBomInfoReturn = pdmClient.getBomInfo(xml);
-
+        String getBomInfoReturn;
         GetBOMInfoReturnXml getBOMInfoReturnXml;
-
-        //返回值转换对象异常
+        //请求PDM或返回值转换对象异常
         try {
+            getBomInfoReturn = pdmClient.getBomInfo(xml);
             getBOMInfoReturnXml = (GetBOMInfoReturnXml) xmlStrToObj(GetBOMInfoReturnXml.class, getBomInfoReturn);
         } catch (Exception e) {
             log.error("Exception:{},GetBOMInfo:drawId:{}", e.getMessage(), id);
@@ -504,8 +515,8 @@ public class ProcessServiceImpl implements ProcessService {
 
         List<BOM> bomList = getBOMInfoReturnXml.getBOM();
         //PLM系统中没有该对象
-        if (bomList == null || bomList.isEmpty() || getBOMInfoReturnXml.getMessage()!=null ) {
-            log.error("GetBOMInfo {},return:{}", id,getBomInfoReturn);
+        if (bomList == null || bomList.isEmpty() || getBOMInfoReturnXml.getMessage() != null) {
+            log.error("GetBOMInfo {},return:{}", id, getBomInfoReturn);
             String remark = getBomInfoReturn;
             if (getBOMInfoReturnXml.getMessage() != null) {
                 remark = getBOMInfoReturnXml.getMessage();
@@ -524,7 +535,7 @@ public class ProcessServiceImpl implements ProcessService {
         return bomList;
     }
 
-    private List<PdmBom> getPdmBomInfo(String parentBomId, int orderNo,BOM currentBom, String dataGroup) {
+    private List<PdmBom> getPdmBomInfo(String parentBomId, int orderNo, BOM currentBom, String dataGroup) {
 
         List<PdmBom> pdmBomList = new ArrayList<>();
         List<BOM> bomList = new ArrayList<>();
@@ -533,15 +544,15 @@ public class ProcessServiceImpl implements ProcessService {
         String bomKey = currentBom.getId();
         Object bomId = bomCacheMap.get(bomKey);
         //缓存中存在，不再重新获取是否有子bom
-        if(currentBom.getId().equals(bomId)){
-            log.info("Get BOM From Cache,{}",bomKey);
+        if (currentBom.getId().equals(bomId)) {
+            log.info("Get BOM From Cache,{}", bomKey);
             //只存储本级bom
             bomList.add(currentBom);
-        }else {
+        } else {
             bomList = getPdmBomXml(currentBom.getId());
             //更新到缓存
-            bomCacheMap.put(bomKey,currentBom.getId());
-            log.info("Update BOM Cache,{}",bomKey);
+            bomCacheMap.put(bomKey, currentBom.getId());
+            log.info("Update BOM Cache,{}", bomKey);
         }
 
 
@@ -549,7 +560,7 @@ public class ProcessServiceImpl implements ProcessService {
             PdmBom pdmBom = new PdmBom();
 
             //使用上次查询的数据
-            if(!"0".equals(parentBomId) && currentBom !=null && currentBom.getId().equals(bom.getId())){
+            if (!"0".equals(parentBomId) && currentBom != null && currentBom.getId().equals(bom.getId())) {
                 bom.setQuantity(currentBom.getQuantity());
             }
             pdmBom.setId(bom.getId());
@@ -561,7 +572,7 @@ public class ProcessServiceImpl implements ProcessService {
             List<PdmBom> pdmBomSaved = pdmBomRepository.findAll(bomExample);
             if (!pdmBomSaved.isEmpty()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Bom id {} already exist, size:{}, id:{}, pid:{}",pdmBom.getId(), pdmBomSaved.size(),pdmBomSaved.get(0).getBomId(),parentBomId);
+                    log.debug("Bom id {} already exist, size:{}, id:{}, pid:{}", pdmBom.getId(), pdmBomSaved.size(), pdmBomSaved.get(0).getBomId(), parentBomId);
                 }
                 pdmBom.setBomId(pdmBomSaved.get(0).getBomId());
             }

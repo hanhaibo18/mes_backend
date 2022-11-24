@@ -30,6 +30,8 @@ import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.quality.InspectionPowerService;
+import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,10 @@ public class ProduceInspectionRecordService {
     private final static String CHECK = "check";
 
     private final static String AUDIT = "audit";
+
+    private final static int IS_STATUS = 1;
+    private final static int NO_STATUS = 0;
+    private final static int BACKOUT_STATUS = 2;
     @Autowired
     private ProduceInspectionRecordMtService produceInspectionRecordMtService;
     @Autowired
@@ -99,6 +105,8 @@ public class ProduceInspectionRecordService {
     private TrackAssignPersonService trackAssignPersonService;
     @Autowired
     private TrackAssignMapper trackAssignMapper;
+    @Autowired
+    private InspectionPowerService inspectionPowerService;
 
 
     /**
@@ -1347,5 +1355,49 @@ public class ProduceInspectionRecordService {
         return true;
     }
 
+    /**
+     * 保存委托单
+     */
+    public CommonResult saveInspectionPower(InspectionPower inspectionPower) throws Exception {
+        inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        if(StringUtils.isEmpty(inspectionPower.getId())){
+            //保存探伤委托单号
+            Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(),codeRuleService);
+            //委托人赋值
+            inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        }else{
+            InspectionPower byId = inspectionPowerService.getById(inspectionPower.getId());
+            if(byId.getStatus()==IS_STATUS){
+                return CommonResult.failed("该委托单已经发起委托，不能修改");
+            }
+        }
+        return CommonResult.success(inspectionPowerService.saveOrUpdate(inspectionPower));
+    }
+
+    /**
+     * 批量委托
+     */
+    public boolean powerOrder(List<String> ids){
+        if(ids.size()>0){
+            UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.in("id",ids)
+                    .set("status",IS_STATUS);
+            return inspectionPowerService.update(updateWrapper);
+        }
+        return true;
+    }
+
+    /**
+     * 批量撤回
+     */
+    public boolean backOutOrder(List<String> ids){
+        if(ids.size()>0){
+            UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.in("id",ids)
+                    .set("status",BACKOUT_STATUS);
+            return inspectionPowerService.update(updateWrapper);
+        }
+        return true;
+    }
 
 }

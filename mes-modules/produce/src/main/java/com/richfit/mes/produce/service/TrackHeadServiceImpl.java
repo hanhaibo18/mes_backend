@@ -1111,12 +1111,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 optSequence = trackItem.getOptSequence();
             }
         }
-        //更新原跟单
+        //更新原跟单生产线
         for (TrackFlow tf : trackFlow) {
             trackHeadFlowService.updateById(tf);
         }
         //原跟单数据处理
         trackHeadData(trackHead, trackFlow);
+
         //更新未开工的工序的数量
         for (TrackItem trackItem : trackItemListOld) {
             if (trackItem.getOptSequence() == optSequence && trackItem.getIsDoing() == 0 && trackItem.getOptParallelType() == 0) {
@@ -1203,22 +1204,27 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public void trackHeadSplitBatchBack(TrackHead trackHead) {
-        //是否可以还原功能检测
+        //是否可以还原功能检测，当前跟单
         trackHeadSplitBatchBackCheck(trackHead);
         TrackHead originalTrackHead = this.getById(trackHead.getOriginalTrackId());
+        //是否可以还原功能检测，还原的上级跟单
         trackHeadSplitBatchBackCheck(originalTrackHead);
+        //计算合并后的跟单数量
         int number = originalTrackHead.getNumber() + trackHead.getNumber();
+        //查询上级跟单的生产现
         QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
         queryWrapperTrackFlow.eq("track_head_id", originalTrackHead.getId());
         List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapperTrackFlow);
+        //跟新上级跟单生产线数量
         for (TrackFlow trackFlow : trackFlowList) {
             trackFlow.setNumber(number);
             trackHeadFlowService.updateById(trackFlow);
         }
+        //上级跟单计算并更新上级跟单
         originalTrackHead = this.trackHeadData(originalTrackHead, trackFlowList);
         this.updateById(originalTrackHead);
 
-        //原跟单工序数量修改
+        //上级跟单工序数量修改
         UpdateWrapper<TrackItem> updateWrapperTrackItem = new UpdateWrapper();
         updateWrapperTrackItem.eq("track_head_id", originalTrackHead.getId());
         updateWrapperTrackItem.set("number", number);
