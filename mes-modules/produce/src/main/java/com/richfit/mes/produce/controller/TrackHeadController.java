@@ -44,9 +44,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/produce/track_head")
 public class TrackHeadController extends BaseController {
 
-
     @Autowired
     private PlanService planService;
+
+    @Autowired
+    private OrderService orderService;
 
     @Autowired
     private TrackHeadService trackHeadService;
@@ -697,5 +699,15 @@ public class TrackHeadController extends BaseController {
     @GetMapping("/queryCountByWorkNo")
     public int queryCountByWorkNo(String workNo, String branchCode) {
         return trackHeadService.queryCountByWorkNo(workNo, branchCode);
+    }
+
+    @ApiOperation(value = "数据处理", notes = "数据处理")
+    @PostMapping("/data_processing")
+    public CommonResult dataProcessing(@ApiParam(value = "跟单信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
+        for (TrackHead trackHead : trackHeads) {
+            planService.planData(trackHead.getWorkPlanId());
+            orderService.orderDataTrackHead(trackHead);
+        }
+        return CommonResult.success("操作成功", TRACK_HEAD_SUCCESS_MESSAGE);
     }
 }
