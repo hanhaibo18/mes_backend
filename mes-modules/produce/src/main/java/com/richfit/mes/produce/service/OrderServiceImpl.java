@@ -157,7 +157,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             int numberDoing = 0;
             for (TrackHead trackFlow : trackFlowList) {
                 if ("1".equals(trackFlow.getStatus())) {
-                    //完成
+                    //在制
                     numberDoing += trackFlow.getNumber();
                 } else if ("2".equals(trackFlow.getStatus())) {
                     //完成
