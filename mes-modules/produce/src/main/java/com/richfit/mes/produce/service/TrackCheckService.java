@@ -1,5 +1,8 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.TrackCheck;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -34,4 +37,15 @@ public interface TrackCheckService extends IService<TrackCheck> {
      * @return: Integer
      **/
     Integer qualityTestingNumber(String branchCode);
+
+    /**
+     * 功能描述: 获取分页数据
+     *
+     * @param page
+     * @param qw
+     * @Author: xinYu.hou
+     * @Date: 2022/11/23 19:30
+     * @return: IPage<TrackCheck>
+     **/
+    IPage<TrackCheck> queryCheckPage(Page<TrackCheck> page, QueryWrapper<TrackCheck> qw);
 }
