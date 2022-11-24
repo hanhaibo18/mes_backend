@@ -149,9 +149,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         String orderNo = trackHead.getProductionOrder();
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderNo)) {
             Map map = new HashMap();
-            map.put("production_order", orderNo);
-            map.put("branch_code", trackHead.getBranchCode());
-            map.put("tenant_id", trackHead.getTenantId());
+            map.put("productionOrder", orderNo);
+            map.put("branchCode", trackHead.getBranchCode());
+            map.put("tenantId", trackHead.getTenantId());
             List<TrackHead> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
             int numberComplete = 0;
             for (TrackHead trackFlow : trackFlowList) {
