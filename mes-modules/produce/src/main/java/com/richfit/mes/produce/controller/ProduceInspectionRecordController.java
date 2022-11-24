@@ -256,7 +256,13 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("modify_time");
+        }
+
+
 
         return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
     }
@@ -293,7 +299,11 @@ public class ProduceInspectionRecordController extends BaseController {
         if(!StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
             queryWrapper.eq("tenant_id",inspectionPowerVo.getTenantId());
         }
-        OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("modify_time");
+        }
 
         return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
     }

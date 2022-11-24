@@ -1,11 +1,12 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
-import java.util.Date;
 
 @Data
 @ApiModel(value = "探伤委托单管理")
@@ -58,6 +59,32 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String tenantId;
     @ApiModelProperty(value = "委托人", dataType = "String")
     private String consignor;
+    @TableField(exist = false)
+    private String productType;
 
-
+    public String getProductType() {
+        StringBuilder productType = new StringBuilder();
+        if(this.weld ==1){
+            productType.append("焊接");
+        }
+        if(this.cast ==1){
+            if(!StringUtils.isEmpty(String.valueOf(productType))){
+                productType.append(" ");
+            }
+            productType.append("铸造");
+        }
+        if(this.forg ==1){
+            if(!StringUtils.isEmpty(String.valueOf(productType))){
+                productType.append(" ");
+            }
+            productType.append("锻压");
+        }
+        if(this.fluorescent ==1){
+            if(!StringUtils.isEmpty(String.valueOf(productType))){
+                productType.append(" ");
+            }
+            productType.append("荧光");
+        }
+        return String.valueOf(productType);
+    }
 }
