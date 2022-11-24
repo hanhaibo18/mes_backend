@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -252,9 +253,46 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
-            queryWrapper.eq("branchCode",inspectionPowerVo.getBranchCode());
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+
+        return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
+    }
+
+    @ApiOperation(value = "探伤站派工页面分页查询委托单", notes = "探伤站派工页面分页查询委托单")
+    @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
+    @PostMapping("/inspectionPower/pageZj")
+    public CommonResult<IPage> queryPowerOrderPageZj(@RequestBody InspectionPowerVo inspectionPowerVo) throws Exception {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
+            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
+            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
+            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
+        }
+        if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
+            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getStatus())){
+            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+        }
+        if(!StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
+            queryWrapper.eq("tenant_id",inspectionPowerVo.getTenantId());
+        }
         OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
 
         return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
@@ -271,6 +309,13 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiImplicitParam(name = "ids", value = "委托单", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/powerOrder")
     public CommonResult<Boolean> powerOrder(@RequestBody List<String> ids) throws Exception {
+        return CommonResult.success(produceInspectionRecordService.powerOrder(ids));
+    }
+
+    @ApiOperation(value = "批量委托撤回", notes = "批量委托撤回")
+    @ApiImplicitParam(name = "id", value = "委托单id", paramType = "body", dataType = "List")
+    @PostMapping("inspectionPower/backOutOrder")
+    public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids) throws Exception {
         return CommonResult.success(produceInspectionRecordService.powerOrder(ids));
     }
 

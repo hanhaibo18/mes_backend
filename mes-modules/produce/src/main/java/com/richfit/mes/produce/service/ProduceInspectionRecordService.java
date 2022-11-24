@@ -61,6 +61,7 @@ public class ProduceInspectionRecordService {
 
     private final static int IS_STATUS = 1;
     private final static int NO_STATUS = 0;
+    private final static int BACKOUT_STATUS = 2;
     @Autowired
     private ProduceInspectionRecordMtService produceInspectionRecordMtService;
     @Autowired
@@ -1362,6 +1363,8 @@ public class ProduceInspectionRecordService {
         if(StringUtils.isEmpty(inspectionPower.getId())){
             //保存探伤委托单号
             Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(),codeRuleService);
+            //委托人赋值
+            inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
         }else{
             InspectionPower byId = inspectionPowerService.getById(inspectionPower.getId());
             if(byId.getStatus()==IS_STATUS){
@@ -1379,6 +1382,19 @@ public class ProduceInspectionRecordService {
             UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
             updateWrapper.in("id",ids)
                     .set("status",IS_STATUS);
+            return inspectionPowerService.update(updateWrapper);
+        }
+        return true;
+    }
+
+    /**
+     * 批量撤回
+     */
+    public boolean backOutOrder(List<String> ids){
+        if(ids.size()>0){
+            UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.in("id",ids)
+                    .set("status",BACKOUT_STATUS);
             return inspectionPowerService.update(updateWrapper);
         }
         return true;

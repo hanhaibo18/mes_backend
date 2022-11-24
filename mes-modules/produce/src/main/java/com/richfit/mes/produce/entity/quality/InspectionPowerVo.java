@@ -23,7 +23,7 @@ public class InspectionPowerVo{
     private String orderNo;
     @ApiModelProperty(value = "委托单位", dataType = "String")
     private String inspectionDepart;
-    @ApiModelProperty(value = "委托单状态", dataType = "String")
+    @ApiModelProperty(value = "委托单状态（逗号隔开）", dataType = "String")
     private String status;
     @ApiModelProperty(value = "图号", dataType = "String")
     private String drawNo;
@@ -34,6 +34,7 @@ public class InspectionPowerVo{
     @ApiModelProperty(value = "结束时间", dataType = "String")
     private String endTime;
     private String branchCode;
+    private String tenantId;
     private String order;
     private String orderCol;
     private int page;
