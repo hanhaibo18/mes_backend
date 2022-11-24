@@ -77,7 +77,7 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             "  and batch_no like concat('%',#{batchNo},'%') " +
             " </if> " +
             " <if test='productionOrder != null and productionOrder != \"\"'> " +
-            "  and production_order like concat('%',#{productionOrder},'%') " +
+            "  and production_order = #{productionOrder} " +
             " </if> " +
             " <if test='productionOrderId != null and productionOrderId != \"\"'> " +
             "  and production_order_id = #{productionOrderId} " +
