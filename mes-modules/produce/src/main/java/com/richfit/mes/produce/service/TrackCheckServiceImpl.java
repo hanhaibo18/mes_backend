@@ -1,6 +1,8 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.TrackCheck;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -53,6 +55,11 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
         queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
         queryWrapper.eq("branch_code", branchCode);
         return trackItemService.count(queryWrapper);
+    }
+
+    @Override
+    public IPage<TrackCheck> queryCheckPage(Page<TrackCheck> page, QueryWrapper<TrackCheck> qw) {
+        return trackCheckMapper.queryTrackCheckPage(page, qw);
     }
 
 }

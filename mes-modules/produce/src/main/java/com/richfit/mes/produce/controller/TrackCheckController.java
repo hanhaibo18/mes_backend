@@ -214,13 +214,13 @@ public class TrackCheckController extends BaseController {
         try {
             QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
             if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
+                queryWrapper.eq("track.branch_code", branchCode);
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
-                queryWrapper.eq("tenant_id", tenantId);
+                queryWrapper.eq("track.tenant_id", tenantId);
             }
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                queryWrapper.eq("drawing_no", drawingNo);
+                queryWrapper.eq("track.drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 trackNo = trackNo.replaceAll(" ", "");
@@ -231,18 +231,18 @@ public class TrackCheckController extends BaseController {
             }
 
             if (!StringUtils.isNullOrEmpty(startTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+                queryWrapper.apply("UNIX_TIMESTAMP(track.modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
 
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + endTime + "')");
+                queryWrapper.apply("UNIX_TIMESTAMP(track.modify_time) <= UNIX_TIMESTAMP('" + endTime + "')");
 
             }
-            queryWrapper.and(wrapper -> wrapper.eq("is_show", "1").or().isNull("is_show"));
+            queryWrapper.and(wrapper -> wrapper.eq("track.is_show", "1").or().isNull("track.is_show"));
             //增加工序过滤
             ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             OrderUtil.query(queryWrapper, orderCol, order);
-            IPage<TrackCheck> checks = trackCheckService.page(new Page<TrackCheck>(page, limit), queryWrapper);
+            IPage<TrackCheck> checks = trackCheckService.queryCheckPage(new Page<TrackCheck>(page, limit), queryWrapper);
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
                 TrackItem trackItem = trackItemService.getById(check.getTiId());
