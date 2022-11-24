@@ -147,35 +147,33 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public void orderDataTrackHead(TrackHead trackHead) {
         String orderId = trackHead.getProductionOrderId();
         String orderNo = trackHead.getProductionOrder();
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderId)) {
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderNo)) {
             Map map = new HashMap();
-            map.put("production_order_id", orderId);
+            map.put("production_order", orderNo);
+            map.put("branch_code", trackHead.getBranchCode());
+            map.put("tenant_id", trackHead.getTenantId());
             List<TrackHead> trackFlowList = trackFlowMapper.selectTrackFlowList(map);
             int numberComplete = 0;
             for (TrackHead trackFlow : trackFlowList) {
                 if ("2".equals(trackFlow.getStatus())) {
                     //完成
-                    numberComplete++;
+                    numberComplete += trackFlow.getNumber();
                 } else if ("8".equals(trackFlow.getStatus())) {
                     //完工质量资料
-                    numberComplete++;
+                    numberComplete += trackFlow.getNumber();
                 } else if ("9".equals(trackFlow.getStatus())) {
                     //交付
-                    numberComplete++;
+                    numberComplete += trackFlow.getNumber();
                 }
             }
-            Order order = orderMapper.queryOrder(orderId);
             //由于之前订单同步删除订单流程bug会导致订单编码的id变更，故加入订单号码查询的流程
-            if (order == null) {
-                QueryWrapper<Order> queryWrapperOrder = new QueryWrapper<>();
-                queryWrapperOrder.eq("order_sn", orderNo);
-                queryWrapperOrder.eq("branch_code", trackHead.getBranchCode());
-                List<Order> orderList = this.list(queryWrapperOrder);
-                if (orderList != null && orderList.size() > 0) {
-                    order = orderList.get(0);
-                }
-            }
-            if (order != null) {
+            QueryWrapper<Order> queryWrapperOrder = new QueryWrapper<>();
+            queryWrapperOrder.eq("order_sn", orderNo);
+            queryWrapperOrder.eq("branch_code", trackHead.getBranchCode());
+            queryWrapperOrder.eq("tenant_id", trackHead.getTenantId());
+            List<Order> orderList = this.list(queryWrapperOrder);
+            if (orderList != null && orderList.size() > 0) {
+                Order order = orderList.get(0);
                 order.setStoreNum(numberComplete);
                 int i = order.getStoreNum().compareTo(order.getOrderNum());
                 if (order.getStoreNum() == 0) {
