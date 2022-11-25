@@ -479,6 +479,7 @@ public class ProductController extends BaseController {
         for (String s : strings) {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
             queryWrapper.select("id");
+            queryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.likeLeft("material_desc", paramMap.get(s));
             queryWrapper.notIn("material_type", s);
             //查出错乱数据的id
@@ -502,7 +503,6 @@ public class ProductController extends BaseController {
                         UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
                         updateWrapper.set("material_type", s);
                         updateWrapper.in("id", objects);
-                        System.out.println(objects + "-----------------" + i);
                         productService.update(updateWrapper);//修改错乱数据
                     }
                 }
@@ -512,7 +512,6 @@ public class ProductController extends BaseController {
                    UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
                    updateWrapper.set("material_type", s);
                    updateWrapper.in("id", idList);
-                   System.out.println(idList + "-----------------aaaaa");
                    productService.update(updateWrapper);//修改错乱数据
                }
             }
