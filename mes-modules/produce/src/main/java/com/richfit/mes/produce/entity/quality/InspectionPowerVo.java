@@ -33,6 +33,8 @@ public class InspectionPowerVo{
     private String startTime;
     @ApiModelProperty(value = "结束时间", dataType = "String")
     private String endTime;
+    @ApiModelProperty(value = "指派状态", dataType = "String")
+    private String assignStatus;
     private String branchCode;
     private String tenantId;
     private String order;

@@ -61,6 +61,7 @@ public class ProduceInspectionRecordService {
     private final static int IS_STATUS = 1;
     private final static int NO_STATUS = 0;
     private final static int BACKOUT_STATUS = 2;
+    private final static int IS_SCHEDULE = 1;
     @Autowired
     private ProduceInspectionRecordMtService produceInspectionRecordMtService;
     @Autowired
@@ -1369,6 +1370,14 @@ public class ProduceInspectionRecordService {
             if(byId.getStatus()==IS_STATUS){
                 return CommonResult.failed("该委托单已经发起委托，不能修改");
             }
+        }
+        //如果是跟单派工发起的委托，修改跟单工序为已派工
+        if(!StringUtils.isEmpty(inspectionPower.getItemId())){
+            TrackItem trackItem = new TrackItem();
+            trackItem.setId(inspectionPower.getItemId());
+            //已经派工状态
+            trackItem.setIsSchedule(IS_SCHEDULE);
+            trackItemService.updateById(trackItem);
         }
         return CommonResult.success(inspectionPowerService.saveOrUpdate(inspectionPower));
     }

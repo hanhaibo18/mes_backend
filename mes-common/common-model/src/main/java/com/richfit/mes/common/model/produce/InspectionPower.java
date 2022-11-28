@@ -61,6 +61,8 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String consignor;
     @ApiModelProperty(value = "派工人", dataType = "String")
     private String assignBy;
+    @ApiModelProperty(value = "指派状态（0、未派  1、已派）")
+    private int assignStatus;
     @TableField(exist = false)
     private String productType;
 
