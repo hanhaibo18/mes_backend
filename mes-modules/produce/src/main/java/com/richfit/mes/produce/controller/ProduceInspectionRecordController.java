@@ -347,9 +347,9 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "探伤委托单指派", notes = "探伤委托单指派")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "ids", value = "委托单批量委托id", required = true, paramType = "body", dataType = "List"),
-            @ApiImplicitParam(name = "assigin", value = "指给谁", required = true,paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "assignBy", value = "指给谁", required = true,paramType = "query", dataType = "string")
     })
-    @PostMapping("assignPower")
+    @PostMapping("inspectionPower/assignPower")
     public void assignPower(@RequestBody List<String> ids , String assignBy){
         produceInspectionRecordService.assignPower(ids,assignBy);
     }
