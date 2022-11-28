@@ -339,4 +339,15 @@ public class ProduceInspectionRecordController extends BaseController {
         }
         return CommonResult.success(inspectionPowerService.removeById(id));
     }
+
+
+    @ApiOperation(value = "探伤委托单指派", notes = "探伤委托单指派")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "ids", value = "委托单批量委托id", required = true, paramType = "body", dataType = "List"),
+            @ApiImplicitParam(name = "assigin", value = "指给谁", required = true,paramType = "query", dataType = "string")
+    })
+    @PostMapping("assignPower")
+    public void assignPower(@RequestBody List<String> ids , String assignBy){
+        produceInspectionRecordService.assignPower(ids,assignBy);
+    }
 }

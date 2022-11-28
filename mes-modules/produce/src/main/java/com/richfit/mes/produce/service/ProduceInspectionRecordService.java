@@ -18,7 +18,6 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -1398,6 +1397,27 @@ public class ProduceInspectionRecordService {
             return inspectionPowerService.update(updateWrapper);
         }
         return true;
+    }
+
+    /**
+     * 探伤委托指派人
+     */
+    public void assignPower(List<String> ids , String assignBy) throws GlobalException{
+        if(ids.size()>0){
+            QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("id",ids);
+            List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
+            //校验 已经派工的不能再次指派
+            List<InspectionPower> assginByNullList = list.stream().filter(item -> StringUtils.isEmpty(item.getAssignBy())).collect(Collectors.toList());
+            if(assginByNullList.size()>0){
+                throw new GlobalException("选中的委托单中，有已经指派的委托单", ResultCode.FORBIDDEN);
+            }
+            //指派派工人
+            UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.in("id",ids)
+                    .set("assign_by",assignBy);
+            inspectionPowerService.update(updateWrapper);
+        }
     }
 
 }
