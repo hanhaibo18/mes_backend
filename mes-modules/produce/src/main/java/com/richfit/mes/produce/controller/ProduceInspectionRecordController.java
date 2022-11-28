@@ -256,6 +256,7 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
         if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
@@ -290,8 +291,8 @@ public class ProduceInspectionRecordController extends BaseController {
         if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
             queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
         }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getStatus())){
-            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        if(!StringUtils.isEmpty(inspectionPowerVo.getAssignStatus())){
+            queryWrapper.in("assign_status",Integer.parseInt(inspectionPowerVo.getAssignStatus()));
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
             queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
@@ -299,6 +300,8 @@ public class ProduceInspectionRecordController extends BaseController {
         if(!StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
             queryWrapper.eq("tenant_id",inspectionPowerVo.getTenantId());
         }
+        //只返回已委托的
+        queryWrapper.eq("status",1);
         if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
@@ -326,7 +329,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiImplicitParam(name = "id", value = "委托单id", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/backOutOrder")
     public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids) throws Exception {
-        return CommonResult.success(produceInspectionRecordService.powerOrder(ids));
+        return CommonResult.success(produceInspectionRecordService.backOutOrder(ids));
     }
 
     @ApiOperation(value = "删除委托单", notes = "删除委托单")
@@ -338,5 +341,16 @@ public class ProduceInspectionRecordController extends BaseController {
             return CommonResult.failed("该委托单已经委托，不能删除");
         }
         return CommonResult.success(inspectionPowerService.removeById(id));
+    }
+
+
+    @ApiOperation(value = "探伤委托单指派", notes = "探伤委托单指派")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "ids", value = "委托单批量委托id", required = true, paramType = "body", dataType = "List"),
+            @ApiImplicitParam(name = "assignBy", value = "指给谁", required = true,paramType = "query", dataType = "string")
+    })
+    @PostMapping("inspectionPower/assignPower")
+    public void assignPower(@RequestBody List<String> ids , String assignBy){
+        produceInspectionRecordService.assignPower(ids,assignBy);
     }
 }

@@ -16,7 +16,7 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private int status;
 
     @ApiModelProperty(value = "跟单工序id", dataType = "String")
-    private int itemId;
+    private String itemId;
 
     @ApiModelProperty(value = "委托单号", dataType = "String")
     private String orderNo;
@@ -59,6 +59,10 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String tenantId;
     @ApiModelProperty(value = "委托人", dataType = "String")
     private String consignor;
+    @ApiModelProperty(value = "派工人", dataType = "String")
+    private String assignBy;
+    @ApiModelProperty(value = "指派状态（0、未派  1、已派）")
+    private int assignStatus;
     @TableField(exist = false)
     private String productType;
 

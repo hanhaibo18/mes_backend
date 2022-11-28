@@ -11,6 +11,7 @@ import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 马峰
@@ -18,6 +19,8 @@ import java.util.List;
  */
 public interface TrackCompleteService extends IService<TrackComplete> {
     IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query);
+
+    Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo);
 
     List<TrackComplete> queryList(String tiId, String branchCode, String order, String orderCol);
 

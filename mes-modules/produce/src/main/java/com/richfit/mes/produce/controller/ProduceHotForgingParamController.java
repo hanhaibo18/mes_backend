@@ -57,7 +57,7 @@ public class ProduceHotForgingParamController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "hotForgingParamIdList", value = "仿型参数IdList", required = true, paramType = "query")
     })
-    @DeleteMapping("/deleteHotForgingParamByIds")
+    @PostMapping("/deleteHotForgingParamByIds")
     public CommonResult deleteHotForgingParam(@RequestBody List<String> hotForgingParamIdList) {
         boolean b = produceHotForgingParamService.removeByIds(hotForgingParamIdList);
         if (b==true) return CommonResult.success(ResultCode.SUCCESS);

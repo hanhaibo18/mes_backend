@@ -11,6 +11,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -26,9 +27,14 @@ import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author sun
@@ -66,6 +72,115 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
         return trackCompleteMapper.queryPage(page, query);
+    }
+
+    @Override
+    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo) {
+        QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.eq("work_no", workNo);
+        }
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                calendar.setTime(sdf.parse(endTime));
+            } catch (ParseException e) {
+                throw new GlobalException("时间格式错误", ResultCode.FAILED);
+            }
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
+
+        }
+        //获取当前登录用户角色列表
+        List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
+        List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
+//            BOMCO_ZF_JMAQ_LDGL;//领导
+//            role_tenant_admin;//租户管理员
+        //查询权限控制
+        if (roleCodeList.contains("BOMCO_ZF_JMAQ_LDGL") || roleCodeList.contains("role_tenant_admin")) {
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+        } else {
+            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+        }
+        List<TrackComplete> completes = trackCompleteService.list(queryWrapper);
+        List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+        List<TrackComplete> dbRecords = completes;
+
+        if (!CollectionUtils.isEmpty(dbRecords)) {
+            //获取设备信息
+            Set<String> deviceIds = dbRecords.stream().map(x -> x.getDeviceId()).collect(Collectors.toSet());
+            List<Device> deviceByIdList = baseServiceClient.getDeviceByIdList(new ArrayList<>(deviceIds));
+            Map<String, Device> deviceMap = deviceByIdList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            //根据跟单id获取跟单数据
+            Set<String> trackIdList = dbRecords.stream().map(x -> x.getTrackId()).collect(Collectors.toSet());
+            List<TrackHead> trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
+            Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            //根据跟单工序id获取跟单工序
+            Set<String> tiIdList = dbRecords.stream().map(x -> x.getTiId()).collect(Collectors.toSet());
+            List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
+            Map<String, TrackItem> trackMap = trackItems.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+            List<String> flowIdList = trackItems.stream().map(x -> x.getFlowId()).collect(Collectors.toList());
+            List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
+            Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+            //根据员工分组
+            Map<String, List<TrackComplete>> completesMap = completes.stream().collect(Collectors.groupingBy(TrackComplete::getUserId));
+            ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
+            Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
+            for (String id : userIdList) {
+                List<TrackComplete> trackCompletes = completesMap.get(id);
+                //统计每个员工
+                if (!CollectionUtils.isEmpty(trackCompletes)) {
+                    //总工时累计额值
+                    Double sumTotalHours = 0.00;
+                    //准结工时累计值
+                    Double sumPrepareEndHours = 0.00;
+                    //额定工时累计值
+                    Double sumSinglePieceHours = 0.00;
+                    TrackComplete track0 = new TrackComplete();
+                    TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
+                    for (TrackComplete track : trackCompletes) {
+                        //计算总工时
+                        sumPrepareEndHours = sumPrepareEndHours + track.getPrepareEndHours();
+                        sumSinglePieceHours = sumSinglePieceHours + track.getSinglePieceHours();
+                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours();
+                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                        track.setUserName(tenantUserVo.getEmplName());
+                        track0.setUserName(tenantUserVo.getEmplName());
+                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                        TrackItem trackItem = trackMap.get(track.getTiId());
+                        //查询产品编号
+                        TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
+                        track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
+                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                    }
+                    track0.setId(id);
+                    track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
+                    track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
+                    track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                    track0.setUserName(tenantUserVo.getEmplName());
+                    track0.setTrackCompleteList(trackCompletes);
+                    //判断是否包含叶子结点
+                    track0.setIsLeafNodes(trackCompletes != null && !CollectionUtils.isEmpty(trackCompletes));
+                    emptyTrackComplete.add(track0);
+                }
+            }
+        }
+        List<TrackComplete> records = completes;
+//            completes.setRecords(records);
+        Map<String, Object> stringObjectHashMap = new HashMap<>();
+        stringObjectHashMap.put("records", records);
+        stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
+        return stringObjectHashMap;
     }
 
     @Override
