@@ -256,6 +256,7 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
         if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
