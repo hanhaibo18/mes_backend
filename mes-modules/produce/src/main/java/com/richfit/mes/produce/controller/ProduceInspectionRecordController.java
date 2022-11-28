@@ -73,7 +73,7 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
+    public CommonResult<IPage<InspectionPower>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
         return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit));
     }
 
@@ -241,10 +241,10 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
-            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
-            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
             queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
@@ -260,7 +260,7 @@ public class ProduceInspectionRecordController extends BaseController {
         if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
-            queryWrapper.orderByDesc("modify_time");
+            queryWrapper.orderByDesc("power_time");
         }
 
 
@@ -283,10 +283,10 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
-            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+            queryWrapper.ge("date_format(assign_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
-            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+            queryWrapper.le("date_format(assign_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
             queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
@@ -295,7 +295,8 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.in("assign_status",Integer.parseInt(inspectionPowerVo.getAssignStatus()));
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
-            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+            //此处换南北探伤站查询  和传的barnchCode比较
+            //queryWrapper.eq("inspection_depart",inspectionPowerVo.getBranchCode());
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
             queryWrapper.eq("tenant_id",inspectionPowerVo.getTenantId());
@@ -305,7 +306,7 @@ public class ProduceInspectionRecordController extends BaseController {
         if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
-            queryWrapper.orderByDesc("modify_time");
+            queryWrapper.orderByDesc("assign_time");
         }
 
         return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
@@ -350,7 +351,7 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "assignBy", value = "指给谁", required = true,paramType = "query", dataType = "string")
     })
     @PostMapping("inspectionPower/assignPower")
-    public void assignPower(@RequestBody List<String> ids , String assignBy){
-        produceInspectionRecordService.assignPower(ids,assignBy);
+    public CommonResult<Boolean>  assignPower(@RequestBody List<String> ids , @RequestParam String assignBy){
+       return CommonResult.success(produceInspectionRecordService.assignPower(ids,assignBy));
     }
 }

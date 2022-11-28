@@ -62,6 +62,7 @@ public class ProduceInspectionRecordService {
     private final static int NO_STATUS = 0;
     private final static int BACKOUT_STATUS = 2;
     private final static int IS_SCHEDULE = 1;
+    private final static int IS_ASSIGN = 1; //委托单已派工
     @Autowired
     private ProduceInspectionRecordMtService produceInspectionRecordMtService;
     @Autowired
@@ -110,7 +111,7 @@ public class ProduceInspectionRecordService {
 
 
     /**
-     * 查询跟单工序探伤列表
+     * 查询探伤列表
      *
      * @param page
      * @param limit
@@ -123,19 +124,21 @@ public class ProduceInspectionRecordService {
      * @param isAudit
      * @return
      */
-    public IPage<TrackItemInspection> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
+    public IPage<InspectionPower> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
 
         //跟单工序查询
-        QueryWrapper<TrackItemInspection> queryWrapper = getTrackItemInspectionQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit);
+        QueryWrapper<InspectionPower> queryWrapper = getProwerQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit);
 
-        queryWrapper.inSql("id", "select id from  produce_track_item_inspection where id in ( select ti_id from produce_assign where user_id like'%" + SecurityUtils.getCurrentUser().getUsername() + "%')");
+        queryWrapper.eq("assign_by", SecurityUtils.getCurrentUser().getUserId());
 
-        IPage<TrackItemInspection> trackItemInspections = trackItemInspectionService.page(new Page<TrackItemInspection>(page, limit), queryWrapper);
+        Page<InspectionPower> assignPowers = inspectionPowerService.page(new Page<InspectionPower>(page, limit), queryWrapper);
         //为跟单工序赋跟单的一些属性
-        setHeadInfoToItem(trackItemInspections);
-        return trackItemInspections;
+        setHeadInfoToItem(assignPowers);
+        return assignPowers;
     }
 
+
+    //要删除的方法
     private void setHeadInfoToItem(IPage<TrackItemInspection> trackItemInspections) {
         for (TrackItemInspection trackItemInspection : trackItemInspections.getRecords()) {
             TrackHead trackHead = trackHeadMapper.selecProjectNametById(trackItemInspection.getTrackHeadId());
@@ -149,6 +152,18 @@ public class ProduceInspectionRecordService {
                 trackItemInspection.setTexture(trackHead.getTexture());
                 trackItemInspection.setPartsName(trackHead.getMaterialName());
                 trackItemInspection.setProjectName(trackHead.getProjectName());
+            }
+        }
+    }
+
+    //跟单属性赋值
+    private void setHeadInfoToItem(Page<InspectionPower> assignPowers) {
+        for (InspectionPower inspectionPower : assignPowers.getRecords()) {
+            TrackHead trackHead = trackHeadMapper.selecProjectNametById(inspectionPower.getHeadId());
+            if (!ObjectUtil.isEmpty(trackHead)) {
+                inspectionPower.setTrackNo(trackHead.getTrackNo());
+                inspectionPower.setWorkNo(trackHead.getWorkNo());
+                inspectionPower.setProjectName(trackHead.getProjectName());
             }
         }
     }
@@ -186,6 +201,44 @@ public class ProduceInspectionRecordService {
             queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", endTime);
         }
         queryWrapper.orderByDesc("modify_time");
+        return queryWrapper;
+    }
+
+    private QueryWrapper<InspectionPower> getProwerQueryWrapper(String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<InspectionPower>();
+        //探伤任务查的是已派工的委托单
+        queryWrapper.isNotNull("assign_by");
+        if (!StringUtils.isEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        if (!StringUtils.isEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        //已审核
+        if ("1".equals(isAudit)) {
+            queryWrapper.isNotNull("audit_by");
+        } else if ("0".equals(isAudit)) {
+            //未审核
+            queryWrapper.isNull("audit_by");
+        }
+
+        if (!StringUtils.isEmpty(trackNo)) {
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.inSql("id", "select id from  produce_inspection_power where head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') LIKE '" + trackNo + '%' + "')");
+        }
+        if (!StringUtils.isEmpty(productName)) {
+            queryWrapper.inSql("id", "select id from  produce_inspection_power where head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
+        }
+        if (!StringUtils.isEmpty(productNo)) {
+            queryWrapper.inSql("id", "select id from  produce_inspection_power where item_id in ( select id from produce_track_head where product_no LIKE '" + productNo + '%' + "')");
+        }
+        if (!StringUtils.isEmpty(startTime)) {
+            queryWrapper.ge("date_format(assign_time, '%Y-%m-%d')", startTime);
+        }
+        if (!StringUtils.isEmpty(endTime)) {
+            queryWrapper.le("date_format(assign_time, '%Y-%m-%d')", endTime);
+        }
+        queryWrapper.orderByDesc("power_time");
         return queryWrapper;
     }
 
@@ -1371,6 +1424,8 @@ public class ProduceInspectionRecordService {
                 return CommonResult.failed("该委托单已经发起委托，不能修改");
             }
         }
+        //委托时间
+        inspectionPower.setPowerTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd HH:mm:ss"));
         //如果是跟单派工发起的委托，修改跟单工序为已派工
         if(!StringUtils.isEmpty(inspectionPower.getItemId())){
             TrackItem trackItem = new TrackItem();
@@ -1389,7 +1444,8 @@ public class ProduceInspectionRecordService {
         if(ids.size()>0){
             UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
             updateWrapper.in("id",ids)
-                    .set("status",IS_STATUS);
+                    .set("status",IS_STATUS)
+                    .set("power_time",DateUtil.date());
             return inspectionPowerService.update(updateWrapper);
         }
         return true;
@@ -1411,22 +1467,27 @@ public class ProduceInspectionRecordService {
     /**
      * 探伤委托指派人
      */
-    public void assignPower(List<String> ids , String assignBy) throws GlobalException{
+    public boolean assignPower(List<String> ids , String assignBy) throws GlobalException{
+
         if(ids.size()>0){
             QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
             queryWrapper.in("id",ids);
             List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
             //校验 已经派工的不能再次指派
-            List<InspectionPower> assginByNullList = list.stream().filter(item -> StringUtils.isEmpty(item.getAssignBy())).collect(Collectors.toList());
+            List<InspectionPower> assginByNullList = list.stream().filter(item -> !StringUtils.isEmpty(item.getAssignBy())).collect(Collectors.toList());
             if(assginByNullList.size()>0){
                 throw new GlobalException("选中的委托单中，有已经指派的委托单", ResultCode.FORBIDDEN);
             }
             //指派派工人
             UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
             updateWrapper.in("id",ids)
-                    .set("assign_by",assignBy);
-            inspectionPowerService.update(updateWrapper);
+                    .set("assign_by",assignBy)
+                    //改为已派工状态
+                    .set("assign_status",IS_ASSIGN)
+                    .set("assign_time",DateUtil.date());
+            return inspectionPowerService.update(updateWrapper);
         }
+        return true;
     }
 
 }
