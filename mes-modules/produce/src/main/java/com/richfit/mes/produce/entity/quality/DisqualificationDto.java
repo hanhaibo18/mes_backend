@@ -1,7 +1,8 @@
-package com.richfit.mes.common.model.produce;
+package com.richfit.mes.produce.entity.quality;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,7 +16,7 @@ import java.util.List;
  * @author hou XinYu
  */
 @Data
-public class Disqualification extends BaseEntity<Disqualification> {
+public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     /**
      * 跟单Id
      */
@@ -160,5 +161,10 @@ public class Disqualification extends BaseEntity<Disqualification> {
     @ApiModelProperty(value = "文件列表", dataType = "List<DisqualificationAttachment>")
     private List<DisqualificationAttachment> attachmentList;
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * 不合格类型
+     */
+    @ApiModelProperty(value = "不合格类型集合", dataType = "List<String>")
+    private List<String> typeList;
+
 }

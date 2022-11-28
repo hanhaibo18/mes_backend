@@ -23,7 +23,11 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "不合格品主键Id")
     private String id;
-
+    /**
+     * 不合格类型
+     */
+    @ApiModelProperty(value = "不合格类型", dataType = "String")
+    private String type;
     /**
      * 工作号
      */
@@ -111,6 +115,13 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "文件列表")
     private List<DisqualificationAttachment> attachmentList;
+
+    /**
+     * 不合格类型
+     */
+    @ApiModelProperty(value = "不合格类型集合", dataType = "List<String>")
+    private List<String> typeList;
+
 
     @ApiModelProperty(value = "用户列表")
     private List<TenantUserVo> userList;

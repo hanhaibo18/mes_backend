@@ -51,7 +51,7 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "创建/修改申请单", notes = "创建或修改不合格申请单接口")
     @PostMapping("/saveDisqualification")
-    public CommonResult<Boolean> saveDisqualification(@RequestBody Disqualification disqualification) {
+    public CommonResult<Boolean> saveDisqualification(@RequestBody DisqualificationDto disqualification) {
         return CommonResult.success(disqualificationService.saveOrUpdateDisqualification(disqualification));
     }
 
