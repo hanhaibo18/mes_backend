@@ -6,10 +6,7 @@ import com.richfit.mes.base.service.*;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +19,7 @@ import java.util.List;
  * @date 2022-01-04 13:27
  */
 @Slf4j
-@Api("工艺")
+@Api(value = "PDM工艺接收", tags = {"PDM工艺接收"})
 @RestController
 @RequestMapping("/api/base/pdmProcess")
 public class PdmProcessController {
@@ -60,6 +57,16 @@ public class PdmProcessController {
     @ApiImplicitParam(name = "pdmProcess", value = "工艺VO", required = true, dataType = "PdmProcess", paramType = "body")
     public CommonResult<IPage<PdmProcess>> getPageList(int page, int limit, PdmProcess pdmProcess) {
         return CommonResult.success(pdmProcessService.queryPageList(page, limit, pdmProcess));
+    }
+
+    @PostMapping("/delete/pdm_process")
+    @ApiOperation(value = "删除工艺", notes = "删除工艺")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "drawIdGroup", value = "工艺id", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "dataGroup", value = "工厂代码", required = true, paramType = "query", dataType = "string")
+    })
+    public CommonResult deletedPDMProcess(String drawIdGroup,String dataGroup) {
+        return CommonResult.success(pdmProcessService.deletePDMProcess(drawIdGroup,dataGroup));
     }
 
 

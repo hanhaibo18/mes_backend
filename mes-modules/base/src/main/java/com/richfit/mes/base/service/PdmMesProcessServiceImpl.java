@@ -4,7 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.base.dao.PdmMesObjectMapper;
+import com.richfit.mes.base.dao.PdmMesOptionMapper;
 import com.richfit.mes.base.dao.PdmMesProcessMapper;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -15,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author zhiqiang.lu
@@ -50,6 +55,12 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
 
     @Autowired
     private RouterCheckService routerCheckService;
+    @Autowired
+    private PdmMesOptionMapper pdmMesOptionMapper;
+    @Autowired
+    private PdmMesBomService pdmMesBomService;
+    @Autowired
+    private PdmMesObjectMapper pdmMesObjectMapper;
 
     @Override
     public IPage<PdmMesProcess> queryPageList(int page, int limit, PdmMesProcess pdmProcess) {
@@ -228,5 +239,45 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             e.printStackTrace();
             throw new Exception("同步MES出现异常");
         }
+    }
+
+    @Override
+    public CommonResult deleteMesPDMProcess(String drawIdGroup, String dataGroup) {
+        //删除工艺
+        QueryWrapper<PdmMesProcess> processWrapper=new QueryWrapper<>();
+        processWrapper.eq("draw_id_group",drawIdGroup);
+        processWrapper.eq("dataGroup",dataGroup);
+        //pdmMesProcessMapper.delete(processWrapper);
+
+        //删除当前工艺关联的工序
+        QueryWrapper<PdmMesOption> optionWrapper=new QueryWrapper<>();
+        optionWrapper.eq("process_id",drawIdGroup);
+        processWrapper.eq("dataGroup",dataGroup);
+        List<PdmMesOption> pdmMesOptions = pdmMesOptionMapper.selectList(optionWrapper);
+        //工序id
+        List<String> optionsId = pdmMesOptions.stream().map(x -> x.getId()).collect(Collectors.toList());
+        //pdmMesOptionMapper.delete(optionWrapper);
+
+        //删除工序工装信息
+        QueryWrapper<PdmMesObject> objectWrapper=new QueryWrapper<>();
+        objectWrapper.eq("dataGroup",dataGroup);
+        objectWrapper.in("op_id",optionsId);
+        List<PdmMesObject> pdmMesObjects = pdmMesObjectMapper.selectList(objectWrapper);
+        List<String> objectsId = pdmMesObjects.stream().map(x -> x.getId()).distinct().collect(Collectors.toList());
+        //pdmMesObjectMapper.delete(objectWrapper);
+
+        //删除图
+        QueryWrapper<PdmMesDraw> drawWrapper=new QueryWrapper<>();
+        drawWrapper.eq("datagroup",dataGroup);
+        drawWrapper.in("op_id",drawIdGroup);
+        pdmMesDrawService.remove(drawWrapper);
+
+        //删除bom
+        QueryWrapper<PdmMesBom> bomWrapper=new QueryWrapper<>();
+        bomWrapper.eq("datagroup",dataGroup);
+        bomWrapper.in("id",objectsId);
+        pdmMesBomService.remove(bomWrapper);
+
+        return  CommonResult.success(ResultCode.SUCCESS);
     }
 }

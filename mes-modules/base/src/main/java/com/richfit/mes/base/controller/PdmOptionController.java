@@ -40,6 +40,7 @@ public class PdmOptionController {
     @ApiOperation(value = "工序查询", notes = "工序查询")
     @ApiImplicitParam(name = "PdmOption", value = "工序VO", required = true, dataType = "PdmOption", paramType = "body")
     public CommonResult<List<PdmOption>> getList(PdmOption pdmOption) {
+
         QueryWrapper<PdmOption> queryWrapper = new QueryWrapper<>();
         queryWrapper.like(!StringUtils.isNullOrEmpty(pdmOption.getOpNo()), "op_no", pdmOption.getOpNo())
                 .like(!StringUtils.isNullOrEmpty(pdmOption.getName()), "name", pdmOption.getName())

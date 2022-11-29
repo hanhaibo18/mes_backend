@@ -1,11 +1,16 @@
 package com.richfit.mes.base.service;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.base.dao.PdmObjectMapper;
+import com.richfit.mes.base.dao.PdmOptionMapper;
 import com.richfit.mes.base.dao.PdmProcessMapper;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author rzw
@@ -52,6 +58,10 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
 
     @Autowired
     private PdmMesBomService pdmMesBomService;
+    @Autowired
+    private PdmOptionMapper pdmOptionMapper;
+    @Autowired
+    private PdmObjectMapper pdmObjectMapper;
 
 
     @Override
@@ -149,6 +159,46 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
             e.printStackTrace();
             throw new Exception("同步MES出现异常");
         }
+    }
+
+    @Override
+    public CommonResult deletePDMProcess(String drawIdGroup, String dataGroup) {
+        //删除工艺
+        QueryWrapper<PdmProcess> processWrapper=new QueryWrapper<>();
+        processWrapper.eq("draw_id_group",drawIdGroup);
+        processWrapper.eq("dataGroup",dataGroup);
+        //pdmProcessMapper.delete(processWrapper);
+
+        //删除当前工艺关联的工序
+        QueryWrapper<PdmOption> optionWrapper=new QueryWrapper<>();
+        optionWrapper.eq("process_id",drawIdGroup);
+        processWrapper.eq("dataGroup",dataGroup);
+        List<PdmOption> pdmOptions = pdmOptionMapper.selectList(optionWrapper);
+        //工序id
+        List<String> optionsId = pdmOptions.stream().map(x -> x.getId()).collect(Collectors.toList());
+        //pdmOptionMapper.delete(optionWrapper);
+
+        //删除工序工装信息
+        QueryWrapper<PdmObject> objectWrapper=new QueryWrapper<>();
+        objectWrapper.eq("dataGroup",dataGroup);
+        objectWrapper.in("op_id",optionsId);
+        List<PdmObject> pdmObjects = pdmObjectMapper.selectList(objectWrapper);
+        List<String> objectsId = pdmObjects.stream().map(x -> x.getId()).distinct().collect(Collectors.toList());
+        //pdmObjectMapper.delete(objectWrapper);
+
+        //删除图
+        QueryWrapper<PdmDraw> drawWrapper=new QueryWrapper<>();
+        drawWrapper.eq("datagroup",dataGroup);
+        drawWrapper.in("op_id",drawIdGroup);
+        //pdmDrawService.remove(drawWrapper);
+
+        //删除bom
+        QueryWrapper<PdmBom> bomWrapper=new QueryWrapper<>();
+        bomWrapper.eq("datagroup",dataGroup);
+        bomWrapper.in("id",objectsId);
+        //pdmBomService.remove(bomWrapper);
+
+        return  CommonResult.success(ResultCode.SUCCESS);
     }
 
     //递归函数
