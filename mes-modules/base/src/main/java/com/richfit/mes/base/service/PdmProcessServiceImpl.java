@@ -172,7 +172,7 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
         //删除当前工艺关联的工序
         QueryWrapper<PdmOption> optionWrapper=new QueryWrapper<>();
         optionWrapper.in("process_id",drawIdGroup);
-        processWrapper.eq("dataGroup",dataGroup);
+        optionWrapper.eq("dataGroup",dataGroup);
         List<PdmOption> pdmOptions = pdmOptionMapper.selectList(optionWrapper);
         //工序id
         List<String> optionsId = pdmOptions.stream().map(x -> x.getId()).collect(Collectors.toList());

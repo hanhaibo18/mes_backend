@@ -242,17 +242,17 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     }
 
     @Override
-    public CommonResult deleteMesPDMProcess(String drawIdGroup, String dataGroup) {
+    public CommonResult deleteMesPDMProcess(List<String> drawIdGroup, String dataGroup) {
         //删除工艺
         QueryWrapper<PdmMesProcess> processWrapper=new QueryWrapper<>();
-        processWrapper.eq("draw_id_group",drawIdGroup);
+        processWrapper.in("draw_id_group",drawIdGroup);
         processWrapper.eq("dataGroup",dataGroup);
         //pdmMesProcessMapper.delete(processWrapper);
 
         //删除当前工艺关联的工序
         QueryWrapper<PdmMesOption> optionWrapper=new QueryWrapper<>();
-        optionWrapper.eq("process_id",drawIdGroup);
-        processWrapper.eq("dataGroup",dataGroup);
+        optionWrapper.in("process_id",drawIdGroup);
+        optionWrapper.eq("dataGroup",dataGroup);
         List<PdmMesOption> pdmMesOptions = pdmMesOptionMapper.selectList(optionWrapper);
         //工序id
         List<String> optionsId = pdmMesOptions.stream().map(x -> x.getId()).collect(Collectors.toList());
@@ -270,13 +270,13 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
         QueryWrapper<PdmMesDraw> drawWrapper=new QueryWrapper<>();
         drawWrapper.eq("datagroup",dataGroup);
         drawWrapper.in("op_id",drawIdGroup);
-        pdmMesDrawService.remove(drawWrapper);
+        //pdmMesDrawService.remove(drawWrapper);
 
         //删除bom
         QueryWrapper<PdmMesBom> bomWrapper=new QueryWrapper<>();
         bomWrapper.eq("datagroup",dataGroup);
         bomWrapper.in("id",objectsId);
-        pdmMesBomService.remove(bomWrapper);
+        //pdmMesBomService.remove(bomWrapper);
 
         return  CommonResult.success(ResultCode.SUCCESS);
     }

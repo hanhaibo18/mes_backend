@@ -1,6 +1,7 @@
 package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.richfit.mes.base.entity.param.DeleteProcessParam;
 import com.richfit.mes.base.service.OperatiponService;
 import com.richfit.mes.base.service.PdmMesProcessService;
 import com.richfit.mes.base.service.RouterService;
@@ -54,8 +55,8 @@ public class PdmMesProcessController {
             @ApiImplicitParam(name = "drawIdGroup", value = "工艺id", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "dataGroup", value = "工厂代码", required = true, paramType = "query", dataType = "string")
     })
-    public CommonResult deletedPDMProcess(String drawIdGroup,String dataGroup) {
-        return CommonResult.success(pdmMesProcessService.deleteMesPDMProcess(drawIdGroup,dataGroup));
+    public CommonResult deletedPDMProcess(@RequestBody DeleteProcessParam deleteProcessParam) {
+        return CommonResult.success(pdmMesProcessService.deleteMesPDMProcess(deleteProcessParam.getDrawIdGroup(),deleteProcessParam.getDataGroup()));
 
     }
 
