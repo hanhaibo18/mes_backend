@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -536,7 +537,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     public DisqualificationItemVo queryItem(String tiId, String branchCode) {
         DisqualificationItemVo disqualification = disqualificationMapper.queryDisqualificationByItemId(tiId);
         if (null != disqualification) {
-            disqualification.setTypeList(Arrays.asList(disqualification.getType().split(",")));
+            if (StrUtil.isNotBlank(disqualification.getType())) {
+                disqualification.setTypeList(Arrays.asList(disqualification.getType().split(",")));
+            }
             return disqualification;
         }
         DisqualificationItemVo item = new DisqualificationItemVo();

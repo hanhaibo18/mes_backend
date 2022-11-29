@@ -122,6 +122,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (CollectionUtils.isNotEmpty(disqualificationDto.getTypeList())) {
             String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
             disqualification.setType(type);
+            disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
         }
         this.saveOrUpdate(disqualification);
         //数据不为空,拼接数据
