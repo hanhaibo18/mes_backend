@@ -15,5 +15,5 @@ public interface PdmProcessService extends IService<PdmProcess> {
 
     void synctomes(PdmProcess pdmProcess) throws Exception;
 
-    CommonResult deletePDMProcess(String drawIdGroup, String dataGroup);
+    CommonResult deletePDMProcess(List<String> drawIdGroup, String dataGroup);
 }

@@ -162,16 +162,16 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
     }
 
     @Override
-    public CommonResult deletePDMProcess(String drawIdGroup, String dataGroup) {
+    public CommonResult deletePDMProcess(List<String> drawIdGroup, String dataGroup) {
         //删除工艺
         QueryWrapper<PdmProcess> processWrapper=new QueryWrapper<>();
-        processWrapper.eq("draw_id_group",drawIdGroup);
+        processWrapper.in("draw_id_group",drawIdGroup);
         processWrapper.eq("dataGroup",dataGroup);
         //pdmProcessMapper.delete(processWrapper);
 
         //删除当前工艺关联的工序
         QueryWrapper<PdmOption> optionWrapper=new QueryWrapper<>();
-        optionWrapper.eq("process_id",drawIdGroup);
+        optionWrapper.in("process_id",drawIdGroup);
         processWrapper.eq("dataGroup",dataGroup);
         List<PdmOption> pdmOptions = pdmOptionMapper.selectList(optionWrapper);
         //工序id
