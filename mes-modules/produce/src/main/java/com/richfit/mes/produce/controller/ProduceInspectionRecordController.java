@@ -73,7 +73,7 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItemInspection>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
+    public CommonResult<IPage<InspectionPower>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
         return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit));
     }
 
@@ -241,10 +241,10 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
-            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
-            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
             queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
@@ -256,10 +256,11 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
         if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
-            queryWrapper.orderByDesc("modify_time");
+            queryWrapper.orderByDesc("power_time");
         }
 
 
@@ -282,27 +283,30 @@ public class ProduceInspectionRecordController extends BaseController {
             queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
-            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+            queryWrapper.ge("date_format(assign_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
         }
         if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
-            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+            queryWrapper.le("date_format(assign_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
             queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
         }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getStatus())){
-            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        if(!StringUtils.isEmpty(inspectionPowerVo.getAssignStatus())){
+            queryWrapper.in("assign_status",Integer.parseInt(inspectionPowerVo.getAssignStatus()));
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
-            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+            //此处换南北探伤站查询  和传的barnchCode比较
+            //queryWrapper.eq("inspection_depart",inspectionPowerVo.getBranchCode());
         }
         if(!StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
             queryWrapper.eq("tenant_id",inspectionPowerVo.getTenantId());
         }
+        //只返回已委托的
+        queryWrapper.eq("status",1);
         if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
-            queryWrapper.orderByDesc("modify_time");
+            queryWrapper.orderByDesc("assign_time");
         }
 
         return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
@@ -326,7 +330,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiImplicitParam(name = "id", value = "委托单id", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/backOutOrder")
     public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids) throws Exception {
-        return CommonResult.success(produceInspectionRecordService.powerOrder(ids));
+        return CommonResult.success(produceInspectionRecordService.backOutOrder(ids));
     }
 
     @ApiOperation(value = "删除委托单", notes = "删除委托单")
@@ -338,5 +342,16 @@ public class ProduceInspectionRecordController extends BaseController {
             return CommonResult.failed("该委托单已经委托，不能删除");
         }
         return CommonResult.success(inspectionPowerService.removeById(id));
+    }
+
+
+    @ApiOperation(value = "探伤委托单指派", notes = "探伤委托单指派")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "ids", value = "委托单批量委托id", required = true, paramType = "body", dataType = "List"),
+            @ApiImplicitParam(name = "assignBy", value = "指给谁", required = true,paramType = "query", dataType = "string")
+    })
+    @PostMapping("inspectionPower/assignPower")
+    public CommonResult<Boolean>  assignPower(@RequestBody List<String> ids , @RequestParam String assignBy){
+       return CommonResult.success(produceInspectionRecordService.assignPower(ids,assignBy));
     }
 }

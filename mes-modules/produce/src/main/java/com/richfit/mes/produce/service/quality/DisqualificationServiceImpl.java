@@ -22,6 +22,8 @@ import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,19 +111,21 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean saveOrUpdateDisqualification(Disqualification disqualification) {
-        if (StrUtil.isNotBlank(disqualification.getId())) {
-            if (1 == disqualification.getIsIssue()) {
-                disqualification.setOrderTime(new Date());
-            }
-            this.updateById(disqualification);
-        } else {
-            if (1 == disqualification.getIsIssue()) {
-                disqualification.setOrderTime(new Date());
-            }
-            this.save(disqualification);
-
+    public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
+        //状态为发布,更新时间
+        if (1 == disqualificationDto.getIsIssue()) {
+            disqualificationDto.setOrderTime(new Date());
         }
+        //处理DTO数据
+        Disqualification disqualification = new Disqualification();
+        BeanUtils.copyProperties(disqualificationDto, disqualification);
+        if (CollectionUtils.isNotEmpty(disqualificationDto.getTypeList())) {
+            String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
+            disqualification.setType(type);
+            disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
+        }
+        this.saveOrUpdate(disqualification);
+        //数据不为空,拼接数据
         if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
             disqualification.getAttachmentList().forEach(attachment -> {
                 attachment.setDisqualificationId(disqualification.getId());
@@ -358,9 +362,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return flowList;
     }
 
+
     private List<TenantUserVo> queryOpinionUser(String disqualificationId) {
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("disqualification_id", disqualificationId);
+        //查询人员并拼接返回数据
         List<DisqualificationUserOpinion> opinions = userOpinionService.list(queryWrapper);
         return opinions.stream().map(user -> {
             TenantUserVo tenantUserVo = new TenantUserVo();

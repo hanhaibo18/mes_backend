@@ -251,7 +251,6 @@ public class PhyChemTestService{
             CellStyle cellStyle = writer.getCellStyle();
             cellStyle.setWrapText(true);
             //向左对齐
-
             writer.renameSheet(physChemOrder.getOrderNo());
             writer.writeCellValue("A3", physChemOrder.getOrderNo());
             writer.writeCellValue("C4", physChemOrder.getSampleTime());

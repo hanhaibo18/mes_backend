@@ -23,7 +23,11 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "不合格品主键Id")
     private String id;
-
+    /**
+     * 不合格类型
+     */
+    @ApiModelProperty(value = "不合格类型", dataType = "String")
+    private String type;
     /**
      * 工作号
      */
@@ -46,6 +50,29 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "产品编号", dataType = "String")
     private String productNo;
 
+    /**
+     * 责任单位内
+     */
+    @ApiModelProperty(value = "责任单位内", dataType = "String")
+    private String unitResponsibilityWithin;
+
+    /**
+     * 责任单位外
+     */
+    @ApiModelProperty(value = "责任单位外", dataType = "String")
+    private String unitResponsibilityOutside;
+
+    /**
+     * 处理单位1
+     */
+    @ApiModelProperty(value = "处理单位1", dataType = "String")
+    private String unitTreatmentOne;
+
+    /**
+     * 处理单位2
+     */
+    @ApiModelProperty(value = "处理单位2", dataType = "String")
+    private String unitTreatmentTwo;
 
     /**
      * 零部件名称
@@ -111,6 +138,13 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "文件列表")
     private List<DisqualificationAttachment> attachmentList;
+
+    /**
+     * 不合格类型
+     */
+    @ApiModelProperty(value = "不合格类型集合", dataType = "List<String>")
+    private List<String> typeList;
+
 
     @ApiModelProperty(value = "用户列表")
     private List<TenantUserVo> userList;

@@ -36,7 +36,7 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @Date: 2022/9/30 9:29
      * @return: Boolean
      **/
-    Boolean saveOrUpdateDisqualification(Disqualification disqualification);
+    Boolean saveOrUpdateDisqualification(DisqualificationDto disqualification);
 
 
     /**
