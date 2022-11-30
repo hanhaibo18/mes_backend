@@ -313,13 +313,10 @@ public class ProduceInspectionRecordController extends BaseController {
     }
 
     @ApiOperation(value = "批量保存委托单", notes = "批量保存委托单")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "inspectionPowers", value = "委托单", paramType = "body", dataType = "List"),
-            @ApiImplicitParam(name = "branchCode", value = "组织结构brachCode", required = true,paramType = "body", dataType = "string")
-    })
+    @ApiImplicitParam(name = "inspectionPowers", value = "委托单", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/saveInspectionPowers")
-    public CommonResult<Boolean> saveInspectionPower(@RequestBody List<InspectionPower> inspectionPowers,String branchCode) throws Exception {
-        return produceInspectionRecordService.saveInspectionPower(inspectionPowers,branchCode);
+    public CommonResult<Boolean> saveInspectionPower(@RequestBody List<InspectionPower> inspectionPowers) throws Exception {
+        return produceInspectionRecordService.saveInspectionPower(inspectionPowers);
     }
 
     @ApiOperation(value = "批量委托", notes = "批量委托")

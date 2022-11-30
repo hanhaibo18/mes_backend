@@ -1413,15 +1413,14 @@ public class ProduceInspectionRecordService {
     /**
      * 保存委托单
      */
-    public CommonResult saveInspectionPower(List<InspectionPower> inspectionPowers,String branchCode) throws Exception {
+    public CommonResult saveInspectionPower(List<InspectionPower> inspectionPowers) throws Exception {
 
         //1、修改保存委托信息
         for (InspectionPower inspectionPower : inspectionPowers) {
             inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            inspectionPower.setBranchCode(branchCode);
             if(StringUtils.isEmpty(inspectionPower.getId())){
                 //保存探伤委托单号
-                Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), branchCode,codeRuleService);
+                Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(),codeRuleService);
                 //委托人赋值
                 inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
             }else{
@@ -1439,6 +1438,7 @@ public class ProduceInspectionRecordService {
         if(inspectionPowers.size()>0 && !StringUtils.isEmpty(inspectionPowers.get(0).getHeadId())){
             TrackItem trackItem = trackItemService.getById(inspectionPowers.get(0).getItemId());
             TrackHead trackHead = trackHeadService.getById(inspectionPowers.get(0).getHeadId());
+            String branchCode = inspectionPowers.get(0).getBranchCode();
             //已经派工状态
             trackItem.setIsSchedule(IS_SCHEDULE);
             trackItemService.updateById(trackItem);
