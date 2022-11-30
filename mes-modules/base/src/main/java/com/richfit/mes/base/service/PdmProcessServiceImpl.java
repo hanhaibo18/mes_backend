@@ -6,9 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.richfit.mes.base.dao.PdmObjectMapper;
-import com.richfit.mes.base.dao.PdmOptionMapper;
-import com.richfit.mes.base.dao.PdmProcessMapper;
+import com.richfit.mes.base.dao.*;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.*;
@@ -62,7 +60,10 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
     private PdmOptionMapper pdmOptionMapper;
     @Autowired
     private PdmObjectMapper pdmObjectMapper;
-
+    @Autowired
+    PdmDrawMapper pdmDrawMapper;
+    @Autowired
+    private PdmBomMapper pdmBomMapper;
 
     @Override
     public IPage<PdmProcess> queryPageList(int page, int limit, PdmProcess pdmProcess) {
@@ -167,7 +168,8 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
         QueryWrapper<PdmProcess> processWrapper=new QueryWrapper<>();
         processWrapper.in("draw_id_group",drawIdGroup);
         processWrapper.eq("dataGroup",dataGroup);
-        //pdmProcessMapper.delete(processWrapper);
+        PdmProcess pdmProcess = pdmProcessMapper.selectOne(processWrapper);
+        pdmProcessMapper.delete(processWrapper);
 
         //删除当前工艺关联的工序
         QueryWrapper<PdmOption> optionWrapper=new QueryWrapper<>();
@@ -176,27 +178,39 @@ public class PdmProcessServiceImpl extends ServiceImpl<PdmProcessMapper, PdmProc
         List<PdmOption> pdmOptions = pdmOptionMapper.selectList(optionWrapper);
         //工序id
         List<String> optionsId = pdmOptions.stream().map(x -> x.getId()).collect(Collectors.toList());
-        //pdmOptionMapper.delete(optionWrapper);
+        pdmOptionMapper.delete(optionWrapper);
+
+
+        //删除工艺图纸
+        QueryWrapper<PdmDraw> drawWrapper=new QueryWrapper<>();
+        drawWrapper.eq("isop", '1');
+        drawWrapper.and(wrapper -> wrapper.eq("op_id", pdmProcess.getDrawIdGroup()).or().eq("op_id", pdmProcess.getDrawNo() + "@" + pdmProcess.getDrawNo() + "@" + pdmProcess.getDataGroup()));
+        drawWrapper.eq("datagroup",dataGroup);
+        //List<PdmDraw> pdmMesDraws = pdmDrawMapper.selectList(drawWrapper);
+        //pdmDrawService.remove(drawWrapper);
+
+
+        //删除bom
+        QueryWrapper<PdmBom> bomWrapper=new QueryWrapper<>();
+        bomWrapper.eq("datagroup",dataGroup);
+        bomWrapper.in("id",pdmProcess.getDrawNo());
+        //List<PdmBom> pdmMesBoms = pdmBomMapper.selectList(bomWrapper);
+        //pdmBomService.remove(bomWrapper);
+
+
+        //删除工序图纸
+        QueryWrapper<PdmDraw> drawWrapperTwo=new QueryWrapper<>();
+        drawWrapperTwo.eq("datagroup",dataGroup);
+        drawWrapperTwo.in("op_id",optionsId);
+        //pdmDrawService.remove(drawWrapperTwo);
 
         //删除工序工装信息
         QueryWrapper<PdmObject> objectWrapper=new QueryWrapper<>();
         objectWrapper.eq("dataGroup",dataGroup);
         objectWrapper.in("op_id",optionsId);
         List<PdmObject> pdmObjects = pdmObjectMapper.selectList(objectWrapper);
-        List<String> objectsId = pdmObjects.stream().map(x -> x.getId()).distinct().collect(Collectors.toList());
-        //pdmObjectMapper.delete(objectWrapper);
-
-        //删除图
-        QueryWrapper<PdmDraw> drawWrapper=new QueryWrapper<>();
-        drawWrapper.eq("datagroup",dataGroup);
-        drawWrapper.in("op_id",drawIdGroup);
-        //pdmDrawService.remove(drawWrapper);
-
-        //删除bom
-        QueryWrapper<PdmBom> bomWrapper=new QueryWrapper<>();
-        bomWrapper.eq("datagroup",dataGroup);
-        bomWrapper.in("id",objectsId);
-        //pdmBomService.remove(bomWrapper);
+        //List<String> objectsId = pdmObjects.stream().map(x -> x.getId()).distinct().collect(Collectors.toList());
+        pdmObjectMapper.delete(objectWrapper);
 
         return  CommonResult.success(ResultCode.SUCCESS);
     }
