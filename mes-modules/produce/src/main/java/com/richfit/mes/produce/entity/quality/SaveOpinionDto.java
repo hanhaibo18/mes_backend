@@ -16,6 +16,8 @@ import java.util.List;
 public class SaveOpinionDto {
     @ApiModelProperty(value = "Id", dataType = "String")
     private String id;
+    @ApiModelProperty(value = "意见类型(0 = 不合格品情况,1 = 质控工程师评审意见,2 = 责任单位1 ,3 = 责任单位2)", dataType = "String")
+    private String type;
     @ApiModelProperty(value = "意见Id", dataType = "String")
     private String opinionId;
     @ApiModelProperty(value = "意见", dataType = "String")

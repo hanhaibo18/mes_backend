@@ -338,6 +338,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", saveOpinionDto.getOpinionId());
         updateWrapper.set("opinion", saveOpinionDto.getOpinion());
+        updateWrapper.set("type", saveOpinionDto.getType());
         updateWrapper.set("modify_time", new Date());
         return userOpinionService.update(updateWrapper);
     }
