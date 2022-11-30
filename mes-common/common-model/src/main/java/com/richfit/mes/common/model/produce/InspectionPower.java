@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
+
 
 @Data
 @ApiModel(value = "探伤委托单管理")
@@ -87,6 +89,12 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String checkBy;
     @ApiModelProperty(value = "探伤审核人")
     private String auditBy;
+    @ApiModelProperty(value = "是否开工(0 = 未开工 1= 已开工 2 = 已完工)", dataType = "String")
+    private String isDoing;
+    @ApiModelProperty(value = "开工人", dataType = "String")
+    private String startDoingUser;
+    @ApiModelProperty(value = "开工时间", dataType = "Date")
+    private Date startDoingTime;
     @TableField(exist = false)
     private String productType;
     @TableField(exist = false)

@@ -57,7 +57,7 @@ public class ProduceInspectionRecordService {
     private final static String CHECK = "check";
 
     private final static String AUDIT = "audit";
-
+    private final static String IS_DOING = "1"; //探伤任务开工
     private final static int IS_STATUS = 1;
     private final static int NO_STATUS = 0;
     private final static int BACKOUT_STATUS = 2;
@@ -126,13 +126,12 @@ public class ProduceInspectionRecordService {
      * @param isAudit
      * @return
      */
-    public IPage<InspectionPower> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
+    public IPage<InspectionPower> page(int page, int limit, String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit,String isDoing) {
 
         //跟单工序查询
-        QueryWrapper<InspectionPower> queryWrapper = getProwerQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit);
-
-        queryWrapper.eq("assign_by", SecurityUtils.getCurrentUser().getUserId());
-
+        QueryWrapper<InspectionPower> queryWrapper = getProwerQueryWrapper(startTime, endTime, trackNo, productName, productNo, branchCode, tenantId, isAudit,isDoing);
+        //已经委托的探伤委托单
+        queryWrapper.eq("status",IS_STATUS);
         Page<InspectionPower> assignPowers = inspectionPowerService.page(new Page<InspectionPower>(page, limit), queryWrapper);
         //为跟单工序赋跟单的一些属性
         setHeadInfoToItem(assignPowers);
@@ -206,10 +205,9 @@ public class ProduceInspectionRecordService {
         return queryWrapper;
     }
 
-    private QueryWrapper<InspectionPower> getProwerQueryWrapper(String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
+    private QueryWrapper<InspectionPower> getProwerQueryWrapper(String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit,String isDoing) {
         QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<InspectionPower>();
-        //探伤任务查的是已派工的委托单
-        queryWrapper.isNotNull("assign_by");
+
         if (!StringUtils.isEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
@@ -223,6 +221,14 @@ public class ProduceInspectionRecordService {
             //未审核
             queryWrapper.isNull("audit_by");
         }
+        //开工状态
+        if ("1".equals(isDoing)) {
+            //已开工
+            queryWrapper.eq("start_doing_user",SecurityUtils.getCurrentUser().getUserId());
+        } else if ("0".equals(isDoing)) {
+            //未开工
+            queryWrapper.eq("is_doing","0");
+        }
 
         if (!StringUtils.isEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -235,10 +241,10 @@ public class ProduceInspectionRecordService {
             queryWrapper.inSql("id", "select id from  produce_inspection_power where item_id in ( select id from produce_track_head where product_no LIKE '" + productNo + '%' + "')");
         }
         if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.ge("date_format(assign_time, '%Y-%m-%d')", startTime);
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", startTime);
         }
         if (!StringUtils.isEmpty(endTime)) {
-            queryWrapper.le("date_format(assign_time, '%Y-%m-%d')", endTime);
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", endTime);
         }
         queryWrapper.orderByDesc("power_time");
         return queryWrapper;
@@ -437,8 +443,8 @@ public class ProduceInspectionRecordService {
         List<ProduceDefectsInfo> produceDefectsInfos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("defectsInfoList")), ProduceDefectsInfo.class);
         //探头信息
         List<ProbeInfo> probeInfoList = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("probeInfoList")), ProbeInfo.class);
-        //工序ids
-        List<String> itemIds = produceInspectionRecordDto.getItemIds();
+        //探伤任务ids
+        List<String> powerIds = produceInspectionRecordDto.getPowerIds();
         //探伤记录id
         String recordId = null;
         //branchCode
@@ -478,9 +484,9 @@ public class ProduceInspectionRecordService {
 
         //工序and探伤记录绑定操作
         List<ProduceItemInspectInfo> produceItemInspectInfos = new ArrayList<>();
-        for (String itemId : itemIds) {
+        for (String powerId : powerIds) {
             ProduceItemInspectInfo produceItemInspectInfo = new ProduceItemInspectInfo();
-            produceItemInspectInfo.setTrackItemId(itemId);
+            produceItemInspectInfo.setPowerId(powerId);
             produceItemInspectInfo.setInspectRecordId(recordId);
             produceItemInspectInfo.setTempType(tempType);
 
@@ -517,26 +523,26 @@ public class ProduceInspectionRecordService {
     /**
      * 根据工序id查询探伤记录
      *
-     * @param itemId
+     * @param powerId
      * @return
      */
-    public List<Map<String, Object>> queryRecordByItemId(String itemId, String checkOrAudit, String isAudit) {
+    public List<Map<String, Object>> queryLastInfoByPowerId(String powerId, String isAudit) {
         //在探伤主表里过滤
         QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
-        itemInspectInfoQueryWrapper.eq("track_item_id", itemId);
+        itemInspectInfoQueryWrapper.eq("power_id", powerId);
 
         if (!StringUtils.isEmpty(isAudit)) {
             itemInspectInfoQueryWrapper.eq("is_audit", isAudit);
         }
 
+        //探伤记录填写页面 根据登陆人 = 检验人查询
+        itemInspectInfoQueryWrapper.eq("check_by", SecurityUtils.getCurrentUser().getUserId());
+       /* if (CHECK.equals(checkOrAudit)) {
 
-        if (CHECK.equals(checkOrAudit)) {
-            //探伤记录填写页面 根据登陆人 = 检验人查询
-            itemInspectInfoQueryWrapper.eq("check_by", SecurityUtils.getCurrentUser().getUserId());
         } else if (AUDIT.equals(checkOrAudit)) {
             //探伤记录审核页面 根据登陆人 = 审核人查询
             itemInspectInfoQueryWrapper.and(wrapper->wrapper.eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(wrapper2->wrapper2.eq("audit_by","/")));
-        }
+        }*/
 
 
         List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
@@ -578,12 +584,12 @@ public class ProduceInspectionRecordService {
     /**
      * 返回最近一条记录
      *
-     * @param itemId
+     * @param powerId
      * @return
      */
-    public Object queryLastInfoByItemId(String itemId) {
+    public Object queryLastInfoByPowerId(String powerId) {
         //所有记录
-        List<Map<String, Object>> inspects = queryRecordByItemId(itemId, "check", null);
+        List<Map<String, Object>> inspects = queryLastInfoByPowerId(powerId,  null);
         if (inspects.size() > 0) {
             return inspects.get(0);
         }
@@ -612,7 +618,7 @@ public class ProduceInspectionRecordService {
 
         List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
         //跟单工序
-        Set<String> itemIds = list.stream().map(ProduceItemInspectInfo::getTrackItemId).collect(Collectors.toSet());
+        Set<String> itemIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toSet());
 
 
         //跟单工序查询
@@ -720,7 +726,7 @@ public class ProduceInspectionRecordService {
         //探伤记录
         Map<String, Object> recordInfo = new HashMap<>();
         //查询探伤工序
-        TrackItemInspection trackItemInspection = trackItemInspectionService.getById(produceItemInspectInfo.getTrackItemId());
+        TrackItemInspection trackItemInspection = trackItemInspectionService.getById(produceItemInspectInfo.getPowerId());
 
         if (!ObjectUtil.isEmpty(trackItemInspection)) {
             trackHead = trackHeadService.getById(trackItemInspection.getTrackHeadId());
@@ -948,78 +954,6 @@ public class ProduceInspectionRecordService {
         return returnMap;
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
-        //获取用户所属公司
-        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
-        for (CompleteDto completeDto : completeDtoList) {
-            if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
-                return CommonResult.failed("质检人员不能为空");
-            }
-            if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
-                return CommonResult.failed("报工人员不能为空");
-            }
-            if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getTiId())) {
-                return CommonResult.failed("工序Id不能为空");
-            }
-            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
-            //检验人
-            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
-            //根据工序Id删除缓存表数据
-            QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("ti_id", completeDto.getTiId());
-            double numDouble = 0.00;
-            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                    return CommonResult.failed("报工工时不能大于额定工时");
-                }
-                trackComplete.setId(null);
-                trackComplete.setAssignId(completeDto.getAssignId());
-                trackComplete.setTiId(completeDto.getTiId());
-                trackComplete.setTrackId(completeDto.getTrackId());
-                trackComplete.setTrackNo(completeDto.getTrackNo());
-                trackComplete.setProdNo(completeDto.getProdNo());
-                trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-                trackComplete.setCompleteTime(new Date());
-                trackComplete.setDetectionResult("-");
-                trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-
-                numDouble += trackComplete.getCompletedQty();
-            }
-            Assign assign = trackAssignService.getById(completeDto.getAssignId());
-            //跟新工序完成数量
-            trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
-            double intervalNumber = assign.getQty() + 0.0;
-            if (numDouble > assign.getQty()) {
-                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
-            }
-            if (numDouble < intervalNumber - 0.1) {
-                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
-            }
-            if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
-                //调用工序激活方法
-                Map<String, String> map = new HashMap<>(3);
-                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-                map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
-                map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
-                map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
-                publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
-                //更改状态 标识当前工序完成
-                trackItem.setIsDoing(2);
-                trackItem.setIsOperationComplete(1);
-                trackItemService.updateById(trackItem);
-                TrackItemInspection trackItemInspection = new TrackItemInspection();
-                BeanUtil.copyProperties(trackItem, trackItemInspection);
-                //修改探伤工序表
-                trackItemInspectionService.updateById(trackItemInspection);
-                trackCompleteCacheService.remove(queryWrapper);
-            }
-            log.error(completeDto.getTrackCompleteList().toString());
-            trackCompleteService.saveBatch(completeDto.getTrackCompleteList());
-        }
-        return CommonResult.success(true);
-    }
-
 
     /**
      * 将Object对象里面的属性和值转化成Map对象
@@ -1060,322 +994,6 @@ public class ProduceInspectionRecordService {
         return jsonObject;
     }
 
-    public CommonResult updateAssign(Assign assign) {
-        try {
-            if (com.mysql.cj.util.StringUtils.isNullOrEmpty(assign.getTiId())) {
-                return CommonResult.failed("关联工序ID编码不能为空！");
-            } else {
-                TrackItem trackItem = trackItemService.getById(assign.getTiId());
-
-                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
-                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！");
-                }
-                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                    return CommonResult.failed("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！");
-                }
-                // 判断后置工序是否已派工，否则无法修改
-                List<Assign> cs = this.find(null, null, null, null, null, trackItem.getFlowId());
-                for (int j = 0; j < cs.size(); j++) {
-                    TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
-                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                        return CommonResult.failed("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工");
-                    }
-                }
-                // 判断修改的派工数量是否在合理范围
-                Assign oldassign = trackAssignService.getById(assign.getId());
-                if (null != trackItem) {
-                    if (trackItem.getAssignableQty() < (assign.getQty() - oldassign.getQty())) {
-                        return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
-                    }
-                }
-                // 设置派工时间，人员，工序可派工数
-                if (null != SecurityUtils.getCurrentUser()) {
-
-                    assign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
-                }
-                assign.setAssignTime(new Date());
-                assign.setModifyTime(new Date());
-                assign.setAvailQty(assign.getQty());
-                boolean bool = trackAssignService.updateById(assign);
-                QueryWrapper<AssignPerson> queryWrapper = new QueryWrapper<AssignPerson>();
-                queryWrapper.eq("assign_id", assign.getId());
-                trackAssignPersonService.remove(queryWrapper);
-                for (AssignPerson person : assign.getAssignPersons()) {
-                    person.setModifyTime(new Date());
-                    person.setAssignId(assign.getId());
-                    trackAssignPersonService.save(person);
-                }
-                trackItem.setAssignableQty(trackItem.getAssignableQty() - (assign.getQty() - oldassign.getQty()));
-                if (assign.getState() == 1) {
-                    trackItem.setIsDoing(1);
-                    trackItem.setStartDoingTime(new Date());
-                    trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
-                } else {
-                    trackItem.setIsSchedule(0);
-                    trackItem.setIsDoing(0);
-                }
-                trackItemService.updateById(trackItem);
-                //修改探伤报工信息
-                TrackItemInspection trackItemInspection = new TrackItemInspection();
-                BeanUtil.copyProperties(trackItem, trackItemInspection);
-                trackItemInspectionService.updateById(trackItemInspection);
-            }
-            return CommonResult.success(assign, "操作成功！");
-        } catch (Exception e) {
-            return CommonResult.failed("操作失败，请重试！" + e.getMessage());
-        }
-    }
-
-    /**
-     * 派工查询
-     *
-     * @param id
-     * @param tiId
-     * @param state
-     * @param trackId
-     * @param trackNo
-     * @param flowId
-     * @return
-     */
-    public List<Assign> find(String id, String tiId, String state, String trackId, String trackNo, String flowId) {
-        QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(id)) {
-            queryWrapper.eq("id", id);
-        }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(tiId)) {
-            queryWrapper.eq("ti_id", tiId);
-        }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(state)) {
-            queryWrapper.eq("state", Integer.parseInt(state));
-        }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(trackId)) {
-            queryWrapper.eq("track_id", trackId);
-        }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.eq("track_no", trackNo);
-        }
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(flowId)) {
-            queryWrapper.eq("flow_id", flowId);
-        }
-        queryWrapper.orderByAsc("modify_time");
-        return trackAssignService.list(queryWrapper);
-    }
-
-    /**
-     * 保存报工
-     *
-     * @param completeDtoList
-     * @return
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveCompleteCache(List<CompleteDto> completeDtoList) {
-        //获取用户所属公司
-        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
-        for (CompleteDto completeDto : completeDtoList) {
-            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
-            //检验人
-            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
-            trackItem.setQualityCheckBranch(completeDto.getQualityCheckBranch());
-            //根据工序Id先删除,在重新新增数据
-            QueryWrapper<TrackCompleteCache> removeCache = new QueryWrapper<>();
-            removeCache.eq("ti_id", completeDto.getTiId());
-            trackCompleteCacheService.remove(removeCache);
-
-            List<TrackCompleteCache> trackCompleteCacheList = new ArrayList<>();
-            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-                if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                    return CommonResult.failed("报工工时不能大于额定工时");
-                }
-                TrackCompleteCache trackCompleteCache = new TrackCompleteCache();
-                trackCompleteCache.setAssignId(completeDto.getAssignId());
-                trackCompleteCache.setTiId(completeDto.getTiId());
-                trackCompleteCache.setTrackId(completeDto.getTrackId());
-                trackCompleteCache.setTrackNo(completeDto.getTrackNo());
-                trackCompleteCache.setProdNo(completeDto.getProdNo());
-                trackCompleteCache.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-                trackCompleteCache.setCompleteTime(new Date());
-                trackCompleteCache.setUserId(trackComplete.getUserId());
-                trackCompleteCache.setDeviceId(trackComplete.getDeviceId());
-                trackCompleteCache.setCompletedHours(trackComplete.getCompletedHours());
-                trackCompleteCache.setActualHours(trackComplete.getActualHours());
-                trackCompleteCache.setReportHours(trackComplete.getReportHours());
-                trackCompleteCache.setStaticHours(trackComplete.getStaticHours());
-                trackCompleteCache.setCompletedQty(trackComplete.getCompletedQty());
-                trackCompleteCache.setRejectQty(trackComplete.getRejectQty());
-                trackCompleteCache.setDetectionResult(trackComplete.getDetectionResult());
-                trackCompleteCacheList.add(trackCompleteCache);
-            }
-            trackItemService.updateById(trackItem);
-            //修改探伤报工信息
-            TrackItemInspection trackItemInspection = new TrackItemInspection();
-            BeanUtil.copyProperties(trackItem, trackItemInspection);
-            trackItemInspectionService.updateById(trackItemInspection);
-
-            trackCompleteCacheService.saveBatch(trackCompleteCacheList);
-        }
-        return CommonResult.success(true);
-    }
-
-
-    @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> updateComplete(CompleteDto completeDto) {
-        //获取用户所属公司
-        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
-        if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getTiId())) {
-            return CommonResult.failed("工序Id不能为空");
-        }
-        if (com.mysql.cj.util.StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
-            return CommonResult.failed("质检人员不能为空");
-        }
-        if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
-            return CommonResult.failed("报工人员不能为空");
-        }
-        TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
-        //检验人
-        trackItem.setQualityCheckBy(completeDto.getQcPersonId());
-        trackItem.setQualityCheckBranch(completeDto.getQualityCheckBranch());
-        //根据工序Id先删除,在重新新增数据
-        QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
-        removeComplete.eq("ti_id", completeDto.getTiId());
-        trackCompleteService.remove(removeComplete);
-        double numDouble = 0.00;
-        Assign assign = trackAssignService.getById(completeDto.getAssignId());
-        double intervalNumber = assign.getQty() + 0.0;
-        for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-            if (trackComplete.getReportHours() > trackItem.getSinglePieceHours()) {
-                return CommonResult.failed("报工工时不能大于额定工时");
-            }
-            trackComplete.setAssignId(completeDto.getAssignId());
-            trackComplete.setTiId(completeDto.getTiId());
-            trackComplete.setTrackId(completeDto.getTrackId());
-            trackComplete.setTrackNo(completeDto.getTrackNo());
-            trackComplete.setProdNo(completeDto.getProdNo());
-            trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-            trackComplete.setCompleteTime(new Date());
-            numDouble += trackComplete.getCompletedQty();
-        }
-        //报工数量判断
-        if (numDouble > assign.getQty()) {
-            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得大于" + assign.getQty());
-        }
-        if (numDouble < intervalNumber - 0.1) {
-            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得少于" + +(intervalNumber - 0.1));
-        }
-        //跟新工序完成数量
-        trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
-        trackItemService.updateById(trackItem);
-        //修改探伤报工信息
-        TrackItemInspection trackItemInspection = new TrackItemInspection();
-        BeanUtil.copyProperties(trackItem, trackItemInspection);
-        trackItemInspectionService.updateById(trackItemInspection);
-        return CommonResult.success(trackCompleteService.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
-    }
-
-    public CommonResult<Boolean> rollBack(String id) {
-        String msg = "";
-        TrackComplete trackComplete = trackCompleteService.getById(id);
-        Assign assign = new Assign();
-        if (null != trackComplete.getAssignId()) {
-            assign = trackAssignService.getById(trackComplete.getAssignId());
-        }
-        TrackItem trackItem = new TrackItem();
-        if (null == assign) {
-            trackItem = trackItemService.getById(trackComplete.getTiId());
-        } else {
-            trackItem = trackItemService.getById(assign.getTiId());
-        }
-        if (null == trackItem) {
-            removeComplete(trackComplete.getTiId());
-        } else {
-            QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
-            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(id)) {
-                queryWrapper.eq("track_id", id);
-            } else {
-                queryWrapper.eq("track_id", "-1");
-            }
-            queryWrapper.orderByAsc("modify_time");
-            List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
-            //判断跟单号已质检完成，报工无法取消
-            if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
-                msg += "跟单号已质检完成，报工无法取消！";
-            }
-            //判断跟单号已质检完成，报工无法取消
-            if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                msg += "跟单号已调度完成，报工无法取消！";
-            }
-            //判断后置工序是否已派工，否则不可回滚
-            QueryWrapper<Assign> queryWrapperAssign = new QueryWrapper<Assign>();
-            queryWrapperAssign.eq("ti_id", trackItem.getId());
-            List<Assign> assigns = trackAssignService.list(queryWrapperAssign);
-            for (int j = 0; j < assigns.size(); j++) {
-                TrackItem cstrackItem = trackItemService.getById(assigns.get(j).getTiId());
-                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                    return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已派工，需要先取消后序工序");
-                }
-            }
-            //判断后置工序是否已报工，否则不可回滚
-            for (int j = 0; j < cs.size(); j++) {
-                TrackItem cstrackItem = trackItemService.getById(cs.get(j).getTiId());
-                if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                    return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已报工，需要先取消后序工序");
-                }
-            }
-
-            //将后置工序IS_CURRENT设置为否，状态为1
-            List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
-            for (TrackItem trackItems : items) {
-                if (trackItems.getOptSequence() > trackItem.getOptSequence() && trackItems.getIsCurrent() == 1) {
-                    trackItems.setIsCurrent(0);
-                    trackItems.setIsDoing(0);
-                    trackItems.setIsFinalComplete("0");
-                    trackItemService.updateById(trackItems);
-                    //修改探伤
-                    TrackItemInspection trackItemInspection = new TrackItemInspection();
-                    BeanUtil.copyProperties(trackItems, trackItemInspection);
-                    trackItemInspectionService.updateById(trackItemInspection);
-
-                }
-            }
-            //将当前工序设置为激活
-            if (msg.equals("")) {
-                trackItem.setIsDoing(0);
-                trackItem.setIsCurrent(1);
-                trackItem.setIsFinalComplete("0");
-                trackItem.setIsOperationComplete(0);
-                trackItem.setAssignableQty(trackItem.getAssignableQty() + trackComplete.getCompletedQty().intValue());
-                trackItemService.updateById(trackItem);
-                //修改探伤
-                TrackItemInspection trackItemInspection = new TrackItemInspection();
-                BeanUtil.copyProperties(trackItem, trackItemInspection);
-                trackItemInspectionService.updateById(trackItemInspection);
-
-                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                trackHead.setStatus("1");
-                trackHeadService.updateById(trackHead);
-                if (null != assign) {
-                    assign.setAvailQty(assign.getQty() + trackComplete.getCompletedQty().intValue());
-                    assign.setState(0);
-                    trackAssignService.updateById(assign);
-                }
-                removeComplete(trackComplete.getTiId());
-            }
-        }
-
-
-        if (msg.equals("")) {
-            return CommonResult.success(null, "删除成功！");
-        } else {
-            return CommonResult.failed("操作失败，请重试！" + msg);
-        }
-    }
-
-    private Boolean removeComplete(String tiId) {
-        QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
-        removeComplete.eq("ti_id", tiId);
-        return trackCompleteService.remove(removeComplete);
-    }
-
     /**
      * 探伤记录审核
      *
@@ -1411,26 +1029,27 @@ public class ProduceInspectionRecordService {
     }
 
     /**
-     * 保存委托单
+     * 批量新增委托单
      */
-    public CommonResult saveInspectionPower(List<InspectionPower> inspectionPowers) throws Exception {
+    public CommonResult saveInspectionPowers(List<InspectionPower> inspectionPowers) throws Exception {
 
         //1、修改保存委托信息
         for (InspectionPower inspectionPower : inspectionPowers) {
+
             inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             if(StringUtils.isEmpty(inspectionPower.getId())){
+                //获取委托单号
+                String orderNo = codeRuleService.gerCode("order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode()).getCurValue();
+                inspectionPower.setReportNo(orderNo);
                 //保存探伤委托单号
                 Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(),codeRuleService);
                 //委托人赋值
                 inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
-            }else{
-                InspectionPower byId = inspectionPowerService.getById(inspectionPower.getId());
-                if(byId.getStatus()==IS_STATUS){
-                    return CommonResult.failed("该委托单已经发起委托，不能修改");
-                }
             }
             //委托时间
             inspectionPower.setPowerTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd HH:mm:ss"));
+            //待开工
+            inspectionPower.setIsDoing("0");
             //保存
             inspectionPowerService.saveOrUpdate(inspectionPower);
         }
@@ -1471,12 +1090,83 @@ public class ProduceInspectionRecordService {
                     assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                     assign.setClasses(trackHead.getClasses());
                     assign.setBranchCode(branchCode);
+                    assign.setPowerId(inspectionPower.getId());
                     trackAssignService.save(assign);
                 }
             }
         }
 
         return CommonResult.success(true);
+    }
+
+    /**
+     * 保存委托单
+     */
+    public CommonResult saveInspectionPower(InspectionPower inspectionPower) throws Exception {
+
+        inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        if(StringUtils.isEmpty(inspectionPower.getId())){
+            //保存探伤委托单号
+            Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(),codeRuleService);
+            //委托人赋值
+            inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        }else{
+            InspectionPower byId = inspectionPowerService.getById(inspectionPower.getId());
+            if(byId.getStatus()==IS_STATUS){
+                return CommonResult.failed("该委托单已经发起委托，不能修改");
+            }
+        }
+        //委托时间
+        inspectionPower.setPowerTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd HH:mm:ss"));
+        //待开工
+        inspectionPower.setIsDoing("0");
+        //保存
+        inspectionPowerService.saveOrUpdate(inspectionPower);
+
+        return CommonResult.success(true);
+    }
+
+    /**
+     * 探伤开工
+     * @param ids 探伤委托单ids
+     */
+    public boolean startsWork(List<String> ids){
+        if(ids.size()>0){
+            QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("id",ids);
+            //要开工的任务
+            List<InspectionPower> inspectionPowers = inspectionPowerService.list(queryWrapper);
+            //有源的
+            List<InspectionPower> haveList = inspectionPowers.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
+            //有源的需要跟新派工信息
+            List<String> powerIds = haveList.stream().map(InspectionPower::getId).collect(Collectors.toList());
+
+            if(powerIds.size()>0){
+                //更新派工信息
+                UpdateWrapper<Assign> assignUpdateWrapper = new UpdateWrapper<>();
+                assignUpdateWrapper.in("power_id",powerIds)
+                        //设置开工状态
+                        .set("state",1);
+                trackAssignService.update(assignUpdateWrapper);
+                //更新跟单工序信息
+                for (InspectionPower inspectionPower : haveList) {
+                    TrackItem trackItem = trackItemService.getById(inspectionPower.getItemId());
+                    trackItem.setIsDoing(1);
+                    trackItem.setStartDoingTime(new Date());
+                    trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
+                    trackItemService.updateById(trackItem);
+                }
+            }
+            //更新探伤委托单开工状态
+            for (InspectionPower inspectionPower : inspectionPowers) {
+                inspectionPower.setIsDoing(IS_DOING);
+                inspectionPower.setStartDoingTime(new Date());
+                inspectionPower.setStartDoingUser(SecurityUtils.getCurrentUser().getUserId());
+            }
+            inspectionPowerService.updateBatchById(inspectionPowers);
+
+        }
+        return true;
     }
 
     /**

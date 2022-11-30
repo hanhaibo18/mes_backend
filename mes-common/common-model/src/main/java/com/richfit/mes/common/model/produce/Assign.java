@@ -189,6 +189,12 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "分流Id")
     private String flowId;
 
+    /**
+     * 探伤委托单id
+     */
+    @ApiModelProperty(value = "探伤委托单id", dataType = "String")
+    private String powerId;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "探伤工序标识")
     private String isFlawDetection;
