@@ -1,20 +1,22 @@
 package com.richfit.mes.base.controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.richfit.mes.base.entity.param.DeleteProcessParam;
 import com.richfit.mes.base.service.*;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -22,7 +24,7 @@ import java.util.List;
  * @date 2022-01-04 13:27
  */
 @Slf4j
-@Api("工艺")
+@Api(value = "PDM工艺接收", tags = {"PDM工艺接收"})
 @RestController
 @RequestMapping("/api/base/pdmProcess")
 public class PdmProcessController {
@@ -60,6 +62,16 @@ public class PdmProcessController {
     @ApiImplicitParam(name = "pdmProcess", value = "工艺VO", required = true, dataType = "PdmProcess", paramType = "body")
     public CommonResult<IPage<PdmProcess>> getPageList(int page, int limit, PdmProcess pdmProcess) {
         return CommonResult.success(pdmProcessService.queryPageList(page, limit, pdmProcess));
+    }
+
+    @PostMapping("/delete/pdm_process")
+    @ApiOperation(value = "删除工艺", notes = "删除工艺")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "drawIdGroup", value = "工艺id", required = true, paramType = "List", dataType = "list"),
+            @ApiImplicitParam(name = "dataGroup", value = "工厂代码", required = true, paramType = "query", dataType = "string")
+    })
+    public CommonResult deletedPDMProcess(@RequestBody DeleteProcessParam deleteProcessParam) {
+        return CommonResult.success(pdmProcessService.deletePDMProcess(deleteProcessParam.getDrawIdGroup(),deleteProcessParam.getDataGroup()));
     }
 
 

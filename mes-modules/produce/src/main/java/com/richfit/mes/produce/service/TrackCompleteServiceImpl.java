@@ -85,7 +85,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
             Calendar calendar = new GregorianCalendar();
@@ -96,7 +96,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 throw new GlobalException("时间格式错误", ResultCode.FAILED);
             }
             calendar.add(Calendar.DAY_OF_MONTH, 1);
-            queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
 
         }
         //获取当前登录用户角色列表

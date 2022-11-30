@@ -17,4 +17,6 @@ public interface PdmMesProcessService extends IService<PdmMesProcess> {
     List<PdmMesProcess> queryList(PdmMesProcess pdmProcess);
 
     void release(PdmMesProcess pdmMesProcess) throws Exception;
+
+    Object deleteMesPDMProcess(List<String> drawIdGroup, String dataGroup);
 }

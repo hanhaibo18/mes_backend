@@ -122,6 +122,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (CollectionUtils.isNotEmpty(disqualificationDto.getTypeList())) {
             String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
             disqualification.setType(type);
+            disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
         }
         this.saveOrUpdate(disqualification);
         //数据不为空,拼接数据
@@ -337,6 +338,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", saveOpinionDto.getOpinionId());
         updateWrapper.set("opinion", saveOpinionDto.getOpinion());
+        updateWrapper.set("type", saveOpinionDto.getType());
         updateWrapper.set("modify_time", new Date());
         return userOpinionService.update(updateWrapper);
     }

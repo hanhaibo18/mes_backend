@@ -3,8 +3,8 @@ package com.richfit.mes.base.controller;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.entity.param.ExamineDrawingApplyParam;
 import com.richfit.mes.base.service.DrawingApplyService;
@@ -21,7 +21,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -86,7 +87,7 @@ public class DrawingApplyController extends BaseController {
     })
     @PostMapping("/importExcelDrawingApply")
     public CommonResult importExcelDrawingApply(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
-        return  drawingApplyService.importExcelDrawingApply(file,branchCode);
+        return drawingApplyService.importExcelDrawingApply(file, branchCode);
     }
 
     @ApiOperation(value = "修改图纸申请", notes = "修改图纸申请")
@@ -136,6 +137,7 @@ public class DrawingApplyController extends BaseController {
             return CommonResult.success(bool, DRAWING_APPLY_SUCCESS_MESSAGE);
         }
     }
+
     @ApiOperation(value = "审批图纸申请批量处理", notes = "审批图纸申请批量处理")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "reason", value = "驳回原因", paramType = "query", dataType = "string")
@@ -143,7 +145,7 @@ public class DrawingApplyController extends BaseController {
     @PostMapping("/examineBatch")
     public CommonResult examineDrawingApplyBatch(@RequestBody ExamineDrawingApplyParam param) {
         try {
-            List<String> ids=(List)param.getIdList();
+            List<String> ids = (List) param.getIdList();
             if (ObjectUtils.isEmpty(ids)) {
                 return CommonResult.failed(DRAWING_APPLY_ID_NULL_MESSAGE);
             } else {
@@ -156,8 +158,8 @@ public class DrawingApplyController extends BaseController {
                 boolean bool = drawingApplyService.update(wrapper);
 
             }
-        }catch (Exception e){
-            log.error("批量审核异常了",e);
+        } catch (Exception e) {
+            log.error("批量审核异常了", e);
         }
         return CommonResult.success(DRAWING_APPLY_SUCCESS_MESSAGE);
     }
@@ -179,33 +181,43 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "分页查询图纸申请", notes = "根据图号、状态分页查询图纸申请")
     @GetMapping("/manage")
-    public CommonResult<IPage<DrawingApply>> selectDrawingApply(String drawingNo, Integer status, String order, String orderCol, int page, int limit, String dataGroup) {
-        QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
-        if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+    public CommonResult<PageInfo<DrawingApply>> selectDrawingApply(String drawingNo, String status, String order, String orderCol, int page, int limit, String dataGroup) {
+//        QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
+//        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+//            queryWrapper.like("drawing_no", drawingNo);
+//        }
+//        if (null != status) {
+//            queryWrapper.eq("status", status);
+//        }
+//
+//        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+//        queryWrapper.eq("datagroup", dataGroup);
+//        if (!StringUtils.isNullOrEmpty(orderCol)) {
+//            if (!StringUtils.isNullOrEmpty(order)) {
+//                if ("desc".equals(order)) {
+//                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+//                } else if ("asc".equals(order)) {
+//                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+//                }
+//            } else {
+//                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+//            }
+//        } else {
+//            queryWrapper.orderByDesc("modify_time");
+//        }
+        DrawingApply drawingApply = new DrawingApply();
+        if (!StrUtil.isBlank(drawingNo)) {
+            drawingApply.setDrawingNo(drawingNo.replaceAll("-", ""));
         }
-        if (null != status) {
-            queryWrapper.eq("status", status);
+        drawingApply.setStatus(status);
+        drawingApply.setDataGroup(dataGroup);
+        PageHelper.startPage(page, limit);
+        if (!StrUtil.isBlank(orderCol)) {
+            PageHelper.orderBy(orderCol + " " + order);
         }
-
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("datagroup", dataGroup);
-        if (!StringUtils.isNullOrEmpty(orderCol)) {
-            if (!StringUtils.isNullOrEmpty(order)) {
-                if ("desc".equals(order)) {
-                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                } else if ("asc".equals(order)) {
-                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
-                }
-            } else {
-                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-            }
-        } else {
-            queryWrapper.orderByDesc("modify_time");
-        }
-
-
-        return CommonResult.success(drawingApplyService.page(new Page<DrawingApply>(page, limit), queryWrapper), DRAWING_APPLY_SUCCESS_MESSAGE);
+        List<DrawingApply> trackFlowList = drawingApplyService.list(drawingApply);
+        PageInfo<DrawingApply> trackFlowPage = new PageInfo(trackFlowList);
+        return CommonResult.success(trackFlowPage, DRAWING_APPLY_SUCCESS_MESSAGE);
     }
 
 

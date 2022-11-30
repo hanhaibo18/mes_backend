@@ -50,6 +50,29 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "产品编号", dataType = "String")
     private String productNo;
 
+    /**
+     * 责任单位内
+     */
+    @ApiModelProperty(value = "责任单位内", dataType = "String")
+    private String unitResponsibilityWithin;
+
+    /**
+     * 责任单位外
+     */
+    @ApiModelProperty(value = "责任单位外", dataType = "String")
+    private String unitResponsibilityOutside;
+
+    /**
+     * 处理单位1
+     */
+    @ApiModelProperty(value = "处理单位1", dataType = "String")
+    private String unitTreatmentOne;
+
+    /**
+     * 处理单位2
+     */
+    @ApiModelProperty(value = "处理单位2", dataType = "String")
+    private String unitTreatmentTwo;
 
     /**
      * 零部件名称

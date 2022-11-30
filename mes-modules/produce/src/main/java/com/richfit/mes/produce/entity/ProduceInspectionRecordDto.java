@@ -19,9 +19,9 @@ public class ProduceInspectionRecordDto{
      */
     private JSONObject inspectionRecord;
     /**
-     * 关联工序ids
+     * 关联探伤任务ids
      */
-    private List<String> itemIds;
+    private List<String> powerIds;
     /**
      * 模板类型
      */

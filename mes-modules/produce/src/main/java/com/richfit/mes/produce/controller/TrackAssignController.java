@@ -24,6 +24,7 @@ import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -677,6 +678,8 @@ public class TrackAssignController extends BaseController {
 
     }
 
+    @Autowired
+    private InspectionPowerService inspectionPowerService;
 
     @ApiOperation(value = "删除派工", notes = "根据id删除派工")
     @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "query")
@@ -727,6 +730,10 @@ public class TrackAssignController extends BaseController {
                 trackItem.setAssignableQty(trackItem.getNumber());
                 trackItemService.updateById(trackItem);
                 trackAssignService.removeById(ids[i]);
+                //如果是探伤工序，删除探伤委托任务
+                if("6".equals(trackItem.getOptType())){
+                    inspectionPowerService.removeById(assign.getPowerId());
+                }
             }
         }
         return CommonResult.success(null, "删除成功！");

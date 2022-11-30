@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.richfit.mes.base.dao.PdmMesProcessMapper;
+import com.richfit.mes.base.dao.*;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author zhiqiang.lu
@@ -50,7 +53,16 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
 
     @Autowired
     private RouterCheckService routerCheckService;
-
+    @Autowired
+    private PdmMesOptionMapper pdmMesOptionMapper;
+    @Autowired
+    private PdmMesBomService pdmMesBomService;
+    @Autowired
+    private PdmMesObjectMapper pdmMesObjectMapper;
+    @Autowired
+    PdmMesDrawMapper pdmMesDrawMapper;
+    @Autowired
+    private PdmMesBomMapper pdmMesBomMapper;
     @Override
     public IPage<PdmMesProcess> queryPageList(int page, int limit, PdmMesProcess pdmProcess) {
         Page<PdmMesProcess> ipage = new Page<>(page, limit);
@@ -228,5 +240,57 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             e.printStackTrace();
             throw new Exception("同步MES出现异常");
         }
+    }
+
+    @Override
+    public CommonResult deleteMesPDMProcess(List<String> drawIdGroup, String dataGroup) {
+        //删除工艺
+        QueryWrapper<PdmMesProcess> processWrapper=new QueryWrapper<>();
+        processWrapper.in("draw_id_group",drawIdGroup);
+        processWrapper.eq("dataGroup",dataGroup);
+        PdmMesProcess pdmMesProcess = pdmMesProcessMapper.selectOne(processWrapper);
+        pdmMesProcessMapper.delete(processWrapper);
+
+        //删除当前工艺关联的工序
+        QueryWrapper<PdmMesOption> optionWrapper=new QueryWrapper<>();
+        optionWrapper.in("process_id",drawIdGroup);
+        optionWrapper.eq("dataGroup",dataGroup);
+        List<PdmMesOption> pdmMesOptions = pdmMesOptionMapper.selectList(optionWrapper);
+        //工序id
+        List<String> optionsId = pdmMesOptions.stream().map(x -> x.getId()).collect(Collectors.toList());
+        pdmMesOptionMapper.delete(optionWrapper);
+
+        //删除工艺图纸
+        QueryWrapper<PdmMesDraw> drawWrapper=new QueryWrapper<>();
+        drawWrapper.eq("isop", '1');
+        drawWrapper.and(wrapper -> wrapper.eq("op_id", pdmMesProcess.getDrawIdGroup()).or().eq("op_id", pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDataGroup()));
+        drawWrapper.eq("datagroup",dataGroup);
+        //List<PdmMesDraw> pdmMesDraws = pdmMesDrawMapper.selectList(drawWrapper);
+        //pdmMesDrawService.remove(drawWrapper);
+
+
+        //删除工艺bom
+        QueryWrapper<PdmMesBom> bomWrapper=new QueryWrapper<>();
+        bomWrapper.eq("datagroup",dataGroup);
+        bomWrapper.in("id",pdmMesProcess.getDrawNo());
+        //List<PdmMesBom> pdmMesBoms = pdmMesBomMapper.selectList(bomWrapper);
+        //pdmMesBomService.remove(bomWrapper);
+
+
+
+        //删除工序工装信息
+        QueryWrapper<PdmMesObject> objectWrapper=new QueryWrapper<>();
+        objectWrapper.eq("dataGroup",dataGroup);
+        objectWrapper.in("op_id",optionsId);
+        //List<PdmMesObject> pdmMesObjects = pdmMesObjectMapper.selectList(objectWrapper);
+        pdmMesObjectMapper.delete(objectWrapper);
+
+        //删除工序图纸
+        QueryWrapper<PdmMesDraw> drawWrapperTwo=new QueryWrapper<>();
+        drawWrapperTwo.eq("datagroup",dataGroup);
+        drawWrapperTwo.in("op_id",optionsId);
+        //List<PdmMesDraw> pdmMesDraws1 = pdmMesDrawMapper.selectList(drawWrapperTwo);
+        //pdmMesDrawService.remove(drawWrapperTwo);
+        return  CommonResult.success(ResultCode.SUCCESS);
     }
 }

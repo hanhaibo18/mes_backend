@@ -1,10 +1,8 @@
 package com.richfit.mes.common.model.base;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-import lombok.ToString;
 
 import java.util.Date;
 
@@ -85,4 +83,23 @@ public class DrawingApply extends BaseEntity<DrawingApply> {
     private String dataGroup;
 
     private String needQuery;
+
+
+    /**
+     * 工艺数量
+     */
+    @TableField(value = "routerNumber")
+    private Integer routerNumber;
+
+    /**
+     * 图纸数量
+     */
+    @TableField(value = "drawingNumber")
+    private Integer drawingNumber;
+
+    /**
+     * BOM数量
+     */
+    @TableField(value = "bomNumber")
+    private Integer bomNumber;
 }

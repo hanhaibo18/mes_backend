@@ -6,6 +6,8 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.DrawingApplyMapper;
 import com.richfit.mes.base.entity.DrawingApplyExcelEntity;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Device;
@@ -73,7 +75,7 @@ public class DrawingApplyServiceImpl extends ServiceImpl<DrawingApplyMapper, Dra
                     queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                     DrawingApply oldApply = this.getOne(queryWrapper);
                     if (oldApply != null && !StringUtils.isNullOrEmpty(oldApply.getId())) {
-                        throw new RuntimeException(drawingApply.getDrawingNo()+" :已有该图号的申请！");
+                        throw new GlobalException(drawingApply.getDrawingNo()+" :已有该图号的申请！", ResultCode.FAILED);
                     } else {
                         DrawingApply da=new DrawingApply();
                         da.setBranchCode(branchCode);
@@ -89,5 +91,10 @@ public class DrawingApplyServiceImpl extends ServiceImpl<DrawingApplyMapper, Dra
                 }
             }
         return CommonResult.success( DRAWING_APPLY_IMPORT_EXCEL_SUCCESS_MESSAGE);
+    }
+
+    @Override
+    public List<DrawingApply> list(DrawingApply drawingApply) {
+        return drawingApplyMapper.list(drawingApply);
     }
 }

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.base.dao.DrawingApplyMapper">
+    <select id="list" resultType="com.richfit.mes.common.model.base.DrawingApply">
+        SELECT
+        o.*,(
+        SELECT
+        count( * )
+        FROM
+        base_i_pdm_process
+        WHERE
+        draw_no = o.drawing_no
+        AND datagroup = o.branch_code
+        ) AS router_number,(
+        SELECT
+        count( * )
+        FROM
+        base_i_pdm_draw
+        WHERE
+        item_id = o.drawing_no
+        AND datagroup = o.branch_code
+        AND isop = '1'
+        ) AS drawing_number,(
+        SELECT
+        count( * )
+        FROM
+        base_i_pdm_bom
+        WHERE
+        id = o.drawing_no
+        AND datagroup = o.branch_code
+        ) AS bom_number
+        FROM
+        base_drawing_apply o
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and replace(o.drawing_no,'-','') like '%${param.drawingNo}%'
+            </if>
+            <if test="param.dataGroup != null and param.dataGroup != ''">
+                and o.datagroup = '${param.dataGroup}'
+            </if>
+            <if test="param.status != null and param.status != '' ">
+                and o.status = '${param.status}'
+            </if>
+        </trim>
+    </select>
+</mapper>

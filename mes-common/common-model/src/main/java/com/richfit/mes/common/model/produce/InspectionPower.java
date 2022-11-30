@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
+
 
 @Data
 @ApiModel(value = "探伤委托单管理")
@@ -15,6 +17,11 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @ApiModelProperty(value = "委托单状态", dataType = "Integer")
     private int status;
 
+    @ApiModelProperty(value = "委托时间", dataType = "String")
+    private String powerTime;
+
+    @ApiModelProperty(value = "跟单id", dataType = "String")
+    private String headId;
     @ApiModelProperty(value = "跟单工序id", dataType = "String")
     private String itemId;
 
@@ -59,12 +66,47 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String tenantId;
     @ApiModelProperty(value = "委托人", dataType = "String")
     private String consignor;
-    @ApiModelProperty(value = "派工人", dataType = "String")
+    @ApiModelProperty(value = "指派人", dataType = "String")
     private String assignBy;
+    @ApiModelProperty(value = "指派时间", dataType = "String")
+    private String assignTime;
     @ApiModelProperty(value = "指派状态（0、未派  1、已派）")
     private int assignStatus;
+
+    @ApiModelProperty(value = "探伤结果", required = true)
+    private Integer flawDetection;
+    @ApiModelProperty(value = "探伤报告号", required = true)
+    private String reportNo;
+    @ApiModelProperty(value = "探伤备注", required = true)
+    private String flawDetectionRemark;
+    @ApiModelProperty(value = "探伤报告文件Id", required = true)
+    private String flawDetectionPaper;
+    @ApiModelProperty(value = "探伤记录编码")
+    private String inspectRecordNo;
+    @ApiModelProperty(value = "审核通过的探伤记录模板")
+    private String inspTempType;
+    @ApiModelProperty(value = "探伤检验人")
+    private String checkBy;
+    @ApiModelProperty(value = "探伤审核人")
+    private String auditBy;
+    @ApiModelProperty(value = "是否开工(0 = 未开工 1= 已开工 2 = 已完工)", dataType = "String")
+    private String isDoing;
+    @ApiModelProperty(value = "开工人", dataType = "String")
+    private String startDoingUser;
+    @ApiModelProperty(value = "开工时间", dataType = "Date")
+    private Date startDoingTime;
     @TableField(exist = false)
     private String productType;
+    @TableField(exist = false)
+    private String assignName;
+    @TableField(exist = false)
+    private String trackNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "项目名称")
+    private String projectName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工作号")
+    private String workNo;
 
     public String getProductType() {
         StringBuilder productType = new StringBuilder();
