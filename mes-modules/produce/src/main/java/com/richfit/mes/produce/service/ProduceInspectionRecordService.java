@@ -108,6 +108,8 @@ public class ProduceInspectionRecordService {
     private TrackAssignMapper trackAssignMapper;
     @Autowired
     private InspectionPowerService inspectionPowerService;
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
 
 
     /**
@@ -1411,30 +1413,70 @@ public class ProduceInspectionRecordService {
     /**
      * 保存委托单
      */
-    public CommonResult saveInspectionPower(InspectionPower inspectionPower) throws Exception {
-        inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        if(StringUtils.isEmpty(inspectionPower.getId())){
-            //保存探伤委托单号
-            Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(),codeRuleService);
-            //委托人赋值
-            inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
-        }else{
-            InspectionPower byId = inspectionPowerService.getById(inspectionPower.getId());
-            if(byId.getStatus()==IS_STATUS){
-                return CommonResult.failed("该委托单已经发起委托，不能修改");
+    public CommonResult saveInspectionPower(List<InspectionPower> inspectionPowers,String branchCode) throws Exception {
+
+        //1、修改保存委托信息
+        for (InspectionPower inspectionPower : inspectionPowers) {
+            inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            inspectionPower.setBranchCode(branchCode);
+            if(StringUtils.isEmpty(inspectionPower.getId())){
+                //保存探伤委托单号
+                Code.update("order_no",inspectionPower.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), branchCode,codeRuleService);
+                //委托人赋值
+                inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+            }else{
+                InspectionPower byId = inspectionPowerService.getById(inspectionPower.getId());
+                if(byId.getStatus()==IS_STATUS){
+                    return CommonResult.failed("该委托单已经发起委托，不能修改");
+                }
             }
+            //委托时间
+            inspectionPower.setPowerTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd HH:mm:ss"));
+            //保存
+            inspectionPowerService.saveOrUpdate(inspectionPower);
         }
-        //委托时间
-        inspectionPower.setPowerTime(DateUtil.format(DateUtil.date(),"YYYY-MM-dd HH:mm:ss"));
-        //如果是跟单派工发起的委托，修改跟单工序为已派工
-        if(!StringUtils.isEmpty(inspectionPower.getItemId())){
-            TrackItem trackItem = new TrackItem();
-            trackItem.setId(inspectionPower.getItemId());
+        //2、派工处理(有源)  只有从跟单派工发起的委托可以触发派工
+        if(inspectionPowers.size()>0 && !StringUtils.isEmpty(inspectionPowers.get(0).getHeadId())){
+            TrackItem trackItem = trackItemService.getById(inspectionPowers.get(0).getItemId());
+            TrackHead trackHead = trackHeadService.getById(inspectionPowers.get(0).getHeadId());
             //已经派工状态
             trackItem.setIsSchedule(IS_SCHEDULE);
             trackItemService.updateById(trackItem);
+            //将跟单状态改为在制
+            if (!StringUtils.isEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
+                trackHead.setStatus("1");
+                trackHeadService.updateById(trackHead);
+                UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                update.set("status", "1");
+                update.eq("id", trackItem.getFlowId());
+                trackHeadFlowService.update(update);
+            }
+            for (InspectionPower inspectionPower : inspectionPowers) {
+                //如果是跟单派工发起的委托，修改跟单工序为已派工
+                if(!StringUtils.isEmpty(inspectionPower.getItemId())){
+                    //派工表
+                    Assign assign = new Assign();
+                    assign.setTiId(inspectionPower.getItemId()); //工序id
+                    assign.setTrackId(inspectionPower.getHeadId());
+                    assign.setSiteId("");  //南北站branchCode
+                    assign.setSiteName(inspectionPower.getInspectionDepart()); //南站北站
+                    assign.setQty(inspectionPower.getNum()); //派工数量 如果后续需要控制探伤数量的话需要处理
+                    assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                    assign.setAssignTime(new Date());
+                    assign.setModifyTime(new Date());
+                    assign.setCreateTime(new Date());
+                    assign.setFlowId(trackItem.getFlowId());
+                    assign.setTrackNo(trackHead.getTrackNo());
+                    assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    assign.setClasses(trackHead.getClasses());
+                    assign.setBranchCode(branchCode);
+                    trackAssignService.save(assign);
+                }
+            }
         }
-        return CommonResult.success(inspectionPowerService.saveOrUpdate(inspectionPower));
+
+        return CommonResult.success(true);
     }
 
     /**
