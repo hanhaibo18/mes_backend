@@ -770,7 +770,7 @@ public class LineStoreController extends BaseController {
 
     /**
      * 校验物料号对应的物料类型是否和 传入的料单物料类型对应
-     * 物料表 物料类型 0铸件 1锻件 2精铸件 3成品/半成品
+     * 物料表 物料类型  0铸件 1锻件 2精铸件 3成品 4下料 5模型 6半成品
      * 料单表 物料类型 0毛坯             1半成品/成品
      */
     private boolean isMaterialTypeMatch(String materialNo, String materialType) {
@@ -781,7 +781,7 @@ public class LineStoreController extends BaseController {
             Product product = result.getData().get(0);
             String productType = product.getMaterialType();
             if ("0".equals(materialType)) {
-                isMatch = "0".equals(productType) || "1".equals(productType) || "2".equals(productType);
+                isMatch = "0".equals(productType) || "1".equals(productType) || "2".equals(productType) || "6".equals(productType);
             } else if ("1".equals(materialType)) {
                 isMatch = "3".equals(productType);
             }
