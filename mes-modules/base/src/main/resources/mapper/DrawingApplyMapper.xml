@@ -11,7 +11,7 @@
         WHERE
         draw_no = o.drawing_no
         AND datagroup = o.branch_code
-        ) AS router_num,(
+        ) AS router_number,(
         SELECT
         count( * )
         FROM
@@ -20,7 +20,7 @@
         item_id = o.drawing_no
         AND datagroup = o.branch_code
         AND isop = '1'
-        ) AS drawing_num,(
+        ) AS drawing_number,(
         SELECT
         count( * )
         FROM
@@ -28,38 +28,20 @@
         WHERE
         id = o.drawing_no
         AND datagroup = o.branch_code
-        ) AS bom_num
+        ) AS bom_number
         FROM
         base_drawing_apply o
         where 1=1
-<!--        <trim suffixOverrides=",">-->
-<!--            <if test="param.orderSn != null and param.orderSn != ''">-->
-<!--                and o.order_sn like '%${param.orderSn}%'-->
-<!--            </if>-->
-<!--            <if test="param.materialCode != null and param.materialCode != ''">-->
-<!--                and o.material_code like '%${param.materialCode}%'-->
-<!--            </if>-->
-<!--            <if test="param.branchCode != null and param.branchCode != ''">-->
-<!--                and o.branch_code = '${param.branchCode}'-->
-<!--            </if>-->
-<!--            <if test="param.controller != null and param.controller != ''">-->
-<!--                and o.controller = '${param.controller}'-->
-<!--            </if>-->
-<!--            <if test="param.startTime != null and param.startTime != ''">-->
-<!--                and o.start_time >= #{param.startTime}-->
-<!--            </if>-->
-<!--            <if test="param.endTime != null and param.endTime != ''">-->
-<!--                and o.end_time &lt;= #{param.endTime}-->
-<!--            </if>-->
-<!--            <if test="param.status != null and param.status != '' ">-->
-<!--                and o.status = '${param.status}'-->
-<!--            </if>-->
-<!--            <if test="param.tenantId != null and param.tenantId != ''">-->
-<!--                and o.tenant_id like '${param.tenantId}'-->
-<!--            </if>-->
-<!--            <if test="param.notEnd != null and param.notEnd != ''">-->
-<!--                and o.status != '2'-->
-<!--            </if>-->
-<!--        </trim>-->
+        <trim suffixOverrides=",">
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and replace(o.drawing_no,'-','') like '%${param.drawingNo}%'
+            </if>
+            <if test="param.dataGroup != null and param.dataGroup != ''">
+                and o.datagroup = '${param.dataGroup}'
+            </if>
+            <if test="param.status != null and param.status != '' ">
+                and o.status = '${param.status}'
+            </if>
+        </trim>
     </select>
 </mapper>

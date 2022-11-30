@@ -3,8 +3,6 @@ package com.richfit.mes.base.controller;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
@@ -15,7 +13,6 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.DrawingApply;
-import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -24,7 +21,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -183,7 +181,7 @@ public class DrawingApplyController extends BaseController {
 
     @ApiOperation(value = "分页查询图纸申请", notes = "根据图号、状态分页查询图纸申请")
     @GetMapping("/manage")
-    public CommonResult<PageInfo<DrawingApply>> selectDrawingApply(String drawingNo, Integer status, String order, String orderCol, int page, int limit, String dataGroup) {
+    public CommonResult<PageInfo<DrawingApply>> selectDrawingApply(String drawingNo, String status, String order, String orderCol, int page, int limit, String dataGroup) {
 //        QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
 //        if (!StringUtils.isNullOrEmpty(drawingNo)) {
 //            queryWrapper.like("drawing_no", drawingNo);
@@ -208,7 +206,15 @@ public class DrawingApplyController extends BaseController {
 //            queryWrapper.orderByDesc("modify_time");
 //        }
         DrawingApply drawingApply = new DrawingApply();
+        if (!StrUtil.isBlank(drawingNo)) {
+            drawingApply.setDrawingNo(drawingNo.replaceAll("-", ""));
+        }
+        drawingApply.setStatus(status);
+        drawingApply.setDataGroup(dataGroup);
         PageHelper.startPage(page, limit);
+        if (!StrUtil.isBlank(orderCol)) {
+            PageHelper.orderBy(orderCol + " " + order);
+        }
         List<DrawingApply> trackFlowList = drawingApplyService.list(drawingApply);
         PageInfo<DrawingApply> trackFlowPage = new PageInfo(trackFlowList);
         return CommonResult.success(trackFlowPage, DRAWING_APPLY_SUCCESS_MESSAGE);
