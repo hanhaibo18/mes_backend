@@ -92,4 +92,9 @@ public class DrawingApplyServiceImpl extends ServiceImpl<DrawingApplyMapper, Dra
             }
         return CommonResult.success( DRAWING_APPLY_IMPORT_EXCEL_SUCCESS_MESSAGE);
     }
+
+    @Override
+    public List<DrawingApply> list(DrawingApply drawingApply) {
+        return drawingApplyMapper.list(drawingApply);
+    }
 }

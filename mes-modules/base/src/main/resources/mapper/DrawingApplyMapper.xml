@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.base.dao.DrawingApplyMapper">
+    <select id="list" resultType="com.richfit.mes.common.model.base.DrawingApply">
+        SELECT
+        o.*,(
+        SELECT
+        count( * )
+        FROM
+        base_i_pdm_process
+        WHERE
+        draw_no = o.drawing_no
+        AND datagroup = o.branch_code
+        ) AS router_num,(
+        SELECT
+        count( * )
+        FROM
+        base_i_pdm_draw
+        WHERE
+        item_id = o.drawing_no
+        AND datagroup = o.branch_code
+        AND isop = '1'
+        ) AS drawing_num,(
+        SELECT
+        count( * )
+        FROM
+        base_i_pdm_bom
+        WHERE
+        id = o.drawing_no
+        AND datagroup = o.branch_code
+        ) AS bom_num
+        FROM
+        base_drawing_apply o
+        where 1=1
+<!--        <trim suffixOverrides=",">-->
+<!--            <if test="param.orderSn != null and param.orderSn != ''">-->
+<!--                and o.order_sn like '%${param.orderSn}%'-->
+<!--            </if>-->
+<!--            <if test="param.materialCode != null and param.materialCode != ''">-->
+<!--                and o.material_code like '%${param.materialCode}%'-->
+<!--            </if>-->
+<!--            <if test="param.branchCode != null and param.branchCode != ''">-->
+<!--                and o.branch_code = '${param.branchCode}'-->
+<!--            </if>-->
+<!--            <if test="param.controller != null and param.controller != ''">-->
+<!--                and o.controller = '${param.controller}'-->
+<!--            </if>-->
+<!--            <if test="param.startTime != null and param.startTime != ''">-->
+<!--                and o.start_time >= #{param.startTime}-->
+<!--            </if>-->
+<!--            <if test="param.endTime != null and param.endTime != ''">-->
+<!--                and o.end_time &lt;= #{param.endTime}-->
+<!--            </if>-->
+<!--            <if test="param.status != null and param.status != '' ">-->
+<!--                and o.status = '${param.status}'-->
+<!--            </if>-->
+<!--            <if test="param.tenantId != null and param.tenantId != ''">-->
+<!--                and o.tenant_id like '${param.tenantId}'-->
+<!--            </if>-->
+<!--            <if test="param.notEnd != null and param.notEnd != ''">-->
+<!--                and o.status != '2'-->
+<!--            </if>-->
+<!--        </trim>-->
+    </select>
+</mapper>
