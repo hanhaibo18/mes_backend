@@ -347,7 +347,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 trackAssembly.setNumber(trackHead.getNumber() * pb.getNumber());
                 trackAssembly.setIsKeyPart(pb.getIsKeyPart());
                 trackAssembly.setTrackType(pb.getTrackType());
-                trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
+                if (pb.getWeight() != null) {
+                    trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
+                }
                 trackAssembly.setIsCheck(pb.getIsCheck());
                 trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
                 trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
