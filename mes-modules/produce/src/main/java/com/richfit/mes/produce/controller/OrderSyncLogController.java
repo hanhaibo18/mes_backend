@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/api/produce/order_sync_log")
 public class OrderSyncLogController {
+
     @Resource
     private OrderSyncLogService orderSyncLogService;
 
@@ -33,4 +34,5 @@ public class OrderSyncLogController {
     public CommonResult<IPage<OrderSyncLog>> queryLogPage(@RequestBody QueryOrderSyncLogPageDto queryOrderSyncLogPageDto) {
         return CommonResult.success(orderSyncLogService.queryLogPage(queryOrderSyncLogPageDto));
     }
+    
 }
