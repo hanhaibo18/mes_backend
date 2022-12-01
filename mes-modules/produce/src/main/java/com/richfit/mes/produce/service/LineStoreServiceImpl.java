@@ -6,6 +6,7 @@ import cn.hutool.core.util.ZipUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -305,7 +306,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
                             Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) {
 
-
         lineStore.setUseNum(0);
         lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
         lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -320,12 +320,26 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             List<LineStore> list = new ArrayList<>();
             String oldWorkblankNo = lineStore.getWorkblankNo();
 
+            //计算入库料单数量
+            int num=0;
+            if(startNo.intValue()==0){
+                num=endNo;
+            }else {
+                num=endNo-startNo+1;
+            }
+
             for (int i = startNo; i <= endNo; i++) {
                 LineStore entity = new LineStore();
                 //改为浅拷贝
                 BeanUtils.copyProperties(lineStore, entity);
                 if (isAutoMatchProd) {
-                    entity.setProductionOrder(matchProd(entity.getMaterialNo(), entity.getNumber()));
+                    //匹配生产订单
+                    String  orderNo = matchProd(entity.getMaterialNo(), entity.getNumber());
+                    HashMap<String,Integer> orderNumAndInNum = getOrderNumAndInNum(entity.getMaterialNo(), orderNo);
+                    int surplusNum = orderNumAndInNum.get("orderNum") - orderNumAndInNum.get("inNum");
+                    //当剩余数量小于当次入库数量提示入库数量大于订单数量
+                    if(surplusNum<num) throw  new  GlobalException("录入量不能大于订单剩余量,订单: "+orderNo+" 的剩余数量为: "+surplusNum+" 您录入是数量为: "+num,ResultCode.FAILED);
+                    entity.setProductionOrder(orderNo);
                 }
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
                 //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
@@ -436,6 +450,42 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         return orderNo;
     }
+
+    /**
+     * 获取订单数量和已入库数量
+     * @param materialNo 物料编码
+     * @param orderNo 订单号
+     * @return
+     */
+    @Override
+    public HashMap<String,Integer> getOrderNumAndInNum(String materialNo, String orderNo) {
+        QueryWrapper<Order> orderWrapper = new QueryWrapper<>();
+        //根据物料号和订单号获取订单
+        orderWrapper.eq("material_code", materialNo);
+        orderWrapper.eq("order_sn", orderNo);
+        orderWrapper.orderByAsc("delivery_date");
+        List<Order> orderList = orderService.list(orderWrapper);
+
+        //根据订单号计算入库数量
+        QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
+        lWrapper.select("sum(number) as number ");
+        lWrapper.eq("production_order", orderNo);
+        LineStore lineStore = this.getOne(lWrapper);
+
+        HashMap<String,Integer> numMap = new HashMap<>();
+        if(CollectionUtils.isNotEmpty(orderList)&&ObjectUtils.isNotEmpty(lineStore)){
+            Integer orderNum = orderList.get(0).getOrderNum();//订单数量
+            numMap.put("orderNum",orderNum);//订单数量
+            numMap.put("inNum",lineStore.getNumber());//已入库数量
+
+        }
+        return numMap;
+    }
+
+
+
+
+
 
     //匹配采购订单
     private String matchPur(String materialNo, Integer number) {

@@ -75,6 +75,14 @@ public class LineStoreController extends BaseController {
     @Autowired
     private SystemServiceClient systemServiceClient;
 
+    @ApiOperation(value = "获取订单数量和剩余数量", notes = "获取订单数量和剩余数量")
+    @PostMapping("/get_order_surplusNum")
+    public HashMap<String,Integer> getOrderNumAndInNum(@ApiParam(value = "启始序列号") @RequestParam(required = false) String materialNo,
+                                                @ApiParam(value = "终止序列号") @RequestParam(required = false) String orderNo){
+            return   lineStoreService.getOrderNumAndInNum(materialNo,orderNo);
+        }
+
+
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
     @PostMapping("/line_store")
     public CommonResult<LineStore> addLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore,
@@ -84,7 +92,6 @@ public class LineStoreController extends BaseController {
                                                 @ApiParam(value = "自动匹配生产订单") @RequestParam Boolean isAutoMatchProd,
                                                 @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
                                                 @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
-
 
         //用来存放开始编号前缀为0
         StringBuilder strartSuffix = new StringBuilder();
