@@ -14,6 +14,8 @@ import java.util.Date;
 @ApiModel(value = "探伤委托单管理")
 public class InspectionPower extends BaseEntity<InspectionPower> {
 
+    private static final long serialVersionUID = 1L;
+
     @ApiModelProperty(value = "委托单状态", dataType = "Integer")
     private int status;
 
@@ -89,12 +91,16 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String checkBy;
     @ApiModelProperty(value = "探伤审核人")
     private String auditBy;
+    @ApiModelProperty(value = "探伤审核状态（最后近一条）")
+    private int auditStatus;
     @ApiModelProperty(value = "是否开工(0 = 未开工 1= 已开工 2 = 已完工)", dataType = "String")
     private String isDoing;
     @ApiModelProperty(value = "开工人", dataType = "String")
     private String startDoingUser;
     @ApiModelProperty(value = "开工时间", dataType = "Date")
     private Date startDoingTime;
+
+
     @TableField(exist = false)
     private String productType;
     @TableField(exist = false)
@@ -102,11 +108,32 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @TableField(exist = false)
     private String trackNo;
     @TableField(exist = false)
+    @ApiModelProperty(value = "委托单位")
+    private String comeFromDepart;
+    @TableField(exist = false)
     @ApiModelProperty(value = "项目名称")
     private String projectName;
     @TableField(exist = false)
+    @ApiModelProperty(value = "产品名称")
+    private String productName;
+    @TableField(exist = false)
     @ApiModelProperty(value = "工作号")
     private String workNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String texture;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序名", dataType = "String")
+    private String optName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序序号", dataType = "String")
+    private String optNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品编号", dataType = "String")
+    private String productNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否有探伤记录", dataType = "Integer")
+    private int isHaveRecord;
 
     public String getProductType() {
         StringBuilder productType = new StringBuilder();

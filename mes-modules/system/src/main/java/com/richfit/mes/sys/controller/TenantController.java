@@ -65,6 +65,17 @@ public class TenantController extends BaseController {
         return CommonResult.success(tenantService.getById(id));
     }
 
+    /**
+     * 根据ID获取租户
+     */
+    @ApiOperation(value = "获取租户信息", notes = "根据租户id获取租户详细信息")
+    @ApiImplicitParam(name = "id", value = "租户ID", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getTenantById")
+    public CommonResult<Tenant> tenantById(@RequestParam String id) throws GlobalException {
+        checkTenantId(id);
+        return CommonResult.success(tenantService.getById(id));
+    }
+
 
     /**
      * 更新tenant

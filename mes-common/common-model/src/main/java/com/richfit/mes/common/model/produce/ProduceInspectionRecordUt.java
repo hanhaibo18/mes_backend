@@ -76,8 +76,10 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     private List<ProduceDefectsInfo> defectsInfoList;*/
     @TableField(exist = false,value = "探头集合")
     private List<ProbeInfo> probeInfoList;
-    @ApiModelProperty(value = "检验结果")
+    @ApiModelProperty(value = "检测结果（0、合格   1、不合格）")
     private String inspectionResults;
+    @ApiModelProperty(value = "检测结果描述")
+    private String inspectionResultsRemark;
     @ApiModelProperty(value = "是否审核")
     private String isAudit;
     @ApiModelProperty(value = "审核意见")
