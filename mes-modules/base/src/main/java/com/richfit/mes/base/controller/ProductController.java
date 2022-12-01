@@ -23,8 +23,6 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -324,6 +322,23 @@ public class ProductController extends BaseController {
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
     }
 
+
+    @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料(订单同步校验用)")
+    @GetMapping("/selectOrderProduct")
+    public List<Product> selectOrderProduct(String materialNo, String drawingNo) {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
+            queryWrapper.eq("material_no", materialNo);
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            queryWrapper.eq("drawing_no", drawingNo);
+        }
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
+        return productService.list(queryWrapper);
+    }
+
     @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料")
     @GetMapping("/product/listByNo")
     public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
@@ -461,7 +476,7 @@ public class ProductController extends BaseController {
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.groupBy("texture");
         List<Product> productList = productService.list(queryWrapper);
-        List<String> textureList = productList.stream().filter(x ->x!=null && !x.getTexture().equals("")).map(x -> x.getTexture()).collect(Collectors.toList());
+        List<String> textureList = productList.stream().filter(x -> x != null && !x.getTexture().equals("")).map(x -> x.getTexture()).collect(Collectors.toList());
         return CommonResult.success(textureList, PRODUCT_SUCCESS_MESSAGE);
     }
 
@@ -479,7 +494,7 @@ public class ProductController extends BaseController {
         for (String s : strings) {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
             queryWrapper.select("id");
-            queryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.likeLeft("material_desc", paramMap.get(s));
             queryWrapper.notIn("material_type", s);
             //查出错乱数据的id
@@ -499,7 +514,7 @@ public class ProductController extends BaseController {
                     } else if (i == oldPage) {//尾页
                         objects = idList.subList(index, idList.size());
                     }
-                    if (!CollectionUtils.isEmpty(objects)){
+                    if (!CollectionUtils.isEmpty(objects)) {
                         UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
                         updateWrapper.set("material_type", s);
                         updateWrapper.in("id", objects);
@@ -508,19 +523,16 @@ public class ProductController extends BaseController {
                 }
             } else {
                 //小于一千条直接修改
-               if (!CollectionUtils.isEmpty(idList)){
-                   UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
-                   updateWrapper.set("material_type", s);
-                   updateWrapper.in("id", idList);
-                   productService.update(updateWrapper);//修改错乱数据
-               }
+                if (!CollectionUtils.isEmpty(idList)) {
+                    UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.set("material_type", s);
+                    updateWrapper.in("id", idList);
+                    productService.update(updateWrapper);//修改错乱数据
+                }
             }
         }
         return CommonResult.success("操作成功");
     }
-
-
-
 
 
 }
