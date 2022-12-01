@@ -85,6 +85,7 @@ public class LineStoreController extends BaseController {
                                                 @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
                                                 @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
 
+
         //用来存放开始编号前缀为0
         StringBuilder strartSuffix = new StringBuilder();
         Integer startNoOld = 0;

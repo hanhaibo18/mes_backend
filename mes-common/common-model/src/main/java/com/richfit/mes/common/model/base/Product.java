@@ -102,6 +102,12 @@ public class Product extends BaseEntity<Product> {
     @ApiModelProperty(value = "类型 0：自制 1：外购 2：外协")
     private String objectType;
 
+    /**
+     * 是否自动同步  y 是  n 否,---为空默认为自动同步
+     */
+    @ApiModelProperty(value = "是否自动同步  y 是  n 否,---为空默认为自动同步")
+    private String autosyns;
+
     @TableField(exist = false)
     private Integer haveRouter;
 
