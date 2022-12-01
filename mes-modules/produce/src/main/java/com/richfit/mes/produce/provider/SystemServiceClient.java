@@ -2,10 +2,7 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.sys.Attachment;
-import com.richfit.mes.common.model.sys.ItemParam;
-import com.richfit.mes.common.model.sys.QualityInspectionRules;
-import com.richfit.mes.common.model.sys.Role;
+import com.richfit.mes.common.model.sys.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.SystemServiceClientFallbackImpl;
@@ -86,6 +83,10 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/queryByUserId")
     public CommonResult<TenantUserVo> queryByUserId(@RequestParam("userId") String userId);
 
+
+    @GetMapping(value = "/api/sys/tenant/getTenantById")
+    public CommonResult<Tenant> getTenantById(@RequestParam("id") String id);
+
     /**
      * 功能描述:根据租户Id查询人员
      *
@@ -99,4 +100,6 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/role/queryRolesByUserId/{userId}")
     public List<Role> queryRolesByUserId(@PathVariable String userId);
+
+
 }

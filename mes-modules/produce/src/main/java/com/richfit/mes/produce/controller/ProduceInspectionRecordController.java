@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -8,10 +9,11 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.OrderUtil;
@@ -20,11 +22,9 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -55,27 +55,14 @@ public class ProduceInspectionRecordController extends BaseController {
      * ***
      * 分页查询待探伤工序
      *
-     * @param page
-     * @param limit
+     * @param inspectionPowerVo
      * @return
      */
     @ApiOperation(value = "分页查询待探伤工序", notes = "分页查询待探伤工序")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "tenantId", value = "组织机构id", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "productNo", value = "产品编号", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isAudit", value = "审核状态（未审核0、已审核1）", paramType = "query", dataType = "Integer"),
-            @ApiImplicitParam(name = "isDoing", value = "开工状态（待开工0、已开工1）", paramType = "query", dataType = "Integer"),
-    })
+    @ApiImplicitParam(name = "探伤任务查询类VO", value = "InspectionPowerVo", paramType = "body", dataType = "InspectionPowerVo")
     @GetMapping("/page")
-    public CommonResult<IPage<InspectionPower>> page(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId,String isAudit, String isDoing) {
-        return CommonResult.success(produceInspectionRecordService.page(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,isAudit,isDoing));
+    public CommonResult<IPage<InspectionPower>> page(InspectionPowerVo inspectionPowerVo) {
+        return CommonResult.success(produceInspectionRecordService.page(inspectionPowerVo));
     }
 
     /**
@@ -168,6 +155,9 @@ public class ProduceInspectionRecordController extends BaseController {
         return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark));
     }
 
+    @Autowired
+    SystemServiceClient systemServiceClient;
+
     @ApiOperation(value = "分页查询委托单", notes = "分页查询委托单")
     @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
     @PostMapping("/inspectionPower/page")
@@ -204,8 +194,16 @@ public class ProduceInspectionRecordController extends BaseController {
         }else{
             queryWrapper.orderByDesc("power_time");
         }
-
-        return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
+        Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
+        //委托人转换
+        for (InspectionPower record : page.getRecords()) {
+            if (!ObjectUtil.isEmpty(record.getConsignor())) {
+                String consignor = record.getConsignor();
+                TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
+                record.setConsignor(data.getEmplName());
+            }
+        }
+        return CommonResult.success(page);
     }
 
 
@@ -303,3 +301,5 @@ public class ProduceInspectionRecordController extends BaseController {
         return CommonResult.success(inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(),inspectionPowerVo.getLimit()),queryWrapper));
     }*/
 }
+
+
