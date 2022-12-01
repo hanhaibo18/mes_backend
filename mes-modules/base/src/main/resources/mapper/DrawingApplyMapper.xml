@@ -10,7 +10,7 @@
         base_i_pdm_process
         WHERE
         draw_no = o.drawing_no
-        AND datagroup = o.branch_code
+        AND datagroup = o.datagroup
         ) AS router_number,(
         SELECT
         count( * )
@@ -18,7 +18,7 @@
         base_i_pdm_draw
         WHERE
         item_id = o.drawing_no
-        AND datagroup = o.branch_code
+        AND datagroup = o.datagroup
         AND isop = '1'
         ) AS drawing_number,(
         SELECT
@@ -27,7 +27,7 @@
         base_i_pdm_bom
         WHERE
         id = o.drawing_no
-        AND datagroup = o.branch_code
+        AND datagroup = o.datagroup
         ) AS bom_number
         FROM
         base_drawing_apply o

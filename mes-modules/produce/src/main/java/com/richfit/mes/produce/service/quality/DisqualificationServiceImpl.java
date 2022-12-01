@@ -116,6 +116,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (1 == disqualificationDto.getIsIssue()) {
             disqualificationDto.setOrderTime(new Date());
         }
+        if (null == disqualificationDto.getIsIssue()) {
+            disqualificationDto.setIsIssue(0);
+        }
         //处理DTO数据
         Disqualification disqualification = new Disqualification();
         BeanUtils.copyProperties(disqualificationDto, disqualification);

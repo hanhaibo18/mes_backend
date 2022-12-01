@@ -213,7 +213,9 @@ public class DrawingApplyController extends BaseController {
         drawingApply.setDataGroup(dataGroup);
         PageHelper.startPage(page, limit);
         if (!StrUtil.isBlank(orderCol)) {
-            PageHelper.orderBy(orderCol + " " + order);
+            PageHelper.orderBy(StrUtil.toUnderlineCase(orderCol) + " " + order);
+        } else {
+            PageHelper.orderBy("modify_time desc");
         }
         List<DrawingApply> trackFlowList = drawingApplyService.list(drawingApply);
         PageInfo<DrawingApply> trackFlowPage = new PageInfo(trackFlowList);

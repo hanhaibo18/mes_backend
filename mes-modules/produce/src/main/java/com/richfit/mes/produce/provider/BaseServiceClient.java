@@ -170,4 +170,16 @@ public interface BaseServiceClient {
      **/
     @GetMapping(value = "/api/base/product/list_by_material_no")
     public List<Product> listByMaterialNo(@RequestParam String materialNo);
+
+    /**
+     * 功能描述: 根据物料号 图号查询校验
+     *
+     * @param materialNo
+     * @param drawingNo
+     * @Author: xinYu.hou
+     * @Date: 2022/11/30 14:01
+     * @return: List<Product>
+     **/
+    @GetMapping("/api/base/product/selectOrderProduct")
+    List<Product> selectOrderProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo);
 }

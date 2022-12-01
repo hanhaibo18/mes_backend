@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * @ClassName: OrderSyncServiceImpl.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 订单同步
  * @CreateTime: 2022年01月19日 16:18:00
  */
 @Slf4j
@@ -154,6 +154,17 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             return CommonResult.success(saveData);
         }
         return CommonResult.success(true);
-
     }
+
+//    /**
+//     * 功能描述: 过滤订单
+//     *
+//     * @param orderList
+//     * @Author: xinYu.hou
+//     * @Date: 2022/12/1 10:10
+//     * @return: List<Order>
+//     **/
+//    private List<Order> filterOrder(List<Order> orderList) {
+//
+//    }
 }

@@ -305,6 +305,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
                             Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) {
 
+
         lineStore.setUseNum(0);
         lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
         lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
