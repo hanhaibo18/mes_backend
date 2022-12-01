@@ -149,6 +149,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     TrackComplete track0 = new TrackComplete();
                     TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
                     for (TrackComplete track : trackCompletes) {
+                        //空校验
+                        if (track.getPrepareEndHours() == null) {
+                            track.setPrepareEndHours(0.00);
+                        }
+                        if (track.getSinglePieceHours() == null) {
+                            track.setSinglePieceHours(0.00);
+                        }
+                        if (track.getCompletedQty() == null) {
+                            track.setCompletedQty(0.00);
+                        }
                         //计算总工时
                         sumPrepareEndHours = sumPrepareEndHours + track.getPrepareEndHours();
                         sumSinglePieceHours = sumSinglePieceHours + track.getSinglePieceHours();
