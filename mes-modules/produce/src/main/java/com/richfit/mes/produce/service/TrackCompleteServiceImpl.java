@@ -91,7 +91,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Calendar calendar = new GregorianCalendar();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
-                calendar.setTime(sdf.parse(endTime));
+                calendar.setTime(sdf.parse(endTime + " 00:00:00"));
             } catch (ParseException e) {
                 e.printStackTrace();
                 throw new GlobalException("时间格式错误", ResultCode.FAILED);
