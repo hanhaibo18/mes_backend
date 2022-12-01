@@ -78,8 +78,10 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
     private String diagramAttachmentId;
     @ApiModelProperty(value = "检测示意图文字描述")
     private String pictureRemark;
-    @ApiModelProperty(value = "检测结果")
+    @ApiModelProperty(value = "检测结果（0、合格   1、不合格）")
     private String inspectionResults;
+    @ApiModelProperty(value = "检测结果描述")
+    private String inspectionResultsRemark;
     @ApiModelProperty(value = "检验员")
     private String checkBy;
     @ApiModelProperty(value = "业主")
