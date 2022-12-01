@@ -93,6 +93,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             try {
                 calendar.setTime(sdf.parse(endTime));
             } catch (ParseException e) {
+                e.printStackTrace();
                 throw new GlobalException("时间格式错误", ResultCode.FAILED);
             }
             calendar.add(Calendar.DAY_OF_MONTH, 1);
