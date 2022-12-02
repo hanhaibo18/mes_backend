@@ -89,18 +89,18 @@ public class DrawingApply extends BaseEntity<DrawingApply> {
     /**
      * 工艺数量
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @TableField(exist = false)
     private Integer routerNumber;
 
     /**
      * 图纸数量
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @TableField(exist = false)
     private Integer drawingNumber;
 
     /**
      * BOM数量
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @TableField(exist = false)
     private Integer bomNumber;
 }
