@@ -310,7 +310,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     public void addTrackAssemblyByTrackHead(TrackHead trackHead) {
         List<TrackAssembly> trackAssemblyList = pojectBomList(trackHead);
         for (TrackAssembly trackAssembly : trackAssemblyList) {
-            trackAssembly.setTrackHeadId(trackHead.getTrackHeadId());
+            trackAssembly.setTrackHeadId(trackHead.getId());
             trackAssembly.setTrackNo(trackHead.getTrackNo());
             trackAssembly.setBranchCode(trackHead.getBranchCode());
             trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));

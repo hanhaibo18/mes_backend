@@ -39,4 +39,6 @@ public interface OrderService extends IService<Order> {
      * @param orderId 订单id
      */
     void orderDataTrackHead(TrackHead trackHead);
+
+    Order deleteOrder(String id);
 }

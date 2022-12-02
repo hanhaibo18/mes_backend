@@ -4,7 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.produce.Action;
+import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.dao.OrderMapper;
@@ -33,10 +38,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     final int ORDER_CLOSE = 2;
 
     @Autowired
-    OrderMapper orderMapper;
+    private OrderMapper orderMapper;
 
     @Autowired
-    TrackFlowMapper trackFlowMapper;
+    private ActionService actionService;
+
+    @Autowired
+    private TrackFlowMapper trackFlowMapper;
+
+    @Autowired
+    private TrackHeadService trackHeadService;
+
+    @Autowired
+    private LineStoreService lineStoreService;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -192,6 +206,41 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 orderMapper.updateById(order);
             }
         }
+    }
+
+    @Override
+    public Order deleteOrder(String id) {
+        Order order = this.getById(id);
+        //通过状态判断是否关联计划
+        if (0 != order.getStatus()) {
+            throw new GlobalException("订单已匹配计划，请先删除计划，否则不能删除!", ResultCode.FAILED);
+        }
+        //查询匹配的料单情况，如以使用不能删除
+        QueryWrapper<LineStore> queryWrapperLineStore = new QueryWrapper<>();
+        queryWrapperLineStore.eq("production_order", order.getOrderSn());
+        queryWrapperLineStore.eq("branch_code", order.getBranchCode());
+        queryWrapperLineStore.eq("tenant_id", order.getTenantId());
+        List<LineStore> lineStores = lineStoreService.list(queryWrapperLineStore);
+        if (lineStores != null && lineStores.size() > 0) {
+            throw new GlobalException("订单已匹配料单，请先删除料单，否则不能删除!", ResultCode.FAILED);
+        }
+        //查询匹配的跟单情况，如以使用不能删除
+        QueryWrapper<TrackHead> queryWrapperTrackHead = new QueryWrapper<>();
+        queryWrapperTrackHead.eq("production_order", order.getOrderSn());
+        queryWrapperTrackHead.eq("branch_code", order.getBranchCode());
+        queryWrapperTrackHead.eq("tenant_id", order.getTenantId());
+        List<TrackHead> trackHeads = trackHeadService.list(queryWrapperTrackHead);
+        if (trackHeads != null && trackHeads.size() > 0) {
+            throw new GlobalException("订单已匹配跟单，请先删除跟单，否则不能删除!", ResultCode.FAILED);
+        }
+        this.removeById(order);
+        //操作日志记录
+        Action action = new Action();
+        action.setActionType("2");
+        action.setActionItem("0");
+        action.setRemark("订单号：" + order.getOrderSn());
+        actionService.saveAction(action);
+        return order;
     }
 
 

@@ -73,7 +73,7 @@ public class ProduceInspectionRecordController extends BaseController {
      * @param limit
      * @return
      */
-    @ApiOperation(value = "分页查询探伤记录审核 跟单工序列表", notes = "分页查询探伤记录审核 跟单工序列表")
+    /*@ApiOperation(value = "分页查询探伤记录审核 跟单工序列表", notes = "分页查询探伤记录审核 跟单工序列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -89,8 +89,8 @@ public class ProduceInspectionRecordController extends BaseController {
     @GetMapping("/page/queryItemByAuditBy")
     public CommonResult<IPage<TrackItemInspection>> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
 
-        return CommonResult.success(produceInspectionRecordService.queryItemByAuditBy(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,""));
-    }
+        return CommonResult.success(produceInspectionRecordService.getProwerQueryWrapper(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,""));
+    }*/
 
 
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
