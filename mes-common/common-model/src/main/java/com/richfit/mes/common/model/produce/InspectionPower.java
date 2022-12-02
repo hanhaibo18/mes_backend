@@ -93,6 +93,8 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String auditBy;
     @ApiModelProperty(value = "探伤审核状态（最后近一条）")
     private int auditStatus;
+    @ApiModelProperty(value = "探伤审核意见（最后近一条）")
+    private String auditRemark;
     @ApiModelProperty(value = "是否开工(0 = 未开工 1= 已开工 2 = 已完工)", dataType = "String")
     private String isDoing;
     @ApiModelProperty(value = "开工人", dataType = "String")
