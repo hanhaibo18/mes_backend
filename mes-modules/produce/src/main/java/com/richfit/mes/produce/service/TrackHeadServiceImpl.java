@@ -767,8 +767,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 //修改老跟单匹配计划
                 planService.planData(trackHeadOld.getWorkPlanId());
+                orderService.orderDataTrackHead(trackHeadOld);
                 //修改新跟单匹配计划
                 planService.planData(t.getWorkPlanId());
+                orderService.orderDataTrackHead(t);
             }
         } catch (Exception e) {
             e.printStackTrace();
