@@ -47,7 +47,7 @@ public class InspectionPowerVo{
     private String isExistHeadInfo;
     @ApiModelProperty(value = "审核状态（未审核0、已审核1）", dataType = "String")
     private String isAudit;
-    @ApiModelProperty(value = "开工状态（待开工0、已开工1、已完工）", dataType = "String")
+    @ApiModelProperty(value = "开工状态（0、待报工  1、已完工）", dataType = "String")
     private String isDoing;
     @ApiModelProperty(value = "检测类型", dataType = "String")
     private String tempType;

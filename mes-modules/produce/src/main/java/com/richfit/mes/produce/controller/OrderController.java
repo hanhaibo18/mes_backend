@@ -201,19 +201,8 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "删除计划信息", notes = "根据计划id删除计划记录")
     @ApiImplicitParam(name = "id", value = "订单id", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/delete/{id}")
-    public CommonResult<Boolean> delById(@PathVariable String id) throws GlobalException {
-        //计划状态为‘0’ 未开始时，才能删除
-        Order order = orderService.getById(id);
-        if (0 != order.getStatus()) {
-            return CommonResult.failed("订单已匹配计划，请先删除计划，否则不能删除!");
-        }
-        Action action = new Action();
-        action.setActionType("2");
-        action.setActionItem("0");
-        action.setRemark("订单号：" + order.getOrderSn());
-        actionService.saveAction(action);
-
-        return CommonResult.success(orderService.removeById(id));
+    public void delById(@PathVariable String id) throws GlobalException {
+        orderService.deleteOrder(id);
     }
 
     @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")

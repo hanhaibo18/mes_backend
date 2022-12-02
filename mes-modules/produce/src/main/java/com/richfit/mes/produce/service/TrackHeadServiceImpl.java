@@ -383,14 +383,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackFlowList.add(trackFlow);
             }
 
+            //添加跟单
+            trackHead = trackHeadData(trackHead, trackFlowList);
+            trackHeadMapper.insert(trackHead);
+            
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 trackAssemblyService.addTrackAssemblyByTrackHead(trackHead);
             }
-
-            //添加跟单
-            trackHead = trackHeadData(trackHead, trackFlowList);
-            trackHeadMapper.insert(trackHead);
 
             //用于在跟单存在第一道工序自动派工的情况
             autoSchedule(trackHead);
@@ -767,8 +767,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                 //修改老跟单匹配计划
                 planService.planData(trackHeadOld.getWorkPlanId());
+                orderService.orderDataTrackHead(trackHeadOld);
                 //修改新跟单匹配计划
                 planService.planData(t.getWorkPlanId());
+                orderService.orderDataTrackHead(t);
             }
         } catch (Exception e) {
             e.printStackTrace();
