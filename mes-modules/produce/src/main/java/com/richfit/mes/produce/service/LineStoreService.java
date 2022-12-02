@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +63,8 @@ public interface LineStoreService extends IService<LineStore> {
      * @return: Integer
      **/
     Integer queryLineStoreSumZpNumber(Map parMap);
+
+    HashMap getOrderNumAndInNum(String materialNo, String orderNo);
 
     /**
      * 功能描述: 合格证生成，根据合格证对应的跟单信息，实现半成品成品合格证信息更新
