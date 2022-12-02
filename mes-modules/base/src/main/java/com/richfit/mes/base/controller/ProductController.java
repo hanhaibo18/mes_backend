@@ -123,6 +123,10 @@ public class ProductController extends BaseController {
         if (ids == null || ids.size() == 0) {
             return CommonResult.failed(PRODUCT_ID_NULL_MESSAGE);
         } else {
+            //检查物料号有没有订单
+
+            //检查物料号或者图号有没有跟单
+
             boolean bool = productService.removeByIds(ids);
             if (bool) {
                 return CommonResult.success(null, PRODUCT_SUCCESS_MESSAGE);
