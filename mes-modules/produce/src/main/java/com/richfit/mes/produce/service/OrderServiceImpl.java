@@ -233,6 +233,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (trackHeads != null && trackHeads.size() > 0) {
             throw new GlobalException("订单已匹配跟单，请先删除跟单，否则不能删除!", ResultCode.FAILED);
         }
+        this.removeById(order);
         //操作日志记录
         Action action = new Action();
         action.setActionType("2");
