@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
@@ -88,18 +89,18 @@ public class DrawingApply extends BaseEntity<DrawingApply> {
     /**
      * 工艺数量
      */
-    @TableField(value = "routerNumber")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Integer routerNumber;
 
     /**
      * 图纸数量
      */
-    @TableField(value = "drawingNumber")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Integer drawingNumber;
 
     /**
      * BOM数量
      */
-    @TableField(value = "bomNumber")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Integer bomNumber;
 }

@@ -473,11 +473,14 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         LineStore lineStore = this.getOne(lWrapper);
 
         HashMap<String,Integer> numMap = new HashMap<>();
-        if(CollectionUtils.isNotEmpty(orderList)&&ObjectUtils.isNotEmpty(lineStore)){
+        if(CollectionUtils.isNotEmpty(orderList)){
             Integer orderNum = orderList.get(0).getOrderNum();//订单数量
             numMap.put("orderNum",orderNum);//订单数量
-            numMap.put("inNum",lineStore.getNumber());//已入库数量
-
+            if(ObjectUtils.isNotEmpty(lineStore)){
+                numMap.put("inNum",lineStore.getNumber());//已入库数量
+            }else {
+                numMap.put("inNum",0);//已入库数量为0
+            }
         }
         return numMap;
     }

@@ -111,7 +111,7 @@ public class ProduceInspectionRecordRt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "检测结果描述")
     private String inspectionResultsRemark;
     @ApiModelProperty(value = "模板类型")
-    private String tempType = "rt";
+    private String tempType = "RT";
     @TableField(exist = false,value = "缺陷记录")
     private List<ProduceDefectsInfo> defectsInfoList;
     @ApiModelProperty(value = "是否审核")
