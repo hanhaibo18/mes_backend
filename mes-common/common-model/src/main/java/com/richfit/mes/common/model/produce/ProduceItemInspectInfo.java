@@ -25,6 +25,8 @@ public class ProduceItemInspectInfo{
     private String checkBy;
     @ApiModelProperty(value = "探伤记录审核状态")
     private String isAudit;
+    @ApiModelProperty(value = "是否是最近的记录（0、否  1、是）")
+    private String isNew;
     /**
      * 创建者
      */
