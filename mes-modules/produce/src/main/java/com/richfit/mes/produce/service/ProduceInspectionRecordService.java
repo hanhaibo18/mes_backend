@@ -48,13 +48,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ProduceInspectionRecordService {
-
-    private final static String CHECK = "check";
-
-    private final static String AUDIT = "audit";
     private final static String IS_DOING = "1"; //探伤任务开工
     private final static int IS_STATUS = 1;
-    private final static int NO_STATUS = 0;
     private final static int BACKOUT_STATUS = 2;
     private final static int IS_SCHEDULE = 1;
     private final static int IS_ASSIGN = 1; //委托单已派工
@@ -108,20 +103,25 @@ public class ProduceInspectionRecordService {
         QueryWrapper<InspectionPower> queryWrapper = getProwerQueryWrapper(inspectionPowerVo);
 
         Page<InspectionPower> assignPowers = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
-        //开工人 委托人和委托单位转换
+        //列表值转换给前端用于显示
         for (InspectionPower record : assignPowers.getRecords()) {
             if (!ObjectUtil.isEmpty(record.getConsignor())) {
                 String consignor = record.getConsignor();
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
+                //委托人
                 record.setConsignor(data.getEmplName());
+                //委托单位
                 record.setComeFromDepart(systemServiceClient.getTenantById(record.getTenantId()).getData().getTenantName());
                 String startDoingUser = record.getStartDoingUser();
+                //开工人
                 if(!StringUtils.isEmpty(startDoingUser)){
                     record.setStartDoingUser(systemServiceClient.getUserById(startDoingUser).getData().getEmplName());
                 }
-                if(!StringUtils.isEmpty(record.getAuditBy())){
+                //探伤审核人
+                if(!StringUtils.isEmpty(record.getAuditBy()) && !record.getAuditBy().equals("/")){
                     record.setAuditBy(systemServiceClient.getUserById(record.getAuditBy()).getData().getEmplName());
                 }
+                //探伤检验人
                 if(!StringUtils.isEmpty(record.getCheckBy())){
                     record.setCheckBy(systemServiceClient.getUserById(record.getCheckBy()).getData().getEmplName());
                 }
@@ -172,41 +172,6 @@ public class ProduceInspectionRecordService {
         }
     }
 
-    private QueryWrapper<TrackItemInspection> getTrackItemInspectionQueryWrapper(String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
-        QueryWrapper<TrackItemInspection> queryWrapper = new QueryWrapper<TrackItemInspection>();
-        if (!StringUtils.isEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
-        if (!StringUtils.isEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id", tenantId);
-        }
-        //已审核
-        if ("1".equals(isAudit)) {
-            queryWrapper.isNotNull("audit_by");
-        } else if ("0".equals(isAudit)) {
-            //未审核
-            queryWrapper.isNull("audit_by");
-        }
-
-        if (!StringUtils.isEmpty(trackNo)) {
-            trackNo = trackNo.replaceAll(" ", "");
-            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') LIKE '" + trackNo + '%' + "')");
-        }
-        if (!StringUtils.isEmpty(productName)) {
-            queryWrapper.inSql("id", "select id from  produce_track_item_inspection where track_head_id in ( select id from produce_track_head where product_name LIKE '" + productName + '%' + "')");
-        }
-        if (!StringUtils.isEmpty(productNo)) {
-            queryWrapper.likeLeft("productNo", productNo);
-        }
-        if (!StringUtils.isEmpty(startTime)) {
-            queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", startTime);
-        }
-        if (!StringUtils.isEmpty(endTime)) {
-            queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", endTime);
-        }
-        queryWrapper.orderByDesc("modify_time");
-        return queryWrapper;
-    }
 
     /**
      * 探伤任务构造查询参数
@@ -353,11 +318,21 @@ public class ProduceInspectionRecordService {
                 //修改之前的记录为历史记录
                 UpdateWrapper<ProduceItemInspectInfo> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("power_id",powerId)
-                        .eq("inspect_record_id",recordId)
                         .set("is_new",0);
                 produceItemInspectInfoService.update(updateWrapper);
             }
             produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
+        }
+        //修改探伤任务的最新探伤记录信息
+        if(powerIds.size()>0){
+            UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.in("id",powerIds)
+                    .set("audit_by",String.valueOf(jsonObject.get("auditBy")))
+                    .set("check_by",SecurityUtils.getCurrentUser().getUserId())
+            .set("inspect_record_no",String.valueOf(jsonObject.get("recordNo")))
+            .set("report_no",String.valueOf(jsonObject.get("reportNo")))
+            .set("insp_temp_type",String.valueOf(jsonObject.get("temp_type")));
+            inspectionPowerService.update(updateWrapper);
         }
 
         //ut保存探头
@@ -386,14 +361,18 @@ public class ProduceInspectionRecordService {
      * @param powerId
      * @return
      */
-    public List<Map<String, Object>> queryLastInfoByPowerId(String powerId, String isAudit) {
+    public List<Map<String, Object>> queryLastInfoByPowerId(String powerId, String isAudit,String isNew) {
         //在探伤主表里过滤
         QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
         itemInspectInfoQueryWrapper.eq("power_id", powerId);
 
         if (!StringUtils.isEmpty(isAudit)) {
-            itemInspectInfoQueryWrapper.eq("is_audit", isAudit);
+            //itemInspectInfoQueryWrapper.eq("is_audit", isAudit);
         }
+        //历史记录
+        itemInspectInfoQueryWrapper.ne(isNew.equals("0"),"is_new","1");
+        //新纪录
+        itemInspectInfoQueryWrapper.eq(isNew.equals("1"),"is_new","1");
 
         //探伤记录填写页面 根据登陆人 = 检验人查询
         //itemInspectInfoQueryWrapper.eq("check_by", SecurityUtils.getCurrentUser().getUserId());
@@ -446,8 +425,8 @@ public class ProduceInspectionRecordService {
      * @return
      */
     public Object queryLastInfoByPowerId(String powerId) {
-        //所有记录
-        List<Map<String, Object>> inspects = queryLastInfoByPowerId(powerId,  null);
+        //所有记录 isnew=1 为新纪录
+        List<Map<String, Object>> inspects = queryLastInfoByPowerId(powerId,  null,"1");
         if (inspects.size() > 0) {
             return inspects.get(0);
         }
@@ -456,67 +435,63 @@ public class ProduceInspectionRecordService {
 
     /**
      * 探伤记录审核列表
-     *
-     * @param page
-     * @param limit
-     * @param startTime
-     * @param endTime
-     * @param trackNo
-     * @param productName
-     * @param productNo
-     * @param branchCode
-     * @param tenantId
-     * @param isAudit
+     * @param inspectionPowerVo
      * @return
      */
-    public Object queryRecordByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName, String productNo, String branchCode, String tenantId, String isAudit) {
-        //从中间表查询审核人是当前用户探伤记录
+    public Object queryRecordByAuditBy(InspectionPowerVo inspectionPowerVo) {
+
+        //从中间表查询审核人是当前用户、最新的探伤记录
         QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(warpper -> warpper.eq("audit_by", "/"))
-                    .orderByDesc("modify_time");
-        queryWrapper.ge(!StringUtils.isEmpty(startTime),"date_format(modify_time, '%Y-%m-%d')",startTime);
-        queryWrapper.le(!StringUtils.isEmpty(endTime),"date_format(modify_time, '%Y-%m-%d')",endTime);
+        queryWrapper
+                .eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(warpper -> warpper.eq("audit_by", "/"))
+                .eq("is_new","1")
+                .ge(!StringUtils.isEmpty(inspectionPowerVo.getStartTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getStartTime())
+                .le(!StringUtils.isEmpty(inspectionPowerVo.getEndTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getEndTime())
+                .inSql("power_id","select a.power_id from (select max(power_id) as power_id from produce_item_inspect_info where is_new = '1' GROUP BY inspect_record_id) a")
+                .in(!StringUtils.isEmpty(inspectionPowerVo.getIsAudit()),"is_audit",inspectionPowerVo.getIsAudit().split(","))
+                .orderByDesc("modify_time");
+
+
         //列表
         List<ProduceItemInspectInfo> inspects = produceItemInspectInfoService.list(queryWrapper);
-        //分页
-        List<ProduceItemInspectInfo> subList = inspects.stream().skip((page - 1) * limit).limit(limit).
+        //分页，后续要操作的list提高接口效率
+        List<ProduceItemInspectInfo> subList = inspects.stream().skip((inspectionPowerVo.getPage() - 1) * inspectionPowerVo.getLimit()).limit(inspectionPowerVo.getLimit()).
                 collect(Collectors.toList());
-        //
-        Map<String, ProduceItemInspectInfo> powerInspectMap = subList.stream().collect(Collectors.toMap(item -> item.getPowerId() + "_" + item.getInspectRecordId(), Function.identity()));
 
         //按照模板类型分组  key->模板类型  value->探伤记录id
         Map<String, List<String>> tempValues = subList.stream().collect(Collectors.groupingBy(ProduceItemInspectInfo::getTempType, Collectors.mapping(ProduceItemInspectInfo::getInspectRecordId, Collectors.toList())));
         //探伤记录列表
-        List<Object> inspectList = new ArrayList<>();
+        List<Object> recordList = new ArrayList<>();
         tempValues.forEach((tempType, ids) -> {
             if (InspectionRecordTypeEnum.MT.getType().equals(tempType)) {
-                inspectList.addAll(produceInspectionRecordMtService.queryListByIds(ids));
+                recordList.addAll(produceInspectionRecordMtService.queryListByIds(ids));
             } else if (InspectionRecordTypeEnum.PT.getType().equals(tempType)) {
-                inspectList.addAll(produceInspectionRecordPtService.queryListByIds(ids));
+                recordList.addAll(produceInspectionRecordPtService.queryListByIds(ids));
             } else if (InspectionRecordTypeEnum.RT.getType().equals(tempType)) {
-                inspectList.addAll(produceInspectionRecordRtService.queryListByIds(ids));
+                recordList.addAll(produceInspectionRecordRtService.queryListByIds(ids));
             } else if (InspectionRecordTypeEnum.UT.getType().equals(tempType)) {
-                inspectList.addAll(produceInspectionRecordUtService.queryListByIds(ids));
+                recordList.addAll(produceInspectionRecordUtService.queryListByIds(ids));
             }
         });
+
+        //探伤委托单信息，便于给探伤记录列表赋值
+        List<String> powerIds = subList.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
+        List<InspectionPower> inspectionPowers = inspectionPowerService.listByIds(powerIds);
+        Map<String, InspectionPower> powerMap = inspectionPowers.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
         //为要返回的探伤记录赋值
         List<Map<String, Object>> maps = new ArrayList<>();
-        for (Object o : inspectList) {
+        for (Object o : recordList) {
             Map<String, Object> map = objectToMap(o);
-
+            InspectionPower power = powerMap.get(String.valueOf(map.get("powerId")));
+            List<InspectionPower> powers = Arrays.asList(power);
+            setHeadAndItemInfoToPower(Arrays.asList(power));
+            map.put("optName",powers.get(0).getOptName());
+            map.put("optNo",powers.get(0).getOptNo());
             maps.add(map);
         }
 
-        //探伤委托单信息
-        List<String> powerIds = subList.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
-        List<InspectionPower> inspectionPowers = inspectionPowerService.listByIds(powerIds);
-        setHeadAndItemInfoToPower(inspectionPowers);
-        Map<String, InspectionPower> powerMap = inspectionPowers.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
-
-
-
         //总页数
-        int pages = inspects.size() % limit == 0 ? inspects.size() / limit : inspects.size() / limit + 1;
+        int pages = inspects.size() % inspectionPowerVo.getLimit() == 0 ? inspects.size() / inspectionPowerVo.getLimit() : inspects.size() / inspectionPowerVo.getLimit() + 1;
         //总数
         int total = inspects.size();
         Map<String, Object> returnMap = new HashMap<>();
@@ -542,18 +517,6 @@ public class ProduceInspectionRecordService {
      */
     @Transactional(rollbackFor = Exception.class)
     public Boolean auditSubmitRecord(String itemId, String flawDetectioRemark, Integer flawDetection, String tempType, String recordNo, String checkBy, String auditBy) {
-        TrackItemInspection trackItemInspection = new TrackItemInspection();
-        trackItemInspection.setId(itemId);
-        trackItemInspection.setFlawDetectionRemark(flawDetectioRemark);
-        trackItemInspection.setFlawDetection(flawDetection);
-        trackItemInspection.setTempType(tempType);
-        trackItemInspection.setInspectRecordNo(recordNo);
-        trackItemInspection.setCheckBy(checkBy);
-        trackItemInspection.setAuditBy(auditBy);
-        //这里生成报告号
-
-        trackItemInspectionService.updateById(trackItemInspection);
-
         //同步回跟单工序表
         TrackItem trackItem = trackItemService.getById(itemId);
         trackItem.setFlawDetectionRemark(flawDetectioRemark);
@@ -591,7 +554,7 @@ public class ProduceInspectionRecordService {
             publicService.activationProcess(map);
         }
 
-        return trackItemInspectionService.updateById(trackItemInspection);
+        return true;
     }
 
     /**
@@ -913,7 +876,19 @@ public class ProduceInspectionRecordService {
         UpdateWrapper<ProduceItemInspectInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("inspect_record_id",id).set("is_audit", isAudit).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
         produceItemInspectInfoService.update(updateWrapper);
-
+        //修改探伤任务数据（将最新的记录信息更新到任务中）
+        QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_new","1")
+                .eq("inspect_record_id",id);
+        List<ProduceItemInspectInfo> inspects = produceItemInspectInfoService.list(queryWrapper);
+        //要修改的任务id
+        List<String> powerIds = inspects.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
+        UpdateWrapper<InspectionPower> inspectionPowerUpdateWrapper = new UpdateWrapper<>();
+        inspectionPowerUpdateWrapper.in("id",powerIds)
+                .set("audit_status",isAudit)
+                .set("audit_remark",auditRemark)
+                .set("audit_by",SecurityUtils.getCurrentUser().getUserId());
+        inspectionPowerService.update(inspectionPowerUpdateWrapper);
         return true;
     }
 

@@ -7,10 +7,10 @@ package com.richfit.mes.produce.enmus;
  * @CreateTime: 2022年08月22日 16:35:00
  */
 public enum InspectionRecordTypeEnum {
-    MT("mt"),
-    PT("pt"),
-    RT("rt"),
-    UT( "ut");
+    MT("MT"),
+    PT("PT"),
+    RT("RT"),
+    UT("UT");
        /**
      * 类型
      */

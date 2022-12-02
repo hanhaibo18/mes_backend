@@ -68,29 +68,14 @@ public class ProduceInspectionRecordController extends BaseController {
     /**
      * ***
      * 分页查询待探伤工序
-     *
-     * @param page
-     * @param limit
      * @return
      */
-    /*@ApiOperation(value = "分页查询探伤记录审核 跟单工序列表", notes = "分页查询探伤记录审核 跟单工序列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "branchCode", value = "组织机构编码", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "tenantId", value = "组织机构id", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "startTime", value = "开始时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "endTime", value = "截至时间", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "trackNo", value = "跟单号", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "productName", value = "产品名称", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "productNo", value = "产品编号", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isAudit", value = "审核状态（待审核0、已审核1）", paramType = "query", dataType = "Integer"),
-    })
-    @GetMapping("/page/queryItemByAuditBy")
-    public CommonResult<IPage<TrackItemInspection>> queryItemByAuditBy(int page, int limit, String startTime, String endTime, String trackNo, String productName,String productNo, String branchCode, String tenantId, String isAudit) {
-
-        return CommonResult.success(produceInspectionRecordService.getProwerQueryWrapper(page,limit,startTime,endTime,trackNo,productName,productNo,branchCode,tenantId,""));
-    }*/
+    @ApiOperation(value = "分页查询探伤记录列表", notes = "分页查询探伤记录列表")
+    @ApiImplicitParam(name = "探伤任务查询类VO", value = "InspectionPowerVo", paramType = "body", dataType = "InspectionPowerVo")
+    @PostMapping("/page/queryAuditRecord")
+    public CommonResult<Object> queryAuditRecord(InspectionPowerVo inspectionPowerVo) {
+        return CommonResult.success(produceInspectionRecordService.queryRecordByAuditBy(inspectionPowerVo));
+    }
 
 
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
@@ -106,7 +91,7 @@ public class ProduceInspectionRecordController extends BaseController {
     })
     @GetMapping("/queryRecordByPowerId")
     public CommonResult queryRecordByPowerId(String powerId,String isAudit){
-        return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId,isAudit));
+        return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId,isAudit,"0"));
     }
 
     @ApiOperation(value = "根据探伤任务id查询最近一条探伤记录", notes = "根据探伤任务id查询最近一条探伤记录")

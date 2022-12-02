@@ -78,11 +78,13 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
             product.setDrawingNo(product.getDrawingNo().trim());
             QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("material_no", product.getMaterialNo());
-            boolean remove = materialSyncService.remove(queryWrapper);
-            boolean save = materialSyncService.save(product);
-            if (save) {
-                data = true;
-                message = "操作成功!";
+            //同步开关字段 Autosyns  值为空 或者为 y  默认同步
+            if (product.getAutosyns().isEmpty()||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
+                boolean save = materialSyncService.updateById(product);
+                if (save) {
+                    data = true;
+                    message = "操作成功!";
+                }
             }
         }
         return CommonResult.success(data, message);
@@ -132,11 +134,14 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                         //本地存在的物料
                         List<Product> list = materialSyncService.list(queryWrapper);
                         Map<String, Product> existPorduct = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
-                        //不存在才去新增
-                        if (ObjectUtil.isEmpty(existPorduct.get(product.getMaterialNo()))) {
-                            //同步开关字段 Autosyns  值为空 或者为 y  默认同步
-                            if(product.getAutosyns().isEmpty()||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")){
+                        //同步开关字段 Autosyns  值为空 或者为 y  默认同步
+                        if (product.getAutosyns().isEmpty()||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
+                            //不存在才去新增
+                            if(ObjectUtil.isEmpty(existPorduct.get(product.getMaterialNo()))){
                             materialSyncService.save(product);
+                            }else {
+                                //存在的要把本地的进行修改,跟同步过来的保持一致
+                                materialSyncService.updateById(product);
                             }
                         }
                     }
