@@ -490,6 +490,12 @@ public class ProductController extends BaseController {
         paramMap.put("4", " X");
         paramMap.put("5", " MX");
         paramMap.put("6", " 半");
+
+        QueryWrapper<Product> cpWrapper = new QueryWrapper<Product>();//构造成品修改条件
+        cpWrapper.select("id");
+        cpWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        cpWrapper.notIn("material_type", 3);
+
         Set<String> strings = paramMap.keySet();
         for (String s : strings) {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
@@ -497,6 +503,8 @@ public class ProductController extends BaseController {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.likeLeft("material_desc", paramMap.get(s));
             queryWrapper.notIn("material_type", s);
+            //拼接成品参数
+            cpWrapper.apply("material_desc not like '%"+paramMap.get(s)+"'");
             //查出错乱数据的id
             List<Object> idList = productService.listObjs(queryWrapper);
             //大于一千条分页操作
@@ -530,6 +538,14 @@ public class ProductController extends BaseController {
                     productService.update(updateWrapper);//修改错乱数据
                 }
             }
+        }
+        //查出成品错乱数据的id
+        List<Object> idList = productService.listObjs(cpWrapper);
+        if (!CollectionUtils.isEmpty(idList)) {
+            UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.set("material_type", 3);
+            updateWrapper.in("id", idList);
+            productService.update(updateWrapper);//修改成品错乱数据
         }
         return CommonResult.success("操作成功");
     }
