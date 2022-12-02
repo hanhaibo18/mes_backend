@@ -5,12 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.OrderSyncLog;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.ErpServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,6 +45,12 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
 
     @Resource
     private SystemServiceClient systemServiceClient;
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
+
+    @Resource
+    private OrderSyncLogService orderLogService;
 
 
     @Autowired
@@ -76,16 +86,10 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             order.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             //同步时数据存在空格，会导致查不到图号
             order.setMaterialCode(order.getMaterialCode().trim());
-            List<Order> orders = new ArrayList<>();
-            QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
-            if (order.getOrderSn() != null) {
-                queryWrapper.eq("order_sn", order.getOrderSn());
-                orders.addAll(orderSyncService.list(queryWrapper));
+            //进行校验
+            if (Boolean.TRUE.equals(filterOrder(order))) {
+                orderSyncService.save(order);
             }
-            if (CollectionUtils.isNotEmpty(orders)) {
-                continue;
-            }
-            orderSyncService.save(order);
         }
         return CommonResult.success(true, "操作成功!");
     }
@@ -137,13 +141,10 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                         if (order.getMaterialCode() == null) {
                             continue;
                         }
-                        QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
-                        queryWrapper.eq("order_sn", order.getOrderSn());
-                        List<Order> orders = orderSyncService.list(queryWrapper);
-                        if (CollectionUtils.isNotEmpty(orders)) {
-                            continue;
+                        //进行校验
+                        if (Boolean.TRUE.equals(filterOrder(order))) {
+                            saveData = orderSyncService.save(order);
                         }
-                        saveData = orderSyncService.save(order);
                     }
                 }
             } catch (Exception e) {
@@ -156,15 +157,60 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         return CommonResult.success(true);
     }
 
-//    /**
-//     * 功能描述: 过滤订单
-//     *
-//     * @param orderList
-//     * @Author: xinYu.hou
-//     * @Date: 2022/12/1 10:10
-//     * @return: List<Order>
-//     **/
-//    private List<Order> filterOrder(List<Order> orderList) {
-//
-//    }
+    /**
+     * 功能描述: 过滤订单
+     *
+     * @param order
+     * @Author: xinYu.hou
+     * @Date: 2022/12/1 10:10
+     * @return: List<Order>
+     **/
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean filterOrder(Order order) {
+        //组装log数据
+        OrderSyncLog log = new OrderSyncLog();
+        log.setMaterialNo(order.getMaterialCode());
+        if (order.getMaterialDesc().contains(" ")) {
+            List<String> list = Arrays.stream(order.getMaterialDesc().split("\\s+")).collect(Collectors.toList());
+            log.setDrawingNo(list.get(0));
+            log.setProductName(list.get(1));
+        } else {
+            log.setProductName(order.getMaterialDesc());
+        }
+        log.setSyncState("0");
+        List<Product> list = baseServiceClient.selectOrderProduct(order.getMaterialCode(), null);
+        if (CollectionUtils.isEmpty(list)) {
+            log.setOpinion("未查询到成品物料信息,请补全成品物料");
+            orderLogService.save(log);
+            return false;
+        }
+        //图号为空,或图号不相等进入
+        if (null == log.getDrawingNo() || !list.get(0).getDrawingNo().equals(log.getDrawingNo())) {
+            if (null != log.getDrawingNo()) {
+                log.setOpinion("同步图号为:" + log.getDrawingNo() + ",本地物料图号为:" + list.get(0).getDrawingNo() + ",图号不同请处理");
+            } else {
+                log.setOpinion("同步图号为:null,本地物料图号为:" + list.get(0).getDrawingNo() + ",图号不同请处理");
+            }
+            orderLogService.save(log);
+            return false;
+        }
+        //根据订单号进行查询,如果存在不进行同步
+        if (order.getOrderSn() != null) {
+            QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("order_sn", order.getOrderSn());
+            List<Order> orders = new ArrayList<>(orderSyncService.list(queryWrapper));
+            if (CollectionUtils.isNotEmpty(orders)) {
+                //订单号已存在
+                log.setSyncState("1");
+                log.setOpinion("订单已存在不进行同步");
+                orderLogService.save(log);
+                return false;
+            }
+        }
+        //通过判断同步状态为1
+        log.setSyncState("1");
+        log.setOpinion("同步成功");
+        orderLogService.save(log);
+        return true;
+    }
 }

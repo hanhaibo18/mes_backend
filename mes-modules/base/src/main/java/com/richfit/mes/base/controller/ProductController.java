@@ -336,6 +336,7 @@ public class ProductController extends BaseController {
         if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
+        queryWrapper.eq("material_type", "3");
         return productService.list(queryWrapper);
     }
 
