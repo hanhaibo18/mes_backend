@@ -4,7 +4,7 @@ package com.richfit.mes.common.core.api;
  * @author sun
  * @Description 枚举常用API操作码
  */
-public enum ResultCode implements IErrorCode{
+public enum ResultCode implements IErrorCode {
     SUCCESS(200, "操作成功"),
     FAILED(500, "操作失败"),
     INVALID_ARGUMENTS(400, "参数检验失败"),
@@ -13,10 +13,17 @@ public enum ResultCode implements IErrorCode{
     FORBIDDEN(403, "没有相关权限");
     private long code;
     private String message;
+    private Object dubug;
 
     private ResultCode(long code, String message) {
         this.code = code;
         this.message = message;
+    }
+
+    private ResultCode(long code, String message, Object dubug) {
+        this.code = code;
+        this.message = message;
+        this.dubug = dubug;
     }
 
     @Override
