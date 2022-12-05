@@ -73,7 +73,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "分页查询探伤记录列表", notes = "分页查询探伤记录列表")
     @ApiImplicitParam(name = "探伤任务查询类VO", value = "InspectionPowerVo", paramType = "body", dataType = "InspectionPowerVo")
     @PostMapping("/page/queryAuditRecord")
-    public CommonResult<Object> queryAuditRecord(InspectionPowerVo inspectionPowerVo) {
+    public CommonResult<Object> queryAuditRecord(@RequestBody InspectionPowerVo inspectionPowerVo) {
         return CommonResult.success(produceInspectionRecordService.queryRecordByAuditBy(inspectionPowerVo));
     }
 
@@ -185,6 +185,12 @@ public class ProduceInspectionRecordController extends BaseController {
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         }else{
             queryWrapper.orderByDesc("power_time");
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())){
+            //有源委托单
+            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+            //无源委托单
+            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
         }
         Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
         //委托人转换
