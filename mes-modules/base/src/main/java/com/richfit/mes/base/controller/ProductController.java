@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -7,16 +8,21 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.enmus.MaterialTypeEnum;
+import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.Router;
+import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -28,6 +34,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -54,7 +61,8 @@ public class ProductController extends BaseController {
 
     @Autowired
     private ProductService productService;
-
+    @Resource
+    private ProduceServiceClient produceServiceClient;
     @Autowired
     private ProductionBomService productionBomService;
 
@@ -123,10 +131,26 @@ public class ProductController extends BaseController {
         if (ids == null || ids.size() == 0) {
             return CommonResult.failed(PRODUCT_ID_NULL_MESSAGE);
         } else {
-            //检查物料号有没有订单
+            List<Product> productList = productService.listByIds(ids);
+            List<String> materialCodes =  productList.stream().map(x -> x.getMaterialNo()).collect(Collectors.toList());
+            List<String> drawingNos =  productList.stream().map(x -> x.getDrawingNo()).collect(Collectors.toList());
 
-            //检查物料号或者图号有没有跟单
-
+            //检查物料号有没有订单,
+            CommonResult<List<Order>> listCommonResult = produceServiceClient.queryByMaterialCode(materialCodes, SecurityUtils.getCurrentUser().getTenantId());
+            List<Order> orders = listCommonResult.getData();
+            if(orders.size()>0){
+                throw  new GlobalException("物料 "+orders.get(0).getMaterialCode()+" 存在订单,不能删除该物料", ResultCode.FAILED);
+            }
+            //检查物料号或者图号有没有跟单,
+            List<TrackHead> trackHeads = produceServiceClient.getTrackHeadByMaterialCodeAndDrawingNo(materialCodes, drawingNos, SecurityUtils.getCurrentUser().getTenantId()).getData();
+            Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2 ) -> value2));
+            Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2 ) -> value2));
+            for (String materialCode : materialCodes) {
+                if(!ObjectUtil.isEmpty(materialNoMap.get(materialCode))) throw  new GlobalException("物料 "+materialCode+" 存在跟单,不能删除该物料", ResultCode.FAILED);
+            }
+            for (String drawingNo : drawingNos) {
+                if(!ObjectUtil.isEmpty(drawingNoMap.get(drawingNo))) throw  new GlobalException("物料图号 "+drawingNo+" 存在跟单,不能删除该物料", ResultCode.FAILED);
+            }
             boolean bool = productService.removeByIds(ids);
             if (bool) {
                 return CommonResult.success(null, PRODUCT_SUCCESS_MESSAGE);
@@ -499,7 +523,7 @@ public class ProductController extends BaseController {
         QueryWrapper<Product> cpWrapper = new QueryWrapper<Product>();//构造成品修改条件
         cpWrapper.select("id");
         cpWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        cpWrapper.notIn("material_type", 3);
+        cpWrapper.apply("(material_type not in(3)or material_type is null)");
 
         Set<String> strings = paramMap.keySet();
         for (String s : strings) {
@@ -507,7 +531,7 @@ public class ProductController extends BaseController {
             queryWrapper.select("id");
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.likeLeft("material_desc", paramMap.get(s));
-            queryWrapper.notIn("material_type", s);
+            queryWrapper.apply("(material_type not in("+s+")or material_type is null)");
             //拼接成品参数
             cpWrapper.apply("material_desc not like '%"+paramMap.get(s)+"'");
             //查出错乱数据的id
