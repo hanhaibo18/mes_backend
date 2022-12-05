@@ -29,6 +29,8 @@ public class ProduceItemInspectInfo{
     private String auditRemark;
     @ApiModelProperty(value = "是否是最近的记录（0、否  1、是）")
     private String isNew;
+    @ApiModelProperty(value = "记录号")
+    private String recordNo;
     /**
      * 创建者
      */

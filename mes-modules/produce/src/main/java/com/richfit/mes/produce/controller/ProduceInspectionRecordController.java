@@ -81,7 +81,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
     @PostMapping("/save")
     public CommonResult saveRecord(@RequestBody ProduceInspectionRecordDto produceInspectionRecordDto) throws Exception {
-        return CommonResult.success(produceInspectionRecordService.saveRecord(produceInspectionRecordDto));
+        return CommonResult.success(produceInspectionRecordService.saveRecords(produceInspectionRecordDto));
     }
 
     @ApiOperation(value = "根据探伤任务id查询探伤记录列表", notes = "根据探伤任务id查询探伤记录列表")
@@ -103,7 +103,7 @@ public class ProduceInspectionRecordController extends BaseController {
 
     @ApiOperation(value = "撤回记录", notes = "撤回记录")
     @ApiImplicitParam(name = "powerIds", value = "探索任务ids", required = true, dataType = "List", paramType = "body")
-    @PostMapping("backoutRecord")
+    @PostMapping("/backoutRecord")
     public CommonResult<Boolean> backoutRecord(@RequestBody List<String> powerIds) {
         return CommonResult.success(produceInspectionRecordService.backoutRecord(powerIds));
     }
@@ -142,7 +142,7 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "id", value = "探伤记录id", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string")
     })
-    @GetMapping("auditRecord")
+    @GetMapping("/auditRecord")
     public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark) {
         return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark));
     }

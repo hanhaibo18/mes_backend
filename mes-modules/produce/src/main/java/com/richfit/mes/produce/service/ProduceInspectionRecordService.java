@@ -241,12 +241,15 @@ public class ProduceInspectionRecordService {
      * 保存探伤记录
      * @return
      */
-    /*public CommonResult saveRecords(ProduceInspectionRecordDto produceInspectionRecordDto) throws Exception{
+    public CommonResult saveRecords(ProduceInspectionRecordDto produceInspectionRecordDto) throws Exception{
         //要保存的记录实体
         JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
-        //已审核的修改，需要本地保存一份审核记录，故将之前的保存，新修改的新增
-        if(!StringUtils.isEmpty(jsonObject.getString("id"))
-                && jsonObject.getString("isAudit").equals("1")){
+        //获取模板类型
+        String tempType = produceInspectionRecordDto.getTempType();
+        //branchCode
+        String branchCode = produceInspectionRecordDto.getBranchCode();
+        //已审核的修改，需要本地保存一份审核记录，故将新修改的新增
+        if(!StringUtils.isEmpty(jsonObject.getString("id"))){
             jsonObject.remove("id");
             produceInspectionRecordDto.setInspectionRecord(jsonObject);
             //powerIds赋值
@@ -256,9 +259,14 @@ public class ProduceInspectionRecordService {
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
             List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
             produceInspectionRecordDto.setPowerIds(powerIds);
+        }else{
+            //如果是新增委托，保存流水号
+            if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
+                codeRuleService.updateCode("inspection_code_" + tempType, null, jsonObject.get("recordNo").toString(), null, SecurityUtils.getCurrentUser().getTenantId(), branchCode);
+            }
         }
         return saveRecord(produceInspectionRecordDto);
-    }*/
+    }
 
     /**
      * 保存探伤记录方法
@@ -288,15 +296,6 @@ public class ProduceInspectionRecordService {
         List<String> powerIds = produceInspectionRecordDto.getPowerIds();
         //探伤记录id
         String recordId = null;
-        //branchCode
-        String branchCode = produceInspectionRecordDto.getBranchCode();
-
-        //如果是新增委托，保存流水号
-        if(StringUtils.isEmpty(recordId) &&  !"1".equals(jsonObject.getString("is_audit"))){
-            if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
-                codeRuleService.updateCode("inspection_code_" + tempType, null, jsonObject.get("recordNo").toString(), null, SecurityUtils.getCurrentUser().getTenantId(), branchCode);
-            }
-        }
 
         if (InspectionRecordTypeEnum.MT.getType().equals(tempType)) {
             //保存探伤记录
@@ -335,6 +334,8 @@ public class ProduceInspectionRecordService {
                 produceItemInspectInfo.setIsAudit("0");
                 //最新的记录标识
                 produceItemInspectInfo.setIsNew("1");
+                //探伤记录号
+                produceItemInspectInfo.setRecordNo(String.valueOf(jsonObject.get("recordNo")));
                 produceItemInspectInfos.add(produceItemInspectInfo);
                 //修改之前的记录为历史记录
                 UpdateWrapper<ProduceItemInspectInfo> updateWrapper = new UpdateWrapper<>();
@@ -509,6 +510,7 @@ public class ProduceInspectionRecordService {
         queryWrapper
                 .eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(warpper -> warpper.eq("audit_by", "/"))
                 .eq("is_new","1")
+                .eq(StringUtils.isEmpty(inspectionPowerVo.getRecordNo()),"record_no",inspectionPowerVo.getRecordNo())
                 .eq(!StringUtils.isEmpty(inspectionPowerVo.getIsAudit()),"is_audit","0")
                 .ge(!StringUtils.isEmpty(inspectionPowerVo.getStartTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getStartTime())
                 .le(!StringUtils.isEmpty(inspectionPowerVo.getEndTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getEndTime())
