@@ -101,6 +101,7 @@ public class ProductController extends BaseController {
     @ApiImplicitParam(name = "product", value = "物料", required = true, dataType = "Branch", paramType = "path")
     @PutMapping("/product")
     public CommonResult<Product> updateProduct(@RequestBody Product product, String oldMaterialNo) {
+
         if (StringUtils.isNullOrEmpty(product.getMaterialNo())) {
             return CommonResult.failed(PRODUCT_MATERIAL_NO_NULL_MESSAGE);
         } else {
@@ -113,6 +114,32 @@ public class ProductController extends BaseController {
                     return CommonResult.failed("物料编码已存在！");
                 }
             }
+            Product byId = productService.getById(product.getId());
+            ArrayList<String> materialCodes = new ArrayList<>();
+            materialCodes.add(byId.getMaterialNo());
+            ArrayList<String> drawingNos = new ArrayList<>();
+            drawingNos.add(byId.getDrawingNo());
+            List<TrackHead> trackHeads = produceServiceClient.getTrackHeadByMaterialCodeAndDrawingNo(materialCodes, drawingNos, SecurityUtils.getCurrentUser().getTenantId()).getData();
+            Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2 ) -> value2));
+            Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2 ) -> value2));
+            //判断物料号是否修改
+            if(!byId.getMaterialNo().equals(product.getMaterialNo())){
+                //物料号有改动时检查物料号有没有订单
+                CommonResult<List<Order>> listCommonResult = produceServiceClient.queryByMaterialCode(materialCodes, SecurityUtils.getCurrentUser().getTenantId());
+                List<Order> orders = listCommonResult.getData();
+                if(orders.size()>0){
+                    throw  new GlobalException("物料号 "+byId.getMaterialNo()+" 存在订单,不能修改该物料号", ResultCode.FAILED);
+                }
+                //物料号有改动时检查是否存在该物料的跟单
+                if(!ObjectUtil.isEmpty(materialNoMap.get(byId.getMaterialNo()))) throw  new GlobalException("物料 "+byId.getMaterialNo()+" 存在跟单,不能修改该物料编号", ResultCode.FAILED);
+            }
+
+            if(!byId.getDrawingNo().equals(product.getDrawingNo())){
+                //物料号有变动时,检查有没有该物料图号的跟单
+                if(!ObjectUtil.isEmpty(drawingNoMap.get(byId.getDrawingNo()))) throw  new GlobalException("物料图号 "+byId.getDrawingNo()+" 存在跟单,不能修改该物料图号", ResultCode.FAILED);
+            }
+
+
             product.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             product.setModifyTime(new Date());
             boolean bool = productService.updateById(product);
