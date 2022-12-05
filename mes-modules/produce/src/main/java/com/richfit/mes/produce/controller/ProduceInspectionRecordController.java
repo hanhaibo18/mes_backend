@@ -101,6 +101,13 @@ public class ProduceInspectionRecordController extends BaseController {
         return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId));
     }
 
+    @ApiOperation(value = "撤回记录", notes = "撤回记录")
+    @ApiImplicitParam(name = "powerIds", value = "探索任务ids", required = true, dataType = "List", paramType = "body")
+    @PostMapping("backoutRecord")
+    public CommonResult<Boolean> backoutRecord(@RequestBody List<String> powerIds) {
+        return CommonResult.success(produceInspectionRecordService.backoutRecord(powerIds));
+    }
+
     @ApiOperation(value = "审核提交探伤记录", notes = "审核提交探伤记录")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "itemId", value = "工序id", required = true, paramType = "query", dataType = "string"),

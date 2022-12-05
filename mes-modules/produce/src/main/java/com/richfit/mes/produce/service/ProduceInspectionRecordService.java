@@ -237,10 +237,31 @@ public class ProduceInspectionRecordService {
         return queryWrapper;
     }
 
-
-
     /**
      * 保存探伤记录
+     * @return
+     */
+    /*public CommonResult saveRecords(ProduceInspectionRecordDto produceInspectionRecordDto) throws Exception{
+        //要保存的记录实体
+        JSONObject jsonObject = produceInspectionRecordDto.getInspectionRecord();
+        //已审核的修改，需要本地保存一份审核记录，故将之前的保存，新修改的新增
+        if(!StringUtils.isEmpty(jsonObject.getString("id"))
+                && jsonObject.getString("isAudit").equals("1")){
+            jsonObject.remove("id");
+            produceInspectionRecordDto.setInspectionRecord(jsonObject);
+            //powerIds赋值
+            QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("inspect_record_id",jsonObject.getString("id"))
+                    .eq("is_new","1");
+            List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
+            List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
+            produceInspectionRecordDto.setPowerIds(powerIds);
+        }
+        return saveRecord(produceInspectionRecordDto);
+    }*/
+
+    /**
+     * 保存探伤记录方法
      *
      * @return
      */
@@ -271,7 +292,7 @@ public class ProduceInspectionRecordService {
         String branchCode = produceInspectionRecordDto.getBranchCode();
 
         //如果是新增委托，保存流水号
-        if(StringUtils.isEmpty(recordId)){
+        if(StringUtils.isEmpty(recordId) &&  !"1".equals(jsonObject.getString("is_audit"))){
             if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
                 codeRuleService.updateCode("inspection_code_" + tempType, null, jsonObject.get("recordNo").toString(), null, SecurityUtils.getCurrentUser().getTenantId(), branchCode);
             }
@@ -434,6 +455,49 @@ public class ProduceInspectionRecordService {
     }
 
     /**
+     * 批量撤回探伤记录
+     * @return
+     */
+    public boolean backoutRecord(List<String> powerIds){
+
+        QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("power_id",powerIds)
+                .eq("is_new","1");
+        List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
+        //校验
+        List<ProduceItemInspectInfo> checkList = list.stream().filter(item -> !StringUtils.isEmpty(item.getIsAudit()) && !"0".equals(item.getIsAudit())).collect(Collectors.toList());
+        if(checkList.size()>0){
+            throw new GlobalException("有已经被审核的记录，不能执行撤回操作", ResultCode.FAILED);
+        }
+
+        //删除最新的探伤记录
+        produceItemInspectInfoService.remove(queryWrapper);
+        //将上一条记录改为当前记录
+        QueryWrapper<ProduceItemInspectInfo> historyListQueryWrapper = new QueryWrapper<>();
+        queryWrapper.in("power_id",powerIds)
+                .orderByDesc("create_time");
+        List<ProduceItemInspectInfo> historyList = produceItemInspectInfoService.list(historyListQueryWrapper);
+        Map<String, List<ProduceItemInspectInfo>> historyMap = historyList.stream().collect(Collectors.groupingBy(item -> item.getPowerId()));
+
+        historyMap.forEach((key,value)->{
+            if(value.size()>0){
+                UpdateWrapper<ProduceItemInspectInfo> produceItemInspectInfoUpdateWrapper = new UpdateWrapper<>();
+                produceItemInspectInfoUpdateWrapper.eq("power_id",key).eq("inspect_record_id",value.get(0).getInspectRecordId()).set("is_new","1");
+                produceItemInspectInfoService.update(produceItemInspectInfoUpdateWrapper);
+                //探伤任务最新记录改为最新的信息
+                UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("id",key)
+                        .set("audit_by",String.valueOf(value.get(0).getAuditBy()))
+                        .set("check_by",SecurityUtils.getCurrentUser().getUserId())
+                        .set("insp_temp_type",String.valueOf(value.get(0).getTempType()))
+                        .set("audit_remark",String.valueOf(value.get(0).getAuditRemark()));
+                inspectionPowerService.update(updateWrapper);
+            }
+        });
+        return false;
+    }
+
+    /**
      * 探伤记录审核列表
      * @param inspectionPowerVo
      * @return
@@ -445,11 +509,19 @@ public class ProduceInspectionRecordService {
         queryWrapper
                 .eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(warpper -> warpper.eq("audit_by", "/"))
                 .eq("is_new","1")
+                .eq(!StringUtils.isEmpty(inspectionPowerVo.getIsAudit()),"is_audit","0")
                 .ge(!StringUtils.isEmpty(inspectionPowerVo.getStartTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getStartTime())
                 .le(!StringUtils.isEmpty(inspectionPowerVo.getEndTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getEndTime())
                 .inSql("power_id","select a.power_id from (select max(power_id) as power_id from produce_item_inspect_info where is_new = '1' GROUP BY inspect_record_id) a")
                 .in(!StringUtils.isEmpty(inspectionPowerVo.getIsAudit()),"is_audit",inspectionPowerVo.getIsAudit().split(","))
                 .orderByDesc("modify_time");
+        if(!StringUtils.isEmpty(inspectionPowerVo.getIsAudit())){
+            if("0".equals(inspectionPowerVo.getIsAudit())){
+                queryWrapper.eq("is_audit","0");
+            }else{
+                queryWrapper.ne("is_audit","0");
+            }
+        }
 
 
         //列表
@@ -874,7 +946,7 @@ public class ProduceInspectionRecordService {
         }
         //修改中间表的数据
         UpdateWrapper<ProduceItemInspectInfo> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("inspect_record_id",id).set("is_audit", isAudit).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
+        updateWrapper.eq("inspect_record_id",id).set("is_audit", isAudit).set("audit_by",SecurityUtils.getCurrentUser().getUserId()).set("audit_remark",auditRemark);
         produceItemInspectInfoService.update(updateWrapper);
         //修改探伤任务数据（将最新的记录信息更新到任务中）
         QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();

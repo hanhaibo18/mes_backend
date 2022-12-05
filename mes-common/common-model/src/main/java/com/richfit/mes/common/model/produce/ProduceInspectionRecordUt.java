@@ -71,7 +71,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "见证")
     private String witnesses;
     @ApiModelProperty(value = "模板类型")
-    private String tempType = "UT";
+    private String tempType = "ut";
    /* @TableField(exist = false,value = "缺陷记录")
     private List<ProduceDefectsInfo> defectsInfoList;*/
     @TableField(exist = false,value = "探头集合")
