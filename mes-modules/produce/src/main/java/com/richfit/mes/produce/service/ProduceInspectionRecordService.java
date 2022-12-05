@@ -456,6 +456,59 @@ public class ProduceInspectionRecordService {
     }
 
     /**
+     * 根据记录id查询探伤记录详情
+     * @param id
+     * @return
+     */
+    public Object queryInfoByRecordId(String id){
+        QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("inspect_record_id",id)
+                .eq("is_new","1");
+        List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
+        if(list.size()>0){
+            ProduceItemInspectInfo produceItemInspectInfo = list.get(0);
+            Object object = null;
+            if (InspectionRecordTypeEnum.MT.getType().equals(produceItemInspectInfo.getTempType())) {
+                object = produceInspectionRecordMtService.getById(produceItemInspectInfo.getInspectRecordId());
+            } else if (InspectionRecordTypeEnum.PT.getType().equals(produceItemInspectInfo.getTempType())) {
+                object = produceInspectionRecordPtService.getById(produceItemInspectInfo.getInspectRecordId());
+            } else if (InspectionRecordTypeEnum.RT.getType().equals(produceItemInspectInfo.getTempType())) {
+                object = produceInspectionRecordRtService.getById(produceItemInspectInfo.getInspectRecordId());
+            } else if (InspectionRecordTypeEnum.UT.getType().equals(produceItemInspectInfo.getTempType())) {
+                object = produceInspectionRecordUtService.getById(produceItemInspectInfo.getInspectRecordId());
+            } else {
+                throw new GlobalException(ResultCode.INVALID_ARGUMENTS.getMessage(), ResultCode.INVALID_ARGUMENTS);
+            }
+            Map<String, Object> map = objectToMap(object);
+            InspectionPower power = inspectionPowerService.getById(produceItemInspectInfo.getPowerId());
+            //赋跟单属性
+            TrackHead trackHead = trackHeadMapper.selecProjectNametById(power.getHeadId());
+            if (!ObjectUtil.isEmpty(trackHead)) {
+                map.put("workNo",trackHead.getTrackNo());
+                //产品名称
+                map.put("productName",trackHead.getProductName());
+                //项目名称
+                map.put("projectName",trackHead.getProjectName());
+                //材质
+                map.put("texture",trackHead.getTexture());
+            }
+            //赋工序属性
+            TrackItem item = trackItemService.getById(power.getItemId());
+            if (!ObjectUtil.isEmpty(item)) {
+                //工序名称
+                map.put("optName",item.getOptName());
+                //工序号
+                map.put("optNo",item.getOptNo());
+                //产品编号
+                map.put("productNo",item.getProductNo());
+            }
+            return  map;
+
+        }
+        return null;
+    }
+
+    /**
      * 批量撤回探伤记录
      * @return
      */
@@ -522,7 +575,6 @@ public class ProduceInspectionRecordService {
                 queryWrapper.ne("is_audit","0");
             }
         }
-
 
         //列表
         List<ProduceItemInspectInfo> inspects = produceItemInspectInfoService.list(queryWrapper);

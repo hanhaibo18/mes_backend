@@ -6,15 +6,18 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
+import com.richfit.mes.produce.service.ProduceItemInspectInfoService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.OrderUtil;
 import freemarker.template.TemplateException;
@@ -49,6 +52,8 @@ public class ProduceInspectionRecordController extends BaseController {
     private ProduceInspectionRecordService produceInspectionRecordService;
     @Autowired
     private InspectionPowerService inspectionPowerService;
+    @Autowired
+    private ProduceItemInspectInfoService produceItemInspectInfoService;
 
 
     /**
@@ -99,6 +104,13 @@ public class ProduceInspectionRecordController extends BaseController {
     @GetMapping("/queryLastInfoByPowerId/{powerId}")
     public CommonResult queryLastInfoByPowerId(@PathVariable String powerId){
         return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId));
+    }
+
+    @ApiOperation(value = "根据记录id查询探伤记录详情", notes = "根据记录id查询探伤记录详情")
+    @ApiImplicitParam(name = "id", value = "记录id", required = true, paramType = "path", dataType = "string")
+    @GetMapping("/queryInfoByRecordId/{id}")
+    public CommonResult<Object> queryInfoByRecordId(@PathVariable String id){
+        return CommonResult.success(produceInspectionRecordService.queryInfoByRecordId(id));
     }
 
     @ApiOperation(value = "撤回记录", notes = "撤回记录")
