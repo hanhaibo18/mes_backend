@@ -159,9 +159,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
+                            track.setPrepareEndHours(0.00);
+                        }else {
+                            track.setPrepareEndHours(trackItem.getPrepareEndHours());
                         }
                         if (trackItem.getSinglePieceHours() == null) {
                             trackItem.setSinglePieceHours(0.00);
+                            track.setSinglePieceHours(0.00);
+                        }else {
+                            track.setSinglePieceHours(trackItem.getSinglePieceHours());
                         }
                         if (track.getCompletedQty() == null) {
                             track.setCompletedQty(0.00);
