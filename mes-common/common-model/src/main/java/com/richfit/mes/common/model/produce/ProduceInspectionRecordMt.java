@@ -93,7 +93,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "检测结果描述")
     private String inspectionResultsRemark;
     @ApiModelProperty(value = "模板类型")
-    private String tempType = "MT";
+    private String tempType = "mt";
     @ApiModelProperty(value = "是否审核")
     private String isAudit;
     @ApiModelProperty(value = "审核意见")

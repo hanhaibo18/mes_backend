@@ -24,4 +24,13 @@ public interface ItemParamService extends IService<ItemParam> {
      * @return: List<ItemParam>
      **/
     List<ItemParam> queryItemByCode(String code) throws Exception;
+
+    /**
+     * 根据code和租户id查询字典
+     * @param code
+     * @param tenantId
+     * @return
+     * @throws Exception
+     */
+    List<ItemParam> queryItemByCodeAndTenantId(String code,String tenantId) throws Exception;
 }
