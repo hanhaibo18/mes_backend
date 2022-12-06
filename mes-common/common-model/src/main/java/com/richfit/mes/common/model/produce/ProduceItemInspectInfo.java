@@ -27,6 +27,8 @@ public class ProduceItemInspectInfo{
     private String isAudit;
     @ApiModelProperty(value = "探伤记录审核意见")
     private String auditRemark;
+    @ApiModelProperty(value = "探伤记录里的核验结果（0、合格   1、不合格）")
+    private String inspectionResults;
     @ApiModelProperty(value = "是否是最近的记录（0、否  1、是）")
     private String isNew;
     @ApiModelProperty(value = "记录号")

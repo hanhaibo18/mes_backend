@@ -152,11 +152,14 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "探伤记录审核", notes = "探伤记录审核")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "探伤记录id", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isAudit", value = "审核状态", required = true,paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "auditRemark", value = "审核备注", required = true,paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "inspector", value = "指派人", required = true,paramType = "query", dataType = "string")
     })
     @GetMapping("/auditRecord")
-    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark) {
-        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark));
+    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark,String inspector,String checkBranch) {
+        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark,inspector,checkBranch));
     }
 
     @Autowired

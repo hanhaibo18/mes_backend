@@ -426,4 +426,32 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         return tenantUserList;
     }
 
+    @Override
+    public List<TenantUserVo> queryAllQualityUserByTenantId(String classes,String tenantId) {
+        Tenant tenant = tenantService.getById(tenantId);
+        //获取当前登录人公司所有质检人员
+        List<TenantUserVo> userList = new ArrayList<>(this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId()));
+        //获取质检公司
+        List<ItemParam> item = null;
+        try {
+            item = itemParamService.queryItemByCodeAndTenantId("qualityManagement",tenantId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException("质检检测部门查询失败", ResultCode.FAILED);
+        }
+        if (CollectionUtils.isEmpty(item)) {
+            throw new GlobalException("未查询到质量检测部门", ResultCode.FAILED);
+        }
+        //根据租户code 查询tenantId
+        List<String> collect = item.stream().map(ItemParam::getCode).collect(Collectors.toList());
+        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("tenant_code", collect);
+        List<Tenant> tenantList = tenantService.list(queryWrapper);
+        //获取质检租户下所有质检人员
+        for (Tenant tenantEntity : tenantList) {
+            userList.addAll(this.queryQualityInspectionDepartment(classes, tenantEntity.getTenantCode(), tenantEntity.getId()));
+        }
+        return userList;
+    }
+
 }
