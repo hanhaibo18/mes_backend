@@ -252,7 +252,6 @@ public class ProduceInspectionRecordService {
         String branchCode = produceInspectionRecordDto.getBranchCode();
         //已审核的修改，需要本地保存一份审核记录，故将新修改的新增
         if(!StringUtils.isEmpty(jsonObject.getString("id"))){
-            jsonObject.remove("id");
             produceInspectionRecordDto.setInspectionRecord(jsonObject);
             //powerIds赋值
             QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
@@ -261,6 +260,7 @@ public class ProduceInspectionRecordService {
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
             List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
             produceInspectionRecordDto.setPowerIds(powerIds);
+            jsonObject.remove("id");
         }else{
             //如果是新增委托，保存流水号
             if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
@@ -357,7 +357,8 @@ public class ProduceInspectionRecordService {
                     .set("check_by",SecurityUtils.getCurrentUser().getUserId())
             .set("inspect_record_no",String.valueOf(jsonObject.get("recordNo")))
             .set("report_no",String.valueOf(jsonObject.get("reportNo")))
-            .set("insp_temp_type",String.valueOf(jsonObject.get("temp_type")));
+            .set("insp_temp_type",String.valueOf(jsonObject.get("temp_type")))
+            .set("audit_status",0);
             inspectionPowerService.update(updateWrapper);
         }
 
@@ -507,7 +508,8 @@ public class ProduceInspectionRecordService {
                 map.put("optNo",item.getOptNo());
                 //产品编号
                 map.put("productNo",item.getProductNo());
-                map.put("tendId",item.getTenantId());
+                //租户id便于审核时查询对应公司的质检人员
+                map.put("tenantId",item.getTenantId());
             }
             return  map;
 
@@ -1107,7 +1109,7 @@ public class ProduceInspectionRecordService {
         //有源的
         List<InspectionPower> headItems = powers.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
         //无源的
-        List<InspectionPower> noHeadItems = powers.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
+        List<InspectionPower> noHeadItems = powers.stream().filter(item -> StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
         //有源的 key->itemid  value->工序对应的探伤任务
         Map<String, List<InspectionPower>> itemMap = headItems.stream().collect(Collectors.groupingBy(InspectionPower::getItemId));
         //有源的走下工序激活
