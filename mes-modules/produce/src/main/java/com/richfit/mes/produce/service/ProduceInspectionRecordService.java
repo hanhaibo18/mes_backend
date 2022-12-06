@@ -507,6 +507,7 @@ public class ProduceInspectionRecordService {
                 map.put("optNo",item.getOptNo());
                 //产品编号
                 map.put("productNo",item.getProductNo());
+                map.put("tendId",item.getTenantId());
             }
             return  map;
 
@@ -622,6 +623,10 @@ public class ProduceInspectionRecordService {
                     setHeadAndItemInfoToPower(powers);
                     map.put("optName",powers.get(0).getOptName());
                     map.put("optNo",powers.get(0).getOptNo());
+                    map.put("trackNo",powers.get(0).getTrackNo());
+                    map.put("texture",powers.get(0).getTexture());
+                    map.put("productNo",powers.get(0).getProductNo());
+                    map.put("drawNo",powers.get(0).getDrawNo());
                 }
                 maps.add(map);
             }
@@ -1099,9 +1104,13 @@ public class ProduceInspectionRecordService {
         QueryWrapper<InspectionPower> powerQueryWrapper = new QueryWrapper<>();
         powerQueryWrapper.in("id",powerIds);
         List<InspectionPower> powers = inspectionPowerService.list(powerQueryWrapper);
-        //key->itemid  value->工序对应的探伤任务
-        Map<String, List<InspectionPower>> itemMap = powers.stream().collect(Collectors.groupingBy(InspectionPower::getItemId));
-
+        //有源的
+        List<InspectionPower> headItems = powers.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
+        //无源的
+        List<InspectionPower> noHeadItems = powers.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
+        //有源的 key->itemid  value->工序对应的探伤任务
+        Map<String, List<InspectionPower>> itemMap = headItems.stream().collect(Collectors.groupingBy(InspectionPower::getItemId));
+        //有源的走下工序激活
         itemMap.forEach((key,values)->{
             //校验该工序的任务否全部审核通过
             List<InspectionPower> collect = values.stream().filter(item -> item.getAuditStatus() == 1).collect(Collectors.toList());
@@ -1124,8 +1133,18 @@ public class ProduceInspectionRecordService {
                     //发送分公司质检
                     toCheck(key,inspector,checkBranch);
                 }
+                for (InspectionPower value : values) {
+                    value.setIsDoing("2");
+                    inspectionPowerService.updateById(value);
+                }
             }
         });
+
+        for (InspectionPower noHeadItem : noHeadItems) {
+            noHeadItem.setIsDoing("2");
+            inspectionPowerService.updateById(noHeadItem);
+        }
+
 
     }
 
