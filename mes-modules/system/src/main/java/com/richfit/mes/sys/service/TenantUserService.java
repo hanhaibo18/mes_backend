@@ -191,4 +191,9 @@ public interface TenantUserService {
     List<TenantUserVo> queryQualityInspectionUser(String classes);
 
     List<TenantUserVo> queryUserByBranchCodePage(String branchCode);
+
+    /*
+    根据租户id查询质检人员
+     */
+    List<TenantUserVo> queryAllQualityUserByTenantId(String classes,String tenantId);
 }

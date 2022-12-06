@@ -733,7 +733,9 @@ public class TrackAssignController extends BaseController {
                 trackAssignService.removeById(ids[i]);
                 //如果是探伤工序，删除探伤委托任务
                 if ("6".equals(trackItem.getOptType())) {
-                    inspectionPowerService.removeById(assign.getPowerId());
+                    QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
+                    inspectionPowerQueryWrapper.eq("item_id",assign.getTiId());
+                    inspectionPowerService.remove(inspectionPowerQueryWrapper);
                 }
             }
         }

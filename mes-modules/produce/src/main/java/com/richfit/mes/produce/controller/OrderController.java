@@ -249,4 +249,23 @@ public class OrderController extends BaseController {
             log.error(e.getMessage());
         }
     }
+
+
+
+
+    @ApiOperation(value = "根据物料编码查询订单信息", notes = "根据物料编码查询订单信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "materialCode", value = "物料编码", paramType = "String"),
+            @ApiImplicitParam(name = "tenantId", value = "租户id", paramType = "String")
+    })
+    @PostMapping("/query_by_materialcode")
+    public CommonResult<List<Order>> queryByMaterialCode(@RequestBody List<String> materialCodes,@RequestParam("tenantId") String tenantId){
+        QueryWrapper<Order> orderWrapper = new QueryWrapper<>();
+        //根据物料号和订单号获取订单
+        orderWrapper.in("material_code", materialCodes);
+        orderWrapper.eq("tenant_id", tenantId);
+        List<Order> orderList = orderService.list(orderWrapper);
+        return CommonResult.success(orderList);
+    }
+
 }

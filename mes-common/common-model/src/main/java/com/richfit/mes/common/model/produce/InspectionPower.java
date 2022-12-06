@@ -136,7 +136,9 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否有探伤记录", dataType = "Integer")
     private int isHaveRecord;
-
+    @TableField(exist = false)
+    @ApiModelProperty(value = "最新探伤记录id", dataType = "String")
+    private String recordId ;
     public String getProductType() {
         StringBuilder productType = new StringBuilder();
         if(this.weld ==1){
