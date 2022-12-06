@@ -340,7 +340,7 @@ public class ProduceInspectionRecordService {
                 //修改之前的记录为历史记录
                 UpdateWrapper<ProduceItemInspectInfo> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("power_id",powerId)
-                        .set("is_new",0);
+                        .set("is_new","0");
                 produceItemInspectInfoService.update(updateWrapper);
             }
             produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
@@ -514,6 +514,7 @@ public class ProduceInspectionRecordService {
      * 批量撤回探伤记录
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean backoutRecord(List<String> powerIds){
 
         QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
@@ -530,7 +531,7 @@ public class ProduceInspectionRecordService {
         produceItemInspectInfoService.remove(queryWrapper);
         //将上一条记录改为当前记录
         QueryWrapper<ProduceItemInspectInfo> historyListQueryWrapper = new QueryWrapper<>();
-        queryWrapper.in("power_id",powerIds)
+        historyListQueryWrapper.in("power_id",powerIds)
                 .orderByDesc("create_time");
         List<ProduceItemInspectInfo> historyList = produceItemInspectInfoService.list(historyListQueryWrapper);
         Map<String, List<ProduceItemInspectInfo>> historyMap = historyList.stream().collect(Collectors.groupingBy(item -> item.getPowerId()));
@@ -550,7 +551,7 @@ public class ProduceInspectionRecordService {
                 inspectionPowerService.update(updateWrapper);
             }
         });
-        return false;
+        return true;
     }
 
     /**
