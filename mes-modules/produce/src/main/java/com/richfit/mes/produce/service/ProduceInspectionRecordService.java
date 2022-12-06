@@ -236,7 +236,6 @@ public class ProduceInspectionRecordService {
         //检测类型
         queryWrapper.eq(!StringUtils.isEmpty(inspectionPowerVo.getTempType()),"temp_type",inspectionPowerVo.getTempType());
         queryWrapper.orderByDesc("power_time");
-        queryWrapper.eq("tenant_id", inspectionPowerVo.getTenantId());
         return queryWrapper;
     }
 
