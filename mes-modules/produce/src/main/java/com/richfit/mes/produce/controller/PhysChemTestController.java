@@ -44,6 +44,8 @@ public class PhysChemTestController extends BaseController {
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单", paramType = "body", dataType = "physChemOrderInner")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> save(@RequestBody PhysChemOrderInner physChemOrderInner) throws Exception{
+        //力学性能参数集合
+        List<PhysChemOrderImpactDto> impacts = physChemOrderInner.getImpacts();
         if(StringUtils.isNullOrEmpty(physChemOrderInner.getId())){
             physChemOrderInner.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         }
