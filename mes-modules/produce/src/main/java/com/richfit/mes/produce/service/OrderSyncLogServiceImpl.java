@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.OrderSyncLog;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.OrderSyncLogMapper;
 import com.richfit.mes.produce.entity.QueryOrderSyncLogPageDto;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ public class OrderSyncLogServiceImpl extends ServiceImpl<OrderSyncLogMapper, Ord
         queryWrapper.ge(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getStartTime()), "modify_time", queryOrderSyncLogPageDto.getStartTime());
         //结束时间
         queryWrapper.ge(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getEndTime()), "modify_time", queryOrderSyncLogPageDto.getEndTime());
+        //根据租户查询
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return this.page(new Page<>(queryOrderSyncLogPageDto.getPage(), queryOrderSyncLogPageDto.getLimit()), queryWrapper);
     }
 }

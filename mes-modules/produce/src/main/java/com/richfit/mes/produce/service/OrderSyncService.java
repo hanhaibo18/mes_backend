@@ -29,11 +29,12 @@ public interface OrderSyncService extends IService<Order> {
      * 功能描述: 保存同步信息
      *
      * @param orderList
+     * @param time
      * @Author: xinYu.hou
      * @Date: 2022年1月18日14:19:44
      * @return: CommonResult<Boolean>
      **/
-    CommonResult<Boolean> saveOrderSync(List<Order> orderList);
+    CommonResult<Boolean> saveOrderSync(List<Order> orderList, String time, String controller, String erpCode);
 
     /**
      * 功能描述: 定时保存同步信息
@@ -43,4 +44,15 @@ public interface OrderSyncService extends IService<Order> {
      * @return: CommonResult<Boolean>
      **/
     CommonResult<Boolean> saveTimingOrderSync();
+
+    /**
+     * 功能描述: 根据订单编号同步
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2022/12/5 9:10
+     * @return: Boolean
+     **/
+    CommonResult<Boolean> saveOrderSyncOne(String id);
+
 }
