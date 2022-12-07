@@ -8,7 +8,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.Query;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,6 +15,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -27,6 +27,7 @@ import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.Code;
+import com.richfit.mes.produce.utils.OrderUtil;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
@@ -1365,86 +1366,136 @@ public class ProduceInspectionRecordService {
     }
 
     /**
+     * 委托单分页查询
+     * @param inspectionPowerVo
+     * @return
+     */
+    public IPage queryPowerOrderPage(InspectionPowerVo inspectionPowerVo) {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
+            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
+            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
+            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
+            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())){
+            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("power_time");
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())){
+            //有源委托单
+            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+            //无源委托单
+            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+        }
+        Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
+        //委托人转换
+        for (InspectionPower record : page.getRecords()) {
+            if (!ObjectUtil.isEmpty(record.getConsignor())) {
+                String consignor = record.getConsignor();
+                TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
+                record.setConsignor(data.getEmplName());
+            }
+        }
+        return page;
+    }
+
+    /*
      * 导出委托单
      * @param parentId
      * @param branchCode
      * @param rsp
-     *//*
-    public void exportExcel(, HttpServletResponse rsp) {
+     */
+    public void exportExcel(InspectionPowerVo inspectionPowerVo, HttpServletResponse rsp) {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
+            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
+            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
+            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
+            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())){
+            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("power_time");
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())){
+            //有源委托单
+            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+            //无源委托单
+            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+        }
+        List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
+        TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+        for (InspectionPower inspectionPower : list) {
+            if(inspectionPower.getStatus() == 0){
+                inspectionPower.setStatusShow("待委托");
+            }
+            if(inspectionPower.getStatus() == 1){
+                inspectionPower.setStatusShow("已委托");
+            }
+            if(inspectionPower.getStatus() == 2){
+                inspectionPower.setStatusShow("驳回");
+            }
+            inspectionPower.setConsignor(data.getEmplName());
+            inspectionPower.setComeFromDepart(data.getBelongOrgId());
+        }
+
         try {
-            QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
-            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
-            }
-            //根据设备导出所有当前设备下的所有信息
-            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(parentId)) {
-                queryWrapper.eq("parent_id", parentId);
-            }
-            queryWrapper.orderByDesc("modify_time");
-            List<Device> list = this.list(queryWrapper);
 
-            //人员信息校验
-            List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCodeList(branchCode).getData();
-            Map<String, TenantUserVo> tenantUserVosMap = tenantUserVos.stream().collect(Collectors.toMap(TenantUserVo::getUserAccount, Function.identity()));
+            String fileName = "委托单导出_" + DateUtil.format(DateUtil.date(),"YYYY-MM-dd") + ".xlsx";
 
-            for (Device device : list) {
-                if (DEVICE.equals(device.getType()) && device.getType() != null) {
-                    device.setType("设备");
-                } else if (GROUP.equals(device.getType()) && device.getType() != null) {
-                    device.setType("设备组");
-                }
-                if (DEVICE.equals(device.getStatus()) && device.getStatus() != null) {
-                    device.setStatus("否");
-                } else if (GROUP.equals(device.getStatus()) && device.getStatus() != null) {
-                    device.setStatus("是");
-                }
-                if (DEVICE.equals(device.getRunStatus()) && device.getRunStatus() != null) {
-                    device.setRunStatus("否");
-                } else if (GROUP.equals(device.getRunStatus()) && device.getRunStatus() != null) {
-                    device.setRunStatus("是");
-                }
-                //人员信息
-                List<DevicePerson> devicePerson = devicePersonService.list(new QueryWrapper<DevicePerson>().eq("device_id", device.getId()));
-                //管理人员（：隔开）
-                StringBuilder userAccount = new StringBuilder();
-                //管理人员名称
-                StringBuilder userName = new StringBuilder();
-                //派工默认人员（：隔开）
-                StringBuilder task = new StringBuilder();
-                for (DevicePerson person : devicePerson) {
-                    if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(userAccount.toString())){
-                        userAccount.append(":");
-                    }
-                    userAccount.append(person.getUserId());
-                    if(IS_DEFAULT == person.getIsDefault()){
-                        if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(task.toString())){
-                            task.append(":");
-                        }
-                        task.append(person.getUserId());
-                    }
-                    if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(userName.toString())){
-                        userName.append(":");
-                    }
-                    userName.append(ObjectUtil.isEmpty(tenantUserVosMap.get(person.getUserId()))?" ":tenantUserVosMap.get(person.getUserId()).getEmplName());
-                }
-                device.setUserAccount(userAccount.toString());
-                device.setUserName(userName.toString());
-                device.setTask(task.toString());
-            }
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+            String[] columnHeaders = {"委托单号", "状态", "钻机号", "样品名称", "图号", "检测类型", "产品类型", "数量", "探伤站", "探伤类型", "单重","长度","处数","创建人","创建单位","创建时间"};
 
-            String fileName = "设备列表_" + format.format(new Date()) + ".xlsx";
-
-            String[] columnHeaders = {"设备编码", "设备名称", "型号", "类型(设备或设备组)", "制造商", "入库时间", "出库时间", "是否启用(是或否)", "运行状态(是或否)", "修改时间", "修改人","关联设备人员账号(:隔开)","人员名称","派工默认人员"};
-
-            String[] fieldNames = {"code", "name", "model", "type", "maker", "inTime", "outTime", "status", "runStatus", "modifyTime", "modifyBy","userAccount","userName","task"};
+            String[] fieldNames = {"orderNo", "statusShow", "drilNo", "sampleName", "drawNo", "tempType", "productType", "num", "inspectionDepart", "checkType", "single","length","reviseNum","consignor","comeFromDepart","createTime"};
 
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-    }*/
+    }
 
 
 
