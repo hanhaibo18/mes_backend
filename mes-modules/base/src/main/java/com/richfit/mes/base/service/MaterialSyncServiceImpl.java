@@ -79,7 +79,7 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
             QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("material_no", product.getMaterialNo());
             //同步开关字段 Autosyns  值为空 或者为 y  默认同步
-            if (product.getAutosyns().isEmpty()||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
+            if (ObjectUtil.isEmpty(product.getAutosyns())||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
                 boolean save = materialSyncService.updateById(product);
                 if (save) {
                     data = true;
@@ -135,7 +135,7 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                         List<Product> list = materialSyncService.list(queryWrapper);
                         Map<String, Product> existPorduct = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
                         //同步开关字段 Autosyns  值为空 或者为 y  默认同步
-                        if (product.getAutosyns().isEmpty()||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
+                        if (ObjectUtil.isEmpty(product.getAutosyns())||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
                             //不存在才去新增
                             if(ObjectUtil.isEmpty(existPorduct.get(product.getMaterialNo()))){
                             materialSyncService.save(product);
