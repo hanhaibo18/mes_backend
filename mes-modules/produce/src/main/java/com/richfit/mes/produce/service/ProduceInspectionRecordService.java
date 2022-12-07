@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /***
  * 探伤记录
@@ -174,7 +173,9 @@ public class ProduceInspectionRecordService {
             QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
             itemInspectInfoQueryWrapper.eq("power_id", inspectionPower.getId()).eq("is_new","1");
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
-            inspectionPower.setRecordId(list.get(0).getInspectRecordId());
+            if(list.size()>0){
+                inspectionPower.setRecordId(list.get(0).getInspectRecordId());
+            }
         }
     }
 
@@ -1362,6 +1363,90 @@ public class ProduceInspectionRecordService {
         }
         return true;
     }
+
+    /**
+     * 导出委托单
+     * @param parentId
+     * @param branchCode
+     * @param rsp
+     *//*
+    public void exportExcel(, HttpServletResponse rsp) {
+        try {
+            QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            //根据设备导出所有当前设备下的所有信息
+            if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(parentId)) {
+                queryWrapper.eq("parent_id", parentId);
+            }
+            queryWrapper.orderByDesc("modify_time");
+            List<Device> list = this.list(queryWrapper);
+
+            //人员信息校验
+            List<TenantUserVo> tenantUserVos = systemServiceClient.queryUserByBranchCodeList(branchCode).getData();
+            Map<String, TenantUserVo> tenantUserVosMap = tenantUserVos.stream().collect(Collectors.toMap(TenantUserVo::getUserAccount, Function.identity()));
+
+            for (Device device : list) {
+                if (DEVICE.equals(device.getType()) && device.getType() != null) {
+                    device.setType("设备");
+                } else if (GROUP.equals(device.getType()) && device.getType() != null) {
+                    device.setType("设备组");
+                }
+                if (DEVICE.equals(device.getStatus()) && device.getStatus() != null) {
+                    device.setStatus("否");
+                } else if (GROUP.equals(device.getStatus()) && device.getStatus() != null) {
+                    device.setStatus("是");
+                }
+                if (DEVICE.equals(device.getRunStatus()) && device.getRunStatus() != null) {
+                    device.setRunStatus("否");
+                } else if (GROUP.equals(device.getRunStatus()) && device.getRunStatus() != null) {
+                    device.setRunStatus("是");
+                }
+                //人员信息
+                List<DevicePerson> devicePerson = devicePersonService.list(new QueryWrapper<DevicePerson>().eq("device_id", device.getId()));
+                //管理人员（：隔开）
+                StringBuilder userAccount = new StringBuilder();
+                //管理人员名称
+                StringBuilder userName = new StringBuilder();
+                //派工默认人员（：隔开）
+                StringBuilder task = new StringBuilder();
+                for (DevicePerson person : devicePerson) {
+                    if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(userAccount.toString())){
+                        userAccount.append(":");
+                    }
+                    userAccount.append(person.getUserId());
+                    if(IS_DEFAULT == person.getIsDefault()){
+                        if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(task.toString())){
+                            task.append(":");
+                        }
+                        task.append(person.getUserId());
+                    }
+                    if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(userName.toString())){
+                        userName.append(":");
+                    }
+                    userName.append(ObjectUtil.isEmpty(tenantUserVosMap.get(person.getUserId()))?" ":tenantUserVosMap.get(person.getUserId()).getEmplName());
+                }
+                device.setUserAccount(userAccount.toString());
+                device.setUserName(userName.toString());
+                device.setTask(task.toString());
+            }
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName = "设备列表_" + format.format(new Date()) + ".xlsx";
+
+            String[] columnHeaders = {"设备编码", "设备名称", "型号", "类型(设备或设备组)", "制造商", "入库时间", "出库时间", "是否启用(是或否)", "运行状态(是或否)", "修改时间", "修改人","关联设备人员账号(:隔开)","人员名称","派工默认人员"};
+
+            String[] fieldNames = {"code", "name", "model", "type", "maker", "inTime", "outTime", "status", "runStatus", "modifyTime", "modifyBy","userAccount","userName","task"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }*/
+
+
 
     /**
      * 分页查询探伤派工信息
