@@ -162,4 +162,8 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
      * 是否显示
      */
     private String isShow;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零部件名称", dataType = "String")
+    private String productName;
 }

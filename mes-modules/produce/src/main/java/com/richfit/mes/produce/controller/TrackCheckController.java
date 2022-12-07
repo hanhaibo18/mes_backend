@@ -249,6 +249,7 @@ public class TrackCheckController extends BaseController {
                 if (null != trackHead) {
                     check.setDrawingNo(trackHead.getDrawingNo());
                     check.setTrackNo(trackHead.getTrackNo());
+                    check.setProductName(trackHead.getProductName());
                 }
                 if (null != trackItem) {
                     check.setNumber(trackItem.getNumber());
