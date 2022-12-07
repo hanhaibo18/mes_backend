@@ -54,7 +54,7 @@ public interface QualityInspectionRulesService extends IService<QualityInspectio
      * @Date: 2022/7/28 10:29
      * @return: IPage<QualityInspectionRules>
      **/
-    IPage<QualityInspectionRules> queryQualityInspectionRulesPage(String stateName, long page, long limit, String order, String orderCol);
+    IPage<QualityInspectionRules> queryQualityInspectionRulesPage(String stateName, String branchCode, long page, long limit, String order, String orderCol);
 
     /**
      * 功能描述: 导出到Excel

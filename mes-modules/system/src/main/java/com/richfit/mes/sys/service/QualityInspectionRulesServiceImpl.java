@@ -55,11 +55,12 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
     }
 
     @Override
-    public IPage<QualityInspectionRules> queryQualityInspectionRulesPage(String stateName, long page, long limit, String order, String orderCol) {
+    public IPage<QualityInspectionRules> queryQualityInspectionRulesPage(String stateName, String branchCode, long page, long limit, String order, String orderCol) {
         QueryWrapper<QualityInspectionRules> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(stateName)) {
             queryWrapper.eq("state_name", stateName);
         }
+        queryWrapper.eq(StrUtil.isNotBlank(branchCode), "branchCode", branchCode);
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
                 if ("desc".equals(order)) {
