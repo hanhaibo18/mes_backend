@@ -42,18 +42,13 @@ import java.util.List;
 @RequestMapping("/api/produce/inspectionRecord")
 public class ProduceInspectionRecordController extends BaseController {
 
-    private static final Integer YES_OPERA = 1; //已报工
-    private static final Integer NO_OPERA = 0; //未报工
 
     private final static int IS_STATUS = 1;
-    private final static int NO_STATUS = 0;
 
     @Autowired
     private ProduceInspectionRecordService produceInspectionRecordService;
     @Autowired
     private InspectionPowerService inspectionPowerService;
-    @Autowired
-    private ProduceItemInspectInfoService produceItemInspectInfoService;
 
 
     /**
@@ -168,55 +163,8 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "分页查询委托单", notes = "分页查询委托单")
     @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
     @PostMapping("/inspectionPower/page")
-    public CommonResult<IPage> queryPowerOrderPage(@RequestBody InspectionPowerVo inspectionPowerVo) throws Exception {
-        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
-        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
-            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
-            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
-            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
-        }
-        if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
-            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
-        }
-        if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
-            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
-            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getStatus())){
-            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
-            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
-        }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
-        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
-            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
-        }else{
-            queryWrapper.orderByDesc("power_time");
-        }
-        if(!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())){
-            //有源委托单
-            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
-            //无源委托单
-            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
-        }
-        Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
-        //委托人转换
-        for (InspectionPower record : page.getRecords()) {
-            if (!ObjectUtil.isEmpty(record.getConsignor())) {
-                String consignor = record.getConsignor();
-                TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
-                record.setConsignor(data.getEmplName());
-            }
-        }
-        return CommonResult.success(page);
+    public CommonResult<IPage> queryPowerOrderPage(@RequestBody InspectionPowerVo inspectionPowerVo){
+        return CommonResult.success(produceInspectionRecordService.queryPowerOrderPage(inspectionPowerVo));
     }
 
 
@@ -257,6 +205,12 @@ public class ProduceInspectionRecordController extends BaseController {
             return CommonResult.failed("该委托单已经委托，不能删除");
         }
         return CommonResult.success(inspectionPowerService.removeById(id));
+    }
+
+    @ApiOperation(value = "导出委托单", notes = "导出委托单信息")
+    @PostMapping("/inspectionPower/export_excel")
+    public void exportExcel(@RequestBody InspectionPowerVo inspectionPowerVo, HttpServletResponse rsp) {
+        produceInspectionRecordService.exportExcel(inspectionPowerVo,rsp);
     }
 
 

@@ -386,7 +386,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //添加跟单
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
-            
+
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 trackAssemblyService.addTrackAssemblyByTrackHead(trackHead);
@@ -823,6 +823,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation trackHeadRelation : trackHeadRelations) {
                 LineStore lineStore = lineStoreService.getById(trackHeadRelation.getLsId());
+                //TODO:不了解业务临时处理一下
+                if (lineStore == null) {
+                    continue;
+                }
                 lineStore.setStatus("0");
                 lineStoreService.updateById(lineStore);
             }

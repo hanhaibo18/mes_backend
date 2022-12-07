@@ -8,7 +8,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.Query;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,6 +15,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -27,6 +27,7 @@ import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.Code;
+import com.richfit.mes.produce.utils.OrderUtil;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
@@ -169,6 +170,12 @@ public class ProduceInspectionRecordService {
                 inspectionPower.setOptNo(item.getOptNo());
                 //产品编号
                 inspectionPower.setProductNo(item.getProductNo());
+            }
+            QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
+            itemInspectInfoQueryWrapper.eq("power_id", inspectionPower.getId()).eq("is_new","1");
+            List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+            if(list.size()>0){
+                inspectionPower.setRecordId(list.get(0).getInspectRecordId());
             }
         }
     }
@@ -357,7 +364,8 @@ public class ProduceInspectionRecordService {
                     .set("check_by",SecurityUtils.getCurrentUser().getUserId())
             .set("inspect_record_no",String.valueOf(jsonObject.get("recordNo")))
             .set("report_no",String.valueOf(jsonObject.get("reportNo")))
-            .set("insp_temp_type",String.valueOf(jsonObject.get("temp_type")))
+            .set("insp_temp_type",String.valueOf(jsonObject.get("tempType")))
+                    .set("flaw_detection",String.valueOf(jsonObject.get("inspectionResults")))
             .set("audit_status",0);
             inspectionPowerService.update(updateWrapper);
         }
@@ -572,7 +580,6 @@ public class ProduceInspectionRecordService {
         QueryWrapper<ProduceItemInspectInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper
                 .and(warpper1->warpper1.eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(warpper -> warpper.eq("audit_by", "/")))
-                .eq("is_new","1")
                 .eq(!StringUtils.isEmpty(inspectionPowerVo.getRecordNo()),"record_no",inspectionPowerVo.getRecordNo())
                 .ge(!StringUtils.isEmpty(inspectionPowerVo.getStartTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getStartTime())
                 .le(!StringUtils.isEmpty(inspectionPowerVo.getEndTime()),"date_format(modify_time, '%Y-%m-%d')",inspectionPowerVo.getEndTime())
@@ -580,7 +587,8 @@ public class ProduceInspectionRecordService {
                 .orderByDesc("modify_time");
         if(!StringUtils.isEmpty(inspectionPowerVo.getIsAudit())){
             if("0".equals(inspectionPowerVo.getIsAudit())){
-                queryWrapper.eq("is_audit","0");
+                queryWrapper.eq("is_audit","0")
+                        .eq("is_new","1");
             }else{
                 queryWrapper.ne("is_audit","0");
             }
@@ -1047,6 +1055,7 @@ public class ProduceInspectionRecordService {
      * @param isAudit
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean auditByRecord(String id, String tempType, String isAudit, String auditRemark,String inspector,String checkBranch) {
         if (InspectionRecordTypeEnum.MT.getType().equals(tempType)) {
             UpdateWrapper<ProduceInspectionRecordMt> updateWrapper = new UpdateWrapper<>();
@@ -1080,28 +1089,28 @@ public class ProduceInspectionRecordService {
         inspectionPowerUpdateWrapper.in("id",powerIds)
                 .set("audit_status",isAudit)
                 .set("audit_remark",auditRemark)
-                .set("audit_by",SecurityUtils.getCurrentUser().getUserId());
+                .set("audit_by",SecurityUtils.getCurrentUser().getUserId())
+                .set("inspector",inspector)
+                .set("check_branch",checkBranch);
         inspectionPowerService.update(inspectionPowerUpdateWrapper);
+        //审核通过判断下工序是否激活
+        if("1".equals(isAudit)){
+            isToNextItemDeal(id);
+        }
 
-        isToNextItemDeal(id,inspector,checkBranch);
         return true;
     }
 
     //是否下工序处理
-    public void isToNextItemDeal(String recordId,String inspector,String checkBranch){
-        //根据探伤记录查询中间表得到探伤任务
+    @Transactional(rollbackFor = Exception.class)
+    public void isToNextItemDeal(String recordId){
+        //1、根据探伤记录查询中间表得到探伤任务
         QueryWrapper<ProduceItemInspectInfo> inspectQueryWrapper = new QueryWrapper<>();
         inspectQueryWrapper.eq("inspect_record_id",recordId)
                 .eq("is_new","1");
         List<ProduceItemInspectInfo> inspects = produceItemInspectInfoService.list(inspectQueryWrapper);
         //探伤任务id
         List<String> powerIds = inspects.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
-        //所有任务中间表信息(便于取值)
-        QueryWrapper<ProduceItemInspectInfo> inspectQueryWrapper2 = new QueryWrapper<>();
-        inspectQueryWrapper2.eq("power_id",powerIds)
-                .eq("is_new","1");
-        Map<String, ProduceItemInspectInfo> inspectMap = produceItemInspectInfoService.list(inspectQueryWrapper).stream().collect(Collectors.toMap(ProduceItemInspectInfo::getPowerId, Function.identity()));
-
         //探伤任务信息
         QueryWrapper<InspectionPower> powerQueryWrapper = new QueryWrapper<>();
         powerQueryWrapper.in("id",powerIds);
@@ -1110,21 +1119,38 @@ public class ProduceInspectionRecordService {
         List<InspectionPower> headItems = powers.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
         //无源的
         List<InspectionPower> noHeadItems = powers.stream().filter(item -> StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
-        //有源的 key->itemid  value->工序对应的探伤任务
-        Map<String, List<InspectionPower>> itemMap = headItems.stream().collect(Collectors.groupingBy(InspectionPower::getItemId));
+
+        //2、关联此记录的有源的跟单工序
+        List<String> items = headItems.stream().map(InspectionPower::getItemId).collect(Collectors.toList());
+        QueryWrapper<InspectionPower> itemTasksWrapper = new QueryWrapper<>();
+        itemTasksWrapper.in("item_id",items);
+        List<InspectionPower> itemPowerList = inspectionPowerService.list(itemTasksWrapper);
+        //分组   判断关联此记录的跟单工序的各个探伤任务状态
+        Map<String, List<InspectionPower>> itemPowerGroup = itemPowerList.stream().collect(Collectors.groupingBy(InspectionPower::getItemId));
+        //关联此记录的工序的全部任务id
+        List<String> allPowerIds = itemPowerList.stream().map(InspectionPower::getId).collect(Collectors.toList());
+        //根据任务查询合格不合格
+        QueryWrapper<ProduceItemInspectInfo> inspectInfoQueryWrapper = new QueryWrapper<>();
+        inspectInfoQueryWrapper.in("power_id",allPowerIds)
+                .eq("is_new","1");
+        List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(inspectInfoQueryWrapper);
+
+        Map<String, String> powerResultsMap = list.stream().collect(Collectors.toMap(ProduceItemInspectInfo::getPowerId, ProduceItemInspectInfo::getInspectionResults));
+
+
+
         //有源的走下工序激活
-        itemMap.forEach((key,values)->{
+        itemPowerGroup.forEach((key,values)->{
             //校验该工序的任务否全部审核通过
             List<InspectionPower> collect = values.stream().filter(item -> item.getAuditStatus() == 1).collect(Collectors.toList());
             if(values.size() == collect.size()){
                 //是否激活下工序标识
                 boolean flag = true;
                 for (InspectionPower value : values) {
-                    ProduceItemInspectInfo produceItemInspectInfo = inspectMap.get(value.getId());
                     //核验结果
-                    String inspectionResults = produceItemInspectInfo.getInspectionResults();
+                    String inspectionResults = powerResultsMap.get(value.getId());
                     //不合格
-                    if("1".equals(inspectionResults)){
+                    if("0".equals(inspectionResults)){
                         flag = false;
                     }
                 }
@@ -1132,8 +1158,11 @@ public class ProduceInspectionRecordService {
                     //激活下工序
                     auditSubmitRecord(key, null, null, null, null, null, null);
                 }else{
+                    //如果不合格 发送最近审核不合格的质检人 降序排列取第一个
+                    List<InspectionPower> noStandardList = values.stream().filter(item -> "0".equals(item.getFlawDetection())).collect(Collectors.toList());
+                    noStandardList.sort((t1, t2) -> t2.getModifyTime().compareTo(t1.getModifyTime()));
                     //发送分公司质检
-                    toCheck(key,inspector,checkBranch);
+                    toCheck(key,noStandardList.get(0).getInspector(),noStandardList.get(0).getCheckBranch());
                 }
                 for (InspectionPower value : values) {
                     value.setIsDoing("2");
@@ -1342,6 +1371,140 @@ public class ProduceInspectionRecordService {
         }
         return true;
     }
+
+    /**
+     * 委托单分页查询
+     * @param inspectionPowerVo
+     * @return
+     */
+    public IPage queryPowerOrderPage(InspectionPowerVo inspectionPowerVo) {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
+            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
+            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
+            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
+            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())){
+            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("power_time");
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())){
+            //有源委托单
+            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+            //无源委托单
+            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+        }
+        Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
+        //委托人转换
+        for (InspectionPower record : page.getRecords()) {
+            if (!ObjectUtil.isEmpty(record.getConsignor())) {
+                String consignor = record.getConsignor();
+                TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
+                record.setConsignor(data.getEmplName());
+            }
+        }
+        return page;
+    }
+
+    /*
+     * 导出委托单
+     * @param parentId
+     * @param branchCode
+     * @param rsp
+     */
+    public void exportExcel(InspectionPowerVo inspectionPowerVo, HttpServletResponse rsp) {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
+            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
+            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
+            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
+            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())){
+            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
+        }
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
+            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("power_time");
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())){
+            //有源委托单
+            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+            //无源委托单
+            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
+        }
+        List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
+        TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+        for (InspectionPower inspectionPower : list) {
+            if(inspectionPower.getStatus() == 0){
+                inspectionPower.setStatusShow("待委托");
+            }
+            if(inspectionPower.getStatus() == 1){
+                inspectionPower.setStatusShow("已委托");
+            }
+            if(inspectionPower.getStatus() == 2){
+                inspectionPower.setStatusShow("驳回");
+            }
+            inspectionPower.setConsignor(data.getEmplName());
+            inspectionPower.setComeFromDepart(data.getBelongOrgId());
+        }
+
+        try {
+
+            String fileName = "委托单导出_" + DateUtil.format(DateUtil.date(),"YYYY-MM-dd") + ".xlsx";
+
+            String[] columnHeaders = {"委托单号", "状态", "钻机号", "样品名称", "图号", "检测类型", "产品类型", "数量", "探伤站", "探伤类型", "单重","长度","处数","创建人","创建单位","创建时间"};
+
+            String[] fieldNames = {"orderNo", "statusShow", "drilNo", "sampleName", "drawNo", "tempType", "productType", "num", "inspectionDepart", "checkType", "single","length","reviseNum","consignor","comeFromDepart","createTime"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+
 
     /**
      * 分页查询探伤派工信息

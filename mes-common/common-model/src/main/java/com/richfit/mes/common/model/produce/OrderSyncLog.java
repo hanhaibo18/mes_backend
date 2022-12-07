@@ -21,6 +21,14 @@ public class OrderSyncLog extends BaseEntity<OrderSyncLog> {
     private String syncState;
     @ApiModelProperty(value = "同步意见", dataType = "String")
     private String opinion;
+    @ApiModelProperty(value = "订单号", dataType = "String")
+    private String orderSn;
+    @ApiModelProperty(value = "订单查询时间", dataType = "String")
+    private String orderSyncTime;
+    @ApiModelProperty(value = "erp车间", dataType = "String")
+    private String erpCode;
+    @ApiModelProperty(value = "控制者", dataType = "String")
+    private String controller;
     @ApiModelProperty(value = "租户Id", dataType = "String")
     private String tenantId;
     @ApiModelProperty(value = "车间", dataType = "String")

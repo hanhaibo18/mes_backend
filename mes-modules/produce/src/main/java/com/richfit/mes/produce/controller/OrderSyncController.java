@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.produce.entity.OrderSyncDto;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
 import com.richfit.mes.produce.service.OrderSyncService;
 import io.swagger.annotations.Api;
@@ -61,15 +62,15 @@ public class OrderSyncController {
     /**
      * 功能描述: 保存同步信息
      *
-     * @param orderList
+     * @param orderSyncDto
      * @Author: xinYu.hou
      * @Date: 2022年1月18日14:19:44
      * @return: CommonResult<Boolean>
      **/
     @ApiOperation(value = "保存采购订单", notes = "保存采购订单")
     @PostMapping("/synchronization_save")
-    public CommonResult<Boolean> saveOrderSynchronization(@RequestBody List<Order> orderList) {
-        return orderSyncService.saveOrderSync(orderList);
+    public CommonResult<Boolean> saveOrderSynchronization(@RequestBody OrderSyncDto orderSyncDto) {
+        return orderSyncService.saveOrderSync(orderSyncDto.getOrderList(), orderSyncDto.getTime(), orderSyncDto.getController(), orderSyncDto.getErpCode());
     }
 
     @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")
@@ -99,5 +100,11 @@ public class OrderSyncController {
             log.error(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @ApiOperation(value = "日志同步", notes = "日志列表同步订单")
+    @GetMapping("/save_order_one")
+    public CommonResult<Boolean> saveOrderSyncOne(String id) {
+        return orderSyncService.saveOrderSyncOne(id);
     }
 }
