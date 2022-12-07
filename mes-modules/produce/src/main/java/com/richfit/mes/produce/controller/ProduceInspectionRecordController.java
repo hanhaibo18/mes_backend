@@ -42,18 +42,13 @@ import java.util.List;
 @RequestMapping("/api/produce/inspectionRecord")
 public class ProduceInspectionRecordController extends BaseController {
 
-    private static final Integer YES_OPERA = 1; //已报工
-    private static final Integer NO_OPERA = 0; //未报工
 
     private final static int IS_STATUS = 1;
-    private final static int NO_STATUS = 0;
 
     @Autowired
     private ProduceInspectionRecordService produceInspectionRecordService;
     @Autowired
     private InspectionPowerService inspectionPowerService;
-    @Autowired
-    private ProduceItemInspectInfoService produceItemInspectInfoService;
 
 
     /**

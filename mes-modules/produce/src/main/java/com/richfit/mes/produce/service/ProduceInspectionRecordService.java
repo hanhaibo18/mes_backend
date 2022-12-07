@@ -364,7 +364,8 @@ public class ProduceInspectionRecordService {
                     .set("check_by",SecurityUtils.getCurrentUser().getUserId())
             .set("inspect_record_no",String.valueOf(jsonObject.get("recordNo")))
             .set("report_no",String.valueOf(jsonObject.get("reportNo")))
-            .set("insp_temp_type",String.valueOf(jsonObject.get("temp_type")))
+            .set("insp_temp_type",String.valueOf(jsonObject.get("tempType")))
+                    .set("flaw_detection",String.valueOf(jsonObject.get("inspectionResults")))
             .set("audit_status",0);
             inspectionPowerService.update(updateWrapper);
         }
@@ -1088,18 +1089,21 @@ public class ProduceInspectionRecordService {
         inspectionPowerUpdateWrapper.in("id",powerIds)
                 .set("audit_status",isAudit)
                 .set("audit_remark",auditRemark)
-                .set("audit_by",SecurityUtils.getCurrentUser().getUserId());
+                .set("audit_by",SecurityUtils.getCurrentUser().getUserId())
+                .set("inspector",inspector)
+                .set("check_branch",checkBranch);
         inspectionPowerService.update(inspectionPowerUpdateWrapper);
         //审核通过判断下工序是否激活
         if("1".equals(isAudit)){
-            isToNextItemDeal(id,inspector,checkBranch);
+            isToNextItemDeal(id);
         }
 
         return true;
     }
 
     //是否下工序处理
-    public void isToNextItemDeal(String recordId,String inspector,String checkBranch){
+    @Transactional(rollbackFor = Exception.class)
+    public void isToNextItemDeal(String recordId){
         //1、根据探伤记录查询中间表得到探伤任务
         QueryWrapper<ProduceItemInspectInfo> inspectQueryWrapper = new QueryWrapper<>();
         inspectQueryWrapper.eq("inspect_record_id",recordId)
@@ -1154,8 +1158,11 @@ public class ProduceInspectionRecordService {
                     //激活下工序
                     auditSubmitRecord(key, null, null, null, null, null, null);
                 }else{
+                    //如果不合格 发送最近审核不合格的质检人 降序排列取第一个
+                    List<InspectionPower> noStandardList = values.stream().filter(item -> "0".equals(item.getFlawDetection())).collect(Collectors.toList());
+                    noStandardList.sort((t1, t2) -> t2.getModifyTime().compareTo(t1.getModifyTime()));
                     //发送分公司质检
-                    toCheck(key,inspector,checkBranch);
+                    toCheck(key,noStandardList.get(0).getInspector(),noStandardList.get(0).getCheckBranch());
                 }
                 for (InspectionPower value : values) {
                     value.setIsDoing("2");

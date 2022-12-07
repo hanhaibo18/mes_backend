@@ -74,9 +74,14 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String assignTime;
     @ApiModelProperty(value = "指派状态（0、未派  1、已派）")
     private int assignStatus;
+    @ApiModelProperty(value = "质检人", dataType = "String")
+    private String inspector;
+    @ApiModelProperty(value = "质检人部门",dataType = "String")
+    private String checkBranch;
 
-    @ApiModelProperty(value = "探伤结果", required = true)
-    private Integer flawDetection;
+
+    @ApiModelProperty(value = "探伤结果(0不合格 1合格)", required = true)
+    private String flawDetection;
     @ApiModelProperty(value = "探伤报告号", required = true)
     private String reportNo;
     @ApiModelProperty(value = "探伤备注", required = true)
