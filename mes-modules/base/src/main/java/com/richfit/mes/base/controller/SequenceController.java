@@ -281,6 +281,8 @@ public class SequenceController extends BaseController {
                     sequence.setBranchCode(branchCode);
                     sequence.setOptCode(sequence.getOptName());
                     sequence.setRouterId(routerId);
+                    //有无图纸默认0 无
+                    sequence.setDrawing("0");
                 }
 //                Sequence sequenceOld = sequenceService.getById(sequence.getId());
 //                if (!sequence.getOptType().equals(sequenceOld.getOptType())) {

@@ -363,8 +363,8 @@ public class ProduceInspectionRecordService {
                     .set("audit_by",String.valueOf(jsonObject.get("auditBy")))
                     .set("check_by",SecurityUtils.getCurrentUser().getUserId())
             .set("inspect_record_no",String.valueOf(jsonObject.get("recordNo")))
-            .set("report_no",String.valueOf(jsonObject.get("reportNo")))
-            .set("insp_temp_type",String.valueOf(jsonObject.get("tempType")))
+            .set(StringUtils.isEmpty(String.valueOf(jsonObject.get("reportNo"))),"report_no",String.valueOf(jsonObject.get("reportNo")))
+            .set("insp_temp_type",tempType)
                     .set("flaw_detection",String.valueOf(jsonObject.get("inspectionResults")))
             .set("audit_status",0);
             inspectionPowerService.update(updateWrapper);
@@ -506,6 +506,8 @@ public class ProduceInspectionRecordService {
                 map.put("projectName",trackHead.getProjectName());
                 //材质
                 map.put("texture",trackHead.getTexture());
+                //跟单类型
+                map.put("classes",trackHead.getClasses());
             }
             //赋工序属性
             TrackItem item = trackItemService.getById(power.getItemId());
@@ -637,7 +639,9 @@ public class ProduceInspectionRecordService {
                     map.put("texture",powers.get(0).getTexture());
                     map.put("productNo",powers.get(0).getProductNo());
                     map.put("drawNo",powers.get(0).getDrawNo());
+                    map.put("checkType",powers.get(0).getCheckType());
                 }
+                //ge
                 maps.add(map);
             }
         }
@@ -1127,7 +1131,7 @@ public class ProduceInspectionRecordService {
         List<InspectionPower> itemPowerList = inspectionPowerService.list(itemTasksWrapper);
         //分组   判断关联此记录的跟单工序的各个探伤任务状态
         Map<String, List<InspectionPower>> itemPowerGroup = itemPowerList.stream().collect(Collectors.groupingBy(InspectionPower::getItemId));
-        //关联此记录的工序的全部任务id
+        /*//关联此记录的工序的全部任务id
         List<String> allPowerIds = itemPowerList.stream().map(InspectionPower::getId).collect(Collectors.toList());
         //根据任务查询合格不合格
         QueryWrapper<ProduceItemInspectInfo> inspectInfoQueryWrapper = new QueryWrapper<>();
@@ -1135,41 +1139,43 @@ public class ProduceInspectionRecordService {
                 .eq("is_new","1");
         List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(inspectInfoQueryWrapper);
 
-        Map<String, String> powerResultsMap = list.stream().collect(Collectors.toMap(ProduceItemInspectInfo::getPowerId, ProduceItemInspectInfo::getInspectionResults));
+        Map<String, String> powerResultsMap = list.stream().collect(Collectors.toMap(ProduceItemInspectInfo::getPowerId, ProduceItemInspectInfo::getInspectionResults));*/
 
 
 
         //有源的走下工序激活
-        itemPowerGroup.forEach((key,values)->{
+        for (Map.Entry<String, List<InspectionPower>> entry : itemPowerGroup.entrySet()) {
+            String key = entry.getKey();
+            List<InspectionPower> values = entry.getValue();
             //校验该工序的任务否全部审核通过
             List<InspectionPower> collect = values.stream().filter(item -> item.getAuditStatus() == 1).collect(Collectors.toList());
-            if(values.size() == collect.size()){
+            if (values.size() == collect.size()) {
                 //是否激活下工序标识
                 boolean flag = true;
                 for (InspectionPower value : values) {
                     //核验结果
-                    String inspectionResults = powerResultsMap.get(value.getId());
+                    String inspectionResults = value.getFlawDetection();
                     //不合格
-                    if("0".equals(inspectionResults)){
+                    if ("0".equals(inspectionResults)) {
                         flag = false;
                     }
                 }
-                if(flag){
+                if (flag) {
                     //激活下工序
                     auditSubmitRecord(key, null, null, null, null, null, null);
-                }else{
+                } else {
                     //如果不合格 发送最近审核不合格的质检人 降序排列取第一个
                     List<InspectionPower> noStandardList = values.stream().filter(item -> "0".equals(item.getFlawDetection())).collect(Collectors.toList());
                     noStandardList.sort((t1, t2) -> t2.getModifyTime().compareTo(t1.getModifyTime()));
                     //发送分公司质检
-                    toCheck(key,noStandardList.get(0).getInspector(),noStandardList.get(0).getCheckBranch());
+                    toCheck(key, noStandardList.get(0).getInspector(), noStandardList.get(0).getCheckBranch());
                 }
                 for (InspectionPower value : values) {
                     value.setIsDoing("2");
                     inspectionPowerService.updateById(value);
                 }
             }
-        });
+        }
 
         for (InspectionPower noHeadItem : noHeadItems) {
             noHeadItem.setIsDoing("2");

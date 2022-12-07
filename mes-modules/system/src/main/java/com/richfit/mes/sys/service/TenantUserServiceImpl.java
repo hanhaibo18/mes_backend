@@ -363,7 +363,8 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             String steelworkRole = branchCode + "_JMAQ_JJZJ";
         }
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("role_code", codeList);
+        //判断如果codeList 为空会报错
+        queryWrapper.in(codeList.size()>0,"role_code", codeList);
         queryWrapper.eq("tenant_id", tenantId);
         List<Role> roleList = roleService.list(queryWrapper);
         List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
