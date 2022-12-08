@@ -86,35 +86,41 @@ public class PhyChemTestService{
      * 保存委托单
      * @return
      */
-    public CommonResult saveOrder(PhysChemOrderInner physChemOrderInner) throws Exception {
-        //校验修改
-        if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(physChemOrderInner.getId())){
-            String status = physChemOrderInner.getStatus();
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult saveOrder(List<PhysChemOrderInner> physChemOrderInners) throws Exception {
+        //获取第一个用于校验数据使用
+        PhysChemOrderInner physChemOrderInner = physChemOrderInners.get(0);
+        //根据委托单号查询中间表的数据
+        List<PhysChemOrderInner> inners = materialInspectionServiceClient.queryByOrderNo(physChemOrderInner.getOrderNo());
+        //校验是否能修改
+        if(inners.size()>0){
+            String status = inners.get(0).getStatus();
             if(YES_STATUS.equals(status)){
                 return CommonResult.failed("材料实验室已经确认委托，无法被修改");
             }
-        }else{
-            //质检发起委托操作
-            //设置委托单状态为待确认、报告生成、实验数据未同步
-            physChemOrderInner.setStatus(GOING_STATUS);
-            physChemOrderInner.setSyncStatus(NO_SYNC_STATUS);
-            physChemOrderInner.setReportStatus(NO_REPORT_STATUS);
+            //校验通过删除之前的数据
+            materialInspectionServiceClient.deleteByOrderNo(physChemOrderInner.getOrderNo());
+        }
+        //inners有数据说明是修改  没数据说明是新增 新增需要保存委托单号和报告号
+        if(inners.size()==0){
             //保存委托单号
             Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
             //保存报告号
             Code.update("report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
-
         }
-        //委托人
-        physChemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
-        physChemOrderInner.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        //本地保存一份委托单用于委托单打印
-        PhysChemOrder physChemOrder = new PhysChemOrder();
-        BeanUtil.copyProperties(physChemOrderInner,physChemOrder);
-        physChemOrderService.saveOrUpdate(physChemOrder);
-        //为了委托单本地和中间表id保持一致
-        physChemOrderInner.setId(physChemOrder.getId());
-        return CommonResult.success(materialInspectionServiceClient.saveOrder(physChemOrderInner));
+        //插入新的数据
+        for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
+            //质检发起委托操作
+            //设置委托单、报告未生成、实验数据未同步
+            chemOrderInner.setSyncStatus(NO_SYNC_STATUS);
+            chemOrderInner.setReportStatus(NO_REPORT_STATUS);
+            //委托人
+            chemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+            chemOrderInner.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        }
+        //保存委托单到中间表
+        materialInspectionServiceClient.saveOrder(physChemOrderInners);
+        return CommonResult.success(true);
     }
 
     /**
@@ -127,6 +133,14 @@ public class PhyChemTestService{
         physChemOrder.setId(id);
         physChemOrder.setStatus(status);
         return physChemOrderService.updateById(physChemOrder);
+    }
+
+    /**
+     * 修改委托单状态
+     * @param orderNos
+     */
+    public boolean changeOrderStatus(List<String> orderNos){
+        return materialInspectionServiceClient.changeOrderStatus(orderNos);
     }
 
     /**

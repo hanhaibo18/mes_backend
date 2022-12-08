@@ -22,18 +22,13 @@ public class MaterialInspectionServiceClientFallbackImpl implements MaterialInsp
     }
 
     @Override
-    public boolean saveOrder(PhysChemOrderInner physChemOrderInner) {
+    public boolean saveOrder(List<PhysChemOrderInner> physChemOrderInners) {
         return false;
     }
 
     @Override
     public List<PhysChemOrderInner> synResultInfos(List<String> reportNos) {
         return null;
-    }
-
-    @Override
-    public boolean changeOrderSatus(String reportNo, String reportStatus) {
-        return false;
     }
 
     @Override
@@ -44,5 +39,20 @@ public class MaterialInspectionServiceClientFallbackImpl implements MaterialInsp
     @Override
     public List<PhysChemOrderInner> getListByBatchNo(String batchNo) {
         return null;
+    }
+
+    @Override
+    public List<PhysChemOrderInner> queryByOrderNo(String orderNo) {
+        return null;
+    }
+
+    @Override
+    public boolean deleteByOrderNo(String orderNo) {
+        return false;
+    }
+
+    @Override
+    public boolean changeOrderStatus(List<String> recordNos) {
+        return false;
     }
 }

@@ -26,7 +26,7 @@ import java.util.List;
 public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "炉批号")
     private String batchNo;
-    @ApiModelProperty(value = "委托单状态（1已发起、2质检确认、3质检拒绝）")
+    @ApiModelProperty(value = "委托单状态（0、未发起、1已发起、2质检确认、3质检拒绝）")
     private String status;
     @ApiModelProperty(value = "委托单号")
     private String orderNo;
