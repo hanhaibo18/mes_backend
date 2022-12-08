@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -7,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+
+import java.util.List;
 
 
 /**
@@ -23,7 +26,7 @@ import lombok.experimental.Accessors;
 public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "炉批号")
     private String batchNo;
-    @ApiModelProperty(value = "委托单状态（1已发起、2质检确认、3质检拒绝）")
+    @ApiModelProperty(value = "委托单状态（0、未发起、1已发起、2质检确认、3质检拒绝）")
     private String status;
     @ApiModelProperty(value = "委托单号")
     private String orderNo;
@@ -194,4 +197,10 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     private String other;
     @ApiModelProperty(value = "金相检验结果")
     private String resultsMetal;
+
+    /**
+     * 多选的力学性能参数
+     */
+    @TableField(exist = false)
+    private List<PhysChemOrderImpactDto> impacts;
 }

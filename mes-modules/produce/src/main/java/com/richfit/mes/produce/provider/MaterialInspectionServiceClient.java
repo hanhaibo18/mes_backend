@@ -24,14 +24,18 @@ public interface MaterialInspectionServiceClient {
     @PostMapping("/api/material/query/page")
     public Page<PhysChemOrderInner> page(@RequestBody PhyChemTaskVo phyChemTaskVo);
     @PostMapping("/api/material/saveOrder")
-    public boolean saveOrder(@RequestBody PhysChemOrderInner physChemOrderInner);
+    public boolean saveOrder(@RequestBody List<PhysChemOrderInner> physChemOrderInners);
     @PostMapping("/api/material/synResultInfos")
     public List<PhysChemOrderInner> synResultInfos(@RequestBody List<String> reportNos);
-    @GetMapping("/api/material/changeOrderSatus")
-    public boolean changeOrderSatus(@RequestParam("reportNo") String reportNo, @RequestParam("reportStatus")  String reportStatus);
     @GetMapping("/api/material/changeOrderSyncStatus")
     public boolean changeOrderSyncSatus(@RequestParam("reportNo") String reportNo,@RequestParam("syncStatus")  String syncStatus);
     @GetMapping("/api/material/getListByBatchNo")
     public List<PhysChemOrderInner> getListByBatchNo(@RequestParam("batchNo") String batchNo);
+    @GetMapping("/api/material/queryByOrderNo")
+    public List<PhysChemOrderInner> queryByOrderNo(@RequestParam("orderNo") String orderNo);
+    @GetMapping("/api/material/deleteByOrderNo")
+    public boolean deleteByOrderNo(@RequestParam("orderNo") String orderNo);
+    @PostMapping("/api/material/changeOrderStatus")
+    public boolean changeOrderStatus(@RequestBody List<String> orderNos);
 
 }

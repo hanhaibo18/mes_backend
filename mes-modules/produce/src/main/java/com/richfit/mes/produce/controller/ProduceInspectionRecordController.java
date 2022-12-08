@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -204,6 +205,18 @@ public class ProduceInspectionRecordController extends BaseController {
         if(inspectionPower.getStatus() == IS_STATUS){
             return CommonResult.failed("该委托单已经委托，不能删除");
         }
+        //同工序有开工的委托 不能删除
+        String itemId = inspectionPower.getItemId();
+        if(!StringUtils.isEmpty(itemId)){
+            QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("item_id",itemId);
+            List<InspectionPower> list = inspectionPowerService.list();
+            List<InspectionPower> isDoingList = list.stream().filter(item -> "1".equals(item.getIsDoing())).collect(Collectors.toList());
+            if(isDoingList.size()>0){
+                return CommonResult.failed("关联跟单工序已经开工，不能删除委托单");
+            }
+        }
+
         return CommonResult.success(inspectionPowerService.removeById(id));
     }
 
