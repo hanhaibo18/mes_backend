@@ -93,9 +93,16 @@ public class PhysChemOrderInnerController extends BaseController {
                 //力学性能-冲击赋值
                 List<PhysChemOrderInner> physChemOrderInners = orderMap.get(record.getOrderNo());
                 for (PhysChemOrderInner physChemOrderInner : physChemOrderInners) {
-                    PhysChemOrderImpactDto physChemOrderImpactDto = new PhysChemOrderImpactDto();
-                    BeanUtils.copyProperties(physChemOrderInner, physChemOrderImpactDto);
-                    impacts.add(physChemOrderImpactDto);
+                    if(StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactDirection())
+                    && StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactGap())
+                    && StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactTemp())){
+                        continue;
+                    }else{
+                        PhysChemOrderImpactDto physChemOrderImpactDto = new PhysChemOrderImpactDto();
+                        BeanUtils.copyProperties(physChemOrderInner, physChemOrderImpactDto);
+                        impacts.add(physChemOrderImpactDto);
+                    }
+
                 }
                 record.setImpacts(impacts);
             }
