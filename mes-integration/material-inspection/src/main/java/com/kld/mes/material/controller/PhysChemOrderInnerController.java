@@ -54,9 +54,7 @@ public class PhysChemOrderInnerController extends BaseController {
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getBatchNo())){
             queryWrapper.eq("batch_no",phyChemTaskVo.getBatchNo());
         }
-        if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getOrderNo())){
-            queryWrapper.eq("order_no",phyChemTaskVo.getOrderNo());
-        }
+
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getProductName())){
             queryWrapper.eq("product_name",phyChemTaskVo.getProductName());
         }
@@ -102,6 +100,7 @@ public class PhysChemOrderInnerController extends BaseController {
                         BeanUtils.copyProperties(physChemOrderInner, physChemOrderImpactDto);
                         impacts.add(physChemOrderImpactDto);
                     }
+
 
                 }
                 record.setImpacts(impacts);
