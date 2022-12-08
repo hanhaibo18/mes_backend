@@ -550,7 +550,7 @@ public class ProductController extends BaseController {
         QueryWrapper<Product> cpWrapper = new QueryWrapper<Product>();//构造成品修改条件
         cpWrapper.select("id");
         cpWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        cpWrapper.apply("(material_type not in(3)or material_type is null)");
+        cpWrapper.apply("(material_type !='3' or material_type is null)");
 
         Set<String> strings = paramMap.keySet();
         for (String s : strings) {
@@ -558,7 +558,7 @@ public class ProductController extends BaseController {
             queryWrapper.select("id");
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.likeLeft("material_desc", paramMap.get(s));
-            queryWrapper.apply("(material_type not in("+s+")or material_type is null)");
+            queryWrapper.apply("(material_type !='"+s+"' or material_type is null)");
             //拼接成品参数
             cpWrapper.apply("material_desc not like '%"+paramMap.get(s)+"'");
             //查出错乱数据的id
@@ -597,11 +597,35 @@ public class ProductController extends BaseController {
         }
         //查出成品错乱数据的id
         List<Object> idList = productService.listObjs(cpWrapper);
-        if (!CollectionUtils.isEmpty(idList)) {
-            UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.set("material_type", 3);
-            updateWrapper.in("id", idList);
-            productService.update(updateWrapper);//修改成品错乱数据
+        if (idList.size() > 1000) {
+            int page = idList.size() / 1000;
+            int oldPage = idList.size() / 1000;
+            if (idList.size() % 1000 > 0) page += 1;//不能整除页数加1
+            for (int i = 0; i < page; i++) {
+                int index = i == 0 ? i : 1000 * i;//起始下标
+                int toIndex = i == 0 ? 999 : 1000 * i + 999;//结尾下标
+                System.out.println(index + "  index-----------------  toindex" + toIndex);
+                List<Object> objects = null;
+                if (i < oldPage) {
+                    objects = idList.subList(index, toIndex);
+                } else if (i == oldPage) {//尾页
+                    objects = idList.subList(index, idList.size());
+                }
+                if (!CollectionUtils.isEmpty(objects)) {
+                    UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.set("material_type", 3);
+                    updateWrapper.in("id", objects);
+                    productService.update(updateWrapper);//修改成品错乱数据
+                }
+            }
+        } else {
+            //小于一千条直接修改
+            if (!CollectionUtils.isEmpty(idList)) {
+                UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.set("material_type", 3);
+                updateWrapper.in("id", idList);
+                productService.update(updateWrapper);//修改成品错乱数据
+            }
         }
         return CommonResult.success("操作成功");
     }
