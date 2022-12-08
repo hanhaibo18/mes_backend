@@ -35,6 +35,7 @@ public class ApplicationNumberServiceImpl extends ServiceImpl<ApplicationNumberM
         ApplicationNumber applicationNumber = new ApplicationNumber();
         applicationNumber.applicationNumber(itemId, branchCode, SecurityUtils.getCurrentUser().getUsername(), SecurityUtils.getCurrentUser().getTenantId());
         applicationNumber.setId(Integer.parseInt(date));
+        this.save(applicationNumber);
         return Integer.parseInt(date);
     }
 
