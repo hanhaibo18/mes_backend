@@ -635,7 +635,7 @@ public class TrackHeadController extends BaseController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单拆分出现异常");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -655,7 +655,7 @@ public class TrackHeadController extends BaseController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单回收出现异常");
+            throw new Exception(e.getMessage());
         }
     }
 
