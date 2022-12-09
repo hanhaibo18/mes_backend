@@ -91,8 +91,8 @@ public class PhysChemTestController extends BaseController {
     @ApiOperation(value = "根据报告号同步试验结果", notes = "根据报告号同步试验结果")
     @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
     @PostMapping("/syncResult")
-    public void syncResult(@RequestBody List<String> reportNos){
-        phyChemTestService.syncResult(reportNos);
+    public CommonResult<Boolean> syncResult(@RequestBody List<String> reportNos){
+        return phyChemTestService.syncResult(reportNos);
     }
 
 
@@ -117,10 +117,10 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "理化检测委托单导出", notes = "理化检测委托单导出")
-    @ApiImplicitParam(name = "orderNo", value = "委托单号", required = true, paramType = "query", dataType = "String")
+    @ApiImplicitParam(name = "reportNo", value = "报告号", required = true, paramType = "query", dataType = "String")
     @GetMapping("/exportExcel")
-    public void exportExcel(HttpServletResponse response, String orderNo) throws IOException, TemplateException, GlobalException {
-        phyChemTestService.exportExcel(response,orderNo);
+    public void exportExcel(HttpServletResponse response, String reportNo) throws GlobalException {
+        phyChemTestService.exportExcel(response,reportNo);
     }
 
 }

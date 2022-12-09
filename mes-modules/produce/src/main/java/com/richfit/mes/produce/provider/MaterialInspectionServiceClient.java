@@ -37,5 +37,7 @@ public interface MaterialInspectionServiceClient {
     public boolean deleteByOrderNo(@RequestParam("orderNo") String orderNo);
     @PostMapping("/api/material/changeOrderStatus")
     public boolean changeOrderStatus(@RequestBody List<String> orderNos);
+    @GetMapping("/api/material/queryByReportNo")
+    public List<PhysChemOrderInner> queryByReportNo(@RequestParam("reportNo") String reportNo);
 
 }
