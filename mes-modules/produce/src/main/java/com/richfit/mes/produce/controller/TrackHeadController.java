@@ -262,7 +262,7 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
-            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'").or().apply("replace(replace(replace(original_track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("drawing_no", drawingNo);
@@ -635,7 +635,7 @@ public class TrackHeadController extends BaseController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单拆分出现异常");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -655,7 +655,7 @@ public class TrackHeadController extends BaseController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单回收出现异常");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -714,9 +714,9 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据物料号和图号查询跟单", notes = "根据物料号和图号查询跟单")
     @GetMapping("/getTrackHeadByMaterialCodeAndDrawingNo")
-    public CommonResult<List<TrackHead> > getTrackHeadByMaterialCodeAndDrawingNo(@ApiParam(value = "物料号") @RequestParam("materialCodes") List<String> materialCodes,
-                                               @ApiParam(value = "图号", required = true) @RequestParam("drawingNos") List<String> drawingNos,
-                                               @ApiParam(value = "租户id", required = true) @RequestParam("tenantId") String tenantId) {
+    public CommonResult<List<TrackHead>> getTrackHeadByMaterialCodeAndDrawingNo(@ApiParam(value = "物料号") @RequestParam("materialCodes") List<String> materialCodes,
+                                                                                @ApiParam(value = "图号", required = true) @RequestParam("drawingNos") List<String> drawingNos,
+                                                                                @ApiParam(value = "租户id", required = true) @RequestParam("tenantId") String tenantId) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
         if (CollectionUtils.isNotEmpty(materialCodes)) {
             queryWrapper.in("material_no", materialCodes);
