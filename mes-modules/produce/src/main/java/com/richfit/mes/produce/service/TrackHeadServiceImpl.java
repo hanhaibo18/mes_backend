@@ -1111,11 +1111,19 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         List<TrackItem> trackItemListOld = trackItemService.list(wrapperTrackItem);
         //获取当前工序中的顺序最大值（包括并行工序）
         int optSequence = 0;
+        TrackItem trackItemLast = new TrackItem();
         for (TrackItem trackItem : trackItemListOld) {
             if (trackItem.getIsCurrent() == 1) {
                 //找到最大的当前工序序号
                 optSequence = trackItem.getOptSequence();
+                trackItemLast = trackItem;
             }
+        }
+        if (optSequence == trackItemListOld.size() && trackItemLast.getOptParallelType() == 1) {
+            throw new GlobalException("最后一道工序为并行工序不允许拆分", ResultCode.FAILED);
+        }
+        if (optSequence == trackItemListOld.size() && trackItemLast.getIsDoing() > 0) {
+            throw new GlobalException("最后一道已开工不允许拆分", ResultCode.FAILED);
         }
         //更新原跟单生产线
         for (TrackFlow tf : trackFlow) {
