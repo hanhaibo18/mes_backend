@@ -1168,7 +1168,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             for (TrackItem trackItem : trackItemListOld) {
                 //工序顺序大于等于当前工序且未开工的工序数量才能修改
                 trackItem.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                trackItem.setTrackHeadId(trackHeadNew.getTrackHeadId());
+                trackItem.setTrackHeadId(trackHeadNew.getId());
                 trackItem.setFlowId(tfn.getId());
                 trackItem.setNumber(trackHeadNew.getNumber());
                 trackItem.setAssignableQty(trackHeadNew.getNumber());
