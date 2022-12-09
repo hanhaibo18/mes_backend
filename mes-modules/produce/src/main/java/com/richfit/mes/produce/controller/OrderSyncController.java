@@ -70,7 +70,7 @@ public class OrderSyncController {
     @ApiOperation(value = "保存采购订单", notes = "保存采购订单")
     @PostMapping("/synchronization_save")
     public CommonResult<Boolean> saveOrderSynchronization(@RequestBody OrderSyncDto orderSyncDto) {
-        return orderSyncService.saveOrderSync(orderSyncDto.getOrderList(), orderSyncDto.getTime(), orderSyncDto.getController(), orderSyncDto.getErpCode());
+        return orderSyncService.saveOrderSync(orderSyncDto.getOrderList(), orderSyncDto.getTime(), orderSyncDto.getController(), orderSyncDto.getErpCode(), orderSyncDto.getBranchCode());
     }
 
     @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")

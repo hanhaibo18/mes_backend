@@ -57,7 +57,8 @@ public class ApplicationNumber {
 
     private String remark;
 
-    public void applicationNumber(String itemId, String branchCode, String user, String tenantId) {
+    public void applicationNumber(int id, String itemId, String branchCode, String user, String tenantId) {
+        this.id = id;
         this.branchCode = branchCode;
         this.itemId = itemId;
         this.createBy = user;
