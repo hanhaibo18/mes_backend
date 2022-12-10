@@ -129,12 +129,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //根据跟单工序id获取跟单工序
             Set<String> tiIdList = dbRecords.stream().map(x -> x.getTiId()).collect(Collectors.toSet());
             List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
-            Map<String, TrackItem> trackMap = trackItems.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+            //只获取已完工数据计算工时
+            Map<String, TrackItem> trackMap = trackItems.stream().filter(item -> item.getIsDoing() == 2).collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
             List<String> flowIdList = trackItems.stream().map(x -> x.getFlowId()).collect(Collectors.toList());
             List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
             Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
             //根据员工分组
-            Map<String, List<TrackComplete>> completesMap = completes.stream().collect(Collectors.groupingBy(TrackComplete::getUserId));
+            Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
             Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
             for (String id : userIdList) {
@@ -152,6 +153,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     for (TrackComplete track : trackCompletes) {
                         //根据跟单工序id获取跟单工序
                         TrackItem trackItem = trackMap.get(track.getTiId());
+                        if (null == trackItem) {
+                            continue;
+                        }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
@@ -160,13 +164,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
                             track.setPrepareEndHours(0.00);
-                        }else {
+                        } else {
                             track.setPrepareEndHours(trackItem.getPrepareEndHours());
                         }
                         if (trackItem.getSinglePieceHours() == null) {
                             trackItem.setSinglePieceHours(0.00);
                             track.setSinglePieceHours(0.00);
-                        }else {
+                        } else {
                             track.setSinglePieceHours(trackItem.getSinglePieceHours());
                         }
                         if (track.getCompletedQty() == null) {
