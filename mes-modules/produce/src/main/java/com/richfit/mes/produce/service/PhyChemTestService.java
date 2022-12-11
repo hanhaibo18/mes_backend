@@ -10,6 +10,7 @@ import cn.hutool.poi.excel.ExcelWriter;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
@@ -86,35 +87,41 @@ public class PhyChemTestService{
      * 保存委托单
      * @return
      */
-    public CommonResult saveOrder(PhysChemOrderInner physChemOrderInner) throws Exception {
-        //校验修改
-        if(!com.mysql.cj.util.StringUtils.isNullOrEmpty(physChemOrderInner.getId())){
-            String status = physChemOrderInner.getStatus();
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult saveOrder(List<PhysChemOrderInner> physChemOrderInners) throws Exception {
+        //获取第一个用于校验数据使用
+        PhysChemOrderInner physChemOrderInner = physChemOrderInners.get(0);
+        //根据委托单号查询中间表的数据
+        List<PhysChemOrderInner> inners = materialInspectionServiceClient.queryByOrderNo(physChemOrderInner.getOrderNo());
+        //校验是否能修改
+        if(inners.size()>0){
+            String status = inners.get(0).getStatus();
             if(YES_STATUS.equals(status)){
                 return CommonResult.failed("材料实验室已经确认委托，无法被修改");
             }
-        }else{
-            //质检发起委托操作
-            //设置委托单状态为待确认、报告生成、实验数据未同步
-            physChemOrderInner.setStatus(GOING_STATUS);
-            physChemOrderInner.setSyncStatus(NO_SYNC_STATUS);
-            physChemOrderInner.setReportStatus(NO_REPORT_STATUS);
+            //校验通过删除之前的数据
+            materialInspectionServiceClient.deleteByOrderNo(physChemOrderInner.getOrderNo());
+        }
+        //inners有数据说明是修改  没数据说明是新增 新增需要保存委托单号和报告号
+        if(inners.size()==0){
             //保存委托单号
             Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
             //保存报告号
-            Code.update("report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
-
+            Code.update("m_report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
         }
-        //委托人
-        physChemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
-        physChemOrderInner.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        //本地保存一份委托单用于委托单打印
-        PhysChemOrder physChemOrder = new PhysChemOrder();
-        BeanUtil.copyProperties(physChemOrderInner,physChemOrder);
-        physChemOrderService.saveOrUpdate(physChemOrder);
-        //为了委托单本地和中间表id保持一致
-        physChemOrderInner.setId(physChemOrder.getId());
-        return CommonResult.success(materialInspectionServiceClient.saveOrder(physChemOrderInner));
+        //插入新的数据
+        for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
+            //质检发起委托操作
+            //设置委托单、报告未生成、实验数据未同步
+            chemOrderInner.setSyncStatus(NO_SYNC_STATUS);
+            chemOrderInner.setReportStatus(NO_REPORT_STATUS);
+            //委托人
+            chemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+            chemOrderInner.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        }
+        //保存委托单到中间表
+        materialInspectionServiceClient.saveOrder(physChemOrderInners);
+        return CommonResult.success(true);
     }
 
     /**
@@ -127,6 +134,14 @@ public class PhyChemTestService{
         physChemOrder.setId(id);
         physChemOrder.setStatus(status);
         return physChemOrderService.updateById(physChemOrder);
+    }
+
+    /**
+     * 修改委托单状态
+     * @param orderNos
+     */
+    public boolean changeOrderStatus(List<String> orderNos){
+        return materialInspectionServiceClient.changeOrderStatus(orderNos);
     }
 
     /**
@@ -189,35 +204,105 @@ public class PhyChemTestService{
      * @throws TemplateException
      */
     public void exoprtReport(HttpServletResponse response,String reportNo) throws IOException, TemplateException {
-        //委托单数据
-        QueryWrapper<PhysChemOrder> physChemOrderQueryWrapper = new QueryWrapper<>();
-        physChemOrderQueryWrapper.eq("report_no",reportNo);
-        PhysChemOrder physChemOrder = physChemOrderService.list(physChemOrderQueryWrapper).get(0);
-        //试验结果数据
-        QueryWrapper<PhysChemResult> physChemResultQueryWrapper = new QueryWrapper<>();
-        physChemResultQueryWrapper.eq("report_no",reportNo);
-        List<PhysChemResult> results = physChemResultService.list(physChemResultQueryWrapper);
-
+        //中间表数据 用于生成报告
+        List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByReportNo(reportNo);
+        //相同报告的委托单信息大体一致（除了冲击试验数据） 所以委托单信息取第一条就好
+        PhysChemOrderInner physChemOrderInner = physChemOrderInners.get(0);
         //构造填充数据
         Map<String, Object> dataMap = new HashMap<>();
-        //委托单数据
-        dataMap.putAll(JSON.parseObject(JSON.toJSONString(physChemOrder), Map.class));
-        dataMap.put("rel","Rel");
-        dataMap.put("forceTensileElongation","A50mm");
-        dataMap.put("forceBendDirection","横向");
-        dataMap.put("forceImpactDirection","横向");
-        dataMap.put("forceTensileDirection","纵向");
-        dataMap.put("forceBendType","截面1/2"); //硬度
-        dataMap.put("forceFlaser","1232"); //压扁
-        dataMap.put("w","10mm");
-        dataMap.put("kp","300j");
-        dataMap.put("kv2","kv2");
-        List<String> headerNames = new ArrayList<>();
-        headerNames.add("V");
-        headerNames.add("Nb");
-        headerNames.add("Ti");
-        dataMap.put("headerNames",headerNames);
-        createDataMap(dataMap);
+        //1、报告头信息
+        dataMap.put("sampleDept",physChemOrderInner.getSampleDept());
+        dataMap.put("productName",physChemOrderInner.getProductName());
+        dataMap.put("drawNo",physChemOrderInner.getDrawNo());
+        dataMap.put("materialMark",physChemOrderInner.getMaterialMark());
+        dataMap.put("reportYear",physChemOrderInner.getReportYear());
+        dataMap.put("reportMonth",physChemOrderInner.getReportMonth());
+        dataMap.put("reportDay",physChemOrderInner.getReportDay());
+        dataMap.put("reportNo",physChemOrderInner.getReportNo());
+        //报告列表表头信息
+        dataMap.put("tensileAdditionalNo",physChemOrderInner.getTensileAdditionalNo());    //拉伸试验序号             9
+        dataMap.put("forceTensileDirection",physChemOrderInner.getForceTensileDirection()); //拉伸试验方向            15
+        dataMap.put("impactAdditionalNo",physChemOrderInner.getImpactAdditionalNo()); //冲击附加序号                  10
+        dataMap.put("forceImpactDirection",physChemOrderInner.getForceImpactDirection()); //力学性能冲击试验方向       16
+        dataMap.put("othertestName",physChemOrderInner.getOthertestName()); //弯压硬低应剪名称                         26
+        dataMap.put("othertestAdditionalNo",physChemOrderInner.getOthertestAdditionalNo()); //弯压硬低应剪附加序号             11
+        dataMap.put("othertestDirection",physChemOrderInner.getOthertestDirection()); //弯压硬低应剪方向                     17
+        dataMap.put("othertestParameter1",physChemOrderInner.getOthertestParameter1()); //弯压硬低应剪参数1            28
+        dataMap.put("othertestParameter2",physChemOrderInner.getOthertestParameter2()); //弯压硬低应剪参数2            27
+        dataMap.put("chemicalAdditionalNo",physChemOrderInner.getChemicalAdditionalNo()); //化学附加序号           12
+        dataMap.put("forceTensileStrength1",physChemOrderInner.getForceTensileStrength1()); //力学性能->拉伸->屈服强度1        23
+        dataMap.put("ForceTensileStrength2",physChemOrderInner.getForceTensileStrength2()); //力学性能->拉伸->屈服强度2    23
+        dataMap.put("forceTensileElongation",physChemOrderInner.getForceTensileElongation()); //力学性能->拉伸->伸长率          24
+        dataMap.put("impactParameter",physChemOrderInner.getImpactParameter()); //冲击试验参数         25
+        dataMap.put("cSpectralline",physChemOrderInner.getCSpectralline()); //碳光谱线          29
+        dataMap.put("sSpectralline",physChemOrderInner.getSSpectralline()); //硫光谱线         30
+        dataMap.put("reportRemarkName",physChemOrderInner.getReportRemarkName()); //备注名称         31
+        dataMap.put("reportRemarkUnit",physChemOrderInner.getReportRemarkUnit()); //备注单位         32
+        //2、报告列表参数
+        dataMap.put("resultList",physChemOrderInners);
+        //空行
+        List<String> nullCells = new ArrayList<>();
+        for(int i=0;i<8-physChemOrderInners.size();i++){
+            nullCells.add("1");
+        }
+        dataMap.put("nullCells",nullCells);
+        //3、报告列表大框参数
+        //金相结果集合
+        List<PhysChemOrderInner> list = physChemOrderInners.stream().filter(item -> !StringUtils.isNullOrEmpty(item.getMetallName())).collect(Collectors.toList());
+        List<Map<String, String>> mapsList = new ArrayList<>();
+        for (PhysChemOrderInner chemOrderInner : list) {
+            Map<String, String> addMap = new HashMap<>();
+            addMap.put("metallName",chemOrderInner.getMetallName());
+            addMap.put("metallAdditionalNo",chemOrderInner.getMetallAdditionalNo());
+            addMap.put("resultsMetal",chemOrderInner.getResultsMetal());
+            mapsList.add(addMap);
+        }
+        dataMap.put("mapsList",mapsList);
+        //附加数据集合
+        List<String> jxList = new ArrayList<>();  //金相附加
+        List<String> hxList = new ArrayList<>();  //化学附加
+        List<String> wyList = new ArrayList<>();  //弯曲附加
+        List<String> cjList = new ArrayList<>();  //冲击附加
+        List<String> lsList = new ArrayList<>();  //拉伸附加
+        for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getMetallAdditional())){
+                jxList.add(chemOrderInner.getMetallAdditional());
+            }
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getChemicalAdditional())){
+                hxList.add(chemOrderInner.getChemicalAdditional());
+            }
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getOthertestAdditional())){
+                wyList.add(chemOrderInner.getOthertestAdditional());
+            }
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getImpactAdditional())){
+                cjList.add(chemOrderInner.getImpactAdditional());
+            }
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getTensileAdditional())){
+                lsList.add(chemOrderInner.getTensileAdditional());
+            }
+        }
+        dataMap.put("jxList",jxList);
+        dataMap.put("hxList",hxList);
+        dataMap.put("wyList",wyList);
+        dataMap.put("cjList",cjList);
+        dataMap.put("lsList",lsList);
+        //报告底层人的信息
+        Set<String> tensileBys = physChemOrderInners.stream().filter(item->!StringUtils.isNullOrEmpty(item.getTensileTester())).collect(Collectors.toList())
+                .stream().map(PhysChemOrderInner::getTensileTester).collect(Collectors.toSet());
+        Set<String> impactTesters = physChemOrderInners.stream().filter(item->!StringUtils.isNullOrEmpty(item.getImpactTester())).collect(Collectors.toList())
+                .stream().map(PhysChemOrderInner::getImpactTester).collect(Collectors.toSet());
+        Set<String> othertestTesters = physChemOrderInners.stream().filter(item->!StringUtils.isNullOrEmpty(item.getOthertestTester())).collect(Collectors.toList())
+                .stream().map(PhysChemOrderInner::getOthertestTester).collect(Collectors.toSet());
+        Set<String> chemicalTesters = physChemOrderInners.stream().filter(item->!StringUtils.isNullOrEmpty(item.getChemicalTester())).collect(Collectors.toList())
+                .stream().map(PhysChemOrderInner::getChemicalTester).collect(Collectors.toSet());
+        Set<String> metallTester = physChemOrderInners.stream().filter(item->!StringUtils.isNullOrEmpty(item.getMetallTester())).collect(Collectors.toList())
+                .stream().map(PhysChemOrderInner::getMetallTester).collect(Collectors.toSet());
+        dataMap.put("supervidor",physChemOrderInner.getSupervidor());
+        dataMap.put("reviewedBy",physChemOrderInner.getReviewedBy());
+        String join = String.join(" ", tensileBys)+" "+String.join(" ", impactTesters)+" "+String.join(" ", othertestTesters)+" "+String.join(" ", chemicalTesters)+" "+String.join(" ", metallTester);
+        dataMap.put("checkBy",join);
+
+
         //导出
         wordUtil.exoprtReport(response,dataMap,"lhjcTemp.ftl","理化检测报告");
     }
@@ -232,12 +317,12 @@ public class PhyChemTestService{
     }
 
     //导出理化委托单
-    public void exportExcel(HttpServletResponse rsp,String orderNo) {
-        PhysChemOrder physChemOrder = new PhysChemOrder();
-        //查询委托单
-        List<PhysChemOrder> list = physChemOrderService.list(new QueryWrapper<PhysChemOrder>().eq("order_no",orderNo));
-        if(list.size()>0){
-            physChemOrder = list.get(0);
+    public void exportExcel(HttpServletResponse rsp,String reportNo) {
+        PhysChemOrderInner physChemOrderInner = new PhysChemOrderInner();
+        //中间表数据 用于生成报告
+        List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByReportNo(reportNo);
+        if(physChemOrderInners.size()>0){
+            physChemOrderInner = physChemOrderInners.get(0);
         }
         int sheetNum = 0;
         try {
@@ -251,11 +336,11 @@ public class PhyChemTestService{
             CellStyle cellStyle = writer.getCellStyle();
             cellStyle.setWrapText(true);
             //向左对齐
-            writer.renameSheet(physChemOrder.getOrderNo());
-            writer.writeCellValue("A3", physChemOrder.getOrderNo());
-            writer.writeCellValue("C4", physChemOrder.getSampleTime());
-            writer.writeCellValue("F4", physChemOrder.getManufacturer());
-            writer.writeCellValue("I4", physChemOrder.getManufacturer());
+            writer.renameSheet(physChemOrderInner.getOrderNo());
+            writer.writeCellValue("A3", physChemOrderInner.getOrderNo());
+            writer.writeCellValue("C4", physChemOrderInner.getSampleTime());
+            writer.writeCellValue("F4", physChemOrderInner.getManufacturer());
+            writer.writeCellValue("I4", physChemOrderInner.getManufacturer());
 
             ServletOutputStream outputStream = rsp.getOutputStream();
             rsp.setContentType("application/vnd.ms-excel;charset=utf-8");

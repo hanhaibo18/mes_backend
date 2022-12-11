@@ -6,15 +6,18 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
+import com.richfit.mes.produce.service.ProduceItemInspectInfoService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.OrderUtil;
 import freemarker.template.TemplateException;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -39,11 +43,8 @@ import java.util.List;
 @RequestMapping("/api/produce/inspectionRecord")
 public class ProduceInspectionRecordController extends BaseController {
 
-    private static final Integer YES_OPERA = 1; //已报工
-    private static final Integer NO_OPERA = 0; //未报工
 
     private final static int IS_STATUS = 1;
-    private final static int NO_STATUS = 0;
 
     @Autowired
     private ProduceInspectionRecordService produceInspectionRecordService;
@@ -73,7 +74,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "分页查询探伤记录列表", notes = "分页查询探伤记录列表")
     @ApiImplicitParam(name = "探伤任务查询类VO", value = "InspectionPowerVo", paramType = "body", dataType = "InspectionPowerVo")
     @PostMapping("/page/queryAuditRecord")
-    public CommonResult<Object> queryAuditRecord(InspectionPowerVo inspectionPowerVo) {
+    public CommonResult<Object> queryAuditRecord(@RequestBody InspectionPowerVo inspectionPowerVo) {
         return CommonResult.success(produceInspectionRecordService.queryRecordByAuditBy(inspectionPowerVo));
     }
 
@@ -81,7 +82,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "保存探伤记录", notes = "保存探伤记录")
     @PostMapping("/save")
     public CommonResult saveRecord(@RequestBody ProduceInspectionRecordDto produceInspectionRecordDto) throws Exception {
-        return CommonResult.success(produceInspectionRecordService.saveRecord(produceInspectionRecordDto));
+        return CommonResult.success(produceInspectionRecordService.saveRecords(produceInspectionRecordDto));
     }
 
     @ApiOperation(value = "根据探伤任务id查询探伤记录列表", notes = "根据探伤任务id查询探伤记录列表")
@@ -99,6 +100,20 @@ public class ProduceInspectionRecordController extends BaseController {
     @GetMapping("/queryLastInfoByPowerId/{powerId}")
     public CommonResult queryLastInfoByPowerId(@PathVariable String powerId){
         return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId));
+    }
+
+    @ApiOperation(value = "根据记录id查询探伤记录详情", notes = "根据记录id查询探伤记录详情")
+    @ApiImplicitParam(name = "id", value = "记录id", required = true, paramType = "path", dataType = "string")
+    @GetMapping("/queryInfoByRecordId/{id}")
+    public CommonResult<Object> queryInfoByRecordId(@PathVariable String id){
+        return CommonResult.success(produceInspectionRecordService.queryInfoByRecordId(id));
+    }
+
+    @ApiOperation(value = "撤回记录", notes = "撤回记录")
+    @ApiImplicitParam(name = "powerIds", value = "探索任务ids", required = true, dataType = "List", paramType = "body")
+    @PostMapping("/backoutRecord")
+    public CommonResult<Boolean> backoutRecord(@RequestBody List<String> powerIds) {
+        return CommonResult.success(produceInspectionRecordService.backoutRecord(powerIds));
     }
 
     @ApiOperation(value = "审核提交探伤记录", notes = "审核提交探伤记录")
@@ -133,11 +148,14 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "探伤记录审核", notes = "探伤记录审核")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "探伤记录id", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isAudit", value = "审核状态", required = true,paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "auditRemark", value = "审核备注", required = true,paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "inspector", value = "指派人", required = true,paramType = "query", dataType = "string")
     })
-    @GetMapping("auditRecord")
-    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark) {
-        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark));
+    @GetMapping("/auditRecord")
+    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark,String inspector,String checkBranch) {
+        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark,inspector,checkBranch));
     }
 
     @Autowired
@@ -146,49 +164,8 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "分页查询委托单", notes = "分页查询委托单")
     @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
     @PostMapping("/inspectionPower/page")
-    public CommonResult<IPage> queryPowerOrderPage(@RequestBody InspectionPowerVo inspectionPowerVo) throws Exception {
-        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
-        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderNo())){
-            queryWrapper.eq("order_no",inspectionPowerVo.getOrderNo());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())){
-            queryWrapper.eq("inspection_depart",inspectionPowerVo.getInspectionDepart());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getSampleName())){
-            queryWrapper.eq("sample_name",inspectionPowerVo.getSampleName());
-        }
-        if (!StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
-            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
-        }
-        if (!StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
-            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo())){
-            queryWrapper.eq("draw_no",inspectionPowerVo.getDrawNo());
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getStatus())){
-            queryWrapper.in("status",inspectionPowerVo.getStatus().split(","));
-        }
-        if(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())){
-            queryWrapper.eq("branch_code",inspectionPowerVo.getBranchCode());
-        }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("consignor",SecurityUtils.getCurrentUser().getUserId());
-        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
-            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
-        }else{
-            queryWrapper.orderByDesc("power_time");
-        }
-        Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
-        //委托人转换
-        for (InspectionPower record : page.getRecords()) {
-            if (!ObjectUtil.isEmpty(record.getConsignor())) {
-                String consignor = record.getConsignor();
-                TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
-                record.setConsignor(data.getEmplName());
-            }
-        }
-        return CommonResult.success(page);
+    public CommonResult<IPage> queryPowerOrderPage(@RequestBody InspectionPowerVo inspectionPowerVo){
+        return CommonResult.success(produceInspectionRecordService.queryPowerOrderPage(inspectionPowerVo));
     }
 
 
@@ -228,7 +205,25 @@ public class ProduceInspectionRecordController extends BaseController {
         if(inspectionPower.getStatus() == IS_STATUS){
             return CommonResult.failed("该委托单已经委托，不能删除");
         }
+        //同工序有开工的委托 不能删除
+        String itemId = inspectionPower.getItemId();
+        if(!StringUtils.isEmpty(itemId)){
+            QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("item_id",itemId);
+            List<InspectionPower> list = inspectionPowerService.list();
+            List<InspectionPower> isDoingList = list.stream().filter(item -> "1".equals(item.getIsDoing())).collect(Collectors.toList());
+            if(isDoingList.size()>0){
+                return CommonResult.failed("关联跟单工序已经开工，不能删除委托单");
+            }
+        }
+
         return CommonResult.success(inspectionPowerService.removeById(id));
+    }
+
+    @ApiOperation(value = "导出委托单", notes = "导出委托单信息")
+    @PostMapping("/inspectionPower/export_excel")
+    public void exportExcel(@RequestBody InspectionPowerVo inspectionPowerVo, HttpServletResponse rsp) {
+        produceInspectionRecordService.exportExcel(inspectionPowerVo,rsp);
     }
 
 

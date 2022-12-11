@@ -50,4 +50,25 @@ public class ItemParamServiceImpl extends ServiceImpl<ItemParamMapper, ItemParam
             throw new Exception("没有找到key=" + code + "的字典！");
         }
     }
+
+    @Override
+    public List<ItemParam> queryItemByCodeAndTenantId(String code,String tenantId) throws Exception {
+        QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
+        if (!StringUtils.isNullOrEmpty(code)) {
+            queryWrapper.eq("code", code);
+            queryWrapper.eq("tenant_id", tenantId);
+        }
+        List<ItemClass> iClasses = itemClassService.list(queryWrapper);
+        if (iClasses.size() > 0) {
+            QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+            wrapper.eq("class_id", iClasses.get(0).getId());
+            if (tenantId != null) {
+                wrapper.eq("tenant_id", tenantId);
+            }
+            wrapper.orderByAsc("order_num");
+            return this.list(wrapper);
+        } else {
+            throw new Exception("没有找到key=" + code + "的字典！");
+        }
+    }
 }

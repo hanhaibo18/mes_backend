@@ -363,7 +363,8 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             String steelworkRole = branchCode + "_JMAQ_JJZJ";
         }
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("role_code", codeList);
+        //判断如果codeList 为空会报错
+        queryWrapper.in(codeList.size()>0,"role_code", codeList);
         queryWrapper.eq("tenant_id", tenantId);
         List<Role> roleList = roleService.list(queryWrapper);
         List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
@@ -424,6 +425,37 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             tenantUserList.addAll(this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId()));
         }
         return tenantUserList;
+    }
+
+    @Override
+    public List<TenantUserVo> queryAllQualityUserByTenantId(String classes,String tenantId) {
+        if(!StringUtils.isEmpty(tenantId)){
+            Tenant tenant = tenantService.getById(tenantId);
+            //获取当前登录人公司所有质检人员
+            List<TenantUserVo> userList = new ArrayList<>(this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId()));
+            //获取质检公司
+            List<ItemParam> item = null;
+            try {
+                item = itemParamService.queryItemByCodeAndTenantId("qualityManagement",tenantId);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new GlobalException("质检检测部门查询失败", ResultCode.FAILED);
+            }
+            if (CollectionUtils.isEmpty(item)) {
+                throw new GlobalException("未查询到质量检测部门", ResultCode.FAILED);
+            }
+            //根据租户code 查询tenantId
+            List<String> collect = item.stream().map(ItemParam::getCode).collect(Collectors.toList());
+            QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("tenant_code", collect);
+            List<Tenant> tenantList = tenantService.list(queryWrapper);
+            //获取质检租户下所有质检人员
+            for (Tenant tenantEntity : tenantList) {
+                userList.addAll(this.queryQualityInspectionDepartment(classes, tenantEntity.getTenantCode(), tenantEntity.getId()));
+            }
+            return userList;
+        }
+        return null;
     }
 
 }

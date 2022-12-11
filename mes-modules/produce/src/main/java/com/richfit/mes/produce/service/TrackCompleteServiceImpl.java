@@ -129,12 +129,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //根据跟单工序id获取跟单工序
             Set<String> tiIdList = dbRecords.stream().map(x -> x.getTiId()).collect(Collectors.toSet());
             List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
-            Map<String, TrackItem> trackMap = trackItems.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+            //只获取已完工数据计算工时
+            Map<String, TrackItem> trackMap = trackItems.stream().filter(item -> item.getIsDoing() == 2).collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
             List<String> flowIdList = trackItems.stream().map(x -> x.getFlowId()).collect(Collectors.toList());
             List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
             Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
             //根据员工分组
-            Map<String, List<TrackComplete>> completesMap = completes.stream().collect(Collectors.groupingBy(TrackComplete::getUserId));
+            Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
             Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
             for (String id : userIdList) {
@@ -150,29 +151,39 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     TrackComplete track0 = new TrackComplete();
                     TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
                     for (TrackComplete track : trackCompletes) {
-                        //空校验
-                        if (track.getPrepareEndHours() == null) {
-                            track.setPrepareEndHours(0.00);
+                        //根据跟单工序id获取跟单工序
+                        TrackItem trackItem = trackMap.get(track.getTiId());
+                        if (null == trackItem) {
+                            continue;
                         }
-                        if (track.getSinglePieceHours() == null) {
+                        //查询产品编号
+                        TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
+                        track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
+                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        //空校验
+                        if (trackItem.getPrepareEndHours() == null) {
+                            trackItem.setPrepareEndHours(0.00);
+                            track.setPrepareEndHours(0.00);
+                        } else {
+                            track.setPrepareEndHours(trackItem.getPrepareEndHours());
+                        }
+                        if (trackItem.getSinglePieceHours() == null) {
+                            trackItem.setSinglePieceHours(0.00);
                             track.setSinglePieceHours(0.00);
+                        } else {
+                            track.setSinglePieceHours(trackItem.getSinglePieceHours());
                         }
                         if (track.getCompletedQty() == null) {
                             track.setCompletedQty(0.00);
                         }
                         //计算总工时
-                        sumPrepareEndHours = sumPrepareEndHours + track.getPrepareEndHours();
-                        sumSinglePieceHours = sumSinglePieceHours + track.getSinglePieceHours();
-                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours();
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getSinglePieceHours() + track.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                        sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
+                        sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
+                        sumTotalHours = sumTotalHours + track.getCompletedQty() * trackItem.getSinglePieceHours() + trackItem.getPrepareEndHours();
+                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * trackItem.getSinglePieceHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
                         track.setUserName(tenantUserVo.getEmplName());
                         track0.setUserName(tenantUserVo.getEmplName());
                         track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
-                        TrackItem trackItem = trackMap.get(track.getTiId());
-                        //查询产品编号
-                        TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
-                        track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
-                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
                     }
                     track0.setId(id);
                     track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时

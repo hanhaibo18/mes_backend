@@ -33,8 +33,9 @@ public class ApplicationNumberServiceImpl extends ServiceImpl<ApplicationNumberM
         //用数量组装 格式202211181
         date = date + numberList.size();
         ApplicationNumber applicationNumber = new ApplicationNumber();
-        applicationNumber.applicationNumber(itemId, branchCode, SecurityUtils.getCurrentUser().getUsername(), SecurityUtils.getCurrentUser().getTenantId());
+        applicationNumber.applicationNumber(Integer.parseInt(date), itemId, branchCode, SecurityUtils.getCurrentUser().getUsername(), SecurityUtils.getCurrentUser().getTenantId());
         applicationNumber.setId(Integer.parseInt(date));
+        this.save(applicationNumber);
         return Integer.parseInt(date);
     }
 

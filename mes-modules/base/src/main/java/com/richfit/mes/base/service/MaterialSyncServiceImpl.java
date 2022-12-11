@@ -3,6 +3,7 @@ package com.richfit.mes.base.service;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.ProductMapper;
 import com.richfit.mes.base.entity.MaterialSyncDto;
@@ -12,6 +13,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.constant.SecurityConstants;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 /**
  * @ClassName: MaterialSyncServiceImpl.java
@@ -76,11 +76,19 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                 product.setMaterialNo(product.getMaterialNo().trim());
             }
             product.setDrawingNo(product.getDrawingNo().trim());
-            QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("material_no", product.getMaterialNo());
             //同步开关字段 Autosyns  值为空 或者为 y  默认同步
-            if (product.getAutosyns().isEmpty()||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
-                boolean save = materialSyncService.updateById(product);
+            if (ObjectUtil.isEmpty(product.getAutosyns()) || product.getAutosyns().equals("null") || product.getAutosyns().equals("y")) {
+                QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("material_no", product.getMaterialNo());
+                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                List<Product> list = materialSyncService.list(queryWrapper);
+                materialSyncService.remove(queryWrapper);
+                if (CollectionUtils.isNotEmpty(list)) {
+                    product.setId(list.get(0).getId());
+                } else {
+                    product.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                }
+                boolean save = materialSyncService.save(product);
                 if (save) {
                     data = true;
                     message = "操作成功!";
@@ -129,20 +137,18 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                         product.setModifyTime(DateUtil.date());
                         product.setBranchCode(itemParam.getLabel());
                         product.setTenantId(itemParam.getTenantId());
-                        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-                        queryWrapper.eq("material_no", product.getMaterialNo());
-                        //本地存在的物料
-                        List<Product> list = materialSyncService.list(queryWrapper);
-                        Map<String, Product> existPorduct = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
-                        //同步开关字段 Autosyns  值为空 或者为 y  默认同步
-                        if (product.getAutosyns().isEmpty()||product.getAutosyns().equals("null")||product.getAutosyns().equals("y")) {
-                            //不存在才去新增
-                            if(ObjectUtil.isEmpty(existPorduct.get(product.getMaterialNo()))){
-                            materialSyncService.save(product);
-                            }else {
-                                //存在的要把本地的进行修改,跟同步过来的保持一致
-                                materialSyncService.updateById(product);
+                        if (ObjectUtil.isEmpty(product.getAutosyns()) || product.getAutosyns().equals("null") || product.getAutosyns().equals("y")) {
+                            QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+                            queryWrapper.eq("material_no", product.getMaterialNo());
+                            queryWrapper.eq("tenant_id", itemParam.getTenantId());
+                            List<Product> list = materialSyncService.list(queryWrapper);
+                            materialSyncService.remove(queryWrapper);
+                            if (CollectionUtils.isNotEmpty(list)) {
+                                product.setId(list.get(0).getId());
+                            } else {
+                                product.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                             }
+                            materialSyncService.save(product);
                         }
                     }
                 }

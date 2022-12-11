@@ -359,5 +359,12 @@ public class TenantUserController extends BaseController {
     public CommonResult<List<TenantUserVo>> queryAllQualityUser(String classes) {
         return CommonResult.success(tenantUserService.queryAllQualityUser(classes));
     }
+
+    @ApiOperation(value = "查询质检人员", notes = "为空查询全部质检人员")
+    @ApiImplicitParam(name = "tenantId", value = "租户id", paramType = "query", dataType = "String")
+    @GetMapping("/queryAllQualityUserByTenantId")
+    public CommonResult<List<TenantUserVo>> queryAllQualityUserByTenantId(String classes,String tenantId) {
+        return CommonResult.success(tenantUserService.queryAllQualityUserByTenantId(classes,tenantId));
+    }
 }
 

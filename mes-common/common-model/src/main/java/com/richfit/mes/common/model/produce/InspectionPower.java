@@ -74,9 +74,14 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String assignTime;
     @ApiModelProperty(value = "指派状态（0、未派  1、已派）")
     private int assignStatus;
+    @ApiModelProperty(value = "质检人", dataType = "String")
+    private String inspector;
+    @ApiModelProperty(value = "质检人部门",dataType = "String")
+    private String checkBranch;
 
-    @ApiModelProperty(value = "探伤结果", required = true)
-    private Integer flawDetection;
+
+    @ApiModelProperty(value = "探伤结果(0不合格 1合格)", required = true)
+    private String flawDetection;
     @ApiModelProperty(value = "探伤报告号", required = true)
     private String reportNo;
     @ApiModelProperty(value = "探伤备注", required = true)
@@ -102,7 +107,9 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @ApiModelProperty(value = "开工时间", dataType = "Date")
     private Date startDoingTime;
 
-
+    @TableField(exist = false)
+    @ApiModelProperty(value = "委托单状态导出展示", dataType = "String")
+    private String statusShow;
     @TableField(exist = false)
     private String productType;
     @TableField(exist = false)
@@ -136,7 +143,9 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否有探伤记录", dataType = "Integer")
     private int isHaveRecord;
-
+    @TableField(exist = false)
+    @ApiModelProperty(value = "最新探伤记录id", dataType = "String")
+    private String recordId ;
     public String getProductType() {
         StringBuilder productType = new StringBuilder();
         if(this.weld ==1){

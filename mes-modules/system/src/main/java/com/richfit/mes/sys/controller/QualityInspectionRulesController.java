@@ -56,8 +56,8 @@ public class QualityInspectionRulesController {
     @ApiOperation(value = "分页查询质量规则", notes = "分页查询质量规则")
     @ApiImplicitParam(name = "stateName", value = "状态名称", dataType = "String", paramType = "query")
     @GetMapping("/queryQualityInspectionRulesPage")
-    public CommonResult<IPage<QualityInspectionRules>> queryQualityInspectionRulesPage(String stateName, long page, long limit, String order, String orderCol) {
-        return CommonResult.success(qualityInspectionRulesService.queryQualityInspectionRulesPage(stateName, page, limit, order, orderCol));
+    public CommonResult<IPage<QualityInspectionRules>> queryQualityInspectionRulesPage(String stateName, String branchCode, long page, long limit, String order, String orderCol) {
+        return CommonResult.success(qualityInspectionRulesService.queryQualityInspectionRulesPage(stateName, branchCode, page, limit, order, orderCol));
     }
 
     @ApiOperation(value = "导出质量规则", notes = "导出质量规则")

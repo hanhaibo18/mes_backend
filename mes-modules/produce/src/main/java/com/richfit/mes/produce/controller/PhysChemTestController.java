@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,11 +18,13 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -44,11 +47,30 @@ public class PhysChemTestController extends BaseController {
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单", paramType = "body", dataType = "physChemOrderInner")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> save(@RequestBody PhysChemOrderInner physChemOrderInner) throws Exception{
-        if(StringUtils.isNullOrEmpty(physChemOrderInner.getId())){
-            physChemOrderInner.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+        //力学性能参数集合
+        List<PhysChemOrderImpactDto> impacts = physChemOrderInner.getImpacts();
+        //要保存的数据
+        List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
+        //合并数据
+        if(!ObjectUtil.isEmpty(impacts)){
+            for (PhysChemOrderImpactDto impact : impacts) {
+                PhysChemOrderInner addNew = new PhysChemOrderInner();
+                BeanUtils.copyProperties(physChemOrderInner,addNew,new String[]{"id"});
+                addNew.setForceImpactTemp(impact.getForceImpactTemp());
+                addNew.setForceImpactGap(impact.getForceImpactGap());
+                addNew.setForceImpactDirection(impact.getForceImpactDirection());
+                if(StringUtils.isNullOrEmpty(physChemOrderInner.getId())){
+                    addNew.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                addNew.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                physChemOrderInners.add(addNew);
+            }
         }
-        physChemOrderInner.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-        return phyChemTestService.saveOrder(physChemOrderInner);
+
+        if(physChemOrderInners.size() == 0){
+            physChemOrderInners.add(physChemOrderInner);
+        }
+        return phyChemTestService.saveOrder(physChemOrderInners);
     }
 
     @ApiOperation(value = "委托任务列表", notes = "委托任务列表")
@@ -58,12 +80,19 @@ public class PhysChemTestController extends BaseController {
         return CommonResult.success(phyChemTestService.page(phyChemTaskVo));
     }
 
+    @ApiOperation(value = "批量委托", notes = "批量委托")
+    @ApiImplicitParam(name = "orderNos", value = "要委托的委托单单号集合", required = true, paramType = "body", dataType = "list")
+    @PostMapping("/changeOrderStatus")
+    public CommonResult changeOrderStatus(@RequestBody List<String> orderNos){
+        return CommonResult.success(phyChemTestService.changeOrderStatus(orderNos));
+    }
+
 
     @ApiOperation(value = "根据报告号同步试验结果", notes = "根据报告号同步试验结果")
     @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
     @PostMapping("/syncResult")
-    public void syncResult(@RequestBody List<String> reportNos){
-        phyChemTestService.syncResult(reportNos);
+    public CommonResult<Boolean> syncResult(@RequestBody List<String> reportNos){
+        return phyChemTestService.syncResult(reportNos);
     }
 
 
@@ -88,10 +117,10 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "理化检测委托单导出", notes = "理化检测委托单导出")
-    @ApiImplicitParam(name = "orderNo", value = "委托单号", required = true, paramType = "query", dataType = "String")
+    @ApiImplicitParam(name = "reportNo", value = "报告号", required = true, paramType = "query", dataType = "String")
     @GetMapping("/exportExcel")
-    public void exportExcel(HttpServletResponse response, String orderNo) throws IOException, TemplateException, GlobalException {
-        phyChemTestService.exportExcel(response,orderNo);
+    public void exportExcel(HttpServletResponse response, String reportNo) throws GlobalException {
+        phyChemTestService.exportExcel(response,reportNo);
     }
 
 }

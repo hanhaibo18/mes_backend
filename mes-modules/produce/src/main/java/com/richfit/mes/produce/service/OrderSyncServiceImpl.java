@@ -74,11 +74,12 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveOrderSync(List<Order> orderList) {
+    public CommonResult<Boolean> saveOrderSync(List<Order> orderList, String time, String controller, String erpCode, String branchCode) {
         for (Order order : orderList) {
             if (order.getMaterialCode() == null) {
                 continue;
             }
+            order.setBranchCode(branchCode);
             order.setOrderDate(order.getStartTime());
             order.setDeliveryDate(order.getEndTime());
             order.setPriority("1");
@@ -87,7 +88,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             //同步时数据存在空格，会导致查不到图号
             order.setMaterialCode(order.getMaterialCode().trim());
             //进行校验
-            if (Boolean.TRUE.equals(filterOrder(order))) {
+            if (Boolean.TRUE.equals(filterOrder(order, time, controller, erpCode))) {
                 orderSyncService.save(order);
             }
         }
@@ -142,7 +143,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                             continue;
                         }
                         //进行校验
-                        if (Boolean.TRUE.equals(filterOrder(order))) {
+                        if (Boolean.TRUE.equals(filterOrder(order, date, null, ordersSynchronization.getCode()))) {
                             saveData = orderSyncService.save(order);
                         }
                     }
@@ -157,6 +158,17 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         return CommonResult.success(true);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> saveOrderSyncOne(String id) {
+        //先查询日志,获取查询参数
+        OrderSyncLog orderSyncLog = orderLogService.getById(id);
+        //查询erp
+        List<Order> orderList = erpServiceClient.getErpOrder(orderSyncLog.getErpCode(), orderSyncLog.getOrderSyncTime(), orderSyncLog.getOrderSn(), orderSyncLog.getController()).getData();
+        //调用同步接口
+        return this.saveOrderSync(orderList, orderSyncLog.getOrderSyncTime(), orderSyncLog.getController(), orderSyncLog.getErpCode(), orderSyncLog.getBranchCode());
+    }
+
     /**
      * 功能描述: 过滤订单
      *
@@ -166,10 +178,11 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
      * @return: List<Order>
      **/
     @Transactional(rollbackFor = Exception.class)
-    public Boolean filterOrder(Order order) {
+    public Boolean filterOrder(Order order, String time, String controller, String erpCode) {
         //组装log数据
         OrderSyncLog log = new OrderSyncLog();
         log.setMaterialNo(order.getMaterialCode());
+        log.setErpCode(erpCode);
         if (order.getMaterialDesc().contains(" ")) {
             List<String> list = Arrays.stream(order.getMaterialDesc().split("\\s+")).collect(Collectors.toList());
             log.setDrawingNo(list.get(0));
@@ -177,7 +190,11 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         } else {
             log.setProductName(order.getMaterialDesc());
         }
+        log.setOrderSn(order.getOrderSn());
         log.setSyncState("0");
+        log.setOrderSyncTime(time);
+        log.setController(controller);
+        log.setTenantId(order.getTenantId());
         List<Product> list = baseServiceClient.selectOrderProduct(order.getMaterialCode(), null);
         if (CollectionUtils.isEmpty(list)) {
             log.setOpinion("未查询到成品物料信息,请补全成品物料");

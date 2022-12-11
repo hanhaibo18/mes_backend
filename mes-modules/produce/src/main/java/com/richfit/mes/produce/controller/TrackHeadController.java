@@ -3,6 +3,7 @@ package com.richfit.mes.produce.controller;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -261,7 +262,7 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
-            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'").or().apply("replace(replace(replace(original_track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             queryWrapper.like("drawing_no", drawingNo);
@@ -634,7 +635,7 @@ public class TrackHeadController extends BaseController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单拆分出现异常");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -654,7 +655,7 @@ public class TrackHeadController extends BaseController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("跟单回收出现异常");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -709,5 +710,22 @@ public class TrackHeadController extends BaseController {
             orderService.orderDataTrackHead(trackHead);
         }
         return CommonResult.success("操作成功", TRACK_HEAD_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "根据物料号和图号查询跟单", notes = "根据物料号和图号查询跟单")
+    @GetMapping("/getTrackHeadByMaterialCodeAndDrawingNo")
+    public CommonResult<List<TrackHead>> getTrackHeadByMaterialCodeAndDrawingNo(@ApiParam(value = "物料号") @RequestParam("materialCodes") List<String> materialCodes,
+                                                                                @ApiParam(value = "图号", required = true) @RequestParam("drawingNos") List<String> drawingNos,
+                                                                                @ApiParam(value = "租户id", required = true) @RequestParam("tenantId") String tenantId) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        if (CollectionUtils.isNotEmpty(materialCodes)) {
+            queryWrapper.in("material_no", materialCodes);
+        }
+        if (CollectionUtils.isNotEmpty(drawingNos)) {
+            queryWrapper.or();
+            queryWrapper.in("drawing_no", drawingNos);
+        }
+        queryWrapper.eq("tenant_id", tenantId);
+        return CommonResult.success(trackHeadService.list(queryWrapper));
     }
 }

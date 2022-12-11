@@ -127,6 +127,7 @@ public class ProductToWmsService {
         String s = HttpUtil.post(mesScddUploadApi, params, 120000);
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         //返回上传信息
+        applicationResult.setEncryption(mesToWmsApiKey);
         return applicationResult;
     }
 

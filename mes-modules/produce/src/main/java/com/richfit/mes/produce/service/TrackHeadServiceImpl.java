@@ -386,7 +386,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //添加跟单
             trackHead = trackHeadData(trackHead, trackFlowList);
             trackHeadMapper.insert(trackHead);
-            
+
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 trackAssemblyService.addTrackAssemblyByTrackHead(trackHead);
@@ -823,6 +823,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackHeadRelation> trackHeadRelations = trackHeadRelationMapper.selectList(queryWrapperTrackHeadRelation);
             for (TrackHeadRelation trackHeadRelation : trackHeadRelations) {
                 LineStore lineStore = lineStoreService.getById(trackHeadRelation.getLsId());
+                //TODO:不了解业务临时处理一下
+                if (lineStore == null) {
+                    continue;
+                }
                 lineStore.setStatus("0");
                 lineStoreService.updateById(lineStore);
             }
@@ -1107,11 +1111,19 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         List<TrackItem> trackItemListOld = trackItemService.list(wrapperTrackItem);
         //获取当前工序中的顺序最大值（包括并行工序）
         int optSequence = 0;
+        TrackItem trackItemLast = new TrackItem();
         for (TrackItem trackItem : trackItemListOld) {
             if (trackItem.getIsCurrent() == 1) {
                 //找到最大的当前工序序号
                 optSequence = trackItem.getOptSequence();
+                trackItemLast = trackItem;
             }
+        }
+        if (optSequence == trackItemListOld.size() && trackItemLast.getOptParallelType() == 1) {
+            throw new GlobalException("最后一道工序为并行工序不允许拆分，请回滚至上工序。", ResultCode.FAILED);
+        }
+        if (optSequence == trackItemListOld.size() && trackItemLast.getIsDoing() > 0) {
+            throw new GlobalException("最后一道已开工不允许拆分，请清除最后工序开工记录。", ResultCode.FAILED);
         }
         //更新原跟单生产线
         for (TrackFlow tf : trackFlow) {
@@ -1164,7 +1176,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             for (TrackItem trackItem : trackItemListOld) {
                 //工序顺序大于等于当前工序且未开工的工序数量才能修改
                 trackItem.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                trackItem.setTrackHeadId(trackHeadNew.getTrackHeadId());
+                trackItem.setTrackHeadId(trackHeadNew.getId());
                 trackItem.setFlowId(tfn.getId());
                 trackItem.setNumber(trackHeadNew.getNumber());
                 trackItem.setAssignableQty(trackHeadNew.getNumber());

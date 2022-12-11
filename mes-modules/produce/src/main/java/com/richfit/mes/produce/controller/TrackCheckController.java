@@ -162,7 +162,7 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
             //增加工序过滤
-            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+//            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             queryWrapper.eq("is_doing", 2);
             queryWrapper.eq("is_operation_complete", 1);
             queryWrapper.orderByDesc("modify_time");
@@ -249,6 +249,7 @@ public class TrackCheckController extends BaseController {
                 if (null != trackHead) {
                     check.setDrawingNo(trackHead.getDrawingNo());
                     check.setTrackNo(trackHead.getTrackNo());
+                    check.setProductName(trackHead.getProductName());
                 }
                 if (null != trackItem) {
                     check.setNumber(trackItem.getNumber());
