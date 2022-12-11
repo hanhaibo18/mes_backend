@@ -25,6 +25,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
+import com.richfit.mes.produce.utils.AESUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -343,7 +344,13 @@ public class TrackAssignController extends BaseController {
                         if ("N".equals(application.getRetCode())) {
                             numberService.deleteApplicationNumberByItemId(trackItem.getId());
                             log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg() + "加密数据:" + application.getEncryption(), ResultCode.FAILED);
+                            String s = "";
+                            try {
+                                s = AESUtil.decrypt(application.getRetMsg(), application.getEncryption());
+                            } catch (Exception e) {
+                                throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+                            }
+                            throw new GlobalException("仓储服务:" + AESUtil.decrypt(application.getRetMsg(), application.getEncryption()) + "加密数据:" + s, ResultCode.FAILED);
                         }
                     }
                 }
