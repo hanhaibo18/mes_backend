@@ -345,7 +345,7 @@ public class TrackAssignController extends BaseController {
                         if ("N".equals(application.getRetCode()) && upload) {
                             numberService.deleteApplicationNumberByItemId(trackItem.getId());
                             log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg() + "密文:" + application.getEncryption(), ResultCode.FAILED);
+                            throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
                         }
                     }
                 }
