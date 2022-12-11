@@ -2,7 +2,6 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.PhyChemTaskVo;
-import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemOrderInner;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
 import org.springframework.stereotype.Component;
@@ -54,5 +53,10 @@ public class MaterialInspectionServiceClientFallbackImpl implements MaterialInsp
     @Override
     public boolean changeOrderStatus(List<String> recordNos) {
         return false;
+    }
+
+    @Override
+    public List<PhysChemOrderInner> queryByReportNo(String reportNo) {
+        return null;
     }
 }

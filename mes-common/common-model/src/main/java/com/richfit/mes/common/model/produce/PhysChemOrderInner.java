@@ -112,8 +112,10 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     private int forceOther;
     @ApiModelProperty(value = "力学性能->其他(值)")
     private String forceOtherVal;
-    @ApiModelProperty(value = "力学性能->拉伸->屈服强度")
-    private String forceTensileStrength;
+    @ApiModelProperty(value = "力学性能->拉伸->屈服强度1")
+    private String forceTensileStrength1;
+    @ApiModelProperty(value = "力学性能->拉伸->屈服强度2")
+    private String forceTensileStrength2;
     @ApiModelProperty(value = "力学性能->拉伸->伸长率")
     private String forceTensileElongation;
     @ApiModelProperty(value = "力学性能->拉伸->试样方向")
@@ -197,6 +199,80 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     private String other;
     @ApiModelProperty(value = "金相检验结果")
     private String resultsMetal;
+
+    @ApiModelProperty(value = "报告日期（年）")
+    private String reportYear;
+    @ApiModelProperty(value = "报告日期（月）")
+    private String reportMonth;
+    @ApiModelProperty(value = "报告日期（日）")
+    private String reportDay;
+    @ApiModelProperty(value = "拉伸附加序号")
+    private String tensileAdditionalNo;
+    @ApiModelProperty(value = "冲击附加序号")
+    private String impactAdditionalNo;
+
+    @ApiModelProperty(value = "弯压硬低应剪附加序号")
+    private String othertestAdditionalNo;
+    @ApiModelProperty(value = "化学附加序号")
+    private String chemicalAdditionalNo;
+    @ApiModelProperty(value = "金相附加序号")
+    private String metallAdditionalNo;
+    @ApiModelProperty(value = "金相结果名称")
+    private String metallName;
+    @ApiModelProperty(value = "弯压硬低应剪方向")
+    private String othertestDirection;
+
+    @ApiModelProperty(value = "弯压硬低应剪方向")
+    private String tensileAdditional;
+    @ApiModelProperty(value = "拉伸附加")
+    private String impactAdditional;
+    @ApiModelProperty(value = "冲击附加")
+    private String othertestAdditional;
+    @ApiModelProperty(value = "化学附加")
+    private String chemicalAdditional;
+    @ApiModelProperty(value = "金相附加")
+    private String metallAdditional;
+
+    @ApiModelProperty(value = "冲击试样参数")
+    private String impactParameter;
+    @ApiModelProperty(value = "弯压硬低应剪名称")
+    private String othertestName;
+    @ApiModelProperty(value = "弯压硬低应剪参数1")
+    private String othertestParameter1;
+    @ApiModelProperty(value = "弯压硬低应剪参数2")
+    private String othertestParameter2;
+    @ApiModelProperty(value = "碳光谱线")
+    private String cSpectralline;
+
+    @ApiModelProperty(value = "硫光谱线")
+    private String sSpectralline;
+    @ApiModelProperty(value = "报告备注名称")
+    private String reportRemarkName;
+    @ApiModelProperty(value = "报告备注单位")
+    private String reportRemarkUnit;
+    @ApiModelProperty(value = "报告备注数值")
+    private String reportRemarkVal;
+    @ApiModelProperty(value = "弯压硬低应剪数值")
+    private String othertestVal;
+
+    @ApiModelProperty(value = "拉伸试验者")
+    private String tensileTester;
+    @ApiModelProperty(value = "冲击试验者")
+    private String impactTester;
+    @ApiModelProperty(value = "弯压硬低应剪试验者")
+    private String othertestTester;
+    @ApiModelProperty(value = "化学试验者")
+    private String chemicalTester;
+    @ApiModelProperty(value = "金相试验者")
+    private String metallTester;
+
+    @ApiModelProperty(value = "复核者")
+    private String reviewedBy;
+    @ApiModelProperty(value = "批准者")
+    private String supervidor;
+
+
+
 
     /**
      * 多选的力学性能参数

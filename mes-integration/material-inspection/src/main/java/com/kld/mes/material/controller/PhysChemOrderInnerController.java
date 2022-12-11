@@ -112,7 +112,7 @@ public class PhysChemOrderInnerController extends BaseController {
     }
 
     /**
-     * 分页查询委托单数据
+     * 根据委托单号查询委托单
      */
     @ApiOperation(value = "根据委托单号查询委托单", notes = "根据委托单号查询委托单")
     @ApiImplicitParam(name = "orderNo", value = "委托单号", paramType = "query", dataType = "String")
@@ -127,7 +127,21 @@ public class PhysChemOrderInnerController extends BaseController {
     }
 
     /**
-     * 分页查询委托单数据
+     * 根据报告号查询中间表数据
+     */
+    @ApiOperation(value = "根据报告号查询中间表数据", notes = "根据报告号查询中间表数据")
+    @ApiImplicitParam(name = "reportNo", value = "报告号", paramType = "query", dataType = "String")
+    @GetMapping("/queryByReportNo")
+    public List<PhysChemOrderInner> queryByReportNo(@RequestParam("reportNo") String reportNo){
+        QueryWrapper<PhysChemOrderInner> queryWrapper = new QueryWrapper<>();
+        if(!StringUtils.isNullOrEmpty(reportNo)){
+            queryWrapper.eq("report_no",reportNo);
+        }
+        return  physChemOrderInnerService.list(queryWrapper);
+    }
+
+    /**
+     * 根据委托单号删除委托单
      */
     @ApiOperation(value = "根据委托单号删除委托单", notes = "根据委托单号删除委托单")
     @ApiImplicitParam(name = "orderNo", value = "委托单号", paramType = "query", dataType = "String")

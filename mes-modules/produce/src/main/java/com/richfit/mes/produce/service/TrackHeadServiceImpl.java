@@ -1120,10 +1120,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
         }
         if (optSequence == trackItemListOld.size() && trackItemLast.getOptParallelType() == 1) {
-            throw new GlobalException("最后一道工序为并行工序不允许拆分", ResultCode.FAILED);
+            throw new GlobalException("最后一道工序为并行工序不允许拆分，请回滚至上工序。", ResultCode.FAILED);
         }
         if (optSequence == trackItemListOld.size() && trackItemLast.getIsDoing() > 0) {
-            throw new GlobalException("最后一道已开工不允许拆分", ResultCode.FAILED);
+            throw new GlobalException("最后一道已开工不允许拆分，请清除最后工序开工记录。", ResultCode.FAILED);
         }
         //更新原跟单生产线
         for (TrackFlow tf : trackFlow) {

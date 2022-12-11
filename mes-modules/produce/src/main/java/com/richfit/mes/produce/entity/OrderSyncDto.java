@@ -22,4 +22,6 @@ public class OrderSyncDto {
     private String controller;
     @ApiModelProperty(value = "erp工厂代码")
     private String erpCode;
+    @ApiModelProperty(value = "工厂")
+    private String branchCode;
 }

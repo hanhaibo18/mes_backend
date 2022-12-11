@@ -74,11 +74,12 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveOrderSync(List<Order> orderList, String time, String controller, String erpCode) {
+    public CommonResult<Boolean> saveOrderSync(List<Order> orderList, String time, String controller, String erpCode, String branchCode) {
         for (Order order : orderList) {
             if (order.getMaterialCode() == null) {
                 continue;
             }
+            order.setBranchCode(branchCode);
             order.setOrderDate(order.getStartTime());
             order.setDeliveryDate(order.getEndTime());
             order.setPriority("1");
@@ -165,7 +166,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         //查询erp
         List<Order> orderList = erpServiceClient.getErpOrder(orderSyncLog.getErpCode(), orderSyncLog.getOrderSyncTime(), orderSyncLog.getOrderSn(), orderSyncLog.getController()).getData();
         //调用同步接口
-        return this.saveOrderSync(orderList, orderSyncLog.getOrderSyncTime(), orderSyncLog.getController(), orderSyncLog.getErpCode());
+        return this.saveOrderSync(orderList, orderSyncLog.getOrderSyncTime(), orderSyncLog.getController(), orderSyncLog.getErpCode(), orderSyncLog.getBranchCode());
     }
 
     /**
