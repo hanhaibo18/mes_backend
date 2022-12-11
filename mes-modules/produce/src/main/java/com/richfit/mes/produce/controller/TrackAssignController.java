@@ -343,7 +343,7 @@ public class TrackAssignController extends BaseController {
                         if ("N".equals(application.getRetCode())) {
                             numberService.deleteApplicationNumberByItemId(trackItem.getId());
                             log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg() + "加密数据:" + application.getEncryption(), ResultCode.FAILED);
+                            throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
                         }
                     }
                 }

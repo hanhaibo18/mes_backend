@@ -126,8 +126,6 @@ public class ProductToWmsService {
         //调用上传接口
         String s = HttpUtil.post(mesScddUploadApi, params, 120000);
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        //返回上传信息
-        applicationResult.setEncryption(ingredientApplicationDtoEncrpy);
         return applicationResult;
     }
 
