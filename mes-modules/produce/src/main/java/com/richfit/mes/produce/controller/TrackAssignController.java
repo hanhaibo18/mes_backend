@@ -343,7 +343,7 @@ public class TrackAssignController extends BaseController {
                         if ("N".equals(application.getRetCode())) {
                             numberService.deleteApplicationNumberByItemId(trackItem.getId());
                             log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg() + "请求数据:" + ingredient, ResultCode.FAILED);
+                            throw new GlobalException("仓储服务:" + application.getRetMsg() + "加密数据:" + application.getEncryption(), ResultCode.FAILED);
                         }
                     }
                 }
@@ -734,7 +734,7 @@ public class TrackAssignController extends BaseController {
                 //如果是探伤工序，删除探伤委托任务
                 if ("6".equals(trackItem.getOptType())) {
                     QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
-                    inspectionPowerQueryWrapper.eq("item_id",assign.getTiId());
+                    inspectionPowerQueryWrapper.eq("item_id", assign.getTiId());
                     inspectionPowerService.remove(inspectionPowerQueryWrapper);
                 }
             }
