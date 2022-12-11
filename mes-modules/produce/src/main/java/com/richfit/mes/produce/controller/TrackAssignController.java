@@ -346,11 +346,11 @@ public class TrackAssignController extends BaseController {
                             log.error("仓储数据:" + ingredient);
                             String s = "";
                             try {
-                                s = AESUtil.decrypt(application.getRetMsg(), application.getEncryption());
+                                s = AESUtil.decrypt(application.getEncryption(), "YQsZ7gPT");
                             } catch (Exception e) {
                                 throw new GlobalException(e.getMessage(), ResultCode.FAILED);
                             }
-                            throw new GlobalException("仓储服务:" + AESUtil.decrypt(application.getRetMsg(), application.getEncryption()) + "加密数据:" + s, ResultCode.FAILED);
+                            throw new GlobalException("仓储服务:" + application.getRetMsg() + "加密数据:" + s, ResultCode.FAILED);
                         }
                     }
                 }
