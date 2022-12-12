@@ -21,9 +21,7 @@ import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -69,10 +67,7 @@ public class PhyChemTestService{
     private final static String YES_REPORT_STATUS = "1";
     //材料检测部门未生成报告
     private final static String NO_REPORT_STATUS = "0";
-    //已经完工
-    private final static int YES_DOING = 2;
-    //工序完成
-    private final static int ITEM_END = 1;
+
 
     /**
      * 查询委托单列表
@@ -317,16 +312,18 @@ public class PhyChemTestService{
     }
 
     //导出理化委托单
-    public void exportExcel(HttpServletResponse rsp,String reportNo) {
+    public void exportExcel(HttpServletResponse rsp,String orderNo) {
         PhysChemOrderInner physChemOrderInner = new PhysChemOrderInner();
         //中间表数据 用于生成报告
-        List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByReportNo(reportNo);
+        List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByOrderNo(orderNo);
         if(physChemOrderInners.size()>0){
             physChemOrderInner = physChemOrderInners.get(0);
         }
         int sheetNum = 0;
         try {
-            ExcelWriter writer = ExcelUtil.getReader(ResourceUtil.getStream("excel/" + "PhyChemOrderTemplate.xlsx")).getWriter();
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + "bb.xlsx");
+
+            ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
             HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
 
             if (sheetNum > 0) {

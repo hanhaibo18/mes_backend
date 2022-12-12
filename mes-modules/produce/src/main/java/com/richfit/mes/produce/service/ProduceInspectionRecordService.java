@@ -174,6 +174,7 @@ public class ProduceInspectionRecordService {
             QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
             itemInspectInfoQueryWrapper.eq("power_id", inspectionPower.getId()).eq("is_new","1");
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+            //完工的时候下载报告的
             if(list.size()>0){
                 inspectionPower.setRecordId(list.get(0).getInspectRecordId());
             }
@@ -189,9 +190,6 @@ public class ProduceInspectionRecordService {
     private QueryWrapper<InspectionPower> getProwerQueryWrapper(InspectionPowerVo inspectionPowerVo) {
         QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<InspectionPower>();
 
-        if (!StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
-            queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
-        }
         if (!StringUtils.isEmpty(inspectionPowerVo.getTenantId())) {
             queryWrapper.eq("tenant_id", inspectionPowerVo.getTenantId());
         }
@@ -236,6 +234,8 @@ public class ProduceInspectionRecordService {
             //无源委托单
             queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()),"item_id");
         }
+        //查询自己租户的
+        queryWrapper.eq(!StringUtils.isEmpty(inspectionPowerVo.getBranchCode()),"inspection_depart", inspectionPowerVo.getBranchCode());
         //已经委托的探伤委托单
         queryWrapper.eq("status",IS_STATUS);
         //图号查询
