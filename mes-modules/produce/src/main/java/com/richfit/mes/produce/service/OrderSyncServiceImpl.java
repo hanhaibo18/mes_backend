@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -198,6 +199,10 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         List<Product> list = baseServiceClient.selectOrderProduct(order.getMaterialCode(), null);
         if (CollectionUtils.isEmpty(list)) {
             log.setOpinion("未查询到成品物料信息,请补全成品物料");
+            orderLogService.save(log);
+            return false;
+        } else if (StrUtil.isBlank(list.get(0).getDrawingNo())) {
+            log.setOpinion("未查询到成品物料图号,请补充物料图号信息");
             orderLogService.save(log);
             return false;
         }

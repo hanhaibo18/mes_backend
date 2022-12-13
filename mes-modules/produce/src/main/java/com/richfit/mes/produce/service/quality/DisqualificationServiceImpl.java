@@ -205,8 +205,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         String value = value("qualityManagement");
         //获取TenantId
         Branch branch = baseServiceClient.queryTenantIdByBranchCode(value);
-        //根据租户Id查询人员列表
-        return systemServiceClient.queryUserByTenantId(branch.getTenantId());
+        if (branch != null && branch.getTenantId() != null) {
+            //根据租户Id查询人员列表
+            return systemServiceClient.queryUserByTenantId(branch.getTenantId());
+        } else {
+            return null;
+        }
     }
 
     @Override
