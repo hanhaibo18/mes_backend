@@ -90,6 +90,7 @@ public class RouterController extends BaseController {
             if (isPDM) {
                 queryWrapper.isNull("draw_no");
             }
+//            queryWrapper.eq("is_active", "1");
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             if (!StringUtils.isNullOrEmpty(orderCol)) {

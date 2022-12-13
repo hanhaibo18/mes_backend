@@ -50,7 +50,7 @@ public class Router extends BaseEntity<Router> {
     private String type;
 
     /**
-     * 状态 0=未激活 1=激活
+     * 状态 0=未激活 1=激活 2=历史
      */
     private String status;
 

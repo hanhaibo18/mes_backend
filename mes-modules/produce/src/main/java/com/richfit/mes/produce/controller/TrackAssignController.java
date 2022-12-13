@@ -336,16 +336,16 @@ public class TrackAssignController extends BaseController {
                         }
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
                         requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
-                        ApplicationResult application = new ApplicationResult();
+//                        ApplicationResult application = new ApplicationResult();
                         if (CollectionUtils.isNotEmpty(ingredient.getLineList())) {
-                            application = wmsServiceClient.anApplicationForm(ingredient).getData();
-                        }
-                        //请勿重复上传！
-                        boolean upload = !application.getRetMsg().contains("请勿重复上传");
-                        if ("N".equals(application.getRetCode()) && upload) {
-                            numberService.deleteApplicationNumberByItemId(trackItem.getId());
-                            log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
+                            ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                            //请勿重复上传！
+                            boolean upload = !application.getRetMsg().contains("请勿重复上传");
+                            if ("N".equals(application.getRetCode()) && upload) {
+                                numberService.deleteApplicationNumberByItemId(trackItem.getId());
+                                log.error("仓储数据:" + ingredient);
+                                throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
+                            }
                         }
                     }
                 }
