@@ -117,10 +117,10 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "理化检测委托单导出", notes = "理化检测委托单导出")
-    @ApiImplicitParam(name = "reportNo", value = "报告号", required = true, paramType = "query", dataType = "String")
+    @ApiImplicitParam(name = "orderNo", value = "委托单号", required = true, paramType = "query", dataType = "String")
     @GetMapping("/exportExcel")
-    public void exportExcel(HttpServletResponse response, String reportNo) throws GlobalException {
-        phyChemTestService.exportExcel(response,reportNo);
+    public void exportExcel(HttpServletResponse response, String orderNo) throws GlobalException {
+        phyChemTestService.exportExcel(response,orderNo);
     }
 
 }

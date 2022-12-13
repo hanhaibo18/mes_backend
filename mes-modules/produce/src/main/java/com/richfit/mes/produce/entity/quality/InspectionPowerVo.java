@@ -33,6 +33,7 @@ public class InspectionPowerVo{
     private String assignStatus;
 
 
+
     @ApiModelProperty(value = "组织机构编码", dataType = "String")
     private String branchCode;
     @ApiModelProperty(value = "组织机构id", dataType = "String")
