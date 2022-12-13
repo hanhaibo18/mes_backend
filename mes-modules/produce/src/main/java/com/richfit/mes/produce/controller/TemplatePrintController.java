@@ -152,7 +152,10 @@ public class TemplatePrintController extends BaseController {
                     // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
                     //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
                     String templateFileId = p.getFileId();
+                    System.out.println(templateFileId);
+                    System.out.println("-----------------------");
                     CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
+                    System.out.println(result.getData());
                     InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
 //                    ExcelUtils.exportExcelOnSheetsData("跟单", inputStream, sheets, rsp);
                     ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo(), inputStream, sheets);
