@@ -35,6 +35,11 @@ public class Router extends BaseEntity<Router> {
     private String routerName;
 
     /**
+     * 工艺类型
+     */
+    private String routerType;
+
+    /**
      * 工艺描述
      */
     private String remark;

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,11 +69,15 @@ public class PdmMesOptionController {
     @ApiOperation(value = "工序图纸列表查询", notes = "工序图纸列表查询")
     @ApiImplicitParam(name = "pdmDraw", value = "图纸VO", required = true, dataType = "pdmDraw", paramType = "body")
     public CommonResult<List<PdmMesDraw>> optionDrawList(PdmMesOption pdmMesOption) {
-        QueryWrapper<PdmMesDraw> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmMesOption.getId()), "op_id", pdmMesOption.getId());
-        queryWrapper.orderByDesc("syc_time")
-                .eq("dataGroup", pdmMesOption.getDataGroup());
-        return CommonResult.success(pdmMesDrawService.list(queryWrapper));
+        List<PdmMesDraw> pdmMesDraws = new ArrayList<>();
+        if(!StringUtils.isNullOrEmpty(pdmMesOption.getId())){
+            QueryWrapper<PdmMesDraw> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmMesOption.getId()), "op_id", pdmMesOption.getId());
+            queryWrapper.orderByDesc("syc_time")
+                    .eq("dataGroup", pdmMesOption.getDataGroup());
+            pdmMesDraws = pdmMesDrawService.list(queryWrapper);
+        }
+        return CommonResult.success(pdmMesDraws);
     }
 
     @GetMapping("/queryOptionDraw/optionDrawPageList")

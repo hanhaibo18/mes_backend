@@ -19,6 +19,12 @@ public class Sequence extends BaseEntity<Sequence> {
      */
     @ApiModelProperty(value = "工艺Id", dataType = "String")
     private String routerId;
+
+    /**
+     * 关联工装图纸的id
+     */
+    @ApiModelProperty(value = "关联工装、图纸的id", dataType = "int")
+    protected String pdmMesOptionId;
     /**
      * 工序顺序
      */

@@ -91,7 +91,8 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 queryWrapperOperatipon.eq("branch_code", pdmMesOption.getDataGroup());
                 queryWrapperOperatipon.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 List<Operatipon> operatipons = operatiponService.list(queryWrapperOperatipon);
-
+                //工序的id
+                String sequenceId = UUID.randomUUID().toString().replace("-", "");
                 //添加工序
                 Sequence sequence = new Sequence();
                 if (operatipons.size() > 0) {
@@ -119,7 +120,9 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                     sequence.setOptCode(operatipon.getOptCode());
                 }
                 sequence.setRouterId(routerId);
-                sequence.setId(pdmMesOption.getId());
+                sequence.setId(sequenceId);
+                //关联工装、图纸的id
+                sequence.setPdmMesOptionId(pdmMesOption.getId());
                 sequence.setOptOrder(Integer.parseInt(pdmMesOption.getOpNo()));
                 sequence.setOpNo(pdmMesOption.getOpNo());
                 sequence.setType(pdmMesOption.getType());
@@ -218,6 +221,8 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             queryWrapperRouter.eq("router_no", pdmMesProcess.getDrawNo());
             queryWrapperRouter.eq("branch_code", pdmMesProcess.getDataGroup());
             queryWrapperRouter.eq("tenant_id", user.getTenantId());
+            //工艺唯一  工艺名称+图号（历史数据）
+            queryWrapperRouter.eq("router_name", pdmMesProcess.getName());
             routerService.update(router, queryWrapperRouter);
             //添加新工艺模块
             router.setId(routerId);
@@ -225,6 +230,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             router.setVersion(pdmMesProcess.getRev());
             router.setRouterName(pdmMesProcess.getName());
             router.setRouterNo(pdmMesProcess.getDrawNo());
+            router.setRouterType(pdmMesProcess.getProcessType());
             router.setDrawNo(pdmMesProcess.getDrawNo());
             router.setRemark(pdmMesProcess.getDrawNo());
             router.setBranchCode(pdmMesProcess.getDataGroup());
