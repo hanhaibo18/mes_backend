@@ -20,8 +20,14 @@ public class RouterTechnique extends BaseEntity<RouterTechnique> {
     /**
      * 工艺di
      */
-    @ApiModelProperty(value = "工艺di", dataType = "String")
+    @ApiModelProperty(value = "工艺id", dataType = "String")
     private String routerId;
+
+    /**
+     * 技术类型
+     */
+    @ApiModelProperty(value = "技术类型", dataType = "String")
+    private String projectType;
 
 
 }
