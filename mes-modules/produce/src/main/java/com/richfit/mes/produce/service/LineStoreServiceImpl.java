@@ -565,32 +565,58 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
+    public String zpExpend(String drawingNo, int number, String branchCode, String tenantId, String lineStoreId) {
+        //3 解绑成功 4失败
+        if (StrUtil.isNotBlank(lineStoreId)) {
+            boolean unbundling = this.unbundling(lineStoreId, number);
+            if (!unbundling) {
+                throw new GlobalException("解绑失败", ResultCode.FAILED);
+            }
+            return "true";
+        }
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+        queryWrapper.apply("number-use_num =" + number);
         queryWrapper.eq("drawing_no", drawingNo);
-        queryWrapper.eq("workblank_no", prodNo);
-        LineStore lineStore = this.getOne(queryWrapper);
-        if (lineStore == null) {
-            return false;
+        queryWrapper.eq("input_type", "3");
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.notIn("status", "3");
+        queryWrapper.orderByAsc("create_time");
+        List<LineStore> lineStoreList = this.list(queryWrapper);
+        if (CollectionUtils.isEmpty(lineStoreList)) {
+            QueryWrapper<LineStore> queryWrappers = new QueryWrapper<LineStore>();
+            queryWrappers.apply("number-use_num >" + number);
+            queryWrappers.eq("drawing_no", drawingNo);
+            queryWrappers.eq("input_type", "3");
+            queryWrappers.eq("branch_code", branchCode);
+            queryWrappers.eq("tenant_id", tenantId);
+            queryWrapper.notIn("status", "3");
+            queryWrappers.orderByAsc("create_time");
+            lineStoreList = this.list(queryWrappers);
+            //0 = 绑定失败
+            if (CollectionUtils.isEmpty(lineStoreList)) {
+                throw new GlobalException("未查询到可绑定项", ResultCode.FAILED);
+            }
         }
-        if (1 == state) {
-            if ("3".equals(lineStore.getStatus())) {
-                return false;
-            }
-            int num = lineStore.getUseNum() + number;
-            lineStore.setUseNum(num);
-            if (lineStore.getNumber() == num) {
-                lineStore.setStatus("3");
-            }
-            return this.updateById(lineStore);
-        } else {
-            int num = lineStore.getUseNum() - number;
-            lineStore.setUseNum(num);
-            if ("3".equals(lineStore.getStatus())) {
-                lineStore.setStatus("0");
-            }
-            return this.updateById(lineStore);
+        LineStore lineStore = lineStoreList.get(0);
+        int num = lineStore.getUseNum() + number;
+        lineStore.setUseNum(num);
+        if (lineStore.getNumber() == num) {
+            lineStore.setStatus("3");
         }
+        this.updateById(lineStore);
+        return lineStore.getId();
+    }
+
+    @Override
+    public boolean unbundling(String id, int number) {
+        LineStore lineStore = this.getById(id);
+        int num = lineStore.getUseNum() - number;
+        lineStore.setUseNum(num);
+        if ("3".equals(lineStore.getStatus())) {
+            lineStore.setStatus("0");
+        }
+        return this.updateById(lineStore);
     }
 
     @Override
