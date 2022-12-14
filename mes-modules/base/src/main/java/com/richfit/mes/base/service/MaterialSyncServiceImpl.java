@@ -3,7 +3,6 @@ package com.richfit.mes.base.service;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.ProductMapper;
 import com.richfit.mes.base.entity.MaterialSyncDto;
@@ -24,10 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: MaterialSyncServiceImpl.java
@@ -70,6 +67,16 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
     public CommonResult<Boolean> saveProductSync(List<Product> productList) {
         boolean data = false;
         String message = "操作失败";
+        //获取到所有物料号
+        List<String> materialNoList = productList.stream().map(Product::getMaterialNo).collect(Collectors.toList());
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("material_no", materialNoList);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<Product> list = materialSyncService.list(queryWrapper);
+        //删除物料信息
+        materialSyncService.remove(queryWrapper);
+        //转化成MAP 方便获取id
+        Map<String, Product> productMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, product -> product, (value1, value2) -> value2));
         for (Product product : productList) {
             //同步时数据存在空格，会导致查不到图号
             if (StringUtils.isNotBlank(product.getMaterialNo())) {
@@ -78,14 +85,12 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
             product.setDrawingNo(product.getDrawingNo().trim());
             //同步开关字段 Autosyns  值为空 或者为 y  默认同步
             if (ObjectUtil.isEmpty(product.getAutosyns()) || product.getAutosyns().equals("null") || product.getAutosyns().equals("y")) {
-                QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("material_no", product.getMaterialNo());
-                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-                List<Product> list = materialSyncService.list(queryWrapper);
-                materialSyncService.remove(queryWrapper);
-                if (CollectionUtils.isNotEmpty(list)) {
-                    product.setId(list.get(0).getId());
+                //根据物料号查询到物料实体
+                if (null != productMap.get(product.getMaterialNo())) {
+                    //存入该物料号以前的id
+                    product.setId(productMap.get(product.getMaterialNo()).getId());
                 } else {
+                    //没有重新生成uuid
                     product.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                 }
                 boolean save = materialSyncService.save(product);
@@ -129,6 +134,16 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                 for (String date : dates) {
                     materialSyncDto.setDate(date);
                     List<Product> productList = materialSyncService.queryProductSync(materialSyncDto);
+                    //获取到所有物料号
+                    List<String> materialNoList = productList.stream().map(Product::getMaterialNo).collect(Collectors.toList());
+                    QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.in("material_no", materialNoList);
+                    queryWrapper.eq("tenant_id", itemParam.getTenantId());
+                    List<Product> list = materialSyncService.list(queryWrapper);
+                    //删除物料信息
+                    materialSyncService.remove(queryWrapper);
+                    //转化成MAP 方便获取id
+                    Map<String, Product> productMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, product -> product, (value1, value2) -> value2));
                     log.debug("日期：" + date + ",同步" + productList.size() + "条数据");
                     for (Product product : productList) {
                         product.setCreateBy("System");
@@ -138,14 +153,12 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
                         product.setBranchCode(itemParam.getLabel());
                         product.setTenantId(itemParam.getTenantId());
                         if (ObjectUtil.isEmpty(product.getAutosyns()) || product.getAutosyns().equals("null") || product.getAutosyns().equals("y")) {
-                            QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-                            queryWrapper.eq("material_no", product.getMaterialNo());
-                            queryWrapper.eq("tenant_id", itemParam.getTenantId());
-                            List<Product> list = materialSyncService.list(queryWrapper);
-                            materialSyncService.remove(queryWrapper);
-                            if (CollectionUtils.isNotEmpty(list)) {
-                                product.setId(list.get(0).getId());
+                            //根据物料号查询到物料实体
+                            if (null != productMap.get(product.getMaterialNo())) {
+                                //存入该物料号以前的id
+                                product.setId(productMap.get(product.getMaterialNo()).getId());
                             } else {
+                                //没有重新生成uuid
                                 product.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                             }
                             materialSyncService.save(product);
