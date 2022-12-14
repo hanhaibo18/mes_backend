@@ -11,6 +11,8 @@ import lombok.Data;
  */
 @Data
 public class QueryOrderSyncLogPageDto extends QueryPageDto {
+    @ApiModelProperty(value = "订单号", dataType = "String")
+    private String orderSn;
     @ApiModelProperty(value = "物料号", dataType = "String")
     private String materialNo;
     @ApiModelProperty(value = "图号", dataType = "String")
