@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -74,10 +75,17 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             trackHead.setProductNo("");
         }
         trackHeadService.updateById(trackHead);
-        this.updateById(assemblyBinding);
         trackAssemblyService.updateById(trackAssembly);
-        boolean expend = lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getNumber(), assemblyBinding.getQuantity(), isBinding);
-        if (expend) {
+        String expend = lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getQuantity(), trackHead.getBranchCode(), trackHead.getTenantId(), assemblyBinding.getLineStoreId());
+        boolean equals = "true".equals(expend);
+        if (!equals) {
+            assemblyBinding.setLineStoreId(expend);
+        }
+        this.updateById(assemblyBinding);
+        if (StrUtil.isNotBlank(expend)) {
+            if (equals) {
+                return CommonResult.success(true, "解绑成功");
+            }
             return CommonResult.success(true, "绑定成功");
         } else {
             throw new GlobalException("绑定失败", ResultCode.FAILED);
@@ -92,7 +100,8 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - assemblyBinding.getQuantity());
             trackAssemblyService.updateById(trackAssembly);
-            lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getNumber(), assemblyBinding.getQuantity(), 0);
+            //解绑
+            lineStoreService.unbundling(assemblyBinding.getLineStoreId(), assemblyBinding.getQuantity());
         }
         return CommonResult.success(removeById(id));
     }
