@@ -267,7 +267,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         List<SignedRecordsVo> recordsVoList = SignedRecordsVo.list(userOpinionService.list(queryWrapper));
         recordsVoList.forEach(records -> {
             QueryWrapper<DisqualificationFinalResult> queryWrapperFinalResult = new QueryWrapper<>();
-            queryWrapperFinalResult.eq("opinion_id", records.getId());
+//            queryWrapperFinalResult.eq("opinion_id", records.getId());
             DisqualificationFinalResult finalResult = finalResultService.getOne(queryWrapperFinalResult);
             if (null == finalResult) {
                 return;
