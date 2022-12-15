@@ -1,6 +1,5 @@
 package com.richfit.mes.base.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.entity.TreeVo;
@@ -276,16 +275,16 @@ public class BranchController extends BaseController {
         queryWrapper.ne("main_branch_code", "");
         List<Branch> result = branchService.list(queryWrapper);
         //当前机构的代码等于顶级机构的代码时返回所有的工厂列表
-        if (StrUtil.isBlank(tenantUserDetails.getOrgId()) || tenantUserDetails.getBelongOrgId().equals(tenantUserDetails.getOrgId())) {
-            return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
-        } else {
-            for (Branch branch : result) {
-                if (tenantUserDetails.getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
-                    branchList.add(branch);
-                }
+        for (Branch branch : result) {
+            if (tenantUserDetails.getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
+                //用于车间及车间下级组织添加车间列表
+                branchList.add(branch);
+            } else if (branch.getBranchCode().replaceAll("_", "").startsWith(tenantUserDetails.getBelongOrgId().replaceAll("_", ""))) {
+                //用于车间上级添加车间列表
+                branchList.add(branch);
             }
-            return CommonResult.success(branchList, BRANCH_SUCCESS_MESSAGE);
         }
+        return CommonResult.success(branchList, BRANCH_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询质检人员(新)/树形结构")
