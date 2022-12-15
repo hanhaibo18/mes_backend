@@ -20,6 +20,7 @@ public class Disqualification extends BaseEntity<Disqualification> {
     /**
      * 跟单Id
      */
+    
     private String trackHeadId;
 
     /**

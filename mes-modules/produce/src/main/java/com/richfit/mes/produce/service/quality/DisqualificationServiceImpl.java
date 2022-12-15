@@ -329,7 +329,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
             disqualificationItemVo.setSignedRecordsList(this.querySignedRecordsList(disqualificationItemVo.getId()));
             disqualificationItemVo.setUserList(queryOpinionUser(disqualificationItemVo.getId()));
-            disqualificationItemVo.setOpinionId(opinionId);
+//            disqualificationItemVo.setOpinionId(opinionId);
         } else if (null != disqualificationItemVo) {
             disqualificationItemVo.setAttachmentList(Collections.emptyList());
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
