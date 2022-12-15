@@ -17,17 +17,83 @@ import java.util.List;
  */
 @Data
 public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
+
     /**
      * 跟单Id
      */
-    @ApiModelProperty(value = "跟单Id", dataType = "String")
     private String trackHeadId;
+
+    /**
+     * 跟单工序Id
+     */
+    @ApiModelProperty(value = "跟单工序Id", dataType = "String")
+    private String trackItemId;
+
+    /**
+     * 申请单编号
+     */
+    @ApiModelProperty(value = "申请单编号", dataType = "String")
+    private String processSheetNo;
 
     /**
      * 不合格类型
      */
-    @ApiModelProperty(value = "不合格类型", dataType = "String")
     private String type;
+
+    /**
+     * 0 = 未发布 1= 已发布 2 = 已关闭
+     */
+    @ApiModelProperty(value = "是否发布", dataType = "String")
+    private Integer isIssue;
+
+    /**
+     * 工作号
+     */
+    @ApiModelProperty(value = "工作号", dataType = "String")
+    private String workNo;
+
+    /**
+     * 产品编号
+     */
+    @ApiModelProperty(value = "产品编号", dataType = "String")
+    private String productNo;
+
+    /**
+     * 产品名称
+     */
+    @ApiModelProperty(value = "产品名称", dataType = "String")
+    private String productName;
+
+
+    /**
+     * 跟单编号
+     */
+    private String trackNo;
+
+    /**
+     * 零部件名称
+     */
+    @ApiModelProperty(value = "零部件名称", dataType = "String")
+    private String partName;
+
+    /**
+     * 零部件材料
+     */
+    @ApiModelProperty(value = "零部件材料", dataType = "String")
+    private String partMaterials;
+
+    /**
+     * 零部件图号
+     */
+    @ApiModelProperty(value = "零部件图号", dataType = "String")
+    private String partDrawingNo;
+
+    /**
+     * 送出的车间
+     */
+    @ApiModelProperty(value = "送出的车间", dataType = "String")
+    private String missiveBranch;
+
 
     /**
      * 责任单位内
@@ -54,66 +120,6 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private String unitTreatmentTwo;
 
     /**
-     * 跟单工序Id
-     */
-    @ApiModelProperty(value = "跟单工序Id", dataType = "String")
-    private String trackItemId;
-
-    /**
-     * 申请单编号
-     */
-    @ApiModelProperty(value = "申请单编号", dataType = "String")
-    private String processSheetNo;
-
-    /**
-     * 是否发布
-     */
-    @ApiModelProperty(value = "是否发布", dataType = "String")
-    private Integer isIssue;
-
-    /**
-     * 工作号
-     */
-    @ApiModelProperty(value = "工作号", dataType = "String")
-    private String workNo;
-
-    /**
-     * 产品编号
-     */
-    @ApiModelProperty(value = "产品编号", dataType = "String")
-    private String productNo;
-
-    /**
-     * 产品名称
-     */
-    @ApiModelProperty(value = "产品名称", dataType = "String")
-    private String productName;
-
-    /**
-     * 零部件名称
-     */
-    @ApiModelProperty(value = "零部件名称", dataType = "String")
-    private String partName;
-
-    /**
-     * 零部件材料
-     */
-    @ApiModelProperty(value = "零部件材料", dataType = "String")
-    private String partMaterials;
-
-    /**
-     * 零部件图号
-     */
-    @ApiModelProperty(value = "零部件图号", dataType = "String")
-    private String partDrawingNo;
-
-    /**
-     * 送出的车间
-     */
-    @ApiModelProperty(value = "送出的车间", dataType = "String")
-    private String missiveBranch;
-
-    /**
      * 工序名称
      */
     @ApiModelProperty(value = "工序名称", dataType = "String")
@@ -138,9 +144,15 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private Date qualityCompleteTime;
 
     /**
-     * 质量检查人
+     * 质控工程师姓名
      */
-    @ApiModelProperty(value = "质量检查人", dataType = "String")
+    @ApiModelProperty(value = "质量检查人name", dataType = "String")
+    private String qualityCheckName;
+
+    /**
+     * 质控工程师
+     */
+    @ApiModelProperty(value = "质量检查userId", dataType = "String")
     private String qualityCheckBy;
 
     /**
@@ -167,11 +179,9 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @ApiModelProperty(value = "所属租户", dataType = "Date")
     private String tenantId;
 
-    /**
-     * 所属租户
-     */
-    @ApiModelProperty(value = "跟单号", dataType = "String")
-    private String trackNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "文件列表", dataType = "List<DisqualificationAttachment>")
+    private List<DisqualificationAttachment> attachmentList;
 
     /**
      * 检验人员
@@ -179,10 +189,6 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @TableField(exist = false)
     @ApiModelProperty(value = "检验人员", dataType = "List<DisqualificationUserOpinion>")
     private List<TenantUserVo> userList;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "文件列表", dataType = "List<DisqualificationAttachment>")
-    private List<DisqualificationAttachment> attachmentList;
 
     /**
      * 不合格类型

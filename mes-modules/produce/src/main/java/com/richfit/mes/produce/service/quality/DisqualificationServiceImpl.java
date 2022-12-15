@@ -272,39 +272,39 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             if (null == finalResult) {
                 return;
             }
-            //意见ID相同 再去拼接最终结果
-            if (records.getId().equals(finalResult.getOpinionId())) {
-                StringBuilder sb = new StringBuilder();
-                //让步接收数量
-                sb.append("让步接收数量:");
-                if (finalResult.getAcceptDeviation() != null) {
-                    sb.append(finalResult.getAcceptDeviation());
-                } else {
-                    sb.append(0);
-                }
-                //返修合格数量
-                sb.append(",返修合格数量:");
-                if (finalResult.getRepairQualified() != null) {
-                    sb.append(finalResult.getRepairQualified());
-                } else {
-                    sb.append(0);
-                }
-                //报废数量
-                sb.append(",报废数量:");
-                if (finalResult.getScrap() != null) {
-                    sb.append(finalResult.getScrap());
-                } else {
-                    sb.append(0);
-                }
-                //退货数量
-                sb.append(",退货数量:");
-                if (finalResult.getSalesReturn() != null) {
-                    sb.append(finalResult.getSalesReturn());
-                } else {
-                    sb.append(0);
-                }
-                records.setFinalResult(sb.toString());
-            }
+//            //意见ID相同 再去拼接最终结果
+//            if (records.getId().equals(finalResult.getOpinionId())) {
+//                StringBuilder sb = new StringBuilder();
+//                //让步接收数量
+//                sb.append("让步接收数量:");
+//                if (finalResult.getAcceptDeviation() != null) {
+//                    sb.append(finalResult.getAcceptDeviation());
+//                } else {
+//                    sb.append(0);
+//                }
+//                //返修合格数量
+//                sb.append(",返修合格数量:");
+//                if (finalResult.getRepairQualified() != null) {
+//                    sb.append(finalResult.getRepairQualified());
+//                } else {
+//                    sb.append(0);
+//                }
+//                //报废数量
+//                sb.append(",报废数量:");
+//                if (finalResult.getScrap() != null) {
+//                    sb.append(finalResult.getScrap());
+//                } else {
+//                    sb.append(0);
+//                }
+//                //退货数量
+//                sb.append(",退货数量:");
+//                if (finalResult.getSalesReturn() != null) {
+//                    sb.append(finalResult.getSalesReturn());
+//                } else {
+//                    sb.append(0);
+//                }
+//                records.setFinalResult(sb.toString());
+//            }
         });
         //单查询开单时间
         Disqualification disqualification = this.getById(disqualificationId);
