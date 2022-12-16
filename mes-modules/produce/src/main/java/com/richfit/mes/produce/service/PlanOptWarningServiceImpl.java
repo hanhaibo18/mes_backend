@@ -58,6 +58,14 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
 
     @Override
     public void warning(Plan plan) throws Exception {
+        QueryWrapper<PlanOptWarning> queryWrapperPlanOptWarning = new QueryWrapper<>();
+        queryWrapperPlanOptWarning.eq("plan_id", plan.getId());
+        List<PlanOptWarning> planOptWarnings = planOptWarningMapper.selectList(queryWrapperPlanOptWarning);
+        if (planOptWarnings == null || planOptWarnings.size() == 0) {
+            //不进行预警
+            plan.setAlarmStatus(0);
+            return;
+        }
         //查询计划预警的数据
         List<PlanOptWarning> planOptWarningList = queryPlanOptWarningList(plan.getId());
         if (planOptWarningList.size() < 1) {
