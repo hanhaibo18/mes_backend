@@ -63,7 +63,7 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
         List<PlanOptWarning> planOptWarnings = planOptWarningMapper.selectList(queryWrapperPlanOptWarning);
         if (planOptWarnings == null || planOptWarnings.size() == 0) {
             //不进行预警
-            plan.setAlarmStatus(0);
+            plan.setAlarmStatus(-1);
             return;
         }
         //查询计划预警的数据
