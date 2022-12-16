@@ -120,23 +120,25 @@ public class ProductController extends BaseController {
             ArrayList<String> drawingNos = new ArrayList<>();
             drawingNos.add(byId.getDrawingNo());
             List<TrackHead> trackHeads = produceServiceClient.getTrackHeadByMaterialCodeAndDrawingNo(materialCodes, drawingNos, SecurityUtils.getCurrentUser().getTenantId()).getData();
-            Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2 ) -> value2));
-            Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2 ) -> value2));
+            Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2) -> value2));
+            Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2) -> value2));
             //判断物料号是否修改
-            if(!byId.getMaterialNo().equals(product.getMaterialNo())){
+            if (!byId.getMaterialNo().equals(product.getMaterialNo())) {
                 //物料号有改动时检查物料号有没有订单
                 CommonResult<List<Order>> listCommonResult = produceServiceClient.queryByMaterialCode(materialCodes, SecurityUtils.getCurrentUser().getTenantId());
                 List<Order> orders = listCommonResult.getData();
-                if(orders.size()>0){
-                    throw  new GlobalException("物料号 "+byId.getMaterialNo()+" 存在订单,不能修改该物料号", ResultCode.FAILED);
+                if (orders.size() > 0) {
+                    throw new GlobalException("物料号 " + byId.getMaterialNo() + " 存在订单,不能修改该物料号", ResultCode.FAILED);
                 }
                 //物料号有改动时检查是否存在该物料的跟单
-                if(!ObjectUtil.isEmpty(materialNoMap.get(byId.getMaterialNo()))) throw  new GlobalException("物料 "+byId.getMaterialNo()+" 存在跟单,不能修改该物料编号", ResultCode.FAILED);
+                if (!ObjectUtil.isEmpty(materialNoMap.get(byId.getMaterialNo())))
+                    throw new GlobalException("物料 " + byId.getMaterialNo() + " 存在跟单,不能修改该物料编号", ResultCode.FAILED);
             }
 
-            if(!byId.getDrawingNo().equals(product.getDrawingNo())){
+            if (byId.getDrawingNo() != null && !byId.getDrawingNo().equals(product.getDrawingNo())) {
                 //物料号有变动时,检查有没有该物料图号的跟单
-                if(!ObjectUtil.isEmpty(drawingNoMap.get(byId.getDrawingNo()))) throw  new GlobalException("物料图号 "+byId.getDrawingNo()+" 存在跟单,不能修改该物料图号", ResultCode.FAILED);
+                if (!ObjectUtil.isEmpty(drawingNoMap.get(byId.getDrawingNo())))
+                    throw new GlobalException("物料图号 " + byId.getDrawingNo() + " 存在跟单,不能修改该物料图号", ResultCode.FAILED);
             }
 
 
@@ -159,24 +161,26 @@ public class ProductController extends BaseController {
             return CommonResult.failed(PRODUCT_ID_NULL_MESSAGE);
         } else {
             List<Product> productList = productService.listByIds(ids);
-            List<String> materialCodes =  productList.stream().map(x -> x.getMaterialNo()).collect(Collectors.toList());
-            List<String> drawingNos =  productList.stream().map(x -> x.getDrawingNo()).collect(Collectors.toList());
+            List<String> materialCodes = productList.stream().map(x -> x.getMaterialNo()).collect(Collectors.toList());
+            List<String> drawingNos = productList.stream().map(x -> x.getDrawingNo()).collect(Collectors.toList());
 
             //检查物料号有没有订单,
             CommonResult<List<Order>> listCommonResult = produceServiceClient.queryByMaterialCode(materialCodes, SecurityUtils.getCurrentUser().getTenantId());
             List<Order> orders = listCommonResult.getData();
-            if(orders.size()>0){
-                throw  new GlobalException("物料 "+orders.get(0).getMaterialCode()+" 存在订单,不能删除该物料", ResultCode.FAILED);
+            if (orders.size() > 0) {
+                throw new GlobalException("物料 " + orders.get(0).getMaterialCode() + " 存在订单,不能删除该物料", ResultCode.FAILED);
             }
             //检查物料号或者图号有没有跟单,
             List<TrackHead> trackHeads = produceServiceClient.getTrackHeadByMaterialCodeAndDrawingNo(materialCodes, drawingNos, SecurityUtils.getCurrentUser().getTenantId()).getData();
-            Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2 ) -> value2));
-            Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2 ) -> value2));
+            Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2) -> value2));
+            Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2) -> value2));
             for (String materialCode : materialCodes) {
-                if(!ObjectUtil.isEmpty(materialNoMap.get(materialCode))) throw  new GlobalException("物料 "+materialCode+" 存在跟单,不能删除该物料", ResultCode.FAILED);
+                if (!ObjectUtil.isEmpty(materialNoMap.get(materialCode)))
+                    throw new GlobalException("物料 " + materialCode + " 存在跟单,不能删除该物料", ResultCode.FAILED);
             }
             for (String drawingNo : drawingNos) {
-                if(!ObjectUtil.isEmpty(drawingNoMap.get(drawingNo))) throw  new GlobalException("物料图号 "+drawingNo+" 存在跟单,不能删除该物料", ResultCode.FAILED);
+                if (!ObjectUtil.isEmpty(drawingNoMap.get(drawingNo)))
+                    throw new GlobalException("物料图号 " + drawingNo + " 存在跟单,不能删除该物料", ResultCode.FAILED);
             }
             boolean bool = productService.removeByIds(ids);
             if (bool) {
@@ -558,9 +562,9 @@ public class ProductController extends BaseController {
             queryWrapper.select("id");
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.likeLeft("material_desc", paramMap.get(s));
-            queryWrapper.apply("(material_type !='"+s+"' or material_type is null)");
+            queryWrapper.apply("(material_type !='" + s + "' or material_type is null)");
             //拼接成品参数
-            cpWrapper.apply("material_desc not like '%"+paramMap.get(s)+"'");
+            cpWrapper.apply("material_desc not like '%" + paramMap.get(s) + "'");
             //查出错乱数据的id
             List<Object> idList = productService.listObjs(queryWrapper);
             //大于一千条分页操作
