@@ -400,6 +400,17 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         try {
             excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
+            //导入模板校验
+            List<ProductionBom> exportCheckList = ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 3, 0, 0, tempName.toString());
+            if(exportCheckList.size()>0
+                    && "是否导入".equals(exportCheckList.get(0).getIsImport())
+                    && "等级".equals(exportCheckList.get(0).getGrade())
+                    && "上级产品图号".equals(exportCheckList.get(0).getMainDrawingNo())
+                    && "零部件图号".equals(exportCheckList.get(0).getDrawingNo())){
+
+            }else {
+                return CommonResult.failed("导入模板错误!，请重新校验模板");
+            }
             //将导入的excel数据生成产品BOM实体类list
             List<ProductionBom> list = ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 4, 0, 0, tempName.toString());
             //过滤要导入的数据
@@ -482,6 +493,25 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
      */
     private String checkExportList(List<ProductionBom> list,String drawingNo,String materialNo){
         StringBuilder message = new StringBuilder();
+        //车间编码不能为空
+        List<ProductionBom> nullBranchCodeList = list.stream().filter(item -> StringUtils.isEmpty(item.getBranchCode())).collect(Collectors.toList());
+        if(nullBranchCodeList.size()>0){
+            message.append("车间编码不能为空!</br>").toString();
+        }
+
+        //0同图号校验
+        if(nullBranchCodeList.size()==0 && list.size()>0){
+            String branchCode = list.get(0).getBranchCode();
+            QueryWrapper<ProductionBom> query = new QueryWrapper<>();
+            query.eq("drawing_no", drawingNo)
+                    .eq("branch_code",branchCode);
+            List<ProductionBom> result = this.list(query);
+            if (result != null && result.size() > 0) {
+                message.append("相同零部件图号已存在！</br>").toString();
+            }
+        }
+
+
         //1、空值校验
         nullValueCheck(list, message);
         if(StringUtils.isEmpty(drawingNo)){
