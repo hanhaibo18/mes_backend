@@ -7,12 +7,9 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
@@ -20,6 +17,9 @@ import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -319,11 +319,35 @@ public class PhyChemTestService{
         if(physChemOrderInners.size()>0){
             physChemOrderInner = physChemOrderInners.get(0);
         }
+        //多选值拼接显示
+        StringBuilder forceImpactTemp = new StringBuilder();
+        StringBuilder forceImpactGap = new StringBuilder();
+        StringBuilder forceImpactDirection = new StringBuilder();
+        for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getForceImpactTemp())){
+                if(!StringUtils.isNullOrEmpty(String.valueOf(forceImpactTemp))){
+                    forceImpactTemp.append("、");
+                }
+                forceImpactTemp.append(chemOrderInner.getForceImpactTemp());
+            }
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getForceImpactGap())){
+                if(!StringUtils.isNullOrEmpty(String.valueOf(forceImpactGap))){
+                    forceImpactGap.append("、");
+                }
+                forceImpactGap.append(chemOrderInner.getForceImpactGap());
+            }
+            if(!StringUtils.isNullOrEmpty(chemOrderInner.getForceImpactDirection())){
+                if(!StringUtils.isNullOrEmpty(String.valueOf(forceImpactDirection))){
+                    forceImpactDirection.append("、");
+                }
+                forceImpactDirection.append(chemOrderInner.getForceImpactDirection());
+            }
+        }
         int sheetNum = 0;
         try {
-            ClassPathResource classPathResource = new ClassPathResource("excel/" + "bb.xlsx");
-
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + "lhjcOrderTemp.xls");
             ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
+
             HSSFWorkbook wk = (HSSFWorkbook) writer.getWorkbook();
 
             if (sheetNum > 0) {
@@ -332,17 +356,70 @@ public class PhyChemTestService{
             //回车
             CellStyle cellStyle = writer.getCellStyle();
             cellStyle.setWrapText(true);
+            HSSFFont font = wk.createFont();
+            font.setColor(IndexedColors.RED.getIndex());
+            cellStyle.setFont(font);
             //向左对齐
+            Row row = writer.getSheet().getRow(2);
+            Cell cell = row.getCell(0);
+            CellStyle cellStyle1 = cell.getCellStyle();
+            cellStyle1.setAlignment(HorizontalAlignment.LEFT);
             writer.renameSheet(physChemOrderInner.getOrderNo());
             writer.writeCellValue("A3", physChemOrderInner.getOrderNo());
-            writer.writeCellValue("C4", physChemOrderInner.getSampleTime());
-            writer.writeCellValue("F4", physChemOrderInner.getManufacturer());
-            writer.writeCellValue("I4", physChemOrderInner.getManufacturer());
+            writer.writeCellValue("C4", physChemOrderInner.getSampleTime().substring(0,10));
+            writer.writeCellValue("G4", physChemOrderInner.getSampleReceive());
+            writer.writeCellValue("J4", physChemOrderInner.getSampleDept());
+            writer.writeCellValue("N4", physChemOrderInner.getManufacturer());
+            writer.writeCellValue("C5", physChemOrderInner.getProductName());
+            writer.writeCellValue("G5", physChemOrderInner.getMaterialMark());
+            writer.writeCellValue("J5", physChemOrderInner.getHeatState());
+            writer.writeCellValue("N5", physChemOrderInner.getDrawNo());
+            writer.writeCellValue("C6", physChemOrderInner.getSampleNum());
+            writer.writeCellValue("G6", physChemOrderInner.getTestBarSpec());
+            writer.writeCellValue("J6", physChemOrderInner.getSamplePlace());
+            writer.writeCellValue("N6", physChemOrderInner.getAccepStandard());
+            writer.writeCellValue("C7", physChemOrderInner.getBatchNo());
+            //化学分析
+            writer.writeCellValue("C10", physChemOrderInner.getChemicalAnalysis()==0?"":"是");
+            writer.writeCellValue("E10", physChemOrderInner.getChemicalCarbonSulfur()==0?"":"是");
+            writer.writeCellValue("F10", physChemOrderInner.getChemicalClean()==0?"":"是");
+            writer.writeCellValue("G10", physChemOrderInner.getChemicalOtherVal());
+            //金相分析
+            writer.writeCellValue("J10", physChemOrderInner.getMetallLowPower()==0?"":"是");
+            writer.writeCellValue("K10", physChemOrderInner.getMetallTexture()==0?"":"是");
+            writer.writeCellValue("L10", physChemOrderInner.getMetallGrainSize()==0?"":"是");
+            writer.writeCellValue("M10", physChemOrderInner.getMetallCarbide()==0?"":"是");
+            writer.writeCellValue("N10", physChemOrderInner.getMetallInclusions()==0?"":"是");
+            writer.writeCellValue("O10", physChemOrderInner.getMetallGraphite()==0?"":"是");
+            writer.writeCellValue("P10", physChemOrderInner.getMetallOtherVal());
+            //力学性能
+            writer.writeCellValue("C13", physChemOrderInner.getOthertestParameter1());
+            writer.writeCellValue("D13", physChemOrderInner.getOthertestParameter2());
+            writer.writeCellValue("E13", physChemOrderInner.getForceTensileElongation());
+            writer.writeCellValue("F13", physChemOrderInner.getForceTensileDirection());
 
+            writer.writeCellValue("G13",forceImpactTemp);
+            writer.writeCellValue("H13",forceImpactGap);
+            writer.writeCellValue("I13",forceImpactDirection);
+
+            writer.writeCellValue("J13", physChemOrderInner.getMetallOtherVal());
+            writer.writeCellValue("L13", physChemOrderInner.getMetallOtherVal());
+            writer.writeCellValue("M13", physChemOrderInner.getMetallOtherVal());
+            writer.writeCellValue("L13", physChemOrderInner.getForceBendType());
+            writer.writeCellValue("M13", physChemOrderInner.getForceBendPart());
+            //数量
+            writer.writeCellValue("K14", physChemOrderInner.getForceFlaser());
+            writer.writeCellValue("N14", physChemOrderInner.getForceShear());
+            writer.writeCellValue("O14", physChemOrderInner.getForceOtherVal());
+            writer.writeCellValue("P14", physChemOrderInner.getResidual());
+            //最底下
+            writer.writeCellValue("C16", physChemOrderInner.getReceiveTime());
+            writer.writeCellValue("H16", physChemOrderInner.getReportNo());
+            writer.writeCellValue("O16", physChemOrderInner.getSampleReceive());
             ServletOutputStream outputStream = rsp.getOutputStream();
             rsp.setContentType("application/vnd.ms-excel;charset=utf-8");
             rsp.setHeader("Content-disposition", "attachment; filename=" + new String("理化检测委托单".getBytes("utf-8"),
-                    "ISO-8859-1") + ".xlsx");
+                    "ISO-8859-1") + ".xls");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
         } catch (Exception e) {

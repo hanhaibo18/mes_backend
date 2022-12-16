@@ -154,6 +154,26 @@ public class Sequence extends BaseEntity<Sequence> {
     private String notice;
 
 
+    @ApiModelProperty(value = "设备（热工）", dataType = "String")
+    private String device;
+
+    @ApiModelProperty(value = "温度下限℃（热工）", dataType = "String")
+    private String tempDown;
+
+    @ApiModelProperty(value = "温度上限℃（热工）", dataType = "String")
+    private String tempUp;
+
+    @ApiModelProperty(value = "实施温度℃（热工）", dataType = "String")
+    private String tempWork;
+
+    @ApiModelProperty(value = "保温时间h（热工）", dataType = "String")
+    private String holdTime;
+
+    @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
+    private String coolType;
+
+
+
     /**
      * 注意事项
      */

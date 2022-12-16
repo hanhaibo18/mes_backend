@@ -1,14 +1,18 @@
 package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * produce_disqualification_final_result
  *
  * @author
  */
+@ApiModel(value = "generate.ProduceDisqualificationFinalResult")
 @Data
 public class DisqualificationFinalResult extends BaseEntity<DisqualificationFinalResult> {
 
@@ -55,9 +59,15 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private Integer acceptDeviation;
 
     /**
-     * 让步接受产品编号
+     * 让步接收损失
      */
-    @ApiModelProperty(value = "让步接受产品编号")
+    @ApiModelProperty(value = "让步接收损失")
+    private String acceptDeviationLoss;
+
+    /**
+     * 让步接收产品编号
+     */
+    @ApiModelProperty(value = "让步接收产品编号")
     private String acceptDeviationNo;
 
     /**
@@ -67,10 +77,34 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private Integer repairQualified;
 
     /**
-     * 返修合格产品编号
+     * 返修损失
      */
-    @ApiModelProperty(value = "返修合格产品编号")
+    @ApiModelProperty(value = "返修损失")
+    private String repairLoss;
+
+    /**
+     * 返修后产品编号
+     */
+    @ApiModelProperty(value = "返修后产品编号")
     private String repairNo;
+
+    /**
+     * 返修结果
+     */
+    @ApiModelProperty(value = "返修结果")
+    private String recapDemerits;
+
+    /**
+     * 返修描述
+     */
+    @ApiModelProperty(value = "返修描述")
+    private String recapDescribe;
+
+    /**
+     * 返修时间
+     */
+    @ApiModelProperty(value = "返修时间")
+    private Date recapTime;
 
     /**
      * 报废数量
@@ -79,9 +113,15 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private Integer scrap;
 
     /**
-     * 报废产品编号
+     * 报废损失
      */
-    @ApiModelProperty(value = "报废产品编号")
+    @ApiModelProperty(value = "报废损失")
+    private String scrapLoss;
+
+    /**
+     * 报废后产品编号
+     */
+    @ApiModelProperty(value = "报废后产品编号")
     private String scrapNo;
 
     /**
@@ -89,6 +129,18 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
      */
     @ApiModelProperty(value = "退货数量")
     private Integer salesReturn;
+
+    /**
+     * 退货损失
+     */
+    @ApiModelProperty(value = "退货损失")
+    private String salesReturnLoss;
+
+    /**
+     * 退货产品编号
+     */
+    @ApiModelProperty(value = "退货产品编号")
+    private String salesReturnNo;
 
     /**
      * 所属机构
@@ -102,6 +154,5 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     @ApiModelProperty(value = "所属租户")
     private String tenantId;
 
-    @ApiModelProperty(value = "意见Id")
-    private String opinionId;
+    private static final long serialVersionUID = 1L;
 }
