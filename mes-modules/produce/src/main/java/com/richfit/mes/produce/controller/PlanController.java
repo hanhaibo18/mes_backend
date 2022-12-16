@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -214,6 +215,20 @@ public class PlanController extends BaseController {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         plan.setTenantId(user.getTenantId());
         return planService.updatePlan(plan);
+    }
+
+    /**
+     * 关闭计划
+     */
+    @ApiOperation(value = "计划关闭", notes = "计划关闭")
+    @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
+    @PostMapping("/close")
+    public CommonResult<Object> close(@RequestBody Plan plan) throws GlobalException {
+        TenantUserDetails user = SecurityUtils.getCurrentUser();
+        plan.setTenantId(user.getTenantId());
+        plan.setModifyBy(user.getUserId());
+        plan.setModifyTime(new Date());
+        return CommonResult.success(planService.updateById(plan));
     }
 
     /**
