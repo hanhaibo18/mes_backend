@@ -72,7 +72,7 @@ public class OperatiponServiceImpl extends ServiceImpl<OperatiponMapper, Operati
     @Override
     public CommonResult updateOperatipon(Operatipon operatipon){
         if (StringUtils.isNullOrEmpty(operatipon.getOptCode())) {
-            return CommonResult.failed("机构编码不能为空！");
+            return CommonResult.failed("工序编码不能为空！");
         } else {
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             operatipon.setModifyBy(user.getUsername());
