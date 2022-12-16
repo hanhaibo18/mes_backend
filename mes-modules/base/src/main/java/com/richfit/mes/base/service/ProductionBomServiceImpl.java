@@ -402,7 +402,10 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             file.transferTo(excelFile);
             //将导入的excel数据生成产品BOM实体类list
             List<ProductionBom> list = ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 4, 0, 0, tempName.toString());
-
+            //过滤要导入的数据
+            list = list.stream().filter(item -> {
+                return StringUtils.equals(item.getIsImport(),"X");
+            }).collect(Collectors.toList());
             //表头产品号(用于校验)
             String drawingNo = String.valueOf(ExcelUtils.getCellValue(excelFile,String.class,0,1,7,tempName.toString()));
             //表头物料编码(用于校验)
@@ -479,10 +482,6 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
      */
     private String checkExportList(List<ProductionBom> list,String drawingNo,String materialNo){
         StringBuilder message = new StringBuilder();
-        //过滤要导入的数据
-        list = list.stream().filter(item -> {
-            return StringUtils.equals(item.getIsImport(),"X");
-        }).collect(Collectors.toList());
         //1、空值校验
         nullValueCheck(list, message);
         if(StringUtils.isEmpty(drawingNo)){
