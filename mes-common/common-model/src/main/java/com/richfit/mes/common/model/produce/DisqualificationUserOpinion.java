@@ -24,7 +24,7 @@ public class DisqualificationUserOpinion extends BaseEntity<DisqualificationUser
     /**
      * 意见类型(0 = 不合格品情况,1 = 质控工程师评审意见,2 = 责任单位1 ,3 = 责任单位2)
      */
-    private String type;
+    private int type;
 
 
     /**
