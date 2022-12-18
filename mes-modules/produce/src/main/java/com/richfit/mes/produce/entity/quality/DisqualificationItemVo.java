@@ -331,7 +331,7 @@ public class DisqualificationItemVo {
         //跟单号
         this.setTrackNo(trackHead.getTrackNo());
         //产品名称
-//        item.setProductName(trackItem.getProductName());
+        this.setProductName(trackHead.getProductName());
         //产品编号
         this.setProductNo(trackHead.getProductNo());
         //零部件名称

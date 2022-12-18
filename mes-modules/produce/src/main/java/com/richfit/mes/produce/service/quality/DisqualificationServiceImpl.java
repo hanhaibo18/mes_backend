@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service.quality;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -10,7 +11,10 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
+import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -112,47 +116,88 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
-        //状态为发布,更新时间
-        if (1 == disqualificationDto.getIsIssue()) {
-            disqualificationDto.setOrderTime(new Date());
-        }
-        if (null == disqualificationDto.getIsIssue()) {
-            disqualificationDto.setIsIssue(0);
-        }
-        //处理DTO数据
+        //先判断流程
+        int processJudge = processJudge(disqualificationDto);
+        //处理不合格主表数据
         Disqualification disqualification = new Disqualification();
         BeanUtils.copyProperties(disqualificationDto, disqualification);
+        disqualification.setType(processJudge);
+        //处理不合格类型
         if (CollectionUtils.isNotEmpty(disqualificationDto.getTypeList())) {
             String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
-            disqualification.setType(type);
+            disqualification.setDisqualificationType(type);
             disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
         }
         this.saveOrUpdate(disqualification);
-        //数据不为空,拼接数据
-        if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
-            disqualification.getAttachmentList().forEach(attachment -> {
-                attachment.setDisqualificationId(disqualification.getId());
-                attachment.setBranchCode(disqualification.getBranchCode());
-                attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                attachment.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                attachment.setCreateTime(new Date());
-                attachment.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                attachment.setModifyTime(new Date());
-            });
-            //删除文件列表
-            QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
-            queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
-            attachmentService.remove(queryWrapperAttachment);
-            attachmentService.saveAttachment(disqualification.getAttachmentList());
+        //处理不合格从表数据
+        DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
+        BeanUtils.copyProperties(disqualificationDto, finalResult);
+        finalResultService.saveOrUpdate(finalResult);
+        //不合格意见JSON
+        List<DisqualificationUserOpinion> userOpinionList = new ArrayList<>();
+        if (StrUtil.isNotBlank(disqualificationDto.getUnqualifiedOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnqualifiedOpinion(), DisqualificationUserOpinion.class));
         }
-        //删除人员意见,重新新增
-        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("disqualification_id", disqualification.getId());
-        userOpinionService.remove(queryWrapper);
-        savePerson(disqualification.getUserList(), disqualification.getId());
+        //质控意见JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getQualityControlOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getQualityControlOpinion(), DisqualificationUserOpinion.class));
+        }
+        //处理单位1JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentOneOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnitTreatmentOneOpinion(), DisqualificationUserOpinion.class));
+        }
+        //处理单位2JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwoOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnitTreatmentTwoOpinion(), DisqualificationUserOpinion.class));
+        }
+        //责任裁决JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getResponsibilityOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getResponsibilityOpinion(), DisqualificationUserOpinion.class));
+        }
+        //技术裁决JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getTechnologyOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getTechnologyOpinion(), DisqualificationUserOpinion.class));
+        }
+        userOpinionService.saveOrUpdateBatch(userOpinionList);
         return true;
     }
 
+
+    /**
+     * 功能描述: 流程个控制方法
+     *
+     * @param disqualificationDto
+     * @Author: xinYu.hou
+     * @Date: 2022/12/19 4:19
+     * @return: int
+     **/
+    //TODO:裁决流程不明确
+    private int processJudge(DisqualificationDto disqualificationDto) {
+        //判断是否发布 1 = 发布 0 = 不发布
+        if (1 == disqualificationDto.getIsSubmit()) {
+            //开局处理单||质控评审 发布直接进行下一步
+            if (1 == disqualificationDto.getType() || 2 == disqualificationDto.getType()) {
+                return disqualificationDto.getType() + 1;
+            }
+            //判断处理单位一
+            if (3 == disqualificationDto.getType()) {
+                //处理单位2存在
+                if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwo())) {
+                    //返回处理单位2状态
+                    return disqualificationDto.getType() + 1;
+                } else {
+                    //没有直接进入状态7 质检员关闭处理单流程
+                    return 7;
+                }
+            }
+            //处理单位2 处理单位填报完 直接进入质检员关闭流程
+            if (4 == disqualificationDto.getType()) {
+                return 7;
+            }
+        }
+        //不发布直接返回当前状态
+        return disqualificationDto.getType();
+    }
 
     /**
      * 功能描述: 保存派工人员接口
@@ -254,7 +299,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } catch (Exception e) {
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
         }
-        queryWrapper.eq("dis.is_issue", 1);
         queryWrapper.eq("opinion.user_id", SecurityUtils.getCurrentUser().getUserId());
         return userOpinionMapper.queryCheck(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
