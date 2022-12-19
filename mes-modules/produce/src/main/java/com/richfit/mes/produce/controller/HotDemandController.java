@@ -53,7 +53,7 @@ public class HotDemandController extends BaseController {
 
     @ApiOperation(value = "需求提报列表查询", notes = "需求提报列表查询")
     @GetMapping("/demand_page")
-    public CommonResult<IPage<HotDemand>> demandPage(@RequestBody HotDemandParam hotDemandParam) {
+    public CommonResult<IPage<HotDemand>> demandPage(HotDemandParam hotDemandParam) {
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
         if(StringUtils.isNotEmpty(hotDemandParam.getProjectName())){//项目名称
             queryWrapper.eq("project_name",hotDemandParam.getProjectName());
