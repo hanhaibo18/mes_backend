@@ -20,8 +20,13 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 @Slf4j
@@ -48,7 +53,7 @@ public class HotDemandController extends BaseController {
 
     @ApiOperation(value = "需求提报列表查询", notes = "需求提报列表查询")
     @GetMapping("/demand_page")
-    public CommonResult<IPage<HotDemand>> demandPage(HotDemandParam hotDemandParam) {
+    public CommonResult<IPage<HotDemand>> demandPage(@RequestBody HotDemandParam hotDemandParam) {
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
         if(StringUtils.isNotEmpty(hotDemandParam.getProjectName())){//项目名称
             queryWrapper.eq("project_name",hotDemandParam.getProjectName());
@@ -72,9 +77,18 @@ public class HotDemandController extends BaseController {
         if(hotDemandParam.getSubmitState()!=null){
             queryWrapper.eq("submit_state",hotDemandParam.getSubmitState());
         }
-
-
-       return CommonResult.success(hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper), ResultCode.SUCCESS.getMessage());
+//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
+//            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + dispatchingDto.getStartTime() + " ')");
+//        }
+//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
+//            Calendar calendar = new GregorianCalendar();
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//            calendar.setTime(sdf.parse(dispatchingDto.getEndTime()));
+//            calendar.add(Calendar.DAY_OF_MONTH, 1);
+//            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+//        }
+        Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
+        return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
 
     @ApiOperation(value = "修改需求提报", notes = "修改需求提报")
@@ -105,7 +119,15 @@ public class HotDemandController extends BaseController {
         return CommonResult.failed();
     }
 
-
+    @ApiOperation(value = "导入需求提报", notes = "根据Excel文档导入导入需求提报")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/import_demand")
+    public CommonResult importExcelDemand(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
+        return hotDemandService.importDemand(file, branchCode);
+    }
 
 
 
