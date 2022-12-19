@@ -11,6 +11,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
@@ -68,6 +69,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private SystemServiceClient systemServiceClient;
     @Resource
     private BaseServiceClient baseServiceClient;
+    @Resource
+    public TrackCheckService trackCheckService;
+
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
@@ -118,6 +122,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         List<TrackComplete> dbRecords = completes;
 
         if (!CollectionUtils.isEmpty(dbRecords)) {
+            //查询当前车间下所有质检规则
+            List<QualityInspectionRules> rulesList = systemServiceClient.queryQualityInspectionRulesList(completes.get(0).getBranchCode()).getData();
+            Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
             //获取设备信息
             Set<String> deviceIds = dbRecords.stream().map(x -> x.getDeviceId()).collect(Collectors.toSet());
             List<Device> deviceByIdList = baseServiceClient.getDeviceByIdList(new ArrayList<>(deviceIds));
@@ -184,6 +191,18 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setUserName(tenantUserVo.getEmplName());
                         track0.setUserName(tenantUserVo.getEmplName());
                         track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                        track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
+                        track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
+                        track.setOptSequence(trackItem.getOptSequence());
+                        track.setOptName(trackItem.getOptName());
+                        //通过工序Id查询质检记录
+                        QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
+                        queryWrapperCheck.eq("ti_id", trackItem.getId());
+                        queryWrapperCheck.orderByAsc("modify_time");
+                        List<TrackCheck> list = trackCheckService.list(queryWrapperCheck);
+                        if (!CollectionUtils.isEmpty(list)) {
+                            track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
+                        }
                     }
                     track0.setId(id);
                     track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
@@ -198,7 +217,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         List<TrackComplete> records = completes;
-//            completes.setRecords(records);
         Map<String, Object> stringObjectHashMap = new HashMap<>();
         stringObjectHashMap.put("records", records);
         stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
