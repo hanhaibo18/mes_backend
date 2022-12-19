@@ -129,14 +129,16 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode) {
-        //检查是否有当前项目号
-//        QueryWrapper<ProjectBom> queryWrapperProject = new QueryWrapper<>();
-//        queryWrapperProject.eq("work_plan_no", workPlanNo);
-//        if (!projectBomService.list(queryWrapperProject).isEmpty()) {
-//            return CommonResult.failed("当前工作号已存在");
-//        }
-        //先处理H级别的数据
+        //校验项目号 图号+项目号组成唯一校验
         ProductionBom productionBom = this.getById(id);
+        QueryWrapper<ProjectBom> queryWrapperProject = new QueryWrapper<>();
+        queryWrapperProject.eq("work_plan_no", workPlanNo);
+        queryWrapperProject.eq("drawing_no", productionBom.getDrawingNo());
+        List<ProjectBom> list = projectBomService.list(queryWrapperProject);
+        if (!list.isEmpty()) {
+            return CommonResult.failed("当前图号下,工作号已经使用");
+        }
+        //先处理H级别的数据
         ProjectBom projectBom = projectBomEntity(productionBom);
         projectBom.setTenantId(tenantId).setBranchCode(branchCode).setProjectName(projectName).setWorkPlanNo(workPlanNo);
         projectBomService.save(projectBom);
