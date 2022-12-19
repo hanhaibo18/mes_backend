@@ -118,7 +118,9 @@ public class ProductController extends BaseController {
             ArrayList<String> materialCodes = new ArrayList<>();
             materialCodes.add(byId.getMaterialNo());
             ArrayList<String> drawingNos = new ArrayList<>();
-            drawingNos.add(byId.getDrawingNo());
+           if(!StringUtils.isNullOrEmpty(byId.getDrawingNo())) {
+               drawingNos.add(byId.getDrawingNo());
+           }
             List<TrackHead> trackHeads = produceServiceClient.getTrackHeadByMaterialCodeAndDrawingNo(materialCodes, drawingNos, SecurityUtils.getCurrentUser().getTenantId()).getData();
             Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2) -> value2));
             Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2) -> value2));
