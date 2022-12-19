@@ -330,7 +330,7 @@ public class TrackAssignController extends BaseController {
                     }
                     //齐套性检查
                     //判断是否存在BOM 没有BOM不进行齐套检查
-                    boolean bom = StrUtil.isBlank(trackHead.getProjectBomId());
+                    boolean bom = StrUtil.isNotBlank(trackHead.getProjectBomId());
                     //判断是否是装配
                     boolean assembly = "2".equals(trackHead.getClasses());
                     //是否是第一道工序
