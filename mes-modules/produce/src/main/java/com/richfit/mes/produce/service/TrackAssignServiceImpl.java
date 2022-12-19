@@ -303,11 +303,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             if (null != trackHead && !StringUtils.isNullOrEmpty(trackHead.getProjectBomId())) {
                 QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("track_head_id", trackHeadId);
+                queryWrapper.eq("grade", "L");
                 List<TrackAssembly> list = trackAssembleService.list(queryWrapper);
                 for (TrackAssembly trackAssembly : list) {
-                    if ("0".equals(trackAssembly.getIsKeyPart())) {
-                        continue;
-                    }
                     Integer number = lineStoreMapper.selectTotalNum(
                             trackAssembly.getMaterialNo(), trackHead.getBranchCode(), trackHead.getTenantId());
                     if (null == number) {

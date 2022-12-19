@@ -101,6 +101,12 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private String recapDescribe;
 
     /**
+     * 返修检验员
+     */
+    @ApiModelProperty(value = "返修检验员")
+    private String recapUser;
+
+    /**
      * 返修时间
      */
     @ApiModelProperty(value = "返修时间")

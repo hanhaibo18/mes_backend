@@ -88,10 +88,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (StrUtil.isNotBlank(queryInspectorDto.getProcessSheetNo())) {
             queryWrapper.like("process_sheet_no", queryInspectorDto.getProcessSheetNo());
         }
-        // 发布/未发布
-        if (null != queryInspectorDto.getIsIssue()) {
-            queryWrapper.eq("is_issue", queryInspectorDto.getIsIssue());
-        }
         try {
             //开始时间
             if (StrUtil.isNotBlank(queryInspectorDto.getStartTime())) {
@@ -132,6 +128,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //处理不合格从表数据
         DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
         BeanUtils.copyProperties(disqualificationDto, finalResult);
+        finalResult.setId(disqualification.getId());
         finalResultService.saveOrUpdate(finalResult);
         //不合格意见JSON
         List<DisqualificationUserOpinion> userOpinionList = new ArrayList<>();
@@ -236,7 +233,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean updateIsIssue(String id, String state) {
         UpdateWrapper<Disqualification> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id);
-        updateWrapper.set("is_issue", state);
         //开单状态增加开单时间
         if ("1".equals(state)) {
             updateWrapper.set("order_time", new Date());
@@ -370,10 +366,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
         //对象不为空,ID不为空
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
-            disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
-            disqualificationItemVo.setSignedRecordsList(this.querySignedRecordsList(disqualificationItemVo.getId()));
+            DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
+            disqualificationItemVo.DisqualificationFinalResult(finalResult);
+            //查询流水
             disqualificationItemVo.setUserList(queryOpinionUser(disqualificationItemVo.getId()));
-//            disqualificationItemVo.setOpinionId(opinionId);
         } else if (null != disqualificationItemVo) {
             disqualificationItemVo.setAttachmentList(Collections.emptyList());
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
