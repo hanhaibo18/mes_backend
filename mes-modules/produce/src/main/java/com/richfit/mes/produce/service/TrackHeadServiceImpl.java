@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
@@ -36,6 +37,7 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -352,6 +354,70 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     /**
+     * 描述: 热工跟单绑定工艺
+     *
+     * @Author: renzewen
+     * @Date: 2022/12/19 10:25
+     **/
+    @Override
+    public boolean rgSaveTrackHead(String trackNo,List<TrackItem> trackItems,String routerId,String routerVer) {
+        //根据跟单号查询跟单
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        trackNo = trackNo.replaceAll(" ", "");
+        queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')",trackNo);
+        List<TrackHead> headList = this.list(queryWrapper);
+        //查询分流表
+        List<String> headIds = headList.stream().map(TrackHead::getId).collect(Collectors.toList());
+        QueryWrapper<TrackFlow> trackFlowQueryWrapper = new QueryWrapper<>();
+        trackFlowQueryWrapper.eq("track_head_id",headIds);
+        List<TrackFlow> trackFlows = trackHeadFlowService.list(trackFlowQueryWrapper);
+        //
+        Map<String, List<TrackFlow>> trackFlowMap = trackFlows.stream().collect(Collectors.groupingBy(TrackFlow::getTrackHeadId));
+        for (TrackHead trackHead : headList) {
+            if(!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size()>0){
+                List<TrackFlow> flows = trackFlowMap.get(trackHead.getId());
+                for (TrackFlow flow : flows) {
+                    if (trackItems != null && trackItems.size() > 0) {
+                        for (TrackItem item : trackItems) {
+                            item.setId(UUID.randomUUID().toString().replace("-", ""));
+                            item.setTrackHeadId(trackHead.getId());
+                            item.setDrawingNo(trackHead.getDrawingNo());
+                            item.setFlowId(flow.getId());
+                            item.setProductNo(trackHead.getDrawingNo() + " " + trackHead.getProductNoDesc());
+                            item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                            //可分配数量
+                            item.setAssignableQty(trackHead.getNumber());
+                            item.setNumber(trackHead.getNumber());
+                            item.setIsSchedule(0);
+                            item.setIsPrepare(0);
+                            item.setIsNotarize(0);
+                            //需要调度审核时展示
+                            if (1 == item.getIsExistScheduleCheck()) {
+                                item.setIsScheduleCompleteShow(1);
+                            } else {
+                                item.setIsScheduleCompleteShow(0);
+                            }
+                            if (trackHead.getStatus().equals("4")) {
+                                item.setIsCurrent(0);
+                            }
+                            trackItemService.save(item);
+                        }
+                    }
+                }
+            }
+            //跟单工艺属性赋值
+            trackHead.setRouterId(routerId);
+            trackHead.setRouterId(routerVer);
+            this.updateById(trackHead);
+            //用于在跟单存在第一道工序自动派工的情况
+            autoSchedule(trackHead);
+        }
+        return true;
+    }
+
+
+
+    /**
      * 描述: 跟单添加方法
      *
      * @Author: zhiqiang.lu
@@ -511,7 +577,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      **/
     public void lineStore(String flowId, TrackHead trackHead, String productsNo, int number) {
         //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
-        //只有机加、非试棒、状态为0时，创建跟单时才会进行库存料单关联
+        //只有机加、非试棒、状态为0时，创料建跟单时才会进行库存单关联
         if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
             //修改库存状态  本次查到的料单能否匹配生产数量完成
             //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
