@@ -350,6 +350,7 @@ public class TrackAssignController extends BaseController {
                         requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
 //                        ApplicationResult application = new ApplicationResult();
                         if (CollectionUtils.isNotEmpty(ingredient.getLineList())) {
+                            ingredient.setGc("X088");
                             ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
                             //请勿重复上传！
                             boolean upload = !application.getRetMsg().contains("请勿重复上传");
