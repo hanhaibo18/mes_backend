@@ -49,7 +49,7 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     /**
      * 质检结果
      */
-    @ApiModelProperty(value = "质检结果(质检规则Id)", dataType = "int")
+    @ApiModelProperty(value = "质检结果(质检规则Id)", dataType = "String")
     private String result;
     /**
      * 不合格原因
@@ -112,7 +112,7 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @TableField(exist = false)
     @ApiModelProperty(value = "产品编号", dataType = "String")
     private String productNo;
-    
+
     @ApiModelProperty(value = "图号", dataType = "String")
     private String drawingNo;
     @TableField(exist = false)

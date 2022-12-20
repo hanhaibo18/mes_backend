@@ -60,6 +60,9 @@ public interface SystemServiceClient {
                                           @RequestParam("branchCode") String branchCode,
                                           @RequestParam("tenantId") String tenantId);
 
+    @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesList")
+    public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(@RequestParam("branchCode") String branchCode);
+
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesById")
     public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(@RequestParam("id") String id);
 

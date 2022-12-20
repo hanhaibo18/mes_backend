@@ -44,7 +44,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -126,14 +129,16 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> issueBom(String id, String workPlanNo, String projectName, String tenantId, String branchCode) {
-        //检查是否有当前项目号
+        //校验项目号 图号+项目号组成唯一校验
+        ProductionBom productionBom = this.getById(id);
         QueryWrapper<ProjectBom> queryWrapperProject = new QueryWrapper<>();
         queryWrapperProject.eq("work_plan_no", workPlanNo);
-        if (!projectBomService.list(queryWrapperProject).isEmpty()) {
-            return CommonResult.failed("当前工作号已存在");
+        queryWrapperProject.eq("drawing_no", productionBom.getDrawingNo());
+        List<ProjectBom> list = projectBomService.list(queryWrapperProject);
+        if (!list.isEmpty()) {
+            return CommonResult.failed("当前图号下,工作号已经使用");
         }
         //先处理H级别的数据
-        ProductionBom productionBom = this.getById(id);
         ProjectBom projectBom = projectBomEntity(productionBom);
         projectBom.setTenantId(tenantId).setBranchCode(branchCode).setProjectName(projectName).setWorkPlanNo(workPlanNo);
         projectBomService.save(projectBom);
@@ -402,28 +407,28 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             file.transferTo(excelFile);
             //导入模板校验
             List<ProductionBom> exportCheckList = ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 3, 0, 0, tempName.toString());
-            if(exportCheckList.size()>0
+            if (exportCheckList.size() > 0
                     && "是否导入".equals(exportCheckList.get(0).getIsImport())
                     && "等级".equals(exportCheckList.get(0).getGrade())
                     && "上级产品图号".equals(exportCheckList.get(0).getMainDrawingNo())
-                    && "零部件图号".equals(exportCheckList.get(0).getDrawingNo())){
+                    && "零部件图号".equals(exportCheckList.get(0).getDrawingNo())) {
 
-            }else {
+            } else {
                 return CommonResult.failed("导入模板错误!，请重新校验模板");
             }
             //将导入的excel数据生成产品BOM实体类list
             List<ProductionBom> list = ExcelUtils.importExcel(excelFile, ProductionBom.class, fieldNames, 4, 0, 0, tempName.toString());
             //过滤要导入的数据
             list = list.stream().filter(item -> {
-                return StringUtils.equals(item.getIsImport(),"X");
+                return StringUtils.equals(item.getIsImport(), "X");
             }).collect(Collectors.toList());
             //表头产品号(用于校验)
-            String drawingNo = String.valueOf(ExcelUtils.getCellValue(excelFile,String.class,0,1,7,tempName.toString()));
+            String drawingNo = String.valueOf(ExcelUtils.getCellValue(excelFile, String.class, 0, 1, 7, tempName.toString()));
             //表头物料编码(用于校验)
-            String materialNo = String.valueOf(ExcelUtils.getCellValue(excelFile,String.class,0,1,10,tempName.toString()));
+            String materialNo = String.valueOf(ExcelUtils.getCellValue(excelFile, String.class, 0, 1, 10, tempName.toString()));
             //导入校验
-            if(!StringUtils.isEmpty(checkExportList(list, drawingNo, materialNo))){
-                return CommonResult.failed("产品bom导入校验错误如下：</br>"+checkExportList(list, drawingNo, materialNo));
+            if (!StringUtils.isEmpty(checkExportList(list, drawingNo, materialNo))) {
+                return CommonResult.failed("产品bom导入校验错误如下：</br>" + checkExportList(list, drawingNo, materialNo));
             }
 
 
@@ -488,23 +493,24 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
     /**
      * 产品bom导入校验
+     *
      * @param list
      * @return
      */
-    private String checkExportList(List<ProductionBom> list,String drawingNo,String materialNo){
+    private String checkExportList(List<ProductionBom> list, String drawingNo, String materialNo) {
         StringBuilder message = new StringBuilder();
         //车间编码不能为空
         List<ProductionBom> nullBranchCodeList = list.stream().filter(item -> StringUtils.isEmpty(item.getBranchCode())).collect(Collectors.toList());
-        if(nullBranchCodeList.size()>0){
+        if (nullBranchCodeList.size() > 0) {
             message.append("车间编码不能为空!</br>").toString();
         }
 
         //0同图号校验
-        if(nullBranchCodeList.size()==0 && list.size()>0){
+        if (nullBranchCodeList.size() == 0 && list.size() > 0) {
             String branchCode = list.get(0).getBranchCode();
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
             query.eq("drawing_no", drawingNo)
-                    .eq("branch_code",branchCode);
+                    .eq("branch_code", branchCode);
             List<ProductionBom> result = this.list(query);
             if (result != null && result.size() > 0) {
                 message.append("相同零部件图号已存在！</br>").toString();
@@ -514,39 +520,39 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
         //1、空值校验
         nullValueCheck(list, message);
-        if(StringUtils.isEmpty(drawingNo)){
+        if (StringUtils.isEmpty(drawingNo)) {
             message.append("产品图号不能为空；</br>");
         }
-        if(StringUtils.isEmpty(materialNo)){
+        if (StringUtils.isEmpty(materialNo)) {
             message.append("物料编码不能为空；</br>");
         }
         //2、校验H层行数
         List<ProductionBom> hCheckList = list.stream().filter(item -> {
             return "H".equals(item.getGrade());
         }).collect(Collectors.toList());
-        if(hCheckList.size()!=1){
+        if (hCheckList.size() != 1) {
             message.append("级别为H的行数不是一行，导入失败；</br>");
         }
         //3、校验L层行数
         List<ProductionBom> lCheckList = list.stream().filter(item -> {
             return "L".equals(item.getGrade());
         }).collect(Collectors.toList());
-        if(lCheckList.size()==0){
+        if (lCheckList.size() == 0) {
             message.append("导入文件没有级别为L的行，导入失败；</br>");
         }
         //4、校验表头信息与H层一致
-        if(hCheckList.size()>0){
-            if(!StringUtils.equals(drawingNo,hCheckList.get(0).getDrawingNo())){
+        if (hCheckList.size() > 0) {
+            if (!StringUtils.equals(drawingNo, hCheckList.get(0).getDrawingNo())) {
                 message.append("表头产品图号与H层零部件图号不符，导入失败；</br>");
             }
-            if(!StringUtils.equals(materialNo,hCheckList.get(0).getMaterialNo())){
+            if (!StringUtils.equals(materialNo, hCheckList.get(0).getMaterialNo())) {
                 message.append("表头物料编码与H层物料编码不符，导入失败；</br>");
             }
         }
         //5、上级图号取表头产品图号或H层的物料图号校验
-        if(hCheckList.size()>0 && lCheckList.size()>0){
+        if (hCheckList.size() > 0 && lCheckList.size() > 0) {
             List<ProductionBom> collect = lCheckList.stream().filter(item -> !StringUtils.equals(hCheckList.get(0).getDrawingNo(), hCheckList.get(0).getMainDrawingNo())).collect(Collectors.toList());
-            if(collect.size()!=lCheckList.size()){
+            if (collect.size() != lCheckList.size()) {
                 message.append("上级图号需要取表头产品图号或H层的物料图号，导入失败；</br>");
             }
         }
@@ -554,8 +560,8 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         List<String> drawNoAndMaterNoList = new ArrayList<>(list.stream().map(item -> item.getDrawingNo() + "&" + item.getMaterialNo()).collect(Collectors.toSet()));
 
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
-                .in("CONCAT_WS('&',drawing_no,material_no)",drawNoAndMaterNoList);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
+                .in("CONCAT_WS('&',drawing_no,material_no)", drawNoAndMaterNoList);
         //本地存在的物料
         List<Product> materials = productService.list(queryWrapper);
         List<String> localInfo = new ArrayList<>(materials.stream().map(item -> item.getDrawingNo() + "&" + item.getMaterialNo()).collect(Collectors.toSet()));
@@ -564,15 +570,15 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
         for (String drawNoAndMaterNo : drawNoAndMaterNoList) {
             //本地不存在 提示物料不存在
-            if(!localInfo.contains(drawNoAndMaterNo)){
-                if(!StringUtils.isEmpty(String.valueOf(materialExitInfo))){
+            if (!localInfo.contains(drawNoAndMaterNo)) {
+                if (!StringUtils.isEmpty(String.valueOf(materialExitInfo))) {
                     materialExitInfo.append("、");
                 }
                 materialExitInfo.append(drawNoAndMaterNo.split("&")[0]);
             }
         }
-        if(!StringUtils.isEmpty(String.valueOf(materialExitInfo))){
-            message.append("图号："+materialExitInfo+" 的零部件不存在；");
+        if (!StringUtils.isEmpty(String.valueOf(materialExitInfo))) {
+            message.append("图号：" + materialExitInfo + " 的零部件不存在；");
         }
 
         return String.valueOf(message);
@@ -580,6 +586,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
     /**
      * 导入空值校验
+     *
      * @param list
      * @param message
      */
@@ -591,24 +598,24 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             //转换map 便于枚举取值
             JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(productionBom));
 
-            jsonObject.forEach((key,value)->{
+            jsonObject.forEach((key, value) -> {
                 //判断是不是要校验的字段
-                if(!ObjectUtil.isEmpty(ProductBomExportEnum.getName(key))){
-                    if(StringUtils.isEmpty(String.valueOf(value))){
+                if (!ObjectUtil.isEmpty(ProductBomExportEnum.getName(key))) {
+                    if (StringUtils.isEmpty(String.valueOf(value))) {
                         String name = ProductBomExportEnum.getName(key);
                         //H行不校验上级产品图号
-                        if("H".equals(productionBom.getGrade()) && ProductBomExportEnum.mainDrawingNo.getCode().equals(key)){
+                        if ("H".equals(productionBom.getGrade()) && ProductBomExportEnum.mainDrawingNo.getCode().equals(key)) {
                             return;
                         }
-                        if(!nullStringList.contains(name)){
+                        if (!nullStringList.contains(name)) {
                             nullStringList.add(name);
                         }
                     }
                 }
             });
         }
-        if(nullStringList.size()>0){
-            message.append(String.join(",", nullStringList)+"；</br>");
+        if (nullStringList.size() > 0) {
+            message.append(String.join(",", nullStringList) + "；</br>");
         }
     }
 }

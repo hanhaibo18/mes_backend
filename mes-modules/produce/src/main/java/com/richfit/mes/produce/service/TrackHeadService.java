@@ -318,4 +318,6 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @return: int
      **/
     int queryCountByWorkNo(String workNo, String branchCode);
+
+    boolean rgSaveTrackHead(String trackNo,List<TrackItem> trackItems,String routerId,String routerVer);
 }

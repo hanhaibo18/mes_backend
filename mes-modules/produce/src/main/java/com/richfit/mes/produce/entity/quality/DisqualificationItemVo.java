@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.entity.quality;
 
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
+import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
@@ -253,6 +254,12 @@ public class DisqualificationItemVo {
     private String recapDescribe;
 
     /**
+     * 返修检验员
+     */
+    @ApiModelProperty(value = "返修描述")
+    private String recapUser;
+
+    /**
      * 返修时间
      */
     @ApiModelProperty(value = "返修时间")
@@ -331,7 +338,7 @@ public class DisqualificationItemVo {
         //跟单号
         this.setTrackNo(trackHead.getTrackNo());
         //产品名称
-//        item.setProductName(trackItem.getProductName());
+        this.setProductName(trackHead.getProductName());
         //产品编号
         this.setProductNo(trackHead.getProductNo());
         //零部件名称
@@ -348,5 +355,54 @@ public class DisqualificationItemVo {
         this.setWorkNo(trackHead.getWorkNo());
         //跟单Id
         this.setTrackHeadId(trackHead.getId());
+    }
+
+    public void DisqualificationFinalResult(DisqualificationFinalResult finalResult) {
+        //发现车间
+        this.discoverBranch = finalResult.getDiscoverBranch();
+        //发现工序
+        this.discoverItem = finalResult.getDiscoverItem();
+        //总重量
+        this.totalWeight = finalResult.getTotalWeight();
+        //废品损失
+        this.abandonmentLoss = finalResult.getAbandonmentLoss();
+        //废品工时
+        this.discardTime = finalResult.getDiscardTime();
+        //回用工时
+        this.reuseTime = finalResult.getReuseTime();
+        //让步接收数量
+        this.acceptDeviation = finalResult.getAcceptDeviation();
+        //让步接收损失
+        this.acceptDeviationLoss = finalResult.getAcceptDeviationLoss();
+        //让步接收损失
+        this.acceptDeviationNo = finalResult.getAcceptDeviationNo();
+        //返修合格数量
+        this.repairQualified = finalResult.getRepairQualified();
+        //返修损失
+        this.repairLoss = finalResult.getRepairLoss();
+        //返修后产品编号
+        this.repairNo = finalResult.getRepairNo();
+        //返修后结果
+        this.recapDemerits = finalResult.getRecapDemerits();
+        //返修描述
+        this.recapDescribe = finalResult.getRecapDescribe();
+        //返修检验员
+        this.recapUser = finalResult.getRecapUser();
+        //返修时间
+        this.recapTime = finalResult.getRecapTime();
+        //报废数量
+        this.scrap = finalResult.getScrap();
+        //报废损失
+        this.scrapLoss = finalResult.getScrapLoss();
+        //报废后产品编号
+        this.scrapNo = finalResult.getScrapNo();
+        //退货数量
+        this.salesReturn = finalResult.getSalesReturn();
+        //退货损失
+        this.salesReturnLoss = finalResult.getSalesReturnLoss();
+        //退货产品编号
+        this.salesReturnNo = finalResult.getSalesReturnNo();
+
+
     }
 }

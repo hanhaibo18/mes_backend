@@ -20,117 +20,139 @@ public class Disqualification extends BaseEntity<Disqualification> {
     /**
      * 跟单Id
      */
-    
+    @ApiModelProperty(value = "跟单Id")
     private String trackHeadId;
 
     /**
      * 跟单工序Id
      */
+    @ApiModelProperty(value = "跟单工序ID")
     private String trackItemId;
 
     /**
      * 申请单编号
      */
+    @ApiModelProperty(value = "申请单编号")
     private String processSheetNo;
+
+    /**
+     * 不合格流程类型
+     */
+    @ApiModelProperty(value = "不合格流程类型")
+    private Integer type;
 
     /**
      * 不合格类型
      */
-    private String type;
-
-    /**
-     * 0 = 未发布 1= 已发布 2 = 已关闭
-     */
-    private Integer isIssue;
+    @ApiModelProperty(value = "不合格类型")
+    private String disqualificationType;
 
     /**
      * 工作号
      */
+    @ApiModelProperty(value = "工作号")
     private String workNo;
 
     /**
      * 产品名称
      */
+    @ApiModelProperty(value = "产品名称")
     private String productName;
 
     /**
      * 产品编号
      */
+    @ApiModelProperty(value = "产品编号")
     private String productNo;
 
     /**
      * 跟单编号
      */
+    @ApiModelProperty(value = "跟单编号")
     private String trackNo;
 
     /**
      * 零部件名称
      */
+    @ApiModelProperty(value = "零部件名称")
     private String partName;
 
     /**
      * 零部件材料
      */
+    @ApiModelProperty(value = "零部件材料")
     private String partMaterials;
 
     /**
      * 零部件图号
      */
+    @ApiModelProperty(value = "零部件图号")
     private String partDrawingNo;
 
     /**
      * 送出的车间
      */
+    @ApiModelProperty(value = "送出车间")
     private String missiveBranch;
 
     /**
      * 责任单位内
      */
+    @ApiModelProperty(value = "责任单位内")
     private String unitResponsibilityWithin;
 
     /**
      * 责任单位外
      */
+    @ApiModelProperty(value = "责任单位外")
     private String unitResponsibilityOutside;
 
     /**
      * 处理单位1
      */
+    @ApiModelProperty(value = "处理单位1")
     private String unitTreatmentOne;
 
     /**
      * 处理单位2
      */
+    @ApiModelProperty(value = "处理单位2")
     private String unitTreatmentTwo;
 
     /**
      * 工序名称
      */
+    @ApiModelProperty(value = "工序名称")
     private String itemName;
 
     /**
      * 工序类型
      */
+    @ApiModelProperty(value = "工序类型")
     private String itemType;
 
     /**
      * 不合格数量
      */
+    @ApiModelProperty(value = "不合格数量")
     private Integer disqualificationNum;
 
     /**
      * 质检完成时间
      */
+    @ApiModelProperty(value = "质检完成时间")
     private Date qualityCompleteTime;
 
     /**
      * 质控工程师姓名
      */
+    @ApiModelProperty(value = "质控工程师姓名")
     private String qualityCheckName;
 
     /**
      * 质控工程师
      */
+    @ApiModelProperty(value = "质控工程师")
     private String qualityCheckBy;
 
     /**
