@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -13,6 +14,8 @@ import com.richfit.mes.common.model.produce.HotLongProductQueryVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.HotDemandParam;
 import com.richfit.mes.produce.service.HotDemandService;
+import com.richfit.mes.produce.utils.DateUtils;
+import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -73,20 +76,33 @@ public class HotDemandController extends BaseController {
         if(StringUtils.isNotEmpty(hotDemandParam.getWorkblankType())){//毛坯类型
             queryWrapper.eq("workblank_type",hotDemandParam.getWorkblankType());
         }
-        //提报状态
+        //0 :未提报  1 :已提报'
         if(hotDemandParam.getSubmitState()!=null){
             queryWrapper.eq("submit_state",hotDemandParam.getSubmitState());
         }
-//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
-//            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + dispatchingDto.getStartTime() + " ')");
-//        }
-//        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
-//            Calendar calendar = new GregorianCalendar();
-//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//            calendar.setTime(sdf.parse(dispatchingDto.getEndTime()));
-//            calendar.add(Calendar.DAY_OF_MONTH, 1);
-//            queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
-//        }
+        //0 :未批准 ,1 已批准',
+        if(hotDemandParam.getProduceRatifyState()!=null){
+            queryWrapper.eq("produce_ratify_state",hotDemandParam.getProduceRatifyState());
+        }
+
+
+         //需求日期
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(hotDemandParam.getDemandStartTime()==null?"":hotDemandParam.getDemandStartTime().toString())) {
+            queryWrapper.ge("demand_time", DateUtils.getStartOfDay(hotDemandParam.getDemandStartTime()));
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(hotDemandParam.getDemandEndTime()==null?"":hotDemandParam.getDemandEndTime().toString())) {
+            queryWrapper.le("demand_time", DateUtils.getEndOfDay(hotDemandParam.getDemandEndTime()));
+        }
+        //提单日期
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(hotDemandParam.getSubmitStartTime()==null?"":hotDemandParam.getSubmitStartTime().toString())) {
+            queryWrapper.ge("submit_order_time", DateUtils.getStartOfDay(hotDemandParam.getSubmitStartTime()));
+        }
+        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(hotDemandParam.getSubmitEndTime()==null?"":hotDemandParam.getSubmitEndTime().toString())) {
+            queryWrapper.le("submit_order_time", DateUtils.getEndOfDay(hotDemandParam.getSubmitEndTime()));
+        }
+        //排序工具
+        OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
+
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
@@ -105,7 +121,7 @@ public class HotDemandController extends BaseController {
 
     @ApiOperation(value = "删除需求提报", notes = "删除需求提报")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "hotForgingParamIdList", value = "仿型参数IdList", required = true, paramType = "query")
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
     })
     @PostMapping("/delete_demand")
     public CommonResult deleteDemand(@RequestBody List<String> idList) {
@@ -129,8 +145,21 @@ public class HotDemandController extends BaseController {
         return hotDemandService.importDemand(file, branchCode);
     }
 
+    @ApiOperation(value = "需求提报与撤回", notes = "需求提报与撤回")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "submitState", value = "提报状态 0 :未提报  1 :已提报", required = true, paramType = "query")
+    })
+    @PostMapping("/submit_or_revocation")
+    public CommonResult submitDemand(@RequestBody List<String> idList,Integer submitState) {
 
-
+        UpdateWrapper updateWrapper=new UpdateWrapper();
+        updateWrapper.set("submit_state",submitState);//设置提报状态
+        updateWrapper.in("id",idList);
+        boolean update = hotDemandService.update(updateWrapper);
+        if (update) return CommonResult.success(ResultCode.SUCCESS);
+        return CommonResult.failed();
+    }
 
 
 
