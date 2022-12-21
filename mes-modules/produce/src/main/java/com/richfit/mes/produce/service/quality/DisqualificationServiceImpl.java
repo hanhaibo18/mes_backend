@@ -363,8 +363,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String opinionId) {
-        DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
+    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId) {
+        DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+        if (StrUtil.isNotBlank(disqualificationId)) {
+            Disqualification disqualification = this.getById(disqualificationId);
+            BeanUtils.copyProperties(disqualificationItemVo, disqualification);
+        } else {
+            disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
+        }
         //对象不为空,ID不为空
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
             DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());

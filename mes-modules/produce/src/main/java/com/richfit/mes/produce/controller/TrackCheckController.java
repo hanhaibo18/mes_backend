@@ -98,7 +98,7 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck, String drawingNo) {
+    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             //车间
@@ -162,10 +162,10 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
             //增加工序过滤
-//            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             queryWrapper.eq("is_doing", 2);
             queryWrapper.eq("is_operation_complete", 1);
-            queryWrapper.orderByDesc("modify_time");
+            OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             for (TrackItem item : assigns.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());

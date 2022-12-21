@@ -84,12 +84,12 @@ public interface DisqualificationService extends IService<Disqualification> {
      *
      * @param tiId
      * @param branchCode
-     * @param opinionId
+     * @param disqualificationId
      * @Author: xinYu.hou
      * @Date: 2022/10/24 16:54
      * @return: DisqualificationItemVo
      **/
-    DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String opinionId);
+    DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId);
 
     /**
      * 功能描述: 提交意见
