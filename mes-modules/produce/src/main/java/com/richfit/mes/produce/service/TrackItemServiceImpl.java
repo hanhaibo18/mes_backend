@@ -549,8 +549,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
         item.trackHead(trackHead);
-        //产品名称
-        item.setProductName(trackItem.getProductName());
         //不合格品数量
         item.setDisqualificationNum(trackItem.getQualityUnqty());
         //工序名称

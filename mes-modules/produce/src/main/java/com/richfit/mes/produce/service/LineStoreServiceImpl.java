@@ -321,11 +321,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             String oldWorkblankNo = lineStore.getWorkblankNo();
 
             //计算入库料单数量
-            int num=0;
-            if(startNo.intValue()==0){
-                num=endNo;
-            }else {
-                num=endNo-startNo+1;
+            int num = 0;
+            if (startNo.intValue() == 0) {
+                num = endNo;
+            } else {
+                num = endNo - startNo + 1;
             }
 
             for (int i = startNo; i <= endNo; i++) {
@@ -334,12 +334,15 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 BeanUtils.copyProperties(lineStore, entity);
                 if (isAutoMatchProd) {
                     //匹配生产订单
-                    String  orderNo = matchProd(entity.getMaterialNo(), entity.getNumber());
-                    HashMap<String,Integer> orderNumAndInNum = getOrderNumAndInNum(entity.getMaterialNo(), orderNo);
-                    int surplusNum = orderNumAndInNum.get("orderNum") - orderNumAndInNum.get("inNum");
-                    //当剩余数量小于当次入库数量提示入库数量大于订单数量
-                    if(surplusNum<num) throw  new  GlobalException("录入量不能大于订单剩余量,订单: "+orderNo+" 的剩余数量为: "+surplusNum+" 您录入是数量为: "+num,ResultCode.FAILED);
-                    entity.setProductionOrder(orderNo);
+                    String orderNo = matchProd(entity.getMaterialNo(), entity.getNumber());
+                    if (StrUtil.isNotBlank(orderNo)) {
+                        HashMap<String, Integer> orderNumAndInNum = getOrderNumAndInNum(entity.getMaterialNo(), orderNo);
+                        int surplusNum = orderNumAndInNum.get("orderNum") - orderNumAndInNum.get("inNum");
+                        //当剩余数量小于当次入库数量提示入库数量大于订单数量
+                        if (surplusNum < num)
+                            throw new GlobalException("录入量不能大于订单剩余量,订单: " + orderNo + " 的剩余数量为: " + surplusNum + " 您录入是数量为: " + num, ResultCode.FAILED);
+                        entity.setProductionOrder(orderNo);
+                    }
                 }
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
                 //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
@@ -453,12 +456,13 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     /**
      * 获取订单数量和已入库数量
+     *
      * @param materialNo 物料编码
-     * @param orderNo 订单号
+     * @param orderNo    订单号
      * @return
      */
     @Override
-    public HashMap<String,Integer> getOrderNumAndInNum(String materialNo, String orderNo) {
+    public HashMap<String, Integer> getOrderNumAndInNum(String materialNo, String orderNo) {
         QueryWrapper<Order> orderWrapper = new QueryWrapper<>();
         //根据物料号和订单号获取订单
         orderWrapper.eq("material_code", materialNo);
@@ -472,22 +476,18 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lWrapper.eq("production_order", orderNo);
         LineStore lineStore = this.getOne(lWrapper);
 
-        HashMap<String,Integer> numMap = new HashMap<>();
-        if(CollectionUtils.isNotEmpty(orderList)){
+        HashMap<String, Integer> numMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(orderList)) {
             Integer orderNum = orderList.get(0).getOrderNum();//订单数量
-            numMap.put("orderNum",orderNum);//订单数量
-            if(ObjectUtils.isNotEmpty(lineStore)){
-                numMap.put("inNum",lineStore.getNumber());//已入库数量
-            }else {
-                numMap.put("inNum",0);//已入库数量为0
+            numMap.put("orderNum", orderNum);//订单数量
+            if (ObjectUtils.isNotEmpty(lineStore)) {
+                numMap.put("inNum", lineStore.getNumber());//已入库数量
+            } else {
+                numMap.put("inNum", 0);//已入库数量为0
             }
         }
         return numMap;
     }
-
-
-
-
 
 
     //匹配采购订单
@@ -565,32 +565,58 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean zpExpend(String drawingNo, String prodNo, int number, int state) {
+    public String zpExpend(String drawingNo, int number, String branchCode, String tenantId, String lineStoreId) {
+        //3 解绑成功 4失败
+        if (StrUtil.isNotBlank(lineStoreId)) {
+            boolean unbundling = this.unbundling(lineStoreId, number);
+            if (!unbundling) {
+                throw new GlobalException("解绑失败", ResultCode.FAILED);
+            }
+            return "true";
+        }
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+        queryWrapper.apply("number-use_num =" + number);
         queryWrapper.eq("drawing_no", drawingNo);
-        queryWrapper.eq("workblank_no", prodNo);
-        LineStore lineStore = this.getOne(queryWrapper);
-        if (lineStore == null) {
-            return false;
+        queryWrapper.eq("input_type", "3");
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.notIn("status", "3");
+        queryWrapper.orderByAsc("create_time");
+        List<LineStore> lineStoreList = this.list(queryWrapper);
+        if (CollectionUtils.isEmpty(lineStoreList)) {
+            QueryWrapper<LineStore> queryWrappers = new QueryWrapper<LineStore>();
+            queryWrappers.apply("number-use_num >" + number);
+            queryWrappers.eq("drawing_no", drawingNo);
+            queryWrappers.eq("input_type", "3");
+            queryWrappers.eq("branch_code", branchCode);
+            queryWrappers.eq("tenant_id", tenantId);
+            queryWrapper.notIn("status", "3");
+            queryWrappers.orderByAsc("create_time");
+            lineStoreList = this.list(queryWrappers);
+            //0 = 绑定失败
+            if (CollectionUtils.isEmpty(lineStoreList)) {
+                throw new GlobalException("未查询到可绑定项", ResultCode.FAILED);
+            }
         }
-        if (1 == state) {
-            if ("3".equals(lineStore.getStatus())) {
-                return false;
-            }
-            int num = lineStore.getUseNum() + number;
-            lineStore.setUseNum(num);
-            if (lineStore.getNumber() == num) {
-                lineStore.setStatus("3");
-            }
-            return this.updateById(lineStore);
-        } else {
-            int num = lineStore.getUseNum() - number;
-            lineStore.setUseNum(num);
-            if ("3".equals(lineStore.getStatus())) {
-                lineStore.setStatus("0");
-            }
-            return this.updateById(lineStore);
+        LineStore lineStore = lineStoreList.get(0);
+        int num = lineStore.getUseNum() + number;
+        lineStore.setUseNum(num);
+        if (lineStore.getNumber() == num) {
+            lineStore.setStatus("3");
         }
+        this.updateById(lineStore);
+        return lineStore.getId();
+    }
+
+    @Override
+    public boolean unbundling(String id, int number) {
+        LineStore lineStore = this.getById(id);
+        int num = lineStore.getUseNum() - number;
+        lineStore.setUseNum(num);
+        if ("3".equals(lineStore.getStatus())) {
+            lineStore.setStatus("0");
+        }
+        return this.updateById(lineStore);
     }
 
     @Override

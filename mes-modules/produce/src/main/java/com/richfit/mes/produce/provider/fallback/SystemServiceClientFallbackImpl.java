@@ -80,6 +80,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(String branchCode) {
+        return CommonResult.success(null);
+    }
+
+    @Override
     public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(String id) {
         return CommonResult.success(null);
     }
@@ -115,7 +120,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
-    public  List<Role> queryRolesByUserId(String userId) {
+    public List<Role> queryRolesByUserId(String userId) {
         return null;
     }
 }

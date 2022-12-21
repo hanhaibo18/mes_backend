@@ -19,6 +19,12 @@ public class Sequence extends BaseEntity<Sequence> {
      */
     @ApiModelProperty(value = "工艺Id", dataType = "String")
     private String routerId;
+
+    /**
+     * 关联工装图纸的id
+     */
+    @ApiModelProperty(value = "关联工装、图纸的id", dataType = "int")
+    protected String pdmMesOptionId;
     /**
      * 工序顺序
      */
@@ -146,6 +152,26 @@ public class Sequence extends BaseEntity<Sequence> {
      */
     @ApiModelProperty(value = "注意事项", dataType = "String")
     private String notice;
+
+
+    @ApiModelProperty(value = "设备（热工）", dataType = "String")
+    private String device;
+
+    @ApiModelProperty(value = "温度下限℃（热工）", dataType = "String")
+    private String tempDown;
+
+    @ApiModelProperty(value = "温度上限℃（热工）", dataType = "String")
+    private String tempUp;
+
+    @ApiModelProperty(value = "实施温度℃（热工）", dataType = "String")
+    private String tempWork;
+
+    @ApiModelProperty(value = "保温时间h（热工）", dataType = "String")
+    private String holdTime;
+
+    @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
+    private String coolType;
+
 
 
     /**

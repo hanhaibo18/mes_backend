@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service.quality;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -10,7 +11,10 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
+import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -84,10 +88,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (StrUtil.isNotBlank(queryInspectorDto.getProcessSheetNo())) {
             queryWrapper.like("process_sheet_no", queryInspectorDto.getProcessSheetNo());
         }
-        // 发布/未发布
-        if (null != queryInspectorDto.getIsIssue()) {
-            queryWrapper.eq("is_issue", queryInspectorDto.getIsIssue());
-        }
         try {
             //开始时间
             if (StrUtil.isNotBlank(queryInspectorDto.getStartTime())) {
@@ -112,47 +112,90 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
-        //状态为发布,更新时间
-        if (1 == disqualificationDto.getIsIssue()) {
-            disqualificationDto.setOrderTime(new Date());
-        }
-        if (null == disqualificationDto.getIsIssue()) {
-            disqualificationDto.setIsIssue(0);
-        }
-        //处理DTO数据
+        //先判断流程
+        int processJudge = processJudge(disqualificationDto);
+        //处理不合格主表数据
         Disqualification disqualification = new Disqualification();
         BeanUtils.copyProperties(disqualificationDto, disqualification);
+        disqualification.setType(processJudge);
+        //处理不合格类型
         if (CollectionUtils.isNotEmpty(disqualificationDto.getTypeList())) {
             String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
-            disqualification.setType(type);
+            disqualification.setDisqualificationType(type);
             disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
         }
         this.saveOrUpdate(disqualification);
-        //数据不为空,拼接数据
-        if (CollectionUtils.isNotEmpty(disqualification.getAttachmentList())) {
-            disqualification.getAttachmentList().forEach(attachment -> {
-                attachment.setDisqualificationId(disqualification.getId());
-                attachment.setBranchCode(disqualification.getBranchCode());
-                attachment.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                attachment.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                attachment.setCreateTime(new Date());
-                attachment.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                attachment.setModifyTime(new Date());
-            });
-            //删除文件列表
-            QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
-            queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
-            attachmentService.remove(queryWrapperAttachment);
-            attachmentService.saveAttachment(disqualification.getAttachmentList());
+        //处理不合格从表数据
+        DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
+        BeanUtils.copyProperties(disqualificationDto, finalResult);
+        finalResult.setId(disqualification.getId());
+        finalResultService.saveOrUpdate(finalResult);
+        //不合格意见JSON
+        List<DisqualificationUserOpinion> userOpinionList = new ArrayList<>();
+        if (StrUtil.isNotBlank(disqualificationDto.getUnqualifiedOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnqualifiedOpinion(), DisqualificationUserOpinion.class));
         }
-        //删除人员意见,重新新增
-        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("disqualification_id", disqualification.getId());
-        userOpinionService.remove(queryWrapper);
-        savePerson(disqualification.getUserList(), disqualification.getId());
+        //质控意见JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getQualityControlOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getQualityControlOpinion(), DisqualificationUserOpinion.class));
+        }
+        //处理单位1JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentOneOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnitTreatmentOneOpinion(), DisqualificationUserOpinion.class));
+        }
+        //处理单位2JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwoOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnitTreatmentTwoOpinion(), DisqualificationUserOpinion.class));
+        }
+        //责任裁决JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getResponsibilityOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getResponsibilityOpinion(), DisqualificationUserOpinion.class));
+        }
+        //技术裁决JSON
+        if (StrUtil.isNotBlank(disqualificationDto.getTechnologyOpinion())) {
+            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getTechnologyOpinion(), DisqualificationUserOpinion.class));
+        }
+        userOpinionService.saveOrUpdateBatch(userOpinionList);
         return true;
     }
 
+
+    /**
+     * 功能描述: 流程个控制方法
+     *
+     * @param disqualificationDto
+     * @Author: xinYu.hou
+     * @Date: 2022/12/19 4:19
+     * @return: int
+     **/
+    //TODO:裁决流程不明确
+    private int processJudge(DisqualificationDto disqualificationDto) {
+        disqualificationDto.setIsSubmit(0);
+        //判断是否发布 1 = 发布 0 = 不发布
+        if (1 == disqualificationDto.getIsSubmit()) {
+            //开局处理单||质控评审 发布直接进行下一步
+            if (1 == disqualificationDto.getType() || 2 == disqualificationDto.getType()) {
+                return disqualificationDto.getType() + 1;
+            }
+            //判断处理单位一
+            if (3 == disqualificationDto.getType()) {
+                //处理单位2存在
+                if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwo())) {
+                    //返回处理单位2状态
+                    return disqualificationDto.getType() + 1;
+                } else {
+                    //没有直接进入状态7 质检员关闭处理单流程
+                    return 7;
+                }
+            }
+            //处理单位2 处理单位填报完 直接进入质检员关闭流程
+            if (4 == disqualificationDto.getType()) {
+                return 7;
+            }
+        }
+        //不发布直接返回当前状态
+        return disqualificationDto.getType();
+    }
 
     /**
      * 功能描述: 保存派工人员接口
@@ -191,7 +234,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean updateIsIssue(String id, String state) {
         UpdateWrapper<Disqualification> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id);
-        updateWrapper.set("is_issue", state);
         //开单状态增加开单时间
         if ("1".equals(state)) {
             updateWrapper.set("order_time", new Date());
@@ -205,8 +247,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         String value = value("qualityManagement");
         //获取TenantId
         Branch branch = baseServiceClient.queryTenantIdByBranchCode(value);
-        //根据租户Id查询人员列表
-        return systemServiceClient.queryUserByTenantId(branch.getTenantId());
+        if (branch != null && branch.getTenantId() != null) {
+            //根据租户Id查询人员列表
+            return systemServiceClient.queryUserByTenantId(branch.getTenantId());
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -250,7 +296,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } catch (Exception e) {
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
         }
-        queryWrapper.eq("dis.is_issue", 1);
         queryWrapper.eq("opinion.user_id", SecurityUtils.getCurrentUser().getUserId());
         return userOpinionMapper.queryCheck(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
@@ -263,44 +308,44 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         List<SignedRecordsVo> recordsVoList = SignedRecordsVo.list(userOpinionService.list(queryWrapper));
         recordsVoList.forEach(records -> {
             QueryWrapper<DisqualificationFinalResult> queryWrapperFinalResult = new QueryWrapper<>();
-            queryWrapperFinalResult.eq("opinion_id", records.getId());
+//            queryWrapperFinalResult.eq("opinion_id", records.getId());
             DisqualificationFinalResult finalResult = finalResultService.getOne(queryWrapperFinalResult);
             if (null == finalResult) {
                 return;
             }
-            //意见ID相同 再去拼接最终结果
-            if (records.getId().equals(finalResult.getOpinionId())) {
-                StringBuilder sb = new StringBuilder();
-                //让步接收数量
-                sb.append("让步接收数量:");
-                if (finalResult.getAcceptDeviation() != null) {
-                    sb.append(finalResult.getAcceptDeviation());
-                } else {
-                    sb.append(0);
-                }
-                //返修合格数量
-                sb.append(",返修合格数量:");
-                if (finalResult.getRepairQualified() != null) {
-                    sb.append(finalResult.getRepairQualified());
-                } else {
-                    sb.append(0);
-                }
-                //报废数量
-                sb.append(",报废数量:");
-                if (finalResult.getScrap() != null) {
-                    sb.append(finalResult.getScrap());
-                } else {
-                    sb.append(0);
-                }
-                //退货数量
-                sb.append(",退货数量:");
-                if (finalResult.getSalesReturn() != null) {
-                    sb.append(finalResult.getSalesReturn());
-                } else {
-                    sb.append(0);
-                }
-                records.setFinalResult(sb.toString());
-            }
+//            //意见ID相同 再去拼接最终结果
+//            if (records.getId().equals(finalResult.getOpinionId())) {
+//                StringBuilder sb = new StringBuilder();
+//                //让步接收数量
+//                sb.append("让步接收数量:");
+//                if (finalResult.getAcceptDeviation() != null) {
+//                    sb.append(finalResult.getAcceptDeviation());
+//                } else {
+//                    sb.append(0);
+//                }
+//                //返修合格数量
+//                sb.append(",返修合格数量:");
+//                if (finalResult.getRepairQualified() != null) {
+//                    sb.append(finalResult.getRepairQualified());
+//                } else {
+//                    sb.append(0);
+//                }
+//                //报废数量
+//                sb.append(",报废数量:");
+//                if (finalResult.getScrap() != null) {
+//                    sb.append(finalResult.getScrap());
+//                } else {
+//                    sb.append(0);
+//                }
+//                //退货数量
+//                sb.append(",退货数量:");
+//                if (finalResult.getSalesReturn() != null) {
+//                    sb.append(finalResult.getSalesReturn());
+//                } else {
+//                    sb.append(0);
+//                }
+//                records.setFinalResult(sb.toString());
+//            }
         });
         //单查询开单时间
         Disqualification disqualification = this.getById(disqualificationId);
@@ -322,10 +367,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
         //对象不为空,ID不为空
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
-            disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
-            disqualificationItemVo.setSignedRecordsList(this.querySignedRecordsList(disqualificationItemVo.getId()));
+            DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
+            disqualificationItemVo.DisqualificationFinalResult(finalResult);
+            //查询流水
             disqualificationItemVo.setUserList(queryOpinionUser(disqualificationItemVo.getId()));
-            disqualificationItemVo.setOpinionId(opinionId);
         } else if (null != disqualificationItemVo) {
             disqualificationItemVo.setAttachmentList(Collections.emptyList());
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());

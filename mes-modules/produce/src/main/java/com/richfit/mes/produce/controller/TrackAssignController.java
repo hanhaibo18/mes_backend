@@ -329,21 +329,36 @@ public class TrackAssignController extends BaseController {
                         trackAssignPersonMapper.insert(person);
                     }
                     //齐套性检查
-                    if ("2".equals(trackHead.getClasses()) && 10 == trackItem.getOriginalOptSequence() && 0 == trackItem.getIsDoing() && 1 == trackItem.getIsCurrent() && "true".equals(off)) {
+                    //判断是否存在BOM 没有BOM不进行齐套检查
+                    boolean bom = StrUtil.isNotBlank(trackHead.getProjectBomId());
+                    //判断是否是装配
+                    boolean assembly = "2".equals(trackHead.getClasses());
+                    //是否是第一道工序
+                    boolean item = 10 == trackItem.getOriginalOptSequence();
+                    //判断是否开工
+                    boolean isDoing = 0 == trackItem.getIsDoing();
+                    //判断当前工序
+                    boolean isCurrent = 1 == trackItem.getIsCurrent();
+                    //是否进行齐套并发送申请单 true = 发送 false = 不发送
+                    boolean switchOff = "true".equals(off);
+                    if (assembly && item && isDoing && isCurrent && switchOff && bom) {
                         //控制第一道工序是否发送申请单
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
                         requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
-                        ApplicationResult application = new ApplicationResult();
+//                        ApplicationResult application = new ApplicationResult();
                         if (CollectionUtils.isNotEmpty(ingredient.getLineList())) {
-                            application = wmsServiceClient.anApplicationForm(ingredient).getData();
-                        }
-                        if ("N".equals(application.getRetCode())) {
-                            numberService.deleteApplicationNumberByItemId(trackItem.getId());
-                            log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg() + "加密数据:" + application.getEncryption(), ResultCode.FAILED);
+                            ingredient.setGc("X088");
+                            ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                            //请勿重复上传！
+                            boolean upload = !application.getRetMsg().contains("请勿重复上传");
+                            if ("N".equals(application.getRetCode()) && upload) {
+                                numberService.deleteApplicationNumberByItemId(trackItem.getId());
+                                log.error("仓储数据:" + ingredient);
+                                throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
+                            }
                         }
                     }
                 }

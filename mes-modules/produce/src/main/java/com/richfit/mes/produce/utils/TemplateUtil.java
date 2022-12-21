@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.utils;
 
+import cn.hutool.core.util.StrUtil;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.CallableStatementCreator;
@@ -37,7 +38,7 @@ public class TemplateUtil {
         if (null != sql && sql.contains(call)) {
             // 如果包含CALL，则只需执行存储过程
             list = getExecute(id, sql, jdbcTemplate);
-        } else if (null != sql) {
+        } else if (!StrUtil.isBlank(sql)) {
             // 如果不包含CALL，则执行SQL 查询
             list = jdbcTemplate.queryForList(String.format(sql, id));
         }

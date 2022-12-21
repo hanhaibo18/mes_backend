@@ -12,5 +12,4 @@ import lombok.Data;
 public class ApplicationResult {
     private String retCode;
     private String retMsg;
-    private String encryption;
 }

@@ -24,6 +24,8 @@ public class OrderSyncLogServiceImpl extends ServiceImpl<OrderSyncLogMapper, Ord
     @Override
     public IPage<OrderSyncLog> queryLogPage(QueryOrderSyncLogPageDto queryOrderSyncLogPageDto) {
         QueryWrapper<OrderSyncLog> queryWrapper = new QueryWrapper<>();
+        //订单号
+        queryWrapper.eq(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getOrderSn()), "order_sn", queryOrderSyncLogPageDto.getOrderSn());
         //物料号
         queryWrapper.eq(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getMaterialNo()), "material_no", queryOrderSyncLogPageDto.getMaterialNo());
         //图号

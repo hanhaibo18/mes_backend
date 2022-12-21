@@ -90,6 +90,7 @@ public class RouterController extends BaseController {
             if (isPDM) {
                 queryWrapper.isNull("draw_no");
             }
+//            queryWrapper.eq("is_active", "1");
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             if (!StringUtils.isNullOrEmpty(orderCol)) {
@@ -130,6 +131,8 @@ public class RouterController extends BaseController {
                 queryWrapperRouter.eq("status", "1");
                 queryWrapperRouter.eq("router_no", router.getRouterNo());
                 queryWrapperRouter.eq("branch_code", router.getBranchCode());
+                //工艺唯一  工艺名称+图号（历史数据）
+                queryWrapperRouter.eq("router_name", router.getRouterName());
                 queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 routerService.update(routerOlds, queryWrapperRouter);
                 //更新新工艺状态模块

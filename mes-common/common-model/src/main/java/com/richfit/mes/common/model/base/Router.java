@@ -35,6 +35,11 @@ public class Router extends BaseEntity<Router> {
     private String routerName;
 
     /**
+     * 工艺类型
+     */
+    private String routerType;
+
+    /**
      * 工艺描述
      */
     private String remark;
@@ -50,7 +55,7 @@ public class Router extends BaseEntity<Router> {
     private String type;
 
     /**
-     * 状态 0=未激活 1=激活
+     * 状态 0=未激活 1=激活 2=历史
      */
     private String status;
 
@@ -87,6 +92,94 @@ public class Router extends BaseEntity<Router> {
      * pdm 工艺id
      */
     private String pdmDrawIdGroup;
+
+    /**
+     * 年度章
+     */
+    private String sealYear;
+
+    /**
+     * 钢水重量
+     */
+    private String weightMolten;
+    /**
+     * 工艺保温时间
+     */
+    private String processHoldTime;
+    /**
+     * 浇筑温度
+     */
+    private String pourTemp;
+    /**
+     * 浇筑速度
+     */
+    private String pourSpeed;
+    /**
+     * 毛坯调质
+     */
+    private String blankControl;
+    /**
+     * 毛坯探伤
+     */
+    private String blankInspect;
+    /**
+     * 锻件重量
+     */
+    private String forgWeight;
+    /**
+     * 下料重量
+     */
+    private String blankWeight;
+    /**
+     * 零件重量
+     */
+    private String partWeight;
+    /**
+     * 下料规格
+     */
+    private String blankSpecifi;
+    /**
+     * 下料长度
+     */
+    private String blankLenght;
+    /**
+     * 锻始温度
+     */
+    private String forgTempStart;
+    /**
+     * 锻终温度
+     */
+    private String forgTempEnd;
+    /**
+     * 加热时间
+     */
+    private String tempTime;
+    /**
+     * 段后处理
+     */
+    private String forgStand;
+    /**
+     * 零件名称
+     */
+    private String partName;
+    /**
+     * 图纸版本
+     */
+    private String drawVer;
+    /**
+     * 材质
+     */
+    private String texture;
+    /**
+     * 试棒
+     */
+    private String testBar;
+    /**
+     * 单重
+     */
+    private String pieceWeight;
+
+
 
     @ApiModelProperty(value = "该工艺历史版本")
     @TableField(exist = false)

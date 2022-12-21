@@ -44,4 +44,6 @@ public interface LineStoreMapper extends BaseMapper<LineStore> {
      **/
     @Select("select sum(number-use_num) as total from produce_line_store where material_no=#{materialNo} and branch_code=#{branchCode} and tenant_id = #{tenantId} and status='0'")
     Integer selectTotalNum(@Param("materialNo") String materialNo, @Param("branchCode") String branchCode, @Param("tenantId") String tenantId);
+    
+
 }

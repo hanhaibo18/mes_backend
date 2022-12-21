@@ -351,7 +351,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //工序完成数量
                 plan.setOptFinishNumber(optNumber - optProcessNumber);
                 //计划数量、已交数量判断用来处理计划状态
-                if (plan.getDeliveryNum().compareTo(plan.getProjNum()) == 0) {
+                if (plan.getProjNum().intValue() == storeNum + deliveryNum) {
                     plan.setStatus(3);
                 } else {
                     if (trackHeadList.size() > 0) {

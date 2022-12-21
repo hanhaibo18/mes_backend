@@ -58,7 +58,7 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
             queryWrapper.eq("branch_code", u.getBranchCode());
             queryWrapper.eq("tenant_id", u.getTenantId());
             //历史版本
-            queryWrapper.eq("is_active", "2");
+            queryWrapper.eq("status", "2");
             //过滤当前工艺自己，不出现在历史版本中
             queryWrapper.ne("id", u.getId());
             u.setChildren(this.list(queryWrapper));

@@ -707,8 +707,11 @@ public class TrackCompleteController extends BaseController {
     @PostMapping("/updateOutComplete")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<TrackComplete> updateOutComplete(@RequestBody TrackComplete complete) {
-
         trackCompleteService.updateById(complete);
+        //外协修改同步修改工序表质检人员
+        TrackItem trackItem = trackItemService.getById(complete.getTiId());
+        trackItem.setQualityCheckBy(complete.getQualityCheckBy());
+        trackItemService.updateById(trackItem);
         return CommonResult.success(complete, "操作成功！");
 
     }

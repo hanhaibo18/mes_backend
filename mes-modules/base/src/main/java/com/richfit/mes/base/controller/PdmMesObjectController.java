@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,10 +38,14 @@ public class PdmMesObjectController {
     @ApiOperation(value = "工装列表查询", notes = "工装列表查询")
     @ApiImplicitParam(name = "pdmObject", value = "工装VO", required = true, dataType = "pdmObject", paramType = "body")
     public CommonResult<List<PdmMesObject>> getList(PdmObject pdmObject) {
-        QueryWrapper<PdmMesObject> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmObject.getOpId()), "op_id", pdmObject.getOpId());
-        queryWrapper.orderByDesc("rev").eq("dataGroup", pdmObject.getDataGroup());
-        return CommonResult.success(pdmMesObjectService.list(queryWrapper));
+        List<PdmMesObject> list = new ArrayList<PdmMesObject>();
+        if(!StringUtils.isNullOrEmpty(pdmObject.getOpId())){
+            QueryWrapper<PdmMesObject> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq(!StringUtils.isNullOrEmpty(pdmObject.getOpId()), "op_id", pdmObject.getOpId());
+            queryWrapper.orderByDesc("rev").eq("dataGroup", pdmObject.getDataGroup());
+            list = pdmMesObjectService.list(queryWrapper);
+        }
+        return CommonResult.success(list);
     }
 
     @GetMapping("/query/pageList")

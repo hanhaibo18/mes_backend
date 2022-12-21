@@ -58,11 +58,20 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
 
     @Override
     public void warning(Plan plan) throws Exception {
+        QueryWrapper<PlanOptWarning> queryWrapperPlanOptWarning = new QueryWrapper<>();
+        queryWrapperPlanOptWarning.eq("plan_id", plan.getId());
+        List<PlanOptWarning> planOptWarnings = planOptWarningMapper.selectList(queryWrapperPlanOptWarning);
+        if (planOptWarnings == null || planOptWarnings.size() == 0) {
+            //不进行预警
+            plan.setAlarmStatus(-1);
+            return;
+        }
         //查询计划预警的数据
         List<PlanOptWarning> planOptWarningList = queryPlanOptWarningList(plan.getId());
         if (planOptWarningList.size() < 1) {
             //不进行预警
             plan.setAlarmStatus(0);
+            return;
         }
         long betweenDay = 101;
         for (PlanOptWarning planOptWarning : planOptWarningList) {
@@ -72,10 +81,13 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
                 }
                 if (betweenDay >= 3) {
                     plan.setAlarmStatus(1);
+                    return;
                 } else if (betweenDay >= 0 && betweenDay < 3) {
                     plan.setAlarmStatus(2);
+                    return;
                 } else {
                     plan.setAlarmStatus(3);
+                    return;
                 }
             }
         }
@@ -112,7 +124,7 @@ public class PlanOptWarningServiceImpl extends ServiceImpl<PlanOptWarningMapper,
             planOptWarning.setProductNo(trackItem.getProductNo());
             planOptWarning.setTrackItemId(trackItem.getId());
             List<Operatipon> data = baseServiceClient.find(trackItem.getOperatiponId(), null, null, null, null, null).getData();
-            if(data.size()>0){
+            if (data.size() > 0) {
                 planOptWarning.setIsKey(data.get(0).getIsKey());
             }
             planOptWarningList.add(planOptWarning);
