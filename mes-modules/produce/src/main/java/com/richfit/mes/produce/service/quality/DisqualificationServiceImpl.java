@@ -170,6 +170,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
      **/
     //TODO:裁决流程不明确
     private int processJudge(DisqualificationDto disqualificationDto) {
+        disqualificationDto.setIsSubmit(0);
         //判断是否发布 1 = 发布 0 = 不发布
         if (1 == disqualificationDto.getIsSubmit()) {
             //开局处理单||质控评审 发布直接进行下一步
