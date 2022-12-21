@@ -4,7 +4,9 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import lombok.Data;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -82,6 +84,10 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
      */
     @ApiModelProperty(value = "需求日期 ", dataType = "Date")
     private Date demandTime;
+    @ApiModelProperty(value = "需求开始日期(需求) ", dataType = "Date")
+    private Date demandStartTime;
+    @ApiModelProperty(value = "需求结束日期 (需求)", dataType = "Date")
+    private Date demandEndTime;
 
     /**
      * 版本号
@@ -94,6 +100,10 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
      */
     @ApiModelProperty(value = "提单日期 ", dataType = "Date")
     private Date submitOrderTime;
+    @ApiModelProperty(value = "开始日期(提单) ", dataType = "Date")
+    private Date submitStartTime;
+    @ApiModelProperty(value = "结束日期(提单) ", dataType = "Date")
+    private Date submitEndTime;
 
     /**
      * 提单单位id
@@ -225,4 +235,9 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
     private int page;
     @ApiModelProperty(value = "条数 ", dataType = "String")
     private int limit;
+
+    @ApiModelProperty(value = "排序方式 ", dataType = "String")
+    private String order;
+    @ApiModelProperty(value = "排序列 ", dataType = "String")
+    private String orderCol;
 }
