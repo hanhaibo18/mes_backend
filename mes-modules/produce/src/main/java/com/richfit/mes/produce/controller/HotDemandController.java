@@ -11,9 +11,13 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.HotDemand;
 import com.richfit.mes.common.model.produce.HotLongProduct;
 import com.richfit.mes.common.model.produce.HotLongProductQueryVo;
+import com.richfit.mes.common.model.produce.HotModelStore;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.HotDemandParam;
 import com.richfit.mes.produce.service.HotDemandService;
+import com.richfit.mes.produce.service.HotLongProductService;
+import com.richfit.mes.produce.service.HotModelStoreService;
 import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
@@ -22,6 +26,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +36,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Api(value = "热工需求管理", tags = {"热工需求管理"})
@@ -41,6 +48,11 @@ public class HotDemandController extends BaseController {
 
     @Resource
     private HotDemandService hotDemandService;
+    @Resource
+    private HotLongProductService hotLongProductService;
+
+    @Resource
+    public HotModelStoreService hotModelStoreService;
 
     @ApiOperation(value = "新增需求提报", notes = "新增需求提报")
     @PostMapping("/save")
@@ -160,6 +172,74 @@ public class HotDemandController extends BaseController {
         if (update) return CommonResult.success(ResultCode.SUCCESS);
         return CommonResult.failed();
     }
+//
+//    @ApiOperation(value = "检查长周期", notes = "检查长周期")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
+//    })
+//    @PostMapping("/check_long_product")
+//    public CommonResult checkLongProduct(@RequestBody List<String> idList) {
+//        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+//
+//        //毛坯需求数据
+//
+//
+//        QueryWrapper<HotLongProduct> longWrapper=new QueryWrapper();
+//        longWrapper.eq("tenant_id",currentUser.getTenantId());
+//        longWrapper.in("product_drawing_no",);
+//        List<HotLongProduct> list = hotLongProductService.list(longWrapper);
+//        //长周期产品
+//        Map<String, HotLongProduct> longMap = list.stream().collect(Collectors.toMap(x -> x.getProductDrawingNo(), x -> x));
+//
+//
+//        //遍历毛坯需求数据,根据图号在长周期产品map中获取,不为空则为长周期产品
+//
+//
+//        //收集长周期产品的毛坯需求id
+//
+//
+//        UpdateWrapper updateWrapper=new UpdateWrapper();
+//        updateWrapper.set("is_long_period",1);//设置为长周期
+//        updateWrapper.in("id",);
+//        boolean update = hotDemandService.update(updateWrapper);
+//        if (update) return CommonResult.success(ResultCode.SUCCESS);
+//        return CommonResult.failed();
+//    }
+//
+//
+//    @ApiOperation(value = "检查模型", notes = "检查模型")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
+//    })
+//    @PostMapping("/check_model")
+//    public CommonResult checkModel(@RequestBody List<String> idList) {
+//        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+//
+//        //毛坯需求数据
+//
+//
+//        QueryWrapper<HotModelStore> modelWrapper=new QueryWrapper();
+//        modelWrapper.eq("tenant_id",currentUser.getTenantId());
+//        modelWrapper.in("model_drawing_no",);
+//        List<HotModelStore> list = hotModelStoreService.list(modelWrapper);
+//        //模型
+//        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo(), x -> x));
+//
+//
+//        //遍历毛坯需求数据,根据图号在模型map中获取,不为空则有模型
+//
+//
+//        //收集有模型的毛坯需求id和无模型的id
+//
+//
+//        UpdateWrapper updateWrapper=new UpdateWrapper();
+//        updateWrapper.set("is_exist_model",1);//设置为有模型
+//        updateWrapper.in("id",);
+//        boolean update = hotDemandService.update(updateWrapper);
+//        if (update) return CommonResult.success(ResultCode.SUCCESS);
+//        return CommonResult.failed();
+//    }
+
 
 
 
