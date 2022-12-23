@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.*;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -76,6 +77,18 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
 
     @Override
     public void release(PdmMesProcess pdmMesProcess) throws Exception {
+        //校验 如果存在图号+版本号+类型的工艺 跳过发布
+        QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
+        routerQueryWrapper.eq("router_no",pdmMesProcess.getDrawNo())
+                .eq("version",pdmMesProcess.getRev())
+                .eq("router_type",pdmMesProcess.getProcessType())
+                .eq("branch_code",pdmMesProcess.getDataGroup());
+        List<Router> list = routerService.list(routerQueryWrapper);
+        //存在的话跳过发布
+        if(list.size()>0){
+            return ;
+        }
+        //不存在的话发布新版本
         try {
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             String routerId = UUID.randomUUID().toString();
@@ -221,8 +234,8 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             queryWrapperRouter.eq("router_no", pdmMesProcess.getDrawNo());
             queryWrapperRouter.eq("branch_code", pdmMesProcess.getDataGroup());
             queryWrapperRouter.eq("tenant_id", user.getTenantId());
-            //工艺唯一  工艺名称+图号（历史数据）
-            queryWrapperRouter.eq("router_name", pdmMesProcess.getName());
+            //工艺唯一  工艺类型+图号（历史数据）
+            queryWrapperRouter.eq("router_type", pdmMesProcess.getProcessType());
             routerService.update(router, queryWrapperRouter);
             //添加新工艺模块
             router.setId(routerId);

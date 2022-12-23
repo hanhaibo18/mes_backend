@@ -70,11 +70,12 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "routerNo", value = "图号", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "routerName", value = "名称", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "routerType", value = "工艺类型", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol, boolean isPDM) {
+    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol, boolean isPDM,String routerType) {
         try {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
@@ -86,6 +87,9 @@ public class RouterController extends BaseController {
             }
             if (!StringUtils.isNullOrEmpty(status)) {
                 queryWrapper.in("status", status.split(","));
+            }
+            if (!StringUtils.isNullOrEmpty(routerType)) {
+                queryWrapper.eq("router_type", routerType);
             }
             if (isPDM) {
                 queryWrapper.isNull("draw_no");
@@ -121,6 +125,18 @@ public class RouterController extends BaseController {
         if (StringUtils.isNullOrEmpty(router.getRouterNo())) {
             return CommonResult.failed("工艺不能为空！");
         } else {
+            //校验能否新增
+            //校验 如果存在图号+版本号+类型的工艺 跳过发布
+            QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
+            routerQueryWrapper.eq("router_no",router.getDrawNo())
+                    .eq("version",router.getVersion())
+                    .eq("router_type",router.getRouterType())
+                    .eq("branch_code",router.getBranchCode());
+            List<Router> list = routerService.list(routerQueryWrapper);
+            //存在的话跳过发布
+            if(list.size()>0){
+                return CommonResult.failed("工艺重复，无法新增！");
+            }
             if ("1".equals(router.getStatus())) {
                 System.out.println("-------------------");
                 //更新老工艺状态模块
@@ -131,8 +147,8 @@ public class RouterController extends BaseController {
                 queryWrapperRouter.eq("status", "1");
                 queryWrapperRouter.eq("router_no", router.getRouterNo());
                 queryWrapperRouter.eq("branch_code", router.getBranchCode());
-                //工艺唯一  工艺名称+图号（历史数据）
-                queryWrapperRouter.eq("router_name", router.getRouterName());
+                //工艺唯一  工艺类型+图号（历史数据）
+                queryWrapperRouter.eq("router_type", router.getRouterType());
                 queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 routerService.update(routerOlds, queryWrapperRouter);
                 //更新新工艺状态模块
@@ -192,6 +208,7 @@ public class RouterController extends BaseController {
                 queryWrapperRouter.eq("router_no", router.getRouterNo());
                 queryWrapperRouter.eq("branch_code", router.getBranchCode());
                 queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                queryWrapperRouter.eq("router_type", router.getRouterType());
                 routerService.update(routerOlds, queryWrapperRouter);
                 //更新新工艺状态模块
                 router.setIsActive("1");
