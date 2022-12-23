@@ -101,9 +101,9 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/getProjectBomPartList")
-    public CommonResult<List<ProjectBom>> getProjectBomPartList(String workPlanNo, String branchCode) {
+    public CommonResult<List<ProjectBom>> getProjectBomPartList(String workPlanNo, String drawingNo, String branchCode) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        return CommonResult.success(projectBomService.getProjectBomPartList(workPlanNo, tenantId, branchCode));
+        return CommonResult.success(projectBomService.getProjectBomPartList(workPlanNo, drawingNo, tenantId, branchCode));
     }
 
     @ApiOperation(value = "根据项目BOM的ID查询项目BOM零件", notes = "提供给其他服务使用")

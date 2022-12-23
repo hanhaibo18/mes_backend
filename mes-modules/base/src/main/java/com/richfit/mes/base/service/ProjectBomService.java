@@ -75,11 +75,12 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @param workPlanNo
      * @param tenantId
      * @param branchCode
+     * @param drawingNo
      * @Author: xinYu.hou
      * @Date: 2022/6/2 7:25
      * @return: List<ProjectBom>
      **/
-    List<ProjectBom> getProjectBomPartList(String workPlanNo, String tenantId, String branchCode);
+    List<ProjectBom> getProjectBomPartList(String workPlanNo, String drawingNo, String tenantId, String branchCode);
 
     /**
      * 功能描述:提供给第三方查询 根据ID查询

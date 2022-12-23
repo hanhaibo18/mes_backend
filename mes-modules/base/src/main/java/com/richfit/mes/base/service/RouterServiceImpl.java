@@ -2,6 +2,7 @@ package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.RouterMapper;
@@ -74,19 +75,24 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
 
     @Override
     public QueryIsHistory queryIsHistory(String routerId) {
+        //根据Id查询当前工艺
         Router router = this.getById(routerId);
         QueryIsHistory queryIsHistory = new QueryIsHistory();
-        if (null != router && !"1".equals(router.getIsActive())) {
-            queryIsHistory.setOldVersions(router.getVersion());
-            queryIsHistory.setIsHistory(true);
-            QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            queryWrapper.eq("router_no", router.getRouterNo());
-            queryWrapper.eq("is_active", "1");
-            Router one = this.getOne(queryWrapper);
-            queryIsHistory.setNewVersions(one.getVersion());
-            return queryIsHistory;
-        }
+        queryIsHistory.setOldVersions(router.getVersion());
         queryIsHistory.setIsHistory(false);
+        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+        queryWrapper.eq("router_no", router.getRouterNo());
+        queryWrapper.eq("is_active", "1");
+        queryWrapper.orderByAsc("modify_time");
+        List<Router> list = this.list(queryWrapper);
+        //查不到当前工艺
+        if (CollectionUtils.isEmpty(list)) {
+            queryIsHistory.setIsHistory(false);
+        }
+        if (!list.get(0).getId().equals(router.getId())) {
+            queryIsHistory.setNewVersions(list.get(0).getVersion());
+            queryIsHistory.setIsHistory(true);
+        }
         return queryIsHistory;
     }
 
