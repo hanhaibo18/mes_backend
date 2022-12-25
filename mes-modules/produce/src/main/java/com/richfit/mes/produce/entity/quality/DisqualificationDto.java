@@ -282,6 +282,12 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private String salesReturnNo;
 
     /**
+     * 不合格情况
+     */
+    @ApiModelProperty(value = "不合格情况")
+    private String disqualificationCondition;
+
+    /**
      * 所属机构
      */
     private String branchCode;
