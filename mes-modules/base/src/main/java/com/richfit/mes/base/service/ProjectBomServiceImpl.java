@@ -38,13 +38,14 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     private ProduceServiceClient produceService;
 
     @Override
-    public boolean deleteBom(String workPlanNo, String tenantId, String branchCode) {
+    public boolean deleteBom(String workPlanNo, String tenantId, String branchCode, String drawingNo) {
         int count = produceService.queryCountByWorkNo(workPlanNo, branchCode);
         if (count > 0) {
             throw new GlobalException("BOM已被使用", ResultCode.FAILED);
         }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", workPlanNo)
+                .and(wrapper -> wrapper.eq("drawing_no", drawingNo).or().eq("main_drawing_no", drawingNo))
                 .eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode);
         return this.remove(queryWrapper);
@@ -102,7 +103,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     public List<ProjectBom> getProjectBomPartList(String workPlanNo, String drawingNo, String tenantId, String branchCode) {
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", workPlanNo)
-                .eq("drawing_no", drawingNo)
+                .eq("main_drawing_no", drawingNo)
                 .eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode)
                 .orderByAsc("order_no");

@@ -402,7 +402,5 @@ public class DisqualificationItemVo {
         this.salesReturnLoss = finalResult.getSalesReturnLoss();
         //退货产品编号
         this.salesReturnNo = finalResult.getSalesReturnNo();
-
-
     }
 }

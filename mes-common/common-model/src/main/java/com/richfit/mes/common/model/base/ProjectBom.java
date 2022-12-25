@@ -134,6 +134,10 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
 
     @ApiModelProperty(value = "分组", dataType = "String")
     private String bomGrouping;
+
+    @ApiModelProperty(value = "分组Id", dataType = "String")
+    private String groupId;
+
     @ApiModelProperty(value = "是否分解", dataType = "String")
     private String isResolution;
     @ApiModelProperty(value = "状态(0停用,1发布)", dataType = "String")

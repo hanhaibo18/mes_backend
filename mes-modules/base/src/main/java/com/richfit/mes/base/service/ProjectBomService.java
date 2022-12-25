@@ -22,10 +22,11 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @param workPlanNo 工作号
      * @param tenantId   租户
      * @param branchCode 公司
+     * @param drawingNo  图号
      * @Author: xinYu.hou
      * @return: boolean
      **/
-    boolean deleteBom(String workPlanNo, String tenantId, String branchCode);
+    boolean deleteBom(String workPlanNo, String tenantId, String branchCode, String drawingNo);
 
     /**
      * 功能描述: 修改BOM

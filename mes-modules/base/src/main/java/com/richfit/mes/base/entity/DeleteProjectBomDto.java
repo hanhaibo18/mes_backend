@@ -12,8 +12,8 @@ import java.util.List;
  */
 @Data
 public class DeleteProjectBomDto {
-    @ApiModelProperty(value = "被删除的BOM的工作号", required = true, dataType = "List<String>")
-    List<String> workPlanNoList;
+    @ApiModelProperty(value = "删除BOM", required = true, dataType = "List<String>")
+    List<DeleteBomDto> bomList;
     @ApiModelProperty(value = "机构编码", required = true, dataType = "String")
     String branchCode;
 }
