@@ -81,4 +81,5 @@ secure:
       - /api/produce/material_receive/material_receive/save_batch
       - /api/produce/material_receive/detail/save_batch
       - /api/produce/request_note/queryRequestNoteDetailDetails/inner
+      - /api/produce/material_receive/material_receive/save_batch_list
 
