@@ -98,10 +98,10 @@ public class TaskUtils {
             for (int page = 0; total > page * pageSize; page++) {
                 if (StringUtils.isEmpty(time)) {
                     //查所有
-                    sql = "select * from v_mes_out_headers order by CREATE_TIME desc limit " + page * 1000 + ",1000";
+                    sql = "select * from v_mes_out_headers order by CREATE_TIME desc limit " + page * pageSize + ",1000";
                 } else {
                     //查上次最后一条时间之后所有
-                    sql = "select * from v_mes_out_headers where CREATE_TIME >" + "' " + time + "' order by CREATE_TIME desc limit " + page * 1000 + ",1000";
+                    sql = "select * from v_mes_out_headers where CREATE_TIME >" + "' " + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
                 }
                 ResultSet rs = stmt.executeQuery(sql);
                 while (rs.next()) {
@@ -150,10 +150,10 @@ public class TaskUtils {
             for (int page = 0; total > page * pageSize; page++) {
                 if (StringUtils.isEmpty(time)) {
                     //查所有
-                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM order by voh.CREATE_TIME desc LIMIT " + page * 1000 + ",1000";
+                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM order by voh.CREATE_TIME desc LIMIT " + page * pageSize + ",1000";
                 } else {
                     //查上次最后一条时间之后所有
-                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + "'" + time + "' order by voh.CREATE_TIME desc LIMIT " + page * 1000 + ",1000";
+                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + "'" + time + "' order by voh.CREATE_TIME desc LIMIT " + page * pageSize + ",1000";
                 }
                 ResultSet rs = stmt.executeQuery(sql);
                 while (rs.next()) {
