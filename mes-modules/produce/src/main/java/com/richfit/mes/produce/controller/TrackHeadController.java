@@ -731,11 +731,11 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "热工跟单绑定工艺", notes = "热工跟单绑定工艺")
-    @GetMapping("/rgSaveTrackHead")
-    public CommonResult<Boolean> rgSaveTrackHead(@ApiParam(value = "工艺工序") @RequestParam("trackItems") List<TrackItem> trackItems,
-                                                 @ApiParam(value = "跟单号",required = true) @RequestParam("trackNo") String trackNo,
-                                              @ApiParam(value = "工艺id", required = true) @RequestParam("routerId") String routerId,
-                                                 @ApiParam(value = "工艺版本", required = true) @RequestParam("routerVer") String routerVer){
+    @PostMapping("/rgSaveTrackHead")
+    public CommonResult<Boolean> rgSaveTrackHead(@ApiParam(value = "工艺工序") @RequestBody List<TrackItem> trackItems,
+                                                 @ApiParam(value = "跟单号",required = true) @RequestParam String trackNo,
+                                              @ApiParam(value = "工艺id", required = true) @RequestParam String routerId,
+                                                 @ApiParam(value = "工艺版本", required = true) @RequestParam  String routerVer){
         return CommonResult.success(trackHeadService.rgSaveTrackHead(trackNo,trackItems,routerId,routerVer));
     }
 }
