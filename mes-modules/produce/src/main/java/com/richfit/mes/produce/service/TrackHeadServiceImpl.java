@@ -369,9 +369,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //查询分流表
         List<String> headIds = headList.stream().map(TrackHead::getId).collect(Collectors.toList());
         QueryWrapper<TrackFlow> trackFlowQueryWrapper = new QueryWrapper<>();
-        trackFlowQueryWrapper.eq("track_head_id",headIds);
+        trackFlowQueryWrapper.in("track_head_id",headIds);
         List<TrackFlow> trackFlows = trackHeadFlowService.list(trackFlowQueryWrapper);
-        //
+        //删除旧的
+        if(headIds.size()>0){
+            QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+            trackItemQueryWrapper.in("track_head_id",headIds);
+            trackItemService.remove(trackItemQueryWrapper);
+        }
+        //绑定新的
         Map<String, List<TrackFlow>> trackFlowMap = trackFlows.stream().collect(Collectors.groupingBy(TrackFlow::getTrackHeadId));
         for (TrackHead trackHead : headList) {
             if(!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size()>0){

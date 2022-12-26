@@ -411,6 +411,24 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String orderStatus;
 
+    @ApiModelProperty(value = "设备（热工）", dataType = "String")
+    private String device;
+
+    @ApiModelProperty(value = "温度下限℃（热工）", dataType = "String")
+    private String tempDown;
+
+    @ApiModelProperty(value = "温度上限℃（热工）", dataType = "String")
+    private String tempUp;
+
+    @ApiModelProperty(value = "实施温度℃（热工）", dataType = "String")
+    private String tempWork;
+
+    @ApiModelProperty(value = "保温时间h（热工）", dataType = "String")
+    private String holdTime;
+
+    @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
+    private String coolType;
+
     @ApiModelProperty(value = "是否生成理化报告")
     @TableField(exist = false)
     private String syncStatus;
