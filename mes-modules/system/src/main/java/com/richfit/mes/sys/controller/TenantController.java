@@ -12,6 +12,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.log.annotation.SysLog;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.TenantService;
 import io.swagger.annotations.Api;
@@ -76,6 +77,15 @@ public class TenantController extends BaseController {
         return CommonResult.success(tenantService.getById(id));
     }
 
+    /**
+     * 根据ID获取租户
+     */
+    @ApiOperation(value = "获取租户信息", notes = "根据租户id获取租户详细信息，仅限微服务调用，前端调用无效")
+    @GetMapping("/getTenantById/inner")
+    @Inner
+    public CommonResult<Tenant> tenantByIdInner(String id) throws GlobalException {
+        return CommonResult.success(tenantService.getById(id));
+    }
 
     /**
      * 更新tenant

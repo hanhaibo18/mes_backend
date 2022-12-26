@@ -91,6 +91,7 @@ secure:
       - /api/sys/item/item/param/list/inner
       - /api/sys/item/item/param/find_by_code
       - /api/sys/role
+      - /api/sys/tenant/getTenantById/inner
 logging:
   level:
     root: INFO
