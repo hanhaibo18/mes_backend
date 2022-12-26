@@ -4,14 +4,15 @@ import com.kld.mes.wms.provider.ProduceServiceClient;
 import com.kld.mes.wms.provider.SystemServiceClient;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +21,13 @@ import java.util.List;
  * @Description TODOA
  * @Author ang
  * @Date 2022/8/2 10:51
+ * @EditDescription 修改查询配送视图流程，查询加入数据过大1000条分页功能，整合接口保证业务一致性等
+ * @EidtAuthor zhiqiang.lu
+ * @EditDate 2022/12/26
  */
 @Component
 @Slf4j
 public class TaskUtils {
-
-    private final String code = "MaterialOutView";
 
     @Value("${tenant.tenantIds}")
     private List<String> tenantIds;
@@ -36,10 +38,10 @@ public class TaskUtils {
     private String urlKey = "MaterialOutView-url";
 
 
-    @Autowired
+    @Resource
     SystemServiceClient systemServiceClient;
 
-    @Autowired
+    @Resource
     ProduceServiceClient produceServiceClient;
 
 
@@ -56,8 +58,12 @@ public class TaskUtils {
                 String password = systemServiceClient.findItemParamByCode(passWordKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 //获取地址
                 String url = systemServiceClient.findItemParamByCode(urlKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
+                //获取工厂code
+                String code = systemServiceClient.tenantByIdInner(tenantId, SecurityConstants.FROM_INNER).getData().getTenantErpCode();
+                System.out.println("code:" + code);
+                //获取变更时间
                 String date = produceServiceClient.getlastTime(tenantId, SecurityConstants.FROM_INNER);
-                jdbcMaterialOutView(userName, password, url, date);
+                jdbcMaterialOutView(userName, password, url, code, date);
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("自动同步物料接收出现异常 [{}]", "租户id:" + tenantId + ":" + e.getMessage());
@@ -65,17 +71,23 @@ public class TaskUtils {
         }
     }
 
-    public void jdbcMaterialOutView(String userName, String password, String url, String time) throws Exception {
+    public void jdbcMaterialOutView(String userName, String password, String url, String code, String time) throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection conn = DriverManager.getConnection("jdbc:mysql://" + url + "/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
         Statement stmt = conn.createStatement();
-        List<MaterialReceive> materialReceiveList = saveMaterialReceive(time, stmt);
-        List<MaterialReceiveDetail> materialReceiveDetailList = saveMaterialReceiveDetail(time, stmt);
+        List<MaterialReceive> materialReceiveList = saveMaterialReceive(code, time, stmt);
+        List<MaterialReceiveDetail> materialReceiveDetailList = saveMaterialReceiveDetail(code, time, stmt);
+        System.out.println("materialReceiveList:" + materialReceiveList.size());
+        System.out.println("materialReceiveDetailList:" + materialReceiveDetailList.size());
+        MaterialReceiveDto materialReceiveDto = new MaterialReceiveDto();
+        materialReceiveDto.setReceived(materialReceiveList);
+        materialReceiveDto.setDetailList(materialReceiveDetailList);
+        produceServiceClient.materialReceiveSaveBatchList(materialReceiveDto, SecurityConstants.FROM_INNER);
         stmt.close();
         conn.close();
     }
 
-    public List<MaterialReceive> saveMaterialReceive(String time, Statement stmt) throws Exception {
+    public List<MaterialReceive> saveMaterialReceive(String code, String time, Statement stmt) throws Exception {
         try {
             List<MaterialReceive> materialReceiveList = new ArrayList<>();
             int total = 0;
@@ -84,10 +96,10 @@ public class TaskUtils {
             String totalSql = null;
             if (StringUtils.isEmpty(time)) {
                 //查所有
-                totalSql = "select count(*) as total from v_mes_out_headers";
+                totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "'";
             } else {
                 //查上次最后一条时间之后所有
-                totalSql = "select count(*) as total from v_mes_out_headers where CREATE_TIME >" + "' " + time + "'";
+                totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "' " + time + "'";
             }
             ResultSet totalRs = stmt.executeQuery(totalSql);
             while (totalRs.next()) {
@@ -97,10 +109,10 @@ public class TaskUtils {
             for (int page = 0; total > page * pageSize; page++) {
                 if (StringUtils.isEmpty(time)) {
                     //查所有
-                    sql = "select * from v_mes_out_headers order by CREATE_TIME desc limit " + page * pageSize + ",1000";
+                    sql = "select * from v_mes_out_headers where work_code ='" + code + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
                 } else {
                     //查上次最后一条时间之后所有
-                    sql = "select * from v_mes_out_headers where CREATE_TIME >" + "' " + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
+                    sql = "select * from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "' " + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
                 }
                 ResultSet rs = stmt.executeQuery(sql);
                 while (rs.next()) {
@@ -112,6 +124,7 @@ public class TaskUtils {
                     materialReceive.setAplyNum(aplyNum);
                     materialReceive.setOutboundDate(createTime);
                     materialReceive.setState("0");
+                    materialReceive.setErpCode(code);
                     materialReceiveList.add(materialReceive);
                 }
 //                if (!ObjectUtils.isEmpty(materialReceiveList)) {
@@ -127,7 +140,7 @@ public class TaskUtils {
         }
     }
 
-    public List<MaterialReceiveDetail> saveMaterialReceiveDetail(String time, Statement stmt) throws Exception {
+    public List<MaterialReceiveDetail> saveMaterialReceiveDetail(String code, String time, Statement stmt) throws Exception {
         try {
             List<MaterialReceiveDetail> detailList = new ArrayList<>();
             int total = 0;
@@ -137,10 +150,10 @@ public class TaskUtils {
 
             if (StringUtils.isEmpty(time)) {
                 //查所有
-                totalSql = "select count(vol.APLY_NUM) as total from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM";
+                totalSql = "select count(vol.APLY_NUM) as total from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM where work_code ='" + code + "'";
             } else {
                 //查上次最后一条时间之后所有
-                totalSql = "select count(vol.APLY_NUM) as total from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + "'" + time + "' order by voh.CREATE_TIME desc LIMIT 1000";
+                totalSql = "select count(vol.APLY_NUM) as total from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM where work_code ='" + code + "' and voh.CREATE_TIME >" + "'" + time + "' order by voh.CREATE_TIME desc LIMIT 1000";
             }
             ResultSet totalRs = stmt.executeQuery(totalSql);
             while (totalRs.next()) {
@@ -149,10 +162,10 @@ public class TaskUtils {
             for (int page = 0; total > page * pageSize; page++) {
                 if (StringUtils.isEmpty(time)) {
                     //查所有
-                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM order by voh.CREATE_TIME desc LIMIT " + page * pageSize + ",1000";
+                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM  where work_code ='" + code + "'  order by voh.CREATE_TIME desc LIMIT " + page * pageSize + ",1000";
                 } else {
                     //查上次最后一条时间之后所有
-                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM WHERE voh.CREATE_TIME >" + "'" + time + "' order by voh.CREATE_TIME desc LIMIT " + page * pageSize + ",1000";
+                    sql = "select voh.OUT_NUM,voh.APLY_NUM,voh.CREATE_TIME,vol.MATERIAL_NUM,vol.MATERIAL_DESC,vol.BATCH_NUM,vol.ORDER_QUANTITY,vol.QUANTITY,vol.UNIT from v_mes_out_lines vol LEFT JOIN v_mes_out_headers  voh ON  vol.APLY_NUM = voh.APLY_NUM  where work_code ='" + code + "' and voh.CREATE_TIME >" + "'" + time + "' order by voh.CREATE_TIME desc LIMIT " + page * pageSize + ",1000";
                 }
                 ResultSet rs = stmt.executeQuery(sql);
                 while (rs.next()) {
