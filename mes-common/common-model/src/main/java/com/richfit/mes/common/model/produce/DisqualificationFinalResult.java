@@ -35,6 +35,30 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private Double totalWeight;
 
     /**
+     * 责任单位内
+     */
+    @ApiModelProperty(value = "责任单位内")
+    private String unitResponsibilityWithin;
+
+    /**
+     * 责任单位外
+     */
+    @ApiModelProperty(value = "责任单位外")
+    private String unitResponsibilityOutside;
+
+    /**
+     * 处理单位1
+     */
+    @ApiModelProperty(value = "处理单位1")
+    private String unitTreatmentOne;
+
+    /**
+     * 处理单位2
+     */
+    @ApiModelProperty(value = "处理单位2")
+    private String unitTreatmentTwo;
+
+    /**
      * 废品损失
      */
     @ApiModelProperty(value = "废品损失")

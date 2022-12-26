@@ -402,7 +402,13 @@ public class DisqualificationItemVo {
         this.salesReturnLoss = finalResult.getSalesReturnLoss();
         //退货产品编号
         this.salesReturnNo = finalResult.getSalesReturnNo();
-
-
+        //责任单位内
+        this.unitResponsibilityWithin = finalResult.getUnitResponsibilityWithin();
+        //责任单位外
+        this.unitResponsibilityOutside = finalResult.getUnitResponsibilityOutside();
+        //处理单位1
+        this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
+        //处理单位2
+        this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
     }
 }

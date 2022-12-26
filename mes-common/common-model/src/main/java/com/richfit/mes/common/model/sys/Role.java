@@ -35,14 +35,15 @@ public class Role extends BaseEntity<Role> {
     /**
      * 角色code
      */
-    @NotBlank(message = "所在组织机构")
+
+//  暂时屏蔽  @NotBlank(message = "所在组织机构")
     @ApiModelProperty(value = "所在组织机构")
     private String orgId;
 
     /**
      * 角色type
      */
-    @NotBlank(message = "角色类型")
+//  暂时屏蔽  @NotBlank(message = "角色类型")
     @ApiModelProperty(value = "角色type")
     private String roleType;
 

@@ -1,6 +1,7 @@
 package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.richfit.mes.base.entity.DeleteBomDto;
 import com.richfit.mes.base.entity.DeleteProjectBomDto;
 import com.richfit.mes.base.service.ProjectBomService;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -41,9 +42,9 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
     })
     @ApiOperation(value = "删除BOM")
-    public CommonResult<Boolean> deleteBom(String workPlanNo, String branchCode) {
+    public CommonResult<Boolean> deleteBom(String workPlanNo, String branchCode, String drawingNo) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        return CommonResult.success(projectBomService.deleteBom(workPlanNo, tenantId, branchCode));
+        return CommonResult.success(projectBomService.deleteBom(workPlanNo, tenantId, branchCode, drawingNo));
     }
 
     @DeleteMapping("/deleteBomList")
@@ -51,8 +52,8 @@ public class ProjectBomController {
     public CommonResult<Boolean> deleteBom(@RequestBody DeleteProjectBomDto deleteProjectBomDto) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         boolean deleteBom = false;
-        for (String workPlanNo : deleteProjectBomDto.getWorkPlanNoList()) {
-            deleteBom = projectBomService.deleteBom(workPlanNo, tenantId, deleteProjectBomDto.getBranchCode());
+        for (DeleteBomDto deleteBomDto : deleteProjectBomDto.getBomList()) {
+            deleteBom = projectBomService.deleteBom(deleteBomDto.getWorkPlanNo(), tenantId, deleteProjectBomDto.getBranchCode(), deleteBomDto.getDrawingNo());
         }
         return CommonResult.success(deleteBom);
     }
@@ -101,9 +102,9 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
     })
     @GetMapping("/getProjectBomPartList")
-    public CommonResult<List<ProjectBom>> getProjectBomPartList(String workPlanNo, String branchCode) {
+    public CommonResult<List<ProjectBom>> getProjectBomPartList(String workPlanNo, String drawingNo, String branchCode) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        return CommonResult.success(projectBomService.getProjectBomPartList(workPlanNo, tenantId, branchCode));
+        return CommonResult.success(projectBomService.getProjectBomPartList(workPlanNo, drawingNo, tenantId, branchCode));
     }
 
     @ApiOperation(value = "根据项目BOM的ID查询项目BOM零件", notes = "提供给其他服务使用")

@@ -170,6 +170,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
      **/
     //TODO:裁决流程不明确
     private int processJudge(DisqualificationDto disqualificationDto) {
+        disqualificationDto.setIsSubmit(0);
         //判断是否发布 1 = 发布 0 = 不发布
         if (1 == disqualificationDto.getIsSubmit()) {
             //开局处理单||质控评审 发布直接进行下一步
@@ -362,8 +363,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String opinionId) {
-        DisqualificationItemVo disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
+    public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId) {
+        DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+        if (StrUtil.isNotBlank(disqualificationId)) {
+            Disqualification disqualification = this.getById(disqualificationId);
+            BeanUtils.copyProperties(disqualificationItemVo, disqualification);
+        } else {
+            disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
+        }
         //对象不为空,ID不为空
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
             DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());

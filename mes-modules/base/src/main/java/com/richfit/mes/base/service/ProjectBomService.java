@@ -22,10 +22,11 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @param workPlanNo 工作号
      * @param tenantId   租户
      * @param branchCode 公司
+     * @param drawingNo  图号
      * @Author: xinYu.hou
      * @return: boolean
      **/
-    boolean deleteBom(String workPlanNo, String tenantId, String branchCode);
+    boolean deleteBom(String workPlanNo, String tenantId, String branchCode, String drawingNo);
 
     /**
      * 功能描述: 修改BOM
@@ -75,11 +76,12 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @param workPlanNo
      * @param tenantId
      * @param branchCode
+     * @param drawingNo
      * @Author: xinYu.hou
      * @Date: 2022/6/2 7:25
      * @return: List<ProjectBom>
      **/
-    List<ProjectBom> getProjectBomPartList(String workPlanNo, String tenantId, String branchCode);
+    List<ProjectBom> getProjectBomPartList(String workPlanNo, String drawingNo, String tenantId, String branchCode);
 
     /**
      * 功能描述:提供给第三方查询 根据ID查询
