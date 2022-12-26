@@ -113,6 +113,6 @@ public interface SystemServiceClient {
      * @return: CommonResult
      **/
     @ApiOperation(value = "查询所有的租户列表信息", notes = "查询所有启用的租户列表信息")
-    @GetMapping("/api/sys/query/tenant/list/inner")
+    @GetMapping("/api/sys/tenant/query/tenant/list/inner")
     public CommonResult<List<Tenant>> queryTenantList(@RequestHeader(value = SecurityConstants.FROM) String header);
 }
