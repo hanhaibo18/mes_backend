@@ -93,6 +93,7 @@ secure:
       - /api/sys/role
       - /api/sys/tenant/getTenantById/inner
       - /api/sys/tenant/query/tenant/list/inner
+      - /api/sys/query/tenant/list/inner
 logging:
   level:
     root: INFO
