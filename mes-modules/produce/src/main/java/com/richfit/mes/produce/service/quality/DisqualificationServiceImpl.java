@@ -11,10 +11,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.produce.Disqualification;
-import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
-import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
-import com.richfit.mes.common.model.produce.TrackFlow;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -156,6 +153,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             userOpinionList.add(JSONUtil.toBean(disqualificationDto.getTechnologyOpinion(), DisqualificationUserOpinion.class));
         }
         userOpinionService.saveOrUpdateBatch(userOpinionList);
+        //处理文件列表
+        QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
+        queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
+        attachmentService.remove(queryWrapperAttachment);
+        attachmentService.saveAttachment(disqualification.getAttachmentList());
         return true;
     }
 
@@ -377,6 +379,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.DisqualificationFinalResult(finalResult);
             //查询流水
             disqualificationItemVo.setUserList(queryOpinionUser(disqualificationItemVo.getId()));
+            //查询文件
+            disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
         } else if (null != disqualificationItemVo) {
             disqualificationItemVo.setAttachmentList(Collections.emptyList());
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());

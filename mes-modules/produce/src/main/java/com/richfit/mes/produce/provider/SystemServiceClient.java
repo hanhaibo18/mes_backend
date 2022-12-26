@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.sys.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.SystemServiceClientFallbackImpl;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -104,5 +105,14 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/role/queryRolesByUserId/{userId}")
     public List<Role> queryRolesByUserId(@PathVariable String userId);
 
-
+    /**
+     * 功能描述:查询所有的租户列表信息
+     *
+     * @Author: xinYu.hou
+     * @Date: 2022/12/26 16:18
+     * @return: CommonResult
+     **/
+    @ApiOperation(value = "查询所有的租户列表信息", notes = "查询所有启用的租户列表信息")
+    @GetMapping("/api/sys/tenant/query/tenant/list/inner")
+    public CommonResult<List<Tenant>> queryTenantList(@RequestHeader(value = SecurityConstants.FROM) String header);
 }

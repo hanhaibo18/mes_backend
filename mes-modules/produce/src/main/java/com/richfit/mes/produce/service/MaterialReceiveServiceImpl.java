@@ -43,6 +43,7 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
         return materialReceiveMapper.getPage(materialReceivePage, queryWrapper);
     }
 
+
     @Override
     public Boolean saveMaterialReceiveList(List<MaterialReceive> materialReceiveList) {
         String deliveryNo = materialReceiveList.get(0).getDeliveryNo();

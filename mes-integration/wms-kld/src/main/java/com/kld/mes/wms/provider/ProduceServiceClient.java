@@ -4,6 +4,7 @@ import com.kld.mes.wms.provider.fallback.ProduceServiceClientFallBackImpl;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.produce.RequestNoteDetail;
+import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ import java.util.List;
  */
 @FeignClient(name = "produce-service", decode404 = true, fallback = ProduceServiceClientFallBackImpl.class)
 public interface ProduceServiceClient {
+
+    @PostMapping(value = "/api/produce/material_receive/material_receive/save_batch_list")
+    public Boolean materialReceiveSaveBatchList(@RequestBody MaterialReceiveDto material, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping(value = "/api/produce/material_receive/get_last_time")
     public String getlastTime(@RequestParam("tenantId") String tenantId, @RequestHeader(value = SecurityConstants.FROM) String header);

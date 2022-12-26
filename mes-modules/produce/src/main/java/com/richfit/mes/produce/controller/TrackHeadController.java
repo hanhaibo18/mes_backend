@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -11,6 +12,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
@@ -731,11 +733,17 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "热工跟单绑定工艺", notes = "热工跟单绑定工艺")
-    @GetMapping("/rgSaveTrackHead")
-    public CommonResult<Boolean> rgSaveTrackHead(@ApiParam(value = "工艺工序") @RequestParam("trackItems") List<TrackItem> trackItems,
-                                                 @ApiParam(value = "跟单号",required = true) @RequestParam("trackNo") String trackNo,
-                                              @ApiParam(value = "工艺id", required = true) @RequestParam("routerId") String routerId,
-                                                 @ApiParam(value = "工艺版本", required = true) @RequestParam("routerVer") String routerVer){
+    @PostMapping("/rgSaveTrackHead")
+    public CommonResult<Boolean> rgSaveTrackHead(@RequestBody JSONObject jsonObject){
+
+        //保存的工序
+        List<TrackItem> trackItems = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("trackItems")), TrackItem.class);
+        //组织机构
+        String trackNo = jsonObject.getString("trackNo");
+        //工艺id
+        String routerId = jsonObject.getString("routerId");
+        //工艺版本
+        String routerVer = jsonObject.getString("routerVer");
         return CommonResult.success(trackHeadService.rgSaveTrackHead(trackNo,trackItems,routerId,routerVer));
     }
 }
