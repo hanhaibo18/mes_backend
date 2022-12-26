@@ -48,8 +48,8 @@ public class TaskUtils {
     public void doTask() throws SQLException, ClassNotFoundException {
         System.out.println("------------------------");
         System.out.println("发起物料接收");
-        try {
-            for (String tenantId : tenantIds) {
+        for (String tenantId : tenantIds) {
+            try {
                 //获取用户名
                 String userName = systemServiceClient.findItemParamByCode(userNameKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 //获取密码
@@ -58,11 +58,10 @@ public class TaskUtils {
                 String url = systemServiceClient.findItemParamByCode(urlKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 String date = produceServiceClient.getlastTime(tenantId, SecurityConstants.FROM_INNER);
                 jdbcMaterialOutView(userName, password, url, date);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error("自动同步物料接收出现异常 [{}]", "租户id:" + tenantId + ":" + e.getMessage());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("自动同步物料接收出现异常 [{}]", e.getMessage());
-            throw new RuntimeException(e.getMessage());
         }
     }
 
