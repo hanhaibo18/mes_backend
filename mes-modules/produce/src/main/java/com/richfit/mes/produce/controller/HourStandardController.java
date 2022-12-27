@@ -8,10 +8,8 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.HourStandard;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.HourStandardService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -60,7 +58,7 @@ public class HourStandardController {
      * 新增工时版本信息
      */
     @ApiOperation(value = "新增工时版本信息", notes = "新增工时版本信息")
-    @PostMapping("/add")
+    @PostMapping("/save")
     public CommonResult<Boolean> saveOrUpdate(@RequestBody HourStandard hourStandard) throws GlobalException {
         hourStandard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(hourStandardService.saveOrUpdate(hourStandard));
