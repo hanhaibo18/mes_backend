@@ -143,7 +143,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", bom.getWorkPlanNo())
-                .eq("drawing_no", bom.getDrawingNo())
+                .eq("main_drawing_no", bom.getDrawingNo())
 //                .notIn("grade", "H")
                 .eq("tenant_id", bom.getTenantId())
                 .eq("branch_code", bom.getBranchCode())
@@ -159,7 +159,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 if (null != projectBom) {
                     QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
                     queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo());
-                    queryWrapperPart.eq("drawing_no", bom.getDrawingNo());
+                    queryWrapperPart.eq("main_drawing_no", bom.getDrawingNo());
                     queryWrapperPart.notIn("grade", "H");
                     queryWrapperPart.orderByAsc("orderNo");
                     List<ProjectBom> projectBoms = this.list(queryWrapperPart);
