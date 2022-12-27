@@ -4,6 +4,7 @@ import com.richfit.mes.base.provider.fallback.ProduceServiceClientFallbackImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,8 +40,11 @@ public interface ProduceServiceClient {
     int queryCountByWorkNo(@RequestParam("workNo") String workNo, @RequestParam("branchCode") String branchCode);
 
     @PostMapping("/api/produce/order/query_by_materialcode")
-    CommonResult<List<Order>> queryByMaterialCode(@RequestBody List<String> materialCodes,@RequestParam("tenantId") String tenantId);
+    CommonResult<List<Order>> queryByMaterialCode(@RequestBody List<String> materialCodes, @RequestParam("tenantId") String tenantId);
 
     @GetMapping("/api/produce/track_head/getTrackHeadByMaterialCodeAndDrawingNo")
-    public CommonResult<List<TrackHead> > getTrackHeadByMaterialCodeAndDrawingNo( @RequestParam("materialCodes") List<String> materialCodes, @RequestParam("drawingNos") List<String> drawingNos, @RequestParam("tenantId") String tenantId);
+    public CommonResult<List<TrackHead>> getTrackHeadByMaterialCodeAndDrawingNo(@RequestParam("materialCodes") List<String> materialCodes, @RequestParam("drawingNos") List<String> drawingNos, @RequestParam("tenantId") String tenantId);
+
+    @GetMapping("/api/produce/track_item/query/id")
+    public TrackItem qyeryTrackItemById(@RequestParam("id") String id);
 }
