@@ -7,6 +7,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Hour;
 import com.richfit.mes.produce.service.HourService;
+import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -24,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @Api(value = "工时标准", tags = {"工时标准"})
 @RestController
-@RequestMapping("/api/hour")
+@RequestMapping("/api/produce/hour")
 public class HourController {
 
     @Autowired
@@ -35,14 +36,18 @@ public class HourController {
      */
     @ApiOperation(value = "查询工时", notes = "查询工时")
     @GetMapping("/page")
-    public CommonResult queryPage(String deviceType,String verId, int page, int limit) throws GlobalException {
+    public CommonResult queryPage(String deviceType,String verId, int page, int limit,String orderCol,String order) throws GlobalException {
 
         QueryWrapper<Hour> queryWrapper = new QueryWrapper<Hour>();
 
         queryWrapper.eq(!StringUtils.isNullOrEmpty(deviceType),"device_type", deviceType);
         queryWrapper.eq("ver_id", verId);
-
-        queryWrapper.orderByDesc("modify_time");
+        if(!StringUtils.isNullOrEmpty(orderCol)){
+            //排序
+            OrderUtil.query(queryWrapper, orderCol, order);
+        }else{
+            queryWrapper.orderByDesc("modify_time");
+        }
 
         return CommonResult.success(hourService.page(new Page<Hour>(page, limit), queryWrapper));
 
