@@ -64,14 +64,6 @@ public class HourStandardController {
         return CommonResult.success(hourStandardService.saveOrUpdate(hourStandard));
     }
 
-    /**
-     * 根据id获取操作信息
-     */
-    @ApiOperation(value = "获取工时版本信息", notes = "获取工时版本信息")
-    @GetMapping("/hourStandard/{id}")
-    public CommonResult<HourStandard> getAction(@PathVariable String id) throws GlobalException {
-        return CommonResult.success(hourStandardService.getById(id));
-    }
 
     /**
      * 删除工时版本信息

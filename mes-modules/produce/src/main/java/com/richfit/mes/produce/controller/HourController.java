@@ -40,7 +40,7 @@ public class HourController {
         QueryWrapper<Hour> queryWrapper = new QueryWrapper<Hour>();
 
         queryWrapper.eq(!StringUtils.isNullOrEmpty(deviceType),"device_type", deviceType);
-        queryWrapper.eq("verId", verId);
+        queryWrapper.eq("ver_id", verId);
 
         queryWrapper.orderByDesc("modify_time");
 
