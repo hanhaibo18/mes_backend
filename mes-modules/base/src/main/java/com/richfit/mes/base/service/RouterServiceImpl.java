@@ -109,10 +109,13 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
         Router router = this.getById(routerId);
         queryWrapper.eq("router_no", router.getRouterNo());
         queryWrapper.eq("is_active", "1");
-        Router one = this.getOne(queryWrapper);
-        QueryWrapper<Sequence> sequenceNewQueryWrapper = new QueryWrapper<>();
-        sequenceNewQueryWrapper.eq("router_id", one.getId());
-        newSequenceList = sequenceService.list(sequenceNewQueryWrapper);
+        List<Router> routerList = this.list(queryWrapper);
+        if (routerList != null && routerList.size() > 0) {
+            Router one = routerList.get(0);
+            QueryWrapper<Sequence> sequenceNewQueryWrapper = new QueryWrapper<>();
+            sequenceNewQueryWrapper.eq("router_id", one.getId());
+            newSequenceList = sequenceService.list(sequenceNewQueryWrapper);
+        }
         return new QueryProcessRecordsVo(oldSequenceList, newSequenceList);
     }
 

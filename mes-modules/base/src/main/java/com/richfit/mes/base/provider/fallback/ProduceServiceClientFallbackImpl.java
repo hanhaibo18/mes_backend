@@ -4,9 +4,8 @@ import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.TrackItem;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -38,6 +37,11 @@ public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
 
     @Override
     public CommonResult<List<TrackHead>> getTrackHeadByMaterialCodeAndDrawingNo(List<String> materialCodes, List<String> drawingNos, String tenantId) {
+        return null;
+    }
+
+    @Override
+    public TrackItem qyeryTrackItemById(String id) {
         return null;
     }
 }

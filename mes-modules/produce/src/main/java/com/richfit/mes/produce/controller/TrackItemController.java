@@ -45,6 +45,12 @@ public class TrackItemController extends BaseController {
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败，请重试！";
 
+    @ApiOperation(value = "操作工序id查询", notes = "操作工序id查询(服务间调用接口)")
+    @GetMapping("/query/id")
+    public TrackItem qyeryById(@RequestParam String id) {
+        return trackItemService.getById(id);
+    }
+
     @ApiOperation(value = "新增跟单工序", notes = "新增跟单工序")
     @PostMapping("/track_item")
     public CommonResult addTrackItem(@RequestBody TrackItem trackItem) {

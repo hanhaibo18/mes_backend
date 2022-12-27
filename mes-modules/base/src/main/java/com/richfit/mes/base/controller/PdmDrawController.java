@@ -3,9 +3,11 @@ package com.richfit.mes.base.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.base.service.PdmDrawService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.PdmDraw;
+import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -27,6 +29,9 @@ public class PdmDrawController {
 
     @Autowired
     private PdmDrawService pdmDrawService;
+
+    @Autowired
+    private ProduceServiceClient produceServiceClient;
 
     @PostMapping(value = "/query/list")
     @ApiOperation(value = "工艺图纸", notes = "工艺图纸查询")
@@ -64,5 +69,14 @@ public class PdmDrawController {
     @GetMapping("/query/queryDrawList")
     public CommonResult<List<PdmDraw>> queryDrawList(String itemId) {
         return CommonResult.success(pdmDrawService.queryDrawList(itemId));
+    }
+
+
+    @ApiOperation(value = "根据图号查询列表", notes = "(操作工序id)")
+    @ApiImplicitParam(name = "itemId", value = "图号", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/query/queryDrawList/itemId")
+    public CommonResult<List<PdmDraw>> queryDrawListByItemId(String itemId) {
+        TrackItem trackItem = produceServiceClient.qyeryTrackItemById(itemId);
+        return CommonResult.success(queryDraw(trackItem.getDrawingNo(), trackItem.getBranchCode()));
     }
 }
