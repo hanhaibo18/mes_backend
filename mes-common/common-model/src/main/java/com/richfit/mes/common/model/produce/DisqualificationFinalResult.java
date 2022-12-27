@@ -173,6 +173,18 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private String salesReturnNo;
 
     /**
+     * 质控工程师显示
+     */
+    @ApiModelProperty(value = "质控工程师显示")
+    private String checkShow;
+
+    /**
+     * 发现车间
+     */
+    @ApiModelProperty(value = "发现车间")
+    private String discoverTenant;
+
+    /**
      * 所属机构
      */
     @ApiModelProperty(value = "所属机构")

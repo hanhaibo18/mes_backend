@@ -32,6 +32,19 @@ public class DisqualificationItemVo {
     private String trackHeadId;
 
     /**
+     * 发现车间
+     */
+    @ApiModelProperty(value = "发现车间")
+    private String discoverTenant;
+
+    /**
+     * 数量
+     */
+    @ApiModelProperty(value = "数量")
+    private int number;
+
+
+    /**
      * 跟单工序Id
      */
     @ApiModelProperty(value = "发现车间")
@@ -313,6 +326,12 @@ public class DisqualificationItemVo {
     private String technologyOpinion;
 
     /**
+     * 质控工程师显示
+     */
+    @ApiModelProperty(value = "质控工程师显示")
+    private String checkShow;
+
+    /**
      * 退货产品编号
      */
     @ApiModelProperty(value = "退货产品编号")
@@ -347,6 +366,8 @@ public class DisqualificationItemVo {
         this.setPartMaterials(trackHead.getTexture());
         //零部件图号
         this.setPartDrawingNo(trackHead.getDrawingNo());
+        //数量
+        this.setNumber(trackHead.getNumber());
         //不合格品数量
 //        this.setDisqualificationNum(trackItem.getQualityUnqty());
         //车间类型
@@ -410,5 +431,9 @@ public class DisqualificationItemVo {
         this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
         //处理单位2
         this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
+        //质控工程师显示
+        this.checkShow = finalResult.getCheckShow();
+        //发现车间
+        this.discoverTenant = finalResult.getDiscoverTenant();
     }
 }

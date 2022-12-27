@@ -24,6 +24,12 @@ public class Disqualification extends BaseEntity<Disqualification> {
     private String trackHeadId;
 
     /**
+     * 数量
+     */
+    @ApiModelProperty(value = "数量")
+    private int number;
+
+    /**
      * 跟单工序Id
      */
     @ApiModelProperty(value = "跟单工序ID")
