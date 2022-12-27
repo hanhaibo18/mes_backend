@@ -366,58 +366,66 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackNo = trackNo.replaceAll(" ", "");
         queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')",trackNo);
         List<TrackHead> headList = this.list(queryWrapper);
-        //查询分流表
-        List<String> headIds = headList.stream().map(TrackHead::getId).collect(Collectors.toList());
-        QueryWrapper<TrackFlow> trackFlowQueryWrapper = new QueryWrapper<>();
-        trackFlowQueryWrapper.in("track_head_id",headIds);
-        List<TrackFlow> trackFlows = trackHeadFlowService.list(trackFlowQueryWrapper);
-        //删除旧的
-        if(headIds.size()>0){
-            QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-            trackItemQueryWrapper.in("track_head_id",headIds);
-            trackItemService.remove(trackItemQueryWrapper);
-        }
-        //绑定新的
-        Map<String, List<TrackFlow>> trackFlowMap = trackFlows.stream().collect(Collectors.groupingBy(TrackFlow::getTrackHeadId));
-        for (TrackHead trackHead : headList) {
-            if(!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size()>0){
-                List<TrackFlow> flows = trackFlowMap.get(trackHead.getId());
-                for (TrackFlow flow : flows) {
-                    if (trackItems != null && trackItems.size() > 0) {
-                        for (TrackItem item : trackItems) {
-                            item.setId(UUID.randomUUID().toString().replace("-", ""));
-                            item.setTrackHeadId(trackHead.getId());
-                            item.setDrawingNo(trackHead.getDrawingNo());
-                            item.setFlowId(flow.getId());
-                            item.setProductNo(trackHead.getDrawingNo() + " " + trackHead.getProductNoDesc());
-                            item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                            //可分配数量
-                            item.setAssignableQty(trackHead.getNumber());
-                            item.setNumber(trackHead.getNumber());
-                            item.setIsSchedule(0);
-                            item.setIsPrepare(0);
-                            item.setIsNotarize(0);
-                            //需要调度审核时展示
-                            if (1 == item.getIsExistScheduleCheck()) {
-                                item.setIsScheduleCompleteShow(1);
-                            } else {
-                                item.setIsScheduleCompleteShow(0);
+        //查询跟单 如果绑定了工艺就是修改
+        if(!StringUtils.isNullOrEmpty(headList.get(0).getRouterId())){
+            boolean bool = this.updataTrackHead(headList.get(0), trackItems);
+        }else{
+            //新增绑定
+            //查询分流表
+            List<String> headIds = headList.stream().map(TrackHead::getId).collect(Collectors.toList());
+            QueryWrapper<TrackFlow> trackFlowQueryWrapper = new QueryWrapper<>();
+            trackFlowQueryWrapper.in("track_head_id",headIds);
+            List<TrackFlow> trackFlows = trackHeadFlowService.list(trackFlowQueryWrapper);
+            //删除旧的
+            if(headIds.size()>0){
+                QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+                trackItemQueryWrapper.in("track_head_id",headIds);
+                trackItemService.remove(trackItemQueryWrapper);
+            }
+            //绑定新的
+            Map<String, List<TrackFlow>> trackFlowMap = trackFlows.stream().collect(Collectors.groupingBy(TrackFlow::getTrackHeadId));
+            for (TrackHead trackHead : headList) {
+                if(!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size()>0){
+                    List<TrackFlow> flows = trackFlowMap.get(trackHead.getId());
+                    for (TrackFlow flow : flows) {
+                        if (trackItems != null && trackItems.size() > 0) {
+                            for (TrackItem item : trackItems) {
+                                item.setId(UUID.randomUUID().toString().replace("-", ""));
+                                item.setTrackHeadId(trackHead.getId());
+                                item.setDrawingNo(trackHead.getDrawingNo());
+                                item.setFlowId(flow.getId());
+                                item.setProductNo(trackHead.getDrawingNo() + " " + trackHead.getProductNoDesc());
+                                item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                                //可分配数量
+                                item.setAssignableQty(trackHead.getNumber());
+                                item.setNumber(trackHead.getNumber());
+                                item.setIsSchedule(0);
+                                item.setIsPrepare(0);
+                                item.setIsNotarize(0);
+                                //需要调度审核时展示
+                                if (1 == item.getIsExistScheduleCheck()) {
+                                    item.setIsScheduleCompleteShow(1);
+                                } else {
+                                    item.setIsScheduleCompleteShow(0);
+                                }
+                                if (trackHead.getStatus().equals("4")) {
+                                    item.setIsCurrent(0);
+                                }
+                                trackItemService.save(item);
                             }
-                            if (trackHead.getStatus().equals("4")) {
-                                item.setIsCurrent(0);
-                            }
-                            trackItemService.save(item);
                         }
                     }
                 }
+                //跟单工艺属性赋值
+                trackHead.setRouterId(routerId);
+                trackHead.setRouterVer(routerVer);
+                this.updateById(trackHead);
+                //用于在跟单存在第一道工序自动派工的情况
+                autoSchedule(trackHead);
             }
-            //跟单工艺属性赋值
-            trackHead.setRouterId(routerId);
-            trackHead.setRouterId(routerVer);
-            this.updateById(trackHead);
-            //用于在跟单存在第一道工序自动派工的情况
-            autoSchedule(trackHead);
+
         }
+
         return true;
     }
 
