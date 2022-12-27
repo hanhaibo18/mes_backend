@@ -157,6 +157,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
         queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
         attachmentService.remove(queryWrapperAttachment);
+        //2022/12/27  15:13  zhiqiang.lu 附件添加报错，补充初始值
+        for (DisqualificationAttachment disqualificationAttachment : disqualification.getAttachmentList()) {
+            disqualificationAttachment.setDisqualificationId(disqualification.getId());
+            disqualificationAttachment.setBranchCode(disqualification.getBranchCode());
+            disqualificationAttachment.setTenantId(disqualification.getTenantId());
+        }
         attachmentService.saveAttachment(disqualification.getAttachmentList());
         return true;
     }
