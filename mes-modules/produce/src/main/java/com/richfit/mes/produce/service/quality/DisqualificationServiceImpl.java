@@ -368,6 +368,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
             disqualificationItemVo.setUserList(Collections.emptyList());
         }
+        //2022/12/27  zhiqiang.lu  缺失预设值信息
+        disqualificationItemVo.setTrackItemId(tiId);
         return disqualificationItemVo;
     }
 

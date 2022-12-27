@@ -129,7 +129,8 @@ public class TenantController extends BaseController {
     public CommonResult queryByCondition(@RequestParam(value = "tenantName", required = false) String tenantName,
                                          @RequestParam(value = "limit") int limit,
                                          @RequestParam(value = "page") int page) throws GlobalException {
-        checkIsSysAdmin();
+        //其他接口需要查询公司列表，用于公司之间流转
+        //checkIsSysAdmin();
         IPage<Tenant> tenants = tenantService.page(new Page<Tenant>(page, limit),
                 new QueryWrapper<Tenant>()
                         .like(StringUtils.hasText(tenantName), "tenant_name", tenantName)

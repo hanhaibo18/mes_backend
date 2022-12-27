@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -60,7 +61,7 @@ public class DisqualificationItemVo {
      * 不合格类型 1=开具处理单 2=质控评审 3=处理单位1评审 4=处理单位2评审 5=责任裁决 6=技术裁决
      */
     @ApiModelProperty(value = "不合格类型")
-    private String type;
+    private String type = "1";
 
     /**
      * 0 = 未发布 1= 已发布 2 = 已关闭
@@ -347,7 +348,7 @@ public class DisqualificationItemVo {
      * 不合格类型
      */
     @ApiModelProperty(value = "不合格类型集合", dataType = "List<String>")
-    private List<String> typeList;
+    private List<String> typeList = new ArrayList<>();
 
 
     @ApiModelProperty(value = "用户列表")
