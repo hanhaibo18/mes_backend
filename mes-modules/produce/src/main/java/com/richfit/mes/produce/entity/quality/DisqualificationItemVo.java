@@ -64,6 +64,12 @@ public class DisqualificationItemVo {
     private String type = "1";
 
     /**
+     * 不合格类型
+     */
+    @ApiModelProperty(value = "不合格类型")
+    private String disqualificationType;
+
+    /**
      * 0 = 未发布 1= 已发布 2 = 已关闭
      */
     @ApiModelProperty(value = "是否发布")

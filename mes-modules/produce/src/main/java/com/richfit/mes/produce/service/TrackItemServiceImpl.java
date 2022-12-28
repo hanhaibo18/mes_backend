@@ -537,8 +537,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     public DisqualificationItemVo queryItem(String tiId, String branchCode) {
         DisqualificationItemVo disqualification = disqualificationMapper.queryDisqualificationByItemId(tiId);
         if (null != disqualification) {
-            if (StrUtil.isNotBlank(disqualification.getType())) {
-                disqualification.setTypeList(Arrays.asList(disqualification.getType().split(",")));
+            if (StrUtil.isNotBlank(disqualification.getDisqualificationType())) {
+                disqualification.setTypeList(Arrays.asList(disqualification.getDisqualificationType().split(",")));
             }
             return disqualification;
         }
