@@ -57,6 +57,7 @@ public class TaskUtils {
         System.out.println("发起物料接收");
         for (String tenantId : tenantIds) {
             MaterialReceiveLog materialReceiveLog = new MaterialReceiveLog();
+            materialReceiveLog.setTenantId(tenantId);
             try {
                 //获取用户名
                 String userName = systemServiceClient.findItemParamByCode(userNameKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
@@ -69,7 +70,6 @@ public class TaskUtils {
                 //获取变更时间
                 String date = produceServiceClient.getlastTime(tenantId, SecurityConstants.FROM_INNER);
                 CommonResult<MaterialReceiveDto> result = jdbcMaterialOutView(userName, password, url, code, date);
-                materialReceiveLog.setTenantId(tenantId);
                 if (result.getStatus() == 200) {
                     materialReceiveLog.setReceivedNumber(result.getData().getReceived().size());
                     materialReceiveLog.setReceivedNumberDetail(result.getData().getDetailList().size());
