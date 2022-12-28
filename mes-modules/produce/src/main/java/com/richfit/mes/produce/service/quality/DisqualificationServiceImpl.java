@@ -1,7 +1,7 @@
 package com.richfit.mes.produce.service.quality;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -111,10 +111,18 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
         //先判断流程
         int processJudge = processJudge(disqualificationDto);
+        //处理人员信息
+        StringBuilder sb = new StringBuilder();
+        if (CollUtil.isNotEmpty(disqualificationDto.getUserList())) {
+            for (TenantUserVo tenantUserVo : disqualificationDto.getUserList()) {
+                sb.append(tenantUserVo.getUserAccount()).append(",");
+            }
+        }
         //处理不合格主表数据
         Disqualification disqualification = new Disqualification();
         BeanUtils.copyProperties(disqualificationDto, disqualification);
         disqualification.setType(processJudge);
+        disqualification.setQualityCheckBy(sb.toString());
         //处理不合格类型
         if (CollectionUtils.isNotEmpty(disqualificationDto.getTypeList())) {
             String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
@@ -127,36 +135,27 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         BeanUtils.copyProperties(disqualificationDto, finalResult);
         finalResult.setId(disqualification.getId());
         finalResultService.saveOrUpdate(finalResult);
-        //不合格意见JSON
-        List<DisqualificationUserOpinion> userOpinionList = new ArrayList<>();
-        if (StrUtil.isNotBlank(disqualificationDto.getUnqualifiedOpinion())) {
-            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnqualifiedOpinion(), DisqualificationUserOpinion.class));
+        //不合格意见
+        //判断申请单状态是1 意见列表为空
+        if (1 == processJudge && CollUtil.isEmpty(disqualificationDto.getDisqualifications())) {
+            //为空处理不合格意见为列表
+            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
+            opinion.setDisqualificationId(disqualification.getId());
+            opinion.setType(processJudge);
+//            opinion.setUserName();
+
         }
-        //质控意见JSON
-        if (StrUtil.isNotBlank(disqualificationDto.getQualityControlOpinion())) {
-            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getQualityControlOpinion(), DisqualificationUserOpinion.class));
-        }
-        //处理单位1JSON
-        if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentOneOpinion())) {
-            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnitTreatmentOneOpinion(), DisqualificationUserOpinion.class));
-        }
-        //处理单位2JSON
-        if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwoOpinion())) {
-            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getUnitTreatmentTwoOpinion(), DisqualificationUserOpinion.class));
-        }
-        //责任裁决JSON
-        if (StrUtil.isNotBlank(disqualificationDto.getResponsibilityOpinion())) {
-            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getResponsibilityOpinion(), DisqualificationUserOpinion.class));
-        }
-        //技术裁决JSON
-        if (StrUtil.isNotBlank(disqualificationDto.getTechnologyOpinion())) {
-            userOpinionList.add(JSONUtil.toBean(disqualificationDto.getTechnologyOpinion(), DisqualificationUserOpinion.class));
-        }
-        userOpinionService.saveOrUpdateBatch(userOpinionList);
+        userOpinionService.saveOrUpdateBatch(disqualificationDto.getDisqualifications());
         //处理文件列表
         QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
         queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
         attachmentService.remove(queryWrapperAttachment);
+        //2022/12/27  15:13  zhiqiang.lu 附件添加报错，补充初始值
+        for (DisqualificationAttachment disqualificationAttachment : disqualification.getAttachmentList()) {
+            disqualificationAttachment.setDisqualificationId(disqualification.getId());
+            disqualificationAttachment.setBranchCode(disqualification.getBranchCode());
+            disqualificationAttachment.setTenantId(disqualification.getTenantId());
+        }
         attachmentService.saveAttachment(disqualification.getAttachmentList());
         return true;
     }
@@ -170,7 +169,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
      * @Date: 2022/12/19 4:19
      * @return: int
      **/
-    //TODO:裁决流程不明确
     private int processJudge(DisqualificationDto disqualificationDto) {
         disqualificationDto.setIsSubmit(0);
         //判断是否发布 1 = 发布 0 = 不发布
@@ -178,6 +176,15 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             //开局处理单||质控评审 发布直接进行下一步
             if (1 == disqualificationDto.getType() || 2 == disqualificationDto.getType()) {
                 return disqualificationDto.getType() + 1;
+            }
+            //判断是否发起责任裁决
+            if (1 == disqualificationDto.getIsResponsibility()) {
+                //进入则人裁决
+                return 5;
+            }
+            //判断是否发起技术裁决
+            if (1 == disqualificationDto.getIsTechnology()) {
+                return 6;
             }
             //判断处理单位一
             if (3 == disqualificationDto.getType()) {
@@ -193,6 +200,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             //处理单位2 处理单位填报完 直接进入质检员关闭流程
             if (4 == disqualificationDto.getType()) {
                 return 7;
+            }
+            //责任裁决结束返回处理单位1
+            if (5 == disqualificationDto.getType()) {
+                return 3;
+            }
+            //技术裁决结束返回处理单位1
+            if (6 == disqualificationDto.getType()) {
+                return 3;
             }
         }
         //不发布直接返回当前状态
@@ -315,39 +330,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             if (null == finalResult) {
                 return;
             }
-//            //意见ID相同 再去拼接最终结果
-//            if (records.getId().equals(finalResult.getOpinionId())) {
-//                StringBuilder sb = new StringBuilder();
-//                //让步接收数量
-//                sb.append("让步接收数量:");
-//                if (finalResult.getAcceptDeviation() != null) {
-//                    sb.append(finalResult.getAcceptDeviation());
-//                } else {
-//                    sb.append(0);
-//                }
-//                //返修合格数量
-//                sb.append(",返修合格数量:");
-//                if (finalResult.getRepairQualified() != null) {
-//                    sb.append(finalResult.getRepairQualified());
-//                } else {
-//                    sb.append(0);
-//                }
-//                //报废数量
-//                sb.append(",报废数量:");
-//                if (finalResult.getScrap() != null) {
-//                    sb.append(finalResult.getScrap());
-//                } else {
-//                    sb.append(0);
-//                }
-//                //退货数量
-//                sb.append(",退货数量:");
-//                if (finalResult.getSalesReturn() != null) {
-//                    sb.append(finalResult.getSalesReturn());
-//                } else {
-//                    sb.append(0);
-//                }
-//                records.setFinalResult(sb.toString());
-//            }
         });
         //单查询开单时间
         Disqualification disqualification = this.getById(disqualificationId);
@@ -386,6 +368,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
             disqualificationItemVo.setUserList(Collections.emptyList());
         }
+        //2022/12/27  zhiqiang.lu  缺失预设值信息
+        disqualificationItemVo.setTrackItemId(tiId);
         return disqualificationItemVo;
     }
 

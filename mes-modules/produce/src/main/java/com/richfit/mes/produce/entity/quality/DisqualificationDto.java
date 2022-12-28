@@ -3,6 +3,7 @@ package com.richfit.mes.produce.entity.quality;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
+import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -288,6 +289,12 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private String disqualificationCondition;
 
     /**
+     * 发现车间
+     */
+    @ApiModelProperty(value = "发现车间")
+    private String discoverTenant;
+
+    /**
      * 所属机构
      */
     private String branchCode;
@@ -297,6 +304,13 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
      */
     private String tenantId;
 
+    @ApiModelProperty(value = "是否责任裁决")
+    private Integer isResponsibility;
+    @ApiModelProperty(value = "是否技术裁决")
+    private Integer isTechnology;
+
+    @ApiModelProperty(value = "意见列表")
+    private List<DisqualificationUserOpinion> disqualifications;
 
     @ApiModelProperty(value = "不合格意见JSON")
     private String unqualifiedOpinion;

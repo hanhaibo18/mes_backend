@@ -2,14 +2,13 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.Hour;
+import com.richfit.mes.common.model.produce.RgDevice;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- *热工工时版本
+ *热工设备
  */
-public interface HourService extends IService<Hour> {
+public interface RgDeviceService extends IService<RgDevice> {
 
-    CommonResult importExcel(MultipartFile file, String branchCode, String verId);
 
 }

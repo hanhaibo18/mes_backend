@@ -125,7 +125,7 @@ public class TemplatePrintController extends BaseController {
     @GetMapping("/createDocumentaryExcelList")
     public void createDocumentaryExcelList(@ApiParam(value = "跟单ids", required = true) @RequestParam List<String> ids,
                                            @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
-                                           @ApiIgnore HttpServletResponse rsp) throws IOException {
+                                           @ApiIgnore HttpServletResponse rsp) {
         try {
             int i = 1;
             File file = FilesUtil.createRandomTempDirectory();
@@ -152,10 +152,10 @@ public class TemplatePrintController extends BaseController {
                     // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
                     //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
                     String templateFileId = p.getFileId();
-                    System.out.println(templateFileId);
-                    System.out.println("-----------------------");
                     CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
-                    System.out.println(result.getData());
+                    if (result.getData() == null) {
+                        throw new GlobalException("没有在文件服务器再到模板文件，清重新上传！", ResultCode.FAILED);
+                    }
                     InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
 //                    ExcelUtils.exportExcelOnSheetsData("跟单", inputStream, sheets, rsp);
                     ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo(), inputStream, sheets);
@@ -163,6 +163,7 @@ public class TemplatePrintController extends BaseController {
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e.getMessage());
+                    throw new GlobalException(e.getMessage(), ResultCode.FAILED);
                 }
             }
 
@@ -171,13 +172,14 @@ public class TemplatePrintController extends BaseController {
                 FilesUtil.zip(file.getAbsolutePath());
                 FilesUtil.downloads(rsp, file.getAbsolutePath() + ".zip");
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new GlobalException(e.getMessage(), ResultCode.FAILED);
             } finally {
                 file.delete();
                 new File(file.getAbsolutePath() + ".zip").delete();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -10,6 +11,8 @@ import lombok.Data;
  */
 @Data
 public class Hour extends BaseEntity<Hour> {
+
+    private static final long serialVersionUID = -5801273490970600632L;
 
     @ApiModelProperty(value = "工时版本id", dataType = "String")
     private String verId;
@@ -43,5 +46,9 @@ public class Hour extends BaseEntity<Hour> {
 
     @ApiModelProperty(value = "工时", dataType = "String")
     private String hour;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否导入", dataType = "String")
+    private  String isExport;
 
 }
