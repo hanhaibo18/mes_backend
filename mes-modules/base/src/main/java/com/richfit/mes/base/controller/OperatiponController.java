@@ -276,4 +276,28 @@ public class OperatiponController extends BaseController {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+    /**
+     * 功能描述: 工序列表查询
+     *
+     * @Author: renzewen
+     * @Date: 2022/12/27 15:06
+     **/
+    @ApiOperation(value = "根据工序名称查询工序", notes = "根据工序名称查询工序")
+    @PostMapping("/queryOptByOptNames")
+    public List<Operatipon> queryOptByOptNames(@ApiParam(value = "工序字典名称") @RequestBody List<String> optNams,
+                                               @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) {
+        QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
+
+        if (optNams.size()>0) {
+            queryWrapper.in("opt_name", optNams);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.orderByDesc("modify_time");
+        List<Operatipon> operatiponList = operatiponService.list(queryWrapper);
+        return operatiponList;
+    }
 }

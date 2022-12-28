@@ -182,4 +182,8 @@ public interface BaseServiceClient {
      **/
     @GetMapping("/api/base/product/selectOrderProduct")
     List<Product> selectOrderProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo);
+
+    @GetMapping("/api/base/opt/queryOptByOptNames")
+    List<Operatipon> queryOptByOptNames(@ApiParam(value = "工序字典名称") @RequestBody List<String> optNams,
+                                        @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode);
 }
