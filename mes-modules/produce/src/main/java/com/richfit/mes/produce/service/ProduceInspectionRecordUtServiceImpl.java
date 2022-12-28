@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.ProbeInfo;
 import com.richfit.mes.common.model.produce.ProduceDefectsInfo;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class ProduceInspectionRecordUtServiceImpl extends ServiceImpl<ProduceInspectionRecordUtMapper, ProduceInspectionRecordUt> implements ProduceInspectionRecordUtService {
+public class ProduceInspectionRecordUtServiceImpl extends ServiceImpl<ProduceInspectionRecordUtMapper, ProduceInspectionRecordUt> implements ProduceInspectionRecordUtService,RecordStragegy {
 
 
     @Autowired
@@ -51,5 +52,17 @@ public class ProduceInspectionRecordUtServiceImpl extends ServiceImpl<ProduceIns
             value.setProbeInfoList(probeMap.get(key));
         });
         return new ArrayList<>(recordMap.values());
+    }
+
+    @Override
+    public Boolean updateAuditInfo(String id, String isAudit, String auditRemark) {
+        UpdateWrapper<ProduceInspectionRecordUt> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", id).set("is_audit", isAudit).set("audit_remark", auditRemark).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
+        return this.update(updateWrapper);
+    }
+
+    @Override
+    public String getType() {
+        return "ut";
     }
 }

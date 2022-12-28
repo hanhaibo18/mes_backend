@@ -28,6 +28,7 @@ import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.OrderUtil;
+import com.richfit.mes.produce.utils.RecordStrategyFactory;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
@@ -1061,24 +1062,8 @@ public class ProduceInspectionRecordService {
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean auditByRecord(String id, String tempType, String isAudit, String auditRemark,String inspector,String checkBranch) {
-        //修改审核记录信息
-        if (InspectionRecordTypeEnum.MT.getType().equals(tempType)) {
-            UpdateWrapper<ProduceInspectionRecordMt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id", id).set("is_audit", isAudit).set("audit_remark", auditRemark).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
-            produceInspectionRecordMtService.update(updateWrapper);
-        } else if (InspectionRecordTypeEnum.PT.getType().equals(tempType)) {
-            UpdateWrapper<ProduceInspectionRecordPt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id", id).set("is_audit", isAudit).set("audit_remark", auditRemark).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
-            produceInspectionRecordPtService.update(updateWrapper);
-        } else if (InspectionRecordTypeEnum.RT.getType().equals(tempType)) {
-            UpdateWrapper<ProduceInspectionRecordRt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id", id).set("is_audit", isAudit).set("audit_remark", auditRemark).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
-            produceInspectionRecordRtService.update(updateWrapper);
-        } else if (InspectionRecordTypeEnum.UT.getType().equals(tempType)) {
-            UpdateWrapper<ProduceInspectionRecordUt> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id", id).set("is_audit", isAudit).set("audit_remark", auditRemark).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
-            produceInspectionRecordUtService.update(updateWrapper);
-        }
+        //根据模板修改审核记录信息
+        RecordStrategyFactory.getRecordStragegy(tempType).updateAuditInfo(id,isAudit,auditRemark);
         //修改中间表的数据
         UpdateWrapper<ProduceItemInspectInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("inspect_record_id",id).set("is_audit", isAudit).set("audit_by",SecurityUtils.getCurrentUser().getUserId()).set("audit_remark",auditRemark);
