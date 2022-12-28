@@ -54,7 +54,6 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
         }
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
         wrapper.eq("delivery_no", deliveryNo);
-        wrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         List<MaterialReceiveDetail> list = materialReceiveDetailService.list(wrapper);
         boolean b = lineStoreService.addStoreByWmsSend(list, branchCode);
         if (b) {
@@ -66,7 +65,6 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
             UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
             detailWrapper.set("state", 1);
             detailWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
-            detailWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             this.update(detailWrapper);
             return true;
         } else {
