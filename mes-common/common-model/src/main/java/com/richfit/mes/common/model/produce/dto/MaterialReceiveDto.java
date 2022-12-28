@@ -4,6 +4,7 @@ import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +15,6 @@ import java.util.List;
  */
 @Data
 public class MaterialReceiveDto {
-    private List<MaterialReceive> received;
-    private List<MaterialReceiveDetail> detailList;
+    private List<MaterialReceive> received = new ArrayList<>();
+    private List<MaterialReceiveDetail> detailList = new ArrayList<>();
 }

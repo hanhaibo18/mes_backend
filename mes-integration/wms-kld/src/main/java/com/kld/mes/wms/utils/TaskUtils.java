@@ -73,7 +73,6 @@ public class TaskUtils {
                 if (result.getStatus() == 200) {
                     materialReceiveLog.setReceivedNumber(result.getData().getReceived().size());
                     materialReceiveLog.setReceivedNumberDetail(result.getData().getDetailList().size());
-
                 } else {
                     materialReceiveLog.setState("1");
                 }
@@ -93,14 +92,15 @@ public class TaskUtils {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection conn = DriverManager.getConnection("jdbc:mysql://" + url + "/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
         Statement stmt = conn.createStatement();
-        List<MaterialReceive> materialReceiveList = saveMaterialReceive(code, time, stmt);
-        List<MaterialReceiveDetail> materialReceiveDetailList = saveMaterialReceiveDetail(code, time, stmt);
-        System.out.println("materialReceiveList:" + materialReceiveList.size());
-        System.out.println("materialReceiveDetailList:" + materialReceiveDetailList.size());
+        CommonResult result = new CommonResult(200);
         MaterialReceiveDto materialReceiveDto = new MaterialReceiveDto();
-        materialReceiveDto.setReceived(materialReceiveList);
-        materialReceiveDto.setDetailList(materialReceiveDetailList);
-        CommonResult result = produceServiceClient.materialReceiveSaveBatchList(materialReceiveDto, SecurityConstants.FROM_INNER);
+        List<MaterialReceive> materialReceiveList = saveMaterialReceive(code, time, stmt);
+        if (materialReceiveList.size() > 0) {
+            List<MaterialReceiveDetail> materialReceiveDetailList = saveMaterialReceiveDetail(code, time, stmt);
+            materialReceiveDto.setReceived(materialReceiveList);
+            materialReceiveDto.setDetailList(materialReceiveDetailList);
+            result = produceServiceClient.materialReceiveSaveBatchList(materialReceiveDto, SecurityConstants.FROM_INNER);
+        }
         result.setData(materialReceiveDto);
         stmt.close();
         conn.close();
