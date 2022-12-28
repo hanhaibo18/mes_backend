@@ -1,8 +1,10 @@
 package com.kld.mes.wms.provider;
 
 import com.kld.mes.wms.provider.fallback.ProduceServiceClientFallBackImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.model.produce.MaterialReceiveLog;
 import com.richfit.mes.common.model.produce.RequestNoteDetail;
 import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
 import com.richfit.mes.common.security.constant.SecurityConstants;
@@ -21,7 +23,10 @@ import java.util.List;
 public interface ProduceServiceClient {
 
     @PostMapping(value = "/api/produce/material_receive/material_receive/save_batch_list")
-    public Boolean materialReceiveSaveBatchList(@RequestBody MaterialReceiveDto material, @RequestHeader(value = SecurityConstants.FROM) String header);
+    public CommonResult materialReceiveSaveBatchList(@RequestBody MaterialReceiveDto material, @RequestHeader(value = SecurityConstants.FROM) String header);
+
+    @PostMapping(value = "/api/produce/material_receive/material_receive/save_log")
+    public Boolean materialReceiveSaveLog(@RequestBody MaterialReceiveLog materialReceiveLog, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping(value = "/api/produce/material_receive/get_last_time")
     public String getlastTime(@RequestParam("tenantId") String tenantId, @RequestHeader(value = SecurityConstants.FROM) String header);

@@ -60,7 +60,7 @@ public class HourStandardController {
             //排序
             OrderUtil.query(queryWrapper, orderCol, order);
         }else{
-            queryWrapper.orderByDesc("activate_time");
+            queryWrapper.orderByAsc("ver");
         }
 
         return CommonResult.success(hourStandardService.page(new Page<HourStandard>(page, limit), queryWrapper));
@@ -73,6 +73,12 @@ public class HourStandardController {
     @ApiOperation(value = "新增工时版本信息", notes = "新增工时版本信息")
     @PostMapping("/save")
     public CommonResult<Boolean> saveOrUpdate(@RequestBody HourStandard hourStandard) throws GlobalException {
+        QueryWrapper<HourStandard> hourStandardQueryWrapper = new QueryWrapper<>();
+        hourStandardQueryWrapper.eq("ver",hourStandard.getVer());
+        List<HourStandard> list = hourStandardService.list(hourStandardQueryWrapper);
+        if(list.size()>0){
+            throw new GlobalException("版本信息以存在！", ResultCode.FAILED);
+        }
         hourStandard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(hourStandardService.saveOrUpdate(hourStandard));
     }
@@ -97,6 +103,11 @@ public class HourStandardController {
         if(ObjectUtil.isEmpty(hourStandard)){
             throw new GlobalException("版本信息不存在", ResultCode.FAILED);
         }
+        //全部转非激活
+        UpdateWrapper<HourStandard> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.set("is_activate","0");
+        boolean update = hourStandardService.update(updateWrapper);
+        //将选中的转激活
         UpdateWrapper<HourStandard> hourStandardUpdateWrapper = new UpdateWrapper<>();
         hourStandardUpdateWrapper.eq("id",id)
                 .set("is_activate","1")
@@ -107,32 +118,32 @@ public class HourStandardController {
     }
 
     /**
-     * 激活
+     * 复制
      */
     @ApiOperation(value = "复制", notes = "复制")
     @GetMapping("/activate/copy")
-    public CommonResult<Boolean> copy(String ver,String remark) throws GlobalException {
+    public CommonResult<Boolean> copy(String id,String ver,String remark) throws GlobalException {
+
         QueryWrapper<HourStandard> hourStandardQueryWrapper = new QueryWrapper<>();
         hourStandardQueryWrapper.eq("ver",ver);
         List<HourStandard> list = hourStandardService.list(hourStandardQueryWrapper);
         if(list.size()>0){
+            throw new GlobalException("版本信息以存在！", ResultCode.FAILED);
+        }else{
             //版本复制
             HourStandard hourStandard = new HourStandard();
             hourStandard.setRemark(remark);
-            String copyModelName = getCopyModelName(ver);
-            hourStandard.setVer(copyModelName);
+            hourStandard.setVer(ver);
             hourStandard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             hourStandardService.save(hourStandard);
             //设备复制
             QueryWrapper<Hour> hourQueryWrapper = new QueryWrapper<>();
-            hourQueryWrapper.eq("ver_id",list.get(0).getId());
+            hourQueryWrapper.eq("ver_id",id);
             List<Hour> hours = hourService.list(hourQueryWrapper);
             for (Hour hour : hours) {
                 hour.setVerId(hourStandard.getId());
             }
             return CommonResult.success(hourService.saveBatch(hours));
-        }else{
-            throw new GlobalException("版本信息不存在", ResultCode.FAILED);
         }
     }
 

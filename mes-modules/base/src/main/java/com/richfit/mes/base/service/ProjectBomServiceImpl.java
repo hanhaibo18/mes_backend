@@ -6,6 +6,7 @@ import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
@@ -233,7 +234,12 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("is_num_from", 1);
         queryWrapper.notIn("is_resolution", 1);
-        return this.getOne(queryWrapper);
+        queryWrapper.orderByAsc("create_time");
+        List<ProjectBom> list = this.list(queryWrapper);
+        if (CollectionUtils.isNotEmpty(list)) {
+            return list.get(0);
+        }
+        return null;
     }
 
     @Override
@@ -258,6 +264,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 writer.passRows(4);
                 QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("work_plan_no", projectBom.getWorkPlanNo());
+                queryWrapper.eq("main_drawing_no", projectBom.getDrawingNo());
                 queryWrapper.eq("branch_code", projectBom.getBranchCode());
                 queryWrapper.orderByAsc("order_no");
                 List<ProjectBom> productionBomList = this.list(queryWrapper);
