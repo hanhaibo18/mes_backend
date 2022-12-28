@@ -63,6 +63,22 @@ public class RgDeviceController {
         return CommonResult.success(rgDeviceService.page(new Page<>(page, limit), queryWrapper));
     }
 
+    /**
+     * 设备类别list
+     */
+    @ApiOperation(value = "设备类别list", notes = "设备类别list")
+    @GetMapping("/list")
+    public CommonResult<List> list() throws GlobalException {
+        QueryWrapper<RgDevice> queryWrapper = new QueryWrapper<>();
+        //父节点为空 即为类别信息
+        queryWrapper.isNull("type_id");
+
+        //升序排列
+        queryWrapper.orderByAsc("type_no");
+
+        return CommonResult.success(rgDeviceService.list(queryWrapper));
+    }
+
 
     /**
      * 新增类别操作信息
