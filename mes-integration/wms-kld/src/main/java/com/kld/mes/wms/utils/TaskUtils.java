@@ -119,21 +119,23 @@ public class TaskUtils {
                 totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "'";
             } else {
                 //查上次最后一条时间之后所有
-                totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "' " + time + "'";
+                totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "'";
             }
+
             ResultSet totalRs = stmt.executeQuery(totalSql);
             while (totalRs.next()) {
                 total = totalRs.getInt("total");
             }
-
+            System.out.println(totalSql);
             for (int page = 0; total > page * pageSize; page++) {
                 if (StringUtils.isEmpty(time)) {
                     //查所有
                     sql = "select * from v_mes_out_headers where work_code ='" + code + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
                 } else {
                     //查上次最后一条时间之后所有
-                    sql = "select * from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "' " + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
+                    sql = "select * from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
                 }
+                System.out.println(sql);
                 ResultSet rs = stmt.executeQuery(sql);
                 while (rs.next()) {
                     String outNum = rs.getString("OUT_NUM");
