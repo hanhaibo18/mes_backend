@@ -49,7 +49,7 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
         wrapperMaterialReceive.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         wrapperMaterialReceive.eq("state", "0");
         List<MaterialReceive> materialReceiveList = materialReceiveService.list(wrapperMaterialReceive);
-        if (materialReceiveList != null && materialReceiveList.size() > 0) {
+        if (materialReceiveList == null && materialReceiveList.size() == 0) {
             throw new GlobalException("当前选择的数据异常，或者选择的已经被接收，没有找到该数据，请刷新页面重试!", ResultCode.FAILED);
         }
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
