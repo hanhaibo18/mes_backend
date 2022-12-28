@@ -47,12 +47,10 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
         QueryWrapper<MaterialReceive> wrapperMaterialReceive = new QueryWrapper<>();
         wrapperMaterialReceive.eq("delivery_no", deliveryNo);
         wrapperMaterialReceive.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        wrapperMaterialReceive.eq("state", "0");
         List<MaterialReceive> materialReceiveList = materialReceiveService.list(wrapperMaterialReceive);
         if (materialReceiveList != null && materialReceiveList.size() > 0) {
-            throw new GlobalException("当前选择的数据异常，没有找到该数据!", ResultCode.FAILED);
-        }
-        if (!"0".equals(materialReceiveList.get(0).getState())) {
-            throw new GlobalException("当前料单已经接收，请先刷新页面!", ResultCode.FAILED);
+            throw new GlobalException("当前选择的数据异常，或者选择的已经被接收，没有找到该数据，请刷新页面重试!", ResultCode.FAILED);
         }
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
         wrapper.eq("delivery_no", deliveryNo);
