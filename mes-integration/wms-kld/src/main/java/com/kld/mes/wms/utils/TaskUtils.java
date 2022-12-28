@@ -2,8 +2,10 @@ package com.kld.mes.wms.utils;
 
 import com.kld.mes.wms.provider.ProduceServiceClient;
 import com.kld.mes.wms.provider.SystemServiceClient;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.model.produce.MaterialReceiveLog;
 import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +52,11 @@ public class TaskUtils {
 
     // 添加定时任务
     @Scheduled(fixedDelayString = "${timer.time-interval}")//  执行完上次十秒后再次执行
-    public void doTask() throws SQLException, ClassNotFoundException {
+    public void doTask() {
         System.out.println("------------------------");
         System.out.println("发起物料接收");
         for (String tenantId : tenantIds) {
+            MaterialReceiveLog materialReceiveLog = new MaterialReceiveLog();
             try {
                 //获取用户名
                 String userName = systemServiceClient.findItemParamByCode(userNameKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
@@ -60,18 +66,30 @@ public class TaskUtils {
                 String url = systemServiceClient.findItemParamByCode(urlKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 //获取工厂code
                 String code = systemServiceClient.tenantByIdInner(tenantId, SecurityConstants.FROM_INNER).getData().getTenantErpCode();
-                System.out.println("code:" + code);
                 //获取变更时间
                 String date = produceServiceClient.getlastTime(tenantId, SecurityConstants.FROM_INNER);
-                jdbcMaterialOutView(userName, password, url, code, date);
+                CommonResult<MaterialReceiveDto> result = jdbcMaterialOutView(userName, password, url, code, date);
+                materialReceiveLog.setTenantId(tenantId);
+                if (result.getStatus() == 200) {
+                    materialReceiveLog.setReceivedNumber(result.getData().getReceived().size());
+                    materialReceiveLog.setReceivedNumberDetail(result.getData().getDetailList().size());
+
+                } else {
+                    materialReceiveLog.setState("1");
+                }
+                materialReceiveLog.setRemark("租户id:" + tenantId + ":" + result.getMessage());
             } catch (Exception e) {
                 e.printStackTrace();
+                materialReceiveLog.setState("1");
+                materialReceiveLog.setRemark("租户id:" + tenantId + ":" + e.getMessage());
                 log.error("自动同步物料接收出现异常 [{}]", "租户id:" + tenantId + ":" + e.getMessage());
+            } finally {
+                produceServiceClient.materialReceiveSaveLog(materialReceiveLog, SecurityConstants.FROM_INNER);
             }
         }
     }
 
-    public void jdbcMaterialOutView(String userName, String password, String url, String code, String time) throws Exception {
+    public CommonResult<MaterialReceiveDto> jdbcMaterialOutView(String userName, String password, String url, String code, String time) throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection conn = DriverManager.getConnection("jdbc:mysql://" + url + "/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
         Statement stmt = conn.createStatement();
@@ -82,9 +100,11 @@ public class TaskUtils {
         MaterialReceiveDto materialReceiveDto = new MaterialReceiveDto();
         materialReceiveDto.setReceived(materialReceiveList);
         materialReceiveDto.setDetailList(materialReceiveDetailList);
-        produceServiceClient.materialReceiveSaveBatchList(materialReceiveDto, SecurityConstants.FROM_INNER);
+        CommonResult result = produceServiceClient.materialReceiveSaveBatchList(materialReceiveDto, SecurityConstants.FROM_INNER);
+        result.setData(materialReceiveDto);
         stmt.close();
         conn.close();
+        return result;
     }
 
     public List<MaterialReceive> saveMaterialReceive(String code, String time, Statement stmt) throws Exception {
@@ -127,10 +147,6 @@ public class TaskUtils {
                     materialReceive.setErpCode(code);
                     materialReceiveList.add(materialReceive);
                 }
-//                if (!ObjectUtils.isEmpty(materialReceiveList)) {
-//                    //保存物料接收
-//                    boolean flag = produceServiceClient.materialReceiveSaveBatch(materialReceiveList, SecurityConstants.FROM_INNER);
-//                }
                 rs.close();
             }
             return materialReceiveList;
@@ -189,16 +205,8 @@ public class TaskUtils {
                     materialReceiveDetail.setUnit(unit);
                     materialReceiveDetail.setState("0");
                     //根据申请单和物料号查询图号
-//                    List<RequestNoteDetail> requestNoteDetailList = produceServiceClient.queryRequestNoteDetailDetails(materialNum, aplyNum, SecurityConstants.FROM_INNER);
-//                    if (!ObjectUtils.isEmpty(requestNoteDetailList)) {
-//                        materialReceiveDetail.setDrawingNo(requestNoteDetailList.get(0).getDrawingNo());
-//                    }
                     detailList.add(materialReceiveDetail);
                 }
-//                if (!ObjectUtils.isEmpty(detailList)) {
-//                    //保存物料接收详情
-//                    boolean flag = produceServiceClient.detailSaveBatch(detailList, SecurityConstants.FROM_INNER);
-//                }
                 rs.close();
             }
             return detailList;
