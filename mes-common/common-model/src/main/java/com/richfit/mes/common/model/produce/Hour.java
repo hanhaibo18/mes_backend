@@ -18,7 +18,7 @@ public class Hour extends BaseEntity<Hour> {
     private String verId;
 
     @ApiModelProperty(value = "设备类型", dataType = "String")
-    private String deviceType;
+    private String typeCode;
 
     @ApiModelProperty(value = "设备名称", dataType = "String")
     private String deviceName;
@@ -56,5 +56,8 @@ public class Hour extends BaseEntity<Hour> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否导入", dataType = "String")
     private  String isExport;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工时版本", dataType = "ver")
+    private String ver;
 
 }

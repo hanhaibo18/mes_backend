@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @Author: renzewen
@@ -82,5 +83,11 @@ public class HourController {
         return  hourService.importExcel(file,branchCode,verId);
     }
 
+
+    @ApiOperation(value = "导出工时标准", notes = "通过Excel文档导出导出工时标准")
+    @GetMapping("/export_excel")
+    public void exportExcel(String verId, String branchCode, HttpServletResponse rsp) {
+        hourService.exportExcel(verId,branchCode,rsp);
+    }
 
 }
