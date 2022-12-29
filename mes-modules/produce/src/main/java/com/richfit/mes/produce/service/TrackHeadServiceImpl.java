@@ -37,7 +37,6 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -360,32 +359,32 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/12/19 10:25
      **/
     @Override
-    public boolean rgSaveTrackHead(String trackNo,List<TrackItem> trackItems,String routerId,String routerVer) {
+    public boolean rgSaveTrackHead(String trackNo, List<TrackItem> trackItems, String routerId, String routerVer) {
         //根据跟单号查询跟单
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
         trackNo = trackNo.replaceAll(" ", "");
-        queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')",trackNo);
+        queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')", trackNo);
         List<TrackHead> headList = this.list(queryWrapper);
         //查询跟单 如果绑定了工艺就是修改
-        if(!StringUtils.isNullOrEmpty(headList.get(0).getRouterId())){
+        if (!StringUtils.isNullOrEmpty(headList.get(0).getRouterId())) {
             boolean bool = this.updataTrackHead(headList.get(0), trackItems);
-        }else{
+        } else {
             //新增绑定
             //查询分流表
             List<String> headIds = headList.stream().map(TrackHead::getId).collect(Collectors.toList());
             QueryWrapper<TrackFlow> trackFlowQueryWrapper = new QueryWrapper<>();
-            trackFlowQueryWrapper.in("track_head_id",headIds);
+            trackFlowQueryWrapper.in("track_head_id", headIds);
             List<TrackFlow> trackFlows = trackHeadFlowService.list(trackFlowQueryWrapper);
             //删除旧的
-            if(headIds.size()>0){
+            if (headIds.size() > 0) {
                 QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-                trackItemQueryWrapper.in("track_head_id",headIds);
+                trackItemQueryWrapper.in("track_head_id", headIds);
                 trackItemService.remove(trackItemQueryWrapper);
             }
             //绑定新的
             Map<String, List<TrackFlow>> trackFlowMap = trackFlows.stream().collect(Collectors.groupingBy(TrackFlow::getTrackHeadId));
             for (TrackHead trackHead : headList) {
-                if(!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size()>0){
+                if (!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size() > 0) {
                     List<TrackFlow> flows = trackFlowMap.get(trackHead.getId());
                     for (TrackFlow flow : flows) {
                         if (trackItems != null && trackItems.size() > 0) {
@@ -428,7 +427,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         return true;
     }
-
 
 
     /**
@@ -1406,7 +1404,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //产品列表排序
         trackFlowsOrder(trackFlowList);
         //机加产品编码处理
-        if (trackFlowList.size() == 1) {
+        if (trackFlowList.size() == 1 && !StrUtil.isBlank(trackFlowList.get(0).getProductNo())) {
             return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
         }
         if (trackFlowList.size() > 1) {
