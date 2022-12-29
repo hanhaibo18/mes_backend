@@ -373,7 +373,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             queryUser.in("role_id", roleIdList);
             return tenantUserMapper.queryByCondition(queryUser);
         }
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -442,7 +442,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         if (!StringUtils.isEmpty(tenantId)) {
             Tenant tenant = tenantService.getById(tenantId);
             //获取当前登录人公司所有质检人员
-            List<TenantUserVo> userList = new ArrayList<>(this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId()));
+            List<TenantUserVo> userList = this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId());
             //获取质检公司
             List<ItemParam> item = null;
             try {

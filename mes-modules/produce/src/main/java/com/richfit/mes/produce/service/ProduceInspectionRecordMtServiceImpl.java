@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.ProduceInspectionRecordMt;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class ProduceInspectionRecordMtServiceImpl extends ServiceImpl<ProduceInspectionRecordMtMapper, ProduceInspectionRecordMt> implements ProduceInspectionRecordMtService {
+public class ProduceInspectionRecordMtServiceImpl extends ServiceImpl<ProduceInspectionRecordMtMapper, ProduceInspectionRecordMt> implements ProduceInspectionRecordMtService,RecordStragegy{
 
 
     @Autowired
@@ -42,5 +43,18 @@ public class ProduceInspectionRecordMtServiceImpl extends ServiceImpl<ProduceIns
             value.setDefectsInfoList(defectsInfoMap.get(key));
         });*/
         return new ArrayList<>(recordMap.values());
+    }
+
+    @Override
+    public Boolean updateAuditInfo(String id, String isAudit, String auditRemark) {
+        ProduceInspectionRecordMtService produceInspectionRecordMtService = new ProduceInspectionRecordMtServiceImpl();
+        UpdateWrapper<ProduceInspectionRecordMt> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", id).set("is_audit", isAudit).set("audit_remark", auditRemark).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
+        return produceInspectionRecordMtService.update(updateWrapper);
+    }
+
+    @Override
+    public String getType() {
+        return "mt";
     }
 }

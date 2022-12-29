@@ -20,8 +20,14 @@ public class Hour extends BaseEntity<Hour> {
     @ApiModelProperty(value = "设备类型", dataType = "String")
     private String deviceType;
 
-    @ApiModelProperty(value = "工序", dataType = "String")
-    private String sequence;
+    @ApiModelProperty(value = "设备名称", dataType = "String")
+    private String deviceName;
+
+    @ApiModelProperty(value = "工序id", dataType = "String")
+    private String optId;
+
+    @ApiModelProperty(value = "工序名称", dataType = "String")
+    private String optName;
 
     @ApiModelProperty(value = "重量下限", dataType = "String")
     private String weightDown;

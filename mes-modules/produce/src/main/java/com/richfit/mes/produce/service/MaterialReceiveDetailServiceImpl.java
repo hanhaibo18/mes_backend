@@ -3,8 +3,11 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.MaterialReceiveDetailMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,14 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateState(String deliveryNo, String branchCode) {
+        QueryWrapper<MaterialReceive> wrapperMaterialReceive = new QueryWrapper<>();
+        wrapperMaterialReceive.eq("delivery_no", deliveryNo);
+        wrapperMaterialReceive.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        wrapperMaterialReceive.eq("state", "0");
+        List<MaterialReceive> materialReceiveList = materialReceiveService.list(wrapperMaterialReceive);
+        if (materialReceiveList == null && materialReceiveList.size() == 0) {
+            throw new GlobalException("当前选择的数据异常，或者选择的已经被接收，没有找到该数据，请刷新页面重试!", ResultCode.FAILED);
+        }
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
         wrapper.eq("delivery_no", deliveryNo);
         List<MaterialReceiveDetail> list = materialReceiveDetailService.list(wrapper);
@@ -49,6 +60,7 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
             UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
             updateWrapper.set("state", 1);
             updateWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
+            updateWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             materialReceiveService.update(updateWrapper);
             UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
             detailWrapper.set("state", 1);

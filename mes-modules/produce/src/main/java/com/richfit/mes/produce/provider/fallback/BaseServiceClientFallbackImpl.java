@@ -160,5 +160,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public List<Operatipon> queryOptByOptNames(List<String> optNams, String branchCode) {
+        return null;
+    }
+
 
 }
