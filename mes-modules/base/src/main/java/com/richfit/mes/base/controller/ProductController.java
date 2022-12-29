@@ -118,9 +118,9 @@ public class ProductController extends BaseController {
             ArrayList<String> materialCodes = new ArrayList<>();
             materialCodes.add(byId.getMaterialNo());
             ArrayList<String> drawingNos = new ArrayList<>();
-           if(!StringUtils.isNullOrEmpty(byId.getDrawingNo())) {
-               drawingNos.add(byId.getDrawingNo());
-           }
+            if (!StringUtils.isNullOrEmpty(byId.getDrawingNo())) {
+                drawingNos.add(byId.getDrawingNo());
+            }
             List<TrackHead> trackHeads = produceServiceClient.getTrackHeadByMaterialCodeAndDrawingNo(materialCodes, drawingNos, SecurityUtils.getCurrentUser().getTenantId()).getData();
             Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2) -> value2));
             Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2) -> value2));
@@ -577,7 +577,7 @@ public class ProductController extends BaseController {
                 for (int i = 0; i < page; i++) {
                     int index = i == 0 ? i : 1000 * i;//起始下标
                     int toIndex = i == 0 ? 999 : 1000 * i + 999;//结尾下标
-                    System.out.println(index + "  index-----------------  toindex" + toIndex);
+                    log.info(index + "  index-----------------  toindex" + toIndex);
                     List<Object> objects = null;
                     if (i < oldPage) {
                         objects = idList.subList(index, toIndex);
