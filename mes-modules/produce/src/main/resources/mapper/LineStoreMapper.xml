@@ -49,7 +49,7 @@
         select c.drawing_no,
         max(c.product_name) product_name,
         max(c.material_no) material_no,
-        sum(c.number - ifnull(c.use_num,0))store_number
+        sum(ifnull(c.number,0) - ifnull(c.use_num,0))store_number
         from (
         select * from mes_produce.produce_line_store
         where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode} and material_type='1'
@@ -67,7 +67,7 @@
 
     <!-- 查询装配库存  配送接收量-->
     <select id="selectDeliveryNumber" resultType="com.richfit.mes.common.model.produce.store.LineStoreSumZp">
-        select drawing_no,sum(number) delivery_number
+        select drawing_no,sum(ifnull(number,0)) delivery_number
         from mes_produce.produce_line_store
         where input_type ='3'
         and material_type = '1'
