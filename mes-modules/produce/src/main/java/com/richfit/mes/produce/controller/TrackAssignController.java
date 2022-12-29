@@ -347,9 +347,9 @@ public class TrackAssignController extends BaseController {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
-                        requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
-//                        ApplicationResult application = new ApplicationResult();
+                        //以齐套不发送申请单
                         if (CollectionUtils.isNotEmpty(ingredient.getLineList())) {
+                            requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
                             ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
                             //请勿重复上传！
                             boolean upload = !application.getRetMsg().contains("请勿重复上传");

@@ -42,6 +42,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     @Resource
     private LineStoreMapper lineStoreMapper;
     @Resource
+    private LineStoreService lineStoreService;
+    @Resource
     private TrackHeadService trackHeadService;
     @Resource
     private TrackItemService trackItemService;
@@ -104,7 +106,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean updateComplete(List<String> idList, String itemId) {
+    public CommonResult<Boolean> updateComplete(List<String> idList, String itemId) {
         boolean isComplete = false;
         for (String id : idList) {
             TrackAssembly trackAssembly = this.getById(id);
@@ -118,10 +120,16 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 assemblyBinding.setAssemblyId(id);
                 assemblyBinding.setItemId(itemId);
                 assemblyBinding.setIsBinding(1);
+                TrackHead trackHead = trackHeadService.getById(trackAssembly.getTrackHeadId());
+                Map<String, String> map = lineStoreService.partsBinding(trackAssembly.getTrackHeadId(), trackAssembly.getFlowId(), trackAssembly.getMaterialNo(), assemblyBinding.getQuantity(), trackHead.getBranchCode(), trackHead.getTenantId());
+                assemblyBinding.setLineStoreId(map.get("success"));
                 assemblyBindingService.save(assemblyBinding);
+                if (StrUtil.isNotBlank(map.get("failureList"))) {
+                    return CommonResult.failed("部分非关键件绑定失败,失败零件列表:" + map.get("failureList"));
+                }
             }
         }
-        return isComplete;
+        return CommonResult.success(isComplete);
     }
 
     @Override
@@ -131,10 +139,12 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             TrackAssembly trackAssembly = this.getById(id);
             if ("0".equals(trackAssembly.getIsKeyPart())) {
                 trackAssembly.setNumberInstall(trackAssembly.getNumber() - trackAssembly.getNumberInstall());
+                this.updateById(trackAssembly);
                 QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("assembly_id", id);
-                this.updateById(trackAssembly);
+                List<TrackAssemblyBinding> bindingList = assemblyBindingService.list(queryWrapper);
                 isSucceed = assemblyBindingService.remove(queryWrapper);
+                lineStoreService.unbundling(bindingList.get(0).getLineStoreId());
             }
         }
         return isSucceed;

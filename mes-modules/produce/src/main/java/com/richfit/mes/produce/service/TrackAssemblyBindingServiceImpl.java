@@ -1,15 +1,13 @@
 package com.richfit.mes.produce.service;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.TrackAssembly;
-import com.richfit.mes.common.model.produce.TrackAssemblyBinding;
-import com.richfit.mes.common.model.produce.TrackFlow;
-import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssemblyBindingMapper;
 import com.richfit.mes.produce.dao.TrackFlowMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -41,12 +39,26 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
     @Resource
     private TrackFlowMapper trackFlowMapper;
     @Resource
+    private TrackHeadFlowService flowService;
+    @Resource
     private TrackAssemblyBindingMapper trackAssemblyBindingMapper;
 
 
     @Override
-
     public CommonResult<Boolean> saveAssemblyBinding(TrackAssemblyBinding assembly) {
+        assembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("number", assembly.getNumber());
+        queryWrapper.eq("branch_code", assembly.getBranchCode());
+        queryWrapper.eq("tenant_id", assembly.getTenantId());
+        List<TrackAssemblyBinding> bindingList = this.list(queryWrapper);
+        if (CollectionUtils.isNotEmpty(bindingList)) {
+            throw new GlobalException("新增失败,编号以使用", ResultCode.FAILED);
+        }
+        TrackAssembly trackAssembly = trackAssemblyService.getById(assembly.getAssemblyId());
+        if (trackAssembly.getNumber() == trackAssembly.getNumberInstall()) {
+            throw new GlobalException("新增失败,零件已全部绑定", ResultCode.FAILED);
+        }
         return CommonResult.success(this.saveOrUpdate(assembly));
     }
 
@@ -58,38 +70,57 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         assemblyBinding.setItemId(itemId);
         TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
         TrackHead trackHead = trackHeadService.getById(trackAssembly.getTrackHeadId());
+        QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHead.getId());
+        TrackFlow trackFlow;
+        try {
+            trackFlow = flowService.getOne(queryWrapper);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new GlobalException("异常提示跟单数据异常出现多个生产流程", ResultCode.FAILED);
+        }
         if (1 == isBinding) {
-            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() + 1);
+            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() + assemblyBinding.getQuantity());
             //判断是否是编号来源
             if ("1".equals(trackAssembly.getIsNumFrom())) {
                 //生成产品编
-                QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("track_head_id", trackHead.getId());
-                TrackFlow trackFlow = trackFlowMapper.selectOne(queryWrapper);
                 String produceNo = trackAssembly.getDrawingNo() + " " + assemblyBinding.getNumber();
-                trackHead.setProductNo(produceNo);
+                trackHead.setProductNo(assemblyBinding.getNumber());
                 trackFlow.setProductNo(produceNo);
+                trackHead.setProductNoDesc(produceNo);
+                //料单入库生成入库单
+                LineStore lineStore = new LineStore();
+                lineStore.setTenantId(trackAssembly.getTenantId());
+                lineStore.setTrackType("0");
+                lineStore.setMaterialType("1");
+                lineStore.setMaterialNo(trackAssembly.getMaterialNo());
+                lineStore.setInputType("2");
+                lineStore.setProductName(trackAssembly.getName());
+                lineStore.setMaterialName(trackAssembly.getName());
+                lineStore.setBranchCode(trackAssembly.getBranchCode());
+                lineStore.setProdNo(produceNo);
+                lineStoreService.save(lineStore);
             }
-        } else {
-            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - 1);
-            trackHead.setProductNo("");
-        }
-        trackHeadService.updateById(trackHead);
-        trackAssemblyService.updateById(trackAssembly);
-        String expend = lineStoreService.zpExpend(trackAssembly.getDrawingNo(), assemblyBinding.getQuantity(), trackHead.getBranchCode(), trackHead.getTenantId(), assemblyBinding.getLineStoreId());
-        boolean equals = "true".equals(expend);
-        if (!equals) {
+            //绑定
+            String expend = lineStoreService.zpExpend(trackAssembly.getTrackHeadId(), trackFlow.getId(), trackAssembly.getMaterialNo(), assemblyBinding.getQuantity(), trackHead.getBranchCode(), trackHead.getTenantId());
             assemblyBinding.setLineStoreId(expend);
-        }
-        this.updateById(assemblyBinding);
-        if (StrUtil.isNotBlank(expend)) {
-            if (equals) {
-                return CommonResult.success(true, "解绑成功");
-            }
-            return CommonResult.success(true, "绑定成功");
         } else {
+            trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - assemblyBinding.getQuantity());
+            trackHead.setProductNo("");
+            trackHead.setProductNoDesc("");
+            trackFlow.setProductNo("");
+            lineStoreService.unbundling(assemblyBinding.getLineStoreId());
+        }
+        try {
+            this.updateById(assemblyBinding);
+            trackHeadService.updateById(trackHead);
+            flowService.updateById(trackFlow);
+            trackAssemblyService.updateById(trackAssembly);
+        } catch (Exception e) {
+            log.error(e.getMessage());
             throw new GlobalException("绑定失败", ResultCode.FAILED);
         }
+        return CommonResult.success(true, "绑定成功");
     }
 
     @Override
@@ -101,7 +132,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - assemblyBinding.getQuantity());
             trackAssemblyService.updateById(trackAssembly);
             //解绑
-            lineStoreService.unbundling(assemblyBinding.getLineStoreId(), assemblyBinding.getQuantity());
+            lineStoreService.unbundling(assemblyBinding.getLineStoreId());
         }
         return CommonResult.success(removeById(id));
     }

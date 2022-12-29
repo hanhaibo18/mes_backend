@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -79,7 +80,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Autowired
     private PublicService publicService;
 
+    @Resource
+    private TrackHeadRelationService trackHeadRelationService;
+
     @Override
+
     public LineStore LineStoreById(String id) {
         return lineStoreMapper.selectById(id);
     }
@@ -565,18 +570,11 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String zpExpend(String drawingNo, int number, String branchCode, String tenantId, String lineStoreId) {
-        //3 解绑成功 4失败
-        if (StrUtil.isNotBlank(lineStoreId)) {
-            boolean unbundling = this.unbundling(lineStoreId, number);
-            if (!unbundling) {
-                throw new GlobalException("解绑失败", ResultCode.FAILED);
-            }
-            return "true";
-        }
+    public String zpExpend(String trackHeadId, String flowId, String materialNo, int number, String branchCode, String tenantId) {
+        //查询所有可绑定数量大于0的
         QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
-        queryWrapper.apply("number-use_num =" + number);
-        queryWrapper.eq("drawing_no", drawingNo);
+        queryWrapper.apply("number-use_num >" + "0");
+        queryWrapper.eq("material_no", materialNo);
         queryWrapper.eq("input_type", "3");
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", tenantId);
@@ -584,39 +582,203 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         queryWrapper.orderByAsc("create_time");
         List<LineStore> lineStoreList = this.list(queryWrapper);
         if (CollectionUtils.isEmpty(lineStoreList)) {
-            QueryWrapper<LineStore> queryWrappers = new QueryWrapper<LineStore>();
-            queryWrappers.apply("number-use_num >" + number);
-            queryWrappers.eq("drawing_no", drawingNo);
-            queryWrappers.eq("input_type", "3");
-            queryWrappers.eq("branch_code", branchCode);
-            queryWrappers.eq("tenant_id", tenantId);
-            queryWrapper.notIn("status", "3");
-            queryWrappers.orderByAsc("create_time");
-            lineStoreList = this.list(queryWrappers);
-            //0 = 绑定失败
-            if (CollectionUtils.isEmpty(lineStoreList)) {
-                throw new GlobalException("未查询到可绑定项", ResultCode.FAILED);
+            throw new GlobalException("未查询到可绑定物料!", ResultCode.FAILED);
+        }
+        //绑定
+        //剩余数量
+        int surplus = number;
+        List<String> bindingIdList = new ArrayList<>();
+        try {
+            for (LineStore lineStore : lineStoreList) {
+                //判断还有需要绑定数量,没有结束循环
+                if (surplus == 0) {
+                    break;
+                }
+                //创建出库单
+                TrackHeadRelation relation = new TrackHeadRelation();
+                relation.setFlowId(flowId);
+                relation.setThId(trackHeadId);
+                relation.setLsId(lineStore.getId());
+                relation.setType("1");
+                //计算可绑定数量
+                int num = lineStore.getNumber() - lineStore.getUseNum();
+                //判断是剩余大于可绑定数量
+                if (surplus > num) {
+                    //大于可绑定数量,先绑定可绑定数量
+                    lineStore.setUseNum(lineStore.getNumber());
+                    lineStore.setStatus("3");
+                    //绑定后剩余数量
+                    surplus = surplus - num;
+                    relation.setNumber(num);
+                    //写出库记录
+                    //记录表不返回Id 自行查询最大的ID
+                    TrackHeadRelation id = trackHeadRelationService.getOne(new LambdaQueryWrapper<TrackHeadRelation>().orderByDesc(TrackHeadRelation::getId).last("limit 1"));
+                    relation.setId(id.getId() + 1);
+                    trackHeadRelationService.save(relation);
+                    bindingIdList.add(String.valueOf(relation.getId()));
+                    this.updateById(lineStore);
+                    continue;
+                }
+                //判断剩余数量等于可绑定数量
+                if (surplus == num) {
+                    lineStore.setUseNum(lineStore.getNumber());
+                    lineStore.setStatus("3");
+                    //绑定后剩余数量
+                    surplus = 0;
+                    relation.setNumber(num);
+                    //写出库记录
+                    //记录表不返回Id 自行查询最大的ID
+                    TrackHeadRelation id = trackHeadRelationService.getOne(new LambdaQueryWrapper<TrackHeadRelation>().orderByDesc(TrackHeadRelation::getId).last("limit 1"));
+                    relation.setId(id.getId() + 1);
+                    trackHeadRelationService.save(relation);
+                    bindingIdList.add(String.valueOf(relation.getId()));
+                    this.updateById(lineStore);
+                    continue;
+                }
+                lineStore.setUseNum(lineStore.getUseNum() + surplus);
+                //绑定后剩余数量
+                surplus = 0;
+                //创建出库单
+                relation.setNumber(num);
+                //写出库记录
+                //记录表不返回Id 自行查询最大的ID
+                TrackHeadRelation id = trackHeadRelationService.getOne(new LambdaQueryWrapper<TrackHeadRelation>().orderByDesc(TrackHeadRelation::getId).last("limit 1"));
+                relation.setId(id.getId() + 1);
+                trackHeadRelationService.save(relation);
+                bindingIdList.add(String.valueOf(relation.getId()));
+                this.updateById(lineStore);
             }
+            if (surplus != 0) {
+                throw new GlobalException("绑定失败,可绑定数量不足", ResultCode.FAILED);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new GlobalException("绑定数量计算错误", ResultCode.FAILED);
         }
-        LineStore lineStore = lineStoreList.get(0);
-        int num = lineStore.getUseNum() + number;
-        lineStore.setUseNum(num);
-        if (lineStore.getNumber() == num) {
-            lineStore.setStatus("3");
-        }
-        this.updateById(lineStore);
-        return lineStore.getId();
+        return String.join(",", bindingIdList);
     }
 
     @Override
-    public boolean unbundling(String id, int number) {
-        LineStore lineStore = this.getById(id);
-        int num = lineStore.getUseNum() - number;
-        lineStore.setUseNum(num);
-        if ("3".equals(lineStore.getStatus())) {
-            lineStore.setStatus("0");
+    public Map<String, String> partsBinding(String trackHeadId, String flowId, String materialNo, int number, String branchCode, String tenantId) {
+        List<String> failureList = new ArrayList<>();
+        //查询所有可绑定数量大于0的
+        QueryWrapper<LineStore> queryWrapper = new QueryWrapper<LineStore>();
+        queryWrapper.apply("number-use_num >" + "0");
+        queryWrapper.eq("material_no", materialNo);
+        queryWrapper.eq("input_type", "3");
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.notIn("status", "3");
+        queryWrapper.orderByAsc("create_time");
+        List<LineStore> lineStoreList = this.list(queryWrapper);
+        if (CollectionUtils.isEmpty(lineStoreList)) {
+            failureList.add(materialNo);
         }
-        return this.updateById(lineStore);
+        //绑定
+        //剩余数量
+        int surplus = number;
+        List<String> bindingIdList = new ArrayList<>();
+        try {
+            for (LineStore lineStore : lineStoreList) {
+                //判断还有需要绑定数量,没有结束循环
+                if (surplus == 0) {
+                    break;
+                }
+                //创建出库单
+                TrackHeadRelation relation = new TrackHeadRelation();
+                relation.setFlowId(flowId);
+                relation.setThId(trackHeadId);
+                relation.setLsId(lineStore.getId());
+                relation.setType("1");
+                //计算可绑定数量
+                int num = lineStore.getNumber() - lineStore.getUseNum();
+                //判断是剩余大于可绑定数量
+                if (surplus > num) {
+                    //大于可绑定数量,先绑定可绑定数量
+                    lineStore.setUseNum(lineStore.getNumber());
+                    lineStore.setStatus("3");
+                    //绑定后剩余数量
+                    surplus = surplus - num;
+                    relation.setNumber(num);
+                    //写出库记录
+                    //记录表不返回Id 自行查询最大的ID
+                    TrackHeadRelation id = trackHeadRelationService.getOne(new LambdaQueryWrapper<TrackHeadRelation>().orderByDesc(TrackHeadRelation::getId).last("limit 1"));
+                    relation.setId(id.getId() + 1);
+                    trackHeadRelationService.save(relation);
+                    bindingIdList.add(String.valueOf(relation.getId()));
+                    this.updateById(lineStore);
+                    continue;
+                }
+                //判断剩余数量等于可绑定数量
+                if (surplus == num) {
+                    lineStore.setUseNum(lineStore.getNumber());
+                    lineStore.setStatus("3");
+                    //绑定后剩余数量
+                    surplus = 0;
+                    relation.setNumber(num);
+                    //写出库记录
+                    //记录表不返回Id 自行查询最大的ID
+                    TrackHeadRelation id = trackHeadRelationService.getOne(new LambdaQueryWrapper<TrackHeadRelation>().orderByDesc(TrackHeadRelation::getId).last("limit 1"));
+                    relation.setId(id.getId() + 1);
+                    trackHeadRelationService.save(relation);
+                    bindingIdList.add(String.valueOf(relation.getId()));
+                    this.updateById(lineStore);
+                    continue;
+                }
+                lineStore.setUseNum(lineStore.getUseNum() + surplus);
+                //绑定后剩余数量
+                surplus = 0;
+                //创建出库单
+                relation.setNumber(num);
+                //写出库记录
+                //记录表不返回Id 自行查询最大的ID
+                TrackHeadRelation id = trackHeadRelationService.getOne(new LambdaQueryWrapper<TrackHeadRelation>().orderByDesc(TrackHeadRelation::getId).last("limit 1"));
+                relation.setId(id.getId() + 1);
+                trackHeadRelationService.save(relation);
+                bindingIdList.add(String.valueOf(relation.getId()));
+                this.updateById(lineStore);
+            }
+            if (surplus != 0) {
+                failureList.add(materialNo);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new GlobalException("绑定数量计算错误", ResultCode.FAILED);
+        }
+        Map<String, String> map = new HashMap<>();
+        map.put("failureList", String.join(",", failureList));
+        map.put("success", String.join(",", bindingIdList));
+        return map;
+    }
+
+
+    @Override
+    @Transactional
+    public boolean unbundling(String idList) {
+        try {
+            List<String> list = new ArrayList<>();
+            if (idList.contains(",")) {
+                list = Arrays.asList(idList.split(","));
+            } else {
+                list.add(idList);
+            }
+            for (String id : list) {
+                TrackHeadRelation trackHeadRelation = trackHeadRelationService.getById(id);
+                LineStore lineStore = this.getById(trackHeadRelation.getLsId());
+                //计算已使用数量
+                int num = lineStore.getUseNum() - trackHeadRelation.getNumber();
+                lineStore.setUseNum(num);
+                if ("3".equals(lineStore.getStatus())) {
+                    lineStore.setStatus("0");
+                }
+                this.updateById(lineStore);
+                trackHeadRelationService.removeById(id);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new GlobalException("解绑失败", ResultCode.FAILED);
+        }
+        return true;
     }
 
     @Override

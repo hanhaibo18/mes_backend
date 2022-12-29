@@ -94,28 +94,44 @@ public interface LineStoreService extends IService<LineStore> {
     void reSetCertNoByTrackHead(TrackHead trackHead);
 
     /**
-     * 功能描述:根据图号和物料号 消耗数量
+     * 功能描述:物料绑定 解放 消耗
      *
-     * @param drawingNo
+     * @param trackHeadId
+     * @param flowId
      * @param materialNo
      * @param number
-     * @param state
+     * @param branchCode
+     * @param tenantId
      * @Author: xinYu.hou
-     * @Date: 2022/7/19 10:59
+     * @Date: 2022/12/28 15:27
      * @return: String
      **/
-    String zpExpend(String drawingNo, int number, String branchCode, String tenantId, String lineStoreId);
+    String zpExpend(String trackHeadId, String flowId, String materialNo, int number, String branchCode, String tenantId);
+
+    /**
+     * 功能描述: 绑定非关键件
+     *
+     * @param trackHeadId
+     * @param flowId
+     * @param materialNo
+     * @param number
+     * @param branchCode
+     * @param tenantId
+     * @Author: xinYu.hou
+     * @Date: 2022/12/29 23:37
+     * @return: Map<String, String>
+     **/
+    Map<String, String> partsBinding(String trackHeadId, String flowId, String materialNo, int number, String branchCode, String tenantId);
 
     /**
      * 功能描述: 根据id 解绑
      *
-     * @param id
-     * @param number
+     * @param idList
      * @Author: xinYu.hou
      * @Date: 2022/12/15 5:56
      * @return: boolean
      **/
-    boolean unbundling(String id, int number);
+    boolean unbundling(String idList);
 
     /**
      * 功能描述: 根据料单Id，查询附件并存储到临时目录，等待压缩下载

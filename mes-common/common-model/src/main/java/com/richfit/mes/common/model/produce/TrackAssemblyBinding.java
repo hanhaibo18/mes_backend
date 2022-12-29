@@ -57,9 +57,9 @@ public class TrackAssemblyBinding extends BaseEntity<TrackAssemblyBinding> {
      * 所属租户
      */
     private String tenantId;
+
     /**
      * 绑定物料Id
      */
     private String lineStoreId;
-
 }
