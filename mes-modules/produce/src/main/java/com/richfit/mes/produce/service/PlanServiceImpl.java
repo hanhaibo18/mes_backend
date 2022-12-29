@@ -213,6 +213,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     }
                     if (flag) {
                         ProjectBomComplete projectBomComplete = new ProjectBomComplete();
+                        projectBomComplete.setTenantId(plan.getTenantId());
+                        projectBomComplete.setBranchCode(plan.getBranchCode());
                         projectBomComplete.setPlanNumber(plan.getProjNum());
                         projectBomComplete.setPlanNeedNumber(plan.getProjNum() * trackAssembly.getNumber());
                         projectBomComplete.setNumber(trackAssembly.getNumber());
@@ -242,6 +244,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     List<ProjectBomComplete> pojectBomCompleteStoreList(List<ProjectBomComplete> projectBomCompleteList) {
         for (ProjectBomComplete pbc : projectBomCompleteList) {
             int num = wmsServiceClient.queryMaterialCount(pbc.getMaterialNo()).getData();
+
 //            int totalErp = 0;
             double totalWms = Double.valueOf(num).intValue();
             double totalStore = 0;
@@ -252,6 +255,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             Integer totalMaterial = lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
             if (totalMaterial != null) {
                 totalStore += lineStoreMapper.selectTotalNum(pbc.getMaterialNo(), pbc.getBranchCode(), pbc.getTenantId());
+                log.info("线边库物料数量： [{}]", totalStore);
                 pbc.setStoreNumber(totalStore / unit);
             }
             totalMiss = pbc.getPlanNeedNumber() * unit - totalWms - totalStore;
