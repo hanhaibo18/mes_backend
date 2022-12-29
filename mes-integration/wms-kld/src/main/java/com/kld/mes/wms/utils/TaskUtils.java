@@ -110,89 +110,79 @@ public class TaskUtils {
     }
 
     public List<MaterialReceive> saveMaterialReceive(String code, String time, Statement stmt) throws Exception {
-        try {
-            List<MaterialReceive> materialReceiveList = new ArrayList<>();
-            int total = 0;
-            int pageSize = 1000;
-            String sql = null;
-            String totalSql = null;
+        List<MaterialReceive> materialReceiveList = new ArrayList<>();
+        int total = 0;
+        int pageSize = 1000;
+        String sql = null;
+        String totalSql = null;
+        if (StringUtils.isEmpty(time)) {
+            //查所有
+            totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "'";
+        } else {
+            //查上次最后一条时间之后所有
+            totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "'";
+        }
+
+        ResultSet totalRs = stmt.executeQuery(totalSql);
+        while (totalRs.next()) {
+            total = totalRs.getInt("total");
+        }
+        for (int page = 0; total > page * pageSize; page++) {
             if (StringUtils.isEmpty(time)) {
                 //查所有
-                totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "'";
+                sql = "select * from v_mes_out_headers where work_code ='" + code + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
             } else {
                 //查上次最后一条时间之后所有
-                totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "'";
+                sql = "select * from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
             }
-
-            ResultSet totalRs = stmt.executeQuery(totalSql);
-            while (totalRs.next()) {
-                total = totalRs.getInt("total");
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                String outNum = rs.getString("OUT_NUM");
+                String aplyNum = rs.getString("APLY_NUM");
+                String createTime = rs.getString("CREATE_TIME");
+                MaterialReceive materialReceive = new MaterialReceive();
+                materialReceive.setDeliveryNo(outNum);
+                materialReceive.setAplyNum(aplyNum);
+                materialReceive.setOutboundDate(createTime);
+                materialReceive.setState("0");
+                materialReceive.setErpCode(code);
+                materialReceiveList.add(materialReceive);
             }
-            for (int page = 0; total > page * pageSize; page++) {
-                if (StringUtils.isEmpty(time)) {
-                    //查所有
-                    sql = "select * from v_mes_out_headers where work_code ='" + code + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
-                } else {
-                    //查上次最后一条时间之后所有
-                    sql = "select * from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
-                }
-                ResultSet rs = stmt.executeQuery(sql);
-                while (rs.next()) {
-                    String outNum = rs.getString("OUT_NUM");
-                    String aplyNum = rs.getString("APLY_NUM");
-                    String createTime = rs.getString("CREATE_TIME");
-                    MaterialReceive materialReceive = new MaterialReceive();
-                    materialReceive.setDeliveryNo(outNum);
-                    materialReceive.setAplyNum(aplyNum);
-                    materialReceive.setOutboundDate(createTime);
-                    materialReceive.setState("0");
-                    materialReceive.setErpCode(code);
-                    materialReceiveList.add(materialReceive);
-                }
-                rs.close();
-            }
-            return materialReceiveList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception(e.getMessage());
+            rs.close();
         }
+        return materialReceiveList;
     }
 
     public List<MaterialReceiveDetail> saveMaterialReceiveDetail(List<MaterialReceive> materialReceiveList, Statement stmt) throws Exception {
-        try {
-            List<MaterialReceiveDetail> detailList = new ArrayList<>();
-            for (MaterialReceive materialReceive : materialReceiveList) {
-                String sql = "SELECT * FROM v_mes_out_lines where APLY_NUM = '" + materialReceive.getAplyNum() + "'";
-                ResultSet rs = stmt.executeQuery(sql);
-                while (rs.next()) {
-                    String outNum = rs.getString("OUT_NUM");
-                    String aplyNum = rs.getString("APLY_NUM");
-                    String materialNum = rs.getString("MATERIAL_NUM");
-                    String name = rs.getString("MATERIAL_DESC");
-                    String batchNum = rs.getString("BATCH_NUM");
-                    int orderQuantity = rs.getInt("ORDER_QUANTITY");
-                    int quantity = rs.getInt("QUANTITY");
-                    String unit = rs.getString("UNIT");
+        List<MaterialReceiveDetail> detailList = new ArrayList<>();
+        for (MaterialReceive materialReceive : materialReceiveList) {
+            String sql = "SELECT * FROM v_mes_out_lines where APLY_NUM = '" + materialReceive.getAplyNum() + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                String outNum = rs.getString("OUT_NUM");
+                String aplyNum = rs.getString("APLY_NUM");
+                String materialNum = rs.getString("MATERIAL_NUM");
+                String name = rs.getString("MATERIAL_DESC");
+                String batchNum = rs.getString("BATCH_NUM");
+                int orderQuantity = rs.getInt("ORDER_QUANTITY");
+                int quantity = rs.getInt("QUANTITY");
+                String unit = rs.getString("UNIT");
 
-                    MaterialReceiveDetail materialReceiveDetail = new MaterialReceiveDetail();
-                    materialReceiveDetail.setDeliveryNo(outNum);
-                    materialReceiveDetail.setAplyNum(aplyNum);
-                    materialReceiveDetail.setMaterialNum(materialNum);
-                    materialReceiveDetail.setName(name);
-                    materialReceiveDetail.setBatchNum(batchNum);
-                    materialReceiveDetail.setOrderQuantity(orderQuantity);
-                    materialReceiveDetail.setQuantity(quantity);
-                    materialReceiveDetail.setUnit(unit);
-                    materialReceiveDetail.setState("0");
-                    //根据申请单和物料号查询图号
-                    detailList.add(materialReceiveDetail);
-                }
-                rs.close();
+                MaterialReceiveDetail materialReceiveDetail = new MaterialReceiveDetail();
+                materialReceiveDetail.setDeliveryNo(outNum);
+                materialReceiveDetail.setAplyNum(aplyNum);
+                materialReceiveDetail.setMaterialNum(materialNum);
+                materialReceiveDetail.setName(name);
+                materialReceiveDetail.setBatchNum(batchNum);
+                materialReceiveDetail.setOrderQuantity(orderQuantity);
+                materialReceiveDetail.setQuantity(quantity);
+                materialReceiveDetail.setUnit(unit);
+                materialReceiveDetail.setState("0");
+                //根据申请单和物料号查询图号
+                detailList.add(materialReceiveDetail);
             }
-            return detailList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception(e.getMessage());
+            rs.close();
         }
+        return detailList;
     }
 }
