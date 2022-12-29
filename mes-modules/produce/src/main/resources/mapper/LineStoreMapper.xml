@@ -68,7 +68,10 @@
     <!-- 查询装配库存  配送接收量-->
     <select id="selectDeliveryNumber" resultType="com.richfit.mes.common.model.produce.store.LineStoreSumZp">
         select drawing_no,sum(number) delivery_number
-        from mes_produce.produce_line_store where input_type ='3' and material_type = '1' and status='0'
+        from mes_produce.produce_line_store
+        where input_type ='3'
+        and material_type = '1'
+        -- and status='0'
         and tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
@@ -83,11 +86,28 @@
 
     <!-- 查询装配库存 全部需求量-->
     <select id="selectRequireNum" resultType="com.richfit.mes.common.model.produce.store.LineStoreSumZp">
-        select cc.drawing_no,sum(cc.compsum) as require_number
-        from (
-        select c.drawing_no,c.`number` * a.bomsum as compsum from (
-        select sum(1) as bomsum,drawing_no from
-        produce_track_head
+        <!--        select cc.drawing_no,sum(cc.compsum) as require_number-->
+        <!--        from (-->
+        <!--        select c.drawing_no,c.`number` * a.bomsum as compsum from (-->
+        <!--        select sum(1) as bomsum,drawing_no from-->
+        <!--        produce_track_head-->
+        <!--        where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}-->
+        <!--        <trim suffixOverrides=",">-->
+        <!--            <if test="param.drawingNo != null and param.drawingNo != ''">-->
+        <!--                and drawing_no like CONCAT('%',#{param.drawingNo},'%')-->
+        <!--            </if>-->
+        <!--            <if test="param.materialNo != null and param.materialNo != ''">-->
+        <!--                and material_no like CONCAT('%',#{param.materialNo},'%')-->
+        <!--            </if>-->
+        <!--        </trim>-->
+        <!--        group by drawing_No-->
+        <!--        ) a,-->
+        <!--        produce_project_bom c where c.main_drawing_no=a.drawing_no-->
+        <!--        ) cc-->
+        <!--        group by cc.drawing_no-->
+
+        select sum(ifnull(number,0)) as require_number,drawing_no from
+        produce_track_assembly
         where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
@@ -98,10 +118,6 @@
             </if>
         </trim>
         group by drawing_No
-        ) a,
-        produce_project_bom c where c.main_drawing_no=a.drawing_no
-        ) cc
-        group by cc.drawing_no
     </select>
 
 
