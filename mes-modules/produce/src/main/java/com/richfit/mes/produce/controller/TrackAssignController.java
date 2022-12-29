@@ -334,7 +334,7 @@ public class TrackAssignController extends BaseController {
                     //判断是否是装配
                     boolean assembly = "2".equals(trackHead.getClasses());
                     //是否是第一道工序
-                    boolean item = "1".equals(trackItem.getOriginalOptSequence());
+                    boolean item = 1 == trackItem.getOptSequence();
                     //判断是否开工
                     boolean isDoing = 0 == trackItem.getIsDoing();
                     //判断当前工序
