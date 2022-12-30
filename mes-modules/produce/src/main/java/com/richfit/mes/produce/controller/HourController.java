@@ -41,7 +41,7 @@ public class HourController {
 
         QueryWrapper<Hour> queryWrapper = new QueryWrapper<Hour>();
 
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(deviceType),"device_type", deviceType);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(deviceType),"type_code", deviceType);
         queryWrapper.eq("ver_id", verId);
         if(!StringUtils.isNullOrEmpty(orderCol)){
             //排序
