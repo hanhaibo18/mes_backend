@@ -36,16 +36,16 @@ public class Hour extends BaseEntity<Hour> {
     private String weightUp;
 
     @ApiModelProperty(value = "碳化上限", dataType = "String")
-    private String cUp;
+    private String layerDepthCarbonCeiling;
 
     @ApiModelProperty(value = "碳化下限", dataType = "String")
-    private String cDown;
+    private String layerDepthCarbonFloor;
 
     @ApiModelProperty(value = "氮化上限", dataType = "String")
-    private String nUp;
+    private String layerDepthNitrogenCeiling;
 
     @ApiModelProperty(value = "氮化下限", dataType = "String")
-    private String nDown;
+    private String layerDepthNitrogenFloor;
 
     @ApiModelProperty(value = "是否高温", dataType = "String")
     private String isHighTemp;
