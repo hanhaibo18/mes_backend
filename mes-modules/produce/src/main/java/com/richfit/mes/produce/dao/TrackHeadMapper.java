@@ -7,10 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.produce.entity.IncomingMaterialVO;
-import com.richfit.mes.produce.entity.QueryTailAfterDto;
-import com.richfit.mes.produce.entity.TailAfterVo;
-import com.richfit.mes.produce.entity.WorkDetailedListVo;
+import com.richfit.mes.produce.entity.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -158,44 +155,12 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      **/
     @Select("<script>" +
             " select * from v_produce_track_store_info where 1=1 " +
-            " <if test='id != null and id != \"\"'> " +
-            "  and id = #{id} " +
-            " </if> " +
-            " <if test='startDate != null and startDate != \"\"'> " +
-            "  and create_time &gt;= #{startDate} " +
-            " </if> " +
-            " <if test='endDate != null and endDate != \"\"'> " +
-            "  and create_time &lt;= #{endDate} " +
-            " </if> " +
-            " <if test='isExamineCard != null and isExamineCard != \"\"'> " +
-            "  and is_examine_card = #{isExamineCard} " +
-            " </if> " +
-            " <if test='isExamineCardData != null and isExamineCardData != \"\"'> " +
-            "  and is_examine_card_data = #{isExamineCardData} " +
-            " </if> " +
-            " <if test='isCardData != null and isCardData != \"\"'> " +
-            "  and is_card_data = #{isCardData} " +
-            " </if> " +
-            " <if test='templateCode != null and templateCode != \"\"'> " +
-            "  and template_code = #{templateCode} " +
-            " </if> " +
-            " <if test='rollStatus != null and rollStatus != \"\"'> " +
-            "  and status > 0 " +
-            " </if> " +
-            " <if test='status != null and status != \"\"'> " +
-            "  and status in (${status}) " +
-            " </if> " +
-            " <if test='isCompletionData != null and isCompletionData != \"\"'> " +
-            "  and is_completion_data = #{isCompletionData} " +
-            " </if> " +
-            " <if test='isCertificate != null and isCertificate != \"\"'> " +
-            "   <if test='isCertificate == \"Y\"'> " +
-            "       and certificate_no is not NULL " +
-            "   </if>" +
-            "   <if test='isCertificate == \"N\"'> " +
-            "       and (certificate_no is null or certificate_no = '') " +
-            "   </if>" +
-            " </if> " +
+//            " <if test='startDate != null and startDate != \"\"'> " +
+//            "  and create_time &gt;= #{startDate} " +
+//            " </if> " +
+//            " <if test='endDate != null and endDate != \"\"'> " +
+//            "  and create_time &lt;= #{endDate} " +
+//            " </if> " +
             " <if test='productNo != null and productNo != \"\"'> " +
             "  and product_no like concat('%',#{productNo},'%') " +
             " </if> " +
@@ -208,30 +173,12 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
             " <if test='drawingNo != null and drawingNo != \"\"'> " +
             "  and drawing_no like concat('%',#{drawingNo},'%') " +
             " </if> " +
-            " <if test='batchNo != null and batchNo != \"\"'> " +
-            "  and batch_no like concat('%',#{batchNo},'%') " +
-            " </if> " +
-            " <if test='productionOrder != null and productionOrder != \"\"'> " +
-            "  and production_order = #{productionOrder} " +
-            " </if> " +
-            " <if test='productionOrderId != null and productionOrderId != \"\"'> " +
-            "  and production_order_id = #{productionOrderId} " +
-            " </if> " +
-            " <if test='workPlanId != null and workPlanId != \"\"'> " +
-            "  and work_plan_id = #{workPlanId} " +
-            " </if> " +
-            " <if test='classes != null and classes != \"\"'> " +
-            "  and classes = #{classes} " +
-            " </if> " +
             " <if test='branchCode != null and branchCode != \"\"'> " +
             "  and branch_code = #{branchCode} " +
             " </if> " +
             " <if test='tenantId != null and tenantId != \"\"'> " +
             "  and tenant_id = #{tenantId} " +
             " </if> " +
-            " <if test='orderCol != null and orderCol != \"\"'> " +
-            " order by ${orderCol} ${order},modify_time desc" +
-            " </if> " +
             "</script>")
-    List<TrackHead> selectTrackHeadAccount(TrackHead trackHead);
+    List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead);
 }

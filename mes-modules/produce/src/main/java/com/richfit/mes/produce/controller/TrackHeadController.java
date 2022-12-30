@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -73,11 +74,15 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "分页查询跟单台账", notes = "分页查询跟单台账")
     @PostMapping("/track_head/account")
-    public CommonResult<PageInfo<TrackHead>> selectTrackHeadAccount(@ApiParam(value = "跟单查询条件") @RequestBody(required = false) TrackHead trackHead,
-                                                                    @ApiParam(value = "页码") @RequestParam(required = false) int page,
-                                                                    @ApiParam(value = "条数") @RequestParam(required = false) int limit
+    public CommonResult<PageInfo<TrackHead>> selectTrackHeadAccount(@ApiParam(value = "跟单查询条件") @RequestBody(required = false) TeackHeadDto trackHead
     ) {
-        PageHelper.startPage(page, limit);
+        PageHelper.startPage(trackHead.getPage(), trackHead.getLimit());
+        if (StrUtil.isNotBlank(trackHead.getTrackNo())) {
+            trackHead.setTrackNo(trackHead.getTrackNo().replaceAll(" ", ""));
+        }
+        if (StrUtil.isNotBlank(trackHead.getOrderCol())) {
+            PageHelper.orderBy(trackHead.getOrderCol() + " " + trackHead.getOrder());
+        }
         List<TrackHead> trackHeadList = trackHeadService.selectTrackHeadAccount(trackHead);
         PageInfo<TrackHead> trackFlowPage = new PageInfo(trackHeadList);
         return CommonResult.success(trackFlowPage, TRACK_HEAD_SUCCESS_MESSAGE);

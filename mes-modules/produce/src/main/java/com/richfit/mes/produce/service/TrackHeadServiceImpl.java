@@ -106,7 +106,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     private TrackItemMapper trackItemMapper;
 
     @Override
-    public List<TrackHead> selectTrackHeadAccount(TrackHead trackHead) {
+    public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
         return trackHeadMapper.selectTrackHeadAccount(trackHead);
     }
 
