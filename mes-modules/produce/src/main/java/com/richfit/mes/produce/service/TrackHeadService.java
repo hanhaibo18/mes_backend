@@ -337,7 +337,6 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @param productNo   不带图号的产品编码
      * @Author: zhiqiang.lu
      * @Date: 2022/12/30 9:38
-     * @return: boolean
      **/
     void changeProductNo(String trackHeadId, String productNo);
 }
