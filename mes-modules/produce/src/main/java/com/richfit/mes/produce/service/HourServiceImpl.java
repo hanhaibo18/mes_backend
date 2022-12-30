@@ -56,9 +56,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
     public CommonResult importExcel(MultipartFile file, String branchCode, String verId) {
         CommonResult result = CommonResult.success(true);
         //封装工时信息实体类
-        java.lang.reflect.Field[] fields = Hour.class.getDeclaredFields();
-
-        String[] fieldNames = {"isExport","deviceName","optName","weightDown","weightUp","cDown","cUp","nDown","nUp","isHighTemp","hour"};
+        String[] fieldNames = {"isExport","deviceName","optName","weightDown","weightUp","layerDepthCarbonFloor","layerDepthCarbonCeiling","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour"};
 
         File excelFile = null;
         //给导入的excel一个临时的文件名
@@ -143,7 +141,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
 
             String[] columnHeaders = {"ID", "版本号", "设备类型", "设备名", "工序id", "工序名", "重量下限", "重量上限", "碳化上限", "碳化下限", "氮化上限","氮化下限","是否高温","工时","变更时间","变更人"};
 
-            String[] fieldNames = {"id", "ver", "typeCode", "deviceName", "optId", "optName", "weightUp", "weightDown", "cUp", "cDown", "nUp","nDown","isHighTemp","hour","modifyTime","modifyBy"};
+            String[] fieldNames = {"id", "ver", "typeCode", "deviceName", "optId", "optName", "weightUp", "weightDown", "layerDepthCarbonCeiling","layerDepthCarbonFloor","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour","modifyTime","modifyBy"};
 
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);

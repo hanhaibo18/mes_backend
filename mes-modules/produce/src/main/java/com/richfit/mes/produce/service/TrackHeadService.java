@@ -25,7 +25,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/12/29 17:06
      **/
-    List<TrackHead> selectTrackHeadAccount(TrackHead trackHead);
+    List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead);
 
 
     /**
