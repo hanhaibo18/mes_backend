@@ -435,30 +435,35 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public void changeProductNo(String trackHeadId, String productNo) {
-        TrackHead trackHead = this.getById(trackHeadId);
-        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
-        queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
-        TrackFlow trackFlow;
         try {
-            trackFlow = trackHeadFlowService.getOne(queryWrapperTrackFlow);
+            TrackHead trackHead = this.getById(trackHeadId);
+            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+            queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
+            TrackFlow trackFlow;
+            try {
+                trackFlow = trackHeadFlowService.getOne(queryWrapperTrackFlow);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                throw new GlobalException("跟单产品编写修改只支持跟单只有单个产品编码，不支持多生产编码修改。", ResultCode.FAILED);
+            }
+            //生成产品编
+            String produceNoDesc = trackHead.getDrawingNo() + " " + productNo;
+            trackHead.setProductNo(productNo);
+            trackHead.setProductNoDesc(produceNoDesc);
+            trackFlow.setProductNo(produceNoDesc);
+            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+            queryWrapperTrackItem.eq("track_head_id", trackHeadId);
+            List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+            for (TrackItem trackItem : trackItemList) {
+                trackItem.setProductNo(produceNoDesc);
+            }
+            trackItemService.updateBatchById(trackItemList);
+            trackHeadFlowService.updateById(trackFlow);
+            this.updateById(trackHead);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new GlobalException("跟单产品编写修改只支持跟单只有单个产品编码，不支持多生产编码修改。", ResultCode.FAILED);
+            throw new GlobalException("修改产品编码出现异常：" + e.getMessage(), ResultCode.FAILED);
         }
-        //生成产品编
-        String produceNoDesc = trackHead.getDrawingNo() + " " + productNo;
-        trackHead.setProductNo(productNo);
-        trackHead.setProductNoDesc(produceNoDesc);
-        trackFlow.setProductNo(produceNoDesc);
-        QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-        queryWrapperTrackItem.eq("track_head_id", trackHeadId);
-        List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
-        for (TrackItem trackItem : trackItemList) {
-            trackItem.setProductNo(produceNoDesc);
-        }
-        trackItemService.updateBatchById(trackItemList);
-        this.updateById(trackHead);
-        trackHeadFlowService.updateById(trackFlow);
     }
 
 
