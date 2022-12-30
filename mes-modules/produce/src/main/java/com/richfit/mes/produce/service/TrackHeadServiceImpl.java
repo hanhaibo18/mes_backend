@@ -451,13 +451,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setProductNo(productNo);
             trackHead.setProductNoDesc(produceNoDesc);
             trackFlow.setProductNo(produceNoDesc);
-            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-            queryWrapperTrackItem.eq("track_head_id", trackHeadId);
-            List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
-            for (TrackItem trackItem : trackItemList) {
-                trackItem.setProductNo(produceNoDesc);
-            }
-            trackItemService.updateBatchById(trackItemList);
+
+            //修改item表产品编号
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("track_head_id", trackHead.getId());
+            updateWrapper.set("product_no", produceNoDesc);
+            trackItemService.update(updateWrapper);
+
+//            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+//            queryWrapperTrackItem.eq("track_head_id", trackHeadId);
+//            List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+//            for (TrackItem trackItem : trackItemList) {
+//                trackItem.setProductNo(produceNoDesc);
+//            }
+//            trackItemService.updateBatchById(trackItemList);
             trackHeadFlowService.updateById(trackFlow);
             this.updateById(trackHead);
         } catch (Exception e) {

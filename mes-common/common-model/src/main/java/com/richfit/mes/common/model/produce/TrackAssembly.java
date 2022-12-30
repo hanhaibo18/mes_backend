@@ -196,6 +196,9 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
      * 产品类型
      */
     private String sourceType;
+    
+    @ApiModelProperty(value = "绑定的入库物料Id")
+    private String lineStoreId;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "是否生成部件级别跟单")

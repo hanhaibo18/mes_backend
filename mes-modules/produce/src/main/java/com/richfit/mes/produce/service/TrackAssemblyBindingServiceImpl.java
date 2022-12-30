@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,6 +43,8 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
     @Resource
     private TrackHeadFlowService flowService;
     @Resource
+    private TrackItemService trackItemService;
+    @Resource
     private TrackAssemblyBindingMapper trackAssemblyBindingMapper;
 
 
@@ -49,6 +53,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         assembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("number", assembly.getNumber());
+        queryWrapper.eq("part_drawing_no", assembly.getPartDrawingNo());
         queryWrapper.eq("branch_code", assembly.getBranchCode());
         queryWrapper.eq("tenant_id", assembly.getTenantId());
         List<TrackAssemblyBinding> bindingList = this.list(queryWrapper);
@@ -86,20 +91,30 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
                 //生成产品编
                 String produceNo = trackAssembly.getDrawingNo() + " " + assemblyBinding.getNumber();
                 trackHead.setProductNo(assemblyBinding.getNumber());
-                trackFlow.setProductNo(produceNo);
                 trackHead.setProductNoDesc(produceNo);
+                trackFlow.setProductNo(produceNo);
+                //修改工序表中产品编号
+                UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("track_head_id", trackHead.getId());
+                updateWrapper.set("product_no", produceNo);
+                trackItemService.update(updateWrapper);
+//                trackHeadService.changeProductNo();
                 //料单入库生成入库单
                 LineStore lineStore = new LineStore();
                 lineStore.setTenantId(trackAssembly.getTenantId());
                 lineStore.setTrackType("0");
                 lineStore.setMaterialType("1");
+                lineStore.setInTime(new Date());
                 lineStore.setMaterialNo(trackAssembly.getMaterialNo());
                 lineStore.setInputType("2");
                 lineStore.setProductName(trackAssembly.getName());
                 lineStore.setMaterialName(trackAssembly.getName());
                 lineStore.setBranchCode(trackAssembly.getBranchCode());
                 lineStore.setProdNo(produceNo);
+                lineStore.setDrawingNo(trackAssembly.getDrawingNo());
+                lineStore.setStatus("1");
                 lineStoreService.save(lineStore);
+                trackAssembly.setLineStoreId(lineStore.getId());
             }
             //绑定
             String expend = lineStoreService.zpExpend(trackAssembly.getTrackHeadId(), trackFlow.getId(), trackAssembly.getMaterialNo(), assemblyBinding.getQuantity(), trackHead.getBranchCode(), trackHead.getTenantId());
@@ -110,6 +125,8 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             trackHead.setProductNoDesc("");
             trackFlow.setProductNo("");
             lineStoreService.unbundling(assemblyBinding.getLineStoreId());
+            trackAssembly.setLineStoreId("");
+            lineStoreService.removeById(trackAssembly.getLineStoreId());
         }
         try {
             this.updateById(assemblyBinding);
