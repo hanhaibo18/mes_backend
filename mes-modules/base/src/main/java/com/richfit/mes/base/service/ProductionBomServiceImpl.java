@@ -510,10 +510,12 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             String branchCode = list.get(0).getBranchCode();
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
             query.eq("drawing_no", drawingNo)
+                    .eq("grade", "H")
                     .eq("branch_code", branchCode);
+            ;
             List<ProductionBom> result = this.list(query);
             if (result != null && result.size() > 0) {
-                message.append("相同零部件图号已存在！</br>").toString();
+                message.append("当前图号产品BOM已存在！</br>").toString();
             }
         }
 
