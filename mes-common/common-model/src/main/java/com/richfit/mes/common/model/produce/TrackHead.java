@@ -346,6 +346,59 @@ public class TrackHead extends BaseEntity<TrackHead> {
     /**
      * 跟单合格证结束
      */
+
+    /**
+     * 跟单台账料单信息
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "料单创建日期", dataType = "Date")
+    private Date storeCreateTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "料单创建人", dataType = "String")
+    private String storeCreateBy;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交来日期,入库时间", dataType = "Date")
+    private Date storeInTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交来日期，出库时间", dataType = "Date")
+    private Date storeOutTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "上工序，物料来源", dataType = "String")
+    private String storeMaterialSource;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单重", dataType = "String")
+    private String storeWeight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String storeTexture;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零件编号", dataType = "String")
+    private String storeWorkblankNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "炉号", dataType = "String")
+    private String storeBatchNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "下工序车间", dataType = "String")
+    private String certificate_next_opt_work;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交出日期", dataType = "String")
+    private String certificate_create_time;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交出人", dataType = "String")
+    private String certificate_create_by;
+
+
     /**
      * 无用属性
      */

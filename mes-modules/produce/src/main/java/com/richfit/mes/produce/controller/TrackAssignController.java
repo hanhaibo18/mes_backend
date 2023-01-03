@@ -334,7 +334,7 @@ public class TrackAssignController extends BaseController {
                     //判断是否是装配
                     boolean assembly = "2".equals(trackHead.getClasses());
                     //是否是第一道工序
-                    boolean item = "1".equals(trackItem.getOriginalOptSequence());
+                    boolean item = 1 == trackItem.getOptSequence();
                     //判断是否开工
                     boolean isDoing = 0 == trackItem.getIsDoing();
                     //判断当前工序
@@ -347,9 +347,9 @@ public class TrackAssignController extends BaseController {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
-                        requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
-//                        ApplicationResult application = new ApplicationResult();
+                        //以齐套不发送申请单
                         if (CollectionUtils.isNotEmpty(ingredient.getLineList())) {
+                            requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
                             ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
                             //请勿重复上传！
                             boolean upload = !application.getRetMsg().contains("请勿重复上传");

@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -39,7 +40,7 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @Date: 2022/7/18 16:48
      * @return: Boolean
      **/
-    Boolean updateComplete(List<String> idList, String itemId);
+    CommonResult<Boolean> updateComplete(List<String> idList, String itemId);
 
     /**
      * 功能描述:解绑非关键件

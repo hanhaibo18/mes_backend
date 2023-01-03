@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -12,13 +13,11 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.OrderUtil;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -71,6 +70,23 @@ public class TrackHeadController extends BaseController {
     public static String TRACK_HEAD_NO_NULL_MESSAGE = "跟单编号不能为空！";
     public static String TRACK_HEAD_SUCCESS_MESSAGE = "操作成功！";
     public static String TRACK_HEAD_FAILED_MESSAGE = "操作失败，请重试！";
+
+
+    @ApiOperation(value = "分页查询跟单台账", notes = "分页查询跟单台账")
+    @PostMapping("/track_head/account")
+    public CommonResult<PageInfo<TrackHead>> selectTrackHeadAccount(@ApiParam(value = "跟单查询条件") @RequestBody(required = false) TeackHeadDto trackHead
+    ) {
+        PageHelper.startPage(trackHead.getPage(), trackHead.getLimit());
+        if (StrUtil.isNotBlank(trackHead.getTrackNo())) {
+            trackHead.setTrackNo(trackHead.getTrackNo().replaceAll(" ", ""));
+        }
+        if (StrUtil.isNotBlank(trackHead.getOrderCol())) {
+            PageHelper.orderBy(trackHead.getOrderCol() + " " + trackHead.getOrder());
+        }
+        List<TrackHead> trackHeadList = trackHeadService.selectTrackHeadAccount(trackHead);
+        PageInfo<TrackHead> trackFlowPage = new PageInfo(trackHeadList);
+        return CommonResult.success(trackFlowPage, TRACK_HEAD_SUCCESS_MESSAGE);
+    }
 
     @ApiOperation(value = "取消计划", notes = "通过跟单id、取消计划")
     @PostMapping("/plan_cancel/{id}")
@@ -734,7 +750,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "热工跟单绑定工艺", notes = "热工跟单绑定工艺")
     @PostMapping("/rgSaveTrackHead")
-    public CommonResult<Boolean> rgSaveTrackHead(@RequestBody JSONObject jsonObject){
+    public CommonResult<Boolean> rgSaveTrackHead(@RequestBody JSONObject jsonObject) {
 
         //保存的工序
         List<TrackItem> trackItems = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("trackItems")), TrackItem.class);
@@ -744,6 +760,6 @@ public class TrackHeadController extends BaseController {
         String routerId = jsonObject.getString("routerId");
         //工艺版本
         String routerVer = jsonObject.getString("routerVer");
-        return CommonResult.success(trackHeadService.rgSaveTrackHead(trackNo,trackItems,routerId,routerVer));
+        return CommonResult.success(trackHeadService.rgSaveTrackHead(trackNo, trackItems, routerId, routerVer));
     }
 }

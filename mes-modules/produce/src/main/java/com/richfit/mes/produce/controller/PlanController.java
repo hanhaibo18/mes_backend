@@ -23,6 +23,7 @@ import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,8 +150,7 @@ public class PlanController extends BaseController {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.orderByDesc("priority");
-        queryWrapper.orderByDesc("modify_time");
+        OrderUtil.query(queryWrapper, planDto.getOrderCol(), planDto.getOrder());
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         planService.planPackageRouter(planList.getRecords());
         return CommonResult.success(planList);

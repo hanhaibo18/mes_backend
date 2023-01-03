@@ -37,7 +37,6 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -105,6 +104,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Resource
     private TrackItemMapper trackItemMapper;
+
+    @Override
+    public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
+        return trackHeadMapper.selectTrackHeadAccount(trackHead);
+    }
 
     /**
      * 功能描述: 工序资料下载指定位置
@@ -360,32 +364,32 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/12/19 10:25
      **/
     @Override
-    public boolean rgSaveTrackHead(String trackNo,List<TrackItem> trackItems,String routerId,String routerVer) {
+    public boolean rgSaveTrackHead(String trackNo, List<TrackItem> trackItems, String routerId, String routerVer) {
         //根据跟单号查询跟单
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
         trackNo = trackNo.replaceAll(" ", "");
-        queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')",trackNo);
+        queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')", trackNo);
         List<TrackHead> headList = this.list(queryWrapper);
         //查询跟单 如果绑定了工艺就是修改
-        if(!StringUtils.isNullOrEmpty(headList.get(0).getRouterId())){
+        if (!StringUtils.isNullOrEmpty(headList.get(0).getRouterId())) {
             boolean bool = this.updataTrackHead(headList.get(0), trackItems);
-        }else{
+        } else {
             //新增绑定
             //查询分流表
             List<String> headIds = headList.stream().map(TrackHead::getId).collect(Collectors.toList());
             QueryWrapper<TrackFlow> trackFlowQueryWrapper = new QueryWrapper<>();
-            trackFlowQueryWrapper.in("track_head_id",headIds);
+            trackFlowQueryWrapper.in("track_head_id", headIds);
             List<TrackFlow> trackFlows = trackHeadFlowService.list(trackFlowQueryWrapper);
             //删除旧的
-            if(headIds.size()>0){
+            if (headIds.size() > 0) {
                 QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-                trackItemQueryWrapper.in("track_head_id",headIds);
+                trackItemQueryWrapper.in("track_head_id", headIds);
                 trackItemService.remove(trackItemQueryWrapper);
             }
             //绑定新的
             Map<String, List<TrackFlow>> trackFlowMap = trackFlows.stream().collect(Collectors.groupingBy(TrackFlow::getTrackHeadId));
             for (TrackHead trackHead : headList) {
-                if(!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size()>0){
+                if (!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size() > 0) {
                     List<TrackFlow> flows = trackFlowMap.get(trackHead.getId());
                     for (TrackFlow flow : flows) {
                         if (trackItems != null && trackItems.size() > 0) {
@@ -429,6 +433,45 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return true;
     }
 
+    @Override
+    public void changeProductNo(String trackHeadId, String productNo) {
+        try {
+            TrackHead trackHead = this.getById(trackHeadId);
+            QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+            queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
+            TrackFlow trackFlow;
+            try {
+                trackFlow = trackHeadFlowService.getOne(queryWrapperTrackFlow);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                throw new GlobalException("跟单产品编写修改只支持跟单只有单个产品编码，不支持多生产编码修改。", ResultCode.FAILED);
+            }
+            //生成产品编
+            String produceNoDesc = trackHead.getDrawingNo() + " " + productNo;
+            trackHead.setProductNo(productNo);
+            trackHead.setProductNoDesc(produceNoDesc);
+            trackFlow.setProductNo(produceNoDesc);
+
+            //修改item表产品编号
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("track_head_id", trackHead.getId());
+            updateWrapper.set("product_no", produceNoDesc);
+            trackItemService.update(updateWrapper);
+
+//            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+//            queryWrapperTrackItem.eq("track_head_id", trackHeadId);
+//            List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+//            for (TrackItem trackItem : trackItemList) {
+//                trackItem.setProductNo(produceNoDesc);
+//            }
+//            trackItemService.updateBatchById(trackItemList);
+            trackHeadFlowService.updateById(trackFlow);
+            this.updateById(trackHead);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new GlobalException("修改产品编码出现异常：" + e.getMessage(), ResultCode.FAILED);
+        }
+    }
 
 
     /**
@@ -437,7 +480,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+    public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo,
+                                int number) {
         try {
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
@@ -494,7 +538,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo,
+                                   int number) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
 
@@ -990,7 +1035,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+    public IPage<TrackHead> selectTrackHeadCurrentRouter
+            (Page<TrackHead> page, QueryWrapper<TrackHead> query) {
         return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
     }
 
@@ -1000,7 +1046,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public IPage<IncomingMaterialVO> queryMaterialList(Integer page, Integer size, String certificateNo, String drawingNo, String branchCode, String tenantId) {
+    public IPage<IncomingMaterialVO> queryMaterialList(Integer page, Integer size, String certificateNo, String
+            drawingNo, String branchCode, String tenantId) {
         QueryWrapper<IncomingMaterialVO> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
             queryWrapper.eq("head.material_certificate_no", certificateNo);
@@ -1169,7 +1216,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
+    public void trackHeadSplit(TrackHead trackHead, String
+            trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
         //更新原跟单
         trackHeadData(trackHead, trackFlow);
         trackHeadMapper.updateById(trackHead);
@@ -1189,7 +1237,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public void trackHeadBatchSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
+    public void trackHeadBatchSplit(TrackHead trackHead, String
+            trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
         if (trackFlow.size() != 1) {
             throw new GlobalException("批次跟单只能有一个生产线", ResultCode.FAILED);
         }
@@ -1406,7 +1455,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //产品列表排序
         trackFlowsOrder(trackFlowList);
         //机加产品编码处理
-        if (trackFlowList.size() == 1) {
+        if (trackFlowList.size() == 1 && !StrUtil.isBlank(trackFlowList.get(0).getProductNo())) {
             return trackFlowList.get(0).getProductNo().replaceFirst(trackHead.getDrawingNo() + " ", "");
         }
         if (trackFlowList.size() > 1) {

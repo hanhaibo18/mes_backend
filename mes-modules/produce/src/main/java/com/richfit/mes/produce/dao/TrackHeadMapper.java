@@ -7,10 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.produce.entity.IncomingMaterialVO;
-import com.richfit.mes.produce.entity.QueryTailAfterDto;
-import com.richfit.mes.produce.entity.TailAfterVo;
-import com.richfit.mes.produce.entity.WorkDetailedListVo;
+import com.richfit.mes.produce.entity.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -148,4 +145,40 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      **/
     @Select("SELECT pth.* ,ppb.project_name FROM produce_track_head pth LEFT JOIN produce_project_bom ppb on ppb.id = pth.project_bom_id WHERE pth.id = #{id}")
     TrackHead selecProjectNametById(@Param("id") String id);
+
+
+    /**
+     * 功能描述: 跟单台账查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/12/29 17:06
+     **/
+    @Select("<script>" +
+            " select * from v_produce_track_store_info where 1=1 " +
+//            " <if test='startDate != null and startDate != \"\"'> " +
+//            "  and create_time &gt;= #{startDate} " +
+//            " </if> " +
+//            " <if test='endDate != null and endDate != \"\"'> " +
+//            "  and create_time &lt;= #{endDate} " +
+//            " </if> " +
+            " <if test='productNo != null and productNo != \"\"'> " +
+            "  and product_no like concat('%',#{productNo},'%') " +
+            " </if> " +
+            " <if test='trackNo != null and trackNo != \"\"'> " +
+            " and replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like concat('%',#{trackNo},'%') " +
+            " </if> " +
+            " <if test='workNo != null and workNo != \"\"'> " +
+            "  and work_no like concat('%',#{workNo},'%') " +
+            " </if> " +
+            " <if test='drawingNo != null and drawingNo != \"\"'> " +
+            "  and drawing_no like concat('%',#{drawingNo},'%') " +
+            " </if> " +
+            " <if test='branchCode != null and branchCode != \"\"'> " +
+            "  and branch_code = #{branchCode} " +
+            " </if> " +
+            " <if test='tenantId != null and tenantId != \"\"'> " +
+            "  and tenant_id = #{tenantId} " +
+            " </if> " +
+            "</script>")
+    List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead);
 }

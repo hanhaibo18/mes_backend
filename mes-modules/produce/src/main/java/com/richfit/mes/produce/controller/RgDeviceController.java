@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +58,7 @@ public class RgDeviceController {
             OrderUtil.query(queryWrapper, orderCol, order);
         }else{
             //升序排列
-            queryWrapper.orderByAsc("type_no");
+            queryWrapper.orderByAsc("type_no+0");
         }
 
         return CommonResult.success(rgDeviceService.page(new Page<>(page, limit), queryWrapper));
@@ -74,7 +75,7 @@ public class RgDeviceController {
         queryWrapper.isNull("type_id");
 
         //升序排列
-        queryWrapper.orderByAsc("type_no");
+        queryWrapper.orderByAsc("type_no+0");
 
         return CommonResult.success(rgDeviceService.list(queryWrapper));
     }
@@ -86,6 +87,9 @@ public class RgDeviceController {
     @ApiOperation(value = "新增或修改操作信息", notes = "新增或修改操作信息")
     @PostMapping("/addOrUpdate")
     public CommonResult<Boolean> addOrUpdate(@RequestBody RgDevice rgDevice) throws GlobalException {
+        if(!StringUtils.isNullOrEmpty(rgDevice.getTypeId())){
+            rgDevice.setDeviceType(rgDeviceService.getById(rgDevice.getTypeId()).getTypeName());
+        }
         return CommonResult.success(rgDeviceService.saveOrUpdate(rgDevice));
     }
 
@@ -106,11 +110,11 @@ public class RgDeviceController {
     /**
      * 根据类别ID获取关联设备信息
      */
-    @ApiOperation(value = "根据类别ID获取关联设备信息", notes = "根据类别ID获取关联设备信息")
-    @GetMapping("/getListInfoById/{id}")
-    public CommonResult<List> getListInfoById(@PathVariable String id,String order,String orderCol) throws GlobalException {
+    @ApiOperation(value = "根据类别ID分页获取关联设备信息", notes = "根据类别ID分页获取关联设备信息")
+    @GetMapping("/getListInfoById")
+    public CommonResult<IPage> getListInfoById(String typeId,String order,String orderCol,int page,int limit) throws GlobalException {
         QueryWrapper<RgDevice> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("type_id", id);
+        queryWrapper.eq("type_id", typeId);
         if(!StringUtils.isNullOrEmpty(orderCol)){
             //排序
             OrderUtil.query(queryWrapper, orderCol, order);
@@ -118,8 +122,7 @@ public class RgDeviceController {
             //升序排列
             queryWrapper.orderByDesc("modify_time");
         }
-        rgDeviceService.list(queryWrapper);
-        return CommonResult.success(rgDeviceService.list(queryWrapper));
+        return CommonResult.success(rgDeviceService.page(new Page<RgDevice>(page,limit),queryWrapper));
     }
 
 

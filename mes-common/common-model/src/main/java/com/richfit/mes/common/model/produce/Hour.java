@@ -18,7 +18,7 @@ public class Hour extends BaseEntity<Hour> {
     private String verId;
 
     @ApiModelProperty(value = "设备类型", dataType = "String")
-    private String deviceType;
+    private String typeCode;
 
     @ApiModelProperty(value = "设备名称", dataType = "String")
     private String deviceName;
@@ -36,16 +36,16 @@ public class Hour extends BaseEntity<Hour> {
     private String weightUp;
 
     @ApiModelProperty(value = "碳化上限", dataType = "String")
-    private String cUp;
+    private String layerDepthCarbonCeiling;
 
     @ApiModelProperty(value = "碳化下限", dataType = "String")
-    private String cDown;
+    private String layerDepthCarbonFloor;
 
     @ApiModelProperty(value = "氮化上限", dataType = "String")
-    private String nUp;
+    private String layerDepthNitrogenCeiling;
 
     @ApiModelProperty(value = "氮化下限", dataType = "String")
-    private String nDown;
+    private String layerDepthNitrogenFloor;
 
     @ApiModelProperty(value = "是否高温", dataType = "String")
     private String isHighTemp;
@@ -56,5 +56,8 @@ public class Hour extends BaseEntity<Hour> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否导入", dataType = "String")
     private  String isExport;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工时版本", dataType = "ver")
+    private String ver;
 
 }

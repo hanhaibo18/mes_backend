@@ -93,7 +93,7 @@ public class TrackAssemblyController extends BaseController {
     @ApiImplicitParam(name = "idList", value = "Id列表", required = true, dataType = "List<String>", paramType = "body")
     @PutMapping("/updateComplete")
     public CommonResult<Boolean> updateComplete(@RequestBody NonKeyDto nonKeyDto) {
-        return CommonResult.success(trackAssemblyService.updateComplete(nonKeyDto.getIdList(), nonKeyDto.getItemId()));
+        return trackAssemblyService.updateComplete(nonKeyDto.getIdList(), nonKeyDto.getItemId());
     }
 
     @ApiOperation(value = "解绑非关键件(新)", notes = "解绑非关键件(新)")

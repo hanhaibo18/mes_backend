@@ -19,6 +19,14 @@ import java.util.Map;
  */
 public interface TrackHeadService extends IService<TrackHead> {
 
+    /**
+     * 功能描述: 跟单台账查询
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/12/29 17:06
+     **/
+    List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead);
+
 
     /**
      * 功能描述: 工序资料下载指定位置
@@ -319,5 +327,16 @@ public interface TrackHeadService extends IService<TrackHead> {
      **/
     int queryCountByWorkNo(String workNo, String branchCode);
 
-    boolean rgSaveTrackHead(String trackNo,List<TrackItem> trackItems,String routerId,String routerVer);
+    boolean rgSaveTrackHead(String trackNo, List<TrackItem> trackItems, String routerId, String routerVer);
+
+
+    /**
+     * 功能描述: 修改产品编码
+     *
+     * @param trackHeadId 跟单id
+     * @param productNo   不带图号的产品编码
+     * @Author: zhiqiang.lu
+     * @Date: 2022/12/30 9:38
+     **/
+    void changeProductNo(String trackHeadId, String productNo);
 }

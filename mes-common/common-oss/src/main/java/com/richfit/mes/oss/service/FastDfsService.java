@@ -321,7 +321,7 @@ public class FastDfsService {
             return is;
 
         } catch (Exception ioe) {
-            ioe.printStackTrace();
+            log.error(ioe.getMessage());
         }
 
         return null;

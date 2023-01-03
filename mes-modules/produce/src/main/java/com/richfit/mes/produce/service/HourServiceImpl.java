@@ -3,11 +3,13 @@ package com.richfit.mes.produce.service;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.produce.Hour;
+import com.richfit.mes.common.model.produce.HourStandard;
 import com.richfit.mes.common.model.produce.RgDevice;
 import com.richfit.mes.produce.dao.HourMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -15,7 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,6 +43,8 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
     private BaseServiceClient baseServiceClient;
     @Autowired
     private RgDeviceService rgDeviceService;
+    @Autowired
+    private HourStandardService hourStandardService;
     /**
      * 工时标准导入
      * @param file
@@ -49,9 +56,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
     public CommonResult importExcel(MultipartFile file, String branchCode, String verId) {
         CommonResult result = CommonResult.success(true);
         //封装工时信息实体类
-        java.lang.reflect.Field[] fields = Hour.class.getDeclaredFields();
-
-        String[] fieldNames = {"isExport","deviceName","optName","weightDown","weightUp","cDown","cUp","nDown","nUp","isHighTemp","hour"};
+        String[] fieldNames = {"isExport","deviceName","optName","weightDown","weightUp","layerDepthCarbonFloor","layerDepthCarbonCeiling","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour"};
 
         File excelFile = null;
         //给导入的excel一个临时的文件名
@@ -92,7 +97,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
                     hour.setOptId(optMap.get(hour.getOptName()).getId());;
                 }
                 if (!ObjectUtil.isEmpty(optMap.get(hour.getDeviceName()))) {
-                    hour.setDeviceType(deviceMap.get(hour.getDeviceName()).getTypeCode());;
+                    hour.setTypeCode(deviceMap.get(hour.getDeviceName()).getTypeCode());;
                 }
             }
             //绑定版本
@@ -112,5 +117,36 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
             return CommonResult.failed();
         }
         return result;
+    }
+
+    @Override
+    public void exportExcel(String verId, String branchCode, HttpServletResponse rsp) {
+        try {
+            //工时版本
+            HourStandard hourStandard = hourStandardService.getById(verId);
+            //工时标准
+            QueryWrapper<Hour> queryWrapper = new QueryWrapper<Hour>();
+            if (!StringUtils.isNullOrEmpty(verId)) {
+                queryWrapper.eq("ver_id", verId);
+            }
+            queryWrapper.orderByDesc("modify_time");
+            List<Hour> list = this.list(queryWrapper);
+
+            for (Hour hour : list) {
+                hour.setVer(hourStandard.getVer());
+            }
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName = "热工工时标准列表_" + format.format(new Date()) + ".xlsx";
+
+            String[] columnHeaders = {"ID", "版本号", "设备类型", "设备名", "工序id", "工序名", "重量下限", "重量上限", "碳化上限", "碳化下限", "氮化上限","氮化下限","是否高温","工时","变更时间","变更人"};
+
+            String[] fieldNames = {"id", "ver", "typeCode", "deviceName", "optId", "optName", "weightUp", "weightDown", "layerDepthCarbonCeiling","layerDepthCarbonFloor","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour","modifyTime","modifyBy"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }

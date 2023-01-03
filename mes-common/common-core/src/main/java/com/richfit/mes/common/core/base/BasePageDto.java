@@ -1,7 +1,6 @@
 package com.richfit.mes.common.core.base;
 
 import lombok.Data;
-import org.apache.poi.ss.formula.functions.T;
 
 /**
  * @Author: GaoLiang
@@ -11,5 +10,7 @@ import org.apache.poi.ss.formula.functions.T;
 public class BasePageDto<T> {
     private int limit = 10;
     private int page = 1;
+    private String order;
+    private String orderCol;
     private T param;
 }
