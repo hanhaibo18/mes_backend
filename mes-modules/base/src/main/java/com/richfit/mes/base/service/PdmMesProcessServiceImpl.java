@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.*;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -91,6 +92,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             return CommonResult.success(pdmMesProcess, "当前工艺已发布，该工艺将不进行发布，修改状态改为以发布");
         }
         //不存在的话发布新版本
+        String message = "发布成功";
         try {
             TenantUserDetails user = SecurityUtils.getCurrentUser();
             String routerId = UUID.randomUUID().toString();
@@ -258,9 +260,11 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             routerService.saveOrUpdate(router);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("同步MES出现异常");
+            message = "同步MES出现异常:" + e.getMessage();
+            throw new GlobalException("同步MES出现异常", ResultCode.FAILED);
+        } finally {
+            return CommonResult.success(pdmMesProcess, message);
         }
-        return CommonResult.success(pdmMesProcess, "发布成功");
     }
 
     @Override
