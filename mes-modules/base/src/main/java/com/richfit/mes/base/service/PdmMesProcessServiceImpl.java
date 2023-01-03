@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.*;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
-import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -64,6 +63,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     PdmMesDrawMapper pdmMesDrawMapper;
     @Autowired
     private PdmMesBomMapper pdmMesBomMapper;
+
     @Override
     public IPage<PdmMesProcess> queryPageList(int page, int limit, PdmMesProcess pdmProcess) {
         Page<PdmMesProcess> ipage = new Page<>(page, limit);
@@ -79,14 +79,16 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     public void release(PdmMesProcess pdmMesProcess) throws Exception {
         //校验 如果存在图号+版本号+类型的工艺 跳过发布
         QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
-        routerQueryWrapper.eq("router_no",pdmMesProcess.getDrawNo())
-                .eq("version",pdmMesProcess.getRev())
-                .eq("router_type",pdmMesProcess.getProcessType())
-                .eq("branch_code",pdmMesProcess.getDataGroup());
+        routerQueryWrapper.eq("router_no", pdmMesProcess.getDrawNo())
+                .eq("version", pdmMesProcess.getRev())
+                .eq("router_type", pdmMesProcess.getProcessType())
+                .eq("branch_code", pdmMesProcess.getDataGroup());
         List<Router> list = routerService.list(routerQueryWrapper);
         //存在的话跳过发布
-        if(list.size()>0){
-            return ;
+        if (list.size() > 0) {
+            pdmMesProcess.setItemStatus("已发布");
+            pdmMesProcessMapper.updateById(pdmMesProcess);
+            throw new Exception("当前工艺以发布，不在进行发布操作,当前记录更新为已发布。");
         }
         //不存在的话发布新版本
         try {
@@ -216,12 +218,11 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
 //                queryWrapperPdmMesDraw.and(wrapper -> wrapper.eq("op_id", pdmMesProcess.getDrawIdGroup()).or().eq("op_id", pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDataGroup()));
 //                queryWrapperPdmMesDraw.eq("dataGroup", pdmMesProcess.getDataGroup());
 //                List<PdmMesDraw> pdmMesDrawList = pdmMesDrawService.list(queryWrapperPdmMesDraw);
-
             // 保存&更新MES工艺，并更新工艺接收状态
             pdmMesProcess.setItemStatus("已发布");
             pdmMesProcess.setModifyTime(new Date());
             pdmMesProcess.setModifyBy(user.getUsername());
-            //特别添加部分pdm图号两边带有空格的问题
+            // 特别添加部分pdm图号两边带有空格的问题
             pdmMesProcess.setDrawNo(pdmMesProcess.getDrawNo().trim());
             pdmMesProcessMapper.updateById(pdmMesProcess);
 
@@ -264,52 +265,51 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     @Override
     public CommonResult deleteMesPDMProcess(List<String> drawIdGroup, String dataGroup) {
         //删除工艺
-        QueryWrapper<PdmMesProcess> processWrapper=new QueryWrapper<>();
-        processWrapper.in("draw_id_group",drawIdGroup);
-        processWrapper.eq("dataGroup",dataGroup);
+        QueryWrapper<PdmMesProcess> processWrapper = new QueryWrapper<>();
+        processWrapper.in("draw_id_group", drawIdGroup);
+        processWrapper.eq("dataGroup", dataGroup);
         PdmMesProcess pdmMesProcess = pdmMesProcessMapper.selectOne(processWrapper);
         pdmMesProcessMapper.delete(processWrapper);
 
         //删除当前工艺关联的工序
-        QueryWrapper<PdmMesOption> optionWrapper=new QueryWrapper<>();
-        optionWrapper.in("process_id",drawIdGroup);
-        optionWrapper.eq("dataGroup",dataGroup);
+        QueryWrapper<PdmMesOption> optionWrapper = new QueryWrapper<>();
+        optionWrapper.in("process_id", drawIdGroup);
+        optionWrapper.eq("dataGroup", dataGroup);
         List<PdmMesOption> pdmMesOptions = pdmMesOptionMapper.selectList(optionWrapper);
         //工序id
         List<String> optionsId = pdmMesOptions.stream().map(x -> x.getId()).collect(Collectors.toList());
         pdmMesOptionMapper.delete(optionWrapper);
 
         //删除工艺图纸
-        QueryWrapper<PdmMesDraw> drawWrapper=new QueryWrapper<>();
+        QueryWrapper<PdmMesDraw> drawWrapper = new QueryWrapper<>();
         drawWrapper.eq("isop", '1');
         drawWrapper.and(wrapper -> wrapper.eq("op_id", pdmMesProcess.getDrawIdGroup()).or().eq("op_id", pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDrawNo() + "@" + pdmMesProcess.getDataGroup()));
-        drawWrapper.eq("datagroup",dataGroup);
+        drawWrapper.eq("datagroup", dataGroup);
         //List<PdmMesDraw> pdmMesDraws = pdmMesDrawMapper.selectList(drawWrapper);
         //pdmMesDrawService.remove(drawWrapper);
 
 
         //删除工艺bom
-        QueryWrapper<PdmMesBom> bomWrapper=new QueryWrapper<>();
-        bomWrapper.eq("datagroup",dataGroup);
-        bomWrapper.in("id",pdmMesProcess.getDrawNo());
+        QueryWrapper<PdmMesBom> bomWrapper = new QueryWrapper<>();
+        bomWrapper.eq("datagroup", dataGroup);
+        bomWrapper.in("id", pdmMesProcess.getDrawNo());
         //List<PdmMesBom> pdmMesBoms = pdmMesBomMapper.selectList(bomWrapper);
         //pdmMesBomService.remove(bomWrapper);
 
 
-
         //删除工序工装信息
-        QueryWrapper<PdmMesObject> objectWrapper=new QueryWrapper<>();
-        objectWrapper.eq("dataGroup",dataGroup);
-        objectWrapper.in("op_id",optionsId);
+        QueryWrapper<PdmMesObject> objectWrapper = new QueryWrapper<>();
+        objectWrapper.eq("dataGroup", dataGroup);
+        objectWrapper.in("op_id", optionsId);
         //List<PdmMesObject> pdmMesObjects = pdmMesObjectMapper.selectList(objectWrapper);
         pdmMesObjectMapper.delete(objectWrapper);
 
         //删除工序图纸
-        QueryWrapper<PdmMesDraw> drawWrapperTwo=new QueryWrapper<>();
-        drawWrapperTwo.eq("datagroup",dataGroup);
-        drawWrapperTwo.in("op_id",optionsId);
+        QueryWrapper<PdmMesDraw> drawWrapperTwo = new QueryWrapper<>();
+        drawWrapperTwo.eq("datagroup", dataGroup);
+        drawWrapperTwo.in("op_id", optionsId);
         //List<PdmMesDraw> pdmMesDraws1 = pdmMesDrawMapper.selectList(drawWrapperTwo);
         //pdmMesDrawService.remove(drawWrapperTwo);
-        return  CommonResult.success(ResultCode.SUCCESS);
+        return CommonResult.success(ResultCode.SUCCESS);
     }
 }
