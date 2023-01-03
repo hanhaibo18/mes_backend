@@ -161,6 +161,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         QueryWrapper<ProjectBom> query = new QueryWrapper<>();
         query.eq("drawing_no", drawingNo);
         query.eq("branch_code", branchCode);
+        query.eq("grade", "H");
         int count = projectBomService.count(query);
         if (count > 0) {
             throw new GlobalException("该BOM已被发布,删除失败!", ResultCode.FAILED);
