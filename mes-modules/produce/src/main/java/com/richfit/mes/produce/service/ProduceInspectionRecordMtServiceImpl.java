@@ -47,10 +47,9 @@ public class ProduceInspectionRecordMtServiceImpl extends ServiceImpl<ProduceIns
 
     @Override
     public Boolean updateAuditInfo(String id, String isAudit, String auditRemark) {
-        ProduceInspectionRecordMtService produceInspectionRecordMtService = new ProduceInspectionRecordMtServiceImpl();
         UpdateWrapper<ProduceInspectionRecordMt> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id).set("is_audit", isAudit).set("audit_remark", auditRemark).set("audit_by",SecurityUtils.getCurrentUser().getUserId());
-        return produceInspectionRecordMtService.update(updateWrapper);
+        return this.update(updateWrapper);
     }
 
     @Override
