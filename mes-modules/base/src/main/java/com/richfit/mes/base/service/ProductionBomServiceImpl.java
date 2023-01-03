@@ -472,11 +472,6 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                     item.setIsKeyPart("1");
                 }
             });
-            if (!StringUtils.isEmpty(list.get(0).getMainDrawingNo())) {
-                this.deleteBom(list.get(0).getMainDrawingNo(), tenantId, list.get(0).getBranchCode());
-            } else if (!StringUtils.isEmpty(list.get(0).getDrawingNo())) {
-                this.deleteBom(list.get(0).getDrawingNo(), tenantId, list.get(0).getBranchCode());
-            }
             boolean bool = this.saveBatch(list);
             if (bool) {
                 return CommonResult.success(null, BOM_IMPORT_EXCEL_SUCCESS_MESSAGE);
@@ -505,15 +500,17 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             message.append("车间编码不能为空!</br>").toString();
         }
 
-        //0同图号校验
+        //产品bom图号校验，只能存在一个图号的bom
         if (nullBranchCodeList.size() == 0 && list.size() > 0) {
             String branchCode = list.get(0).getBranchCode();
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
             query.eq("drawing_no", drawingNo)
+                    .eq("grade", "H")
                     .eq("branch_code", branchCode);
+            ;
             List<ProductionBom> result = this.list(query);
             if (result != null && result.size() > 0) {
-                message.append("相同零部件图号已存在！</br>").toString();
+                message.append("当前图号产品BOM已存在！</br>").toString();
             }
         }
 
