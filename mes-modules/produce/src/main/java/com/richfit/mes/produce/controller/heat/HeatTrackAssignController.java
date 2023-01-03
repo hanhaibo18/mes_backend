@@ -5,7 +5,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
-import com.richfit.mes.produce.service.TrackAssignService;
+import com.richfit.mes.produce.service.heat.HeatTrackAssignService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +27,11 @@ import java.text.ParseException;
 public class HeatTrackAssignController extends BaseController {
 
     @Autowired
-    private TrackAssignService trackAssignService;
+    private HeatTrackAssignService heatTrackAssignService;
 
     @ApiOperation(value = "未报工查询")
     @PostMapping("/queryNotAtWork")
     public CommonResult<IPage<Assign>> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException {
-        return CommonResult.success(trackAssignService.queryNotAtWork(dispatchingDto));
+        return CommonResult.success(heatTrackAssignService.queryNotAtWork(dispatchingDto));
     }
 }
