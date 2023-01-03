@@ -89,7 +89,7 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
-        IPage<Assign> queryPage = trackAssignMapper.queryPageNew(new Page(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
+        IPage<Assign> queryPage = trackAssignMapper.queryPageAssignTrackStore(new Page(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
