@@ -76,7 +76,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
     }
 
     @Override
-    public void release(PdmMesProcess pdmMesProcess) throws Exception {
+    public CommonResult<PdmMesProcess> release(PdmMesProcess pdmMesProcess) throws Exception {
         //校验 如果存在图号+版本号+类型的工艺 跳过发布
         QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
         routerQueryWrapper.eq("router_no", pdmMesProcess.getDrawNo())
@@ -88,7 +88,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
         if (list.size() > 0) {
             pdmMesProcess.setItemStatus("已发布");
             pdmMesProcessMapper.updateById(pdmMesProcess);
-            throw new Exception("当前工艺以发布，不在进行发布操作,当前记录更新为已发布。");
+            return CommonResult.success(pdmMesProcess, "当前工艺已发布，该工艺将不进行发布，修改状态改为以发布");
         }
         //不存在的话发布新版本
         try {
@@ -260,6 +260,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
             e.printStackTrace();
             throw new Exception("同步MES出现异常");
         }
+        return CommonResult.success(pdmMesProcess, "发布成功");
     }
 
     @Override
