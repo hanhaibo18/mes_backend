@@ -505,7 +505,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             message.append("车间编码不能为空!</br>").toString();
         }
 
-        //0同图号校验
+        //产品bom图号校验，只能存在一个图号的bom
         if (nullBranchCodeList.size() == 0 && list.size() > 0) {
             String branchCode = list.get(0).getBranchCode();
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
