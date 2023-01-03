@@ -56,16 +56,19 @@ public class PdmMesProcessController {
             @ApiImplicitParam(name = "dataGroup", value = "工厂代码", required = true, paramType = "query", dataType = "string")
     })
     public CommonResult deletedPDMProcess(@RequestBody DeleteProcessParam deleteProcessParam) {
-        return CommonResult.success(pdmMesProcessService.deleteMesPDMProcess(deleteProcessParam.getDrawIdGroup(),deleteProcessParam.getDataGroup()));
+        return CommonResult.success(pdmMesProcessService.deleteMesPDMProcess(deleteProcessParam.getDrawIdGroup(), deleteProcessParam.getDataGroup()));
 
     }
 
     @PostMapping("/release")
     @ApiOperation(value = "发布", notes = "发布")
-    public void release(@ApiParam(value = "发布的工艺列表") @RequestBody List<PdmMesProcess> pdmMesProcesses) throws Exception {
+    public CommonResult release(@ApiParam(value = "发布的工艺列表") @RequestBody List<PdmMesProcess> pdmMesProcesses) throws Exception {
+        String message = "";
         for (PdmMesProcess p : pdmMesProcesses) {
-            pdmMesProcessService.release(p);
+            CommonResult<PdmMesProcess> result = pdmMesProcessService.release(p);
+            message += result.getData().getDrawNo() + ":" + result.getMessage() + ";";
         }
+        return CommonResult.success(pdmMesProcesses, message);
     }
 
 
