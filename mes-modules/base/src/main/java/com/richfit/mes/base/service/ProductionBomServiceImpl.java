@@ -472,11 +472,6 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                     item.setIsKeyPart("1");
                 }
             });
-            if (!StringUtils.isEmpty(list.get(0).getMainDrawingNo())) {
-                this.deleteBom(list.get(0).getMainDrawingNo(), tenantId, list.get(0).getBranchCode());
-            } else if (!StringUtils.isEmpty(list.get(0).getDrawingNo())) {
-                this.deleteBom(list.get(0).getDrawingNo(), tenantId, list.get(0).getBranchCode());
-            }
             boolean bool = this.saveBatch(list);
             if (bool) {
                 return CommonResult.success(null, BOM_IMPORT_EXCEL_SUCCESS_MESSAGE);
