@@ -134,6 +134,9 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         QueryWrapper<ProjectBom> queryWrapperProject = new QueryWrapper<>();
         queryWrapperProject.eq("work_plan_no", workPlanNo);
         queryWrapperProject.eq("main_drawing_no", productionBom.getDrawingNo());
+        //处理逻辑判断问题   zhiqiang.lu   2023.1.4
+        queryWrapperProject.eq("branch_code", productionBom.getBranchCode());
+        queryWrapperProject.eq("tenant_id", productionBom.getTenantId());
         List<ProjectBom> list = projectBomService.list(queryWrapperProject);
         if (!list.isEmpty()) {
             return CommonResult.failed("当前图号下,工作号已经使用");
