@@ -70,7 +70,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
             List<Hour> checkInfo = ExcelUtils.importExcel(excelFile, Hour.class, fieldNames, 0, 0, 0, tempName.toString());
             if(checkInfo.size()>0){
                 if("是否导入".equals(checkInfo.get(0).getIsExport()) &&
-                        "设备类型".equals(checkInfo.get(0).getDeviceName()) &&
+                        "设备类型".equals(checkInfo.get(0).getTypeName()) &&
                         "工序".equals(checkInfo.get(0).getOptName()) &&
                         "重量下限".equals(checkInfo.get(0).getWeightDown())){
 
@@ -86,7 +86,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
             List<Hour> exportList = list.stream().filter(item -> "X".equals(item.getIsExport())).collect(Collectors.toList());
             //工序和设备需要根据name 获取id和设备类型  转换map 便于取值
             List<String> optNames = exportList.stream().map(Hour::getOptName).collect(Collectors.toList());
-            List<String> deviceNames = exportList.stream().map(Hour::getDeviceName).collect(Collectors.toList());
+            List<String> deviceNames = exportList.stream().map(Hour::getTypeName).collect(Collectors.toList());
             Map<String, Operatipon> optMap = baseServiceClient.queryOptByOptNames(optNames, branchCode).stream().collect(Collectors.toMap(Operatipon::getOptName, Function.identity()));
             QueryWrapper<RgDevice> rgDeviceQueryWrapper = new QueryWrapper<>();
             rgDeviceQueryWrapper.in("type_name",deviceNames);
@@ -96,8 +96,8 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
                 if (!ObjectUtil.isEmpty(optMap.get(hour.getOptName()))) {
                     hour.setOptId(optMap.get(hour.getOptName()).getId());
                 }
-                if (!ObjectUtil.isEmpty(optMap.get(hour.getDeviceName()))) {
-                    hour.setTypeCode(deviceMap.get(hour.getDeviceName()).getTypeCode());
+                if (!ObjectUtil.isEmpty(optMap.get(hour.getTypeName()))) {
+                    hour.setTypeCode(deviceMap.get(hour.getTypeName()).getTypeCode());
                 }
             }
             //绑定版本
