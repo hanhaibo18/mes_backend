@@ -40,11 +40,13 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
 
     @Override
     public boolean deleteBom(String id, String workPlanNo, String tenantId, String branchCode, String drawingNo) {
+        //处理逻辑 重写接口   zhiqiang.lu   2023.1.4
         int count = produceService.queryCountByWorkNo(id);
         if (count > 0) {
             throw new GlobalException("BOM已被使用", ResultCode.FAILED);
         }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        //处理删除逻辑  zhiqiang.lu   2023.1.4
         queryWrapper
                 .and(wrapper -> wrapper.eq("drawing_no", drawingNo).eq("grade", "H").or().eq("main_drawing_no", drawingNo).eq("grade", "L"))
                 .eq("work_plan_no", workPlanNo)

@@ -44,6 +44,7 @@ public class ProjectBomController {
     @ApiOperation(value = "删除BOM")
     public CommonResult<Boolean> deleteBom(String id, String workPlanNo, String branchCode, String drawingNo) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        //处理逻辑判断问题   zhiqiang.lu   2023.1.4
         return CommonResult.success(projectBomService.deleteBom(id, workPlanNo, tenantId, branchCode, drawingNo));
     }
 
@@ -53,6 +54,7 @@ public class ProjectBomController {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         boolean deleteBom = false;
         for (DeleteBomDto deleteBomDto : deleteProjectBomDto.getBomList()) {
+            //处理逻辑判断问题   zhiqiang.lu   2023.1.4
             deleteBom = projectBomService.deleteBom(deleteBomDto.getId(), deleteBomDto.getWorkPlanNo(), tenantId, deleteProjectBomDto.getBranchCode(), deleteBomDto.getDrawingNo());
         }
         return CommonResult.success(deleteBom);
