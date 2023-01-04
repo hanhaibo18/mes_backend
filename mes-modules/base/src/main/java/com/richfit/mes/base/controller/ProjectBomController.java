@@ -42,9 +42,9 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
     })
     @ApiOperation(value = "删除BOM")
-    public CommonResult<Boolean> deleteBom(String workPlanNo, String branchCode, String drawingNo) {
+    public CommonResult<Boolean> deleteBom(String id, String workPlanNo, String branchCode, String drawingNo) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        return CommonResult.success(projectBomService.deleteBom(workPlanNo, tenantId, branchCode, drawingNo));
+        return CommonResult.success(projectBomService.deleteBom(id, workPlanNo, tenantId, branchCode, drawingNo));
     }
 
     @DeleteMapping("/deleteBomList")
@@ -53,7 +53,7 @@ public class ProjectBomController {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         boolean deleteBom = false;
         for (DeleteBomDto deleteBomDto : deleteProjectBomDto.getBomList()) {
-            deleteBom = projectBomService.deleteBom(deleteBomDto.getWorkPlanNo(), tenantId, deleteProjectBomDto.getBranchCode(), deleteBomDto.getDrawingNo());
+            deleteBom = projectBomService.deleteBom(deleteBomDto.getId(), deleteBomDto.getWorkPlanNo(), tenantId, deleteProjectBomDto.getBranchCode(), deleteBomDto.getDrawingNo());
         }
         return CommonResult.success(deleteBom);
     }

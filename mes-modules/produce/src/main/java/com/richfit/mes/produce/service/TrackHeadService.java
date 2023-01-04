@@ -319,13 +319,14 @@ public interface TrackHeadService extends IService<TrackHead> {
     /**
      * 功能描述:根据项目BOM工作号,车间查询是否被跟单使用,有返回数量已被使用
      *
-     * @param workNo
-     * @param branchCode
+     * @param projectBomId
      * @Author: xinYu.hou
      * @Date: 2022/11/15 17:29
      * @return: int
+     * @edit zhiqiang。lu
+     * @date 2023.1.4
      **/
-    int queryCountByWorkNo(String workNo, String branchCode);
+    int queryCountByWorkNo(String projectBomId);
 
     boolean rgSaveTrackHead(String trackNo, List<TrackItem> trackItems, String routerId, String routerVer);
 

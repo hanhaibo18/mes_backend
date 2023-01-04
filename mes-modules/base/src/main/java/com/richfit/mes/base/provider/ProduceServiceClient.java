@@ -37,7 +37,7 @@ public interface ProduceServiceClient {
      * @return: int
      **/
     @GetMapping(value = "/api/produce/track_head/queryCountByWorkNo")
-    int queryCountByWorkNo(@RequestParam("workNo") String workNo, @RequestParam("branchCode") String branchCode);
+    int queryCountByWorkNo(@RequestParam("projectBomId") String projectBomId);
 
     @PostMapping("/api/produce/order/query_by_materialcode")
     CommonResult<List<Order>> queryByMaterialCode(@RequestBody List<String> materialCodes, @RequestParam("tenantId") String tenantId);

@@ -26,7 +26,7 @@ public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
     }
 
     @Override
-    public int queryCountByWorkNo(String workNo, String branchCode) {
+    public int queryCountByWorkNo(String projectBomId) {
         return 0;
     }
 

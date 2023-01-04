@@ -717,8 +717,8 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "查询BOM是否被使用", notes = "查询项目BOM是否被使用(项目BOM删除查询使用)")
     @GetMapping("/queryCountByWorkNo")
-    public int queryCountByWorkNo(String workNo, String branchCode) {
-        return trackHeadService.queryCountByWorkNo(workNo, branchCode);
+    public int queryCountByWorkNo(String projectBomId) {
+        return trackHeadService.queryCountByWorkNo(projectBomId);
     }
 
     @ApiOperation(value = "数据处理", notes = "数据处理")

@@ -39,8 +39,8 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     private ProduceServiceClient produceService;
 
     @Override
-    public boolean deleteBom(String workPlanNo, String tenantId, String branchCode, String drawingNo) {
-        int count = produceService.queryCountByWorkNo(workPlanNo, branchCode);
+    public boolean deleteBom(String id, String workPlanNo, String tenantId, String branchCode, String drawingNo) {
+        int count = produceService.queryCountByWorkNo(id);
         if (count > 0) {
             throw new GlobalException("BOM已被使用", ResultCode.FAILED);
         }
