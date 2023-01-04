@@ -56,7 +56,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
     public CommonResult importExcel(MultipartFile file, String branchCode, String verId) {
         CommonResult result = CommonResult.success(true);
         //封装工时信息实体类
-        String[] fieldNames = {"isExport","deviceName","optName","weightDown","weightUp","layerDepthCarbonFloor","layerDepthCarbonCeiling","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour"};
+        String[] fieldNames = {"isExport","typeName","optName","weightDown","weightUp","layerDepthCarbonFloor","layerDepthCarbonCeiling","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour"};
 
         File excelFile = null;
         //给导入的excel一个临时的文件名
@@ -96,7 +96,7 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
                 if (!ObjectUtil.isEmpty(optMap.get(hour.getOptName()))) {
                     hour.setOptId(optMap.get(hour.getOptName()).getId());
                 }
-                if (!ObjectUtil.isEmpty(optMap.get(hour.getTypeName()))) {
+                if (!ObjectUtil.isEmpty(deviceMap.get(hour.getTypeName()))) {
                     hour.setTypeCode(deviceMap.get(hour.getTypeName()).getTypeCode());
                 }
             }

@@ -15,6 +15,8 @@ import java.util.List;
 @Data
 public class HourStandard extends BaseEntity<HourStandard> {
 
+    public static String YES_ACTIVATE = "1";
+
     @ApiModelProperty(value = "id", dataType = "String")
     private String id;
 
