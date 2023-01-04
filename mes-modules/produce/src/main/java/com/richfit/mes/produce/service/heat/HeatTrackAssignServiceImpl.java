@@ -58,14 +58,8 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
             queryWrapper.like("u.drawing_no", dispatchingDto.getRouterNo());
         }
-        if (!StringUtils.isNullOrEmpty(dispatchingDto.getSiteId())) {
-            queryWrapper.like("u.assign_by", dispatchingDto.getSiteId());
-        }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getProductNo())) {
             queryWrapper.like("u.product_no", dispatchingDto.getProductNo());
-        }
-        if (!StrUtil.isBlank(dispatchingDto.getUserId())) {
-            queryWrapper.likeRight("u.user_id", dispatchingDto.getUserId() + ",");
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + dispatchingDto.getStartTime() + " ')");
@@ -85,7 +79,8 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
         }
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-        queryWrapper.eq("u.classes", dispatchingDto.getClasses());
+        queryWrapper.eq(StrUtil.isNotBlank(dispatchingDto.getClasses()), "u.classes", dispatchingDto.getClasses());
+        queryWrapper.eq("u.site_id", SecurityUtils.getCurrentUser().getBelongOrgId());
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());

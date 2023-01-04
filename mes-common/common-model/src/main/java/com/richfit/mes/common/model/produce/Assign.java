@@ -15,6 +15,7 @@ import java.util.List;
 @Data
 public class Assign extends BaseEntity<Assign> {
 
+    private static final long serialVersionUID = 3788961298306032177L;
     @ApiModelProperty(value = "id", dataType = "String")
     private String id;
 
@@ -198,4 +199,26 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "探伤工序标识")
     private String isFlawDetection;
+
+    /**
+     * 预装炉（起）
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "来料日期")
+    private Date inTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String texture;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "试棒数量")
+    private Integer testBarNumber;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "毛胚编码", dataType = "String")
+    private String workblankNo;
+    /**
+     * 预装炉（止）
+     */
 }
