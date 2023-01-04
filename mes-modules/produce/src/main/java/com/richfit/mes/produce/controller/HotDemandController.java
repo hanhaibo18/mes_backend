@@ -193,6 +193,7 @@ public class HotDemandController extends BaseController {
 
         //长周期字段为空的毛坯需求数据
         QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.in("id",idList);
         queryWrapper.eq("tenant_id",currentUser.getTenantId());
         queryWrapper.eq("branch_code",branchCode);
         queryWrapper.apply("is_long_period is null");
@@ -240,13 +241,14 @@ public class HotDemandController extends BaseController {
 
         //无模型或者模型字段为空的毛坯需求数据
         QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.in("id",idList);
         queryWrapper.eq("tenant_id",currentUser.getTenantId());
         queryWrapper.eq("branch_code",branchCode);
         queryWrapper.apply("is_exist_model is null");
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-
+        if (CollectionUtils.isEmpty(drawNos))  return CommonResult.success("所有均已校验完成");
         //根据需求数据中的图号查询模型库
         QueryWrapper<HotModelStore> modelWrapper=new QueryWrapper();
         modelWrapper.eq("tenant_id",currentUser.getTenantId());
@@ -302,6 +304,7 @@ public class HotDemandController extends BaseController {
     public CommonResult checkRepertory(@RequestBody List<String> idList) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.in("id",idList);
         queryWrapper.eq("tenant_id",currentUser.getTenantId());
         queryWrapper.and(wapper-> wapper.eq("is_exist_repertory",0).or().eq("is_exist_repertory",null));
         //查询出没有库存的数据
@@ -335,12 +338,13 @@ public class HotDemandController extends BaseController {
 
         //是否有工艺字段为空的毛坯需求数据
         QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+            queryWrapper.in("id",idList);
         queryWrapper.eq("tenant_id",currentUser.getTenantId());
         queryWrapper.eq("branch_code",branchCode);
         queryWrapper.apply("(is_exist_process=0 or is_exist_process is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-
+        if (CollectionUtils.isEmpty(drawNos))   return CommonResult.success("所有均已校验完成");
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
         //工艺库数据
@@ -378,11 +382,11 @@ public class HotDemandController extends BaseController {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
 
         try {
-            this.checkLongProduct(idList,branchCode);
-            this.checkModel(idList,branchCode);
-            this.checkOutsource(idList);
-            this.checkRepertory(idList);
-            this.checkRouter(idList,branchCode);
+            this.checkLongProduct(idList,branchCode);//校验长周期
+            this.checkModel(idList,branchCode);//检查模型
+            this.checkOutsource(idList);//检查外协件
+            this.checkRepertory(idList);//核对库存
+            this.checkRouter(idList,branchCode);//工艺检查
         }catch (Exception e){
             log.error(e.getMessage());
             throw  new GlobalException("一键检查异常",ResultCode.FAILED);
@@ -395,15 +399,17 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "生产批准与撤销批准", notes = "生产批准与撤销批准")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
-            @ApiImplicitParam(name = "ratifyState", value = "生产批准状态 0 :未批准 ,1 已批准", required = true, paramType = "query")
+            @ApiImplicitParam(name = "ratifyState", value = "生产批准状态 0 :未批准 ,1 已批准", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
     })
     @PostMapping("/ratify")
-    public CommonResult ratify(@RequestBody List<String> idList,Integer submitState) {
-        //校验有无模型
-
+    public CommonResult ratify(@RequestBody List<String> idList,Integer ratifyState,String branchCode) {
+        //检查无模型数据
+        List<String> ids = hotDemandService.checkModel(idList, branchCode);
+        if(CollectionUtils.isNotEmpty(ids)) return CommonResult.failed("存在无模型需求");
 
         UpdateWrapper updateWrapper=new UpdateWrapper();
-        updateWrapper.set("produce_ratify_state",submitState);//设置提报状态
+        updateWrapper.set("produce_ratify_state",ratifyState);//设置提报状态
         updateWrapper.in("id",idList);
         boolean update = hotDemandService.update(updateWrapper);
         if (update) return CommonResult.success(ResultCode.SUCCESS);
