@@ -29,4 +29,8 @@ public class ForDispatchingDto extends QueryPageDto {
     private String productNo;
     @ApiModelProperty(value = "车间类型", dataType = "String")
     private String classes;
+    @ApiModelProperty(value = "实施温度℃（热工）", dataType = "String")
+    private String tempWork;
+    @ApiModelProperty(value = "实施温度℃（热工）扩展", dataType = "String")
+    private String tempWork1;
 }

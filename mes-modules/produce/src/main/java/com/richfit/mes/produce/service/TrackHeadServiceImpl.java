@@ -1695,10 +1695,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public int queryCountByWorkNo(String workNo, String branchCode) {
-        QueryWrapper<TrackHead> query = new QueryWrapper<>();
-        query.eq("project_bom_work", workNo);
-        query.eq("branch_code", branchCode);
-        return this.count(query);
+    public int queryCountByWorkNo(String projectBomId) {
+        int i = 0;
+        QueryWrapper<TrackHead> queryTrackHead = new QueryWrapper<>();
+        queryTrackHead.eq("project_bom_id", projectBomId);
+        i += this.count(queryTrackHead);
+        QueryWrapper<Plan> queryPlan = new QueryWrapper<>();
+        queryPlan.eq("project_bom", projectBomId);
+        i += planService.count(queryPlan);
+        return i;
     }
 }

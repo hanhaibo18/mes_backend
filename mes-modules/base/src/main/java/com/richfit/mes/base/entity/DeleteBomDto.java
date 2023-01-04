@@ -10,6 +10,7 @@ import lombok.Data;
  */
 @Data
 public class DeleteBomDto {
+    private String id;
     private String workPlanNo;
     private String drawingNo;
 }
