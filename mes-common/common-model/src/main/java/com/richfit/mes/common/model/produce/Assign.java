@@ -218,6 +218,34 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "毛胚编码", dataType = "String")
     private String workblankNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备分类编码（热工）", dataType = "String")
+    private String typeCode;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备分类名称（热工）", dataType = "String")
+    private String typeName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "温度下限℃（热工）", dataType = "String")
+    private String tempDown;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "温度上限℃（热工）", dataType = "String")
+    private String tempUp;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "实施温度℃（热工）", dataType = "String")
+    private String tempWork;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "保温时间h（热工）", dataType = "String")
+    private String holdTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
+    private String coolType;
     /**
      * 预装炉（止）
      */
