@@ -285,14 +285,18 @@ public class HotDemandController extends BaseController {
     @PostMapping("/check_outsource")
     public CommonResult checkOutsource(@RequestBody List<String> idList) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        //检查毛坯需求中{材质}字段，如果字段信息前几个字母包含“ZCU”、“HT”、“精ZG”任何一项，标记为外协件产品。
-        UpdateWrapper<HotDemand> updateWrapper=new UpdateWrapper();
-        updateWrapper.set("is_outsource",1);//设置外协件
-        updateWrapper.eq("tenant_id",currentUser.getTenantId());
-        updateWrapper.and(wrapper -> wrapper.likeRight("texture","ZCU").or().likeRight("texture","HT").or().likeRight("texture","精ZG"));
-        boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
-        return CommonResult.failed();
+        try {
+            //检查毛坯需求中{材质}字段，如果字段信息前几个字母包含“ZCU”、“HT”、“精ZG”任何一项，标记为外协件产品。
+            UpdateWrapper<HotDemand> updateWrapper=new UpdateWrapper();
+            updateWrapper.set("is_outsource",1);//设置外协件
+            updateWrapper.eq("tenant_id",currentUser.getTenantId());
+            updateWrapper.and(wrapper -> wrapper.likeRight("texture","ZCU").or().likeRight("texture","HT").or().likeRight("texture","精ZG"));
+            hotDemandService.update(updateWrapper);
+            return CommonResult.success(ResultCode.SUCCESS);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return CommonResult.failed();
+        }
     }
 
 
@@ -319,11 +323,10 @@ public class HotDemandController extends BaseController {
                     updateWrapper.set("is_exist_repertory",1);//设置为已有库存
                     updateWrapper.in("id",hotDemand.getId());
                     boolean update = hotDemandService.update(updateWrapper);
-                    if (update) return CommonResult.success(ResultCode.SUCCESS);
                 }
             }
         }
-        return CommonResult.failed();
+        return CommonResult.success("操作成功");
     }
 
 
