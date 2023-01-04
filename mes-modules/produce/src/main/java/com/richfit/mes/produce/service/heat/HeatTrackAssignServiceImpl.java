@@ -51,6 +51,14 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
     @Override
     public IPage<Assign> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
+            int tempWorkZ = Integer.parseInt(dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
+            int tempWorkQ = Integer.parseInt(dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
+            //小于等于
+            queryWrapper.le("u.temp_work", tempWorkZ);
+            //大于等于
+            queryWrapper.ge("u.temp_work", tempWorkQ);
+        }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTrackNo())) {
             dispatchingDto.setTrackNo(dispatchingDto.getTrackNo().replaceAll(" ", ""));
             queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
