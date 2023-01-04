@@ -27,7 +27,12 @@ import java.util.UUID;
 @Service
 public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand> implements HotDemandService {
 
-
+    /**
+     * 导入需求提报数据
+     * @param file
+     * @param branchCode
+     * @return
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult importDemand(MultipartFile file, String branchCode) {

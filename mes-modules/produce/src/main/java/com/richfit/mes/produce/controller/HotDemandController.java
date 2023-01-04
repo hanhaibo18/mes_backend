@@ -3,11 +3,14 @@ package com.richfit.mes.produce.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.OperationTypeSpec;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.HotDemand;
 import com.richfit.mes.common.model.produce.HotLongProduct;
 import com.richfit.mes.common.model.produce.HotLongProductQueryVo;
@@ -15,16 +18,16 @@ import com.richfit.mes.common.model.produce.HotModelStore;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.HotDemandParam;
+import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.HotDemandService;
 import com.richfit.mes.produce.service.HotLongProductService;
 import com.richfit.mes.produce.service.HotModelStoreService;
 import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.OrderUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -33,10 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -54,7 +54,14 @@ public class HotDemandController extends BaseController {
     @Resource
     public HotModelStoreService hotModelStoreService;
 
+    @Resource
+    public WmsServiceClient wmsServiceClient;
+
+    @Resource
+    private BaseServiceClient baseServiceClient;
     @ApiOperation(value = "新增需求提报", notes = "新增需求提报")
+
+
     @PostMapping("/save")
     public CommonResult saveDemand(@RequestBody HotDemand hotDemand){
         hotDemand.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -160,7 +167,7 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "需求提报与撤回", notes = "需求提报与撤回")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
-            @ApiImplicitParam(name = "submitState", value = "提报状态 0 :未提报  1 :已提报", required = true, paramType = "query")
+            @ApiImplicitParam(name = "submitState", value = "提报状态 0 :未提报  1 :已提报  2:需求退回", required = true, paramType = "query")
     })
     @PostMapping("/submit_or_revocation")
     public CommonResult submitDemand(@RequestBody List<String> idList,Integer submitState) {
@@ -172,73 +179,216 @@ public class HotDemandController extends BaseController {
         if (update) return CommonResult.success(ResultCode.SUCCESS);
         return CommonResult.failed();
     }
-//
-//    @ApiOperation(value = "检查长周期", notes = "检查长周期")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
-//    })
-//    @PostMapping("/check_long_product")
-//    public CommonResult checkLongProduct(@RequestBody List<String> idList) {
-//        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-//
-//        //毛坯需求数据
-//
-//
-//        QueryWrapper<HotLongProduct> longWrapper=new QueryWrapper();
-//        longWrapper.eq("tenant_id",currentUser.getTenantId());
-//        longWrapper.in("product_drawing_no",);
-//        List<HotLongProduct> list = hotLongProductService.list(longWrapper);
-//        //长周期产品
-//        Map<String, HotLongProduct> longMap = list.stream().collect(Collectors.toMap(x -> x.getProductDrawingNo(), x -> x));
-//
-//
-//        //遍历毛坯需求数据,根据图号在长周期产品map中获取,不为空则为长周期产品
-//
-//
-//        //收集长周期产品的毛坯需求id
-//
-//
-//        UpdateWrapper updateWrapper=new UpdateWrapper();
-//        updateWrapper.set("is_long_period",1);//设置为长周期
-//        updateWrapper.in("id",);
-//        boolean update = hotDemandService.update(updateWrapper);
-//        if (update) return CommonResult.success(ResultCode.SUCCESS);
-//        return CommonResult.failed();
-//    }
-//
-//
-//    @ApiOperation(value = "检查模型", notes = "检查模型")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
-//    })
-//    @PostMapping("/check_model")
-//    public CommonResult checkModel(@RequestBody List<String> idList) {
-//        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-//
-//        //毛坯需求数据
-//
-//
-//        QueryWrapper<HotModelStore> modelWrapper=new QueryWrapper();
-//        modelWrapper.eq("tenant_id",currentUser.getTenantId());
-//        modelWrapper.in("model_drawing_no",);
-//        List<HotModelStore> list = hotModelStoreService.list(modelWrapper);
-//        //模型
-//        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo(), x -> x));
-//
-//
-//        //遍历毛坯需求数据,根据图号在模型map中获取,不为空则有模型
-//
-//
-//        //收集有模型的毛坯需求id和无模型的id
-//
-//
-//        UpdateWrapper updateWrapper=new UpdateWrapper();
-//        updateWrapper.set("is_exist_model",1);//设置为有模型
-//        updateWrapper.in("id",);
-//        boolean update = hotDemandService.update(updateWrapper);
-//        if (update) return CommonResult.success(ResultCode.SUCCESS);
-//        return CommonResult.failed();
-//    }
+
+    @ApiOperation(value = "检查长周期", notes = "检查长周期")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/check_long_product")
+    public CommonResult checkLongProduct(@RequestBody List<String> idList,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+
+        //长周期字段为空的毛坯需求数据
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        queryWrapper.eq("branch_code",branchCode);
+        queryWrapper.apply("is_long_period is null");
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
+
+        //根据需求图号查询长周期产品库
+        QueryWrapper<HotLongProduct> longWrapper=new QueryWrapper();
+        longWrapper.eq("tenant_id",currentUser.getTenantId());
+        longWrapper.in("product_drawing_no",drawNos);
+        List<HotLongProduct> list = hotLongProductService.list(longWrapper);
+        //长周期产品数据
+        Map<String, HotLongProduct> longMap = list.stream().collect(Collectors.toMap(x -> x.getProductDrawingNo(), x -> x));
+
+        List<String> ids=new ArrayList<>();
+        //遍历毛坯需求数据,根据图号在长周期产品map中获取,不为空则为长周期产品
+        for (HotDemand hotDemand : hotDemands) {
+            HotLongProduct hotLongProduct = longMap.get(hotDemand.getDrawNo());
+            if (ObjectUtils.isNotEmpty(hotLongProduct)){
+                //收集长周期产品的毛坯需求id
+                ids.add(hotDemand.getId());
+            }
+        }
+        if (CollectionUtils.isNotEmpty(ids)){
+            UpdateWrapper updateWrapper=new UpdateWrapper();
+            updateWrapper.set("is_long_period",1);//设置为长周期
+            updateWrapper.in("id",ids);
+            boolean update = hotDemandService.update(updateWrapper);
+            if (update) return CommonResult.success(ResultCode.SUCCESS);
+            return CommonResult.failed();
+        }else {
+            return CommonResult.success("操作成功");
+        }
+    }
+
+
+    @ApiOperation(value = "检查模型", notes = "检查模型")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/check_model")
+    public CommonResult checkModel(@RequestBody List<String> idList,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+
+        //无模型或者模型字段为空的毛坯需求数据
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        queryWrapper.eq("branch_code",branchCode);
+        queryWrapper.apply("is_exist_model is null");
+        queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
+
+        //根据需求数据中的图号查询模型库
+        QueryWrapper<HotModelStore> modelWrapper=new QueryWrapper();
+        modelWrapper.eq("tenant_id",currentUser.getTenantId());
+        modelWrapper.in("model_drawing_no",drawNos);
+        List<HotModelStore> list = hotModelStoreService.list(modelWrapper);
+        //模型
+        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo(), x -> x));
+
+        List<String> ids=new ArrayList<>();
+        //遍历毛坯需求数据,根据图号在模型map中获取,不为空则有模型
+        for (HotDemand hotDemand : hotDemands) {
+            HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo());
+            if (ObjectUtils.isNotEmpty(hotModelStore)){
+                //收集有模型的毛坯需求id
+                ids.add(hotDemand.getId());
+            }
+        }
+        if (CollectionUtils.isNotEmpty(ids)){
+            UpdateWrapper updateWrapper=new UpdateWrapper();
+            updateWrapper.set("is_exist_model",1);//设置为有模型
+            updateWrapper.in("id",ids);
+            boolean update = hotDemandService.update(updateWrapper);
+            if (update) return CommonResult.success(ResultCode.SUCCESS);
+            return CommonResult.failed();
+        }else {
+            return CommonResult.success("操作成功");
+        }
+    }
+
+    @ApiOperation(value = "检查外协件", notes = "检查外协件")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
+    })
+    @PostMapping("/check_outsource")
+    public CommonResult checkOutsource(@RequestBody List<String> idList) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        //检查毛坯需求中{材质}字段，如果字段信息前几个字母包含“ZCU”、“HT”、“精ZG”任何一项，标记为外协件产品。
+        UpdateWrapper<HotDemand> updateWrapper=new UpdateWrapper();
+        updateWrapper.set("is_outsource",1);//设置外协件
+        updateWrapper.eq("tenant_id",currentUser.getTenantId());
+        updateWrapper.and(wrapper -> wrapper.likeRight("texture","ZCU").or().likeRight("texture","HT").or().likeRight("texture","精ZG"));
+        boolean update = hotDemandService.update(updateWrapper);
+        if (update) return CommonResult.success(ResultCode.SUCCESS);
+        return CommonResult.failed();
+    }
+
+
+    @ApiOperation(value = "核对库存", notes = "核对库存")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
+    })
+    @PostMapping("/check_repertory")
+    public CommonResult checkRepertory(@RequestBody List<String> idList) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        queryWrapper.and(wapper-> wapper.eq("is_exist_repertory",0).or().eq("is_exist_repertory",null));
+        //查询出没有库存的数据
+        List<HotDemand> list = hotDemandService.list(queryWrapper);
+        for (HotDemand hotDemand : list) {
+            if(StringUtils.isNotEmpty(hotDemand.getErpProductCode())){
+                //库存数量
+                Integer count = wmsServiceClient.queryMaterialCount(hotDemand.getErpProductCode()).getData();
+                if (count>0){
+                    UpdateWrapper<HotDemand> updateWrapper=new UpdateWrapper();
+                    updateWrapper.set("repertory_num",count);//设置库存数量
+                    updateWrapper.set("is_exist_repertory",1);//设置为已有库存
+                    updateWrapper.in("id",hotDemand.getId());
+                    boolean update = hotDemandService.update(updateWrapper);
+                    if (update) return CommonResult.success(ResultCode.SUCCESS);
+                }
+            }
+        }
+        return CommonResult.failed();
+    }
+
+
+        @ApiOperation(value = "检查工艺", notes = "检查工艺")
+        @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/check_router")
+    public CommonResult checkRouter(@RequestBody List<String> idList,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+
+        //是否有工艺字段为空的毛坯需求数据
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        queryWrapper.eq("branch_code",branchCode);
+        queryWrapper.apply("(is_exist_process=0 or is_exist_process is null)");
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
+
+        //根据需求图号查询工艺库
+        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
+        //工艺库数据
+        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
+
+        List<String> ids=new ArrayList<>();
+        //遍历毛坯需求数据,根据图号在工艺map中获取,不为空则有工艺
+        for (HotDemand hotDemand : hotDemands) {
+            Router router = routerMap.get(hotDemand.getDrawNo());
+            if (ObjectUtils.isNotEmpty(router)){
+                //收集有模型的毛坯需求id
+                ids.add(hotDemand.getId());
+            }
+        }
+        if (CollectionUtils.isNotEmpty(ids)){
+            UpdateWrapper updateWrapper=new UpdateWrapper();
+            updateWrapper.set("is_exist_process",1);//设置为有工艺
+            updateWrapper.in("id",ids);
+            boolean update = hotDemandService.update(updateWrapper);
+            if (update) return CommonResult.success(ResultCode.SUCCESS);
+            return CommonResult.failed();
+        }else {
+            return CommonResult.success("操作成功");
+        }
+    }
+
+
+    @ApiOperation(value = "一键检查", notes = "一键检查")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/one_check")
+    public CommonResult oneCheck(@RequestBody List<String> idList,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+
+        try {
+            this.checkLongProduct(idList,branchCode);
+            this.checkModel(idList,branchCode);
+            this.checkOutsource(idList);
+            this.checkRepertory(idList);
+            this.checkRouter(idList,branchCode);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw  new GlobalException("一键检查异常",ResultCode.FAILED);
+        }
+        return CommonResult.success("操作成功");
+
+    }
+
 
 
 
