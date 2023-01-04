@@ -26,7 +26,7 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @Author: xinYu.hou
      * @return: boolean
      **/
-    boolean deleteBom(String workPlanNo, String tenantId, String branchCode, String drawingNo);
+    boolean deleteBom(String id, String workPlanNo, String tenantId, String branchCode, String drawingNo);
 
     /**
      * 功能描述: 修改BOM
