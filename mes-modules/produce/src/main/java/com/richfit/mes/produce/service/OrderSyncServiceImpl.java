@@ -195,6 +195,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         log.setSyncState("0");
         log.setOrderSyncTime(time);
         log.setController(controller);
+        log.setBranchCode(order.getBranchCode());
         log.setTenantId(order.getTenantId());
         List<Product> list = baseServiceClient.selectOrderProduct(order.getMaterialCode(), null);
         if (CollectionUtils.isEmpty(list)) {
