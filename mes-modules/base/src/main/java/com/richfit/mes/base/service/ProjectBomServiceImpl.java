@@ -45,8 +45,9 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
             throw new GlobalException("BOM已被使用", ResultCode.FAILED);
         }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("work_plan_no", workPlanNo)
-                .and(wrapper -> wrapper.eq("drawing_no", drawingNo).or().eq("main_drawing_no", drawingNo))
+        queryWrapper
+                .and(wrapper -> wrapper.eq("drawing_no", drawingNo).eq("grade", "H").or().eq("main_drawing_no", drawingNo).eq("grade", "L"))
+                .eq("work_plan_no", workPlanNo)
                 .eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode);
         return this.remove(queryWrapper);
