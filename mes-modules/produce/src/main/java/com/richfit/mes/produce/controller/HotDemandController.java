@@ -76,7 +76,9 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "需求提报列表查询", notes = "需求提报列表查询")
     @PostMapping("/demand_page")
     public CommonResult<IPage<HotDemand>> demandPage(@RequestBody HotDemandParam hotDemandParam) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
         if(StringUtils.isNotEmpty(hotDemandParam.getProjectName())){//项目名称
             queryWrapper.eq("project_name",hotDemandParam.getProjectName());
         }
@@ -196,7 +198,7 @@ public class HotDemandController extends BaseController {
         queryWrapper.apply("is_long_period is null");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-
+        if (CollectionUtils.isEmpty(drawNos))   return CommonResult.success("所有均已校验完成");
         //根据需求图号查询长周期产品库
         QueryWrapper<HotLongProduct> longWrapper=new QueryWrapper();
         longWrapper.eq("tenant_id",currentUser.getTenantId());
@@ -390,7 +392,23 @@ public class HotDemandController extends BaseController {
     }
 
 
+    @ApiOperation(value = "生产批准与撤销批准", notes = "生产批准与撤销批准")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "ratifyState", value = "生产批准状态 0 :未批准 ,1 已批准", required = true, paramType = "query")
+    })
+    @PostMapping("/ratify")
+    public CommonResult ratify(@RequestBody List<String> idList,Integer submitState) {
+        //校验有无模型
 
+
+        UpdateWrapper updateWrapper=new UpdateWrapper();
+        updateWrapper.set("produce_ratify_state",submitState);//设置提报状态
+        updateWrapper.in("id",idList);
+        boolean update = hotDemandService.update(updateWrapper);
+        if (update) return CommonResult.success(ResultCode.SUCCESS);
+        return CommonResult.failed();
+    }
 
 
 
