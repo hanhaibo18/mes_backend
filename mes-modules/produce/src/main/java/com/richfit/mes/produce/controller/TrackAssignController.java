@@ -367,17 +367,12 @@ public class TrackAssignController extends BaseController {
                         assign.getUserId().substring(0, assign.getUserId().length() - 1),
                         assign.getBranchCode(),
                         assign.getTenantId());
-                //参数不为空 并且为"1" 复制工序参数
-                if (!StringUtils.isNullOrEmpty(trackItem.getOptType()) && "6".equals(trackItem.getOptType())) {
-                    inspectionService.saveItem(assign.getTiId());
-                }
             }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
-
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
         CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());

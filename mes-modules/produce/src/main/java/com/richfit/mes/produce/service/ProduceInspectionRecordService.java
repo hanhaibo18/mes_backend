@@ -1054,7 +1054,9 @@ public class ProduceInspectionRecordService {
 
     /**
      * 探伤记录审核
-     *
+     * 功能描述：1、修改探伤记录审核状态会影响探伤任务的状态，探伤任务和探伤记录为多对多的关系，所以当一个探伤记录状态改变会影响多个探伤任务审核状态
+     *          2、探伤工序和探伤任务为一对多的关系，故需要根据对应跟单工序的探伤任务状态来判断工序是否探伤完成
+     *          3、跟单工序状态判断：多个探伤任务情况下，只要有一个为不合格便将此跟单发送质检部门复检做不合格处理，当全部为合格并且审核通过便激活下工序此探伤过程完工
      * @param id
      * @param tempType
      * @param isAudit
@@ -1091,7 +1093,12 @@ public class ProduceInspectionRecordService {
         return true;
     }
 
-    //审核通过探伤任务处理
+    /**
+     * 探伤记录审核
+     * 审核通过探伤任务处理功能描述：探伤任务分为有源跟单（带有跟单工序的探伤任务，需要下工序处理的），无源跟单（质检部门自己创建的探伤任务没用跟单工序的）
+     * @param powerIds
+     * @return
+     */
     @Transactional(rollbackFor = Exception.class)
     public void isToNextItemDeal(List<String> powerIds){
         QueryWrapper<InspectionPower> powerQueryWrapper = new QueryWrapper<>();

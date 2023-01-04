@@ -94,10 +94,10 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
             //工序id和设备类型赋值
             for (Hour hour : exportList) {
                 if (!ObjectUtil.isEmpty(optMap.get(hour.getOptName()))) {
-                    hour.setOptId(optMap.get(hour.getOptName()).getId());;
+                    hour.setOptId(optMap.get(hour.getOptName()).getId());
                 }
                 if (!ObjectUtil.isEmpty(optMap.get(hour.getDeviceName()))) {
-                    hour.setTypeCode(deviceMap.get(hour.getDeviceName()).getTypeCode());;
+                    hour.setTypeCode(deviceMap.get(hour.getDeviceName()).getTypeCode());
                 }
             }
             //绑定版本

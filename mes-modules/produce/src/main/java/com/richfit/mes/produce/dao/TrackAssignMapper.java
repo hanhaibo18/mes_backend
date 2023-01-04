@@ -40,6 +40,9 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     @Select("select u.* from v_produce_assign u ${ew.customSqlSegment}")
     IPage<Assign> queryPageNew(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 
+    @Select("select u.* from v_produce_assign_store u ${ew.customSqlSegment}")
+    IPage<Assign> queryPageAssignTrackStore(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
+
     /**
      * 功能描述: 查询派工还视图
      *
