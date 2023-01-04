@@ -133,7 +133,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         ProductionBom productionBom = this.getById(id);
         QueryWrapper<ProjectBom> queryWrapperProject = new QueryWrapper<>();
         queryWrapperProject.eq("work_plan_no", workPlanNo);
-        queryWrapperProject.eq("drawing_no", productionBom.getDrawingNo());
+        queryWrapperProject.eq("main_drawing_no", productionBom.getDrawingNo());
         List<ProjectBom> list = projectBomService.list(queryWrapperProject);
         if (!list.isEmpty()) {
             return CommonResult.failed("当前图号下,工作号已经使用");

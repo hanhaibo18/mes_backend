@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,7 +32,7 @@ public class HeatTrackAssignController extends BaseController {
 
     @ApiOperation(value = "未报工查询")
     @PostMapping("/queryNotAtWork")
-    public CommonResult<IPage<Assign>> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException {
+    public CommonResult<IPage<Assign>> queryNotAtWork(@RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryNotAtWork(dispatchingDto));
     }
 }

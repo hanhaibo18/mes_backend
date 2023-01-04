@@ -17,11 +17,11 @@ public class Hour extends BaseEntity<Hour> {
     @ApiModelProperty(value = "工时版本id", dataType = "String")
     private String verId;
 
-    @ApiModelProperty(value = "设备类型", dataType = "String")
+    @ApiModelProperty(value = "设备类型code", dataType = "String")
     private String typeCode;
 
-    @ApiModelProperty(value = "设备名称", dataType = "String")
-    private String deviceName;
+    @ApiModelProperty(value = "设备类型名称", dataType = "String")
+    private String typeName;
 
     @ApiModelProperty(value = "工序id", dataType = "String")
     private String optId;
