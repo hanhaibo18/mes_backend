@@ -165,5 +165,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public CommonResult<List<Router>> getByDrawNo(List<String> drawNos, String branchCode) {
+        return null;
+    }
+
 
 }

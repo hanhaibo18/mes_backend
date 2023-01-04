@@ -22,6 +22,7 @@ import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
@@ -460,7 +461,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     /**
-     * 获取订单数量和已入库数量
+     * 根据订单号获取订单的物料数量和已入库数量
      *
      * @param materialNo 物料编码
      * @param orderNo    订单号
@@ -469,7 +470,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Override
     public HashMap<String, Integer> getOrderNumAndInNum(String materialNo, String orderNo) {
         QueryWrapper<Order> orderWrapper = new QueryWrapper<>();
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         //根据物料号和订单号获取订单
+        orderWrapper.eq("tenant_id",currentUser.getTenantId());
         orderWrapper.eq("material_code", materialNo);
         orderWrapper.eq("order_sn", orderNo);
         orderWrapper.orderByAsc("delivery_date");
@@ -484,7 +487,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         HashMap<String, Integer> numMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(orderList)) {
             Integer orderNum = orderList.get(0).getOrderNum();//订单数量
-            numMap.put("orderNum", orderNum);//订单数量
+            numMap.put("orderNum", orderNum);//订单物料数量
             if (ObjectUtils.isNotEmpty(lineStore)) {
                 numMap.put("inNum", lineStore.getNumber());//已入库数量
             } else {

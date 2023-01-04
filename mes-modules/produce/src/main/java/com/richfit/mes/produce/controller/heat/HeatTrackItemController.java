@@ -33,7 +33,7 @@ import java.util.UUID;
  * @Description 跟单工序Controller
  */
 @Slf4j
-@Api(value = "跟单工序管理", tags = {"跟单工序管理"})
+@Api(value = "热工跟单工序管理", tags = {"热工跟单工序管理"})
 @RestController
 @RequestMapping("/api/produce/heat/track_item")
 public class HeatTrackItemController extends BaseController {
@@ -143,4 +143,8 @@ public class HeatTrackItemController extends BaseController {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
+
+
+
+
 }
