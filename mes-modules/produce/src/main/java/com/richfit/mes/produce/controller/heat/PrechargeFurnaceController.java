@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller.heat;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Assign;
@@ -45,6 +46,14 @@ public class PrechargeFurnaceController extends BaseController {
     @PostMapping("/query")
     public CommonResult<List<PrechargeFurnace>> query(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) {
         QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper();
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
+            int tempWorkZ = Integer.parseInt(dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
+            int tempWorkQ = Integer.parseInt(dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
+            //小于等于
+            queryWrapper.le("u.temp_work", tempWorkZ);
+            //大于等于
+            queryWrapper.ge("u.temp_work", tempWorkQ);
+        }
         queryWrapper.orderByAsc("modify_time");
         return CommonResult.success(prechargeFurnaceService.list(queryWrapper));
     }
