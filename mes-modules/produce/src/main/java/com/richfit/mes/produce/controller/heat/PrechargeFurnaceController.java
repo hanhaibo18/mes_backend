@@ -3,7 +3,9 @@ package com.richfit.mes.produce.controller.heat;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
@@ -40,6 +42,22 @@ public class PrechargeFurnaceController extends BaseController {
     public CommonResult furnaceCharging(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList) {
         prechargeFurnaceService.furnaceCharging(assignList);
         return CommonResult.success("装炉成功");
+    }
+
+    @ApiOperation(value = "预装炉删除")
+    @PostMapping("/delete")
+    public CommonResult delete(@ApiParam(value = "预装炉ID", required = true) @RequestParam Long id) {
+        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(id);
+        if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("只能删除未开工的预装炉", ResultCode.FAILED);
+        }
+        List<Assign> assignList = prechargeFurnaceService.queryTrackItem(id);
+        if (assignList.isEmpty()) {
+            prechargeFurnaceService.removeById(id);
+            return CommonResult.success("删除成功");
+        } else {
+            return CommonResult.failed("当前炉内还有生产数据，不能删除！");
+        }
     }
 
     @ApiOperation(value = "装炉查询", tags = "不分页装炉列表查询")

@@ -63,13 +63,12 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     @Override
     public void addTrackItem(List<Assign> assignList) {
         //预装炉未开工状态
-        String wkg = "0";
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
-        if (!wkg.equals(prechargeFurnace.getStatus())) {
-            throw new GlobalException("只能添加未开工的预装下的工序", ResultCode.FAILED);
+        if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("只能添加未开工的预装炉的工序", ResultCode.FAILED);
         }
         for (Assign assign : assignList) {
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
@@ -84,13 +83,12 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     @Override
     public void deleteTrackItem(List<Assign> assignList) {
         //预装炉未开工状态
-        String wkg = "0";
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要选择删除预装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
-        if (!wkg.equals(prechargeFurnace.getStatus())) {
-            throw new GlobalException("只能删除未开工的预装下的工序", ResultCode.FAILED);
+        if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("只能删除未开工的预装炉的工序", ResultCode.FAILED);
         }
         for (Assign assign : assignList) {
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
