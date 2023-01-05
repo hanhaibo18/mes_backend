@@ -404,7 +404,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                                 item.setTrackHeadId(trackHead.getId());
                                 item.setDrawingNo(trackHead.getDrawingNo());
                                 item.setFlowId(flow.getId());
-                                item.setProductNo(trackHead.getDrawingNo() + " " + trackHead.getProductNoDesc());
+                                item.setProductNo(flow.getProductNo());
                                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                                 //可分配数量
                                 item.setAssignableQty(trackHead.getNumber());
@@ -599,7 +599,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
 
             //跟单添加料单数据处理
-            this.lineStore(flowId, trackHead, productsNo, number);
+            lineStore(flowId, trackHead, productsNo, number);
 
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);

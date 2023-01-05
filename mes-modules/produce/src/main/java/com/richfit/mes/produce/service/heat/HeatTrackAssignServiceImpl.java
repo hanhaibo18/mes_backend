@@ -127,6 +127,7 @@ public class  HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, 
     }
 
     /**
+     * 功能描述：热工跟单派工
      * @param assign
      * @return
      * @throws Exception
@@ -180,7 +181,6 @@ public class  HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, 
                 assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 assign.setTrackNo(trackHead.getTrackNo());
                 assign.setDeviceId(trackItem.getTypeCode());
-                assign.setDeviceName(trackItem.getTypeName());
                 assign.setDeviceName(trackItem.getTypeName());
                 assign.setClasses(trackHead.getClasses());
                 //保存派工信息
