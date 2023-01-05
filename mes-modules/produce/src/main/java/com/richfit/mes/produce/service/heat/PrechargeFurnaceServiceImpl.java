@@ -54,7 +54,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     }
 
     @Override
-    public List<Assign> queryTrackItem(String id) {
+    public List<Assign> queryTrackItem(Long id) {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("u.precharge_furnace_id", id);
         return trackAssignMapper.queryListAssignTrackStore(queryWrapper);
@@ -71,14 +71,14 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         if (!wkg.equals(prechargeFurnace.getStatus())) {
             throw new GlobalException("只能添加未开工的预装下的工序", ResultCode.FAILED);
         }
-        prechargeFurnace.setOptName(optNames(assignList));
-        this.updateById(prechargeFurnace);
         for (Assign assign : assignList) {
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
             updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
             trackItemService.update(updateWrapper);
         }
+        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        this.updateById(prechargeFurnace);
     }
 
     @Override
@@ -92,14 +92,14 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         if (!wkg.equals(prechargeFurnace.getStatus())) {
             throw new GlobalException("只能删除未开工的预装下的工序", ResultCode.FAILED);
         }
-        prechargeFurnace.setOptName(optNames(assignList));
-        this.updateById(prechargeFurnace);
         for (Assign assign : assignList) {
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
             updateWrapper.set("precharge_furnace_id", null);
             trackItemService.update(updateWrapper);
         }
+        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        this.updateById(prechargeFurnace);
     }
 
     private String optNames(List<Assign> assignList) {

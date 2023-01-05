@@ -29,7 +29,7 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      * @Date: 2023/1/5 9:45
      * @return: List<Assign>
      **/
-    public List<Assign> queryTrackItem(String id);
+    public List<Assign> queryTrackItem(Long id);
 
     /**
      * 功能描述:装炉跟单工序添加

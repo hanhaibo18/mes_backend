@@ -51,7 +51,7 @@ public class PrechargeFurnaceController extends BaseController {
 
     @ApiOperation(value = "装炉跟单工序查询", tags = "不分页装炉跟单工序查询")
     @GetMapping("/query/track/item")
-    public CommonResult<List<Assign>> queryTrackItem(@ApiParam(value = "预装炉ID", required = true) @RequestParam String id) {
+    public CommonResult<List<Assign>> queryTrackItem(@ApiParam(value = "预装炉ID", required = true) @RequestParam Long id) {
         return CommonResult.success(prechargeFurnaceService.queryTrackItem(id));
     }
 
