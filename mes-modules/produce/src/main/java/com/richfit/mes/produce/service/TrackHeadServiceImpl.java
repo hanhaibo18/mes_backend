@@ -357,6 +357,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return true;
     }
 
+    @Autowired
+    private HourStandardService hourStandardService;
+    @Autowired
+    private HourService hourService;
+
     /**
      * 描述: 热工跟单绑定工艺
      *
@@ -388,6 +393,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //绑定新的
             Map<String, List<TrackFlow>> trackFlowMap = trackFlows.stream().collect(Collectors.groupingBy(TrackFlow::getTrackHeadId));
+
             for (TrackHead trackHead : headList) {
                 if (!ObjectUtil.isEmpty(trackFlowMap.get(trackHead.getId())) && trackFlowMap.get(trackHead.getId()).size() > 0) {
                     List<TrackFlow> flows = trackFlowMap.get(trackHead.getId());
@@ -415,6 +421,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                                 if (trackHead.getStatus().equals("4")) {
                                     item.setIsCurrent(0);
                                 }
+
                                 trackItemService.save(item);
                             }
                         }
@@ -429,8 +436,55 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
 
         }
+        //加载工时标准
+        Map<String, List<Hour>> hourGoup = getHourGoupByTypeCodeAndOptName();
+        for (TrackItem item : trackItems) {
+            //工时计算
+            Double aDouble = calculationHeatItemHour(item, hourGoup.get(item.getTypeCode() + "_" + item.getOptName()));
+            item.setHeatHour(aDouble);
+        }
+        trackItemService.saveOrUpdateBatch(trackItems);
+
 
         return true;
+    }
+
+    /**
+     * 工时标准分组
+     */
+    private Map<String, List<Hour>> getHourGoupByTypeCodeAndOptName() {
+
+        QueryWrapper<HourStandard> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("is_activate",HourStandard.YES_ACTIVATE);
+        List<HourStandard> list = hourStandardService.list(queryWrapper1);
+        if(list.size()>0){
+            QueryWrapper<Hour> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.eq("ver_id",list.get(0).getId());
+            List<Hour> hours = hourService.list(queryWrapper2);
+            //分组便于取值  key->typeCode_optName
+            return hours.stream().collect(Collectors.groupingBy(item -> item.getTypeCode() + "_" + item.getOptName()));
+        }
+        return new HashMap<String, List<Hour>>();
+    }
+
+    /**
+     * 描述: 根据工时标准计算跟单工序工时
+     *       时标准重量上限>判断跟单重量>时标准重量下限
+     * @Author: renzewen
+     * @Date: 2023/1/4 10:25
+     **/
+    public Double calculationHeatItemHour(TrackItem item,List<Hour> hours){
+        //跟单重量
+        Float weight = trackHeadMapper.selectById(item.getTrackHeadId()).getWeight();
+        //根据工时标准的重量上限下限来确定工时
+        if(!ObjectUtil.isEmpty(hours)){
+            for (Hour hour : hours) {
+                if( Double.parseDouble(hour.getWeightUp())>=Double.parseDouble(String.valueOf(weight)) && Double.parseDouble(String.valueOf(weight))>=Double.parseDouble(hour.getWeightDown())){
+                    return Double.parseDouble(hour.getHour());
+                }
+            }
+        }
+        return 0.0;
     }
 
     @Override
