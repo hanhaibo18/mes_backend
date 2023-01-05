@@ -67,7 +67,7 @@ public class PrechargeFurnaceController extends BaseController {
         }
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(assignList.get(0).getPrechargeFurnaceId());
         if (!wkg.equals(prechargeFurnace.getStatus())) {
-            return CommonResult.failed("只能删除未开工的预装下的工序");
+            return CommonResult.failed("只能添加未开工的预装下的工序");
         }
         for (Assign assign : assignList) {
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
