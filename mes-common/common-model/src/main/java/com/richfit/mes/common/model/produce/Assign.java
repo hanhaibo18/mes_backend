@@ -163,6 +163,9 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "产品名称", dataType = "String")
     private String productName;
     @TableField(exist = false)
+    @ApiModelProperty(value = "产品编码全", dataType = "String")
+    private String productNoDesc;
+    @TableField(exist = false)
     @ApiModelProperty(value = "零部件名称", dataType = "String")
     private String partsName;
     @TableField(exist = false)
