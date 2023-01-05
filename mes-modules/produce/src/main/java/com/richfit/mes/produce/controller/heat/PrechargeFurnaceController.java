@@ -50,9 +50,9 @@ public class PrechargeFurnaceController extends BaseController {
             int tempWorkZ = Integer.parseInt(dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
             int tempWorkQ = Integer.parseInt(dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
             //小于等于
-            queryWrapper.le("u.temp_work", tempWorkZ);
+            queryWrapper.le("temp_work", tempWorkZ);
             //大于等于
-            queryWrapper.ge("u.temp_work", tempWorkQ);
+            queryWrapper.ge("temp_work", tempWorkQ);
         }
         queryWrapper.orderByAsc("modify_time");
         return CommonResult.success(prechargeFurnaceService.list(queryWrapper));
