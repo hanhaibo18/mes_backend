@@ -2,6 +2,7 @@ package com.kld.mes.wms.service;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -124,7 +125,7 @@ public class ProductToWmsService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", ingredientApplicationDtoEncrpy);
         //调用上传接口
-        String s = HttpUtil.post(mesScddUploadApi, params, 120000);
+        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
