@@ -55,9 +55,9 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "派工用户ID", dataType = "String")
     private String emplName;
     /**
-     * 派工用户名称
+     * 派工工位名称
      */
-    @ApiModelProperty(value = "派工用户名称", dataType = "String")
+    @ApiModelProperty(value = "派工工位名称", dataType = "String")
     private String siteId;
     /**
      * 派工工位名称

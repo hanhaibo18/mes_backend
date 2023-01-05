@@ -2,39 +2,42 @@ package com.richfit.mes.produce.service.heat;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
-import com.richfit.mes.produce.service.PlanService;
-import com.richfit.mes.produce.service.ProduceRoleOperationService;
-import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.OrderUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 /**
  * @author zhiqiang.lu
  * @Description 跟单派工服务
  */
 @Service
-public class
-HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements HeatTrackAssignService {
+public class  HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements HeatTrackAssignService {
     @Autowired
     public TrackAssignMapper trackAssignMapper;
     @Resource
@@ -47,6 +50,12 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
     private ProduceRoleOperationService roleOperationService;
     @Resource
     private SystemServiceClient systemServiceClient;
+    @Autowired
+    public BaseServiceClient baseServiceClient;
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
+    @Autowired
+    private TrackAssignService trackAssignService;
 
     @Override
     public IPage<Assign> queryWhetherProduce(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException {
@@ -115,5 +124,91 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
             }
         }
         return queryPage;
+    }
+
+    /**
+     * @param assign
+     * @return
+     * @throws Exception
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Assign assignItem(Assign assign) throws Exception {
+        try {
+            if (StringUtils.isNullOrEmpty(assign.getTiId())) {
+                throw new GlobalException("未关联工序", ResultCode.FAILED);
+            }
+            TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            //默认全部派工
+            assign.setQty(trackItem.getAssignableQty());
+            if (null != trackItem) {
+                trackItem.setIsCurrent(1);
+                trackItem.setIsDoing(0);
+                //默认全部派工
+                trackItem.setAssignableQty(0);
+                //已派工
+                trackItem.setIsSchedule(1);
+                trackItem.setDeviceId(assign.getDeviceId());
+                //处理工艺信息
+                trackItem.setRouterInfo(getRouterInfo(trackItem));
+                trackItemService.updateById(trackItem);
+                if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
+                    assign.setTrackNo(trackHead.getTrackNo());
+                }
+                if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
+                    //将跟单状态改为在制
+                    trackHead.setStatus("1");
+                    trackHeadService.updateById(trackHead);
+                    UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                    update.set("status", "1");
+                    update.eq("id", trackItem.getFlowId());
+                    trackHeadFlowService.update(update);
+                }
+                assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                if (null != SecurityUtils.getCurrentUser()) {
+                    assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
+                assign.setAssignName(user.getData().getEmplName());
+                assign.setAssignTime(new Date());
+                assign.setModifyTime(new Date());
+                assign.setCreateTime(new Date());
+                assign.setAvailQty(assign.getQty());
+                assign.setFlowId(trackItem.getFlowId());
+                assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                assign.setTrackNo(trackHead.getTrackNo());
+                assign.setDeviceId(trackItem.getTypeCode());
+                assign.setDeviceName(trackItem.getTypeName());
+                assign.setDeviceName(trackItem.getTypeName());
+                assign.setClasses(trackHead.getClasses());
+                //保存派工信息
+                trackAssignService.save(assign);
+            }
+            return assign;
+        } catch (Exception e) {
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+    /**
+     * 工艺信息字段拼接
+     * @param trackItem
+     * @return
+     */
+    private String getRouterInfo(TrackItem trackItem) {
+        StringBuilder routerInfo = new StringBuilder();
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("flow_id",trackItem.getFlowId())
+                .orderByAsc("sequence_order_by");
+        List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
+        for (TrackItem item : list) {
+            if(!StringUtils.isNullOrEmpty(String.valueOf(routerInfo))){
+                routerInfo.append(";");
+            }
+            routerInfo.append(item.getOptName()+" "+item.getTempWork()+" "+item.getHoldTime()+" "+item.getCoolType());
+        }
+        return String.valueOf(routerInfo);
     }
 }

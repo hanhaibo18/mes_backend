@@ -21,4 +21,15 @@ public interface HeatTrackAssignService extends IService<Assign> {
      * @return: IPage<Assign>
      **/
     IPage<Assign> queryWhetherProduce(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException;
+
+
+    /**
+     * 功能描述:跟单派工
+     *
+     * @param assign
+     * @Author: renzewen
+     * @Date: 2023/1/5 16:24
+     * @return: Assign
+     **/
+    Assign assignItem(Assign assign) throws Exception;
 }
