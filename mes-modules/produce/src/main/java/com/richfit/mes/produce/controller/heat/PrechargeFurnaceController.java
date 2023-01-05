@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
@@ -72,6 +73,7 @@ public class PrechargeFurnaceController extends BaseController {
             //大于等于
             queryWrapper.ge("temp_work", tempWorkQ);
         }
+        queryWrapper.eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId());
         queryWrapper.orderByAsc("modify_time");
         return CommonResult.success(prechargeFurnaceService.list(queryWrapper));
     }
