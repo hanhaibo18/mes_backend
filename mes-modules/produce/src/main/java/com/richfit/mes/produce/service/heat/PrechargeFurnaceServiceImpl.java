@@ -44,6 +44,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         PrechargeFurnace prechargeFurnace = new PrechargeFurnace();
         prechargeFurnace.setTempWork("");
         prechargeFurnace.setOptName(optNames(assignList));
+        prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id

@@ -60,4 +60,6 @@ public class PrechargeFurnace {
     private String status;
     @ApiModelProperty(value = "是否分批  0否  1是", dataType = "String")
     private String isBatch;
+    @ApiModelProperty(value = "车间班组组织代码", dataType = "String")
+    private String siteId;
 }
