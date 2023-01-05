@@ -253,6 +253,10 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "预装炉id", dataType = "String")
     private String prechargeFurnaceId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工艺信息")
+    private String routerInfo;
     /**
      * 预装炉（止）
      */
