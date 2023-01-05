@@ -19,7 +19,7 @@ public class PrechargeFurnace {
     private static final long serialVersionUID = -5801273490970600632L;
 
     @TableId(type = IdType.AUTO)
-    protected Integer id;
+    protected Long id;
 
     /**
      * 创建者

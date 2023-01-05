@@ -246,6 +246,10 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
     private String coolType;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "预装炉id", dataType = "String")
+    private String prechargeFurnaceId;
     /**
      * 预装炉（止）
      */

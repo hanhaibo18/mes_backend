@@ -440,5 +440,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String syncStatus;
 
-
+    @ApiModelProperty(value = "预装炉id", dataType = "String")
+    private Long prechargeFurnaceId;
 }

@@ -49,7 +49,7 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
     private SystemServiceClient systemServiceClient;
 
     @Override
-    public IPage<Assign> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException {
+    public IPage<Assign> queryWhetherProduce(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
             int tempWorkZ = Integer.parseInt(dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
@@ -88,6 +88,11 @@ HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implem
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq(StrUtil.isNotBlank(dispatchingDto.getClasses()), "u.classes", dispatchingDto.getClasses());
+        if (IsProduce) {
+            queryWrapper.isNotNull("u.precharge_furnace_id");
+        } else {
+            queryWrapper.isNull("u.precharge_furnace_id");
+        }
         queryWrapper.eq("u.site_id", SecurityUtils.getCurrentUser().getBelongOrgId());
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
