@@ -63,7 +63,7 @@ public class PrechargeFurnaceController extends BaseController {
         //预装炉未开工状态
         String wkg = "0";
         if (assignList.isEmpty()) {
-            return CommonResult.failed("必须要选择删除预装炉的工序");
+            return CommonResult.failed("必须要选择添加预装炉的工序");
         }
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(assignList.get(0).getPrechargeFurnaceId());
         if (!wkg.equals(prechargeFurnace.getStatus())) {
