@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service.heat;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -40,14 +41,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要有装炉的工序", ResultCode.FAILED);
         }
-        Set<String> optNames = new HashSet();
         PrechargeFurnace prechargeFurnace = new PrechargeFurnace();
         prechargeFurnace.setTempWork("");
-        for (Assign assign : assignList) {
-            //拼接工序名称
-            optNames.add(assign.getOptName());
-        }
-        prechargeFurnace.setOptName(optNames.toString());
+        prechargeFurnace.setOptName(optNames(assignList));
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id
@@ -62,5 +58,56 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("u.precharge_furnace_id", id);
         return trackAssignMapper.queryListAssignTrackStore(queryWrapper);
+    }
+
+    @Override
+    public void addTrackItem(List<Assign> assignList) {
+        //预装炉未开工状态
+        String wkg = "0";
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
+        if (!wkg.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("只能添加未开工的预装下的工序", ResultCode.FAILED);
+        }
+        prechargeFurnace.setOptName(optNames(assignList));
+        this.updateById(prechargeFurnace);
+        for (Assign assign : assignList) {
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id", assign.getTiId());
+            updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
+            trackItemService.update(updateWrapper);
+        }
+    }
+
+    @Override
+    public void deleteTrackItem(List<Assign> assignList) {
+        //预装炉未开工状态
+        String wkg = "0";
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要选择删除预装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
+        if (!wkg.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("只能删除未开工的预装下的工序", ResultCode.FAILED);
+        }
+        prechargeFurnace.setOptName(optNames(assignList));
+        this.updateById(prechargeFurnace);
+        for (Assign assign : assignList) {
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id", assign.getTiId());
+            updateWrapper.set("precharge_furnace_id", null);
+            trackItemService.update(updateWrapper);
+        }
+    }
+
+    private String optNames(List<Assign> assignList) {
+        Set<String> optNames = new HashSet();
+        for (Assign assign : assignList) {
+            //拼接工序名称
+            optNames.add(assign.getOptName());
+        }
+        return optNames.toString();
     }
 }
