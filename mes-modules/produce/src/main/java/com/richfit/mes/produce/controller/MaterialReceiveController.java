@@ -168,7 +168,7 @@ public class MaterialReceiveController extends BaseController {
                     detail.setDrawingNo(noteDetailList.get(0).getDrawingNo());
                 }
             });
-            materialReceiveDetailService.saveDetailList(material.getDetailList());
+            materialReceiveDetailService.saveBatch(material.getDetailList());
         } catch (GlobalException e) {
             e.printStackTrace();
             //既能实现回滚也能返回结果
