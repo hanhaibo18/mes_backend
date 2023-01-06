@@ -257,21 +257,25 @@ public class SequenceController extends BaseController {
         CommonResult<List<Sequence>> list = this.list(routerId);
         List<Sequence> dbSequenceList = list.getData();
         //修改后的idlist
-        List<String> idList = sequenceList.stream().filter(s-> !StringUtils.isNullOrEmpty(s.getId())).map(s -> s.getId()).collect(Collectors.toList());
+        List<String> idList = sequenceList.stream().filter(s -> !StringUtils.isNullOrEmpty(s.getId())).map(s -> s.getId()).collect(Collectors.toList());
         //修改前的所有工序idlist
         List<String> dbIdList = dbSequenceList.stream().map(s -> s.getId()).collect(Collectors.toList());
         //已经删除掉订单工序id
         List<String> ids = dbIdList.stream().filter(id -> !idList.contains(id)).collect(Collectors.toList());
         sequenceService.removeByIds(ids);
         for (Sequence sequence : sequenceList) {
-            if (StringUtils.isNullOrEmpty(sequence.getOptCode()) && !StringUtils.isNullOrEmpty(sequence.getId())) {
-                return CommonResult.failed("工序code不能为空！");
+            if (StringUtils.isNullOrEmpty(sequence.getOptId()) && !StringUtils.isNullOrEmpty(sequence.getId())) {
+                return CommonResult.failed(sequence.getOptName() + ":工序获取字典id不能为空！");
             } else {
+                Operatipon operatipon = operatiponService.getById(sequence.getOptId());
+                if (operatipon == null) {
+                    return CommonResult.failed(sequence.getOptName() + ":没有找到工序字典！");
+                }
+                sequence.setOptCode(operatipon.getOptCode());
                 sequence.setModifyBy(user.getUsername());
                 sequence.setModifyTime(new Date());
-
-                if(StringUtils.isNullOrEmpty(sequence.getId())){
-                    if(StringUtils.isNullOrEmpty(sequence.getOptName())){
+                if (StringUtils.isNullOrEmpty(sequence.getId())) {
+                    if (StringUtils.isNullOrEmpty(sequence.getOptName())) {
                         return CommonResult.failed("工序名称不能为空！");
                     }
                     sequence.setId(UUID.randomUUID().toString().replaceAll("-", ""));
