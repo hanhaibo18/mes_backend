@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -33,7 +34,7 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
     public String getlastTime(String tenantId) {
         Date date = materialReceiveMapper.getlastTime(tenantId);
         if (null != date) {
-            return date.toString();
+            return DateUtil.format(date, "yyyy-MM-dd HH:mm:ss");
         }
         return null;
     }
