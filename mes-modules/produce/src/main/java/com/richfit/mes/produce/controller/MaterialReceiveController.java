@@ -146,8 +146,18 @@ public class MaterialReceiveController extends BaseController {
         boolean flag = true;
         String message = "成功";
         try {
+            if (CollectionUtils.isEmpty(material.getReceived())) {
+                throw new GlobalException("物料主数据为空", ResultCode.FAILED);
+            }
+            if (CollectionUtils.isEmpty(material.getDetailList())) {
+                throw new GlobalException("物料明细数据为空", ResultCode.FAILED);
+            }
+
             Map<String, Tenant> collect = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getTenantErpCode, x -> x, (value1, value2) -> value2));
             material.getReceived().forEach(materialReceive -> {
+                if (collect.get(materialReceive.getErpCode()) == null) {
+                    throw new GlobalException("ERPCODE没有找到租户信息", ResultCode.FAILED);
+                }
                 materialReceive.setTenantId(collect.get(materialReceive.getErpCode()).getId());
                 materialReceive.setBranchCode(collect.get(materialReceive.getErpCode()).getTenantCode());
             });
@@ -160,6 +170,7 @@ public class MaterialReceiveController extends BaseController {
             });
             materialReceiveDetailService.saveDetailList(material.getDetailList());
         } catch (GlobalException e) {
+            e.printStackTrace();
             //既能实现回滚也能返回结果
             flag = false;
             message = e.getMessage();

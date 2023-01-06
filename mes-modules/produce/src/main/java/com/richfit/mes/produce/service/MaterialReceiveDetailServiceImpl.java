@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -78,9 +79,12 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
             QueryWrapper<MaterialReceiveDetail> queryWrapper = new QueryWrapper();
             queryWrapper.eq("delivery_no", materialReceiveDetail.getDeliveryNo());
             List<MaterialReceiveDetail> list = this.list(queryWrapper);
-            if (!list.isEmpty()) {
+            if (!CollectionUtils.isEmpty(list)) {
                 detailList.remove(materialReceiveDetail);
             }
+        }
+        if (CollectionUtils.isEmpty(detailList)) {
+            throw new GlobalException("明细删除申请单号后申请明细的数据为空", ResultCode.FAILED);
         }
         return this.saveBatch(detailList);
     }
