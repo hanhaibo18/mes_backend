@@ -4,23 +4,22 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
-import com.richfit.mes.produce.service.PrechargeFurnaceService;
+import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.service.heat.HeatTrackAssignService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author zhiqiang.lu
@@ -34,28 +33,31 @@ public class HeatTrackAssignController extends BaseController {
 
     @Autowired
     private HeatTrackAssignService heatTrackAssignService;
-
     @Autowired
-    private PrechargeFurnaceService prechargeFurnaceService;
+    public TrackHeadService trackHeadService;
 
-
-    @ApiOperation(value = "未报工查询")
-    @PostMapping("/queryNotAtWork")
-    public CommonResult<IPage<Assign>> queryNotAtWork(@RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
-        return CommonResult.success(heatTrackAssignService.queryNotAtWork(dispatchingDto));
+    @ApiOperation(value = "未装炉生产查询")
+    @PostMapping("/query_not_produce")
+    public CommonResult<IPage<Assign>> queryNotProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
+        return CommonResult.success(heatTrackAssignService.queryWhetherProduce(dispatchingDto, false));
     }
 
-    @ApiOperation(value = "装炉")
-    @PostMapping("/save")
-    public CommonResult<List<Assign>> save(@RequestBody List<Assign> assignList) throws ParseException {
-        Set<String> optNames = new HashSet();
-        PrechargeFurnace prechargeFurnace = new PrechargeFurnace();
-        prechargeFurnace.setTempWork("");
-        for (Assign assign : assignList) {
-            optNames.add(assign.getOptName());
-        }
-        prechargeFurnace.setOptName(optNames.toString());
-        prechargeFurnaceService.save(prechargeFurnace);
-        return CommonResult.success(assignList);
+    @ApiOperation(value = "装炉生产查询")
+    @PostMapping("/query_produce")
+    public CommonResult<IPage<Assign>> queryProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
+        return CommonResult.success(heatTrackAssignService.queryWhetherProduce(dispatchingDto, true));
+    }
+
+    /**
+     * @param assign
+     * @return
+     * @throws Exception
+     */
+    @ApiOperation(value = "热工批量新增派工", notes = "热工批量新增派工")
+    @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "body")
+    @PostMapping("/assignItem")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Assign> assignItem(@RequestBody Assign assign) throws Exception {
+        return CommonResult.success(heatTrackAssignService.assignItem(assign), "操作成功！");
     }
 }

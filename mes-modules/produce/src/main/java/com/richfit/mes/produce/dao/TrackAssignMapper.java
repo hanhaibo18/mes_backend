@@ -43,6 +43,9 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     @Select("select u.* from v_produce_assign_store u ${ew.customSqlSegment}")
     IPage<Assign> queryPageAssignTrackStore(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 
+    @Select("select u.* from v_produce_assign_store u ${ew.customSqlSegment}")
+    List<Assign> queryListAssignTrackStore(@Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
+
     /**
      * 功能描述: 查询派工还视图
      *
@@ -61,7 +64,7 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
      * @Author: xinYu.hou
      * @return: List<QueryProcessVo>
      **/
-    @Select("SELECT item.id,item.track_head_id,item.opt_id,item.opt_name,item.opt_ver,item.prepare_end_hours,item.single_piece_hours,item.opt_parallel_type,item.is_current,item.is_doing FROM v_produce_track_item item WHERE item.flow_id = #{flowId} ORDER BY item.opt_sequence ASC")
+    @Select("SELECT item.id,item.track_head_id,item.opt_id,item.opt_name,item.opt_ver,item.prepare_end_hours,item.single_piece_hours,item.opt_parallel_type,item.is_current,item.is_doing,item.temp_work,item.hold_time,item.cool_type FROM v_produce_track_item item WHERE item.flow_id = #{flowId} ORDER BY item.opt_sequence ASC")
     List<QueryProcessVo> queryProcessList(@Param("flowId") String flowId);
 
     /**

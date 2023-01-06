@@ -37,4 +37,13 @@ public class QueryProcessVo {
     public String isDispatching;
     @ApiModelProperty(value = "工序状态")
     private Integer isDoing;
+
+    @ApiModelProperty(value = "实施温度℃（热工）", dataType = "String")
+    private String tempWork;
+
+    @ApiModelProperty(value = "保温时间h（热工）", dataType = "String")
+    private String holdTime;
+
+    @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
+    private String coolType;
 }

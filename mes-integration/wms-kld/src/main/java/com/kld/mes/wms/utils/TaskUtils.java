@@ -58,20 +58,33 @@ public class TaskUtils {
         for (String tenantId : tenantIds) {
             MaterialReceiveLog materialReceiveLog = new MaterialReceiveLog();
             materialReceiveLog.setTenantId(tenantId);
+            String userName;
+            String password;
+            String url;
+            String code;
+            String date;
             try {
                 //获取用户名
-                String userName = systemServiceClient.findItemParamByCode(userNameKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
+                userName = systemServiceClient.findItemParamByCode(userNameKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 //获取密码
-                String password = systemServiceClient.findItemParamByCode(passWordKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
+                password = systemServiceClient.findItemParamByCode(passWordKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 //获取地址
-                String url = systemServiceClient.findItemParamByCode(urlKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
+                url = systemServiceClient.findItemParamByCode(urlKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 //获取工厂code
-                String code = systemServiceClient.tenantByIdInner(tenantId, SecurityConstants.FROM_INNER).getData().getTenantErpCode();
+                code = systemServiceClient.tenantByIdInner(tenantId, SecurityConstants.FROM_INNER).getData().getTenantErpCode();
                 //获取变更时间
-                String date = produceServiceClient.getlastTime(tenantId, SecurityConstants.FROM_INNER);
+                date = produceServiceClient.getlastTime(tenantId, SecurityConstants.FROM_INNER);
                 if (StrUtil.isBlank(date)) {
                     date = systemServiceClient.findItemParamByCode(dateKey, tenantId, SecurityConstants.FROM_INNER).getData().getLabel();
                 }
+            } catch (Exception e) {
+                materialReceiveLog.setState("1");
+                materialReceiveLog.setRemark("租户id:" + tenantId + ":获取基本数据信息异常");
+                log.error("自动同步物料接收出现异常 [{}]", "租户id:" + tenantId + ":获取基本数据信息异常");
+                produceServiceClient.materialReceiveSaveLog(materialReceiveLog, SecurityConstants.FROM_INNER);
+                continue;
+            }
+            try {
                 CommonResult<MaterialReceiveDto> result = jdbcMaterialOutView(userName, password, url, code, date);
                 if (result.getStatus() == 200) {
                     materialReceiveLog.setReceivedNumber(result.getData().getReceived().size());
@@ -102,6 +115,8 @@ public class TaskUtils {
             materialReceiveDto.setReceived(materialReceiveList);
             materialReceiveDto.setDetailList(materialReceiveDetailList);
             result = produceServiceClient.materialReceiveSaveBatchList(materialReceiveDto, SecurityConstants.FROM_INNER);
+        } else {
+            result.setMessage("没有查询到可接收信息");
         }
         result.setData(materialReceiveDto);
         stmt.close();
@@ -122,7 +137,6 @@ public class TaskUtils {
             //查上次最后一条时间之后所有
             totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "'";
         }
-
         ResultSet totalRs = stmt.executeQuery(totalSql);
         while (totalRs.next()) {
             total = totalRs.getInt("total");

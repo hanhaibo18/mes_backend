@@ -435,10 +435,14 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "工时（热工）", dataType = "String")
     private Double heatHour;
 
+    @ApiModelProperty(value = "工艺信息")
+    private String routerInfo;
+
 
     @ApiModelProperty(value = "是否生成理化报告")
     @TableField(exist = false)
     private String syncStatus;
 
-
+    @ApiModelProperty(value = "预装炉id", dataType = "String")
+    private Long prechargeFurnaceId;
 }

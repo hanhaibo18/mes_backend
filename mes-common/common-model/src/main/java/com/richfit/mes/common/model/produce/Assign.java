@@ -55,9 +55,9 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "派工用户ID", dataType = "String")
     private String emplName;
     /**
-     * 派工用户名称
+     * 派工工位名称
      */
-    @ApiModelProperty(value = "派工用户名称", dataType = "String")
+    @ApiModelProperty(value = "派工工位名称", dataType = "String")
     private String siteId;
     /**
      * 派工工位名称
@@ -163,6 +163,9 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "产品名称", dataType = "String")
     private String productName;
     @TableField(exist = false)
+    @ApiModelProperty(value = "产品编码全", dataType = "String")
+    private String productNoDesc;
+    @TableField(exist = false)
     @ApiModelProperty(value = "零部件名称", dataType = "String")
     private String partsName;
     @TableField(exist = false)
@@ -246,6 +249,14 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
     private String coolType;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "预装炉id", dataType = "String")
+    private String prechargeFurnaceId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工艺信息")
+    private String routerInfo;
     /**
      * 预装炉（止）
      */

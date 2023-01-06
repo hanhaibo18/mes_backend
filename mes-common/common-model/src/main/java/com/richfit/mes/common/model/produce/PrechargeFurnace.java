@@ -18,8 +18,10 @@ public class PrechargeFurnace {
 
     private static final long serialVersionUID = -5801273490970600632L;
 
+    public static final String STATE_WKG = "0";
+
     @TableId(type = IdType.AUTO)
-    protected Integer id;
+    protected Long id;
 
     /**
      * 创建者
@@ -58,4 +60,6 @@ public class PrechargeFurnace {
     private String status;
     @ApiModelProperty(value = "是否分批  0否  1是", dataType = "String")
     private String isBatch;
+    @ApiModelProperty(value = "车间班组组织代码", dataType = "String")
+    private String siteId;
 }

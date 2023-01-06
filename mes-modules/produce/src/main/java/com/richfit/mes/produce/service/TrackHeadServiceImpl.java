@@ -404,7 +404,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                                 item.setTrackHeadId(trackHead.getId());
                                 item.setDrawingNo(trackHead.getDrawingNo());
                                 item.setFlowId(flow.getId());
-                                item.setProductNo(trackHead.getDrawingNo() + " " + trackHead.getProductNoDesc());
+                                item.setProductNo(flow.getProductNo());
                                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                                 //可分配数量
                                 item.setAssignableQty(trackHead.getNumber());
@@ -455,11 +455,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     private Map<String, List<Hour>> getHourGoupByTypeCodeAndOptName() {
 
         QueryWrapper<HourStandard> queryWrapper1 = new QueryWrapper<>();
-        queryWrapper1.eq("is_activate",HourStandard.YES_ACTIVATE);
+        queryWrapper1.eq("is_activate", HourStandard.YES_ACTIVATE);
         List<HourStandard> list = hourStandardService.list(queryWrapper1);
-        if(list.size()>0){
+        if (list.size() > 0) {
             QueryWrapper<Hour> queryWrapper2 = new QueryWrapper<>();
-            queryWrapper2.eq("ver_id",list.get(0).getId());
+            queryWrapper2.eq("ver_id", list.get(0).getId());
             List<Hour> hours = hourService.list(queryWrapper2);
             //分组便于取值  key->typeCode_optName
             return hours.stream().collect(Collectors.groupingBy(item -> item.getTypeCode() + "_" + item.getOptName()));
@@ -469,17 +469,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 描述: 根据工时标准计算跟单工序工时
-     *       时标准重量上限>判断跟单重量>时标准重量下限
+     * 时标准重量上限>判断跟单重量>时标准重量下限
+     *
      * @Author: renzewen
      * @Date: 2023/1/4 10:25
      **/
-    public Double calculationHeatItemHour(TrackItem item,List<Hour> hours){
+    public Double calculationHeatItemHour(TrackItem item, List<Hour> hours) {
         //跟单重量
         Float weight = trackHeadMapper.selectById(item.getTrackHeadId()).getWeight();
         //根据工时标准的重量上限下限来确定工时
-        if(!ObjectUtil.isEmpty(hours)){
+        if (!ObjectUtil.isEmpty(hours)) {
             for (Hour hour : hours) {
-                if( Double.parseDouble(hour.getWeightUp())>=Double.parseDouble(String.valueOf(weight)) && Double.parseDouble(String.valueOf(weight))>=Double.parseDouble(hour.getWeightDown())){
+                if (Double.parseDouble(hour.getWeightUp()) >= Double.parseDouble(String.valueOf(weight)) && Double.parseDouble(String.valueOf(weight)) >= Double.parseDouble(hour.getWeightDown())) {
                     return Double.parseDouble(hour.getHour());
                 }
             }
@@ -598,7 +599,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
 
             //跟单添加料单数据处理
-            this.lineStore(flowId, trackHead, productsNo, number);
+            lineStore(flowId, trackHead, productsNo, number);
 
             //添加跟单分流
             TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
@@ -691,34 +692,37 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public void lineStore(String flowId, TrackHead trackHead, String productsNo, int number) {
         //仅带派工状态，也就是普通跟单新建的时候才进行库存的变更处理
         //只有机加、非试棒、状态为0时，创料建跟单时才会进行库存单关联
-        if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar()) && "1".equals(trackHead.getClasses())) {
-            //修改库存状态  本次查到的料单能否匹配生产数量完成
-            //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
-            Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
-            LineStore lineStore = (LineStore) retMap.get("lineStore");
-            if (lineStore == null) {
-                //无库存料单，默认新增库存料单，然后出库
-                lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
-            }
-            //添加跟单-分流-料单的关联信息
-            TrackHeadRelation relation = new TrackHeadRelation();
-            relation.setThId(trackHead.getId());
-            relation.setFlowId(flowId);
-            relation.setLsId(lineStore.getId());
-            relation.setType("0");
-            relation.setNumber(number);
-            trackHeadRelationMapper.insert(relation);
-            //料单添加成品信息
-            LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
+        if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar())) {
+            //机加+热处理
+            if ("1".equals(trackHead.getClasses()) || "5".equals(trackHead.getClasses())) {
+                //修改库存状态  本次查到的料单能否匹配生产数量完成
+                //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
+                Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
+                LineStore lineStore = (LineStore) retMap.get("lineStore");
+                if (lineStore == null) {
+                    //无库存料单，默认新增库存料单，然后出库
+                    lineStore = lineStoreService.autoInAndOutStoreByTrackHead(number, trackHead, productsNo);
+                }
+                //添加跟单-分流-料单的关联信息
+                TrackHeadRelation relation = new TrackHeadRelation();
+                relation.setThId(trackHead.getId());
+                relation.setFlowId(flowId);
+                relation.setLsId(lineStore.getId());
+                relation.setType("0");
+                relation.setNumber(number);
+                trackHeadRelationMapper.insert(relation);
+                //料单添加成品信息
+                LineStore lineStoreCp = lineStoreService.addCpStoreByTrackHead(trackHead, productsNo, number);
 
-            //添加跟单-分流-料单的关联信息
-            TrackHeadRelation relationCp = new TrackHeadRelation();
-            relationCp.setThId(trackHead.getId());
-            relationCp.setFlowId(flowId);
-            relationCp.setLsId(lineStoreCp.getId());
-            relationCp.setType("1");
-            relationCp.setNumber(number);
-            trackHeadRelationMapper.insert(relationCp);
+                //添加跟单-分流-料单的关联信息
+                TrackHeadRelation relationCp = new TrackHeadRelation();
+                relationCp.setThId(trackHead.getId());
+                relationCp.setFlowId(flowId);
+                relationCp.setLsId(lineStoreCp.getId());
+                relationCp.setType("1");
+                relationCp.setNumber(number);
+                trackHeadRelationMapper.insert(relationCp);
+            }
         }
     }
 

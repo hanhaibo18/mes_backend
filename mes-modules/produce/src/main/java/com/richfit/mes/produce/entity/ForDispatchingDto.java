@@ -33,4 +33,6 @@ public class ForDispatchingDto extends QueryPageDto {
     private String tempWork;
     @ApiModelProperty(value = "实施温度℃（热工）扩展", dataType = "String")
     private String tempWork1;
+    @ApiModelProperty(value = "预装炉id", dataType = "String")
+    private String prechargeFurnaceId;
 }
