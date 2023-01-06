@@ -1,21 +1,18 @@
 package com.richfit.mes.produce.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.MaterialReceive;
+import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
+import com.richfit.mes.common.model.produce.MaterialReceiveLog;
+import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
-import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.security.annotation.Inner;
-import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
@@ -30,8 +27,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @Description TODO
@@ -143,45 +138,7 @@ public class MaterialReceiveController extends BaseController {
     @PostMapping(value = "/material_receive/save_batch_list")
     @Inner
     public CommonResult materialReceiveSaveBatchList(@RequestBody MaterialReceiveDto material) {
-        boolean flag = true;
-        String message = "成功";
-        try {
-            if (CollectionUtils.isEmpty(material.getReceived())) {
-                throw new GlobalException("物料主数据为空", ResultCode.FAILED);
-            }
-            if (CollectionUtils.isEmpty(material.getDetailList())) {
-                throw new GlobalException("物料明细数据为空", ResultCode.FAILED);
-            }
-
-            Map<String, Tenant> collect = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getTenantErpCode, x -> x, (value1, value2) -> value2));
-            material.getReceived().forEach(materialReceive -> {
-                if (collect.get(materialReceive.getErpCode()) == null) {
-                    throw new GlobalException("ERPCODE没有找到租户信息", ResultCode.FAILED);
-                }
-                materialReceive.setTenantId(collect.get(materialReceive.getErpCode()).getId());
-                materialReceive.setBranchCode(collect.get(materialReceive.getErpCode()).getTenantCode());
-            });
-            materialReceiveService.saveMaterialReceiveList(material.getReceived());
-            material.getDetailList().forEach(detail -> {
-                List<RequestNoteDetail> noteDetailList = requestService.queryRequestNoteDetailDetails(detail.getMaterialNum(), detail.getAplyNum());
-                if (!CollectionUtils.isEmpty(noteDetailList) && StrUtil.isNotEmpty(noteDetailList.get(0).getDrawingNo())) {
-                    detail.setDrawingNo(noteDetailList.get(0).getDrawingNo());
-                }
-            });
-            materialReceiveDetailService.saveBatch(material.getDetailList());
-        } catch (GlobalException e) {
-            e.printStackTrace();
-            //既能实现回滚也能返回结果
-            flag = false;
-            message = e.getMessage();
-            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
-        } finally {
-            if (flag) {
-                return CommonResult.success(message);
-            } else {
-                return CommonResult.failed(message);
-            }
-        }
+        return materialReceiveService.materialReceiveSaveBatchList(material);
     }
 
     @ApiOperation(value = "物料接收日志", notes = "物料接收日志")
