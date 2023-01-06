@@ -1,18 +1,32 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.MaterialReceive;
 import com.richfit.mes.common.model.produce.RequestNote;
+import com.richfit.mes.common.model.produce.RequestNoteDetail;
+import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
+import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.dao.MaterialReceiveMapper;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -22,6 +36,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMapper, MaterialReceive> implements MaterialReceiveService {
 
     @Autowired
@@ -29,6 +44,16 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
 
     @Autowired
     RequestNoteService requestNoteService;
+
+    @Resource
+    SystemServiceClient systemServiceClient;
+
+    @Autowired
+    MaterialReceiveDetailService materialReceiveDetailService;
+
+
+    @Resource
+    private RequestNoteDetailService requestService;
 
     @Override
     public String getlastTime(String tenantId) {
@@ -67,5 +92,46 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
             }
         }
         return this.saveBatch(materialReceiveList);
+    }
+
+    @Override
+    public CommonResult materialReceiveSaveBatchList(MaterialReceiveDto material) {
+        boolean flag = true;
+        String message = "成功";
+        try {
+            if (CollectionUtils.isEmpty(material.getReceived())) {
+                throw new GlobalException("物料主数据为空", ResultCode.FAILED);
+            }
+            if (CollectionUtils.isEmpty(material.getDetailList())) {
+                throw new GlobalException("物料明细数据为空", ResultCode.FAILED);
+            }
+            Map<String, Tenant> collect = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getTenantErpCode, x -> x, (value1, value2) -> value2));
+            material.getReceived().forEach(materialReceive -> {
+                if (collect.get(materialReceive.getErpCode()) == null) {
+                    throw new GlobalException("ERPCODE没有找到租户信息", ResultCode.FAILED);
+                }
+                materialReceive.setTenantId(collect.get(materialReceive.getErpCode()).getId());
+                materialReceive.setBranchCode(collect.get(materialReceive.getErpCode()).getTenantCode());
+            });
+            this.saveMaterialReceiveList(material.getReceived());
+            material.getDetailList().forEach(detail -> {
+                List<RequestNoteDetail> noteDetailList = requestService.queryRequestNoteDetailDetails(detail.getMaterialNum(), detail.getAplyNum());
+                if (!CollectionUtils.isEmpty(noteDetailList) && StrUtil.isNotEmpty(noteDetailList.get(0).getDrawingNo())) {
+                    detail.setDrawingNo(noteDetailList.get(0).getDrawingNo());
+                }
+            });
+            materialReceiveDetailService.saveDetailList(material.getDetailList());
+        } catch (GlobalException e) {
+            //既能实现回滚也能返回结果
+            flag = false;
+            message = e.getMessage();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        } finally {
+            if (flag) {
+                return CommonResult.success(message);
+            } else {
+                return CommonResult.failed(message);
+            }
+        }
     }
 }

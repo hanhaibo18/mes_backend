@@ -22,7 +22,7 @@ import java.util.List;
  * @Date 2022/8/2 9:20
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiveDetailMapper, MaterialReceiveDetail> implements MaterialReceiveDetailService {
 
     @Resource

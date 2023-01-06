@@ -3,9 +3,10 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.MaterialReceive;
+import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
 
-import java.sql.Date;
 import java.util.List;
 
 /**
@@ -21,4 +22,6 @@ public interface MaterialReceiveService extends IService<MaterialReceive> {
     Page<MaterialReceive> getPage(Page<MaterialReceive> materialReceivePage, QueryWrapper<MaterialReceive> queryWrapper);
 
     Boolean saveMaterialReceiveList(List<MaterialReceive> materialReceiveList);
+
+    CommonResult materialReceiveSaveBatchList(MaterialReceiveDto material);
 }
