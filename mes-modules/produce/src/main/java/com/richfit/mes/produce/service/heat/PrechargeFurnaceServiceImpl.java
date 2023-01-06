@@ -62,7 +62,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     }
 
     @Override
-    public void addTrackItem(List<Assign> assignList) {
+    public PrechargeFurnace addTrackItem(List<Assign> assignList) {
         //预装炉未开工状态
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
@@ -79,10 +79,11 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
         this.updateById(prechargeFurnace);
+        return prechargeFurnace;
     }
 
     @Override
-    public void deleteTrackItem(List<Assign> assignList) {
+    public PrechargeFurnace deleteTrackItem(List<Assign> assignList) {
         //预装炉未开工状态
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要选择删除预装炉的工序", ResultCode.FAILED);
@@ -99,6 +100,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
         this.updateById(prechargeFurnace);
+        return prechargeFurnace;
     }
 
     private String optNames(List<Assign> assignList) {

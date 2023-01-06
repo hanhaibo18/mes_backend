@@ -87,14 +87,12 @@ public class PrechargeFurnaceController extends BaseController {
     @ApiOperation(value = "装炉跟单工序添加", tags = "装炉跟单工序添加")
     @PostMapping("/add/track/item")
     public CommonResult addTrackItem(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
-        prechargeFurnaceService.addTrackItem(assignList);
-        return CommonResult.success("更新成功");
+        return CommonResult.success(prechargeFurnaceService.addTrackItem(assignList), "更新成功");
     }
 
     @ApiOperation(value = "装炉跟单工序删除", tags = "装炉跟单工序删除")
     @PostMapping("/delete/track/item")
     public CommonResult deleteTrackItem(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
-        prechargeFurnaceService.deleteTrackItem(assignList);
-        return CommonResult.success("删除成功");
+        return CommonResult.success(prechargeFurnaceService.deleteTrackItem(assignList), "删除成功");
     }
 }
