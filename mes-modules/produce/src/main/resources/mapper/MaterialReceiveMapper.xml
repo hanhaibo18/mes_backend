@@ -14,7 +14,7 @@
                  LEFT JOIN produce_request_note prn ON mr.aply_num = prn.request_note_number
                  LEFT JOIN produce_track_head pth ON prn.track_head_id = pth.id
         WHERE pth.tenant_id = #{tenant_id}
-        ORDER BY mr.CREATE_TIME DESC LIMIT 1
+        ORDER BY mr.outbound_date DESC LIMIT 1
 
     </select>
 </mapper>
