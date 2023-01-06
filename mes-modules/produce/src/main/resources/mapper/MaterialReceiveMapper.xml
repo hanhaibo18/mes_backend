@@ -9,7 +9,7 @@
     </select>
 
     <select id="getlastTime" resultType="java.util.Date">
-        SELECT mr.CREATE_TIME
+        SELECT mr.outbound_date
         FROM produce_material_receive mr
                  LEFT JOIN produce_request_note prn ON mr.aply_num = prn.request_note_number
                  LEFT JOIN produce_track_head pth ON prn.track_head_id = pth.id
