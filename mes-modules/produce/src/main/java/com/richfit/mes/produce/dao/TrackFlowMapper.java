@@ -71,7 +71,7 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             "  and work_no like concat('%',#{workNo},'%') " +
             " </if> " +
             " <if test='drawingNo != null and drawingNo != \"\"'> " +
-            "  and drawing_no like concat('%',#{drawingNo},'%') " +
+            "  and ${drawingNo} " +
             " </if> " +
             " <if test='batchNo != null and batchNo != \"\"'> " +
             "  and batch_no like concat('%',#{batchNo},'%') " +
