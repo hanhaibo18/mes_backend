@@ -146,6 +146,38 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      */
     protected Double auxiliaryHours;
 
+    @ApiModelProperty(value = "步骤", dataType = "Integer")
+    protected String step;
+    @ApiModelProperty(value = "炉批号", dataType = "Integer")
+    protected String furnaceNo;
+    @ApiModelProperty(value = "是否最后一道工序", dataType = "Integer")
+    protected Integer isFinalStep;
+    @ApiModelProperty(value = "水温℃", dataType = "Integer")
+    protected Double waterTempera;
+    @ApiModelProperty(value = "炉温℃", dataType = "Integer")
+    protected Double furnaceTempera;
+    @ApiModelProperty(value = "介质温度℃", dataType = "Integer")
+    protected Double neurogenTempera;
+    @ApiModelProperty(value = "油温℃", dataType = "Integer")
+    protected Double oilTempera;
+    @ApiModelProperty(value = "炉冷min", dataType = "Integer")
+    protected Double furnaceCool;
+    @ApiModelProperty(value = "空冷min", dataType = "Integer")
+    protected Double vacancyCool;
+    @ApiModelProperty(value = "水冷min", dataType = "Integer")
+    protected Double waterCool;
+    @ApiModelProperty(value = "油冷min", dataType = "Integer")
+    protected Double oilCool;
+    @ApiModelProperty(value = "介质冷min", dataType = "Integer")
+    protected Double neurogenCool;
+    @ApiModelProperty(value = "KR7280℃", dataType = "Integer")
+    protected Double krTempera;
+    @ApiModelProperty(value = "KR7280min", dataType = "Integer")
+    protected Double krCool;
+    @ApiModelProperty(value = "实际干活时间", dataType = "Integer")
+    protected String actualWorkTime;
+
+
     /**
      * 探伤结果
      */
