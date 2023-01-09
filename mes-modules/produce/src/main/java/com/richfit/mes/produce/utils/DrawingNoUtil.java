@@ -11,8 +11,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 public class DrawingNoUtil {
 
     static String drawingNo(String drawingNo) {
+        drawingNo = drawingNo.trim();
         drawingNo = drawingNo.replaceAll("-", "");
-        drawingNo = drawingNo.replaceAll(".", "");
+        drawingNo = drawingNo.replaceAll("[.]", "");
         drawingNo = drawingNo.replaceAll(" ", "");
         return drawingNo;
     }
