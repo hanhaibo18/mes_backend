@@ -482,10 +482,14 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "删除工序", notes = "根据id删除工序")
     @ApiImplicitParam(name = "id", value = "ids", required = true, dataType = "String", paramType = "path")
     @PostMapping("/delete")
-    public CommonResult<Sequence> deleteById(@RequestBody String[] ids) {
+    public CommonResult<Sequence> deleteById(@RequestBody String[] ids, String branchCode) {
         for (String id : ids) {
-            //删除工序检查内容和质量资料
-            Sequence sequence = sequenceService.getById(id);
+            //数据库双主键，不能使用id进行查询
+            QueryWrapper<Sequence> queryWrapperSequence = new QueryWrapper<>();
+            queryWrapperSequence.eq("id", id);
+            queryWrapperSequence.eq("branch_code", branchCode);
+            Sequence sequence = sequenceService.getOne(queryWrapperSequence);
+
             QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
             queryWrapperRouterCheck.eq("sequence_id", sequence.getId());
             queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
