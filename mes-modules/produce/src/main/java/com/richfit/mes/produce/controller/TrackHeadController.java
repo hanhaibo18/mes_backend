@@ -17,6 +17,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -284,7 +285,7 @@ public class TrackHeadController extends BaseController {
             queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(workPlanId)) {
             queryWrapper.like("work_plan_id", workPlanId);
