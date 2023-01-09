@@ -1,6 +1,8 @@
 package com.richfit.mes.common.model.base;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -95,6 +97,7 @@ public class Sequence extends BaseEntity<Sequence> {
      * 机构编码
      */
     @ApiModelProperty(value = "机构编码", dataType = "String")
+    @TableId(type = IdType.ASSIGN_UUID)
     private String branchCode;
     /**
      * 工序ID
@@ -174,7 +177,6 @@ public class Sequence extends BaseEntity<Sequence> {
 
     @ApiModelProperty(value = "冷却方式（热工）", dataType = "String")
     private String coolType;
-
 
 
     /**

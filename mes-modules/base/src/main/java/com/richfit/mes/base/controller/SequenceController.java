@@ -325,7 +325,17 @@ public class SequenceController extends BaseController {
 //                        routerCheckService.save(routerCheck);
 //                    }
 //                }
-                boolean bool = sequenceService.saveOrUpdate(sequence);
+//                boolean bool = sequenceService.saveOrUpdate(sequence);
+                QueryWrapper<Sequence> queryWrapperSequence = new QueryWrapper<>();
+                queryWrapperSequence.eq("id", sequence.getId());
+                queryWrapperSequence.eq("branch_code", sequence.getBranchCode());
+                Sequence sequenceOld = sequenceService.getOne(queryWrapperSequence);
+                boolean bool = false;
+                if (sequenceOld == null) {
+                    bool = sequenceService.save(sequence);
+                } else {
+                    bool = sequenceService.update(sequence, queryWrapperSequence);
+                }
                 if (!bool) {
                     return CommonResult.failed("操作失败，请重试！");
                 }
