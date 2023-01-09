@@ -62,4 +62,15 @@ public class PrechargeFurnace {
     private String isBatch;
     @ApiModelProperty(value = "车间班组组织代码", dataType = "String")
     private String siteId;
+    @ApiModelProperty(value = "炉批号", dataType = "String")
+    private String furnaceNo;
+    @ApiModelProperty(value = "处理炉", dataType = "String")
+    private String dealFurnace;
+    @ApiModelProperty(value = "上步骤", dataType = "String")
+    private String upStep;
+    @ApiModelProperty(value = "当前步骤", dataType = "String")
+    private String currStep;
+    @ApiModelProperty(value = "次数", dataType = "String")
+    private String number;
+
 }
