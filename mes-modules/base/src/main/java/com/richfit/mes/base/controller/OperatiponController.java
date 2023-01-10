@@ -81,19 +81,21 @@ public class OperatiponController extends BaseController {
             }
             queryWrapper.orderByDesc("modify_time");
             IPage<Operatipon> routers = operatiponService.page(new Page<Operatipon>(page, limit), queryWrapper);
-            //获取工序绑定工艺信息
-            List<String> ids = routers.getRecords().stream().map(Operatipon::getId).collect(Collectors.toList());
-            QueryWrapper<Sequence> operatiponQueryWrapper = new QueryWrapper<>();
-            operatiponQueryWrapper.in("opt_id",ids);
-            List<Sequence> sequences = sequenceService.list(operatiponQueryWrapper);
-            //构造map 以便于判断此工序是否绑定工艺
-            Map<String, List<Sequence>> sequenceMap = sequences.stream().collect(Collectors.groupingBy(item -> item.getOptId()));
-            //给是否绑定工艺状态字段赋值
-            for (Operatipon operatipon : routers.getRecords()) {
-                if (!ObjectUtil.isEmpty(sequenceMap.get(operatipon.getId()))) {
-                    operatipon.setUpdate(false);
-                }else{
-                    operatipon.setUpdate(true);
+            if(!ObjectUtil.isEmpty(routers.getRecords()) && routers.getRecords().size()>0){
+                //获取工序绑定工艺信息
+                List<String> ids = routers.getRecords().stream().map(Operatipon::getId).collect(Collectors.toList());
+                QueryWrapper<Sequence> operatiponQueryWrapper = new QueryWrapper<>();
+                operatiponQueryWrapper.in("opt_id",ids);
+                List<Sequence> sequences = sequenceService.list(operatiponQueryWrapper);
+                //构造map 以便于判断此工序是否绑定工艺
+                Map<String, List<Sequence>> sequenceMap = sequences.stream().collect(Collectors.groupingBy(item -> item.getOptId()));
+                //给是否绑定工艺状态字段赋值
+                for (Operatipon operatipon : routers.getRecords()) {
+                    if (!ObjectUtil.isEmpty(sequenceMap.get(operatipon.getId()))) {
+                        operatipon.setUpdate(false);
+                    }else{
+                        operatipon.setUpdate(true);
+                    }
                 }
             }
             return CommonResult.success(routers);
