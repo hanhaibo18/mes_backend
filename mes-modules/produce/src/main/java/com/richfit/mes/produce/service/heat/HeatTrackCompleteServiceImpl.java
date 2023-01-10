@@ -86,17 +86,19 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         }
         //是否最后一道工序
         boolean isFinal = TrackComplete.IS_FINAL_STEP.equals(heatCompleteDto.getTrackCompleteList().get(0).getIsFinalStep());
+        //报工信息
+        TrackComplete complete = heatCompleteDto.getTrackCompleteList().get(0);
         //保存每一个工序的报工信息
         for (String tiId : heatCompleteDto.getTiIds()) {
             if(heatCompleteDto.getIsUpdate().equals(HeatCompleteDto.IS_UPDATE)){
                 //修改操作
-                //删除当前工序数据
+                //删除当前报工数据
                 QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<TrackComplete>();
                 completeQueryWrapper.eq("ti_id",tiId).eq("is_current",TrackComplete.YES_IS_CURRENT);
                 this.remove(completeQueryWrapper);
             }else{
                 //新增操作
-                //把之前的当前工序数据修改为非当前工序
+                //把之前的当前报工数据修改为非当前报工数据
                 UpdateWrapper<TrackComplete> trackCompleteUpdateWrapper = new UpdateWrapper<>();
                 trackCompleteUpdateWrapper.eq("ti_id",tiId).set("is_current",TrackComplete.NO_IS_CURRENT);
                 this.update(trackCompleteUpdateWrapper);
@@ -123,6 +125,10 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             }
             //最后一道工序需要激活下工序
             if(isFinal){
+                //检验人
+                trackItem.setQualityCheckBy(complete.getQualityCheckBy());
+                //检验车间
+                trackItem.setQualityCheckBranch(complete.getQualityCheckBranch());
                 nextItemActivate(tiId, trackItem, assign);
             }else{
                 trackItem.setIsDoing(1);

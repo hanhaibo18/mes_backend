@@ -95,10 +95,14 @@ public class PrechargeFurnaceController extends BaseController {
         //查询本部门未开工的 和  自己开工的
         queryWrapper.and(wrapper3->wrapper3.and(wrapper4->wrapper4.eq("step_status","0").eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId()))
                 .or(wrapper->wrapper.eq("step_status","1").and(wrapper2->wrapper2.eq("start_work_by",SecurityUtils.getCurrentUser().getUserId()))));
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(dispatchingDto.getState()),"status",dispatchingDto.getState())
-                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()),"create_time",dispatchingDto.getStartTime())
-                .ge(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()),"create_time",dispatchingDto.getEndTime());
-
+        queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getStartTime())
+                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getEndTime());
+        if ("0,1".equals(dispatchingDto.getState())) {
+            queryWrapper.in("u.state", 0, 1);
+        }
+        if ("2".equals(dispatchingDto.getState())) {
+            queryWrapper.in("u.state", 2);
+        }
         queryWrapper.orderByAsc("modify_time");
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));
     }
