@@ -14,10 +14,14 @@ import java.util.List;
  */
 @Data
 public class HeatCompleteDto {
+
+    public static final Integer IS_UPDATE = 1;
     @ApiModelProperty(value = "报工信息", dataType = "List<TrackComplete>")
     private List<TrackComplete> trackCompleteList;
     @ApiModelProperty(value = "工序Ids", dataType = "List<String>")
     private List<String> tiIds;
     @ApiModelProperty(value = "预装炉id", dataType = "String")
     private String prechargeFurnaceId;
+    @ApiModelProperty(value = "isUpdate", dataType = "String")
+    private String isUpdate;
 }

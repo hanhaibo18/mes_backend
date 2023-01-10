@@ -78,6 +78,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }
@@ -99,6 +100,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        //设备类型赋值
+        prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }

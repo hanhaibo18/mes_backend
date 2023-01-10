@@ -18,6 +18,12 @@ import java.util.List;
 public class TrackComplete extends BaseEntity<TrackComplete> {
 
     private static final long serialVersionUID = 2731220432204410300L;
+
+    public static final Integer IS_FINAL_STEP = 1;
+
+    public static final Integer YES_IS_CURRENT = 1;
+
+    public static final Integer NO_IS_CURRENT = 0;
     /**
      * 租户ID
      */
@@ -174,8 +180,12 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     protected Double krTempera;
     @ApiModelProperty(value = "KR7280min", dataType = "Integer")
     protected Double krCool;
-    @ApiModelProperty(value = "实际干活时间", dataType = "Integer")
+    @ApiModelProperty(value = "实际干活时间", dataType = "String")
     protected String actualWorkTime;
+    @ApiModelProperty(value = "是否当前步骤", dataType = "Integer")
+    protected Integer isCurrent;
+    @ApiModelProperty(value = "预装炉id", dataType = "String")
+    protected String prechargeFurnaceId;
 
 
     /**

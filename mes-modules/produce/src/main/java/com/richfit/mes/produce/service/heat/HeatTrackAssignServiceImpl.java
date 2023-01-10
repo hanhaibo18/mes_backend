@@ -154,9 +154,7 @@ public class  HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, 
                 //处理工艺信息
                 trackItem.setRouterInfo(getRouterInfo(trackItem));
                 trackItemService.updateById(trackItem);
-                if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
-                    assign.setTrackNo(trackHead.getTrackNo());
-                }
+                assign.setTrackNo(trackHead.getTrackNo());
                 if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
                     //将跟单状态改为在制
                     trackHead.setStatus("1");
