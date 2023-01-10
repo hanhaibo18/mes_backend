@@ -248,6 +248,24 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             prechargeFurnace.setStatus(PrechargeFurnace.END_START_WORK);
             prechargeFurnace.setStepStatus(PrechargeFurnace.END_START_WORK);
         }
+        //次数字段赋值
+        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
+        trackCompleteQueryWrapper.eq("precharge_furnace_id",prechargeFurnace.getId())
+                .eq("step",prechargeFurnace.getCurrStep());
+        List<TrackComplete> list = this.list(trackCompleteQueryWrapper);
+        Map<String, List<TrackComplete>> itemCompleteMap = list.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
+        int number = 0;
+        for (Map.Entry<String, List<TrackComplete>> itemCompleteEntry : itemCompleteMap.entrySet()) {
+            if(!ObjectUtil.isEmpty(itemCompleteEntry)){
+                for (TrackComplete trackComplete : itemCompleteEntry.getValue()) {
+                    if(trackComplete.getStep()==currStep){
+                        number+=1;
+                    }
+                }
+            }
+        }
+        prechargeFurnace.setNumber(String.valueOf(number));
+
         prechargeFurnaceService.updateById(prechargeFurnace);
     }
 

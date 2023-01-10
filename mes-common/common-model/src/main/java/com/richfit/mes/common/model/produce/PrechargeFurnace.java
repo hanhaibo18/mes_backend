@@ -63,7 +63,7 @@ public class PrechargeFurnace {
     private String typeCode;
     @ApiModelProperty(value = "状态 0 初始  1 开工  2 完工", dataType = "String")
     private String status;
-    @ApiModelProperty(value = "状态 0 未开工  1 已开工", dataType = "String")
+    @ApiModelProperty(value = "步骤状态 0 未开工  1 已开工", dataType = "String")
     private String stepStatus;
     @ApiModelProperty(value = "开工人", dataType = "String")
     private String startWorkBy;
