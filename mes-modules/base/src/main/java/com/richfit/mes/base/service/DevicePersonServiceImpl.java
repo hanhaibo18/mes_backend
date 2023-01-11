@@ -32,14 +32,20 @@ public class DevicePersonServiceImpl extends ServiceImpl<DevicePersonMapper, Dev
     }
 
     @Override
-    public List<Device> queryDeviceByUserId(String userId) {
+    public List<Device> queryDeviceByUserId(String userId,String branchCode) {
         QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
         List<DevicePerson> devicePeople = this.list(queryWrapper);
         if (devicePeople != null) {
             List<Device> deviceList = new ArrayList<>();
             for (DevicePerson devicePerson : devicePeople) {
-                deviceList.add(deviceService.getById(devicePerson.getDeviceId()));
+                QueryWrapper<Device> queryWrapper1 = new QueryWrapper<>();
+                queryWrapper1.eq("branch_code",branchCode)
+                        .eq("id",devicePerson.getDeviceId());
+                List<Device> list = deviceService.list(queryWrapper1);
+                if(list.size()>0){
+                    deviceList.add(list.get(0));
+                }
             }
             return deviceList;
         }

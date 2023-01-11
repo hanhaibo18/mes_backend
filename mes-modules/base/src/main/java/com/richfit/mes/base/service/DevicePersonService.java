@@ -25,5 +25,5 @@ public interface DevicePersonService extends IService<DevicePerson> {
      * @Date: 2022/6/20 16:51
      * @return: List<Device>
      **/
-    List<Device> queryDeviceByUserId(String userId);
+    List<Device> queryDeviceByUserId(String userId,String branchCode);
 }
