@@ -53,6 +53,9 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
     @ApiModelProperty(value = "产品编号")
     private String productNo;
 
+    @ApiModelProperty(value = "产品来源")
+    private String productSource;
+
     @ApiModelProperty(value = "数量")
     private Integer number;
 
