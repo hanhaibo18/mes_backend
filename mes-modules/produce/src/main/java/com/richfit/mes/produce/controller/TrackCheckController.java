@@ -123,7 +123,7 @@ public class TrackCheckController extends BaseController {
             //是否质检
             if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
                 //质检页面只查询指派给自己的质检信息
-                queryWrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername());
+                queryWrapper.and(wrapper -> wrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername()).or().eq("quality_check_by", "/"));
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
             //是否调度
