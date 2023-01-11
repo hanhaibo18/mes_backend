@@ -45,6 +45,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setTempWork("");
         prechargeFurnace.setOptName(optNames(assignList));
         prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
+        prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id
@@ -78,6 +79,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }
@@ -99,6 +101,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        //设备类型赋值
+        prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }

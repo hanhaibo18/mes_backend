@@ -3,6 +3,7 @@ package com.richfit.mes.common.model.produce;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -119,7 +120,9 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
             map.put("trackNo", trackNo.replaceAll(" ", ""));
         }
         map.put("workNo", workNo);
-        map.put("drawingNo", drawingNo);
+        if (!StrUtil.isBlank(drawingNo)) {
+            map.put("drawingNo", DrawingNoUtil.queryLikeSql("drawing_no", drawingNo));
+        }
         map.put("batchNo", batchNo);
         map.put("productionOrder", productionOrder);
         map.put("workPlanId", workPlanId);

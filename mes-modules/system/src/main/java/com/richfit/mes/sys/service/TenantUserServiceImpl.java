@@ -273,6 +273,10 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     public TenantUserVo queryByUserAccount(String userAccount) {
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
+        TenantUserVo tenantUserVo = tenantUserMapper.queryUser(queryWrapper);
+        if(ObjectUtil.isEmpty(tenantUserVo)){
+            throw new GlobalException("用户不存在！",ResultCode.FAILED);
+        }
         return tenantUserMapper.queryUser(queryWrapper);
     }
 

@@ -125,5 +125,25 @@ public class RgDeviceController {
         return CommonResult.success(rgDeviceService.page(new Page<RgDevice>(page,limit),queryWrapper));
     }
 
+    /**
+     * 根据类别code获取关联设备信息
+     */
+    @ApiOperation(value = "根据类别code获取关联设备信息", notes = "根据类别code获取关联设备信息")
+    @GetMapping("/getDeviceListByTypeCode")
+    public CommonResult<List> getListInfoById(String typeCode) throws GlobalException {
+        List<RgDevice> rgDevices = new ArrayList<>();
+        QueryWrapper<RgDevice> rgDeviceQueryWrapper = new QueryWrapper<>();
+        rgDeviceQueryWrapper.eq("type_code",typeCode);
+        List<RgDevice> list = rgDeviceService.list(rgDeviceQueryWrapper);
+        if(list.size()>0){
+            QueryWrapper<RgDevice> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("type_id", list.get(0).getId());
+            //升序排列
+            queryWrapper.orderByDesc("device_name");
+            rgDevices = rgDeviceService.list(queryWrapper);
+        }
+        return CommonResult.success(rgDevices);
+    }
+
 
 }
