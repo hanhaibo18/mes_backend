@@ -181,7 +181,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @ApiModelProperty(value = "KR7280min", dataType = "Integer")
     protected Double krCool;
     @ApiModelProperty(value = "实际干活时间", dataType = "String")
-    protected String actualWorkTime;
+    protected Date actualWorkTime;
     @ApiModelProperty(value = "是否当前步骤", dataType = "Integer")
     protected Integer isCurrent;
     @ApiModelProperty(value = "预装炉id", dataType = "String")

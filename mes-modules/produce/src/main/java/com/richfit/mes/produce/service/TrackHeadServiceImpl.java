@@ -375,6 +375,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackNo = trackNo.replaceAll(" ", "");
         queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')", trackNo);
         List<TrackHead> headList = this.list(queryWrapper);
+        //对工序数据处理
+        beforeSaveItemDeal(trackItems);
         //查询跟单 如果绑定了工艺就是修改
         if (!StringUtils.isNullOrEmpty(headList.get(0).getRouterId())) {
             boolean bool = this.updataTrackHead(headList.get(0), trackItems);
@@ -449,6 +451,63 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return true;
     }
 
+    private void beforeSaveItemDeal(List<TrackItem> trackItems) {
+        //升序排列 便于原工序顺序赋值
+        trackItems.sort((t1,t2)->t1.getSequenceOrderBy().compareTo(t2.getSequenceOrderBy()));
+        //并行状态处理(连续两个并行才算并行)
+        for (int i=0;i<trackItems.size();i++) {
+            if(trackItems.get(i).getOptParallelType()==1){
+                //连续两个为并行才为并行工序
+                if((i-1==-1 || trackItems.get(i-1).getOptParallelType()==0) && ((i+1==trackItems.size()) || trackItems.get(i+1).getOptParallelType()==0)){
+                    trackItems.get(i).setOptParallelType(0);
+                }
+            }
+        }
+        //当前工序处理
+        if(trackItems.get(0).getIsCurrent()==1){
+            for (int i=1;i<trackItems.size();i++) {
+                if(trackItems.get(i).getOptParallelType()==1){
+                    trackItems.get(i).setIsCurrent(1);
+                }
+            }
+        }
+
+        //原工序顺序字段赋值
+        int originalOptSequence = 10;
+        //上条工序是否并行
+        int upOptParallelType = 1;
+        for (TrackItem trackItem : trackItems) {
+            if(trackItem.getOptParallelType()==1 && upOptParallelType==1){
+                //并行工序用之前的顺序
+                trackItem.setOriginalOptSequence(originalOptSequence);
+            }else{
+                //非并行顺序加10
+                trackItem.setOriginalOptSequence(originalOptSequence+=10);
+            }
+            upOptParallelType = trackItem.getOptParallelType();
+        }
+        //下工序顺序字段赋值
+        int netOptSequence = 0;
+        //上条工序是否并行
+        int downOptParallelType = 0;
+        for (int i=trackItems.size()-1;i>=0;i--) {
+            if(i==trackItems.size()-1){
+                netOptSequence = 0;
+            }else{
+                if(trackItems.get(i).getOptParallelType()==0 && downOptParallelType==0){
+                    //非并行
+                    netOptSequence = trackItems.get(i + 1).getOriginalOptSequence();
+                }
+                if(trackItems.get(i).getOptParallelType()!=downOptParallelType) {
+                    //非并行
+                    netOptSequence = trackItems.get(i + 1).getOriginalOptSequence();
+                }
+            }
+            trackItems.get(i).setNextOptSequence(netOptSequence);
+            downOptParallelType = trackItems.get(i).getOptParallelType();
+        }
+    }
+
     /**
      * 工时标准分组
      */
@@ -478,7 +537,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //跟单重量
         Float weight = trackHeadMapper.selectById(item.getTrackHeadId()).getWeight();
         //根据工时标准的重量上限下限来确定工时
-        if (!ObjectUtil.isEmpty(hours)) {
+        if (!ObjectUtil.isEmpty(hours) && !ObjectUtil.isEmpty(weight)) {
             for (Hour hour : hours) {
                 if (Double.parseDouble(hour.getWeightUp()) >= Double.parseDouble(String.valueOf(weight)) && Double.parseDouble(String.valueOf(weight)) >= Double.parseDouble(hour.getWeightDown())) {
                     return Double.parseDouble(hour.getHour());

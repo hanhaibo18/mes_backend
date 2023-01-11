@@ -11,10 +11,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.OperationTypeSpec;
 import com.richfit.mes.common.model.base.Router;
-import com.richfit.mes.common.model.produce.HotDemand;
-import com.richfit.mes.common.model.produce.HotLongProduct;
-import com.richfit.mes.common.model.produce.HotLongProductQueryVo;
-import com.richfit.mes.common.model.produce.HotModelStore;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.HotDemandParam;
@@ -23,6 +20,7 @@ import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.HotDemandService;
 import com.richfit.mes.produce.service.HotLongProductService;
 import com.richfit.mes.produce.service.HotModelStoreService;
+import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.*;
@@ -59,9 +57,13 @@ public class HotDemandController extends BaseController {
 
     @Resource
     private BaseServiceClient baseServiceClient;
+
+    @Autowired
+    private PlanService planService;
+
+
+
     @ApiOperation(value = "新增需求提报", notes = "新增需求提报")
-
-
     @PostMapping("/save")
     public CommonResult saveDemand(@RequestBody HotDemand hotDemand){
         hotDemand.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
@@ -418,6 +420,44 @@ public class HotDemandController extends BaseController {
         if (update) return CommonResult.success(ResultCode.SUCCESS);
         return CommonResult.failed();
     }
+
+
+    @ApiOperation(value = "模型排产", notes = "模型排产")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/model_production_scheduling")
+    public CommonResult ratify(@RequestBody List<String> idList,String branchCode) {
+        //查出需要排产的需求数据
+        List<HotDemand> hotDemands = hotDemandService.listByIds(idList);
+
+        ArrayList<Plan> plans = new ArrayList<>();
+        //根据需求信息自动生成生产计划数据
+        for (HotDemand hotDemand : hotDemands) {
+
+            Plan plan = new Plan();
+            plan.setProjCode(DateUtils.formatDate(new Date(),"yyyy-MM"));
+            plan.setWorkNo(hotDemand.getWorkNo());//工作号
+            plan.setDrawNo(hotDemand.getDrawNo());//图号
+            plan.setProjNum(hotDemand.getPlanNum());//计划数量
+            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
+            plan.setBranchCode(hotDemand.getBranchCode());//车间码
+            plan.setTenantId(hotDemand.getTenantId());//租户id
+            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
+            plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
+            plan.setTexture(hotDemand.getTexture());//材质
+            plan.setBlank(hotDemand.getWorkblankType());//毛坯
+            plan.setStartTime(new Date());//开始时间
+            plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
+            plans.add(plan);
+        }
+
+
+
+        return CommonResult.failed();
+    }
+
 
 
 

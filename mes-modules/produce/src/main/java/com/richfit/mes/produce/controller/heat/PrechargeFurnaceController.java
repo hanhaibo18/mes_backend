@@ -98,10 +98,10 @@ public class PrechargeFurnaceController extends BaseController {
         queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getStartTime())
                 .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getEndTime());
         if ("0,1".equals(dispatchingDto.getState())) {
-            queryWrapper.in("u.state", 0, 1);
+            queryWrapper.in("status", 0, 1);
         }
         if ("2".equals(dispatchingDto.getState())) {
-            queryWrapper.in("u.state", 2);
+            queryWrapper.in("status", 2);
         }
         queryWrapper.orderByAsc("modify_time");
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));
