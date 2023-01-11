@@ -250,6 +250,9 @@ public class PublicServiceImpl implements PublicService {
         currentTrackItem.orderByDesc("sequence_order_by");
         List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
         //判断还有没有下工序
+        if (currentTrackItemList == null && currentTrackItemList.size() == 0) {
+            throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
+        }
         if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
             return true;
