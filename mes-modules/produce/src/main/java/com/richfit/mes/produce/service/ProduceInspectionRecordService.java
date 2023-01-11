@@ -112,7 +112,7 @@ public class ProduceInspectionRecordService {
                 String consignor = record.getConsignor();
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
                 //委托人
-                record.setConsignor(data.getEmplName());
+                record.setConsignor(ObjectUtil.isEmpty(data)?null:data.getEmplName());
                 //委托单位
                 record.setComeFromDepart(systemServiceClient.getTenantById(record.getTenantId()).getData().getTenantName());
                 String startDoingUser = record.getStartDoingUser();
