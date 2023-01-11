@@ -505,15 +505,9 @@ public class SequenceController extends BaseController {
             queryWrapperRouterCheck.eq("branch_code", sequence.getBranchCode());
             queryWrapperRouterCheck.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             routerCheckService.remove(queryWrapperRouterCheck);
+            sequenceService.remove(queryWrapperSequence);
         }
-
-        boolean bool = sequenceService.removeByIds(java.util.Arrays.asList(ids));
-        if (bool) {
-            return CommonResult.success(null, "删除成功！");
-        } else {
-            return CommonResult.failed("操作失败，请重试！");
-        }
-
+        return CommonResult.success(null, "删除成功！");
     }
 
     @ApiOperation(value = "导入工序", notes = "根据Excel文档导入工序")
