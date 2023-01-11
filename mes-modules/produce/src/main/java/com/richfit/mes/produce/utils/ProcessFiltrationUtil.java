@@ -28,9 +28,10 @@ public class ProcessFiltrationUtil {
         List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
         queryWrapperRole.in("role_id", roleId);
         List<ProduceRoleOperation> operationList = role.list(queryWrapperRole);
-        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationId).collect(Collectors.toSet());
+        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationName).collect(Collectors.toSet());
         if (!set.isEmpty()) {
-            queryWrapper.in("operatipon_id", set);
+//            queryWrapper.in("operatipon_id", set);
+            queryWrapper.in("opt_name", set);
         }
     }
 }
