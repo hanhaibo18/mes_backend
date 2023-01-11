@@ -74,6 +74,10 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveComplete(HeatCompleteDto heatCompleteDto) throws Exception {
+        PrechargeFurnace furnace = prechargeFurnaceService.getById(heatCompleteDto.getPrechargeFurnaceId());
+        if(furnace.getStepStatus().equals("0")){
+            throw new GlobalException("请先开工后报工！",ResultCode.FAILED);
+        }
         //校验报工信息
         if (null == heatCompleteDto.getTrackCompleteList() && heatCompleteDto.getTrackCompleteList().isEmpty()) {
             throw new GlobalException("报工人员不能为空",ResultCode.FAILED);
@@ -132,8 +136,9 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 nextItemActivate(tiId, trackItem, assign);
             }else{
                 trackItem.setIsDoing(1);
+                trackItemService.updateById(trackItem);
             }
-            trackItemService.updateById(trackItem);
+
             //保存报工信息
             this.saveBatch(heatCompleteDto.getTrackCompleteList());
         }
@@ -158,6 +163,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         trackItem.setIsDoing(2);
         trackItem.setIsOperationComplete(1);
         trackItem.setOperationCompleteTime(new Date());
+        //此工序完工
+        trackItemService.updateById(trackItem);
         //派工状态设置为完成
         assign.setState(2);
         trackAssignService.updateById(assign);
@@ -226,9 +233,9 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             update = trackItemService.updateById(trackItemEntity);
             //下工序派工(继承上工序的派工信息)
             Assign nextItemAssign = new Assign();
-            BeanUtils.copyProperties(nextItemAssign,assign,new String[]{"id"});
+            BeanUtils.copyProperties(assign,nextItemAssign,new String[]{"id"});
             nextItemAssign.setTiId(trackItemEntity.getId());
-            heatTrackAssignService.assignItem(assign);
+            heatTrackAssignService.assignItem(nextItemAssign);
         }
         return update;
     }
@@ -245,6 +252,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         //上工步
         prechargeFurnace.setUpStep(currStep);
         prechargeFurnace.setCurrStep(heatCompleteDto.getTrackCompleteList().get(0).getStep());
+        prechargeFurnace.setFurnaceNo(heatCompleteDto.getTrackCompleteList().get(0).getFurnaceNo());
+        prechargeFurnace.setDealFurnace(heatCompleteDto.getTrackCompleteList().get(0).getDeviceName());
         if(!isFinal){
             prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
             //工步状态设为未开工
