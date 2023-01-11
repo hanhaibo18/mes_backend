@@ -446,7 +446,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
 
         //判断自己是否是第一道工序,第一道工序不修改状态
-        if (item.getOriginalOptSequence() == 10) {
+        if (item.getOriginalOptSequence() != 10) {
             // 将当前工序is_current设为0
             UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
             updateWrapperOld.eq("flow_id", flowId);
