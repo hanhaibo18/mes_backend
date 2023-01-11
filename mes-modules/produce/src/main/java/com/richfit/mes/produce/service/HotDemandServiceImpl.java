@@ -97,6 +97,13 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         return CommonResult.success("");
     }
 
+
+    /**
+     * 检查模型
+      * @param idList
+     * @param branchCode
+     * @return
+     */
     @Override
     public List<String> checkModel(List<String> idList, String branchCode) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
