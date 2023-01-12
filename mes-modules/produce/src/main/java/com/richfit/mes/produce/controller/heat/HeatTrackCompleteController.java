@@ -32,10 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -150,6 +147,41 @@ public class HeatTrackCompleteController extends BaseController {
 
         }
         return new ArrayList<TrackItem>();
+    }
+
+    @ApiOperation(value = "（已报工）人员批量删除")
+    @PostMapping("/deleteCompleteBy")
+    public CommonResult<Boolean> deleteCompleteBy(@ApiParam(value = "人员列表的ids", required = true) @RequestBody List<String> ids){
+        if(!ObjectUtil.isEmpty(ids) && ids.size()>0){
+            QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
+            wrapper.in("id",ids);
+            return CommonResult.success(heatTrackCompleteService.remove(wrapper));
+            //todo 删除人员得重新计算工时
+
+        }
+        return CommonResult.failed("请选择要删除的人员！");
+    }
+
+    @ApiOperation(value = "（已报工）报工信息编辑")
+    @PostMapping("/updateCompleteInfo")
+    public CommonResult<Boolean> updateCompleteInfo(@ApiParam(value = "报工信息", required = true) @RequestBody TrackComplete trackComplete){
+        //步骤id
+        String stepGroupId = trackComplete.getStepGroupId();
+        //根据步骤id获取要修改的报工信息
+        QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
+        wrapper.eq("step_group_id",stepGroupId);
+        List<TrackComplete> stepCompletes = heatTrackCompleteService.list(wrapper);
+        for (TrackComplete complete : stepCompletes) {
+            complete.setWaterTempera(trackComplete.getWaterTempera());
+            complete.setOilTempera(trackComplete.getOilTempera());
+            complete.setNeurogenTempera(trackComplete.getNeurogenTempera());
+            complete.setFurnaceCool(trackComplete.getFurnaceCool());
+            complete.setWaterCool(trackComplete.getWaterCool());
+            complete.setVacancyCool(trackComplete.getVacancyCool());
+            complete.setOilCool(trackComplete.getOilCool());
+            complete.setNeurogenCool(trackComplete.getNeurogenCool());
+        }
+        return CommonResult.success(heatTrackCompleteService.updateBatchById(stepCompletes));
     }
 
 
