@@ -165,7 +165,7 @@ public class PdmMesProcessServiceImpl extends ServiceImpl<PdmMesProcessMapper, P
                 sequence.setCreateBy(user.getUsername());
                 sequence.setModifyTime(new Date());
                 sequence.setModifyBy(user.getUsername());
-                sequenceService.saveOrUpdate(sequence);
+                sequenceService.save(sequence);
 
 //                //删除工序已关联的质量资料历史数据
 //                QueryWrapper<RouterCheck> queryWrapperRouterCheck = new QueryWrapper<>();
