@@ -445,21 +445,23 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             return "当前工序已是跟单第一步有效工序,不可回退！";
         }
 
-        // 将当前工序is_current设为0
-        UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
-        updateWrapperOld.eq("flow_id", flowId);
-        updateWrapperOld.eq("is_current", 1);
-        updateWrapperOld.orderByDesc("opt_sequence");
-        updateWrapperOld.set("is_current", 0);
-        this.update(updateWrapperOld);
-
-        // 将上道工序is_current设为1
-        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.set("is_current", 1);
-        updateWrapper.set("is_track_sequence_complete", 0);
-        updateWrapper.eq("flow_id", flowId);
-        updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
-        this.update(updateWrapper);
+        //判断自己是否是第一道工序,第一道工序不修改状态
+        if (item.getOriginalOptSequence() != 10) {
+            // 将当前工序is_current设为0
+            UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
+            updateWrapperOld.eq("flow_id", flowId);
+            updateWrapperOld.eq("is_current", 1);
+            updateWrapperOld.orderByDesc("opt_sequence");
+            updateWrapperOld.set("is_current", 0);
+            this.update(updateWrapperOld);
+            // 将上道工序is_current设为1
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.set("is_current", 1);
+            updateWrapper.set("is_track_sequence_complete", 0);
+            updateWrapper.eq("flow_id", flowId);
+            updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
+            this.update(updateWrapper);
+        }
         //生产线状态改为在制
         UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
         updateWrapperTrackFlow.set("status", "1");
