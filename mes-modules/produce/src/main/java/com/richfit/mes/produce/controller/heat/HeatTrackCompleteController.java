@@ -107,14 +107,14 @@ public class HeatTrackCompleteController extends BaseController {
     }
 
     @ApiOperation(value = "（已报工）已报工根据预装炉id查询当前用户报工的步骤及用户")
-    @PostMapping("/queryStepListByFuId")
-    public Map queryStepListByFuId(String prechargeFurnaceId){
+    @GetMapping("/queryStepListByFuId")
+    public Map queryStepListByFuId(@ApiParam(value = "预装炉id", required = true) @RequestParam String id){
         TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
         if(ObjectUtil.isEmpty(data)){
             throw new GlobalException("用户不存在", ResultCode.FAILED);
         }
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("precharge_furnace_id",prechargeFurnaceId)
+        queryWrapper.eq("precharge_furnace_id",id)
                 .eq("complete_by", data.getUserAccount())
                 .orderByAsc("create_time");
         List<TrackComplete> completes = heatTrackCompleteService.list(queryWrapper);
@@ -137,8 +137,8 @@ public class HeatTrackCompleteController extends BaseController {
     }
 
     @ApiOperation(value = "（已报工）根据步骤id查询跟单工序信息")
-    @PostMapping("/queryItemListByStepGroupId")
-    public List<TrackItem> queryItemListByStepGroupId(String stepGroupId){
+    @GetMapping("/queryItemListByStepGroupId")
+    public List<TrackItem> queryItemListByStepGroupId(@ApiParam(value = "步骤分组id（stepGroupId）", required = true) @RequestParam String stepGroupId){
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
         wrapper.eq("step_group_id",stepGroupId);
         List<TrackComplete> stepCompletes = heatTrackCompleteService.list(wrapper);
