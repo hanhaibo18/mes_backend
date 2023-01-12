@@ -9,6 +9,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ProduceRoleOperationService;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,9 +30,13 @@ public class ProcessFiltrationUtil {
         queryWrapperRole.in("role_id", roleId);
         List<ProduceRoleOperation> operationList = role.list(queryWrapperRole);
         Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationName).collect(Collectors.toSet());
+        Set<String> names = new HashSet<>();
+        for (String name : set) {
+            names.add(name.replaceAll(" ", ""));
+        }
         if (!set.isEmpty()) {
 //            queryWrapper.in("operatipon_id", set);
-            queryWrapper.in("opt_name", set);
+            queryWrapper.in("replace(opt_name, ' ', '')", names);
         }
     }
 }

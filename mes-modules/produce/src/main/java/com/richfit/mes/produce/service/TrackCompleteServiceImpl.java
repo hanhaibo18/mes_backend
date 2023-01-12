@@ -110,7 +110,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 //            BOMCO_ZF_JMAQ_LDGL;//领导
 //            role_tenant_admin;//租户管理员
         //查询权限控制
-        if (roleCodeList.contains("BOMCO_ZF_JMAQ_LDGL") || roleCodeList.contains("role_tenant_admin")) {
+        if (roleCodeList.toString().contains("_LDGL") || roleCodeList.toString().contains("_TJ") || roleCodeList.contains("role_tenant_admin")) {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
@@ -201,7 +201,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         queryWrapperCheck.orderByAsc("modify_time");
                         List<TrackCheck> list = trackCheckService.list(queryWrapperCheck);
                         if (!CollectionUtils.isEmpty(list)) {
-                            track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
+                            if (rulesMap.get(list.get(0).getResult()) != null) {
+                                track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
+                            }
                         }
                     }
                     track0.setId(id);

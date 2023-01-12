@@ -186,6 +186,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     protected Integer isCurrent;
     @ApiModelProperty(value = "预装炉id", dataType = "String")
     protected String prechargeFurnaceId;
+    @ApiModelProperty(value = "步骤分组id", dataType = "String")
+    protected String stepGroupId;
 
 
     /**

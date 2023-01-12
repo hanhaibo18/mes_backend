@@ -262,7 +262,15 @@ public class SequenceController extends BaseController {
         List<String> dbIdList = dbSequenceList.stream().map(s -> s.getId()).collect(Collectors.toList());
         //已经删除掉订单工序id
         List<String> ids = dbIdList.stream().filter(id -> !idList.contains(id)).collect(Collectors.toList());
-        sequenceService.removeByIds(ids);
+        // 原id删除方法改为双主键删除
+        // sequenceService.removeByIds(ids);
+        for (String id : ids) {
+            //双主键删除
+            QueryWrapper<Sequence> queryWrapperSequence = new QueryWrapper<>();
+            queryWrapperSequence.eq("id", id);
+            queryWrapperSequence.eq("branch_code", branchCode);
+            sequenceService.remove(queryWrapperSequence);
+        }
         for (Sequence sequence : sequenceList) {
             if (StringUtils.isNullOrEmpty(sequence.getOptId()) && !StringUtils.isNullOrEmpty(sequence.getId())) {
                 return CommonResult.failed(sequence.getOptName() + ":工序获取字典id不能为空！");

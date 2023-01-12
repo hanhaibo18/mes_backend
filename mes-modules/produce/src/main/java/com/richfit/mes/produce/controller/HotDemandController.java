@@ -409,10 +409,18 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/ratify")
     public CommonResult ratify(@RequestBody List<String> idList,Integer ratifyState,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         //检查无模型数据
         List<String> ids = hotDemandService.checkModel(idList, branchCode);
         if(CollectionUtils.isNotEmpty(ids)) return CommonResult.failed("存在无模型需求");
 
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("branch_code",branchCode);
+        queryWrapper.in("id",idList);
+        //无模型"且“未排产”产品
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        //将需求数据转换为生产计划并入库
+        this.convertAndSave(currentUser, hotDemands);
         UpdateWrapper updateWrapper=new UpdateWrapper();
         updateWrapper.set("produce_ratify_state",ratifyState);//设置提报状态
         updateWrapper.in("id",idList);
@@ -429,13 +437,35 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/model_production_scheduling")
     public CommonResult ratify(@RequestBody List<String> idList,String branchCode) {
-        //查出需要排产的需求数据
-        List<HotDemand> hotDemands = hotDemandService.listByIds(idList);
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        queryWrapper.eq("branch_code",branchCode);
+        queryWrapper.apply("(is_exist_model=0 or is_exist_process is null)");
+        queryWrapper.in("id",idList);
+        //无模型"且“未排产”产品
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        //将需求数据转换为生产计划并入库
+        this.convertAndSave(currentUser, hotDemands);
+        UpdateWrapper updateWrapper=new UpdateWrapper();
+        updateWrapper.set("produce_state",1);//设置排产状态 0: 未排产   1 :已排产',
+        updateWrapper.in("id",idList);
+        boolean update = hotDemandService.update(updateWrapper);
+        if (update) return CommonResult.success(ResultCode.SUCCESS);
 
+        return CommonResult.failed();
+    }
+
+    /**
+     * 将需求数据转换为生产计划并入库
+     * @param currentUser
+     * @param hotDemands
+     */
+
+    private void convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands) {
         ArrayList<Plan> plans = new ArrayList<>();
         //根据需求信息自动生成生产计划数据
         for (HotDemand hotDemand : hotDemands) {
-
             Plan plan = new Plan();
             plan.setProjCode(DateUtils.formatDate(new Date(),"yyyy-MM"));
             plan.setWorkNo(hotDemand.getWorkNo());//工作号
@@ -450,16 +480,16 @@ public class HotDemandController extends BaseController {
             plan.setBlank(hotDemand.getWorkblankType());//毛坯
             plan.setStartTime(new Date());//开始时间
             plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
+            plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
+            plan.setCreateBy(currentUser.getUserId());//创建人
+            plan.setCreateTime(new Date());
+            plan.setModifyBy(currentUser.getUserId());
+            plan.setModifyTime(new Date());
+            plan.setDrawNoName("");//图号名称
             plans.add(plan);
         }
-
-
-
-        return CommonResult.failed();
+        planService.saveBatch(plans);
     }
-
-
-
 
 
 }
