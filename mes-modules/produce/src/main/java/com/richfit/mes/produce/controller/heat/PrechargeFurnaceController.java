@@ -20,7 +20,6 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 /**
@@ -92,15 +91,18 @@ public class PrechargeFurnaceController extends BaseController {
             //大于等于
             queryWrapper.ge("temp_work", tempWorkQ);
         }
-        //查询本部门未开工的 和  自己开工的
-        queryWrapper.and(wrapper3->wrapper3.and(wrapper4->wrapper4.eq("step_status","0").eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId()))
-                .or(wrapper->wrapper.eq("step_status","1").and(wrapper2->wrapper2.eq("start_work_by",SecurityUtils.getCurrentUser().getUserId()))));
         queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getStartTime())
                 .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getEndTime());
         if ("0,1".equals(dispatchingDto.getState())) {
+            //查询本部门未开工的 和  自己开工的
+            queryWrapper.and(wrapper3->wrapper3.and(wrapper4->wrapper4.eq("step_status","0").eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId()))
+                    .or(wrapper->wrapper.eq("step_status","1").and(wrapper2->wrapper2.eq("start_work_by",SecurityUtils.getCurrentUser().getUserId()))));
             queryWrapper.in("status", 0, 1);
         }
+
+
         if ("2".equals(dispatchingDto.getState())) {
+            queryWrapper.eq("start_work_by",SecurityUtils.getCurrentUser().getUserId());
             queryWrapper.in("status", 2);
         }
         queryWrapper.orderByAsc("modify_time");

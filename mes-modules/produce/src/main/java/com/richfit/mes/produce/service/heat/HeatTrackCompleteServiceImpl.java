@@ -1,44 +1,23 @@
 package com.richfit.mes.produce.service.heat;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.sys.QualityInspectionRules;
-import com.richfit.mes.common.model.sys.Role;
-import com.richfit.mes.common.model.sys.Tenant;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.dao.TrackAssignMapper;
-import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
-import com.richfit.mes.produce.enmus.PublicCodeEnum;
-import com.richfit.mes.produce.entity.CompleteDto;
-import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
-import com.richfit.mes.produce.provider.BaseServiceClient;
-import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -92,6 +71,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         boolean isFinal = TrackComplete.IS_FINAL_STEP.equals(heatCompleteDto.getTrackCompleteList().get(0).getIsFinalStep());
         //报工信息
         TrackComplete complete = heatCompleteDto.getTrackCompleteList().get(0);
+        //保存报工信息(给步骤分组id赋值)
+        String stepGroupId = UUID.randomUUID().toString().replaceAll("-", "");
         //保存每一个工序的报工信息
         for (String tiId : heatCompleteDto.getTiIds()) {
             if(heatCompleteDto.getIsUpdate().equals(HeatCompleteDto.IS_UPDATE)){
@@ -126,7 +107,10 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 trackComplete.setIsCurrent(TrackComplete.YES_IS_CURRENT);
                 //预装炉id
                 trackComplete.setPrechargeFurnaceId(heatCompleteDto.getPrechargeFurnaceId());
+                //步骤分组id
+                trackComplete.setStepGroupId(stepGroupId);
             }
+
             //最后一道工序需要激活下工序
             if(isFinal){
                 //检验人
@@ -138,7 +122,6 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 trackItem.setIsDoing(1);
                 trackItemService.updateById(trackItem);
             }
-
             //保存报工信息
             this.saveBatch(heatCompleteDto.getTrackCompleteList());
         }
@@ -329,7 +312,6 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
         return returnMap;
     }
-
 
 
 }
