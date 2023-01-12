@@ -288,6 +288,14 @@ public class TrackHead extends BaseEntity<TrackHead> {
      * 跟单分流表开始
      */
     @TableField(exist = false)
+    @ApiModelProperty(value = "产品来源")
+    private String productSource;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品来源名称")
+    private String productSourceName;
+
+    @TableField(exist = false)
     @ApiModelProperty(value = "分流id", dataType = "String")
     private String flowId;
 
