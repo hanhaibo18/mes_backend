@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 public class OperationAssign extends BaseEntity<OperationAssign> {
 
+    private static final long serialVersionUID = -2605519808352402867L;
     @ApiModelProperty(value = "id", dataType = "String")
     private String id;
     /**
@@ -68,4 +69,12 @@ public class OperationAssign extends BaseEntity<OperationAssign> {
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String operationId;
 
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String optId;
+
+    @ApiModelProperty(value = "工序code", dataType = "String")
+    private String optCode;
+    
+    @ApiModelProperty(value = "工序name", dataType = "String")
+    private String optName;
 }
