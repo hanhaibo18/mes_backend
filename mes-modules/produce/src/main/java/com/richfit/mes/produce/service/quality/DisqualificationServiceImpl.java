@@ -142,8 +142,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
             opinion.setDisqualificationId(disqualification.getId());
             opinion.setType(processJudge);
-//            opinion.setUserName();
-
+            //查询人员姓名
+            TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+            opinion.setUserName(user.getEmplName());
         }
         userOpinionService.saveOrUpdateBatch(disqualificationDto.getDisqualifications());
         //处理文件列表

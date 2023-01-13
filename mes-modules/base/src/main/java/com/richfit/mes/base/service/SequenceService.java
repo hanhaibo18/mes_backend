@@ -17,10 +17,11 @@ public interface SequenceService extends IService<Sequence> {
     /**
      * 功能描述: 查询工艺
      *
-     * @param id
+     * @param optName
+     * @param branchCode
      * @Author: xinYu.hou
      * @Date: 2022/8/18 16:26
      * @return: String
      **/
-    String queryCraft(String id);
+    String queryCraft(String optName, String branchCode);
 }

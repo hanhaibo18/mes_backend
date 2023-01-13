@@ -116,12 +116,12 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<Sequence> querySequenceById(String id) {
-        return CommonResult.success(null);
+    public CommonResult<Sequence> querySequenceById(String optName, String branchCode) {
+        return null;
     }
 
     @Override
-    public String queryCraft(String id) {
+    public String queryCraft(String optName, String branchCode) {
         return null;
     }
 
