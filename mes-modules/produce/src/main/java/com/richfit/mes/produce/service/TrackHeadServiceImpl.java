@@ -797,6 +797,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
+            this.beforeSaveItemDeal(trackItems);
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
             //当跟单中存在bom
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId()) && !trackHead.getProjectBomId().equals(trackHeadOld.getProjectBomId())) {
