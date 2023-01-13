@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: PublicServiceImpl.java
@@ -259,8 +261,10 @@ public class PublicServiceImpl implements PublicService {
                 return false;
             }
         }
-//        currentTrackItemList.stream().filter()
-        if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
+        //过滤已完工数据,获取未完工/未开工数据
+        List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsDoing() != 2).collect(Collectors.toList());
+        //判断是最后一道工序和没有未完工/未开工数据
+        if (currentTrackItemList.get(0).getNextOptSequence() == 0 && CollectionUtils.isEmpty(collect)) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
             return true;
         }
