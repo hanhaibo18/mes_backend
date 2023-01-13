@@ -597,6 +597,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo,
                                 int number) {
         try {
+            this.beforeSaveItemDeal(trackItems);
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
