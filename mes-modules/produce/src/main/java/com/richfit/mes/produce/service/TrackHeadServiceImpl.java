@@ -597,6 +597,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo,
                                 int number) {
         try {
+            this.beforeSaveItemDeal(trackItems);
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
@@ -796,6 +797,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
+            this.beforeSaveItemDeal(trackItems);
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
             //当跟单中存在bom
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId()) && !trackHead.getProjectBomId().equals(trackHeadOld.getProjectBomId())) {
