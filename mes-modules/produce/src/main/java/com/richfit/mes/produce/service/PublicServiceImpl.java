@@ -260,7 +260,7 @@ public class PublicServiceImpl implements PublicService {
             }
         }
 //        currentTrackItemList.stream().filter()
-        if (currentTrackItemList.get(0).getNextOptSequence() == 0 && currentTrackItemList.get(0).) {
+        if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
             return true;
         }
