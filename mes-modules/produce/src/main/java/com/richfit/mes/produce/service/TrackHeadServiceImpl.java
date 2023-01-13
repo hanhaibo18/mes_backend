@@ -1419,21 +1419,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //工序当前、序号处理
         this.beforeSaveItemDeal(trackItemListOld);
 
-        //获取当前工序中的顺序最大值（包括并行工序）
-        int optSequence = 0;
-        TrackItem trackItemLast = new TrackItem();
+        //检验是否可以拆分
         for (TrackItem trackItem : trackItemListOld) {
             if (trackItem.getIsCurrent() == 1) {
-                //找到最大的当前工序序号
-                optSequence = trackItem.getOptSequence();
-                trackItemLast = trackItem;
+                if (trackItem.getIsDoing() != 0) {
+                    throw new GlobalException("当前工序已开工，请清除当前的工序开工记录才能拆分。", ResultCode.FAILED);
+                }
             }
-        }
-//        if (optSequence == trackItemListOld.size() && trackItemLast.getOptParallelType() == 1) {
-//            throw new GlobalException("最后一道工序为并行工序不允许拆分，请回滚至上工序。", ResultCode.FAILED);
-//        }
-        if (optSequence == trackItemListOld.size() && trackItemLast.getIsDoing() > 0) {
-            throw new GlobalException("最后一道已开工不允许拆分，请清除最后工序开工记录。", ResultCode.FAILED);
         }
         //更新原跟单生产线
         for (TrackFlow tf : trackFlow) {
