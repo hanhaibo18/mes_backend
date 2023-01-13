@@ -5,7 +5,7 @@
         SELECT c.drawing_no,
                (select s.product_name
                 from mes_produce.produce_line_store s
-                where s.drawing_no = c.drawing_no
+                where replace(replace(replace(s.drawing_no, '-', ''), '.', ''),' ', '') = replace(replace(replace(c.drawing_no, '-', ''), '.', ''),' ', '')
                   and tenant_id = c.tenant_id
                   and branch_code =
                       c.branch_code limit 1) material_name,
@@ -55,7 +55,7 @@
         where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode} and material_type='1'
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
-                and drawing_no like CONCAT('%',#{param.drawingNo},'%')
+                and ${param.drawingNoSql}
             </if>
             <if test="param.materialNo != null and param.materialNo != ''">
                 and material_no like CONCAT('%',#{param.materialNo},'%')
@@ -75,7 +75,7 @@
         and tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
-                and drawing_no like CONCAT('%',#{param.drawingNo},'%')
+                and ${param.drawingNoSql}
             </if>
             <if test="param.materialNo != null and param.materialNo != ''">
                 and material_no like CONCAT('%',#{param.materialNo},'%')
@@ -111,7 +111,7 @@
         where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
-                and drawing_no like CONCAT('%',#{param.drawingNo},'%')
+                and ${param.drawingNoSql}
             </if>
             <if test="param.materialNo != null and param.materialNo != ''">
                 and material_no like CONCAT('%',#{param.materialNo},'%')
@@ -129,7 +129,7 @@
         where tenant_id = #{param.tenantId} and branch_code = #{param.branchCode}
         <trim suffixOverrides=",">
             <if test="param.drawingNo != null and param.drawingNo != ''">
-                and drawing_no like CONCAT('%',#{param.drawingNo},'%')
+                and and ${param.drawingNoSql}
             </if>
         </trim>
         group by drawing_no

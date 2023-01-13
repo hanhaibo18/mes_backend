@@ -9,6 +9,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.RouterCheckMapper;
 import com.richfit.mes.base.entity.RouterCheckDto;
 import com.richfit.mes.base.entity.RouterCheckQualityDto;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
@@ -116,7 +117,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                     queryWrapper.eq("type", "检查内容");
                     queryWrapper.eq("tenant_id", tenantId);
                     queryWrapper.eq("branch_code", branchCode);
-                    queryWrapper.eq("drawing_no", drawnos.split(",")[i]);
+                    DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawnos.split(",")[i]);
                     this.remove(queryWrapper);
 
                     for (int j = 0; j < checkList.size(); j++) {
@@ -197,8 +198,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                     queryWrapper.eq("type", "质量资料");
                     queryWrapper.eq("tenant_id", tenantId);
                     queryWrapper.eq("branch_code", branchCode);
-                    queryWrapper.eq("drawing_no", drawnos.split(",")[i]);
-
+                    DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawnos.split(",")[i]);
                     this.remove(queryWrapper);
                     int check_order = 1;
                     // 插入新数据

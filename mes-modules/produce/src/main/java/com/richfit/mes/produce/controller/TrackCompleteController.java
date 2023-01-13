@@ -20,6 +20,7 @@ import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -104,7 +105,7 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.eq("work_no", workNo);
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.like("drawing_no", routerNo);
+                DrawingNoUtil.queryLike(queryWrapper,"drawing_no", routerNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 trackNo = trackNo.replaceAll(" ", "");

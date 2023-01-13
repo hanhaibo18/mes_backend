@@ -18,9 +18,11 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.HeatTrackCompleteService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -53,6 +55,7 @@ public class HeatTrackCompleteController extends BaseController {
     private SystemServiceClient systemServiceClient;
     @Autowired
     private TrackItemService trackItemService;
+
 
     @ApiOperation(value = "报工")
     @PostMapping("/saveComplete")
@@ -103,6 +106,7 @@ public class HeatTrackCompleteController extends BaseController {
         return CommonResult.success(new Page<PrechargeFurnace>());
     }
 
+
     @ApiOperation(value = "（已报工）已报工根据预装炉id查询当前用户报工的步骤及用户")
     @GetMapping("/queryStepListByFuId")
     public CommonResult<Map> queryStepListByFuId(@ApiParam(value = "预装炉id", required = true) @RequestParam String id){
@@ -114,7 +118,7 @@ public class HeatTrackCompleteController extends BaseController {
         queryWrapper.eq("precharge_furnace_id",id)
                 .eq("complete_by", data.getUserAccount())
                 .orderByAsc("create_time");
-        List<TrackComplete> completes = heatTrackCompleteService.list(queryWrapper);
+        List<TrackComplete> completes = heatTrackCompleteService.queryList(queryWrapper);
         List<TrackComplete> stepList = new ArrayList<>();
         List<TrackComplete> userList = new ArrayList<>();
         //根据步骤分组id分组 得到步骤集合
@@ -128,6 +132,7 @@ public class HeatTrackCompleteController extends BaseController {
         Map<String, List<TrackComplete>> returnMap = new HashMap<>();
         stepList.sort((t1,t2)->t1.getCreateTime().compareTo(t2.getCreateTime()));
         userList.sort((t1,t2)->t1.getCreateTime().compareTo(t2.getCreateTime()));
+
         returnMap.put("stepList",stepList);
         returnMap.put("userList",userList);
         return CommonResult.success(returnMap);

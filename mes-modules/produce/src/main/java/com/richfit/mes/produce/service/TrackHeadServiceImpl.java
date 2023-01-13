@@ -25,10 +25,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
-import com.richfit.mes.produce.utils.FilesUtil;
-import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
-import com.richfit.mes.produce.utils.TrackHeadUtil;
-import com.richfit.mes.produce.utils.Utils;
+import com.richfit.mes.produce.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,7 +104,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
-        return trackHeadMapper.selectTrackHeadAccount(trackHead);
+        if(!StringUtils.isNullOrEmpty(trackHead.getDrawingNo())){
+            trackHead.setDrawingNo(DrawingNoUtil.queryLikeSql("drawing_no",trackHead.getDrawingNo()));
+        }
+        List<TrackHead> headList = trackHeadMapper.selectTrackHeadAccount(trackHead);
+        return headList;
     }
 
     /**
@@ -1218,7 +1219,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("head.material_certificate_no", certificateNo);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.eq("head.drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(queryWrapper,"head.drawing_no", drawingNo);
         }
         queryWrapper.eq("head.branch_code", branchCode);
         queryWrapper.eq("head.tenant_id", tenantId);
@@ -1244,7 +1245,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         queryWrapper.le("create_time", calendar.getTime());
         if (!StringUtils.isNullOrEmpty(standing.getDrawingNo())) {
-            queryWrapper.eq("drawing_no", standing.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", standing.getDrawingNo());
         }
         if (!StringUtils.isNullOrEmpty(standing.getDocumentaryId())) {
             queryWrapper.eq("track_no", standing.getDocumentaryId());
@@ -1285,7 +1286,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("head.work_no", queryWork.getWorkId());
         }
         if (null != queryWork.getDrawingNo()) {
-            queryWrapper.eq("head.drawing_no", queryWork.getWorkId());
+            DrawingNoUtil.queryEq(queryWrapper,"head.drawing_no", queryWork.getWorkId());
         }
         if (null != queryWork.getTrackNo()) {
             queryWrapper.eq("head.track_no", queryWork.getTrackNo());
@@ -1329,7 +1330,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.le("create_time", calendar.getTime());
         }
         if (!StringUtils.isNullOrEmpty(tailAfter.getDrawingNo())) {
-            queryWrapper.eq("drawing_no", tailAfter.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", tailAfter.getDrawingNo());
         }
         if (!StringUtils.isNullOrEmpty(tailAfter.getTrackNo())) {
             queryWrapper.ge("track_no", tailAfter.getTrackNo());
@@ -1416,7 +1417,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         wrapperTrackItem.eq("track_head_id", trackHead.getId());
         wrapperTrackItem.orderByAsc("opt_sequence");
         List<TrackItem> trackItemListOld = trackItemService.list(wrapperTrackItem);
-        
+
         //工序当前、序号处理
         this.beforeSaveItemDeal(trackItemListOld);
 
@@ -1696,7 +1697,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public List<Map> selectTrackStoreCount(String drawingNos) {
-        return trackHeadMapper.selectTrackStoreCount(drawingNos);
+        List<String> list = Arrays.asList(drawingNos.split(","));
+        return trackHeadMapper.selectTrackStoreCount(DrawingNoUtil.queryInSql("drawing_no",list));
     }
 
     @Override

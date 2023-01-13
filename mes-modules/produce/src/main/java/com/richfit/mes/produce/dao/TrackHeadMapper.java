@@ -136,8 +136,8 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/10 15:06
      **/
-    @Select("select drawing_no, count(*),sum(number-use_num) as number FROM v_produce_track_store where type = '1' and drawing_no in (${drawingNos}) GROUP BY drawing_no;")
-    List<Map> selectTrackStoreCount(String drawingNos);
+    @Select("select drawing_no, count(*),sum(number-use_num) as number FROM v_produce_track_store where type = '1' and ${drawNoSql} GROUP BY drawing_no;")
+    List<Map> selectTrackStoreCount(String drawNoSql);
 
 
     /**
@@ -171,7 +171,7 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
             "  and work_no like concat('%',#{workNo},'%') " +
             " </if> " +
             " <if test='drawingNo != null and drawingNo != \"\"'> " +
-            "  and drawing_no like concat('%',#{drawingNo},'%') " +
+            "  and ${drawingNo} " +
             " </if> " +
             " <if test='branchCode != null and branchCode != \"\"'> " +
             "  and branch_code = #{branchCode} " +

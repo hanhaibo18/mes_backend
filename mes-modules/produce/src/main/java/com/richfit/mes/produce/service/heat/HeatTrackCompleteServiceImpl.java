@@ -41,7 +41,14 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private HeatTrackAssignService heatTrackAssignService;
     @Autowired
     private TrackHeadService trackHeadService;
+    @Autowired
+    private TrackCompleteMapper trackCompleteMapper;
 
+
+    @Override
+    public List<TrackComplete> queryList(QueryWrapper queryWrapper) {
+        return trackCompleteMapper.queryList(queryWrapper);
+    }
 
     /**
      * 功能描述: 热工报工接口

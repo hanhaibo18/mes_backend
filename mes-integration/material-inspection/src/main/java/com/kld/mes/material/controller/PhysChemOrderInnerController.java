@@ -12,6 +12,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.PhyChemTaskVo;
 import com.richfit.mes.common.model.produce.PhysChemOrderImpactDto;
 import com.richfit.mes.common.model.produce.PhysChemOrderInner;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -61,7 +62,7 @@ public class PhysChemOrderInnerController extends BaseController {
             queryWrapper.eq("product_name",phyChemTaskVo.getProductName());
         }
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getDrawingNo())){
-            queryWrapper.eq("draw_no",phyChemTaskVo.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper,"draw_no",phyChemTaskVo.getDrawingNo());
         }
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getSampleDept())){
             queryWrapper.eq("sample_dept",phyChemTaskVo.getSampleDept());

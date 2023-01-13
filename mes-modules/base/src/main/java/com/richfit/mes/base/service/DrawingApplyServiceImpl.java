@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.DrawingApplyMapper;
 import com.richfit.mes.base.entity.DrawingApplyExcelEntity;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -70,7 +71,7 @@ public class DrawingApplyServiceImpl extends ServiceImpl<DrawingApplyMapper, Dra
                     throw new RuntimeException(DRAWING_APPLY_NO_NULL_MESSAGE);
                 } else {
                     QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
-                    queryWrapper.eq("drawing_no", drawingApply.getDrawingNo());
+                    DrawingNoUtil.queryEq(queryWrapper,"drawing_no",drawingApply.getDrawingNo());
                     queryWrapper.eq("branch_code", branchCode);
                     queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                     DrawingApply oldApply = this.getOne(queryWrapper);

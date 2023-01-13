@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.RouterCheckService;
 import com.richfit.mes.base.service.SequenceService;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.RouterCheck;
@@ -156,7 +157,7 @@ public class RouterCheckController extends BaseController {
                 queryWrapper.like("name", name);
             }
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                queryWrapper.like("drawing_no", drawingNo);
+                DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(id)) {
                 queryWrapper.eq("id", id);
@@ -281,5 +282,5 @@ public class RouterCheckController extends BaseController {
         return routerCheckService.queryRouterList(optId, type, branchCode, tenantId);
     }
 
-    
+
 }

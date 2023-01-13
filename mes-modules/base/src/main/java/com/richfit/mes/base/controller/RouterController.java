@@ -11,6 +11,7 @@ import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.base.service.SequenceService;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
@@ -577,7 +578,7 @@ public class RouterController extends BaseController {
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode) {
         try {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            queryWrapper.in("draw_no", drawNos);
+            DrawingNoUtil.queryIn(queryWrapper,"draw_no",drawNos);
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Router> routers = routerService.list(queryWrapper);
