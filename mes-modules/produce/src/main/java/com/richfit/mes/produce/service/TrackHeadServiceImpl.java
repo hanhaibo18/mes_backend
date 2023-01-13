@@ -1416,6 +1416,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         wrapperTrackItem.eq("track_head_id", trackHead.getId());
         wrapperTrackItem.orderByAsc("opt_sequence");
         List<TrackItem> trackItemListOld = trackItemService.list(wrapperTrackItem);
+        //工序当前、序号处理
+        this.beforeSaveItemDeal(trackItemListOld);
+
         //获取当前工序中的顺序最大值（包括并行工序）
         int optSequence = 0;
         TrackItem trackItemLast = new TrackItem();
@@ -1426,9 +1429,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackItemLast = trackItem;
             }
         }
-        if (optSequence == trackItemListOld.size() && trackItemLast.getOptParallelType() == 1) {
-            throw new GlobalException("最后一道工序为并行工序不允许拆分，请回滚至上工序。", ResultCode.FAILED);
-        }
+//        if (optSequence == trackItemListOld.size() && trackItemLast.getOptParallelType() == 1) {
+//            throw new GlobalException("最后一道工序为并行工序不允许拆分，请回滚至上工序。", ResultCode.FAILED);
+//        }
         if (optSequence == trackItemListOld.size() && trackItemLast.getIsDoing() > 0) {
             throw new GlobalException("最后一道已开工不允许拆分，请清除最后工序开工记录。", ResultCode.FAILED);
         }
@@ -1441,14 +1444,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         //更新未开工的工序的数量
         for (TrackItem trackItem : trackItemListOld) {
-            if (trackItem.getOptSequence() == optSequence && trackItem.getIsDoing() == 0 && trackItem.getOptParallelType() == 0) {
-                //工序顺序等于当前工序且未开工且是非并行的工序数量才能修改
-                trackItem.setNumber(trackHead.getNumber());
-                trackItem.setAssignableQty(trackHead.getNumber());
-                trackItem.setBatchQty(trackHead.getNumber());
-                trackItemService.updateById(trackItem);
-            } else if (trackItem.getOptSequence() > optSequence && trackItem.getIsDoing() == 0) {
-                //工序顺序大于当前工序且未开工的工序数量才能修改
+            if (trackItem.getIsDoing() == 0) {
                 trackItem.setNumber(trackHead.getNumber());
                 trackItem.setAssignableQty(trackHead.getNumber());
                 trackItem.setBatchQty(trackHead.getNumber());
