@@ -786,8 +786,7 @@ public class ProduceInspectionRecordService {
         InspectionPower power = inspectionPowerService.getById(produceItemInspectInfo.getPowerId());
         TrackItem trackItem = trackItemService.getById(power.getItemId());
 
-        if (!ObjectUtil.isEmpty(trackItem)) {
-            trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        if (!ObjectUtil.isEmpty(produceItemInspectInfo)) {
             List<Map<String, Object>> list = new ArrayList<>();
             if (InspectionRecordTypeEnum.MT.getType().equals(produceItemInspectInfo.getTempType())) {
                 list = produceInspectionRecordMtService.listMaps(new QueryWrapper<ProduceInspectionRecordMt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
@@ -817,7 +816,7 @@ public class ProduceInspectionRecordService {
 
         Map<String, Object> dataMap = new HashMap<>();
         //填充数据
-        createDataMap(trackHead, recordInfo, dataMap, produceItemInspectInfo.getTempType());
+        createDataMap(trackHead, recordInfo, dataMap, produceItemInspectInfo.getTempType(),power);
 
         //根据模板类型获取模板和导出文件名
         Map<String, String> tempNameAndDocNameMap = checkTempNameAndDocName(produceItemInspectInfo.getTempType());
@@ -833,7 +832,7 @@ public class ProduceInspectionRecordService {
      * @param dataMap
      * @param tempType
      */
-    private void createDataMap(TrackHead trackHead, Map<String, Object> recordInfo, Map<String, Object> dataMap, String tempType) throws IOException {
+    private void createDataMap(TrackHead trackHead, Map<String, Object> recordInfo, Map<String, Object> dataMap, String tempType,InspectionPower power) throws IOException {
         if (InspectionRecordTypeEnum.MT.getType().equals(tempType)) {
             createMtDataMap(recordInfo, dataMap);
         } else if (InspectionRecordTypeEnum.PT.getType().equals(tempType)) {
@@ -844,11 +843,14 @@ public class ProduceInspectionRecordService {
             createUtDataMap(recordInfo, dataMap);
         }
         //图号
-        dataMap.put("drawingNo", trackHead.getDrawingNo());
+        dataMap.put("drawingNo", ObjectUtil.isEmpty(trackHead)?power.getDrawNo():trackHead.getDrawingNo());
         //零件名称
-        dataMap.put("materialName", trackHead.getMaterialName());
+        dataMap.put("materialName", ObjectUtil.isEmpty(trackHead)?power.getSampleName():trackHead.getMaterialName());
         //材质
-        dataMap.put("texture", trackHead.getTexture());
+        if(!ObjectUtil.isEmpty(trackHead)){
+            dataMap.put("texture", trackHead.getTexture());
+        }
+
         dataMap.put("year", String.valueOf(DateUtil.year(DateUtil.date())));
         dataMap.put("month", DateUtil.thisMonth() + 1);
         dataMap.put("day", DateUtil.dayOfMonth(DateUtil.date()));
