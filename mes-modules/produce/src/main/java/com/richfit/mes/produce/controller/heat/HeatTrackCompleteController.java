@@ -74,7 +74,7 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "（已报工）分页查询已报工信息")
     @PostMapping("/alreadyCompletePage")
-    public Page<PrechargeFurnace> alreadyCompletePage(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto){
+    public CommonResult alreadyCompletePage(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto){
         TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
         if(ObjectUtil.isEmpty(data)){
             throw new GlobalException("用户不存在", ResultCode.FAILED);
@@ -97,15 +97,15 @@ public class HeatTrackCompleteController extends BaseController {
             }
             prechargeFurnaceQueryWrapper.in("id",fuIds)
                     .orderByAsc("modify_time");
-            return  prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(),dispatchingDto.getLimit()),prechargeFurnaceQueryWrapper);
+            return  CommonResult.success(prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(),dispatchingDto.getLimit()),prechargeFurnaceQueryWrapper));
 
         }
-        return new Page<PrechargeFurnace>();
+        return CommonResult.success(new Page<PrechargeFurnace>());
     }
 
     @ApiOperation(value = "（已报工）已报工根据预装炉id查询当前用户报工的步骤及用户")
     @GetMapping("/queryStepListByFuId")
-    public Map queryStepListByFuId(@ApiParam(value = "预装炉id", required = true) @RequestParam String id){
+    public CommonResult<Map> queryStepListByFuId(@ApiParam(value = "预装炉id", required = true) @RequestParam String id){
         TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
         if(ObjectUtil.isEmpty(data)){
             throw new GlobalException("用户不存在", ResultCode.FAILED);
@@ -130,12 +130,12 @@ public class HeatTrackCompleteController extends BaseController {
         userList.sort((t1,t2)->t1.getCreateTime().compareTo(t2.getCreateTime()));
         returnMap.put("stepList",stepList);
         returnMap.put("userList",userList);
-        return returnMap;
+        return CommonResult.success(returnMap);
     }
 
     @ApiOperation(value = "（已报工）根据步骤id查询跟单工序信息")
     @GetMapping("/queryItemListByStepGroupId")
-    public List<TrackItem> queryItemListByStepGroupId(@ApiParam(value = "步骤分组id（stepGroupId）", required = true) @RequestParam String stepGroupId){
+    public CommonResult<List<TrackItem>> queryItemListByStepGroupId(@ApiParam(value = "步骤分组id（stepGroupId）", required = true) @RequestParam String stepGroupId){
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
         wrapper.eq("step_group_id",stepGroupId);
         List<TrackComplete> stepCompletes = heatTrackCompleteService.list(wrapper);
@@ -143,10 +143,10 @@ public class HeatTrackCompleteController extends BaseController {
         if(itemIds.size()>0){
             QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
             trackItemQueryWrapper.in("id",itemIds);
-            return trackItemService.list(trackItemQueryWrapper);
+            return CommonResult.success(trackItemService.list(trackItemQueryWrapper));
 
         }
-        return new ArrayList<TrackItem>();
+        return CommonResult.success(new ArrayList<TrackItem>());
     }
 
     @ApiOperation(value = "（已报工）人员批量删除")

@@ -48,6 +48,8 @@ public class TrackHeadUtil {
                     trackNo(th, codeRuleService);
                     th.setProductNo((String) m.get("workblankNo"));
                     th.setNumber((Integer) m.get("num"));
+                    th.setProductSource((String) m.get("materialSource"));
+                    th.setProductSourceName((String) m.get("materialSourceName"));
                     trackHeadList.add(th);
                 }
             }
@@ -71,11 +73,13 @@ public class TrackHeadUtil {
         //IsBatch类型为N(是否批次：Y是 N否), StoreList 不为空 进行创建
         if (TrackHead.TRACKHEAD_BATCH_NO.equals(trackHead.getIsBatch()) && CollectionUtils.isNotEmpty(trackHead.getStoreList())) {
             //单件多数量（多生产线）
-                for (Map m : trackHead.getStoreList()) {
-                    TrackHead th = JSON.parseObject(JSON.toJSONString(trackHead), TrackHead.class);
-                    th.setProductNo((String) m.get("workblankNo"));
-                    th.setNumber((Integer) m.get("num"));
-                    trackHeadList.add(th);
+            for (Map m : trackHead.getStoreList()) {
+                TrackHead th = JSON.parseObject(JSON.toJSONString(trackHead), TrackHead.class);
+                th.setProductNo((String) m.get("workblankNo"));
+                th.setProductSource((String) m.get("materialSource"));
+                th.setProductSourceName((String) m.get("materialSourceName"));
+                th.setNumber((Integer) m.get("num"));
+                trackHeadList.add(th);
             }
         } else {
             //正常生产线

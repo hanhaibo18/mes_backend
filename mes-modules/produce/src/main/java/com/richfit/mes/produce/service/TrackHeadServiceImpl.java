@@ -453,20 +453,20 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     private void beforeSaveItemDeal(List<TrackItem> trackItems) {
         //升序排列 便于原工序顺序赋值
-        trackItems.sort((t1,t2)->t1.getSequenceOrderBy().compareTo(t2.getSequenceOrderBy()));
+        trackItems.sort((t1, t2) -> t1.getSequenceOrderBy().compareTo(t2.getSequenceOrderBy()));
         //并行状态处理(连续两个并行才算并行)
-        for (int i=0;i<trackItems.size();i++) {
-            if(trackItems.get(i).getOptParallelType()==1){
+        for (int i = 0; i < trackItems.size(); i++) {
+            if (trackItems.get(i).getOptParallelType() == 1) {
                 //连续两个为并行才为并行工序
-                if((i-1==-1 || trackItems.get(i-1).getOptParallelType()==0) && ((i+1==trackItems.size()) || trackItems.get(i+1).getOptParallelType()==0)){
+                if ((i - 1 == -1 || trackItems.get(i - 1).getOptParallelType() == 0) && ((i + 1 == trackItems.size()) || trackItems.get(i + 1).getOptParallelType() == 0)) {
                     trackItems.get(i).setOptParallelType(0);
                 }
             }
         }
         //当前工序处理
-        if(trackItems.get(0).getIsCurrent()==1){
-            for (int i=1;i<trackItems.size();i++) {
-                if(trackItems.get(i).getOptParallelType()==1){
+        if (trackItems.get(0).getIsCurrent() == 1) {
+            for (int i = 1; i < trackItems.size(); i++) {
+                if (trackItems.get(i).getOptParallelType() == 1) {
                     trackItems.get(i).setIsCurrent(1);
                 }
             }
@@ -477,12 +477,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //上条工序是否并行
         int upOptParallelType = 1;
         for (TrackItem trackItem : trackItems) {
-            if(trackItem.getOptParallelType()==1 && upOptParallelType==1){
+            if (trackItem.getOptParallelType() == 1 && upOptParallelType == 1) {
                 //并行工序用之前的顺序
                 trackItem.setOriginalOptSequence(originalOptSequence);
-            }else{
+            } else {
                 //非并行顺序加10
-                trackItem.setOriginalOptSequence(originalOptSequence+=10);
+                trackItem.setOriginalOptSequence(originalOptSequence += 10);
             }
             upOptParallelType = trackItem.getOptParallelType();
         }
@@ -490,15 +490,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         int netOptSequence = 0;
         //上条工序是否并行
         int downOptParallelType = 0;
-        for (int i=trackItems.size()-1;i>=0;i--) {
-            if(i==trackItems.size()-1){
+        for (int i = trackItems.size() - 1; i >= 0; i--) {
+            if (i == trackItems.size() - 1) {
                 netOptSequence = 0;
-            }else{
-                if(trackItems.get(i).getOptParallelType()==0 && downOptParallelType==0){
+            } else {
+                if (trackItems.get(i).getOptParallelType() == 0 && downOptParallelType == 0) {
                     //非并行
                     netOptSequence = trackItems.get(i + 1).getOriginalOptSequence();
                 }
-                if(trackItems.get(i).getOptParallelType()!=downOptParallelType) {
+                if (trackItems.get(i).getOptParallelType() != downOptParallelType) {
                     //非并行
                     netOptSequence = trackItems.get(i + 1).getOriginalOptSequence();
                 }
@@ -665,6 +665,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setId(flowId);
             trackFlow.setNumber(number);
             trackFlow.setTrackHeadId(trackHead.getId());
+            trackFlow.setProductSource(trackHead.getProductSource());
+            trackFlow.setProductSourceName(trackHead.getProductSourceName());
             if (!StrUtil.isBlank(productsNo)) {
                 //试棒类型拼接S
                 if ("1".equals(trackHead.getIsTestBar())) {
