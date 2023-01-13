@@ -1416,6 +1416,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         wrapperTrackItem.eq("track_head_id", trackHead.getId());
         wrapperTrackItem.orderByAsc("opt_sequence");
         List<TrackItem> trackItemListOld = trackItemService.list(wrapperTrackItem);
+        
         //工序当前、序号处理
         this.beforeSaveItemDeal(trackItemListOld);
 
