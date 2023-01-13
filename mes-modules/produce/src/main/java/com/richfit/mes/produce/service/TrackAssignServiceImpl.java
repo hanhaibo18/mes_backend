@@ -75,7 +75,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 trackItem.setTotalQuantity(trackItem.getNumber());
                 trackItem.setWorkPlanNo(trackHead.getWorkPlanNo());
                 trackItem.setDispatchingNumber(trackItem.getAssignableQty());
-                String version = baseServiceClient.queryCraft(trackItem.getOptId());
+                String version = baseServiceClient.queryCraft(trackItem.getOptName(), trackItem.getBranchCode());
                 if (!StringUtils.isNullOrEmpty(version)) {
                     trackItem.setVersions(version);
                 }
@@ -105,7 +105,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 trackItem.setTotalQuantity(trackItem.getNumber());
                 trackItem.setDispatchingNumber(trackItem.getAssignableQty());
                 trackItem.setWorkPlanNo(trackHead.getWorkPlanNo());
-                String version = baseServiceClient.queryCraft(trackItem.getOptId());
+                String version = baseServiceClient.queryCraft(trackItem.getOptName(), trackItem.getBranchCode());
                 if (!StringUtils.isNullOrEmpty(version)) {
                     trackItem.setVersions(version);
                 }
@@ -130,7 +130,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 trackItem.setTotalQuantity(trackItem.getNumber());
                 trackItem.setDispatchingNumber(trackItem.getAssignableQty());
                 trackItem.setWorkPlanNo(trackHead.getWorkPlanNo());
-                String version = baseServiceClient.queryCraft(trackItem.getOptId());
+                String version = baseServiceClient.queryCraft(trackItem.getOptName(), trackItem.getBranchCode());
                 if (!StringUtils.isNullOrEmpty(version)) {
                     trackItem.setVersions(version);
                 }

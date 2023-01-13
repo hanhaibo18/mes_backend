@@ -90,7 +90,7 @@ public interface BaseServiceClient {
     public CommonResult<OperationAssign> assignGet(@RequestParam("sequenceId") String sequenceId);
 
     @GetMapping("/api/base/sequence/querySequenceById")
-    public CommonResult<Sequence> querySequenceById(@RequestParam("id") String id);
+    public CommonResult<Sequence> querySequenceById(@RequestParam("optName") String optName, @RequestParam("branchCode") String branchCode);
 
     /**
      * 功能描述:查询工艺版本
@@ -101,7 +101,7 @@ public interface BaseServiceClient {
      * @return: String
      **/
     @GetMapping("/api/base/sequence/queryCraft")
-    public String queryCraft(@RequestParam("id") String id);
+    public String queryCraft(@RequestParam("optName") String optName, @RequestParam("branchCode") String branchCode);
 
     /**
      * 功能描述: 查询PDM图纸
@@ -188,5 +188,5 @@ public interface BaseServiceClient {
                                         @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode);
 
     @GetMapping("/api/base/router/get_by_drawNo")
-    public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos ,@RequestParam String branchCode);
+    public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode);
 }

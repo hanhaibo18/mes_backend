@@ -8,6 +8,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.OperationDeviceService;
 import com.richfit.mes.base.service.OperatiponService;
 import com.richfit.mes.base.service.SequenceService;
+import com.richfit.mes.base.util.OptNameUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.OperationDevice;
@@ -81,11 +82,11 @@ public class OperatiponController extends BaseController {
             }
             queryWrapper.orderByDesc("modify_time");
             IPage<Operatipon> routers = operatiponService.page(new Page<Operatipon>(page, limit), queryWrapper);
-            if(!ObjectUtil.isEmpty(routers.getRecords()) && routers.getRecords().size()>0){
+            if (!ObjectUtil.isEmpty(routers.getRecords()) && routers.getRecords().size() > 0) {
                 //获取工序绑定工艺信息
                 List<String> ids = routers.getRecords().stream().map(Operatipon::getId).collect(Collectors.toList());
                 QueryWrapper<Sequence> operatiponQueryWrapper = new QueryWrapper<>();
-                operatiponQueryWrapper.in("opt_id",ids);
+                operatiponQueryWrapper.in("opt_id", ids);
                 List<Sequence> sequences = sequenceService.list(operatiponQueryWrapper);
                 //构造map 以便于判断此工序是否绑定工艺
                 Map<String, List<Sequence>> sequenceMap = sequences.stream().collect(Collectors.groupingBy(item -> item.getOptId()));
@@ -93,7 +94,7 @@ public class OperatiponController extends BaseController {
                 for (Operatipon operatipon : routers.getRecords()) {
                     if (!ObjectUtil.isEmpty(sequenceMap.get(operatipon.getId()))) {
                         operatipon.setUpdate(false);
-                    }else{
+                    } else {
                         operatipon.setUpdate(true);
                     }
                 }
@@ -128,7 +129,7 @@ public class OperatiponController extends BaseController {
                 queryWrapper2.eq("branch_code", operatipon.getBranchCode());
             }
             if (!StringUtils.isNullOrEmpty(operatipon.getOptName())) {
-                queryWrapper2.eq("opt_name", operatipon.getOptName());
+                OptNameUtil.queryEq(queryWrapper2, "opt_name", operatipon.getOptName());
             }
             List<Operatipon> list2 = operatiponService.list(queryWrapper2);
             if (list2.size() > 0) {
@@ -172,7 +173,7 @@ public class OperatiponController extends BaseController {
         }
 
         if (!StringUtils.isNullOrEmpty(optName)) {
-            queryWrapper.like("opt_name", optName);
+            OptNameUtil.queryLike(queryWrapper, "opt_name", optName);
         }
         if (!StringUtils.isNullOrEmpty(routerId)) {
             queryWrapper.eq("router_id", routerId);
@@ -265,7 +266,7 @@ public class OperatiponController extends BaseController {
                 queryWrapper.like("opt_code", optCode);
             }
             if (!StringUtils.isNullOrEmpty(optName)) {
-                queryWrapper.like("opt_name", optName);
+                OptNameUtil.queryLike(queryWrapper, "opt_name", optName);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
@@ -291,7 +292,7 @@ public class OperatiponController extends BaseController {
                                                @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) {
         QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
 
-        if (optNams.size()>0) {
+        if (optNams.size() > 0) {
             queryWrapper.in("opt_name", optNams);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {

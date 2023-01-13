@@ -2264,7 +2264,7 @@
                                             <w:sz w:val="24"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>${inspectionResults!""}</w:t>
+                                        <w:t><#if inspectionResults=="0">不合格<#else>合格</#if></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

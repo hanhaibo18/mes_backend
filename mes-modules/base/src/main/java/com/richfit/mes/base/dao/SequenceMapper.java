@@ -21,6 +21,6 @@ public interface SequenceMapper extends BaseMapper<Sequence> {
      * @Date: 2022/8/18 16:36
      * @return: String
      **/
-    @Select("SELECT router.version FROM base_sequence sequence LEFT JOIN base_router router ON sequence.router_id = router.id WHERE sequence.id = #{id} limit 1")
-    String queryVersion(@Param("id") String id);
+    @Select("SELECT router.version FROM base_sequence sequence LEFT JOIN base_router router ON sequence.router_id = router.id WHERE  #{optName} and sequence.branch_code = #{branchCode} limit 1")
+    String queryVersion(@Param("optName") String optName, @Param("branchCode") String branchCode);
 }

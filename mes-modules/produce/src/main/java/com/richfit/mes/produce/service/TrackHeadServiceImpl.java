@@ -452,6 +452,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     private void beforeSaveItemDeal(List<TrackItem> trackItems) {
+        //工序校验，避免空工序
+        if (trackItems == null && trackItems.size() == 0) {
+            throw new GlobalException("工艺工序不能为空，请核对数据后重试", ResultCode.FAILED);
+        }
         //升序排列 便于原工序顺序赋值
         trackItems.sort((t1, t2) -> t1.getSequenceOrderBy().compareTo(t2.getSequenceOrderBy()));
         //并行状态处理(连续两个并行才算并行)
@@ -460,14 +464,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 //连续两个为并行才为并行工序
                 if ((i - 1 == -1 || trackItems.get(i - 1).getOptParallelType() == 0) && ((i + 1 == trackItems.size()) || trackItems.get(i + 1).getOptParallelType() == 0)) {
                     trackItems.get(i).setOptParallelType(0);
-                }
-            }
-        }
-        //当前工序处理
-        if (trackItems.get(0).getIsCurrent() == 1) {
-            for (int i = 1; i < trackItems.size(); i++) {
-                if (trackItems.get(i).getOptParallelType() == 1) {
-                    trackItems.get(i).setIsCurrent(1);
                 }
             }
         }
@@ -505,6 +501,54 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             trackItems.get(i).setNextOptSequence(netOptSequence);
             downOptParallelType = trackItems.get(i).getOptParallelType();
+        }
+
+        //当前工序处理
+        //当前工序
+        TrackItem currentTrackItem = null;
+        //当前工序在工序列表中的位置
+        int index = 0;
+        //获取当前工序
+        for (int i = 0; i < trackItems.size(); i++) {
+            if (trackItems.get(i).getIsCurrent() == 1) {
+                currentTrackItem = trackItems.get(i);
+                index = i;
+                break;
+            }
+        }
+        //数据异常没有当前工序时，对第一个工序进行当前工序赋值
+        if (currentTrackItem == null) {
+            trackItems.get(0).setIsCurrent(1);
+            currentTrackItem = trackItems.get(0);
+        }
+        //初始化数据，处理当前工序状态
+        for (TrackItem trackItem : trackItems) {
+            if (trackItem.getId() != currentTrackItem.getId()) {
+                trackItem.setIsCurrent(0);
+            }
+        }
+        //如果当前工序是并行工序的情况，重新进行当前工序赋值
+        if (currentTrackItem.getOptParallelType() == 1) {
+            //当前工序下工序如果是并行工序处理
+            for (int i = index; i < trackItems.size(); i++) {
+                if (trackItems.get(i).getOptSequence() > currentTrackItem.getOptSequence()) {
+                    if (trackItems.get(i).getOptParallelType() == 1) {
+                        trackItems.get(i).setIsCurrent(1);
+                    } else {
+                        break;
+                    }
+                }
+            }
+            //当前工序上工序如果是并行工序处理
+            for (int i = index; i >= 0; i--) {
+                if (trackItems.get(i).getOptSequence() < currentTrackItem.getOptSequence()) {
+                    if (trackItems.get(i).getOptParallelType() == 1) {
+                        trackItems.get(i).setIsCurrent(1);
+                    } else {
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -597,6 +641,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public boolean trackHeadAdd(TrackHead trackHead, List<TrackItem> trackItems, String productsNo,
                                 int number) {
         try {
+            this.beforeSaveItemDeal(trackItems);
             //查询跟单号码是否存在
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("track_no", trackHead.getTrackNo());
@@ -796,6 +841,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems) {
         try {
+            this.beforeSaveItemDeal(trackItems);
             TrackHead trackHeadOld = trackHeadMapper.selectById(trackHead.getId());
             //当跟单中存在bom
             if (!StringUtils.isNullOrEmpty(trackHead.getProjectBomId()) && !trackHead.getProjectBomId().equals(trackHeadOld.getProjectBomId())) {
@@ -1370,21 +1416,17 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         wrapperTrackItem.eq("track_head_id", trackHead.getId());
         wrapperTrackItem.orderByAsc("opt_sequence");
         List<TrackItem> trackItemListOld = trackItemService.list(wrapperTrackItem);
-        //获取当前工序中的顺序最大值（包括并行工序）
-        int optSequence = 0;
-        TrackItem trackItemLast = new TrackItem();
+        
+        //工序当前、序号处理
+        this.beforeSaveItemDeal(trackItemListOld);
+
+        //检验是否可以拆分
         for (TrackItem trackItem : trackItemListOld) {
             if (trackItem.getIsCurrent() == 1) {
-                //找到最大的当前工序序号
-                optSequence = trackItem.getOptSequence();
-                trackItemLast = trackItem;
+                if (trackItem.getIsDoing() != 0) {
+                    throw new GlobalException("当前工序已开工，请清除当前的工序开工记录才能拆分。", ResultCode.FAILED);
+                }
             }
-        }
-        if (optSequence == trackItemListOld.size() && trackItemLast.getOptParallelType() == 1) {
-            throw new GlobalException("最后一道工序为并行工序不允许拆分，请回滚至上工序。", ResultCode.FAILED);
-        }
-        if (optSequence == trackItemListOld.size() && trackItemLast.getIsDoing() > 0) {
-            throw new GlobalException("最后一道已开工不允许拆分，请清除最后工序开工记录。", ResultCode.FAILED);
         }
         //更新原跟单生产线
         for (TrackFlow tf : trackFlow) {
@@ -1395,14 +1437,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         //更新未开工的工序的数量
         for (TrackItem trackItem : trackItemListOld) {
-            if (trackItem.getOptSequence() == optSequence && trackItem.getIsDoing() == 0 && trackItem.getOptParallelType() == 0) {
-                //工序顺序等于当前工序且未开工且是非并行的工序数量才能修改
-                trackItem.setNumber(trackHead.getNumber());
-                trackItem.setAssignableQty(trackHead.getNumber());
-                trackItem.setBatchQty(trackHead.getNumber());
-                trackItemService.updateById(trackItem);
-            } else if (trackItem.getOptSequence() > optSequence && trackItem.getIsDoing() == 0) {
-                //工序顺序大于当前工序且未开工的工序数量才能修改
+            if (trackItem.getIsDoing() == 0) {
                 trackItem.setNumber(trackHead.getNumber());
                 trackItem.setAssignableQty(trackHead.getNumber());
                 trackItem.setBatchQty(trackHead.getNumber());

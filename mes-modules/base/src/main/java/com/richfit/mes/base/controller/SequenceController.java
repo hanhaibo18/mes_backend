@@ -11,8 +11,11 @@ import com.richfit.mes.base.enmus.MessageEnum;
 import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.entity.SequenceExportVo;
 import com.richfit.mes.base.service.*;
+import com.richfit.mes.base.util.OptNameUtil;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.*;
@@ -126,7 +129,7 @@ public class SequenceController extends BaseController {
                 queryWrapper.eq("opt_code", optCode);
             }
             if (!StringUtils.isNullOrEmpty(optName)) {
-                queryWrapper.eq("opt_name", optName);
+                OptNameUtil.queryEq(queryWrapper, "opt_name", optName);
             }
             // queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.orderByAsc("opt_order");
@@ -379,10 +382,10 @@ public class SequenceController extends BaseController {
             queryWrapper.like("opt_code", optCode);
         }
         if (!StringUtils.isNullOrEmpty(optName)) {
-            queryWrapper.like("opt_name", optName);
+            OptNameUtil.queryLike(queryWrapper, "opt_name", optName);
         }
         if (!StringUtils.isNullOrEmpty(optName)) {
-            queryWrapper.like("opt_name", optName);
+            OptNameUtil.queryLike(queryWrapper, "opt_name", optName);
         }
         if (!StringUtils.isNullOrEmpty(routerId)) {
             queryWrapper.eq("router_id", routerId);
@@ -803,13 +806,19 @@ public class SequenceController extends BaseController {
     }
 
     @GetMapping("/querySequenceById")
-    public CommonResult<Sequence> querySequenceById(String id) {
-        Sequence sequence = sequenceService.getById(id);
-        return CommonResult.success(sequence);
+    public CommonResult<Sequence> querySequenceById(String optName, String branchCode) {
+        QueryWrapper<Sequence> queryWrapper = new QueryWrapper<>();
+        OptNameUtil.queryEq(queryWrapper, "opt_name", optName);
+        queryWrapper.eq("branchCode", branchCode);
+        List<Sequence> sequence = sequenceService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(sequence)) {
+            throw new GlobalException("未能查询到工序", ResultCode.FAILED);
+        }
+        return CommonResult.success(sequence.get(0));
     }
 
     @GetMapping("/queryCraft")
-    public String queryCraft(String id) {
-        return sequenceService.queryCraft(id);
+    public String queryCraft(String optName, String branchCode) {
+        return sequenceService.queryCraft(optName, branchCode);
     }
 }

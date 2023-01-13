@@ -253,15 +253,16 @@ public class PublicServiceImpl implements PublicService {
         if (currentTrackItemList == null && currentTrackItemList.size() == 0) {
             throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
         }
-        if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
-            trackHeadService.trackHeadFinish(map.get("flowId"));
-            return true;
-        }
         //判断所有并行工序是否全部完成
         for (TrackItem trackItem : currentTrackItemList) {
             if (2 != trackItem.getIsDoing()) {
                 return false;
             }
+        }
+//        currentTrackItemList.stream().filter()
+        if (currentTrackItemList.get(0).getNextOptSequence() == 0) {
+            trackHeadService.trackHeadFinish(map.get("flowId"));
+            return true;
         }
         for (TrackItem trackItem : currentTrackItemList) {
             trackItem.setIsCurrent(0);
@@ -359,7 +360,7 @@ public class PublicServiceImpl implements PublicService {
     public Boolean automaticProcess(Map<String, String> map) {
         TrackItem trackItem = trackItemService.getById(map.get("trackItemId"));
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
-        CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptId());
+        CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptName(), trackItem.getBranchCode());
         CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptId());
         if (null == assignGet.getData()) {
             throw new GlobalException("未查询到自动派工信息", ResultCode.FAILED);

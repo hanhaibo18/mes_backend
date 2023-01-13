@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.SequenceMapper;
+import com.richfit.mes.base.util.OptNameUtil;
 import com.richfit.mes.common.model.base.Sequence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,8 @@ public class SequenceServiceImpl extends ServiceImpl<SequenceMapper, Sequence> i
     }
 
     @Override
-    public String queryCraft(String id) {
-        return sequenceMapper.queryVersion(id);
+    public String queryCraft(String optName, String branchCode) {
+        return sequenceMapper.queryVersion(OptNameUtil.queryEqSql("sequence.opt_name ", optName), branchCode);
     }
 
 }

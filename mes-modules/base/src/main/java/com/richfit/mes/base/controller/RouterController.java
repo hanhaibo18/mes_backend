@@ -75,7 +75,7 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "status", value = "状态", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol, boolean isPDM,String routerType) {
+    public CommonResult<IPage<Router>> page(int page, int limit, String routerNo, String routerName, String branchCode, String tenantId, String status, String order, String orderCol, boolean isPDM, String routerType) {
         try {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
@@ -128,13 +128,13 @@ public class RouterController extends BaseController {
             //校验能否新增
             //校验 如果存在图号+版本号+类型的工艺 跳过发布
             QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
-            routerQueryWrapper.eq("router_no",router.getDrawNo())
-                    .eq("version",router.getVersion())
-                    .eq("router_type",router.getRouterType())
-                    .eq("branch_code",router.getBranchCode());
+            routerQueryWrapper.eq("router_no", router.getDrawNo())
+                    .eq("version", router.getVersion())
+                    .eq("router_type", router.getRouterType())
+                    .eq("branch_code", router.getBranchCode());
             List<Router> list = routerService.list(routerQueryWrapper);
             //存在的话跳过发布
-            if(list.size()>0){
+            if (list.size() > 0) {
                 return CommonResult.failed("工艺重复，无法新增！");
             }
             if ("1".equals(router.getStatus())) {
@@ -213,7 +213,11 @@ public class RouterController extends BaseController {
                 //更新新工艺状态模块
                 router.setIsActive("1");
             }
-            boolean bool = routerService.updateById(router);
+            QueryWrapper<Router> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("id", router.getId());
+            queryWrapper.eq("branch_code", router.getBranchCode());
+            boolean bool = routerService.update(router, queryWrapper);
+//            boolean bool = routerService.updateById(router);
             if (bool) {
                 return CommonResult.success(router, "操作成功！");
             } else {
@@ -570,10 +574,10 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "车间代码", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/get_by_drawNo")
-    public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos ,@RequestParam String branchCode) {
+    public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode) {
         try {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            queryWrapper.in("draw_no",drawNos);
+            queryWrapper.in("draw_no", drawNos);
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Router> routers = routerService.list(queryWrapper);
