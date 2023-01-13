@@ -409,6 +409,7 @@ public class ProduceInspectionRecordService {
         }
         //历史记录
         itemInspectInfoQueryWrapper.ne(isNew.equals("0"),"is_new","1");
+        itemInspectInfoQueryWrapper.ne(isNew.equals("0"),"is_audit","0");
         //新纪录
         itemInspectInfoQueryWrapper.eq(isNew.equals("1"),"is_new","1");
 

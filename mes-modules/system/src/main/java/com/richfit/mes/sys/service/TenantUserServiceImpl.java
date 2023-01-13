@@ -366,6 +366,10 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         if ("4".equals(classes) || StrUtil.isBlank(classes)) {
             String steelworkRole = branchCode + "_JMAQ_JJZJ";
         }
+        if ("5".equals(classes) || StrUtil.isBlank(classes)) {
+            String machiningRole = branchCode + "_JMAQ_JJZJ";
+            codeList.add(machiningRole);
+        }
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
         //判断如果codeList 为空会报错
         queryWrapper.in(codeList.size() > 0, "role_code", codeList);
@@ -447,7 +451,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             Tenant tenant = tenantService.getById(tenantId);
             //获取当前登录人公司所有质检人员
             List<TenantUserVo> userList = this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId());
-            //获取质检公司
+            /*//获取质检公司
             List<ItemParam> item = null;
             try {
                 item = itemParamService.queryItemByCodeAndTenantId("qualityManagement", tenantId);
@@ -466,7 +470,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             //获取质检租户下所有质检人员
             for (Tenant tenantEntity : tenantList) {
                 userList.addAll(this.queryQualityInspectionDepartment(classes, tenantEntity.getTenantCode(), tenantEntity.getId()));
-            }
+            }*/
             return userList;
         }
         return null;
