@@ -216,7 +216,7 @@ public class RouterController extends BaseController {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("id", router.getId());
             queryWrapper.eq("branch_code", router.getBranchCode());
-            boolean bool = routerService.update(router, queryWrapper);
+            routerService.update(router, queryWrapper)
 //            boolean bool = routerService.updateById(router);
             if (bool) {
                 return CommonResult.success(router, "操作成功！");
