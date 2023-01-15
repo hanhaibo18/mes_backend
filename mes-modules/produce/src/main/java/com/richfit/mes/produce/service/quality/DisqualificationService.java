@@ -19,7 +19,7 @@ import java.util.Map;
 public interface DisqualificationService extends IService<Disqualification> {
 
     /**
-     * 功能描述: 查询质检员查看列表
+     * 功能描述: 查询申请人创建的申请单
      *
      * @param queryInspectorDto
      * @Author: xinYu.hou
@@ -27,6 +27,46 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: IPage<DisqualificationService>
      **/
     IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto);
+
+    /**
+     * 功能描述: 查询不合格质检信息分页接口
+     *
+     * @param queryCheckDto
+     * @Author: xinYu.hou
+     * @Date: 2022/10/17 10:44
+     * @return: IPage<Disqualification>
+     **/
+    IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto);
+
+    /**
+     * 功能描述: 查询处理单位列表
+     *
+     * @param queryCheckDto
+     * @Author: xinYu.hou
+     * @Date: 2023/1/16 3:40
+     * @return: IPage<Disqualification>
+     **/
+    IPage<Disqualification> queryDealWith(QueryCheckDto queryCheckDto);
+
+    /**
+     * 功能描述: 责任裁决列表
+     *
+     * @param queryCheckDto
+     * @Author: xinYu.hou
+     * @Date: 2023/1/16 4:03
+     * @return: IPage<Disqualification>
+     **/
+    IPage<Disqualification> queryResponsibility(QueryCheckDto queryCheckDto);
+
+    /**
+     * 功能描述: 技术裁决列表
+     *
+     * @param queryCheckDto
+     * @Author: xinYu.hou
+     * @Date: 2023/1/16 4:03
+     * @return: IPage<Disqualification>
+     **/
+    IPage<Disqualification> queryTechnology(QueryCheckDto queryCheckDto);
 
     /**
      * 功能描述: 创建申请单
@@ -58,16 +98,6 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: List<TenantUserVo>
      **/
     List<TenantUserVo> queryUser();
-
-    /**
-     * 功能描述: 查询不合格质检信息分页接口
-     *
-     * @param queryCheckDto
-     * @Author: xinYu.hou
-     * @Date: 2022/10/17 10:44
-     * @return: IPage<Disqualification>
-     **/
-    IPage<DisqualificationVo> queryCheck(QueryCheckDto queryCheckDto);
 
     /**
      * 功能描述: 查询签核记录列表
@@ -121,5 +151,13 @@ public interface DisqualificationService extends IService<Disqualification> {
      **/
     List<Map<String, String>> queryProductNoList(String trackHeadId);
 
-
+//    /**
+//     * 功能描述: 查询质量管理列表,根据当前登录用处查询指定质检人员
+//     *
+//     * @param queryInspectorDto
+//     * @Author: xinYu.hou
+//     * @Date: 2022/9/29 16:14
+//     * @return: IPage<DisqualificationService>
+//     **/
+//    IPage<Disqualification> queryQuality(QueryInspectorDto queryInspectorDto);
 }

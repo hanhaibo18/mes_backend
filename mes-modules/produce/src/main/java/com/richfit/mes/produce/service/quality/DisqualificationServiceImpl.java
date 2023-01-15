@@ -65,6 +65,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Resource
     private DisqualificationFinalResultService finalResultService;
 
+    @Resource
+    private DisqualificationMapper disqualificationMapper;
+
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
@@ -84,6 +87,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //申请单号
         if (StrUtil.isNotBlank(queryInspectorDto.getProcessSheetNo())) {
             queryWrapper.like("process_sheet_no", queryInspectorDto.getProcessSheetNo());
+        }
+        //申请单状态
+        if (StrUtil.isNotBlank(queryInspectorDto.getType())) {
+            queryWrapper.eq("type", queryInspectorDto.getType());
         }
         try {
             //开始时间
@@ -107,6 +114,111 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
+    public IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
+        queryWrapper.eq(StrUtil.isNotBlank(queryCheckDto.getTenantId()), "tenant_id", queryCheckDto.getTenantId());
+        queryWrapper.eq("type", 2);
+        queryWrapper.like("quality_check_by", SecurityUtils.getCurrentUser().getUsername() + ",");
+        return this.page(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+
+    @Override
+    public IPage<Disqualification> queryDealWith(QueryCheckDto queryCheckDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        //图号查询
+        if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
+            queryWrapper.like("dis.drawing_no", queryCheckDto.getDrawingNo());
+        }
+        //产品名称
+        if (StrUtil.isNotBlank(queryCheckDto.getProductName())) {
+            queryWrapper.like("dis.product_name", queryCheckDto.getProductName());
+        }
+        //跟单号
+        if (StrUtil.isNotBlank(queryCheckDto.getTrackNo())) {
+            queryCheckDto.setTrackNo(queryCheckDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(dis.track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryCheckDto.getTrackNo() + "%'");
+        }
+        //申请单号
+        if (StrUtil.isNotBlank(queryCheckDto.getProcessSheetNo())) {
+            queryWrapper.like("dis.process_sheet_no", queryCheckDto.getProcessSheetNo());
+        }
+        try {
+            //开始时间
+            if (StrUtil.isNotBlank(queryCheckDto.getStartTime())) {
+                queryWrapper.apply("UNIX_TIMESTAMP(dis.modify_time) >= UNIX_TIMESTAMP('" + queryCheckDto.getStartTime() + " 00:00:00')");
+            }
+            //结束时间
+            if (StrUtil.isNotBlank(queryCheckDto.getEndTime())) {
+                Calendar calendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                calendar.setTime(sdf.parse(queryCheckDto.getEndTime()));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                queryWrapper.apply("UNIX_TIMESTAMP(dis.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+            }
+        } catch (Exception e) {
+            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
+        }
+        queryWrapper.and(wrapper -> wrapper.eq("final.unit_treatment_one", SecurityUtils.getCurrentUser().getTenantId()).or().eq("final.unit_treatment_two", SecurityUtils.getCurrentUser().getTenantId()));
+        queryWrapper.and(wrapper -> wrapper.eq("dis.type", 3).or().eq("dis.tyep", 4));
+        return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+    @Override
+    public IPage<Disqualification> queryResponsibility(QueryCheckDto queryCheckDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
+        queryWrapper.eq("type", 5);
+        return this.page(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+    @Override
+    public IPage<Disqualification> queryTechnology(QueryCheckDto queryCheckDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
+        queryWrapper.eq("type", 6);
+        return this.page(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+    private void disqualificationQueryWrapper(QueryWrapper<Disqualification> queryWrapper, QueryCheckDto queryCheckDto) {
+        //图号查询
+        if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
+            queryWrapper.like("drawing_no", queryCheckDto.getDrawingNo());
+        }
+        //产品名称
+        if (StrUtil.isNotBlank(queryCheckDto.getProductName())) {
+            queryWrapper.like("product_name", queryCheckDto.getProductName());
+        }
+        //跟单号
+        if (StrUtil.isNotBlank(queryCheckDto.getTrackNo())) {
+            queryCheckDto.setTrackNo(queryCheckDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryCheckDto.getTrackNo() + "%'");
+        }
+        //申请单号
+        if (StrUtil.isNotBlank(queryCheckDto.getProcessSheetNo())) {
+            queryWrapper.like("process_sheet_no", queryCheckDto.getProcessSheetNo());
+        }
+        //根据公司区分申请单
+        try {
+            //开始时间
+            if (StrUtil.isNotBlank(queryCheckDto.getStartTime())) {
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + queryCheckDto.getStartTime() + " 00:00:00')");
+            }
+            //结束时间
+            if (StrUtil.isNotBlank(queryCheckDto.getEndTime())) {
+                Calendar calendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                calendar.setTime(sdf.parse(queryCheckDto.getEndTime()));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+            }
+        } catch (Exception e) {
+            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
+        }
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
         //先判断流程
@@ -114,8 +226,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //处理人员信息
         StringBuilder sb = new StringBuilder();
         if (CollUtil.isNotEmpty(disqualificationDto.getUserList())) {
-            for (TenantUserVo tenantUserVo : disqualificationDto.getUserList()) {
-                sb.append(tenantUserVo.getUserAccount()).append(",");
+            for (String userAccount : disqualificationDto.getUserList()) {
+                sb.append(userAccount).append(",");
             }
         }
         //处理不合格主表数据
@@ -137,16 +249,16 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         finalResultService.saveOrUpdate(finalResult);
         //不合格意见
         //判断申请单状态是1 意见列表为空
-        if (1 == processJudge && CollUtil.isEmpty(disqualificationDto.getDisqualifications())) {
-            //为空处理不合格意见为列表
-            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
-            opinion.setDisqualificationId(disqualification.getId());
-            opinion.setType(processJudge);
-            //查询人员姓名
-            TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
-            opinion.setUserName(user.getEmplName());
-        }
-        userOpinionService.saveOrUpdateBatch(disqualificationDto.getDisqualifications());
+//        if (1 == processJudge && CollUtil.isEmpty(disqualificationDto.getDisqualifications())) {
+//            //为空处理不合格意见为列表
+//            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
+//            opinion.setDisqualificationId(disqualification.getId());
+//            opinion.setType(processJudge);
+//            //查询人员姓名
+//            TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+//            opinion.setUserName(user.getEmplName());
+//        }
+//        userOpinionService.saveOrUpdateBatch(disqualificationDto.getDisqualifications());
         //处理文件列表
         QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
         queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
@@ -271,51 +383,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } else {
             return null;
         }
-    }
-
-    @Override
-    public IPage<DisqualificationVo> queryCheck(QueryCheckDto queryCheckDto) {
-        QueryWrapper<DisqualificationVo> queryWrapper = new QueryWrapper<>();
-        //图号查询
-        if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
-            queryWrapper.like("dis.part_drawing_no", queryCheckDto.getDrawingNo());
-        }
-        //产品名称
-        if (StrUtil.isNotBlank(queryCheckDto.getProductName())) {
-            queryWrapper.like("dis.product_name", queryCheckDto.getProductName());
-        }
-        //跟单号
-        if (StrUtil.isNotBlank(queryCheckDto.getTrackNo())) {
-            queryCheckDto.setTrackNo(queryCheckDto.getTrackNo().replaceAll(" ", ""));
-            queryWrapper.apply("replace(replace(replace(dis.track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryCheckDto.getTrackNo() + "%'");
-        }
-        //申请单号
-        if (StrUtil.isNotBlank(queryCheckDto.getProcessSheetNo())) {
-            queryWrapper.like("dis.process_sheet_no", queryCheckDto.getProcessSheetNo());
-        }
-        // 处理/未处理
-        if (null != queryCheckDto.getIsDispose()) {
-            queryWrapper.apply(Boolean.TRUE.equals(queryCheckDto.getIsDispose()), "opinion.opinion IS NOT NULL");
-            queryWrapper.apply(Boolean.FALSE.equals(queryCheckDto.getIsDispose()), "opinion.opinion IS NULL");
-        }
-        try {
-            //开始时间
-            if (StrUtil.isNotBlank(queryCheckDto.getStartTime())) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + queryCheckDto.getStartTime() + " 00:00:00')");
-            }
-            //结束时间
-            if (StrUtil.isNotBlank(queryCheckDto.getEndTime())) {
-                Calendar calendar = new GregorianCalendar();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                calendar.setTime(sdf.parse(queryCheckDto.getEndTime()));
-                calendar.add(Calendar.DAY_OF_MONTH, 1);
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
-            }
-        } catch (Exception e) {
-            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
-        }
-        queryWrapper.eq("opinion.user_id", SecurityUtils.getCurrentUser().getUserId());
-        return userOpinionMapper.queryCheck(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
     @Override

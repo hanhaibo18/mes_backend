@@ -27,4 +27,6 @@ public class QueryCheckDto extends QueryPageDto {
     private String processSheetNo;
     @ApiModelProperty(value = "是否处理", dataType = "Boolean", required = true)
     private Boolean isDispose;
+    @ApiModelProperty(value = "申请公司", dataType = "String")
+    private String tenantId;
 }
