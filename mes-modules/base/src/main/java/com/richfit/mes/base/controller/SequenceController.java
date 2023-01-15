@@ -821,4 +821,18 @@ public class SequenceController extends BaseController {
     public String queryCraft(String optName, String branchCode) {
         return sequenceService.queryCraft(optName, branchCode);
     }
+
+    @ApiOperation(value = "根据工艺id查询工序列表", notes = "根据工艺id查询工序列表")
+    @GetMapping("/query_by_routerIds")
+    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds) {
+        try {
+            QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
+            queryWrapper.in("router_id", routerIds);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            List<Sequence> sequences = sequenceService.list(queryWrapper);
+            return sequences;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
