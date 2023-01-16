@@ -517,40 +517,44 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 break;
             }
         }
-        //数据异常没有当前工序时，对第一个工序进行当前工序赋值
-        if (currentTrackItem == null) {
-            trackItems.get(0).setIsCurrent(1);
-            currentTrackItem = trackItems.get(0);
-        }
-        //初始化数据，处理当前工序状态
-        for (TrackItem trackItem : trackItems) {
-            if (trackItem.getId() != currentTrackItem.getId()) {
-                trackItem.setIsCurrent(0);
+
+        if(!ObjectUtil.isEmpty(trackItems) && trackItems.size()>0){
+            //数据异常没有当前工序时，对第一个工序进行当前工序赋值
+            if (currentTrackItem == null) {
+                trackItems.get(0).setIsCurrent(1);
+                currentTrackItem = trackItems.get(0);
             }
-        }
-        //如果当前工序是并行工序的情况，重新进行当前工序赋值
-        if (currentTrackItem.getOptParallelType() == 1) {
-            //当前工序下工序如果是并行工序处理
-            for (int i = index; i < trackItems.size(); i++) {
-                if (trackItems.get(i).getOptSequence() > currentTrackItem.getOptSequence()) {
-                    if (trackItems.get(i).getOptParallelType() == 1) {
-                        trackItems.get(i).setIsCurrent(1);
-                    } else {
-                        break;
+            //初始化数据，处理当前工序状态
+            for (TrackItem trackItem : trackItems) {
+                if (trackItem.getId() != currentTrackItem.getId()) {
+                    trackItem.setIsCurrent(0);
+                }
+            }
+            //如果当前工序是并行工序的情况，重新进行当前工序赋值
+            if (currentTrackItem.getOptParallelType() == 1) {
+                //当前工序下工序如果是并行工序处理
+                for (int i = index; i < trackItems.size(); i++) {
+                    if (trackItems.get(i).getOptSequence() > currentTrackItem.getOptSequence()) {
+                        if (trackItems.get(i).getOptParallelType() == 1) {
+                            trackItems.get(i).setIsCurrent(1);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                //当前工序上工序如果是并行工序处理
+                for (int i = index; i >= 0; i--) {
+                    if (trackItems.get(i).getOptSequence() < currentTrackItem.getOptSequence()) {
+                        if (trackItems.get(i).getOptParallelType() == 1) {
+                            trackItems.get(i).setIsCurrent(1);
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
-            //当前工序上工序如果是并行工序处理
-            for (int i = index; i >= 0; i--) {
-                if (trackItems.get(i).getOptSequence() < currentTrackItem.getOptSequence()) {
-                    if (trackItems.get(i).getOptParallelType() == 1) {
-                        trackItems.get(i).setIsCurrent(1);
-                    } else {
-                        break;
-                    }
-                }
-            }
         }
+
     }
 
     /**
