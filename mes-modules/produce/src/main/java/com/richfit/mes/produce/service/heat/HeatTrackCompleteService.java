@@ -30,12 +30,12 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
     /**
      * 功能描述: 编辑报工
      *
-     * @param heatCompleteDto
+     * @param trackCompleteList
      * @Author: renzewen
      * @Date: 2023/1/16 14:08
      * @return: Boolean
      **/
-    boolean updateComplete(HeatCompleteDto heatCompleteDto) throws Exception;
+    boolean updateComplete(List<TrackComplete> trackCompleteList) throws Exception;
 
     /**
      * 功能描述: 热工报工开工

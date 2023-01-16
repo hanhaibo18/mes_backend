@@ -59,8 +59,8 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "编辑报工")
     @PostMapping("/updateComplete")
-    public CommonResult<Boolean> updateComplete(@RequestBody HeatCompleteDto heatCompleteDto) throws Exception {
-        return CommonResult.success(heatTrackCompleteService.updateComplete(heatCompleteDto));
+    public CommonResult<Boolean> updateComplete(@RequestBody List<TrackComplete> trackCompleteList) throws Exception {
+        return CommonResult.success(heatTrackCompleteService.updateComplete(trackCompleteList));
     }
 
 
@@ -154,8 +154,9 @@ public class HeatTrackCompleteController extends BaseController {
     @ApiOperation(value = "（已报工）根据步骤id查询跟单工序信息")
     @GetMapping("/queryItemListByStepGroupId")
     public CommonResult<List<TrackItem>> queryItemListByStepGroupId(@ApiParam(value = "步骤分组id（stepGroupId）", required = true) @RequestParam String stepGroupId){
+        TrackComplete trackComplete = heatTrackCompleteService.getById(stepGroupId);
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
-        wrapper.eq("step_group_id",stepGroupId);
+        wrapper.eq("step_group_id",trackComplete.getStepGroupId());
         List<TrackComplete> stepCompletes = heatTrackCompleteService.list(wrapper);
         List<String> itemIds = stepCompletes.stream().map(TrackComplete::getTiId).collect(Collectors.toList());
         if(itemIds.size()>0){
