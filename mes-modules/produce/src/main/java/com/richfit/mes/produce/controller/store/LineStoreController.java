@@ -24,6 +24,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.LineStoreService;
 import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -248,7 +249,7 @@ public class LineStoreController extends BaseController {
             queryWrapper.eq("track_type", trackType);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.like("work_no", workNo);
@@ -322,7 +323,7 @@ public class LineStoreController extends BaseController {
             queryWrapper.eq("track_type", trackType);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.like("work_no", workNo);
@@ -390,7 +391,7 @@ public class LineStoreController extends BaseController {
 //            queryWrapper.eq("material_type", materialType);
 //        }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("material_no", materialNo);

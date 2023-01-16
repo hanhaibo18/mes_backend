@@ -424,7 +424,7 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "每页条数", required = true) @RequestParam int limit) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("th.drawing_no", "%" + drawingNo + "%");
+            DrawingNoUtil.queryLike(queryWrapper, "th.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(optVer)) {
             queryWrapper.eq("ti.opt_ver", optVer);
@@ -466,7 +466,7 @@ public class TrackHeadController extends BaseController {
             queryWrapper.eq("th.status", status);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("th.drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper, "th.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("th.product_no", productNo);
@@ -743,7 +743,7 @@ public class TrackHeadController extends BaseController {
         }
         if (CollectionUtils.isNotEmpty(drawingNos)) {
             queryWrapper.or();
-            queryWrapper.in("drawing_no", drawingNos);
+            DrawingNoUtil.queryIn(queryWrapper,"drawing_no", drawingNos);
         }
         queryWrapper.eq("tenant_id", tenantId);
         return CommonResult.success(trackHeadService.list(queryWrapper));

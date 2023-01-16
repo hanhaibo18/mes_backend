@@ -11,16 +11,14 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.OperationTypeSpec;
 import com.richfit.mes.common.model.base.Router;
+import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.HotDemandParam;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
-import com.richfit.mes.produce.service.HotDemandService;
-import com.richfit.mes.produce.service.HotLongProductService;
-import com.richfit.mes.produce.service.HotModelStoreService;
-import com.richfit.mes.produce.service.PlanService;
+import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.*;
@@ -60,6 +58,8 @@ public class HotDemandController extends BaseController {
 
     @Autowired
     private PlanService planService;
+    @Autowired
+    private HotPlanNodeService planNodeService;
 
 
 
@@ -490,6 +490,57 @@ public class HotDemandController extends BaseController {
         }
         planService.saveBatch(plans);
     }
+    @ApiOperation(value = "自动生成工序计划", notes = "自动生成工序计划")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/create_plan_node")
+    public CommonResult initPlanNode(@RequestBody List<String> idList,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        queryWrapper.eq("branch_code",branchCode);
+        queryWrapper.in("id",idList);
+        //查出需求信息
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
 
+        //根据图号查出工艺信息
+        List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoList, branchCode).getData();
+        if(CollectionUtils.isEmpty(byDrawNo)) return CommonResult.failed("没有工艺信息");
+        List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
+        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x.getId()));
+        //根据工艺id查出工序信息
+        List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
+        if(CollectionUtils.isEmpty(sequences)) return CommonResult.failed("工艺没有工序信息");
+        //根据工艺id分组
+        Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
+        ArrayList<HotPlanNode> planNodes = new ArrayList<>();
+        //根据需求信息自动生成生产计划数据
+        for (HotDemand hotDemand : hotDemands) {
+            String s = routerIdMap.get(hotDemand.getDrawNo());
+            if (StringUtils.isNotEmpty(s)){
+                //有工艺的情况下
+                List<Sequence> sequencesList = sequencesMap.get(s);
+                if(CollectionUtils.isNotEmpty(sequencesList)){
+                    //工艺有工序的情况
+                    for (Sequence sequence : sequencesList) {
+                        HotPlanNode planNode = new HotPlanNode();
+                        planNode.setDemandId(hotDemand.getId());//毛坯需求id
+                        planNode.setOptName(sequence.getOptName());//工序名称
+                        planNode.setDemandNum(hotDemand.getNum());//需求数量
+                        planNode.setOptStatus("0");//工序状态 0:未开始,1: 进行中,2:已结束
+                        planNode.setBranchCode(hotDemand.getBranchCode());//车间码
+                        planNode.setTenantId(hotDemand.getTenantId());//租户id
+                        planNodes.add(planNode);
+                    }
+
+                }
+            }
+        }
+        planNodeService.saveBatch(planNodes);
+        return CommonResult.success("操作成功");
+    }
 
 }

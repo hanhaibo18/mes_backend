@@ -9,6 +9,7 @@ import com.richfit.mes.base.dao.RouterMapper;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
 import com.richfit.mes.base.provider.ProduceServiceClient;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;

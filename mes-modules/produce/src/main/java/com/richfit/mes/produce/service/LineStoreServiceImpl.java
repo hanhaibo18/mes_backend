@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,6 +29,7 @@ import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.FilesUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -122,10 +124,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         //本次使用数量
         int useNum = 0;
         //修改库存状态
-        LineStore lineStore1 = lineStoreMapper.selectOne(
-                new QueryWrapper<LineStore>().eq("drawing_no", trackHead.getDrawingNo())
-                        .eq("workblank_no", workblankNo.replace(trackHead.getDrawingNo(), ""))
-                        .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId()));
+        QueryWrapper<LineStore> lineStoreQueryWrapper = new QueryWrapper<>();
+        lineStoreQueryWrapper
+                .eq("workblank_no", workblankNo.replace(trackHead.getDrawingNo(), ""))
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        DrawingNoUtil.queryEq(lineStoreQueryWrapper,"drawing_no", trackHead.getDrawingNo());
+        LineStore lineStore1 = lineStoreMapper.selectOne(lineStoreQueryWrapper);
         if (lineStore1 != null) {
             if (lineStore1.getNumber() - lineStore1.getUseNum() <= num) {
                 useNum = lineStore1.getNumber() - lineStore1.getUseNum();
@@ -411,7 +415,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 }
 
                 QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("drawing_no", lineStore.getDrawingNo());
+                DrawingNoUtil.queryEq(queryWrapper,"drawing_no", lineStore.getDrawingNo());
                 queryWrapper.eq("workblank_no", workblankNo);
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 List<LineStore> result = this.list(queryWrapper);
@@ -423,7 +427,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             //单件编号
         } else {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("drawing_no", lineStore.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", lineStore.getDrawingNo());
             queryWrapper.eq("workblank_no", lineStore.getWorkblankNo());
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<LineStore> result = this.list(queryWrapper);
@@ -871,6 +875,10 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Override
     public IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) {
 
+        //图号查询处理
+        if(!ObjectUtil.isEmpty(parMap.get("drawingNo"))){
+            parMap.put("drawingNoSql",DrawingNoUtil.queryLikeSql("drawing_no",String.valueOf(parMap.get("drawingNo"))));
+        }
         //1 当前库存量
         IPage<LineStoreSumZp> storeList = this.lineStoreMapper.selectStoreNumForAssembly(page, parMap);
         log.debug("库存记录条数 [{}]", storeList.getRecords().size());

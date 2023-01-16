@@ -23,6 +23,7 @@ import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.PlanOptWarningService;
 import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +82,7 @@ public class PlanController extends BaseController {
             queryWrapper.eq("work_no", workNo);
         }
         if (!StringUtils.isNullOrEmpty(drawNo)) {
-            queryWrapper.eq("draw_no", drawNo);
+            DrawingNoUtil.queryEq(queryWrapper,"draw_no", drawNo);
         }
         if (!StringUtils.isNullOrEmpty(projCode)) {
             queryWrapper.eq("proj_code", projCode);
@@ -132,7 +133,7 @@ public class PlanController extends BaseController {
             queryWrapper.like("work_no", planDto.getWorkNo());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getDrawNo())) {
-            queryWrapper.like("draw_no", planDto.getDrawNo());
+            DrawingNoUtil.queryLike(queryWrapper,"draw_no", planDto.getDrawNo());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getStartTime())) {
             queryWrapper.ge("start_time", planDto.getStartTime());

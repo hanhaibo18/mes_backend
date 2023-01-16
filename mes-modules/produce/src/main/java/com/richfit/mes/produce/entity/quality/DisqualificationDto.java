@@ -3,8 +3,6 @@ package com.richfit.mes.produce.entity.quality;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
-import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -145,11 +143,11 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @ApiModelProperty(value = "质控工程师姓名")
     private String qualityCheckName;
 
-    /**
-     * 质控工程师
-     */
-    @ApiModelProperty(value = "质控工程师")
-    private String qualityCheckBy;
+//    /**
+//     * 质控工程师
+//     */
+//    @ApiModelProperty(value = "质控工程师")
+//    private String qualityCheckBy;
 
     /**
      * 开单时间
@@ -282,11 +280,6 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @ApiModelProperty(value = "退货产品编号")
     private String salesReturnNo;
 
-    /**
-     * 不合格情况
-     */
-    @ApiModelProperty(value = "不合格情况")
-    private String disqualificationCondition;
 
     /**
      * 发现车间
@@ -309,20 +302,22 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @ApiModelProperty(value = "是否技术裁决")
     private Integer isTechnology;
 
-    @ApiModelProperty(value = "意见列表")
-    private List<DisqualificationUserOpinion> disqualifications;
-
-    @ApiModelProperty(value = "不合格意见JSON")
-    private String unqualifiedOpinion;
-    @ApiModelProperty(value = "质控意见JSON")
+    //    @ApiModelProperty(value = "不合格意见")
+//    private String unqualifiedOpinion;
+    /**
+     * 不合格情况
+     */
+    @ApiModelProperty(value = "不合格情况")
+    private String disqualificationCondition;
+    @ApiModelProperty(value = "质控意见")
     private String qualityControlOpinion;
-    @ApiModelProperty(value = "处理单位1JSON")
+    @ApiModelProperty(value = "处理单位1")
     private String unitTreatmentOneOpinion;
-    @ApiModelProperty(value = "处理单位2JSON")
+    @ApiModelProperty(value = "处理单位2")
     private String unitTreatmentTwoOpinion;
-    @ApiModelProperty(value = "责任裁决JSON")
+    @ApiModelProperty(value = "责任裁决")
     private String responsibilityOpinion;
-    @ApiModelProperty(value = "技术裁决JSON")
+    @ApiModelProperty(value = "技术裁决")
     private String technologyOpinion;
 
     @ApiModelProperty(value = "是否提交")
@@ -337,8 +332,8 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
      * 检验人员
      */
     @TableField(exist = false)
-    @ApiModelProperty(value = "检验人员", dataType = "List<DisqualificationUserOpinion>")
-    private List<TenantUserVo> userList;
+    @ApiModelProperty(value = "检验人员", dataType = "List<String>")
+    private List<String> userList;
 
     /**
      * 不合格类型

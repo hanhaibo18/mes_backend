@@ -170,5 +170,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public List<Sequence> querySequenceByRouterIds(List<String> routerIds) {
+        return null;
+    }
+
 
 }

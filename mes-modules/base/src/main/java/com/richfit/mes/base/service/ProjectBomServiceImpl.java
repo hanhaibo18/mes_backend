@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProjectBomMapper;
 import com.richfit.mes.base.provider.ProduceServiceClient;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -48,7 +49,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         //处理删除逻辑  zhiqiang.lu   2023.1.4
         queryWrapper
-                .and(wrapper -> wrapper.eq("drawing_no", drawingNo).eq("grade", "H").or().eq("main_drawing_no", drawingNo).eq("grade", "L"))
+                .and(wrapper -> DrawingNoUtil.queryReturn(wrapper,"drawing_no", drawingNo).eq("grade", "H").or(wrapper2->DrawingNoUtil.queryReturn(wrapper2,"main_drawing_no", drawingNo).eq("grade", "L")))
                 .eq("work_plan_no", workPlanNo)
                 .eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode);
@@ -64,7 +65,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     public IPage<ProjectBom> getProjectBomPage(String drawingNo, String projectName, String prodDesc, String state, String tenantId, String branchCode, String order, String orderCol, int page, int limit) {
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper,"drawing_no",drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(projectName)) {
             queryWrapper.like("project_name", projectName);
@@ -97,8 +98,8 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     @Override
     public List<ProjectBom> getProjectBomList(String drawingNo, String tenantId, String branchCode) {
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("drawing_no", drawingNo)
-                .eq("tenant_id", tenantId)
+        DrawingNoUtil.queryEq(queryWrapper,"drawing_no",drawingNo);
+        queryWrapper.eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode);
         return this.list(queryWrapper);
     }
@@ -107,10 +108,10 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     public List<ProjectBom> getProjectBomPartList(String workPlanNo, String drawingNo, String tenantId, String branchCode) {
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", workPlanNo)
-                .eq("main_drawing_no", drawingNo)
                 .eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode)
                 .orderByAsc("order_no");
+        DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no",drawingNo);
         List<ProjectBom> list = this.list(queryWrapper);
         List<ProjectBom> projectBomList = new ArrayList<>();
         for (ProjectBom project : list) {
@@ -124,8 +125,8 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 ProjectBom projectBom = this.getById(project.getBomKey());
                 if (null != projectBom) {
                     QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
-                    queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo())
-                            .eq("drawing_no", drawingNo);
+                    queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo());
+                    DrawingNoUtil.queryEq(queryWrapper,"drawing_no",drawingNo);
                     List<ProjectBom> projectBoms = this.list(queryWrapperPart);
                     for (ProjectBom boms : projectBoms) {
                         boms.setLevel("3");
@@ -146,8 +147,8 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
             return Collections.emptyList();
         }
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no",bom.getDrawingNo());
         queryWrapper.eq("work_plan_no", bom.getWorkPlanNo())
-                .eq("main_drawing_no", bom.getDrawingNo())
 //                .notIn("grade", "H")
                 .eq("tenant_id", bom.getTenantId())
                 .eq("branch_code", bom.getBranchCode())
@@ -163,7 +164,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 if (null != projectBom) {
                     QueryWrapper<ProjectBom> queryWrapperPart = new QueryWrapper<>();
                     queryWrapperPart.eq("work_plan_no", projectBom.getWorkPlanNo());
-                    queryWrapperPart.eq("main_drawing_no", bom.getDrawingNo());
+                    DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no",bom.getDrawingNo());
                     queryWrapperPart.notIn("grade", "H");
                     queryWrapperPart.orderByAsc("orderNo");
                     List<ProjectBom> projectBoms = this.list(queryWrapperPart);
@@ -267,7 +268,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 writer.passRows(4);
                 QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("work_plan_no", projectBom.getWorkPlanNo());
-                queryWrapper.eq("main_drawing_no", projectBom.getDrawingNo());
+                DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no",projectBom.getDrawingNo());
                 queryWrapper.eq("branch_code", projectBom.getBranchCode());
                 queryWrapper.orderByAsc("order_no");
                 List<ProjectBom> productionBomList = this.list(queryWrapper);

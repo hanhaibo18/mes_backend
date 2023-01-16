@@ -18,6 +18,7 @@ import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.OrderUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.apache.ibatis.annotations.Param;
@@ -192,7 +193,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.like("u.drawing_no", routerNo);
+            DrawingNoUtil.queryLike(queryWrapper,"u.drawing_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(siteId)) {
             queryWrapper.like("u.assign_by", siteId);
@@ -394,7 +395,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
-            queryWrapper.like("u.drawing_no", dispatchingDto.getRouterNo());
+            DrawingNoUtil.queryLike(queryWrapper,"u.drawing_no", dispatchingDto.getRouterNo());
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getSiteId())) {
             queryWrapper.like("u.assign_by", dispatchingDto.getSiteId());
@@ -456,7 +457,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
-            queryWrapper.like("u.drawing_no", dispatchingDto.getRouterNo());
+            DrawingNoUtil.queryLike(queryWrapper,"u.drawing_no", dispatchingDto.getRouterNo());
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getSiteId())) {
             queryWrapper.like("u.assign_by", dispatchingDto.getSiteId());

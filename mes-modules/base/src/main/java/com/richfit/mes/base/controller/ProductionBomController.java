@@ -8,6 +8,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.entity.DeleteProductionBomDto;
 import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.Product;
@@ -69,7 +70,7 @@ public class ProductionBomController extends BaseController {
         } else {
 
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
-            query.eq("drawing_no", productionBom.getDrawingNo());
+            DrawingNoUtil.queryEq(query,"drawing_no", productionBom.getDrawingNo());
             List<ProductionBom> result = productionBomService.list(query);
             if (result != null && result.size() > 0) {
                 return CommonResult.failed("相同版本的零部件图号已存在！");
@@ -81,7 +82,7 @@ public class ProductionBomController extends BaseController {
             productionBomService.update(bomQuery);
 
             QueryWrapper<Product> productQuery = new QueryWrapper<>();
-            productQuery.eq("drawing_no", productionBom.getDrawingNo());
+            DrawingNoUtil.queryEq(productQuery,"drawing_no", productionBom.getDrawingNo());
             productQuery.eq("material_no", productionBom.getMaterialNo());
             List<Product> result2 = productService.list(productQuery);
             if (result2 == null || result2.size() == 0) {
@@ -170,13 +171,13 @@ public class ProductionBomController extends BaseController {
             query.eq("pb.material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            query.like("pb.drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(query,"pb.drawing_no", drawingNo);
         }
 
         if (StringUtils.isNullOrEmpty(mainDrawingNo)) {
             query.and(wrapper -> wrapper.isNull("main_drawing_no").or().eq("main_drawing_no", ""));
         } else {
-            query.eq("main_drawing_no", mainDrawingNo);
+            DrawingNoUtil.queryLike(query,"main_drawing_no", mainDrawingNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             query.eq("pb.branch_code", branchCode);

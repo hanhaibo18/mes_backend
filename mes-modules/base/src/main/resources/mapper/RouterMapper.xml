@@ -7,7 +7,7 @@
         any_value(r.branch_code) branch_code, any_value(r.tenant_id) tenant_id
         FROM mes_base.base_router r
         INNER JOIN mes_base.base_product p
-        ON REPLACE (r.router_no, '-', '') = REPLACE (p.drawing_no, '-', '')
+        ON replace(replace(replace(r.router_no, '-', ''), '.', ''),' ', '') = replace(replace(replace(p.drawing_no, '-', ''), '.', ''),' ', '')
         ${ew.customSqlSegment}
     </select>
 </mapper>

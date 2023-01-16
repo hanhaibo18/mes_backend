@@ -12,6 +12,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssemblyBindingMapper;
 import com.richfit.mes.produce.dao.TrackFlowMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +54,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         assembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("number", assembly.getNumber());
-        queryWrapper.eq("part_drawing_no", assembly.getPartDrawingNo());
+        DrawingNoUtil.queryEq(queryWrapper,"part_drawing_no", assembly.getPartDrawingNo());
         queryWrapper.eq("branch_code", assembly.getBranchCode());
         queryWrapper.eq("tenant_id", assembly.getTenantId());
         List<TrackAssemblyBinding> bindingList = this.list(queryWrapper);

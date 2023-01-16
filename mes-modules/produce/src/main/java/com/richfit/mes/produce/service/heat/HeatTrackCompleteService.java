@@ -1,10 +1,14 @@
 package com.richfit.mes.produce.service.heat;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
+import com.richfit.mes.produce.service.TrackCompleteService;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,6 +16,9 @@ import java.util.Map;
  * @Description 热工报工服务
  */
 public interface HeatTrackCompleteService extends IService<TrackComplete> {
+
+
+    List<TrackComplete> queryList(QueryWrapper queryWrapper);
 
     /**
      * 功能描述: 热工报工

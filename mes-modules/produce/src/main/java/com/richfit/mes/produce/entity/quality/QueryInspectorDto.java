@@ -25,4 +25,6 @@ public class QueryInspectorDto extends QueryPageDto {
     private String processSheetNo;
     @ApiModelProperty(value = "是否发布", dataType = "String")
     private Integer isIssue;
+    @ApiModelProperty(value = "状态", dataType = "String")
+    private String type;
 }

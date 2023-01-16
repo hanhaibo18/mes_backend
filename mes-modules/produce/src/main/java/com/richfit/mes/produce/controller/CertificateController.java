@@ -13,6 +13,7 @@ import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackCertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -129,7 +130,7 @@ public class CertificateController {
             queryWrapper.eq("pc.cert_origin", origin);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
             queryWrapper.like("pc.certificate_no", certificateNo);

@@ -12,6 +12,7 @@ import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
 import com.richfit.mes.base.service.RouterService;
+import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
@@ -206,7 +207,8 @@ public class ProductController extends BaseController {
                                                       @ApiParam(value = "反向查询物料类型") @RequestParam(required = false, defaultValue = "false") Boolean material_type_reverse) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("p.drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper,"p.drawing_no", drawingNo);
+            //queryWrapper.like("p.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("p.material_no", materialNo);
@@ -251,7 +253,8 @@ public class ProductController extends BaseController {
             // 查询物料是否有对应的BOM
             QueryWrapper<ProductionBom> bomQuery = new QueryWrapper<>();
             // pb.drawing_no = p.drawing_no  and pb.is_current = '1' and pb.grade = 'H' and main_drawing_no  is NULL
-            bomQuery.eq("drawing_no", product.getDrawingNo());
+            DrawingNoUtil.queryLike(bomQuery,"drawing_no", product.getDrawingNo());
+            //bomQuery.eq("drawing_no", product.getDrawingNo());
             bomQuery.eq("is_current", "1");
             bomQuery.eq("grade", "H");
             bomQuery.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -282,8 +285,7 @@ public class ProductController extends BaseController {
     public CommonResult<List<Product>> selectByMaterialNoOrDrawingNo(String inputKey, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(inputKey)) {
-            inputKey = "%" + inputKey.replaceAll("-", "") + "%";
-            queryWrapper.apply("(material_no like {0} or replace(drawing_no,'-','') like {0})", inputKey);
+            queryWrapper.apply("(material_no like {0} or "+DrawingNoUtil.queryLikeSql("drawing_no",inputKey)+"");
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             if (isEqualType != null) {
@@ -310,7 +312,7 @@ public class ProductController extends BaseController {
             queryWrapper.and(wrapper -> wrapper.like("material_no", inputKey).or().like("product_name", inputKey));
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.eq("drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             if (isEqualType != null) {
@@ -337,7 +339,7 @@ public class ProductController extends BaseController {
             queryWrapper.and(wrapper -> wrapper.like("material_no", inputKey).or().like("product_name", inputKey));
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.eq("drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             if (isEqualType != null) {
@@ -364,7 +366,7 @@ public class ProductController extends BaseController {
             queryWrapper.like("material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.like("drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             if (isEqualType != null) {
@@ -392,7 +394,7 @@ public class ProductController extends BaseController {
             queryWrapper.eq("material_no", materialNo);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.eq("drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawingNo);
         }
         if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -414,7 +416,7 @@ public class ProductController extends BaseController {
             queryWrapper.eq("material_type", "3");
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            queryWrapper.eq("drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawingNo);
         }
         if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -465,7 +467,7 @@ public class ProductController extends BaseController {
         try {
             QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                queryWrapper.like("drawing_no", drawingNo);
+                DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(materialNo)) {
                 queryWrapper.like("material_no", materialNo);

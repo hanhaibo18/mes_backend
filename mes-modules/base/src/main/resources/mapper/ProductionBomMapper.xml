@@ -51,13 +51,13 @@
     <select id="getProductionBomHistory" resultMap="productionBomResultMap">
         select pb.*, product.* from base_production_bom pb
         LEFT join base_product product on
-        pb.drawing_no = product.drawing_no and pb.material_no = product.material_no
+        replace(replace(replace(pb.drawing_no, '-', ''), '.', ''),' ', '') = replace(replace(replace(product.drawing_no, '-', ''), '.', ''),' ', '') and pb.material_no = product.material_no
         ${ew.customSqlSegment}
     </select>
     <select id="getProductionBomByPage" resultMap="productionBomResultMap">
         select * from mes_base.base_production_bom pb
         LEFT join mes_base.base_product product on
-        pb.drawing_no = product.drawing_no and pb.material_no = product.material_no
+        replace(replace(replace(pb.drawing_no, '-', ''), '.', ''),' ', '') = replace(replace(replace(product.drawing_no, '-', ''), '.', ''),' ', '') and pb.material_no = product.material_no
         ${ew.customSqlSegment}
     </select>
 

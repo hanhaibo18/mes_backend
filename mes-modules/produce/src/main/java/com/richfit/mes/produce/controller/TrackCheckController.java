@@ -27,6 +27,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.OrderUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.*;
@@ -107,7 +108,7 @@ public class TrackCheckController extends BaseController {
             }
             //图号
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                queryWrapper.like("drawing_no", drawingNo);
+                DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("tenant_id", tenantId);
@@ -220,7 +221,7 @@ public class TrackCheckController extends BaseController {
                 queryWrapper.eq("track.tenant_id", tenantId);
             }
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                queryWrapper.eq("track.drawing_no", drawingNo);
+                DrawingNoUtil.queryEq(queryWrapper,"track.drawing_no", drawingNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 trackNo = trackNo.replaceAll(" ", "");

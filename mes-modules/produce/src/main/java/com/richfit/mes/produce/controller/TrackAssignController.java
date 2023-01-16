@@ -25,6 +25,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
+import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -120,7 +121,8 @@ public class TrackAssignController extends BaseController {
                 queryWrapper.eq("assign_by", assignBy);
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.apply("track_id in (select id from produce_track_head where drawing_no='" + routerNo + "')");
+                queryWrapper.apply("track_id in (select id from produce_track_head where "+DrawingNoUtil.queryEqSql("drawing_no",routerNo)+"");
+
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null)");

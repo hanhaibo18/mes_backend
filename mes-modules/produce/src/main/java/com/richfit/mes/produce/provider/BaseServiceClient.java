@@ -189,4 +189,8 @@ public interface BaseServiceClient {
 
     @GetMapping("/api/base/router/get_by_drawNo")
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode);
+
+
+    @GetMapping("/api/base/sequence/query_by_routerIds")
+    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds);
 }
