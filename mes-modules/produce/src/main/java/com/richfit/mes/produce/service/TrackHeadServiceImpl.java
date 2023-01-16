@@ -1422,12 +1422,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         this.beforeSaveItemDeal(trackItemListOld);
 
         //检验是否可以拆分
+        boolean flag = false;
         for (TrackItem trackItem : trackItemListOld) {
-            if (trackItem.getIsCurrent() == 1) {
-                if (trackItem.getIsDoing() != 0) {
-                    throw new GlobalException("当前工序已开工，请清除当前的工序开工记录才能拆分。", ResultCode.FAILED);
-                }
+            if (trackItem.getIsSchedule() != 1) {
+                flag = true;
             }
+        }
+        if (flag) {
+            throw new GlobalException("当前跟单已全部派工，全部派工后跟单将不能差分，请先清除当前工序的派工记录。", ResultCode.FAILED);
         }
         //更新原跟单生产线
         for (TrackFlow tf : trackFlow) {
@@ -1438,7 +1440,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         //更新未开工的工序的数量
         for (TrackItem trackItem : trackItemListOld) {
-            if (trackItem.getIsDoing() == 0) {
+            if (trackItem.getIsSchedule() == 0) {
                 trackItem.setNumber(trackHead.getNumber());
                 trackItem.setAssignableQty(trackHead.getNumber());
                 trackItem.setBatchQty(trackHead.getNumber());
