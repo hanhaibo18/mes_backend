@@ -420,7 +420,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (StrUtil.isNotBlank(disqualificationId)) {
             Disqualification disqualification = this.getById(disqualificationId);
             BeanUtils.copyProperties(disqualificationItemVo, disqualification);
-            disqualificationItemVo.setUserList(Arrays.asList(disqualificationId.split(",")));
         } else {
             disqualificationItemVo = trackItemService.queryItem(tiId, branchCode);
         }
@@ -428,6 +427,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (null != disqualificationItemVo && StrUtil.isNotBlank(disqualificationItemVo.getId())) {
             DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
             disqualificationItemVo.DisqualificationFinalResult(finalResult);
+            //处理质控工程师列表
+            disqualificationItemVo.setUserList(Arrays.asList(disqualificationItemVo.getQualityCheckBy().split(",")));
             //查询流水记录
             //查询文件
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
