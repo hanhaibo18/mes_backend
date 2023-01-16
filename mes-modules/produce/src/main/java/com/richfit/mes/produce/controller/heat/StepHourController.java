@@ -52,7 +52,7 @@ public class StepHourController {
      */
     @ApiOperation(value = "保存工时步骤信息", notes = "保存工时步骤信息")
     @PostMapping("/saveOrUpdate")
-    public CommonResult saveOrUpdate(StepHour stepHour) throws GlobalException {
+    public CommonResult saveOrUpdate(@RequestBody StepHour stepHour) throws GlobalException {
         QueryWrapper<StepHour> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("step_type",stepHour.getStepType())
                 .eq("ver_id",stepHour.getVerId())

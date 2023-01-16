@@ -138,6 +138,61 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     }
 
     /**
+     * 编辑报工
+     * @param heatCompleteDto
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateComplete(HeatCompleteDto heatCompleteDto){
+        //校验报工信息
+        if (null == heatCompleteDto.getTrackCompleteList() && heatCompleteDto.getTrackCompleteList().isEmpty()) {
+            throw new GlobalException("报工人员不能为空",ResultCode.FAILED);
+        }
+        if(ObjectUtil.isEmpty(heatCompleteDto.getTiIds()) || heatCompleteDto.getTiIds().size()==0){
+            throw new GlobalException("报工工序Id不能为空",ResultCode.FAILED);
+        }
+        if(ObjectUtil.isEmpty(heatCompleteDto.getPrechargeFurnaceId())){
+            throw new GlobalException("预装炉Id不能为空",ResultCode.FAILED);
+        }
+        //报工工序ids
+        TrackComplete complete = heatCompleteDto.getTrackCompleteList().get(0);
+        String stepGroupId = complete.getStepGroupId();
+        QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
+        List<TrackComplete> completes = trackCompleteMapper.queryList(wrapper);
+        Set<String> tiIds = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
+        //删除旧的
+        wrapper.eq("step_group_id",stepGroupId);
+        trackCompleteMapper.delete(wrapper);
+        //保存新的数据
+        for (String tiId : tiIds) {
+            TrackItem trackItem = trackItemService.getById(tiId);
+            //派工信息
+            Assign assign = trackAssignService.list(new QueryWrapper<Assign>().eq("ti_id", tiId)).get(0);
+
+            for (TrackComplete trackComplete : heatCompleteDto.getTrackCompleteList()) {
+                trackComplete.setId(null);
+                trackComplete.setAssignId(assign.getId());
+                trackComplete.setTiId(tiId);
+                trackComplete.setTrackId(trackItem.getTrackHeadId());
+                trackComplete.setTrackNo(trackItem.getTrackNo());
+                trackComplete.setProdNo(trackItem.getProductNo());
+                trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackComplete.setCompleteTime(new Date());
+                trackComplete.setDetectionResult("-");
+                trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                //设置为当前工序
+                trackComplete.setIsCurrent(complete.getIsCurrent());
+                //预装炉id
+                trackComplete.setPrechargeFurnaceId(heatCompleteDto.getPrechargeFurnaceId());
+                //步骤分组id
+                trackComplete.setStepGroupId(stepGroupId);
+            }
+            this.saveBatch(heatCompleteDto.getTrackCompleteList());
+        }
+        return true;
+    }
+
+    /**
      * 功能描述: 最后一步需要激活下工序，并且对下工序派工
      * @Author: renzewen
      * @param tiId

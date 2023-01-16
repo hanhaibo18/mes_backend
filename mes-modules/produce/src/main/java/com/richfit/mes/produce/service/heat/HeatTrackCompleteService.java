@@ -2,11 +2,8 @@ package com.richfit.mes.produce.service.heat;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
-import com.richfit.mes.produce.service.TrackCompleteService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +26,16 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
      * @return: Boolean
      **/
     Boolean saveComplete(HeatCompleteDto heatCompleteDto) throws Exception;
+
+    /**
+     * 功能描述: 编辑报工
+     *
+     * @param heatCompleteDto
+     * @Author: renzewen
+     * @Date: 2023/1/16 14:08
+     * @return: Boolean
+     **/
+    boolean updateComplete(HeatCompleteDto heatCompleteDto) throws Exception;
 
     /**
      * 功能描述: 热工报工开工

@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -267,4 +268,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否叶子结点", dataType = "Boolean")
     private Boolean isLeafNodes;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "步骤人员信息", dataType = "List<Map>")
+    private List<CompleteUserInfoDto> userInfos;
 }
