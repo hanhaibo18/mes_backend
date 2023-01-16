@@ -161,7 +161,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
         }
         queryWrapper.and(wrapper -> wrapper.eq("final.unit_treatment_one", SecurityUtils.getCurrentUser().getTenantId()).or().eq("final.unit_treatment_two", SecurityUtils.getCurrentUser().getTenantId()));
-        queryWrapper.and(wrapper -> wrapper.eq("dis.type", 3).or().eq("dis.tyep", 4));
+        queryWrapper.and(wrapper -> wrapper.eq("dis.type", 3).or().eq("dis.type", 4));
         return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
