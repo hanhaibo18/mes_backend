@@ -181,9 +181,9 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     @ApiModelProperty(value = "质控意见")
     private String qualityControlOpinion;
     @ApiModelProperty(value = "质控姓名")
-    private String qualityControlName;
+    private String qualityName;
     @ApiModelProperty(value = "质控时间")
-    private Date qualityControlTime;
+    private Date qualityTime;
 
     @ApiModelProperty(value = "处理单位1意见")
     private String unitTreatmentOneOpinion;

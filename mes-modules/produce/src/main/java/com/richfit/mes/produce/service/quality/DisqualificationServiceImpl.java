@@ -446,6 +446,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.DisqualificationFinalResult(finalResult);
             //处理质控工程师列表
             disqualificationItemVo.setUserList(Arrays.asList(disqualificationItemVo.getQualityCheckBy().split(",")));
+            //处理
             //查询流水记录
             //查询文件
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
