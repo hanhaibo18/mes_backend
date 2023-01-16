@@ -258,8 +258,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
         switch (disqualification.getType()) {
             case 2:
-                finalResult.setQualityControlName(user.getEmplName());
-                finalResult.setQualityControlTime(new Date());
+                finalResult.setQualityName(user.getEmplName());
+                finalResult.setQualityTime(new Date());
                 break;
             default:
                 break;
