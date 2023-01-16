@@ -3,7 +3,6 @@ package com.richfit.mes.produce.entity.quality;
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -358,7 +357,7 @@ public class DisqualificationItemVo {
 
 
     @ApiModelProperty(value = "用户列表")
-    private List<TenantUserVo> userList;
+    private List<String> userList;
 
     public void trackHead(TrackHead trackHead) {
         //跟单号
