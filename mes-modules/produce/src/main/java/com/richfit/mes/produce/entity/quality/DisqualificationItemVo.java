@@ -324,9 +324,9 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "质控意见")
     private String qualityControlOpinion;
     @ApiModelProperty(value = "质控姓名")
-    private String qualityControlName;
+    private String qualityName;
     @ApiModelProperty(value = "质控时间")
-    private Date qualityControlTime;
+    private Date qualityTime;
 
     @ApiModelProperty(value = "处理单位1意见")
     private String unitTreatmentOneOpinion;
@@ -464,9 +464,9 @@ public class DisqualificationItemVo {
         //质控意见
         this.qualityControlOpinion = finalResult.getQualityControlOpinion();
         //质控姓名
-        this.qualityControlName = finalResult.getQualityControlName();
+        this.qualityName = finalResult.getQualityName();
         //质控时间
-        this.qualityControlTime = finalResult.getQualityControlTime();
+        this.qualityTime = finalResult.getQualityTime();
 
         //处理单位1
         this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
