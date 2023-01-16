@@ -121,8 +121,7 @@ public class TrackAssignController extends BaseController {
                 queryWrapper.eq("assign_by", assignBy);
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.apply("track_id in (select id from produce_track_head where "+DrawingNoUtil.queryEqSql("drawing_no",routerNo)+"");
-
+                queryWrapper.apply("track_id in (select id from produce_track_head where "+DrawingNoUtil.queryEqSql("drawing_no",routerNo)+")");
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
                 queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null)");
