@@ -320,8 +320,10 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "不合格意见JSON")
     private String unqualifiedOpinion;
+    //TODO:需要保存一份不合格意见填写人姓名,时间
     @ApiModelProperty(value = "质控意见JSON")
     private String qualityControlOpinion;
+
     @ApiModelProperty(value = "处理单位1JSON")
     private String unitTreatmentOneOpinion;
     @ApiModelProperty(value = "处理单位2JSON")
@@ -437,8 +439,6 @@ public class DisqualificationItemVo {
         this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
         //处理单位2
         this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
-        //质控工程师显示
-        this.checkShow = finalResult.getCheckShow();
         //发现车间
         this.discoverTenant = finalResult.getDiscoverTenant();
     }
