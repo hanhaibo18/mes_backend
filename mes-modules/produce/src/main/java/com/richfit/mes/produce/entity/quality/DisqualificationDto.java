@@ -17,6 +17,7 @@ import java.util.List;
 @Data
 public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
 
+    private static final long serialVersionUID = 2911298524898169849L;
     /**
      * 跟单Id
      */
@@ -298,9 +299,9 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private String tenantId;
 
     @ApiModelProperty(value = "是否责任裁决")
-    private Integer isResponsibility;
+    private Integer isResponsibility = 0;
     @ApiModelProperty(value = "是否技术裁决")
-    private Integer isTechnology;
+    private Integer isTechnology = 0;
 
     //    @ApiModelProperty(value = "不合格意见")
 //    private String unqualifiedOpinion;
