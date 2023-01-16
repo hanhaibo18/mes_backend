@@ -318,20 +318,43 @@ public class DisqualificationItemVo {
 
     private String tenantId;
 
-    @ApiModelProperty(value = "不合格意见JSON")
+    @ApiModelProperty(value = "不合格意见意见")
     private String unqualifiedOpinion;
     //TODO:需要保存一份不合格意见填写人姓名,时间
     @ApiModelProperty(value = "质控意见")
     private String qualityControlOpinion;
+    @ApiModelProperty(value = "质控姓名")
+    private String qualityControlName;
+    @ApiModelProperty(value = "质控时间")
+    private Date qualityControlTime;
 
-    @ApiModelProperty(value = "处理单位1JSON")
+    @ApiModelProperty(value = "处理单位1意见")
     private String unitTreatmentOneOpinion;
-    @ApiModelProperty(value = "处理单位2JSON")
+    @ApiModelProperty(value = "处理单位1姓名")
+    private String treatmentOneName;
+    @ApiModelProperty(value = "处理单位1时间")
+    private Date treatmentOneTime;
+
+    @ApiModelProperty(value = "处理单位2意见")
     private String unitTreatmentTwoOpinion;
-    @ApiModelProperty(value = "责任裁决JSON")
+    @ApiModelProperty(value = "处理单位2姓名")
+    private String treatmentTwoName;
+    @ApiModelProperty(value = "处理单位2时间")
+    private Date treatmentTwoTime;
+
+    @ApiModelProperty(value = "责任裁决意见")
     private String responsibilityOpinion;
-    @ApiModelProperty(value = "技术JSON")
+    @ApiModelProperty(value = "责任裁决姓名")
+    private String responsibilityName;
+    @ApiModelProperty(value = "责任裁决时间")
+    private String responsibilityTime;
+
+    @ApiModelProperty(value = "技术裁决意见")
     private String technologyOpinion;
+    @ApiModelProperty(value = "技术裁决姓名")
+    private String technologyName;
+    @ApiModelProperty(value = "技术裁决时间")
+    private String technologyTime;
 
     /**
      * 质控工程师显示
@@ -435,11 +458,46 @@ public class DisqualificationItemVo {
         this.unitResponsibilityWithin = finalResult.getUnitResponsibilityWithin();
         //责任单位外
         this.unitResponsibilityOutside = finalResult.getUnitResponsibilityOutside();
-        //处理单位1
-        this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
-        //处理单位2
-        this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
         //发现车间
         this.discoverTenant = finalResult.getDiscoverTenant();
+
+        //质控意见
+        this.qualityControlOpinion = finalResult.getQualityControlOpinion();
+        //质控姓名
+        this.qualityControlName = finalResult.getQualityControlName();
+        //质控时间
+        this.qualityControlTime = finalResult.getQualityControlTime();
+
+        //处理单位1
+        this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
+        //处理单位1意见
+        this.unitTreatmentOneOpinion = finalResult.getUnitTreatmentOneOpinion();
+        //处理单位1姓名
+        this.treatmentOneName = finalResult.getTreatmentOneName();
+        //处理单位1时间
+        this.treatmentOneTime = finalResult.getTreatmentOneTime();
+
+        //处理单位2
+        this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
+        //处理单位2意见
+        this.unitTreatmentTwoOpinion = finalResult.getUnitTreatmentTwoOpinion();
+        //处理单位2姓名
+        this.treatmentTwoName = finalResult.getTreatmentTwoName();
+        //处理单位2时间
+        this.treatmentTwoTime = finalResult.getTreatmentTwoTime();
+
+        //责任裁决意见
+        this.responsibilityOpinion = finalResult.getResponsibilityOpinion();
+        //责任裁决姓名
+        this.responsibilityName = finalResult.getResponsibilityName();
+        //责任裁决时间
+        this.responsibilityTime = finalResult.getResponsibilityTime();
+
+        //技术裁决意见
+        this.technologyOpinion = finalResult.getTechnologyOpinion();
+        //技术裁决姓名
+        this.technologyName = finalResult.getTechnologyName();
+        //技术裁决时间
+        this.technologyTime = finalResult.getTechnologyTime();
     }
 }

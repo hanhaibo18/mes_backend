@@ -178,6 +178,41 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     @ApiModelProperty(value = "发现车间")
     private String discoverTenant;
 
+    @ApiModelProperty(value = "质控意见")
+    private String qualityControlOpinion;
+    @ApiModelProperty(value = "质控姓名")
+    private String qualityControlName;
+    @ApiModelProperty(value = "质控时间")
+    private Date qualityControlTime;
+
+    @ApiModelProperty(value = "处理单位1意见")
+    private String unitTreatmentOneOpinion;
+    @ApiModelProperty(value = "处理单位1姓名")
+    private String treatmentOneName;
+    @ApiModelProperty(value = "处理单位1时间")
+    private Date treatmentOneTime;
+
+    @ApiModelProperty(value = "处理单位2意见")
+    private String unitTreatmentTwoOpinion;
+    @ApiModelProperty(value = "处理单位2姓名")
+    private String treatmentTwoName;
+    @ApiModelProperty(value = "处理单位2时间")
+    private Date treatmentTwoTime;
+
+    @ApiModelProperty(value = "责任裁决意见")
+    private String responsibilityOpinion;
+    @ApiModelProperty(value = "责任裁决姓名")
+    private String responsibilityName;
+    @ApiModelProperty(value = "责任裁决时间")
+    private String responsibilityTime;
+
+    @ApiModelProperty(value = "技术裁决意见")
+    private String technologyOpinion;
+    @ApiModelProperty(value = "技术裁决姓名")
+    private String technologyName;
+    @ApiModelProperty(value = "技术裁决时间")
+    private String technologyTime;
+
     /**
      * 所属机构
      */
@@ -189,6 +224,7 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
      */
     @ApiModelProperty(value = "所属租户")
     private String tenantId;
+
 
     private static final long serialVersionUID = 1L;
 }

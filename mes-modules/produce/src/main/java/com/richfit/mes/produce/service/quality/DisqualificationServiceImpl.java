@@ -246,6 +246,24 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
         BeanUtils.copyProperties(disqualificationDto, finalResult);
         finalResult.setId(disqualification.getId());
+        //让步接收产品编号
+        finalResult.setAcceptDeviationNo(String.join(",", disqualificationDto.getAcceptDeviationNoList()));
+        //返修后产品编号
+        finalResult.setRepairNo(String.join(",", disqualificationDto.getRepairNoList()));
+        //报废后产品编号
+        finalResult.setScrapNo(String.join(",", disqualificationDto.getScrapNoList()));
+        //退货产品编号
+        finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
+        //处理意见数据
+        TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+        switch (disqualification.getType()) {
+            case 2:
+                finalResult.setQualityControlName(user.getEmplName());
+                finalResult.setQualityControlTime(new Date());
+                break;
+            default:
+                break;
+        }
         finalResultService.saveOrUpdate(finalResult);
         //不合格意见
         //判断申请单状态是1 意见列表为空

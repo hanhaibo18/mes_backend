@@ -206,7 +206,7 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
      * 让步接收产品编号
      */
     @ApiModelProperty(value = "让步接收产品编号")
-    private String acceptDeviationNo;
+    private List<String> acceptDeviationNoList;
 
     /**
      * 返修合格数量
@@ -224,7 +224,7 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
      * 返修后产品编号
      */
     @ApiModelProperty(value = "返修后产品编号")
-    private String repairNo;
+    private List<String> repairNoList;
 
     /**
      * 返修结果
@@ -260,7 +260,7 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
      * 报废后产品编号
      */
     @ApiModelProperty(value = "报废后产品编号")
-    private String scrapNo;
+    private List<String> scrapNoList;
 
     /**
      * 退货数量
@@ -278,7 +278,7 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
      * 退货产品编号
      */
     @ApiModelProperty(value = "退货产品编号")
-    private String salesReturnNo;
+    private List<String> salesReturnNoList;
 
 
     /**
