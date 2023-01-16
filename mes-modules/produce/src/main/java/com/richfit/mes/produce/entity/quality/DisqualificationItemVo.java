@@ -3,7 +3,6 @@ package com.richfit.mes.produce.entity.quality;
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -321,8 +320,10 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "不合格意见JSON")
     private String unqualifiedOpinion;
-    @ApiModelProperty(value = "质控意见JSON")
+    //TODO:需要保存一份不合格意见填写人姓名,时间
+    @ApiModelProperty(value = "质控意见")
     private String qualityControlOpinion;
+
     @ApiModelProperty(value = "处理单位1JSON")
     private String unitTreatmentOneOpinion;
     @ApiModelProperty(value = "处理单位2JSON")
@@ -358,7 +359,7 @@ public class DisqualificationItemVo {
 
 
     @ApiModelProperty(value = "用户列表")
-    private List<TenantUserVo> userList;
+    private List<String> userList;
 
     public void trackHead(TrackHead trackHead) {
         //跟单号
@@ -438,8 +439,6 @@ public class DisqualificationItemVo {
         this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
         //处理单位2
         this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
-        //质控工程师显示
-        this.checkShow = finalResult.getCheckShow();
         //发现车间
         this.discoverTenant = finalResult.getDiscoverTenant();
     }
