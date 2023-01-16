@@ -321,7 +321,7 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "不合格意见JSON")
     private String unqualifiedOpinion;
     //TODO:需要保存一份不合格意见填写人姓名,时间
-    @ApiModelProperty(value = "质控意见JSON")
+    @ApiModelProperty(value = "质控意见")
     private String qualityControlOpinion;
 
     @ApiModelProperty(value = "处理单位1JSON")

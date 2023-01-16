@@ -92,19 +92,19 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryCheck(queryCheckDto));
     }
 
-    @ApiOperation(value = "查询未处理/已处理申请单", notes = "质检人员查询不合格品处理单查询接口")
-    @PostMapping("/query_dealWith")
+    @ApiOperation(value = "查询质量检测部", notes = "查询质量检测部")
+    @PostMapping("/query_deal_with")
     public CommonResult<IPage<Disqualification>> queryDealWith(@RequestBody QueryCheckDto queryCheckDto) {
         return CommonResult.success(disqualificationService.queryDealWith(queryCheckDto));
     }
 
-    @ApiOperation(value = "查询未处理/已处理申请单", notes = "质检人员查询不合格品处理单查询接口")
+    @ApiOperation(value = "查询责任裁决", notes = "查询责任裁决")
     @PostMapping("/query_responsibility")
     public CommonResult<IPage<Disqualification>> queryResponsibility(@RequestBody QueryCheckDto queryCheckDto) {
         return CommonResult.success(disqualificationService.queryResponsibility(queryCheckDto));
     }
 
-    @ApiOperation(value = "查询未处理/已处理申请单", notes = "质检人员查询不合格品处理单查询接口")
+    @ApiOperation(value = "查询技术裁决", notes = "查询技术裁决")
     @PostMapping("/query_technology")
     public CommonResult<IPage<Disqualification>> queryTechnology(@RequestBody QueryCheckDto queryCheckDto) {
         return CommonResult.success(disqualificationService.queryTechnology(queryCheckDto));
