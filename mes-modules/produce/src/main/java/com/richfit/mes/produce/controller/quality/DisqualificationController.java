@@ -92,8 +92,26 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryCheck(queryCheckDto));
     }
 
+    @ApiOperation(value = "查询未处理/已处理申请单", notes = "质检人员查询不合格品处理单查询接口")
+    @PostMapping("/query_dealWith")
+    public CommonResult<IPage<Disqualification>> queryDealWith(@RequestBody QueryCheckDto queryCheckDto) {
+        return CommonResult.success(disqualificationService.queryDealWith(queryCheckDto));
+    }
+
+    @ApiOperation(value = "查询未处理/已处理申请单", notes = "质检人员查询不合格品处理单查询接口")
+    @PostMapping("/query_responsibility")
+    public CommonResult<IPage<Disqualification>> queryResponsibility(@RequestBody QueryCheckDto queryCheckDto) {
+        return CommonResult.success(disqualificationService.queryResponsibility(queryCheckDto));
+    }
+
+    @ApiOperation(value = "查询未处理/已处理申请单", notes = "质检人员查询不合格品处理单查询接口")
+    @PostMapping("/query_technology")
+    public CommonResult<IPage<Disqualification>> queryTechnology(@RequestBody QueryCheckDto queryCheckDto) {
+        return CommonResult.success(disqualificationService.queryTechnology(queryCheckDto));
+    }
+
     @ApiOperation(value = "查询意见列表", notes = "查询意见列表")
-    @GetMapping(value = "/querySignedRecordsList")
+    @GetMapping(value = "/query_signedRecordsList")
     public CommonResult<List<SignedRecordsVo>> querySignedRecordsList(String disqualificationId) {
         return CommonResult.success(disqualificationService.querySignedRecordsList(disqualificationId));
     }
