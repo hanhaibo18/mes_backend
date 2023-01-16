@@ -11,12 +11,14 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.common.model.produce.TrackComplete;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.HeatTrackCompleteService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
@@ -49,6 +51,8 @@ public class HeatTrackCompleteController extends BaseController {
     private SystemServiceClient systemServiceClient;
     @Autowired
     private TrackItemService trackItemService;
+    @Autowired
+    private TrackHeadService headService;
 
 
     @ApiOperation(value = "报工")
@@ -59,7 +63,8 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "编辑报工")
     @PostMapping("/updateComplete")
-    public CommonResult<Boolean> updateComplete(@RequestBody List<TrackComplete> trackCompleteList) throws Exception {
+    public CommonResult<Boolean> updateComplete(@RequestBody HeatCompleteDto heatCompleteDto) throws Exception {
+        List<TrackComplete> trackCompleteList = heatCompleteDto.getTrackCompleteList();
         return CommonResult.success(heatTrackCompleteService.updateComplete(trackCompleteList));
     }
 
@@ -162,7 +167,13 @@ public class HeatTrackCompleteController extends BaseController {
         if(itemIds.size()>0){
             QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
             trackItemQueryWrapper.in("id",itemIds);
-            return CommonResult.success(trackItemService.list(trackItemQueryWrapper));
+            List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
+            for (TrackItem trackItem : list) {
+                TrackHead head = headService.getById(trackItem.getTrackHeadId());
+                trackItem.setTrackNo(head.getTrackNo());
+                trackItem.setProductName(head.getProductName());
+            }
+            return CommonResult.success(list);
 
         }
         return CommonResult.success(new ArrayList<TrackItem>());
