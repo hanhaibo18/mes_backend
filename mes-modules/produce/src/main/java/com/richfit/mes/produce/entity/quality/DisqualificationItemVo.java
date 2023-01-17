@@ -9,10 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @ClassName: DisqualificationItemVO.java
@@ -177,12 +174,6 @@ public class DisqualificationItemVo {
      */
     @ApiModelProperty(value = "质控工程师")
     private String qualityCheckBy;
-
-    /**
-     * 不合格情况
-     */
-    @ApiModelProperty(value = "不合格情况")
-    private String disqualificationCondition;
 
     /**
      * 开单时间
@@ -358,6 +349,12 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "技术裁决时间")
     private Date technologyTime;
 
+    @ApiModelProperty(value = "不合格情况")
+    private String disqualificationCondition;
+    @ApiModelProperty(value = "不合格姓名")
+    private String disqualificationName;
+    @ApiModelProperty(value = "不合格时间")
+    private Date disqualificationTime;
     /**
      * 质控工程师显示
      */
@@ -432,7 +429,7 @@ public class DisqualificationItemVo {
         if (finalResult.getAcceptDeviationNo().contains(",")) {
             this.acceptDeviationNoList = Arrays.asList(finalResult.getAcceptDeviationNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getAcceptDeviationNo())) {
-            this.acceptDeviationNoList.add(finalResult.getAcceptDeviationNo());
+            this.acceptDeviationNoList = new ArrayList<>(Collections.singletonList(finalResult.getAcceptDeviationNo()));
         }
         //返修合格数量
         this.repairQualified = finalResult.getRepairQualified();
@@ -442,7 +439,7 @@ public class DisqualificationItemVo {
         if (finalResult.getRepairNo().contains(",")) {
             this.repairNoList = Arrays.asList(finalResult.getRepairNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getRepairNo())) {
-            this.repairNoList.add(finalResult.getRepairNo());
+            this.repairNoList = new ArrayList<>(Collections.singletonList(finalResult.getRepairNo()));
         }
         //返修后结果
         this.recapDemerits = finalResult.getRecapDemerits();
@@ -460,7 +457,7 @@ public class DisqualificationItemVo {
         if (finalResult.getScrapNo().contains(",")) {
             this.scrapNoList = Arrays.asList(finalResult.getScrapNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getScrapNo())) {
-            this.scrapNoList.add(finalResult.getScrapNo());
+            this.scrapNoList = new ArrayList<>(Collections.singletonList(finalResult.getScrapNo()));
         }
         //退货数量
         this.salesReturn = finalResult.getSalesReturn();
@@ -470,7 +467,7 @@ public class DisqualificationItemVo {
         if (finalResult.getSalesReturnNo().contains(",")) {
             this.salesReturnNoList = Arrays.asList(finalResult.getSalesReturnNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getSalesReturnNo())) {
-            this.salesReturnNoList.add(finalResult.getSalesReturnNo());
+            this.salesReturnNoList = new ArrayList<>(Collections.singletonList(finalResult.getSalesReturnNo()));
         }
         //责任单位内
         this.unitResponsibilityWithin = finalResult.getUnitResponsibilityWithin();
@@ -517,5 +514,12 @@ public class DisqualificationItemVo {
         this.technologyName = finalResult.getTechnologyName();
         //技术裁决时间
         this.technologyTime = finalResult.getTechnologyTime();
+
+        //不合格情况(意见)
+        this.disqualificationCondition = finalResult.getDisqualificationCondition();
+        //不合格姓名
+        this.disqualificationName = finalResult.getDisqualificationName();
+        //不合格时间
+        this.disqualificationTime = finalResult.getDisqualificationTime();
     }
 }

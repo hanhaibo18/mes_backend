@@ -213,7 +213,12 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     @ApiModelProperty(value = "责任裁决时间")
     private Date responsibilityTime;
 
-
+    @ApiModelProperty(value = "不合格情况")
+    private String disqualificationCondition;
+    @ApiModelProperty(value = "不合格姓名")
+    private String disqualificationName;
+    @ApiModelProperty(value = "不合格时间")
+    private Date disqualificationTime;
     /**
      * 所属机构
      */

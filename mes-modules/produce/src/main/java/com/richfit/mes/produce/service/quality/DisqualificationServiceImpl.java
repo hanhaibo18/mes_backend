@@ -248,7 +248,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
         //处理意见数据
         TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
-        switch (disqualification.getType()) {
+        switch (disqualificationDto.getType()) {
+            case 1:
+                finalResult.setDisqualificationName(user.getEmplName());
+                finalResult.setDisqualificationTime(new Date());
+                break;
             case 2:
                 finalResult.setQualityName(user.getEmplName());
                 finalResult.setQualityTime(new Date());
@@ -273,18 +277,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 break;
         }
         finalResultService.saveOrUpdate(finalResult);
-        //不合格意见
-        //判断申请单状态是1 意见列表为空
-//        if (1 == processJudge && CollUtil.isEmpty(disqualificationDto.getDisqualifications())) {
-//            //为空处理不合格意见为列表
-//            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
-//            opinion.setDisqualificationId(disqualification.getId());
-//            opinion.setType(processJudge);
-//            //查询人员姓名
-//            TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
-//            opinion.setUserName(user.getEmplName());
-//        }
-//        userOpinionService.saveOrUpdateBatch(disqualificationDto.getDisqualifications());
         //处理文件列表
         QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
         queryWrapperAttachment.eq("disqualification_id", disqualification.getId());

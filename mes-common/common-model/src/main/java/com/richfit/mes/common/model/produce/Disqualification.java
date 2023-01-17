@@ -139,11 +139,6 @@ public class Disqualification extends BaseEntity<Disqualification> {
     private String qualityCheckBy;
 
     /**
-     * 不合格情况
-     */
-    private String disqualificationCondition;
-
-    /**
      * 开单时间
      */
     private Date orderTime;
