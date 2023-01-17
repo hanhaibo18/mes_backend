@@ -199,19 +199,20 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     @ApiModelProperty(value = "处理单位2时间")
     private Date treatmentTwoTime;
 
-    @ApiModelProperty(value = "责任裁决意见")
-    private String responsibilityOpinion;
-    @ApiModelProperty(value = "责任裁决姓名")
-    private String responsibilityName;
-    @ApiModelProperty(value = "责任裁决时间")
-    private String responsibilityTime;
-
     @ApiModelProperty(value = "技术裁决意见")
     private String technologyOpinion;
     @ApiModelProperty(value = "技术裁决姓名")
     private String technologyName;
     @ApiModelProperty(value = "技术裁决时间")
-    private String technologyTime;
+    private Date technologyTime;
+
+    @ApiModelProperty(value = "责任裁决意见")
+    private String responsibilityOpinion;
+    @ApiModelProperty(value = "责任裁决姓名")
+    private String responsibilityName;
+    @ApiModelProperty(value = "责任裁决时间")
+    private Date responsibilityTime;
+
 
     /**
      * 所属机构

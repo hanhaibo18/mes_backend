@@ -7,8 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -240,7 +242,7 @@ public class DisqualificationItemVo {
      * 让步接收产品编号
      */
     @ApiModelProperty(value = "让步接收产品编号")
-    private String acceptDeviationNo;
+    private List<String> acceptDeviationNoList;
 
     /**
      * 返修合格数量
@@ -258,7 +260,7 @@ public class DisqualificationItemVo {
      * 返修后产品编号
      */
     @ApiModelProperty(value = "返修后产品编号")
-    private String repairNo;
+    private List<String> repairNoList;
 
     /**
      * 返修结果
@@ -300,7 +302,7 @@ public class DisqualificationItemVo {
      * 报废后产品编号
      */
     @ApiModelProperty(value = "报废后产品编号")
-    private String scrapNo;
+    private List<String> scrapNoList;
 
     /**
      * 退货数量
@@ -347,14 +349,14 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "责任裁决姓名")
     private String responsibilityName;
     @ApiModelProperty(value = "责任裁决时间")
-    private String responsibilityTime;
+    private Date responsibilityTime;
 
     @ApiModelProperty(value = "技术裁决意见")
     private String technologyOpinion;
     @ApiModelProperty(value = "技术裁决姓名")
     private String technologyName;
     @ApiModelProperty(value = "技术裁决时间")
-    private String technologyTime;
+    private Date technologyTime;
 
     /**
      * 质控工程师显示
@@ -366,7 +368,7 @@ public class DisqualificationItemVo {
      * 退货产品编号
      */
     @ApiModelProperty(value = "退货产品编号")
-    private String salesReturnNo;
+    private List<String> salesReturnNoList;
 
     @ApiModelProperty(value = "审核意见列表", dataType = "List<SignedRecordsVo>")
     private List<SignedRecordsVo> signedRecordsList;
@@ -426,14 +428,22 @@ public class DisqualificationItemVo {
         this.acceptDeviation = finalResult.getAcceptDeviation();
         //让步接收损失
         this.acceptDeviationLoss = finalResult.getAcceptDeviationLoss();
-        //让步接收损失
-        this.acceptDeviationNo = finalResult.getAcceptDeviationNo();
+        //让步接收损失编号
+        if (finalResult.getAcceptDeviationNo().contains(",")) {
+            this.acceptDeviationNoList = Arrays.asList(finalResult.getAcceptDeviationNo().split(","));
+        } else if (StringUtils.isNotBlank(finalResult.getAcceptDeviationNo())) {
+            this.acceptDeviationNoList.add(finalResult.getAcceptDeviationNo());
+        }
         //返修合格数量
         this.repairQualified = finalResult.getRepairQualified();
         //返修损失
         this.repairLoss = finalResult.getRepairLoss();
         //返修后产品编号
-        this.repairNo = finalResult.getRepairNo();
+        if (finalResult.getRepairNo().contains(",")) {
+            this.repairNoList = Arrays.asList(finalResult.getRepairNo().split(","));
+        } else if (StringUtils.isNotBlank(finalResult.getRepairNo())) {
+            this.repairNoList.add(finalResult.getRepairNo());
+        }
         //返修后结果
         this.recapDemerits = finalResult.getRecapDemerits();
         //返修描述
@@ -447,13 +457,21 @@ public class DisqualificationItemVo {
         //报废损失
         this.scrapLoss = finalResult.getScrapLoss();
         //报废后产品编号
-        this.scrapNo = finalResult.getScrapNo();
+        if (finalResult.getScrapNo().contains(",")) {
+            this.scrapNoList = Arrays.asList(finalResult.getScrapNo().split(","));
+        } else if (StringUtils.isNotBlank(finalResult.getScrapNo())) {
+            this.scrapNoList.add(finalResult.getScrapNo());
+        }
         //退货数量
         this.salesReturn = finalResult.getSalesReturn();
         //退货损失
         this.salesReturnLoss = finalResult.getSalesReturnLoss();
         //退货产品编号
-        this.salesReturnNo = finalResult.getSalesReturnNo();
+        if (finalResult.getSalesReturnNo().contains(",")) {
+            this.salesReturnNoList = Arrays.asList(finalResult.getSalesReturnNo().split(","));
+        } else if (StringUtils.isNotBlank(finalResult.getSalesReturnNo())) {
+            this.salesReturnNoList.add(finalResult.getSalesReturnNo());
+        }
         //责任单位内
         this.unitResponsibilityWithin = finalResult.getUnitResponsibilityWithin();
         //责任单位外
