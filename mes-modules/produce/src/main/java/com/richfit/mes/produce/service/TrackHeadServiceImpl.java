@@ -104,8 +104,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
-        if(!StringUtils.isNullOrEmpty(trackHead.getDrawingNo())){
-            trackHead.setDrawingNo(DrawingNoUtil.queryLikeSql("drawing_no",trackHead.getDrawingNo()));
+        if (!StringUtils.isNullOrEmpty(trackHead.getDrawingNo())) {
+            trackHead.setDrawingNo(DrawingNoUtil.queryLikeSql("drawing_no", trackHead.getDrawingNo()));
         }
         List<TrackHead> headList = trackHeadMapper.selectTrackHeadAccount(trackHead);
         return headList;
@@ -454,8 +454,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     private void beforeSaveItemDeal(List<TrackItem> trackItems) {
         //工序校验，避免空工序
-        if (trackItems == null && trackItems.size() == 0) {
-            throw new GlobalException("工艺工序不能为空，请核对数据后重试", ResultCode.FAILED);
+        if (trackItems == null || trackItems.size() == 0) {
+            return;
         }
         //升序排列 便于原工序顺序赋值
         trackItems.sort((t1, t2) -> t1.getSequenceOrderBy().compareTo(t2.getSequenceOrderBy()));
@@ -517,44 +517,40 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 break;
             }
         }
-
-        if(!ObjectUtil.isEmpty(trackItems) && trackItems.size()>0){
-            //数据异常没有当前工序时，对第一个工序进行当前工序赋值
-            if (currentTrackItem == null) {
-                trackItems.get(0).setIsCurrent(1);
-                currentTrackItem = trackItems.get(0);
+        //数据异常没有当前工序时，对第一个工序进行当前工序赋值
+        if (currentTrackItem == null) {
+            trackItems.get(0).setIsCurrent(1);
+            currentTrackItem = trackItems.get(0);
+        }
+        //初始化数据，处理当前工序状态
+        for (TrackItem trackItem : trackItems) {
+            if (trackItem.getId() != currentTrackItem.getId()) {
+                trackItem.setIsCurrent(0);
             }
-            //初始化数据，处理当前工序状态
-            for (TrackItem trackItem : trackItems) {
-                if (trackItem.getId() != currentTrackItem.getId()) {
-                    trackItem.setIsCurrent(0);
-                }
-            }
-            //如果当前工序是并行工序的情况，重新进行当前工序赋值
-            if (currentTrackItem.getOptParallelType() == 1) {
-                //当前工序下工序如果是并行工序处理
-                for (int i = index; i < trackItems.size(); i++) {
-                    if (trackItems.get(i).getOptSequence() > currentTrackItem.getOptSequence()) {
-                        if (trackItems.get(i).getOptParallelType() == 1) {
-                            trackItems.get(i).setIsCurrent(1);
-                        } else {
-                            break;
-                        }
+        }
+        //如果当前工序是并行工序的情况，重新进行当前工序赋值
+        if (currentTrackItem.getOptParallelType() == 1) {
+            //当前工序下工序如果是并行工序处理
+            for (int i = index; i < trackItems.size(); i++) {
+                if (trackItems.get(i).getOptSequence() > currentTrackItem.getOptSequence()) {
+                    if (trackItems.get(i).getOptParallelType() == 1) {
+                        trackItems.get(i).setIsCurrent(1);
+                    } else {
+                        break;
                     }
                 }
-                //当前工序上工序如果是并行工序处理
-                for (int i = index; i >= 0; i--) {
-                    if (trackItems.get(i).getOptSequence() < currentTrackItem.getOptSequence()) {
-                        if (trackItems.get(i).getOptParallelType() == 1) {
-                            trackItems.get(i).setIsCurrent(1);
-                        } else {
-                            break;
-                        }
+            }
+            //当前工序上工序如果是并行工序处理
+            for (int i = index; i >= 0; i--) {
+                if (trackItems.get(i).getOptSequence() < currentTrackItem.getOptSequence()) {
+                    if (trackItems.get(i).getOptParallelType() == 1) {
+                        trackItems.get(i).setIsCurrent(1);
+                    } else {
+                        break;
                     }
                 }
             }
         }
-
     }
 
     /**
@@ -1223,7 +1219,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("head.material_certificate_no", certificateNo);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            DrawingNoUtil.queryEq(queryWrapper,"head.drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(queryWrapper, "head.drawing_no", drawingNo);
         }
         queryWrapper.eq("head.branch_code", branchCode);
         queryWrapper.eq("head.tenant_id", tenantId);
@@ -1249,7 +1245,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         queryWrapper.le("create_time", calendar.getTime());
         if (!StringUtils.isNullOrEmpty(standing.getDrawingNo())) {
-            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", standing.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", standing.getDrawingNo());
         }
         if (!StringUtils.isNullOrEmpty(standing.getDocumentaryId())) {
             queryWrapper.eq("track_no", standing.getDocumentaryId());
@@ -1290,7 +1286,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("head.work_no", queryWork.getWorkId());
         }
         if (null != queryWork.getDrawingNo()) {
-            DrawingNoUtil.queryEq(queryWrapper,"head.drawing_no", queryWork.getWorkId());
+            DrawingNoUtil.queryEq(queryWrapper, "head.drawing_no", queryWork.getWorkId());
         }
         if (null != queryWork.getTrackNo()) {
             queryWrapper.eq("head.track_no", queryWork.getTrackNo());
@@ -1334,7 +1330,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.le("create_time", calendar.getTime());
         }
         if (!StringUtils.isNullOrEmpty(tailAfter.getDrawingNo())) {
-            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", tailAfter.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", tailAfter.getDrawingNo());
         }
         if (!StringUtils.isNullOrEmpty(tailAfter.getTrackNo())) {
             queryWrapper.ge("track_no", tailAfter.getTrackNo());
@@ -1704,7 +1700,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public List<Map> selectTrackStoreCount(String drawingNos) {
         List<String> list = Arrays.asList(drawingNos.split(","));
-        return trackHeadMapper.selectTrackStoreCount(DrawingNoUtil.queryInSql("drawing_no",list));
+        return trackHeadMapper.selectTrackStoreCount(DrawingNoUtil.queryInSql("drawing_no", list));
     }
 
     @Override

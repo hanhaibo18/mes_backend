@@ -116,7 +116,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
      * 是否当前工序
      */
     @ApiModelProperty(value = "是否当前工序", dataType = "Integer")
-    private Integer isCurrent;
+    private Integer isCurrent = 0;
     /**
      * 是否开工
      */
