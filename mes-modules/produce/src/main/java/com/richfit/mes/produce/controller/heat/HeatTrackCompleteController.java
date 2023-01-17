@@ -172,6 +172,7 @@ public class HeatTrackCompleteController extends BaseController {
                 TrackHead head = headService.getById(trackItem.getTrackHeadId());
                 trackItem.setTrackNo(head.getTrackNo());
                 trackItem.setProductName(head.getProductName());
+                trackItem.setWeight(head.getWeight());
             }
             return CommonResult.success(list);
 

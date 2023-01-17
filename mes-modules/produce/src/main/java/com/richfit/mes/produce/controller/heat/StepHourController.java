@@ -59,7 +59,9 @@ public class StepHourController {
                 .eq("step_name",stepHour.getStepName());
         List<StepHour> list = stepHourService.list(queryWrapper);
         if(list.size()>0){
-            return CommonResult.failed("此版本下已经存在报工类型（"+stepHour.getStepType()+"）步骤名（"+stepHour.getStepName()+"）的步骤工时，无法保存！");
+            if((!StringUtils.isNullOrEmpty(stepHour.getId()) && !list.get(0).getId().equals(stepHour.getId())) || StringUtils.isNullOrEmpty(stepHour.getId())){
+                return CommonResult.failed("此版本下已经存在报工类型（"+stepHour.getStepType()+"）步骤名（"+stepHour.getStepName()+"）的步骤工时，无法保存！");
+            }
         }
         return CommonResult.success(stepHourService.saveOrUpdate(stepHour));
     }

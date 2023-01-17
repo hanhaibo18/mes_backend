@@ -218,6 +218,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private Integer optType;
     @TableField(exist = false)
+    private Integer optNo;
+    @TableField(exist = false)
     private Integer optSequence;
     @TableField(exist = false)
     private Integer technologySequence;
