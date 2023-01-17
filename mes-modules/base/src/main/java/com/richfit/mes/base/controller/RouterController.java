@@ -370,7 +370,8 @@ public class RouterController extends BaseController {
 
             // 复制工艺，名字加复制
             Router r = routers.get(0);
-            r.setId("");
+            String copyRouterId = UUID.randomUUID().toString().replaceAll("-", "");
+            r.setId(copyRouterId);
             String copyName = r.getRouterName() + "复制";
             String copyNo = r.getRouterNo() + "复制";
             r.setCreateTime(new Date());
@@ -386,13 +387,6 @@ public class RouterController extends BaseController {
             r.setRouterName(copyName);
             r.setRouterNo(copyNo);
             routerService.save(r);
-
-            //查询新工艺ID
-            QueryWrapper<Router> queryWrapper3 = new QueryWrapper<Router>();
-            queryWrapper3.eq("router_no", copyNo);
-            queryWrapper3.eq("branch_code", routers.get(0).getBranchCode());
-            List<Router> copyRouters = routerService.list(queryWrapper3);
-            String copyRouterId = copyRouters.get(0).getId();
 
             // 复制工艺路径
             for (int i = 0; i < sequences.size(); i++) {
