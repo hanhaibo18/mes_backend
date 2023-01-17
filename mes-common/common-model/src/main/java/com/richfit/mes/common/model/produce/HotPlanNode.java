@@ -12,7 +12,7 @@ import lombok.Data;
  * @author 
  */
 @Data
-public class HotPlanNode extends BaseEntity<HotModelStore> implements Serializable {
+public class HotPlanNode   implements Serializable {
     private String id;
 
     /**
