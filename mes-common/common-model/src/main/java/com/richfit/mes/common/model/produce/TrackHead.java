@@ -156,6 +156,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "优先级")
     private String priority;
 
+    @ApiModelProperty(value = "使用的料单产品编码", dataType = "String")
+    private String userProductNo;
+
     @ApiModelProperty(value = "数量")
     private Integer number;
 
@@ -410,11 +413,11 @@ public class TrackHead extends BaseEntity<TrackHead> {
     /**
      * 无用属性
      */
-    private String userProductNo;
-    private Integer startNo;
-    private Integer endNo;
-    private String suffixNo;
-    private String userMaterialNo;
+
+//    private Integer startNo;
+//    private Integer endNo;
+//    private String suffixNo;
+//    private String userMaterialNo;
 
 
     @TableField(exist = false)
