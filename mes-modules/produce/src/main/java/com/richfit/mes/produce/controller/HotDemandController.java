@@ -175,8 +175,17 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/submit_or_revocation")
     public CommonResult submitDemand(@RequestBody List<String> idList,Integer submitState) {
+        //需求撤回需要校验是否被热工确认,已经确认的不能撤回
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+        queryWrapper.in("id",idList);
+        List<HotDemand> demands = hotDemandService.list(queryWrapper);
+        for (HotDemand demand : demands) {
+            if (demand.getProduceRatifyState()==1){
+                return CommonResult.failed(demand.getDemandName()+" 已经批准生产,不可撤回");
+            }
+        }
 
-        UpdateWrapper updateWrapper=new UpdateWrapper();
+        UpdateWrapper<HotDemand> updateWrapper=new UpdateWrapper();
         updateWrapper.set("submit_state",submitState);//设置提报状态
         updateWrapper.in("id",idList);
         boolean update = hotDemandService.update(updateWrapper);
@@ -423,6 +432,8 @@ public class HotDemandController extends BaseController {
         this.convertAndSave(currentUser, hotDemands);
         UpdateWrapper updateWrapper=new UpdateWrapper();
         updateWrapper.set("produce_ratify_state",ratifyState);//设置提报状态
+        updateWrapper.set("issue_time",new Date());//设置下发时间
+
         updateWrapper.in("id",idList);
         boolean update = hotDemandService.update(updateWrapper);
         if (update) return CommonResult.success(ResultCode.SUCCESS);
