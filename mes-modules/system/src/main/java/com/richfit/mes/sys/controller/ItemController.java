@@ -303,7 +303,9 @@ public class ItemController extends BaseController {
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("class_id", itemClassList.get(0).getId());
         wrapper.eq("tenant_id", tenantId);
-        return CommonResult.success(itemParamService.list(wrapper));
+        List<ItemParam> list = itemParamService.list(wrapper);
+        list.forEach(item -> item.setValue(item.getCode()));
+        return CommonResult.success(list);
     }
 
 }
