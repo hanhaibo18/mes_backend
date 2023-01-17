@@ -266,6 +266,22 @@ public class TrackCheckController extends BaseController {
             ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackCheck> checks = trackCheckService.queryCheckPage(new Page<TrackCheck>(page, limit), queryWrapper);
+            //收集跟单分流表id
+            List<String> flowIdList=new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(checks.getRecords())){
+                flowIdList = checks.getRecords().stream().map(x -> x.getFlowId()).collect(Collectors.toList());
+            }
+            List<TrackFlow> flowList=new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(flowIdList)){
+                QueryWrapper<TrackFlow> flowQueryWrapper=new QueryWrapper<>();
+                flowQueryWrapper.in("id",flowIdList);
+                flowList = trackHeadFlowService.list(flowQueryWrapper);
+            }
+            Map<String, TrackFlow> flowMap=new HashMap<>();
+            if(CollectionUtils.isNotEmpty(flowList)){
+                flowMap = flowList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            }
+
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
                 TrackItem trackItem = trackItemService.getById(check.getTiId());
@@ -282,7 +298,8 @@ public class TrackCheckController extends BaseController {
                     check.setOptType(trackItem.getOptType());
                     check.setIsCurrent(trackItem.getIsCurrent());
                 }
-
+                TrackFlow trackFlow = flowMap.get(check.getFlowId());
+                check.setProductSourceName(trackFlow==null?"":trackFlow.getProductSourceName());//产品来源名称（热工）
             }
             return CommonResult.success(checks);
         } catch (Exception e) {
