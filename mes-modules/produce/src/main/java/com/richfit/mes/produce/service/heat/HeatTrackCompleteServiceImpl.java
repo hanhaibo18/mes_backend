@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
@@ -43,6 +44,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private TrackHeadService trackHeadService;
     @Autowired
     private TrackCompleteMapper trackCompleteMapper;
+    @Autowired
+    private RgDeviceService rgDeviceService;
 
 
     @Override
@@ -78,6 +81,12 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         boolean isFinal = TrackComplete.IS_FINAL_STEP.equals(heatCompleteDto.getTrackCompleteList().get(0).getIsFinalStep());
         //报工信息
         TrackComplete complete = heatCompleteDto.getTrackCompleteList().get(0);
+        //处理炉设备转换
+        String deviceName = null;
+        if(!StringUtils.isNullOrEmpty(complete.getDeviceId())){
+            RgDevice rgDevice = rgDeviceService.getById(complete.getDeviceId());
+            deviceName = ObjectUtil.isEmpty(rgDevice) ? null : rgDevice.getDeviceName();
+        }
         //保存报工信息(给步骤分组id赋值)
         String stepGroupId = UUID.randomUUID().toString().replaceAll("-", "");
         //保存每一个工序的报工信息
@@ -109,6 +118,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
                 trackComplete.setCompleteTime(new Date());
                 trackComplete.setDetectionResult("-");
+                trackComplete.setDeviceName(deviceName);
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 //设置为当前工序
                 trackComplete.setIsCurrent(TrackComplete.YES_IS_CURRENT);
@@ -134,6 +144,49 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         }
         //更新设置预装炉信息
         completeUpdatePreChargeFurnaceInfo(heatCompleteDto, isFinal);
+        return true;
+    }
+
+    /**
+     * 编辑报工
+     * @param trackCompleteList
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateComplete(List<TrackComplete> trackCompleteList){
+        //校验报工信息
+        if (null == trackCompleteList && trackCompleteList.isEmpty()) {
+            throw new GlobalException("报工人员不能为空",ResultCode.FAILED);
+        }
+        //报工工序ids
+        TrackComplete complete = trackCompleteList.get(0);
+        String stepGroupId = complete.getStepGroupId();
+        QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
+        wrapper.eq("step_group_id",stepGroupId);
+        List<TrackComplete> completes = trackCompleteMapper.queryList(wrapper);
+        Set<String> tiIds = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
+        //删除旧的
+        trackCompleteMapper.delete(wrapper);
+        //保存新的数据
+        for (String tiId : tiIds) {
+            TrackItem trackItem = trackItemService.getById(tiId);
+            //派工信息
+            Assign assign = trackAssignService.list(new QueryWrapper<Assign>().eq("ti_id", tiId)).get(0);
+
+            for (TrackComplete trackComplete : trackCompleteList) {
+                trackComplete.setId(null);
+                trackComplete.setAssignId(assign.getId());
+                trackComplete.setTiId(tiId);
+                trackComplete.setTrackId(trackItem.getTrackHeadId());
+                trackComplete.setTrackNo(trackItem.getTrackNo());
+                trackComplete.setProdNo(trackItem.getProductNo());
+                trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackComplete.setCompleteTime(new Date());
+                trackComplete.setDetectionResult("-");
+                trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            }
+            this.saveBatch(trackCompleteList);
+        }
         return true;
     }
 
@@ -239,6 +292,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private void completeUpdatePreChargeFurnaceInfo(HeatCompleteDto heatCompleteDto, boolean isFinal) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(heatCompleteDto.getPrechargeFurnaceId());
         String currStep = prechargeFurnace.getCurrStep();
+        prechargeFurnace.setDealFurnace(heatCompleteDto.getTrackCompleteList().get(0).getDeviceName());
         //上工步
         prechargeFurnace.setUpStep(currStep);
         prechargeFurnace.setCurrStep(heatCompleteDto.getTrackCompleteList().get(0).getStep());
@@ -258,17 +312,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         trackCompleteQueryWrapper.eq("precharge_furnace_id",prechargeFurnace.getId())
                 .eq("step",prechargeFurnace.getCurrStep());
         List<TrackComplete> list = this.list(trackCompleteQueryWrapper);
-        Map<String, List<TrackComplete>> itemCompleteMap = list.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
-        int number = 0;
-        for (Map.Entry<String, List<TrackComplete>> itemCompleteEntry : itemCompleteMap.entrySet()) {
-            if(!ObjectUtil.isEmpty(itemCompleteEntry)){
-                for (TrackComplete trackComplete : itemCompleteEntry.getValue()) {
-                    if(trackComplete.getStep()==currStep){
-                        number+=1;
-                    }
-                }
-            }
-        }
+        Map<String, List<TrackComplete>> itemCompleteMap = list.stream().collect(Collectors.groupingBy(item->item.getStepGroupId()));
+        int number = itemCompleteMap.keySet().size();
         prechargeFurnace.setNumber(String.valueOf(number));
 
         prechargeFurnaceService.updateById(prechargeFurnace);

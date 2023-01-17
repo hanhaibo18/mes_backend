@@ -2,38 +2,34 @@ package com.richfit.mes.produce.controller.heat;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.common.model.produce.TrackComplete;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
-import com.richfit.mes.produce.service.TrackCompleteService;
+import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.HeatTrackCompleteService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
-import com.richfit.mes.produce.utils.DrawingNoUtil;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +51,8 @@ public class HeatTrackCompleteController extends BaseController {
     private SystemServiceClient systemServiceClient;
     @Autowired
     private TrackItemService trackItemService;
+    @Autowired
+    private TrackHeadService headService;
 
 
     @ApiOperation(value = "报工")
@@ -62,6 +60,14 @@ public class HeatTrackCompleteController extends BaseController {
     public CommonResult<Boolean> saveComplete(@ApiParam(value = "查询条件", required = true) @RequestBody HeatCompleteDto heatCompleteDto) throws Exception {
         return CommonResult.success(heatTrackCompleteService.saveComplete(heatCompleteDto));
     }
+
+    @ApiOperation(value = "编辑报工")
+    @PostMapping("/updateComplete")
+    public CommonResult<Boolean> updateComplete(@RequestBody HeatCompleteDto heatCompleteDto) throws Exception {
+        List<TrackComplete> trackCompleteList = heatCompleteDto.getTrackCompleteList();
+        return CommonResult.success(heatTrackCompleteService.updateComplete(trackCompleteList));
+    }
+
 
     @ApiOperation(value = "开工")
     @GetMapping("/startWork")
@@ -130,6 +136,18 @@ public class HeatTrackCompleteController extends BaseController {
             }
         });
         Map<String, List<TrackComplete>> returnMap = new HashMap<>();
+        //每一步骤人员列表
+        for (TrackComplete complete : stepList) {
+            List<CompleteUserInfoDto> stepUserInfos = new ArrayList<>();
+            List<TrackComplete> completes1 = stepGroup.get(complete.getStepGroupId());
+            for (TrackComplete trackComplete : completes1) {
+                CompleteUserInfoDto completeUserInfoDto = new CompleteUserInfoDto();
+                BeanUtils.copyProperties(trackComplete,completeUserInfoDto);
+                stepUserInfos.add(completeUserInfoDto);
+            }
+            complete.setUserInfos(stepUserInfos);
+        }
+
         stepList.sort((t1,t2)->t1.getCreateTime().compareTo(t2.getCreateTime()));
         userList.sort((t1,t2)->t1.getCreateTime().compareTo(t2.getCreateTime()));
 
@@ -141,14 +159,21 @@ public class HeatTrackCompleteController extends BaseController {
     @ApiOperation(value = "（已报工）根据步骤id查询跟单工序信息")
     @GetMapping("/queryItemListByStepGroupId")
     public CommonResult<List<TrackItem>> queryItemListByStepGroupId(@ApiParam(value = "步骤分组id（stepGroupId）", required = true) @RequestParam String stepGroupId){
+        TrackComplete trackComplete = heatTrackCompleteService.getById(stepGroupId);
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
-        wrapper.eq("step_group_id",stepGroupId);
+        wrapper.eq("step_group_id",trackComplete.getStepGroupId());
         List<TrackComplete> stepCompletes = heatTrackCompleteService.list(wrapper);
         List<String> itemIds = stepCompletes.stream().map(TrackComplete::getTiId).collect(Collectors.toList());
         if(itemIds.size()>0){
             QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
             trackItemQueryWrapper.in("id",itemIds);
-            return CommonResult.success(trackItemService.list(trackItemQueryWrapper));
+            List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
+            for (TrackItem trackItem : list) {
+                TrackHead head = headService.getById(trackItem.getTrackHeadId());
+                trackItem.setTrackNo(head.getTrackNo());
+                trackItem.setProductName(head.getProductName());
+            }
+            return CommonResult.success(list);
 
         }
         return CommonResult.success(new ArrayList<TrackItem>());

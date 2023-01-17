@@ -161,7 +161,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
         }
         queryWrapper.and(wrapper -> wrapper.eq("final.unit_treatment_one", SecurityUtils.getCurrentUser().getTenantId()).or().eq("final.unit_treatment_two", SecurityUtils.getCurrentUser().getTenantId()));
-        queryWrapper.and(wrapper -> wrapper.eq("dis.type", 3).or().eq("dis.tyep", 4));
+        queryWrapper.and(wrapper -> wrapper.eq("dis.type", 3).or().eq("dis.type", 4));
         return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
@@ -246,6 +246,24 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
         BeanUtils.copyProperties(disqualificationDto, finalResult);
         finalResult.setId(disqualification.getId());
+        //让步接收产品编号
+        finalResult.setAcceptDeviationNo(String.join(",", disqualificationDto.getAcceptDeviationNoList()));
+        //返修后产品编号
+        finalResult.setRepairNo(String.join(",", disqualificationDto.getRepairNoList()));
+        //报废后产品编号
+        finalResult.setScrapNo(String.join(",", disqualificationDto.getScrapNoList()));
+        //退货产品编号
+        finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
+        //处理意见数据
+        TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+        switch (disqualification.getType()) {
+            case 2:
+                finalResult.setQualityName(user.getEmplName());
+                finalResult.setQualityTime(new Date());
+                break;
+            default:
+                break;
+        }
         finalResultService.saveOrUpdate(finalResult);
         //不合格意见
         //判断申请单状态是1 意见列表为空
@@ -428,6 +446,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.DisqualificationFinalResult(finalResult);
             //处理质控工程师列表
             disqualificationItemVo.setUserList(Arrays.asList(disqualificationItemVo.getQualityCheckBy().split(",")));
+            //处理
             //查询流水记录
             //查询文件
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));

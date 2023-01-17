@@ -1,7 +1,9 @@
 package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -181,6 +183,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @ApiModelProperty(value = "KR7280min", dataType = "Integer")
     protected Double krCool;
     @ApiModelProperty(value = "实际干活时间", dataType = "String")
+    @JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd mm:dd:ss")
     protected Date actualWorkTime;
     @ApiModelProperty(value = "是否当前步骤", dataType = "Integer")
     protected Integer isCurrent;
@@ -267,4 +270,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否叶子结点", dataType = "Boolean")
     private Boolean isLeafNodes;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "步骤人员信息", dataType = "List<Map>")
+    private List<CompleteUserInfoDto> userInfos;
 }
