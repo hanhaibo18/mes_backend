@@ -2,9 +2,11 @@ package com.richfit.mes.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.ItemClass;
@@ -168,7 +170,7 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "查询字典参数(下拉框值)", notes = "根据分类id查询字典参数")
     @GetMapping("/item/paramList")
-    public CommonResult<List<ItemParam>> paramList( String classId) {
+    public CommonResult<List<ItemParam>> paramList(String classId) {
         QueryWrapper<ItemParam> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(classId)) {
             queryWrapper.eq("class_id", classId);
@@ -177,7 +179,7 @@ public class ItemController extends BaseController {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         queryWrapper.orderByAsc("order_num");
-        List<ItemParam> itemParamList = itemParamService.list( queryWrapper);
+        List<ItemParam> itemParamList = itemParamService.list(queryWrapper);
         for (ItemParam itemParam : itemParamList) {
             itemParam.setValue(itemParam.getCode());
         }
@@ -282,11 +284,26 @@ public class ItemController extends BaseController {
     @GetMapping("/param/find_by_code/inner")
     @Inner
     public CommonResult<ItemParam> findItemParamByCodeInner(String code, String tenantId) {
-
         QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
         wrapper.eq("code", code);
         wrapper.eq("tenant_id", tenantId);
         return CommonResult.success(itemParamService.getOne(wrapper));
+    }
+
+    @ApiOperation(value = "根据Code查询字典列表项", notes = "根据字典code查询列表项")
+    @GetMapping("/param/find_by_class_code")
+    public CommonResult<List<ItemParam>> findItemParamByCode(String code, String tenantId) {
+        QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("code", code);
+        queryWrapper.eq("tenant_id", tenantId);
+        List<ItemClass> itemClassList = itemClassService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(itemClassList)) {
+            throw new GlobalException("未查询到字典项", ResultCode.FAILED);
+        }
+        QueryWrapper<ItemParam> wrapper = new QueryWrapper<>();
+        wrapper.eq("class_id", itemClassList.get(0).getId());
+        wrapper.eq("tenant_id", tenantId);
+        return CommonResult.success(itemParamService.list(wrapper));
     }
 
 }
