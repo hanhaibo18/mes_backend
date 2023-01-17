@@ -178,9 +178,12 @@ public class TrackCheckController extends BaseController {
             if(CollectionUtils.isNotEmpty(assigns.getRecords())){
                  flowIdList = assigns.getRecords().stream().map(x -> x.getFlowId()).collect(Collectors.toList());
             }
-            QueryWrapper<TrackFlow> flowQueryWrapper=new QueryWrapper<>();
-            flowQueryWrapper.in("id",flowIdList);
-            List<TrackFlow> flowList = trackHeadFlowService.list(flowQueryWrapper);
+            List<TrackFlow> flowList=new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(flowIdList)){
+                QueryWrapper<TrackFlow> flowQueryWrapper=new QueryWrapper<>();
+                flowQueryWrapper.in("id",flowIdList);
+                flowList = trackHeadFlowService.list(flowQueryWrapper);
+            }
             Map<String, TrackFlow> flowMap=new HashMap<>();
             if(CollectionUtils.isNotEmpty(flowList)){
                  flowMap = flowList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
