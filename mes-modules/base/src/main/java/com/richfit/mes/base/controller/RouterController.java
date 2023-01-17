@@ -397,7 +397,7 @@ public class RouterController extends BaseController {
             // 复制工艺路径
             for (int i = 0; i < sequences.size(); i++) {
                 sequences.get(i).setRouterId(copyRouterId);
-                sequences.get(i).setId("");
+                sequences.get(i).setId(UUID.randomUUID().toString().replaceAll("-", ""));
                 sequences.get(i).setCreateTime(new Date());
                 sequences.get(i).setModifyTime(new Date());
                 if (null != SecurityUtils.getCurrentUser()) {
@@ -578,7 +578,7 @@ public class RouterController extends BaseController {
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode) {
         try {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            DrawingNoUtil.queryIn(queryWrapper,"draw_no",drawNos);
+            DrawingNoUtil.queryIn(queryWrapper, "draw_no", drawNos);
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Router> routers = routerService.list(queryWrapper);
