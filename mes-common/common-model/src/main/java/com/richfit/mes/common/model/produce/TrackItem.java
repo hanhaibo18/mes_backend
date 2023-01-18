@@ -445,4 +445,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "预装炉id", dataType = "String")
     private Long prechargeFurnaceId;
+
+    @ApiModelProperty(value = "产品来源名称（热工）")
+    @TableField(exist = false)
+    private String productSourceName;
 }
