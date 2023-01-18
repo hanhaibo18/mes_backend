@@ -20,8 +20,10 @@ import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
 import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.CodeRuleService;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.utils.Code;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -67,6 +69,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private DisqualificationMapper disqualificationMapper;
+
+    @Resource
+    private CodeRuleService codeRuleService;
 
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
@@ -449,6 +454,22 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Override
     public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId) {
+        if (StrUtil.isBlank(tiId)) {
+            DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+            disqualificationItemVo.setTrackItemId(uuid);
+            //获取申请单编号
+            try {
+                String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+                disqualificationItemVo.setProcessSheetNo(disqualificationNo);
+                Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+                throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
+            }
+            return disqualificationItemVo;
+        }
         DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
         if (StrUtil.isNotBlank(disqualificationId)) {
             Disqualification disqualification = this.getById(disqualificationId);
