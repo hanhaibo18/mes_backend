@@ -17,7 +17,10 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
-import com.richfit.mes.produce.entity.quality.*;
+import com.richfit.mes.produce.entity.quality.DisqualificationDto;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
+import com.richfit.mes.produce.entity.quality.QueryCheckDto;
+import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.CodeRuleService;
@@ -33,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName: DisqualificationServiceImpl.java
@@ -428,36 +430,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public List<SignedRecordsVo> querySignedRecordsList(String disqualificationId) {
-        //查询意见表
-        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("disqualification_id", disqualificationId);
-        List<SignedRecordsVo> recordsVoList = SignedRecordsVo.list(userOpinionService.list(queryWrapper));
-        recordsVoList.forEach(records -> {
-            QueryWrapper<DisqualificationFinalResult> queryWrapperFinalResult = new QueryWrapper<>();
-//            queryWrapperFinalResult.eq("opinion_id", records.getId());
-            DisqualificationFinalResult finalResult = finalResultService.getOne(queryWrapperFinalResult);
-            if (null == finalResult) {
-                return;
-            }
-        });
-        //单查询开单时间
-        Disqualification disqualification = this.getById(disqualificationId);
-        SignedRecordsVo signedRecordsVo = new SignedRecordsVo();
-        signedRecordsVo.setHandlingTime(disqualification.getOrderTime());
-        //查询姓名
-        CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(disqualification.getCreateBy());
-        signedRecordsVo.setUserName(userAccount.getData().getEmplName());
-        //查询车间名称
-        CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(disqualification.getBranchCode(), disqualification.getTenantId());
-        signedRecordsVo.setBranchCodeName(branch.getData().getBranchName());
-        signedRecordsVo.setOpinion("提报不合格品申请单");
-        recordsVoList.add(0, signedRecordsVo);
-        return recordsVoList;
-    }
-
-    @Override
     public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId) {
+        //无缘查询详情
         if (StrUtil.isBlank(tiId)) {
             DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
             String uuid = UUID.randomUUID().toString().replaceAll("-", "");
@@ -474,6 +448,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             }
             disqualificationItemVo.setType("0");
             disqualificationItemVo.setSourceType(0);
+            disqualificationItemVo.setRepairNoList(Collections.emptyList());
+            disqualificationItemVo.setSalesReturnNoList(Collections.emptyList());
+            disqualificationItemVo.setAcceptDeviationNoList(Collections.emptyList());
+            disqualificationItemVo.setScrapNoList(Collections.emptyList());
             return disqualificationItemVo;
         }
         DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
@@ -504,23 +482,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean submitOpinions(SaveOpinionDto saveOpinionDto) {
-        savePerson(saveOpinionDto.getUserList(), saveOpinionDto.getId());
-        UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id", saveOpinionDto.getOpinionId());
-        updateWrapper.set("opinion", saveOpinionDto.getOpinion());
-        updateWrapper.set("type", saveOpinionDto.getType());
-        updateWrapper.set("modify_time", new Date());
-        return userOpinionService.update(updateWrapper);
-    }
-
-    @Override
-    public Boolean saveFinalResult(DisqualificationFinalResult disqualificationFinalResult) {
-        return finalResultService.save(disqualificationFinalResult);
-    }
-
-    @Override
     public List<Map<String, String>> queryProductNoList(String trackHeadId) {
         QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackHeadId);
@@ -535,20 +496,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return flowList;
     }
 
-
-    private List<TenantUserVo> queryOpinionUser(String disqualificationId) {
-        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("disqualification_id", disqualificationId);
-        //查询人员并拼接返回数据
-        List<DisqualificationUserOpinion> opinions = userOpinionService.list(queryWrapper);
-        return opinions.stream().map(user -> {
-            TenantUserVo tenantUserVo = new TenantUserVo();
-            tenantUserVo.setId(user.getUserId());
-            tenantUserVo.setEmplName(user.getUserName());
-            tenantUserVo.setBelongOrgId(user.getUserBranch());
-            return tenantUserVo;
-        }).collect(Collectors.toList());
-    }
 
     /**
      * 功能描述: 获取字典
