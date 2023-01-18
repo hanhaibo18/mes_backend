@@ -427,6 +427,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                                 trackItemService.save(item);
                             }
+                            //加载工时标准
+                            Map<String, List<Hour>> hourGoup = getHourGoupByTypeCodeAndOptName();
+                            for (TrackItem item : trackItems) {
+                                //工时计算
+                                Double aDouble = calculationHeatItemHour(item, hourGoup.get(item.getTypeCode() + "_" + item.getOptName()));
+                                item.setHeatHour(aDouble);
+                            }
+                            trackItemService.saveOrUpdateBatch(trackItems);
                         }
                     }
                 }
@@ -439,16 +447,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
 
         }
-        //加载工时标准
-        Map<String, List<Hour>> hourGoup = getHourGoupByTypeCodeAndOptName();
-        for (TrackItem item : trackItems) {
-            //工时计算
-            Double aDouble = calculationHeatItemHour(item, hourGoup.get(item.getTypeCode() + "_" + item.getOptName()));
-            item.setHeatHour(aDouble);
-        }
-        trackItemService.saveOrUpdateBatch(trackItems);
-
-
         return true;
     }
 

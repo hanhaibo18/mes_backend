@@ -444,6 +444,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
                 assignPersonQueryWrapper.eq("assign_id", assign.getId());
                 assign.setAssignPersons(trackAssignPersonService.list(assignPersonQueryWrapper));
+                assign.setTypeName(trackItem.getTypeName());
+                assign.setTypeCode(trackItem.getTypeCode());
             }
         }
         return queryPage;

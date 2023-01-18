@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,8 +34,6 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     @Resource
     private TrackAssignService trackAssignService;
     @Resource
-    public PublicService publicService;
-    @Resource
     private TrackItemService trackItemService;
     @Resource
     private PrechargeFurnaceService prechargeFurnaceService;
@@ -46,6 +45,10 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private TrackCompleteMapper trackCompleteMapper;
     @Autowired
     private RgDeviceService rgDeviceService;
+    @Autowired
+    private StepHourService stepHourService;
+    @Autowired
+    private StepHourVerService stepHourVerService;
 
 
     @Override
@@ -120,6 +123,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 trackComplete.setDetectionResult("-");
                 trackComplete.setDeviceName(deviceName);
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                trackComplete.setBranchCode(heatCompleteDto.getBranchCode());
                 //设置为当前工序
                 trackComplete.setIsCurrent(TrackComplete.YES_IS_CURRENT);
                 //预装炉id
@@ -127,7 +131,6 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 //步骤分组id
                 trackComplete.setStepGroupId(stepGroupId);
             }
-
             //最后一道工序需要激活下工序
             if(isFinal){
                 //检验人
@@ -138,10 +141,15 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             }else{
                 trackItem.setIsDoing(1);
                 trackItemService.updateById(trackItem);
+                //派工状态设置在制
+                assign.setState(1);
+                trackAssignService.updateById(assign);
             }
             //保存报工信息
             this.saveBatch(heatCompleteDto.getTrackCompleteList());
         }
+        //计算工时
+        calculationHour(stepGroupId);
         //更新设置预装炉信息
         completeUpdatePreChargeFurnaceInfo(heatCompleteDto, isFinal);
         return true;
@@ -187,6 +195,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             }
             this.saveBatch(trackCompleteList);
         }
+        //计算工时
+        this.calculationHour(stepGroupId);
         return true;
     }
 
@@ -308,15 +318,21 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             prechargeFurnace.setStepStatus(PrechargeFurnace.END_START_WORK);
         }
         //次数字段赋值
-        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
-        trackCompleteQueryWrapper.eq("precharge_furnace_id",prechargeFurnace.getId())
-                .eq("step",prechargeFurnace.getCurrStep());
-        List<TrackComplete> list = this.list(trackCompleteQueryWrapper);
-        Map<String, List<TrackComplete>> itemCompleteMap = list.stream().collect(Collectors.groupingBy(item->item.getStepGroupId()));
-        int number = itemCompleteMap.keySet().size();
+        int number = getNumber(prechargeFurnace.getId(),prechargeFurnace.getCurrStep());
         prechargeFurnace.setNumber(String.valueOf(number));
 
         prechargeFurnaceService.updateById(prechargeFurnace);
+    }
+
+    //同预装炉 相同步骤报工次数计算
+    private int getNumber(Long fuId,String step) {
+        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
+        trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
+                .eq("step",step);
+        List<TrackComplete> list = this.list(trackCompleteQueryWrapper);
+        Map<String, List<TrackComplete>> itemCompleteMap = list.stream().collect(Collectors.groupingBy(item->item.getStepGroupId()));
+
+        return itemCompleteMap.keySet().size();
     }
 
 
@@ -363,6 +379,73 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         }
 
         return returnMap;
+    }
+
+
+    /**
+     * 步骤工时计算  工序标准工时* 步骤工时标准比列 / 预装炉步骤次数 / 报工人数
+     * @param stepGroupId
+     * @return
+     */
+    public void calculationHour(String stepGroupId){
+        QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
+        wrapper.eq("step_group_id",stepGroupId);
+        List<TrackComplete> list = trackCompleteMapper.queryList(wrapper);
+        //报工步骤
+        if(list.size() == 0){
+            throw new GlobalException("当前步骤没有对应的报工信息，无法计算工时！",ResultCode.FAILED);
+        }
+        String stepName = list.get(0).getStep();
+
+        //判断使用哪个步骤工时标准
+        String stepType = "多步骤无保温";
+        String fuId = list.get(0).getPrechargeFurnaceId();
+        List<TrackComplete> trackCompletes = this.list(new QueryWrapper<TrackComplete>().eq("precharge_furnace_id", fuId));
+        List<String> stepNameList = trackCompletes.stream().map(TrackComplete::getStep).collect(Collectors.toList());
+        if(stepNameList.contains("保温")){
+            stepType = "多步骤有保温";
+        }
+
+        PrechargeFurnace fuInfo = prechargeFurnaceService.getById(fuId);
+        //该步骤的报工次数
+        int number = this.getNumber(fuInfo.getId(), stepName);
+
+        //查询当前激活的步骤工时标准版本
+        List<StepHourVer> stepHourVer = stepHourVerService.list(new QueryWrapper<StepHourVer>().eq("is_activate", StepHourVer.YES_ACTIVATE));
+        if(stepHourVer.size() == 0){
+            throw new GlobalException("当前没有激活的工时标准版本，无法报工时！",ResultCode.FAILED);
+        }
+        List<StepHour> stepHours = stepHourService.list(new QueryWrapper<StepHour>().eq("ver_id", stepHourVer.get(0).getId()).eq("step_type", stepType).eq("step_name",stepName));
+        if(stepHours.size()==0){
+            throw new GlobalException("当前激活的步骤工时版本中没有对应的步骤工时分配比例，无法报工时！",ResultCode.FAILED);
+        }
+
+        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
+        trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
+                .eq("step",stepName);
+        //修改报工信息的工时
+        Map<String, List<TrackComplete>> itemMap = this.queryList(trackCompleteQueryWrapper).stream().collect(Collectors.groupingBy(item->item.getStepGroupId()+"_"+item.getTiId()));
+        //修改后的报工信息
+        List<TrackComplete> updateCompletes = new ArrayList<>();
+
+        itemMap.forEach((key,value)->{
+            //该步骤报工人数
+            int poepleNumber = value.size();
+            BigDecimal stepHour = new BigDecimal(stepHours.get(0).getHourRatio());
+            for (TrackComplete complete : value) {
+                //工序标准工时
+                BigDecimal hour = complete.getHeatHour();
+                //报工工时
+                if(hour==null || hour.compareTo(new BigDecimal(0))==0){
+                    complete.setCompletedHours(0.0);
+                }else{
+                    BigDecimal completeHour = hour.multiply(stepHour).divide(new BigDecimal(number)).divide(new BigDecimal(poepleNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    complete.setCompletedHours(Double.parseDouble(String.valueOf(completeHour)));
+                }
+                updateCompletes.add(complete);
+            }
+        });
+        this.updateBatchById(updateCompletes);
     }
 
 
