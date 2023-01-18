@@ -35,4 +35,9 @@ public class ForDispatchingDto extends QueryPageDto {
     private String tempWork1;
     @ApiModelProperty(value = "预装炉id", dataType = "String")
     private String prechargeFurnaceId;
+
+    @ApiModelProperty(value = "排序字段", dataType = "String")
+    private String orderCol;
+    @ApiModelProperty(value = "排序", dataType = "String")
+    private String order;
 }
