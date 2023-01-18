@@ -307,6 +307,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             if (1 == disqualificationDto.getType() || 2 == disqualificationDto.getType()) {
                 return disqualificationDto.getType() + 1;
             }
+            //申请人最后一步填写
+            if (7 == disqualificationDto.getType()) {
+                return 8;
+            }
             //判断是否发起责任裁决
             if (1 == disqualificationDto.getIsResponsibility()) {
                 //进入则人裁决
@@ -386,13 +390,17 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public Boolean updateIsIssue(String id, String state) {
+    public Boolean updateIsIssue(String id) {
+        Disqualification disqualification = this.getById(id);
+        if (disqualification == null) {
+            throw new GlobalException("未查询到不合格信息", ResultCode.FAILED);
+        }
+        if (disqualification.getType() != 8) {
+            throw new GlobalException("流程还未结束,不允许关单", ResultCode.FAILED);
+        }
         UpdateWrapper<Disqualification> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id);
-        //开单状态增加开单时间
-        if ("1".equals(state)) {
-            updateWrapper.set("order_time", new Date());
-        }
+        updateWrapper.set("type", 9);
         return this.update(updateWrapper);
     }
 

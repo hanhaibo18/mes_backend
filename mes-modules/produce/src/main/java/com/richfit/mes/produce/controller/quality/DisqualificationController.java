@@ -55,18 +55,11 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.saveOrUpdateDisqualification(disqualification));
     }
 
-    @ApiOperation(value = "开单", notes = "发布申请单")
-    @ApiImplicitParam(name = "id", value = "申请单Id", required = true, paramType = "query", dataType = "String")
-    @GetMapping("/issueApplication")
-    public CommonResult<Boolean> issueApplication(String id) {
-        return CommonResult.success(disqualificationService.updateIsIssue(id, "1"));
-    }
-
     @ApiOperation(value = "关单", notes = "关闭申请单")
     @ApiImplicitParam(name = "id", value = "申请单Id", required = true, paramType = "query", dataType = "String")
     @GetMapping("/closeApplication")
     public CommonResult<Boolean> closeApplication(String id) {
-        return CommonResult.success(disqualificationService.updateIsIssue(id, "2"));
+        return CommonResult.success(disqualificationService.updateIsIssue(id));
     }
 
     @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")

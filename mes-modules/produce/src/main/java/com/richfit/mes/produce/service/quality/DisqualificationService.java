@@ -83,12 +83,11 @@ public interface DisqualificationService extends IService<Disqualification> {
      * 功能描述: 修改不合格申请单
      *
      * @param id
-     * @param state
      * @Author: xinYu.hou
      * @Date: 2022/9/30 10:24
      * @return: Boolean
      **/
-    Boolean updateIsIssue(String id, String state);
+    Boolean updateIsIssue(String id);
 
     /**
      * 功能描述: 查询质量检测部质检人员
