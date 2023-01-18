@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.utils.OptNameUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -108,11 +109,19 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     }
 
     private String optNames(List<Assign> assignList) {
-        Set<String> optNames = new HashSet();
+        if (assignList == null || assignList.size() == 0) {
+            return "";
+        }
+        Set<String> optNames = new HashSet<>();
+        String name = "";
         for (Assign assign : assignList) {
             //拼接工序名称
-            optNames.add(assign.getOptName());
+            name = OptNameUtil.optName(assign.getOptName());
+            optNames.add(name);
         }
-        return optNames.toString();
+        if (optNames.size() != 1) {
+            throw new GlobalException("只有工序名称相同的工序才能放到一个预装炉内！", ResultCode.FAILED);
+        }
+        return name;
     }
 }

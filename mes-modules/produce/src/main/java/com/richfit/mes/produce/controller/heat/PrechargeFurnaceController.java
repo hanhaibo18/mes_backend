@@ -2,7 +2,6 @@ package com.richfit.mes.produce.controller.heat;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.pagehelper.IPage;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -20,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
@@ -75,6 +75,7 @@ public class PrechargeFurnaceController extends BaseController {
             queryWrapper.ge("temp_work", tempWorkQ);
         }
         queryWrapper.eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId());
+        queryWrapper.in("status", new java.lang.String[]{"0", "1"});
         queryWrapper.orderByAsc("modify_time");
         return CommonResult.success(prechargeFurnaceService.list(queryWrapper));
     }
@@ -84,25 +85,25 @@ public class PrechargeFurnaceController extends BaseController {
     public CommonResult<Page<PrechargeFurnace>> pageQuery(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) {
         QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper();
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
-            int tempWorkZ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())?"0":dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
-            int tempWorkQ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())?"0":dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
+            int tempWorkZ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
+            int tempWorkQ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
             //小于等于
             queryWrapper.le("temp_work", tempWorkZ);
             //大于等于
             queryWrapper.ge("temp_work", tempWorkQ);
         }
-        queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getStartTime())
-                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()),"date_format(create_time, '%Y-%m-%d')",dispatchingDto.getEndTime());
+        queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()), "date_format(create_time, '%Y-%m-%d')", dispatchingDto.getStartTime())
+                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()), "date_format(create_time, '%Y-%m-%d')", dispatchingDto.getEndTime());
         if ("0,1".equals(dispatchingDto.getState())) {
             //查询本部门未开工的 和  自己开工的
-            queryWrapper.and(wrapper3->wrapper3.and(wrapper4->wrapper4.eq("step_status","0").eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId()))
-                    .or(wrapper->wrapper.eq("step_status","1").and(wrapper2->wrapper2.eq("start_work_by",SecurityUtils.getCurrentUser().getUserId()))));
+            queryWrapper.and(wrapper3 -> wrapper3.and(wrapper4 -> wrapper4.eq("step_status", "0").eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId()))
+                    .or(wrapper -> wrapper.eq("step_status", "1").and(wrapper2 -> wrapper2.eq("start_work_by", SecurityUtils.getCurrentUser().getUserId()))));
             queryWrapper.in("status", 0, 1);
         }
 
 
         if ("2".equals(dispatchingDto.getState())) {
-            queryWrapper.eq("start_work_by",SecurityUtils.getCurrentUser().getUserId());
+            queryWrapper.eq("start_work_by", SecurityUtils.getCurrentUser().getUserId());
             queryWrapper.in("status", 2);
         }
         queryWrapper.orderByAsc("modify_time");
