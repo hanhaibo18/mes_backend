@@ -361,6 +361,9 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "质控工程师显示")
     private String checkShow;
 
+    @ApiModelProperty(value = "来源状态 1=有来源 0=无来源")
+    private Integer sourceType;
+
     /**
      * 退货产品编号
      */

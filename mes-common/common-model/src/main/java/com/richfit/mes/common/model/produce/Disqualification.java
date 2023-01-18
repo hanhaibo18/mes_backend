@@ -143,6 +143,9 @@ public class Disqualification extends BaseEntity<Disqualification> {
      */
     private Date orderTime;
 
+    @ApiModelProperty(value = "来源状态 1=有来源 0=无来源")
+    private Integer sourceType;
+
     /**
      * 所属机构
      */

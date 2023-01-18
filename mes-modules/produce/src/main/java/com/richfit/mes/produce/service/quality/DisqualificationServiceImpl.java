@@ -312,6 +312,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             if (1 == disqualificationDto.getType() || 2 == disqualificationDto.getType()) {
                 return disqualificationDto.getType() + 1;
             }
+            //无源发布
+            if (0 == disqualificationDto.getType()) {
+                return 2;
+            }
             //申请人最后一步填写
             if (7 == disqualificationDto.getType()) {
                 return 8;
@@ -468,6 +472,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 log.error(e.getMessage());
                 throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
             }
+            disqualificationItemVo.setType("0");
+            disqualificationItemVo.setSourceType(0);
             return disqualificationItemVo;
         }
         DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
@@ -487,6 +493,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             //查询文件
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
         } else if (null != disqualificationItemVo) {
+            disqualificationItemVo.setSourceType(1);
             disqualificationItemVo.setAttachmentList(Collections.emptyList());
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
             disqualificationItemVo.setUserList(Collections.emptyList());

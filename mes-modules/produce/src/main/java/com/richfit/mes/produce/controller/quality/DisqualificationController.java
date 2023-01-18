@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
-import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.service.quality.DisqualificationAttachmentService;
@@ -103,23 +102,6 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryTechnology(queryCheckDto));
     }
 
-    @ApiOperation(value = "查询意见列表", notes = "查询意见列表")
-    @GetMapping(value = "/query_signedRecordsList")
-    public CommonResult<List<SignedRecordsVo>> querySignedRecordsList(String disqualificationId) {
-        return CommonResult.success(disqualificationService.querySignedRecordsList(disqualificationId));
-    }
-
-    @ApiOperation(value = "保存文件中间表数据", notes = "保存文件中间表数据")
-    @PostMapping("/saveAttachment")
-    public CommonResult<Boolean> saveAttachment(@RequestBody List<DisqualificationAttachment> attachments) {
-        return CommonResult.success(attachmentService.saveAttachment(attachments));
-    }
-
-    @ApiOperation(value = "保存意见", notes = "质检人员保存审核意见并增加质检人员")
-    @PostMapping("/submitOpinions")
-    public CommonResult<Boolean> submitOpinions(@RequestBody SaveOpinionDto saveOpinionDto) {
-        return CommonResult.success(disqualificationService.submitOpinions(saveOpinionDto));
-    }
 
     @ApiOperation(value = "保存最终结果", notes = "保存最终结果")
     @PostMapping("/saveFinalResult")
