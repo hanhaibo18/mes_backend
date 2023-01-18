@@ -141,6 +141,9 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @ApiModelProperty(value = "产品编号", dataType = "String")
     private String productNo;
     @TableField(exist = false)
+    @ApiModelProperty(value = "跟单类型 0单件 1批次")
+    private String trackType;
+    @TableField(exist = false)
     @ApiModelProperty(value = "是否有探伤记录", dataType = "Integer")
     private int isHaveRecord;
     @TableField(exist = false)
