@@ -133,4 +133,15 @@ public interface DisqualificationService extends IService<Disqualification> {
 //     * @return: IPage<DisqualificationService>
 //     **/
 //    IPage<Disqualification> queryQuality(QueryInspectorDto queryInspectorDto);
+
+    /**
+     * 功能描述: 跟单回滚
+     *
+     * @param id
+     * @param type
+     * @Author: xinYu.hou
+     * @Date: 2023/1/18 15:20
+     * @return: Boolean
+     **/
+    Boolean rollBack(String id, Integer type);
 }
