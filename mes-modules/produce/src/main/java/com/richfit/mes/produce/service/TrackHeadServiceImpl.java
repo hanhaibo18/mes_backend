@@ -1426,7 +1426,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 flag = true;
             }
         }
-        if (flag) {
+        if (!flag) {
             throw new GlobalException("当前跟单已全部派工，全部派工后跟单将不能差分，请先清除当前工序的派工记录。", ResultCode.FAILED);
         }
         //更新原跟单生产线
