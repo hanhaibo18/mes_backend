@@ -541,10 +541,18 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return this.updateById(disqualification);
     }
 
+    @Override
+    public Boolean rollBackAll(String id) {
+        UpdateWrapper<Disqualification> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", id);
+        updateWrapper.set("type", 1);
+        return this.update(updateWrapper);
+    }
 
-//    private void saveRecord(Disqualification disqualification) {
-//
-//    }
+
+    private void saveRecord(Disqualification disqualification) {
+
+    }
 
     /**
      * 功能描述: 获取字典
