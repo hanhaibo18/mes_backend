@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 public class Disqualification extends BaseEntity<Disqualification> {
 
+    private static final long serialVersionUID = -1482899816223711387L;
     /**
      * 跟单Id
      */
@@ -158,7 +160,7 @@ public class Disqualification extends BaseEntity<Disqualification> {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "文件列表", dataType = "List<DisqualificationAttachment>")
-    private List<DisqualificationAttachment> attachmentList;
+    private List<DisqualificationAttachment> attachmentList = new ArrayList<>();
 
     /**
      * 检验人员

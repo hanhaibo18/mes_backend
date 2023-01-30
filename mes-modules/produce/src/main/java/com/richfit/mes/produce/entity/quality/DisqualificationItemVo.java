@@ -374,7 +374,7 @@ public class DisqualificationItemVo {
     private List<DisqualificationUserOpinion> userOpinionsList;
 
     @ApiModelProperty(value = "文件列表")
-    private List<DisqualificationAttachment> attachmentList;
+    private List<DisqualificationAttachment> attachmentList = new ArrayList<>();
 
     /**
      * 不合格类型
