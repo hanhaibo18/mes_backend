@@ -566,6 +566,7 @@ public class ProduceInspectionRecordService {
                         .set("audit_by",String.valueOf(value.get(0).getAuditBy()))
                         .set("check_by",SecurityUtils.getCurrentUser().getUserId())
                         .set("insp_temp_type",String.valueOf(value.get(0).getTempType()))
+                        .set("audit_status",String.valueOf(value.get(0).getIsAudit()))
                         .set("audit_remark",String.valueOf(value.get(0).getAuditRemark()));
                 inspectionPowerService.update(updateWrapper);
             }
