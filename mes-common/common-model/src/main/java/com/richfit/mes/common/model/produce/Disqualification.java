@@ -139,14 +139,12 @@ public class Disqualification extends BaseEntity<Disqualification> {
     private String qualityCheckBy;
 
     /**
-     * 不合格情况
-     */
-    private String disqualificationCondition;
-
-    /**
      * 开单时间
      */
     private Date orderTime;
+
+    @ApiModelProperty(value = "来源状态 1=有来源 0=无来源")
+    private Integer sourceType;
 
     /**
      * 所属机构

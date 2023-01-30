@@ -17,11 +17,16 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
-import com.richfit.mes.produce.entity.quality.*;
+import com.richfit.mes.produce.entity.quality.DisqualificationDto;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
+import com.richfit.mes.produce.entity.quality.QueryCheckDto;
+import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.CodeRuleService;
 import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.utils.Code;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -31,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName: DisqualificationServiceImpl.java
@@ -67,6 +71,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private DisqualificationMapper disqualificationMapper;
+
+    @Resource
+    private CodeRuleService codeRuleService;
 
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
@@ -117,32 +124,80 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public IPage<Disqualification> queryCheck(QueryCheckDto queryCheckDto) {
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
         disqualificationQueryWrapper(queryWrapper, queryCheckDto);
-        queryWrapper.eq(StrUtil.isNotBlank(queryCheckDto.getTenantId()), "tenant_id", queryCheckDto.getTenantId());
-        queryWrapper.eq("type", 2);
-        queryWrapper.like("quality_check_by", SecurityUtils.getCurrentUser().getUsername() + ",");
-        return this.page(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+        queryWrapper.eq(StrUtil.isNotBlank(queryCheckDto.getTenantId()), "dis.tenant_id", queryCheckDto.getTenantId());
+        //判断是否处理 true=已处理 false=未处理
+        if (Boolean.TRUE.equals(queryCheckDto.getIsDispose())) {
+            queryWrapper.gt("dis.type", 2);
+            queryWrapper.isNotNull("final.quality_control_opinion");
+        } else {
+            queryWrapper.eq("dis.type", 2);
+        }
+        queryWrapper.like("dis.quality_check_by", SecurityUtils.getCurrentUser().getUsername() + ",");
+        return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
 
     @Override
     public IPage<Disqualification> queryDealWith(QueryCheckDto queryCheckDto) {
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        //判断是否处理 true=已处理 false=未处理
+        if (Boolean.TRUE.equals(queryCheckDto.getIsDispose())) {
+            queryWrapper.and(wrapper -> wrapper
+                    .and(one -> one.gt("dis.type", 3)
+                            .eq("final.unit_treatment_one", tenantId)
+                            .isNotNull("unit_treatment_one_opinion"))
+                    .or(two -> two.gt("dis.type", 4)
+                            .eq("final.unit_treatment_two", tenantId)
+                            .isNotNull("unit_treatment_two_opinion")));
+        } else {
+            queryWrapper.and(wrapper -> wrapper
+                    .and(one -> one.eq("dis.type", 3).eq("final.unit_treatment_one", tenantId))
+                    .or(two -> two.eq("dis.type", 4).eq("final.unit_treatment_two", tenantId)));
+        }
+        return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+    @Override
+    public IPage<Disqualification> queryResponsibility(QueryCheckDto queryCheckDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
+        //判断是否处理 true=已处理 false=未处理
+        if (Boolean.TRUE.equals(queryCheckDto.getIsDispose())) {
+            queryWrapper.gt("type", 5);
+            queryWrapper.isNotNull("responsibility_opinion");
+        } else {
+            queryWrapper.eq("type", 5);
+        }
+        return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+    @Override
+    public IPage<Disqualification> queryTechnology(QueryCheckDto queryCheckDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
+        //判断是否处理 true=已处理 false=未处理
+        if (Boolean.TRUE.equals(queryCheckDto.getIsDispose())) {
+            queryWrapper.gt("type", 6);
+            queryWrapper.isNotNull("technology_opinion");
+        } else {
+            queryWrapper.eq("type", 6);
+        }
+        return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
+    }
+
+    private void disqualificationQueryWrapper(QueryWrapper<Disqualification> queryWrapper, QueryCheckDto queryCheckDto) {
         //图号查询
-        if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
-            queryWrapper.like("dis.drawing_no", queryCheckDto.getDrawingNo());
-        }
+        queryWrapper.like(StrUtil.isNotBlank(queryCheckDto.getDrawingNo()), "dis.drawing_no", queryCheckDto.getDrawingNo());
         //产品名称
-        if (StrUtil.isNotBlank(queryCheckDto.getProductName())) {
-            queryWrapper.like("dis.product_name", queryCheckDto.getProductName());
-        }
+        queryWrapper.like(StrUtil.isNotBlank(queryCheckDto.getProductName()), "dis.product_name", queryCheckDto.getProductName());
+        //申请单号
+        queryWrapper.like(StrUtil.isNotBlank(queryCheckDto.getProcessSheetNo()), "dis.process_sheet_no", queryCheckDto.getProcessSheetNo());
         //跟单号
         if (StrUtil.isNotBlank(queryCheckDto.getTrackNo())) {
             queryCheckDto.setTrackNo(queryCheckDto.getTrackNo().replaceAll(" ", ""));
             queryWrapper.apply("replace(replace(replace(dis.track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryCheckDto.getTrackNo() + "%'");
-        }
-        //申请单号
-        if (StrUtil.isNotBlank(queryCheckDto.getProcessSheetNo())) {
-            queryWrapper.like("dis.process_sheet_no", queryCheckDto.getProcessSheetNo());
         }
         try {
             //开始时间
@@ -156,62 +211,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 calendar.setTime(sdf.parse(queryCheckDto.getEndTime()));
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
                 queryWrapper.apply("UNIX_TIMESTAMP(dis.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
-            }
-        } catch (Exception e) {
-            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
-        }
-        queryWrapper.and(wrapper -> wrapper.eq("final.unit_treatment_one", SecurityUtils.getCurrentUser().getTenantId()).or().eq("final.unit_treatment_two", SecurityUtils.getCurrentUser().getTenantId()));
-        queryWrapper.and(wrapper -> wrapper.eq("dis.type", 3).or().eq("dis.type", 4));
-        return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
-    }
-
-    @Override
-    public IPage<Disqualification> queryResponsibility(QueryCheckDto queryCheckDto) {
-        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
-        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
-        queryWrapper.eq("type", 5);
-        return this.page(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
-    }
-
-    @Override
-    public IPage<Disqualification> queryTechnology(QueryCheckDto queryCheckDto) {
-        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
-        disqualificationQueryWrapper(queryWrapper, queryCheckDto);
-        queryWrapper.eq("type", 6);
-        return this.page(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
-    }
-
-    private void disqualificationQueryWrapper(QueryWrapper<Disqualification> queryWrapper, QueryCheckDto queryCheckDto) {
-        //图号查询
-        if (StrUtil.isNotBlank(queryCheckDto.getDrawingNo())) {
-            queryWrapper.like("drawing_no", queryCheckDto.getDrawingNo());
-        }
-        //产品名称
-        if (StrUtil.isNotBlank(queryCheckDto.getProductName())) {
-            queryWrapper.like("product_name", queryCheckDto.getProductName());
-        }
-        //跟单号
-        if (StrUtil.isNotBlank(queryCheckDto.getTrackNo())) {
-            queryCheckDto.setTrackNo(queryCheckDto.getTrackNo().replaceAll(" ", ""));
-            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryCheckDto.getTrackNo() + "%'");
-        }
-        //申请单号
-        if (StrUtil.isNotBlank(queryCheckDto.getProcessSheetNo())) {
-            queryWrapper.like("process_sheet_no", queryCheckDto.getProcessSheetNo());
-        }
-        //根据公司区分申请单
-        try {
-            //开始时间
-            if (StrUtil.isNotBlank(queryCheckDto.getStartTime())) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + queryCheckDto.getStartTime() + " 00:00:00')");
-            }
-            //结束时间
-            if (StrUtil.isNotBlank(queryCheckDto.getEndTime())) {
-                Calendar calendar = new GregorianCalendar();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                calendar.setTime(sdf.parse(queryCheckDto.getEndTime()));
-                calendar.add(Calendar.DAY_OF_MONTH, 1);
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
             }
         } catch (Exception e) {
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
@@ -256,27 +255,35 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
         //处理意见数据
         TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
-        switch (disqualification.getType()) {
+        switch (disqualificationDto.getType()) {
+            case 1:
+                finalResult.setDisqualificationName(user.getEmplName());
+                finalResult.setDisqualificationTime(new Date());
+                break;
             case 2:
                 finalResult.setQualityName(user.getEmplName());
                 finalResult.setQualityTime(new Date());
+                break;
+            case 3:
+                finalResult.setTreatmentOneName(user.getEmplName());
+                finalResult.setTreatmentOneTime(new Date());
+                break;
+            case 4:
+                finalResult.setTreatmentTwoName(user.getEmplName());
+                finalResult.setTreatmentTwoTime(new Date());
+                break;
+            case 5:
+                finalResult.setTechnologyName(user.getEmplName());
+                finalResult.setTechnologyTime(new Date());
+                break;
+            case 6:
+                finalResult.setResponsibilityName(user.getEmplName());
+                finalResult.setResponsibilityTime(new Date());
                 break;
             default:
                 break;
         }
         finalResultService.saveOrUpdate(finalResult);
-        //不合格意见
-        //判断申请单状态是1 意见列表为空
-//        if (1 == processJudge && CollUtil.isEmpty(disqualificationDto.getDisqualifications())) {
-//            //为空处理不合格意见为列表
-//            DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
-//            opinion.setDisqualificationId(disqualification.getId());
-//            opinion.setType(processJudge);
-//            //查询人员姓名
-//            TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
-//            opinion.setUserName(user.getEmplName());
-//        }
-//        userOpinionService.saveOrUpdateBatch(disqualificationDto.getDisqualifications());
         //处理文件列表
         QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
         queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
@@ -307,6 +314,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             if (1 == disqualificationDto.getType() || 2 == disqualificationDto.getType()) {
                 return disqualificationDto.getType() + 1;
             }
+            //无源发布
+            if (0 == disqualificationDto.getType()) {
+                return 2;
+            }
+            //申请人最后一步填写
+            if (7 == disqualificationDto.getType()) {
+                return 8;
+            }
             //判断是否发起责任裁决
             if (1 == disqualificationDto.getIsResponsibility()) {
                 //进入则人裁决
@@ -333,10 +348,18 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             }
             //责任裁决结束返回处理单位1
             if (5 == disqualificationDto.getType()) {
+                //判断是否有处理单位2 有处理单位2状态返回到4
+                if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwo())) {
+                    return 4;
+                }
                 return 3;
             }
             //技术裁决结束返回处理单位1
             if (6 == disqualificationDto.getType()) {
+                //判断是否有处理单位2 有处理单位2状态返回到4
+                if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwo())) {
+                    return 4;
+                }
                 return 3;
             }
         }
@@ -378,13 +401,17 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public Boolean updateIsIssue(String id, String state) {
+    public Boolean updateIsIssue(String id) {
+        Disqualification disqualification = this.getById(id);
+        if (disqualification == null) {
+            throw new GlobalException("未查询到不合格信息", ResultCode.FAILED);
+        }
+        if (disqualification.getType() != 8) {
+            throw new GlobalException("流程还未结束,不允许关单", ResultCode.FAILED);
+        }
         UpdateWrapper<Disqualification> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id);
-        //开单状态增加开单时间
-        if ("1".equals(state)) {
-            updateWrapper.set("order_time", new Date());
-        }
+        updateWrapper.set("type", 9);
         return this.update(updateWrapper);
     }
 
@@ -403,36 +430,30 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     @Override
-    public List<SignedRecordsVo> querySignedRecordsList(String disqualificationId) {
-        //查询意见表
-        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("disqualification_id", disqualificationId);
-        List<SignedRecordsVo> recordsVoList = SignedRecordsVo.list(userOpinionService.list(queryWrapper));
-        recordsVoList.forEach(records -> {
-            QueryWrapper<DisqualificationFinalResult> queryWrapperFinalResult = new QueryWrapper<>();
-//            queryWrapperFinalResult.eq("opinion_id", records.getId());
-            DisqualificationFinalResult finalResult = finalResultService.getOne(queryWrapperFinalResult);
-            if (null == finalResult) {
-                return;
-            }
-        });
-        //单查询开单时间
-        Disqualification disqualification = this.getById(disqualificationId);
-        SignedRecordsVo signedRecordsVo = new SignedRecordsVo();
-        signedRecordsVo.setHandlingTime(disqualification.getOrderTime());
-        //查询姓名
-        CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(disqualification.getCreateBy());
-        signedRecordsVo.setUserName(userAccount.getData().getEmplName());
-        //查询车间名称
-        CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(disqualification.getBranchCode(), disqualification.getTenantId());
-        signedRecordsVo.setBranchCodeName(branch.getData().getBranchName());
-        signedRecordsVo.setOpinion("提报不合格品申请单");
-        recordsVoList.add(0, signedRecordsVo);
-        return recordsVoList;
-    }
-
-    @Override
     public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId) {
+        //无缘查询详情
+        if (StrUtil.isBlank(tiId)) {
+            DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+            disqualificationItemVo.setTrackItemId(uuid);
+            //获取申请单编号
+            try {
+                String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+                disqualificationItemVo.setProcessSheetNo(disqualificationNo);
+                Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+                throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
+            }
+            disqualificationItemVo.setType("0");
+            disqualificationItemVo.setSourceType(0);
+            disqualificationItemVo.setRepairNoList(Collections.emptyList());
+            disqualificationItemVo.setSalesReturnNoList(Collections.emptyList());
+            disqualificationItemVo.setAcceptDeviationNoList(Collections.emptyList());
+            disqualificationItemVo.setScrapNoList(Collections.emptyList());
+            return disqualificationItemVo;
+        }
         DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
         if (StrUtil.isNotBlank(disqualificationId)) {
             Disqualification disqualification = this.getById(disqualificationId);
@@ -446,11 +467,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.DisqualificationFinalResult(finalResult);
             //处理质控工程师列表
             disqualificationItemVo.setUserList(Arrays.asList(disqualificationItemVo.getQualityCheckBy().split(",")));
-            //处理
             //查询流水记录
             //查询文件
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
         } else if (null != disqualificationItemVo) {
+            disqualificationItemVo.setSourceType(1);
             disqualificationItemVo.setAttachmentList(Collections.emptyList());
             disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
             disqualificationItemVo.setUserList(Collections.emptyList());
@@ -458,23 +479,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //2022/12/27  zhiqiang.lu  缺失预设值信息
         disqualificationItemVo.setTrackItemId(tiId);
         return disqualificationItemVo;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean submitOpinions(SaveOpinionDto saveOpinionDto) {
-        savePerson(saveOpinionDto.getUserList(), saveOpinionDto.getId());
-        UpdateWrapper<DisqualificationUserOpinion> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id", saveOpinionDto.getOpinionId());
-        updateWrapper.set("opinion", saveOpinionDto.getOpinion());
-        updateWrapper.set("type", saveOpinionDto.getType());
-        updateWrapper.set("modify_time", new Date());
-        return userOpinionService.update(updateWrapper);
-    }
-
-    @Override
-    public Boolean saveFinalResult(DisqualificationFinalResult disqualificationFinalResult) {
-        return finalResultService.save(disqualificationFinalResult);
     }
 
     @Override
@@ -492,20 +496,55 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return flowList;
     }
 
+    @Override
+    public Boolean rollBack(String id, Integer type) {
+        Disqualification disqualification = this.getById(id);
+        switch (type) {
+            //传入是1 需要判断 是回滚状态2 还是回滚状态8
+            case 1:
+                if (disqualification.getType() == 2) {
+                    disqualification.setType(1);
+                } else if (disqualification.getType() == 8) {
+                    disqualification.setType(7);
+                } else {
+                    throw new GlobalException("未能回滚,状态不允许回滚", ResultCode.FAILED);
+                }
+                break;
+            case 2:
+                if (disqualification.getType() == 3) {
+                    disqualification.setType(2);
+                } else {
+                    throw new GlobalException("未能回滚,状态不允许回滚", ResultCode.FAILED);
+                }
+                break;
+            case 3:
+                //判断是状态3 还是状态4
+                DisqualificationFinalResult finalResult = finalResultService.getById(disqualification.getId());
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                //是处理单位1
+                if (finalResult.getUnitTreatmentOne().equals(tenantId)) {
+                    if (disqualification.getType() == 4) {
+                        disqualification.setType(3);
+                    }
+                }
+                //处理单位2
+                if (finalResult.getUnitTreatmentTwo().equals(tenantId)) {
+                    if (disqualification.getType() == 7) {
+                        disqualification.setType(4);
+                    }
+                }
+                break;
+            default:
+                break;
 
-    private List<TenantUserVo> queryOpinionUser(String disqualificationId) {
-        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("disqualification_id", disqualificationId);
-        //查询人员并拼接返回数据
-        List<DisqualificationUserOpinion> opinions = userOpinionService.list(queryWrapper);
-        return opinions.stream().map(user -> {
-            TenantUserVo tenantUserVo = new TenantUserVo();
-            tenantUserVo.setId(user.getUserId());
-            tenantUserVo.setEmplName(user.getUserName());
-            tenantUserVo.setBelongOrgId(user.getUserBranch());
-            return tenantUserVo;
-        }).collect(Collectors.toList());
+        }
+        return this.updateById(disqualification);
     }
+
+
+//    private void saveRecord(Disqualification disqualification) {
+//
+//    }
 
     /**
      * 功能描述: 获取字典

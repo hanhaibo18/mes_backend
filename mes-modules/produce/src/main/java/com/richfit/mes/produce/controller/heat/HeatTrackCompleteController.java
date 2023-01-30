@@ -22,6 +22,7 @@ import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.HeatTrackCompleteService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
+import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -104,8 +105,13 @@ public class HeatTrackCompleteController extends BaseController {
                 //大于等于
                 prechargeFurnaceQueryWrapper.ge("temp_work", tempWorkQ);
             }
-            prechargeFurnaceQueryWrapper.in("id",fuIds)
-                    .orderByAsc("modify_time");
+            prechargeFurnaceQueryWrapper.in("id",fuIds);
+            if(StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())){
+                prechargeFurnaceQueryWrapper.orderByAsc("modify_time");
+            }else{
+                OrderUtil.query(prechargeFurnaceQueryWrapper,dispatchingDto.getOrderCol(),dispatchingDto.getOrder());
+            }
+
             return  CommonResult.success(prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(),dispatchingDto.getLimit()),prechargeFurnaceQueryWrapper));
 
         }

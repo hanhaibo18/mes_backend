@@ -1418,6 +1418,17 @@ public class ProduceInspectionRecordService {
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
                 record.setConsignor(data.getEmplName());
             }
+            String itemId = record.getItemId();
+            String headId = record.getHeadId();
+            if(!StringUtils.isEmpty(itemId)){
+                TrackItem trackItem = trackItemService.getById(itemId);
+                TrackHead trackHead = trackHeadService.getById(headId);
+                record.setTrackNo(trackHead.getTrackNo());
+                record.setOptNo(trackItem.getOptNo());
+                record.setOptName(trackItem.getOptName());
+                record.setProductNo(trackItem.getProductNo());
+                record.setTrackType(trackHead.getTrackType());
+            }
         }
         return page;
     }

@@ -37,6 +37,9 @@ public class ProcessFiltrationUtil {
         if (!set.isEmpty()) {
 //            queryWrapper.in("operatipon_id", set);
             queryWrapper.in("replace(opt_name, ' ', '')", names);
+        } else {
+            //过滤条件为空不显示数据
+            queryWrapper.eq("opt_name", SecurityUtils.getCurrentUser().getUserId());
         }
     }
 }

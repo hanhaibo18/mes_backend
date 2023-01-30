@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
  */
 public class OptNameUtil {
 
-    static String optName(String optName) {
+    public static String optName(String optName) {
         optName = optName.trim();
         optName = optName.replaceAll("-", "");
         optName = optName.replaceAll("[.]", "");
@@ -71,5 +71,5 @@ public class OptNameUtil {
         optName = OptNameUtil.optName(optName);
         return "replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', '') = '" + optName + "'";
     }
-    
+
 }

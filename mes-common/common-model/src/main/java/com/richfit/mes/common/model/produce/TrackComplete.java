@@ -7,6 +7,7 @@ import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -191,6 +192,9 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     protected String prechargeFurnaceId;
     @ApiModelProperty(value = "步骤分组id", dataType = "String")
     protected String stepGroupId;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "标准工时", dataType = "")
+    protected BigDecimal heatHour;
 
 
     /**

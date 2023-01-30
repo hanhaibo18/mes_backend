@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -83,6 +85,9 @@ public class TrackCheckController extends BaseController {
     private PhysChemOrderService physChemOrderService;
     @Autowired
     private MaterialInspectionServiceClient materialInspectionServiceClient;
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
+
 
     /**
      * ***
@@ -168,6 +173,21 @@ public class TrackCheckController extends BaseController {
             queryWrapper.eq("is_operation_complete", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
+            //收集跟单分流表id
+            List<String> flowIdList=new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(assigns.getRecords())){
+                 flowIdList = assigns.getRecords().stream().map(x -> x.getFlowId()).collect(Collectors.toList());
+            }
+            List<TrackFlow> flowList=new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(flowIdList)){
+                QueryWrapper<TrackFlow> flowQueryWrapper=new QueryWrapper<>();
+                flowQueryWrapper.in("id",flowIdList);
+                flowList = trackHeadFlowService.list(flowQueryWrapper);
+            }
+            Map<String, TrackFlow> flowMap=new HashMap<>();
+            if(CollectionUtils.isNotEmpty(flowList)){
+                 flowMap = flowList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            }
             for (TrackItem item : assigns.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
                 item.setTrackNo(trackHead.getTrackNo());
@@ -179,6 +199,8 @@ public class TrackCheckController extends BaseController {
                 item.setTexture(trackHead.getTexture());
                 item.setPartsName(trackHead.getMaterialName());
                 item.setBatchNo(trackHead.getBatchNo());
+                TrackFlow trackFlow = flowMap.get(item.getFlowId());
+                item.setProductSourceName(trackFlow==null?"":trackFlow.getProductSourceName());//产品来源名称（热工）
                 //查询理化委托单,查询委托单号最大的数据
                /* List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.getListByBatchNo(trackHead.getBatchNo());
                 if (physChemOrderInners.size() > 0) {
@@ -244,6 +266,22 @@ public class TrackCheckController extends BaseController {
             ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackCheck> checks = trackCheckService.queryCheckPage(new Page<TrackCheck>(page, limit), queryWrapper);
+            //收集跟单分流表id
+            List<String> flowIdList=new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(checks.getRecords())){
+                flowIdList = checks.getRecords().stream().map(x -> x.getFlowId()).collect(Collectors.toList());
+            }
+            List<TrackFlow> flowList=new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(flowIdList)){
+                QueryWrapper<TrackFlow> flowQueryWrapper=new QueryWrapper<>();
+                flowQueryWrapper.in("id",flowIdList);
+                flowList = trackHeadFlowService.list(flowQueryWrapper);
+            }
+            Map<String, TrackFlow> flowMap=new HashMap<>();
+            if(CollectionUtils.isNotEmpty(flowList)){
+                flowMap = flowList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            }
+
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
                 TrackItem trackItem = trackItemService.getById(check.getTiId());
@@ -260,7 +298,8 @@ public class TrackCheckController extends BaseController {
                     check.setOptType(trackItem.getOptType());
                     check.setIsCurrent(trackItem.getIsCurrent());
                 }
-
+                TrackFlow trackFlow = flowMap.get(check.getFlowId());
+                check.setProductSourceName(trackFlow==null?"":trackFlow.getProductSourceName());//产品来源名称（热工）
             }
             return CommonResult.success(checks);
         } catch (Exception e) {

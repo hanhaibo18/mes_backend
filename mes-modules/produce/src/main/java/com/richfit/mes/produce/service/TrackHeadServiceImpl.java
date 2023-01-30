@@ -427,6 +427,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
                                 trackItemService.save(item);
                             }
+                            //加载工时标准
+                            Map<String, List<Hour>> hourGoup = getHourGoupByTypeCodeAndOptName();
+                            for (TrackItem item : trackItems) {
+                                //工时计算
+                                Double aDouble = calculationHeatItemHour(item, hourGoup.get(item.getTypeCode() + "_" + item.getOptName()));
+                                item.setHeatHour(aDouble);
+                            }
+                            trackItemService.saveOrUpdateBatch(trackItems);
                         }
                     }
                 }
@@ -439,16 +447,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
 
         }
-        //加载工时标准
-        Map<String, List<Hour>> hourGoup = getHourGoupByTypeCodeAndOptName();
-        for (TrackItem item : trackItems) {
-            //工时计算
-            Double aDouble = calculationHeatItemHour(item, hourGoup.get(item.getTypeCode() + "_" + item.getOptName()));
-            item.setHeatHour(aDouble);
-        }
-        trackItemService.saveOrUpdateBatch(trackItems);
-
-
         return true;
     }
 
@@ -1428,7 +1426,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 flag = true;
             }
         }
-        if (flag) {
+        if (!flag) {
             throw new GlobalException("当前跟单已全部派工，全部派工后跟单将不能差分，请先清除当前工序的派工记录。", ResultCode.FAILED);
         }
         //更新原跟单生产线

@@ -6,7 +6,7 @@ import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 /**
  * @ClassName: DisqualificationUserOpinionService.java
  * @Author: Hou XinYu
- * @Description: TODO
+ * @Description: 签核记录
  * @CreateTime: 2022年09月30日 16:07:00
  */
 public interface DisqualificationUserOpinionService extends IService<DisqualificationUserOpinion> {

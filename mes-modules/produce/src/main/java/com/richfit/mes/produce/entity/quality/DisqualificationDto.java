@@ -24,6 +24,13 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @ApiModelProperty(value = "跟单Id")
     private String trackHeadId;
 
+
+    /**
+     * 跟单Id
+     */
+    @ApiModelProperty(value = "跟单Id")
+    private Integer number;
+
     /**
      * 跟单工序Id
      */
@@ -303,8 +310,9 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @ApiModelProperty(value = "是否技术裁决")
     private Integer isTechnology = 0;
 
-    //    @ApiModelProperty(value = "不合格意见")
-//    private String unqualifiedOpinion;
+    @ApiModelProperty(value = "来源状态 1=有来源 0=无来源")
+    private Integer sourceType;
+
     /**
      * 不合格情况
      */

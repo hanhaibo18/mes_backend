@@ -24,4 +24,6 @@ public class HeatCompleteDto {
     private String prechargeFurnaceId;
     @ApiModelProperty(value = "isUpdate", dataType = "String")
     private String isUpdate;
+    @ApiModelProperty(value = "branchCode", dataType = "String")
+    private String branchCode;
 }

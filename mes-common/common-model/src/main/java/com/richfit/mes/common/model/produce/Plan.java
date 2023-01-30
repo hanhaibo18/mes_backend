@@ -53,34 +53,34 @@ public class Plan extends BaseEntity<Plan> {
     private String drawNo;
 
     @ApiModelProperty(value = "计划数量")
-    private Integer projNum;
+    private Integer projNum = 0;
 
     @ApiModelProperty(value = "库存数量")
-    private Integer storeNumber;
+    private Integer storeNumber = 0;
 
     @ApiModelProperty(value = "在制数量")
-    private Integer processNum;
+    private Integer processNum = 0;
 
     @ApiModelProperty(value = "交付数量")
-    private Integer deliveryNum;
+    private Integer deliveryNum = 0;
 
     @ApiModelProperty(value = "缺件数量")
-    private Integer missingNum;
+    private Integer missingNum = 0;
 
     @ApiModelProperty(value = "跟单数量")
-    private Integer trackHeadNumber;
+    private Integer trackHeadNumber = 0;
 
     @ApiModelProperty(value = "单机数量")
-    private Integer singleNumber;
+    private Integer singleNumber = 0;
 
     @ApiModelProperty(value = "已完成跟单数量")
-    private Integer trackHeadFinishNumber;
+    private Integer trackHeadFinishNumber = 0;
 
     @ApiModelProperty(value = "跟单数量")
-    private Integer optNumber;
+    private Integer optNumber = 0;
 
     @ApiModelProperty(value = "已完成跟单数量")
-    private Integer optFinishNumber;
+    private Integer optFinishNumber = 0;
 
     @ApiModelProperty(value = "排序号")
     private Integer sortNo;
@@ -132,7 +132,7 @@ public class Plan extends BaseEntity<Plan> {
 
 
     @ApiModelProperty(value = "总台数")
-    private Integer totalNumber;
+    private Integer totalNumber = 0;
 
     @ApiModelProperty(value = "毛坯")
     private String blank;
