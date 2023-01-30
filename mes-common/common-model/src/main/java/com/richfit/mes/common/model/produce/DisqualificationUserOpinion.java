@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * produce_disqualification_user_opinion
@@ -9,6 +10,7 @@ import lombok.Data;
  * @author
  */
 @Data
+@Accessors(chain = true)
 public class DisqualificationUserOpinion extends BaseEntity<DisqualificationUserOpinion> {
 
     /**
@@ -17,30 +19,9 @@ public class DisqualificationUserOpinion extends BaseEntity<DisqualificationUser
     private String disqualificationId;
 
     /**
-     * 审核人员
+     * 排序
      */
-    private String userId;
-
-    /**
-     * 意见类型(0 = 不合格品情况,1 = 质控工程师评审意见,2 = 责任单位1 ,3 = 责任单位2)
-     */
-    private int type;
-
-
-    /**
-     * 审核人员姓名
-     */
-    private String userName;
-
-    /**
-     * 审核人员车间
-     */
-    private String userBranch;
-
-    /**
-     * 审核人员车间名称
-     */
-    private String userBranchName;
+    private int sort;
 
     /**
      * 意见

@@ -2,6 +2,7 @@ package com.richfit.mes.produce.entity.quality;
 
 import com.richfit.mes.common.model.produce.DisqualificationAttachment;
 import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
+import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
 import com.richfit.mes.common.model.produce.TrackHead;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -313,7 +314,6 @@ public class DisqualificationItemVo {
 
     @ApiModelProperty(value = "不合格意见意见")
     private String unqualifiedOpinion;
-    //TODO:需要保存一份不合格意见填写人姓名,时间
     @ApiModelProperty(value = "质控意见")
     private String qualityControlOpinion;
     @ApiModelProperty(value = "质控姓名")
@@ -370,8 +370,8 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "退货产品编号")
     private List<String> salesReturnNoList;
 
-    @ApiModelProperty(value = "审核意见列表", dataType = "List<SignedRecordsVo>")
-    private List<SignedRecordsVo> signedRecordsList;
+    @ApiModelProperty(value = "审核意见列表", dataType = "List<DisqualificationUserOpinion>")
+    private List<DisqualificationUserOpinion> userOpinionsList;
 
     @ApiModelProperty(value = "文件列表")
     private List<DisqualificationAttachment> attachmentList;
