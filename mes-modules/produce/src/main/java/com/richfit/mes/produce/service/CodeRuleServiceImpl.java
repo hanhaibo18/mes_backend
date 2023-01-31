@@ -206,15 +206,18 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                     if ("year".equals(cris.get(i).getSnResetDependency())) {
                         if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
                             cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentDate(new Date());
                         }
                     } else if ("quarter".equals(cris.get(i).getSnResetDependency())) {
                     } else if ("month".equals(cris.get(i).getSnResetDependency())) {
                         if (new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
                             cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentDate(new Date());
                         }
                     } else if ("date".equals(cris.get(i).getSnResetDependency())) {
                         if (new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()) {
                             cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentDate(new Date());
                         }
                     } else if ("input".equals(cris.get(i).getSnResetDependency())) {
 
