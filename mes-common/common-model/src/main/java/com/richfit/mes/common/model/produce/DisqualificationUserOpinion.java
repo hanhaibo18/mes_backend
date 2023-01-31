@@ -19,9 +19,24 @@ public class DisqualificationUserOpinion extends BaseEntity<DisqualificationUser
     private String disqualificationId;
 
     /**
+     * 办理人姓名
+     */
+    private String name;
+
+    /**
+     * 签核单位名称
+     */
+    private String tenantName;
+
+    /**
+     * 类型
+     */
+    private Integer type;
+
+    /**
      * 排序
      */
-    private int sort;
+    private Integer sort;
 
     /**
      * 意见
