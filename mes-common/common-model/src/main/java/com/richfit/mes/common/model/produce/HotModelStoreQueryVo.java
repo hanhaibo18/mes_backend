@@ -62,6 +62,11 @@ public class HotModelStoreQueryVo extends BaseEntity<HotModelStoreQueryVo> {
     private int page;
     @ApiModelProperty(value = "条数 ", dataType = "String")
     private int limit;
+    @ApiModelProperty(value = "排序方式 ", dataType = "String")
+    private String order;
+    @ApiModelProperty(value = "排序列 ", dataType = "String")
+    private String orderCol;
+
 
 }
 
