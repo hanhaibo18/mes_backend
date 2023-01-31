@@ -58,5 +58,17 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
     Map<String,Object> getCompleteInfoByFuId(String prechargeFurnaceId);
 
 
+    /**
+     * 功能描述: 工时统计
+     * @param trackNo
+     * @param startTime
+     * @param endTime
+     * @param branchCode
+     * @param workNo
+     * @return
+     */
+    Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo);
+
+
 
 }

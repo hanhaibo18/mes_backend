@@ -12,6 +12,7 @@ import com.richfit.mes.common.model.produce.HotModelStoreQueryVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.HotModelStoreService;
 import com.richfit.mes.produce.utils.DrawingNoUtil;
+import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -125,6 +126,8 @@ public class HotModelStoreController extends BaseController {
         }
         queryWrapper.eq("tenant_id", hotModelStorQueryVo.getTenantId());
         queryWrapper.orderByDesc("create_time");
+        //排序工具
+        OrderUtil.query(queryWrapper, hotModelStorQueryVo.getOrderCol(), hotModelStorQueryVo.getOrder());
         return CommonResult.success(hotModelStoreService.page(new Page<HotModelStore>(hotModelStorQueryVo.getPage(), hotModelStorQueryVo.getLimit()), queryWrapper), SUCCESS_MESSAGE);
     }
 
