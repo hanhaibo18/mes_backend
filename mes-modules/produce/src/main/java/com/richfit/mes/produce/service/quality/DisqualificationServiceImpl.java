@@ -13,6 +13,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
@@ -242,7 +243,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
         }
         this.saveOrUpdate(disqualification);
-        processingRecord(disqualificationDto, disqualification.getId());
         //处理不合格从表数据
         DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
         BeanUtils.copyProperties(disqualificationDto, finalResult);
@@ -286,6 +286,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 break;
         }
         finalResultService.saveOrUpdate(finalResult);
+        //发布才进行签核记录
+        if (1 == disqualificationDto.getIsSubmit()) {
+            processingRecord(disqualificationDto, disqualification.getId(), finalResult);
+        }
         //处理文件列表
         QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
         queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
@@ -377,34 +381,35 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
      * @Date: 2023/1/30 16:07
      * @return: void
      **/
-    private void processingRecord(DisqualificationDto disqualificationDto, String id) {
+    private void processingRecord(DisqualificationDto disqualificationDto, String id, DisqualificationFinalResult finalResult) {
+        Integer type = disqualificationDto.getType();
         //申请人提交
-        if (1 == disqualificationDto.getType()) {
-            saveRecord(id, UnitEnum.getMessage(disqualificationDto.getType()) + "提交。不合格情况:" + disqualificationDto.getDisqualificationCondition());
+        if (1 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。不合格情况:" + disqualificationDto.getDisqualificationCondition(), type, finalResult.getDisqualificationName());
         }
         //质控提交
-        if (2 == disqualificationDto.getType()) {
-            saveRecord(id, UnitEnum.getMessage(disqualificationDto.getType()) + "提交。意见:" + disqualificationDto.getQualityControlOpinion());
+        if (2 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getQualityName());
         }
         //处理单位一提交
-        if (3 == disqualificationDto.getType()) {
-            saveRecord(id, UnitEnum.getMessage(disqualificationDto.getType()) + "提交。意见:" + disqualificationDto.getUnitTreatmentOneOpinion());
+        if (3 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentOneOpinion(), type, finalResult.getTreatmentOneName());
         }
         //处理单位二提交
-        if (4 == disqualificationDto.getType()) {
-            saveRecord(id, UnitEnum.getMessage(disqualificationDto.getType()) + "提交。意见:" + disqualificationDto.getUnitTreatmentTwoOpinion());
+        if (4 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentTwoOpinion(), type, finalResult.getTreatmentTwoName());
         }
         //责任裁决
-        if (5 == disqualificationDto.getType()) {
-            saveRecord(id, UnitEnum.getMessage(disqualificationDto.getType()) + "提交。责任裁决:" + disqualificationDto.getUnitTreatmentTwoOpinion());
+        if (5 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。责任裁决:" + disqualificationDto.getResponsibilityOpinion(), type, finalResult.getResponsibilityName());
         }
         //技术裁决
-        if (6 == disqualificationDto.getType()) {
-            saveRecord(id, UnitEnum.getMessage(disqualificationDto.getType()) + "提交。技术裁决:" + disqualificationDto.getUnitTreatmentTwoOpinion());
+        if (6 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。技术裁决:" + disqualificationDto.getTechnologyOpinion(), type, finalResult.getTechnologyName());
         }
         //申请人最后一步填写意见
-        if (7 == disqualificationDto.getType()) {
-            saveRecord(id, UnitEnum.getMessage(1) + "提交。返修情况:" + disqualificationDto.getQualityControlOpinion());
+        if (7 == type) {
+            saveRecord(id, UnitEnum.getMessage(1) + "提交。返修情况:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getDisqualificationName());
         }
     }
 
@@ -547,7 +552,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 }
                 break;
             default:
-                saveRecord(id, "回滚到:" + UnitEnum.getMessage(disqualification.getType()));
+                //获取当前登录人姓名
+                CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
+                saveRecord(id, "回滚到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
                 break;
 
         }
@@ -566,12 +573,17 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
 
-    private void saveRecord(String id, String record) {
+    private void saveRecord(String id, String record, Integer type, String name) {
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("disqualification_id", id);
+        //获取当前登录租户名称
+        CommonResult<Tenant> tenant = systemServiceClient.getTenantById(SecurityUtils.getCurrentUser().getTenantId());
         DisqualificationUserOpinion userOpinion = new DisqualificationUserOpinion();
         userOpinion.setDisqualificationId(id)
                 .setSort(userOpinionService.count(queryWrapper) + 1)
+                .setType(type)
+                .setName(name)
+                .setTenantName(tenant.getData().getTenantName())
                 .setOpinion(record);
         userOpinionService.save(userOpinion);
     }
