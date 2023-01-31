@@ -415,37 +415,39 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         if(stepHourVer.size() == 0){
             throw new GlobalException("当前没有激活的工时标准版本，无法报工时！",ResultCode.FAILED);
         }
+        stepName = ("保温".equals(stepName) || "装炉".equals(stepName) || "出炉".equals(stepName) || "校直".equals(stepName))?stepName:"工序";
         List<StepHour> stepHours = stepHourService.list(new QueryWrapper<StepHour>().eq("ver_id", stepHourVer.get(0).getId()).eq("step_type", stepType).eq("step_name",stepName));
-        if(stepHours.size()==0){
-            throw new GlobalException("当前激活的步骤工时版本中没有对应的步骤工时分配比例，无法报工时！",ResultCode.FAILED);
+        if(stepHours.size()>0){
+            QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
+            trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
+                    .eq("step",stepName);
+            //修改报工信息的工时
+            Map<String, List<TrackComplete>> itemMap = this.queryList(trackCompleteQueryWrapper).stream().collect(Collectors.groupingBy(item->item.getStepGroupId()+"_"+item.getTiId()));
+            //修改后的报工信息
+            List<TrackComplete> updateCompletes = new ArrayList<>();
+
+            itemMap.forEach((key,value)->{
+                //该步骤报工人数
+                int poepleNumber = value.size();
+                BigDecimal stepHour = new BigDecimal(stepHours.get(0).getHourRatio());
+                for (TrackComplete complete : value) {
+                    //工序标准工时
+                    BigDecimal hour = complete.getHeatHour();
+                    //报工工时
+                    if(hour==null || hour.compareTo(new BigDecimal(0))==0){
+                        complete.setCompletedHours(0.0);
+                    }else{
+                        BigDecimal completeHour = hour.multiply(stepHour).divide(new BigDecimal(number)).divide(new BigDecimal(poepleNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        complete.setCompletedHours(Double.parseDouble(String.valueOf(completeHour)));
+                    }
+                    updateCompletes.add(complete);
+                }
+            });
+            this.updateBatchById(updateCompletes);
+            //throw new GlobalException("当前激活的步骤工时版本中没有对应的步骤工时分配比例，无法报工时！",ResultCode.FAILED);
         }
 
-        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
-        trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
-                .eq("step",stepName);
-        //修改报工信息的工时
-        Map<String, List<TrackComplete>> itemMap = this.queryList(trackCompleteQueryWrapper).stream().collect(Collectors.groupingBy(item->item.getStepGroupId()+"_"+item.getTiId()));
-        //修改后的报工信息
-        List<TrackComplete> updateCompletes = new ArrayList<>();
 
-        itemMap.forEach((key,value)->{
-            //该步骤报工人数
-            int poepleNumber = value.size();
-            BigDecimal stepHour = new BigDecimal(stepHours.get(0).getHourRatio());
-            for (TrackComplete complete : value) {
-                //工序标准工时
-                BigDecimal hour = complete.getHeatHour();
-                //报工工时
-                if(hour==null || hour.compareTo(new BigDecimal(0))==0){
-                    complete.setCompletedHours(0.0);
-                }else{
-                    BigDecimal completeHour = hour.multiply(stepHour).divide(new BigDecimal(number)).divide(new BigDecimal(poepleNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
-                    complete.setCompletedHours(Double.parseDouble(String.valueOf(completeHour)));
-                }
-                updateCompletes.add(complete);
-            }
-        });
-        this.updateBatchById(updateCompletes);
     }
 
 
