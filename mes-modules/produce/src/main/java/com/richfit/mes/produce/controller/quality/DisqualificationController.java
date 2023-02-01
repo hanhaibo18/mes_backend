@@ -84,7 +84,7 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryCheck(queryCheckDto));
     }
 
-    @ApiOperation(value = "查询质量检测部", notes = "查询质量检测部")
+    @ApiOperation(value = "查询处理单位", notes = "查询质量检测部")
     @PostMapping("/query_deal_with")
     public CommonResult<IPage<Disqualification>> queryDealWith(@RequestBody QueryCheckDto queryCheckDto) {
         return CommonResult.success(disqualificationService.queryDealWith(queryCheckDto));
