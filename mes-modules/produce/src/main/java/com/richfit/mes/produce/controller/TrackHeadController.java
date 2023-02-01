@@ -597,8 +597,8 @@ public class TrackHeadController extends BaseController {
             @ApiParam(value = "每页记录数") @RequestParam int limit,
             @ApiParam(value = "分公司") @RequestParam String branchCode) throws Exception {
         Map<String, String> map = new HashMap<>();
-        TrackFlow.param(startTime,
-                endTime,
+        TrackFlow.param(startTime + " 00:00:00",
+                endTime + " 23:59:59",
                 null,
                 null,
                 null,
