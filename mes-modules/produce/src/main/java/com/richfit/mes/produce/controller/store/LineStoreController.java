@@ -78,10 +78,10 @@ public class LineStoreController extends BaseController {
 
     @ApiOperation(value = "获取订单数量和剩余数量", notes = "获取订单数量和剩余数量")
     @PostMapping("/get_order_surplusNum")
-    public HashMap<String,Integer> getOrderNumAndInNum(@ApiParam(value = "启始序列号") @RequestParam(required = false) String materialNo,
-                                                @ApiParam(value = "终止序列号") @RequestParam(required = false) String orderNo){
-            return   lineStoreService.getOrderNumAndInNum(materialNo,orderNo);
-        }
+    public HashMap<String, Integer> getOrderNumAndInNum(@ApiParam(value = "启始序列号") @RequestParam(required = false) String materialNo,
+                                                        @ApiParam(value = "终止序列号") @RequestParam(required = false) String orderNo) {
+        return lineStoreService.getOrderNumAndInNum(materialNo, orderNo);
+    }
 
 
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
@@ -100,7 +100,7 @@ public class LineStoreController extends BaseController {
         Integer endNoOld = 0;
 
         //只有单件的时候才会使用启始序列号，只要是单件  则启始序列号必有
-        if(lineStore!=null&& org.apache.commons.lang3.StringUtils.isNotEmpty(lineStore.getTrackType())&&"0".equals(lineStore.getTrackType())){
+        if (lineStore != null && org.apache.commons.lang3.StringUtils.isNotEmpty(lineStore.getTrackType()) && "0".equals(lineStore.getTrackType())) {
             //前端不需要校验endNo有没有填写 如果没有填写endNo 则吧startNo给到endNo
             if (endNo == null || org.apache.commons.lang3.StringUtils.isEmpty(endNo)) {
                 endNo = startNo;
@@ -239,7 +239,7 @@ public class LineStoreController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("status", status);
-        }else {
+        } else {
             queryWrapper.notIn("status", 3);
         }
         if (number != null) {
@@ -249,16 +249,16 @@ public class LineStoreController extends BaseController {
             queryWrapper.eq("track_type", trackType);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.like("work_no", workNo);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("in_Time", startTime);
+            queryWrapper.ge("in_Time", startTime + " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("in_Time", endTime);
+            queryWrapper.le("in_Time", endTime + " 23:59:59");
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
             queryWrapper.like("certificate_no", certificateNo);
@@ -323,7 +323,7 @@ public class LineStoreController extends BaseController {
             queryWrapper.eq("track_type", trackType);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.like("work_no", workNo);
@@ -391,7 +391,7 @@ public class LineStoreController extends BaseController {
 //            queryWrapper.eq("material_type", materialType);
 //        }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("material_no", materialNo);
