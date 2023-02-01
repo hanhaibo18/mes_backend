@@ -584,6 +584,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 .setType(type)
                 .setName(name)
                 .setTenantName(tenant.getData().getTenantName())
+                .setTenantId(tenant.getData().getId())
                 .setOpinion(record);
         userOpinionService.save(userOpinion);
     }
