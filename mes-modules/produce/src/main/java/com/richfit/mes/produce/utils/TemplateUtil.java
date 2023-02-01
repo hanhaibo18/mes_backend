@@ -25,6 +25,31 @@ public class TemplateUtil {
      */
     static String call = "call";
 
+
+    /**
+     * 功能描述: 将用户账户转换为用户名
+     *
+     * @param id           下载的文件id
+     * @param sql          模板中的sql语句
+     * @param jdbcTemplate jdbc模板查询
+     * @return 返回查询获取数据集合
+     * @Author: zhiqiang.lu
+     * @Date: 2023/2/1 9:56
+     */
+    public static List<Map<String, Object>> getDataList(String id, String sql, JdbcTemplate jdbcTemplate, Map<String, String> usersAccount) {
+        List<Map<String, Object>> list = getDataList(id, sql, jdbcTemplate);
+        for (Map<String, Object> map : list) {
+            for (String key : map.keySet()) {
+                if (key.contains("人") || key.equals("操作者")) {
+                    if (map.get(key) != null && StrUtil.isNotBlank(usersAccount.get(map.get(key).toString()))) {
+                        map.put(key, usersAccount.get(map.get(key).toString()));
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
     /**
      * 执行存储过程
      *

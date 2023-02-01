@@ -129,4 +129,9 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
         return null;
     }
 
+    @Override
+    public CommonResult<Map<String, String>> usersAccount() {
+        return null;
+    }
+
 }
