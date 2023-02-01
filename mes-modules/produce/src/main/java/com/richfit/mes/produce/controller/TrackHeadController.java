@@ -19,6 +19,7 @@ import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.OrderUtil;
+import com.richfit.mes.produce.utils.TimeUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -272,10 +273,10 @@ public class TrackHeadController extends BaseController {
             queryWrapper.ge("classes", classes);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("create_time", startTime + " 00:00:00");
+            TimeUtil.queryStartTime(queryWrapper, startTime);
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("create_time", endTime + " 23:59:59");
+            TimeUtil.queryEndTime(queryWrapper, endTime);
         }
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
