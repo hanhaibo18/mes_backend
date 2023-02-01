@@ -9,7 +9,6 @@ import com.richfit.mes.base.dao.RouterMapper;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
 import com.richfit.mes.base.provider.ProduceServiceClient;
-import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -75,22 +74,27 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
     }
 
     @Override
-    public QueryIsHistory queryIsHistory(String routerId) {
+    public QueryIsHistory queryIsHistory(String routerId, String branchCode) {
         //根据Id查询当前工艺
-        Router router = this.getById(routerId);
+//        Router router = this.getById(routerId);
+        QueryWrapper<Router> query = new QueryWrapper<>();
+        query.eq("id", routerId)
+                .eq("branch_code", branchCode);
+        List<Router> routerList = this.list(query);
         QueryIsHistory queryIsHistory = new QueryIsHistory();
-        queryIsHistory.setOldVersions(router.getVersion());
+        queryIsHistory.setOldVersions(routerList.get(0).getVersion());
         queryIsHistory.setIsHistory(false);
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-        queryWrapper.eq("router_no", router.getRouterNo());
+        queryWrapper.eq("router_no", routerList.get(0).getRouterNo());
         queryWrapper.eq("is_active", "1");
+        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.orderByAsc("modify_time");
         List<Router> list = this.list(queryWrapper);
         //查不到当前工艺
         if (CollectionUtils.isEmpty(list)) {
             queryIsHistory.setIsHistory(false);
         }
-        if (!list.get(0).getId().equals(router.getId())) {
+        if (!list.get(0).getId().equals(routerList.get(0).getId())) {
             queryIsHistory.setNewVersions(list.get(0).getVersion());
             queryIsHistory.setIsHistory(true);
         }

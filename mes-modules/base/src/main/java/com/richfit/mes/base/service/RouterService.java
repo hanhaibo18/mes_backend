@@ -31,7 +31,7 @@ public interface RouterService extends IService<Router> {
      * @Date: 2022/6/24 3:59
      * @return: Boolean
      **/
-    QueryIsHistory queryIsHistory(String routerId);
+    QueryIsHistory queryIsHistory(String routerId, String branchCode);
 
     /**
      * 功能描述:
