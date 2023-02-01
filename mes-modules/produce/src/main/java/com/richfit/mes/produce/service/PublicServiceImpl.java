@@ -252,7 +252,7 @@ public class PublicServiceImpl implements PublicService {
         currentTrackItem.orderByDesc("sequence_order_by");
         List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
         //判断还有没有下工序
-        if (currentTrackItemList == null && currentTrackItemList.size() == 0) {
+        if (CollectionUtils.isEmpty(currentTrackItemList)) {
             throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
         }
         //判断所有并行工序是否全部完成
@@ -414,7 +414,8 @@ public class PublicServiceImpl implements PublicService {
      * @Author: xinYu.hou
      * @Date: 2022/8/23 15:08
      **/
-    private boolean activation(TrackItem trackItem) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean activation(TrackItem trackItem) {
         //激活下工序
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("flow_id", trackItem.getFlowId());
@@ -432,9 +433,6 @@ public class PublicServiceImpl implements PublicService {
                 automaticProcess(map);
             }
         }
-//        if (trackItemEntity.getOptParallelType() == 1 && trackItemEntity.getNextOptSequence() != 0) {
-//            queryTrackItemList(trackItemEntity);
-//        }
         return update;
     }
 
@@ -444,7 +442,8 @@ public class PublicServiceImpl implements PublicService {
      * @Author: xinYu.hou
      * @Date: 2022/8/23 15:08
      **/
-    private void queryTrackItemList(TrackItem trackItems) {
+    @Transactional(rollbackFor = Exception.class)
+    public void queryTrackItemList(TrackItem trackItems) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("flow_id", trackItems.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItems.getNextOptSequence());
