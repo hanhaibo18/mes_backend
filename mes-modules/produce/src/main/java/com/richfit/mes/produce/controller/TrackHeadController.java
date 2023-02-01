@@ -244,8 +244,8 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "分页查询跟单", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单")
     @GetMapping("/track_head")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
-                                                          @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                                                          @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
                                                           @ApiParam(value = "id") @RequestParam(required = false) String id,
                                                           @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
 
@@ -271,11 +271,11 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(classes)) {
             queryWrapper.ge("classes", classes);
         }
-        if (!StringUtils.isNullOrEmpty(startDate)) {
-            queryWrapper.ge("create_time", startDate);
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.ge("create_time", startTime + " 00:00:00");
         }
-        if (!StringUtils.isNullOrEmpty(endDate)) {
-            queryWrapper.le("create_time", endDate);
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            queryWrapper.le("create_time", endTime + " 23:59:59");
         }
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -743,7 +743,7 @@ public class TrackHeadController extends BaseController {
         }
         if (CollectionUtils.isNotEmpty(drawingNos)) {
             queryWrapper.or();
-            DrawingNoUtil.queryIn(queryWrapper,"drawing_no", drawingNos);
+            DrawingNoUtil.queryIn(queryWrapper, "drawing_no", drawingNos);
         }
         queryWrapper.eq("tenant_id", tenantId);
         return CommonResult.success(trackHeadService.list(queryWrapper));
