@@ -334,8 +334,8 @@ public class TrackHeadController extends BaseController {
             @ApiParam(value = "条数") @RequestParam(required = false) int limit,
             @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
             @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
-            @ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
-            @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+            @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+            @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
             @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
             @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
             @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
@@ -351,8 +351,8 @@ public class TrackHeadController extends BaseController {
             @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode
     ) throws Exception {
         Map<String, String> map = new HashMap<>();
-        TrackFlow.param(startDate,
-                endDate,
+        TrackFlow.param(startTime + " 00:00:00",
+                endTime + " 23:59:59",
                 null,
                 null,
                 templateCode,
@@ -380,8 +380,8 @@ public class TrackHeadController extends BaseController {
     public CommonResult<List<TrackHead>> selectTrackFLowList(
             @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
             @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
-            @ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
-            @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+            @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+            @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
             @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
             @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
             @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
@@ -395,8 +395,8 @@ public class TrackHeadController extends BaseController {
             @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
             @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) throws Exception {
         Map<String, String> map = new HashMap<>();
-        TrackFlow.param(startDate,
-                endDate,
+        TrackFlow.param(startTime + " 00:00:00",
+                endTime + " 23:59:59",
                 null,
                 null,
                 templateCode,
