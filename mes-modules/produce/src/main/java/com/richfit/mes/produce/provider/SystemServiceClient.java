@@ -115,4 +115,15 @@ public interface SystemServiceClient {
     @ApiOperation(value = "查询所有的租户列表信息", notes = "查询所有启用的租户列表信息")
     @GetMapping("/api/sys/tenant/query/tenant/list/inner")
     public CommonResult<List<Tenant>> queryTenantList(@RequestHeader(value = SecurityConstants.FROM) String header);
+
+
+    /**
+     * 功能描述: 查詢全部的用戶賬戶姓名键值对
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2023/2/1 9:56
+     * @return: CommonResult<Map>
+     **/
+    @GetMapping(value = "/api/sys/user/users_account")
+    public CommonResult<Map<String, String>> usersAccount();
 }

@@ -143,10 +143,12 @@ public class TemplatePrintController extends BaseController {
 
                 List<List<Map<String, Object>>> sheets = new ArrayList();
 
+                CommonResult<Map<String, String>> resultUsersAccount = systemServiceClient.usersAccount();
+                Map<String, String> usersAccount = resultUsersAccount.getData();
                 // 根据配置SQL，获取SHEET1、2、3表数据
-                sheets.add(TemplateUtil.getDataList(id, p.getSheet1(), jdbcTemplate));
-                sheets.add(TemplateUtil.getDataList(id, p.getSheet2(), jdbcTemplate));
-                sheets.add(TemplateUtil.getDataList(id, p.getSheet3(), jdbcTemplate));
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet1(), jdbcTemplate, usersAccount));
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet2(), jdbcTemplate, usersAccount));
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet3(), jdbcTemplate, usersAccount));
                 // 生成EXCEL文件，并输出文件流
                 try {
                     // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
