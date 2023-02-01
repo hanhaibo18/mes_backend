@@ -56,8 +56,6 @@ public class TrackCompleteController extends BaseController {
     @Autowired
     private LineStoreService lineStoreService;
     @Autowired
-    private PlanService planService;
-    @Autowired
     private BaseServiceClient baseServiceClient;
     @Resource
     private ProduceRoleOperationService roleOperationService;
@@ -670,7 +668,7 @@ public class TrackCompleteController extends BaseController {
 
             //合计当前派工下的已报工数
             int sum = complete.getCompletedQty().intValue();
-            trackItem.setCompleteQty(trackItem.getCompleteQty() + sum);
+            trackItem.setCompleteQty(ObjectUtil.isEmpty(trackItem.getCompleteQty())?0:trackItem.getCompleteQty() + sum);
             trackItem.setAssignableQty(trackItem.getAssignableQty() - sum);
             complete.setTiId(complete.getTiId());
             complete.setModifyTime(new Date());

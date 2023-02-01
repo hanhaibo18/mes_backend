@@ -13,10 +13,12 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
+import com.richfit.mes.produce.enmus.UnitEnum;
 import com.richfit.mes.produce.entity.quality.DisqualificationDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.entity.quality.QueryCheckDto;
@@ -284,6 +286,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 break;
         }
         finalResultService.saveOrUpdate(finalResult);
+        //发布才进行签核记录
+        if (1 == disqualificationDto.getIsSubmit()) {
+            processingRecord(disqualificationDto, disqualification.getId(), finalResult);
+        }
         //处理文件列表
         QueryWrapper<DisqualificationAttachment> queryWrapperAttachment = new QueryWrapper<>();
         queryWrapperAttachment.eq("disqualification_id", disqualification.getId());
@@ -368,35 +374,42 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     /**
-     * 功能描述: 保存派工人员接口
+     * 功能描述: 处理签核记录
      *
-     * @param userList
-     * @param id
+     * @param disqualificationDto
      * @Author: xinYu.hou
-     * @Date: 2022/10/14 17:04
+     * @Date: 2023/1/30 16:07
      * @return: void
      **/
-    private void savePerson(List<TenantUserVo> userList, String id) {
-        try {
-            List<DisqualificationUserOpinion> userOpinions = new ArrayList<>();
-            for (TenantUserVo user : userList) {
-                DisqualificationUserOpinion opinion = new DisqualificationUserOpinion();
-                opinion.setDisqualificationId(id);
-                //赋值用户唯一Id
-                opinion.setUserId(user.getId());
-                //赋值用户姓名
-                opinion.setUserName(user.getEmplName());
-                //赋值用户车间
-                opinion.setUserBranch(user.getBelongOrgId());
-                //查询车间姓名并赋值
-                Branch branch = baseServiceClient.queryTenantIdByBranchCode(user.getBelongOrgId());
-                opinion.setUserBranchName(branch.getBranchName());
-                userOpinions.add(opinion);
-            }
-            userOpinionService.saveBatch(userOpinions);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new GlobalException("保存人员失败!", ResultCode.FAILED);
+    private void processingRecord(DisqualificationDto disqualificationDto, String id, DisqualificationFinalResult finalResult) {
+        Integer type = disqualificationDto.getType();
+        //申请人提交
+        if (1 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。不合格情况:" + disqualificationDto.getDisqualificationCondition(), type, finalResult.getDisqualificationName());
+        }
+        //质控提交
+        if (2 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getQualityName());
+        }
+        //处理单位一提交
+        if (3 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentOneOpinion(), type, finalResult.getTreatmentOneName());
+        }
+        //处理单位二提交
+        if (4 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentTwoOpinion(), type, finalResult.getTreatmentTwoName());
+        }
+        //责任裁决
+        if (5 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。责任裁决:" + disqualificationDto.getResponsibilityOpinion(), type, finalResult.getResponsibilityName());
+        }
+        //技术裁决
+        if (6 == type) {
+            saveRecord(id, UnitEnum.getMessage(type) + "提交。技术裁决:" + disqualificationDto.getTechnologyOpinion(), type, finalResult.getTechnologyName());
+        }
+        //申请人最后一步填写意见
+        if (7 == type) {
+            saveRecord(id, UnitEnum.getMessage(1) + "提交。返修情况:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getDisqualificationName());
         }
     }
 
@@ -454,6 +467,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.setScrapNoList(Collections.emptyList());
             return disqualificationItemVo;
         }
+        //有源头
         DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
         if (StrUtil.isNotBlank(disqualificationId)) {
             Disqualification disqualification = this.getById(disqualificationId);
@@ -467,13 +481,16 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.DisqualificationFinalResult(finalResult);
             //处理质控工程师列表
             disqualificationItemVo.setUserList(Arrays.asList(disqualificationItemVo.getQualityCheckBy().split(",")));
-            //查询流水记录
+            //查询签核记录
+            QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("disqualification_id", disqualificationItemVo.getId());
+            disqualificationItemVo.setUserOpinionsList(userOpinionService.list(queryWrapper));
             //查询文件
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
         } else if (null != disqualificationItemVo) {
             disqualificationItemVo.setSourceType(1);
             disqualificationItemVo.setAttachmentList(Collections.emptyList());
-            disqualificationItemVo.setSignedRecordsList(Collections.emptyList());
+            disqualificationItemVo.setUserOpinionsList(Collections.emptyList());
             disqualificationItemVo.setUserList(Collections.emptyList());
         }
         //2022/12/27  zhiqiang.lu  缺失预设值信息
@@ -535,16 +552,41 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 }
                 break;
             default:
+                //获取当前登录人姓名
+                CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
+                saveRecord(id, "回滚到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
                 break;
 
         }
         return this.updateById(disqualification);
     }
 
+    @Override
+    public Boolean rollBackAll(String id) {
+        Disqualification disqualification = this.getById(id);
+        if (1 == disqualification.getSourceType()) {
+            disqualification.setType(1);
+        } else {
+            disqualification.setType(0);
+        }
+        return this.updateById(disqualification);
+    }
 
-//    private void saveRecord(Disqualification disqualification) {
-//
-//    }
+
+    private void saveRecord(String id, String record, Integer type, String name) {
+        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("disqualification_id", id);
+        //获取当前登录租户名称
+        CommonResult<Tenant> tenant = systemServiceClient.getTenantById(SecurityUtils.getCurrentUser().getTenantId());
+        DisqualificationUserOpinion userOpinion = new DisqualificationUserOpinion();
+        userOpinion.setDisqualificationId(id)
+                .setSort(userOpinionService.count(queryWrapper) + 1)
+                .setType(type)
+                .setName(name)
+                .setTenantName(tenant.getData().getTenantName())
+                .setOpinion(record);
+        userOpinionService.save(userOpinion);
+    }
 
     /**
      * 功能描述: 获取字典

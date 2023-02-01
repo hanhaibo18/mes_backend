@@ -115,9 +115,15 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryProductNoList(trackHeadId));
     }
 
-    @ApiOperation(value = "查询产品编号列表", notes = "查询产品编号列表")
+    @ApiOperation(value = "回滚", notes = "回滚")
     @GetMapping("/roll_back")
     public CommonResult<Boolean> rollBack(String id, Integer type) {
         return CommonResult.success(disqualificationService.rollBack(id, type));
+    }
+
+    @ApiOperation(value = "回滚All", notes = "回滚全部")
+    @GetMapping("/roll_back_all")
+    public CommonResult<Boolean> rollBackAll(String id) {
+        return CommonResult.success(disqualificationService.rollBackAll(id));
     }
 }

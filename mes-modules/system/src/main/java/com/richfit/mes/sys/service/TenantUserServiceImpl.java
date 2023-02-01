@@ -28,10 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -274,8 +271,8 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         TenantUserVo tenantUserVo = tenantUserMapper.queryUser(queryWrapper);
-        if(ObjectUtil.isEmpty(tenantUserVo)){
-            throw new GlobalException("用户不存在！",ResultCode.FAILED);
+        if (ObjectUtil.isEmpty(tenantUserVo)) {
+            throw new GlobalException("用户不存在！", ResultCode.FAILED);
         }
         return tenantUserMapper.queryUser(queryWrapper);
     }
@@ -474,6 +471,17 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             return userList;
         }
         return null;
+    }
+
+    @Override
+    public Map usersAccount() {
+        Map<String, String> map = new HashMap();
+        QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+        List<TenantUserVo> users = tenantUserMapper.queryUserList(queryWrapper);
+        for (TenantUserVo user : users) {
+            map.put(user.getUserAccount(), user.getEmplName());
+        }
+        return map;
     }
 
 }

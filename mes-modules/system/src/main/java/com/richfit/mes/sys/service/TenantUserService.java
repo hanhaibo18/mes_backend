@@ -126,6 +126,7 @@ public interface TenantUserService {
 
     /**
      * 获取本公司下的所以质检人员信息
+     *
      * @return
      */
     List<TenantUserVo> queryByTendId();
@@ -195,5 +196,10 @@ public interface TenantUserService {
     /*
     根据租户id查询质检人员
      */
-    List<TenantUserVo> queryAllQualityUserByTenantId(String classes,String tenantId);
+    List<TenantUserVo> queryAllQualityUserByTenantId(String classes, String tenantId);
+
+    /*
+查询全部人员账户姓名
+ */
+    Map usersAccount();
 }

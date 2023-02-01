@@ -1,7 +1,6 @@
 package com.richfit.mes.produce.service;
 
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -566,6 +565,7 @@ public class ProduceInspectionRecordService {
                         .set("audit_by",String.valueOf(value.get(0).getAuditBy()))
                         .set("check_by",SecurityUtils.getCurrentUser().getUserId())
                         .set("insp_temp_type",String.valueOf(value.get(0).getTempType()))
+                        .set("audit_status",String.valueOf(value.get(0).getIsAudit()))
                         .set("audit_remark",String.valueOf(value.get(0).getAuditRemark()));
                 inspectionPowerService.update(updateWrapper);
             }
@@ -873,44 +873,6 @@ public class ProduceInspectionRecordService {
         }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordMt), Map.class));
-        /*//记录编号
-        dataMap.put("recordNo",produceInspectionRecordMt.getRecordNo());
-        //种类
-        dataMap.put("type",produceInspectionRecordMt.getType());
-        //提升力
-        dataMap.put("liftPower",produceInspectionRecordMt.getLiftPower());
-        //磁化方法
-        dataMap.put("magneticMethod",produceInspectionRecordMt.getMagneticMethod());
-        //检测方法
-        dataMap.put("detectionMethod",produceInspectionRecordMt.getDetectionMethod());
-        //磁粉载体
-        dataMap.put("magneticCarrier",produceInspectionRecordMt.getMagneticCarrier());
-        //磁化方向
-        dataMap.put("magneticDirection",produceInspectionRecordMt.getMagneticDirection());
-        //荧光/非荧光
-        dataMap.put("fluorescent",produceInspectionRecordMt.getFluorescent());
-        //退磁
-        dataMap.put("isMagnetic",produceInspectionRecordMt.getIsMagnetic());
-        //温度
-        dataMap.put("tempera",produceInspectionRecordMt.getTempera());
-        //室温
-        dataMap.put("isRoomTemp",produceInspectionRecordMt.getIsRoomTemp());
-        //粗糙度
-        dataMap.put("roughness",produceInspectionRecordMt.getRoughness());
-        //试验规范
-        dataMap.put("testSpecification",produceInspectionRecordMt.getTestSpecification());
-        //试验标准
-        dataMap.put("acceptanceCriteria",produceInspectionRecordMt.getAcceptanceCriteria());
-        //灵敏度试片
-        dataMap.put("sensitivityTestPiece",produceInspectionRecordMt.getSensitivityTestPiece());
-        //检验员
-        dataMap.put("checkBy",produceInspectionRecordMt.getCheckBy());
-        //审核人
-        dataMap.put("auditBy",produceInspectionRecordMt.getAuditBy());
-        //检验结果
-        dataMap.put("inspectionResults",produceInspectionRecordMt.getInspectionResults());
-        //见证
-        dataMap.put("witnesses",produceInspectionRecordMt.getWitnesses());*/
         //图片base64编码
         if (!StringUtils.isEmpty(produceInspectionRecordMt.getDiagramAttachmentId())) {
             dataMap.put("img", systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());
@@ -1428,6 +1390,13 @@ public class ProduceInspectionRecordService {
                 record.setOptName(trackItem.getOptName());
                 record.setProductNo(trackItem.getProductNo());
                 record.setTrackType(trackHead.getTrackType());
+            }
+            QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
+            itemInspectInfoQueryWrapper.eq("power_id", record.getId()).eq("is_new","1");
+            List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+            //完工的时候下载报告的
+            if(list.size()>0){
+                record.setRecordId(list.get(0).getInspectRecordId());
             }
         }
         return page;

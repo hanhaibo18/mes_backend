@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service.heat;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,18 +9,24 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Role;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +56,10 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private StepHourService stepHourService;
     @Autowired
     private StepHourVerService stepHourVerService;
+    @Autowired
+    private SystemServiceClient systemServiceClient;
+    @Resource
+    private TrackHeadFlowService trackFlowService;
 
 
     @Override
@@ -116,9 +127,10 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 trackComplete.setAssignId(assign.getId());
                 trackComplete.setTiId(tiId);
                 trackComplete.setTrackId(trackItem.getTrackHeadId());
-                trackComplete.setTrackNo(trackItem.getTrackNo());
+                trackComplete.setTrackNo(assign.getTrackNo());
                 trackComplete.setProdNo(trackItem.getProductNo());
                 trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackComplete.setCompletedQty(Double.parseDouble(String.valueOf(assign.getQty())));
                 trackComplete.setCompleteTime(new Date());
                 trackComplete.setDetectionResult("-");
                 trackComplete.setDeviceName(deviceName);
@@ -415,37 +427,174 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         if(stepHourVer.size() == 0){
             throw new GlobalException("当前没有激活的工时标准版本，无法报工时！",ResultCode.FAILED);
         }
+        stepName = ("保温".equals(stepName) || "装炉".equals(stepName) || "出炉".equals(stepName) || "校直".equals(stepName))?stepName:"工序";
         List<StepHour> stepHours = stepHourService.list(new QueryWrapper<StepHour>().eq("ver_id", stepHourVer.get(0).getId()).eq("step_type", stepType).eq("step_name",stepName));
-        if(stepHours.size()==0){
-            throw new GlobalException("当前激活的步骤工时版本中没有对应的步骤工时分配比例，无法报工时！",ResultCode.FAILED);
+        if(stepHours.size()>0){
+            QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
+            trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
+                    .eq("step",stepName);
+            //修改报工信息的工时
+            Map<String, List<TrackComplete>> itemMap = this.queryList(trackCompleteQueryWrapper).stream().collect(Collectors.groupingBy(item->item.getStepGroupId()+"_"+item.getTiId()));
+            //修改后的报工信息
+            List<TrackComplete> updateCompletes = new ArrayList<>();
+
+            itemMap.forEach((key,value)->{
+                //该步骤报工人数
+                int poepleNumber = value.size();
+                BigDecimal stepHour = new BigDecimal(stepHours.get(0).getHourRatio());
+                for (TrackComplete complete : value) {
+                    //工序标准工时
+                    BigDecimal hour = complete.getHeatHour();
+                    //报工工时
+                    if(hour==null || hour.compareTo(new BigDecimal(0))==0){
+                        complete.setCompletedHours(0.0);
+                        complete.setActualHours(0.0);
+                        complete.setReportHours(0.0);
+                        complete.setStaticHours(0.0);
+                    }else{
+                        BigDecimal completeHour = hour.multiply(stepHour).divide(new BigDecimal(number)).divide(new BigDecimal(poepleNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        complete.setCompletedHours(Double.parseDouble(String.valueOf(completeHour)));
+                        complete.setActualHours(Double.parseDouble(String.valueOf(completeHour)));
+                        complete.setReportHours(Double.parseDouble(String.valueOf(completeHour)));
+                        complete.setStaticHours(Double.parseDouble(String.valueOf(completeHour)));
+                    }
+                    updateCompletes.add(complete);
+                }
+            });
+            this.updateBatchById(updateCompletes);
+            //throw new GlobalException("当前激活的步骤工时版本中没有对应的步骤工时分配比例，无法报工时！",ResultCode.FAILED);
         }
 
-        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
-        trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
-                .eq("step",stepName);
-        //修改报工信息的工时
-        Map<String, List<TrackComplete>> itemMap = this.queryList(trackCompleteQueryWrapper).stream().collect(Collectors.groupingBy(item->item.getStepGroupId()+"_"+item.getTiId()));
-        //修改后的报工信息
-        List<TrackComplete> updateCompletes = new ArrayList<>();
 
-        itemMap.forEach((key,value)->{
-            //该步骤报工人数
-            int poepleNumber = value.size();
-            BigDecimal stepHour = new BigDecimal(stepHours.get(0).getHourRatio());
-            for (TrackComplete complete : value) {
-                //工序标准工时
-                BigDecimal hour = complete.getHeatHour();
-                //报工工时
-                if(hour==null || hour.compareTo(new BigDecimal(0))==0){
-                    complete.setCompletedHours(0.0);
-                }else{
-                    BigDecimal completeHour = hour.multiply(stepHour).divide(new BigDecimal(number)).divide(new BigDecimal(poepleNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
-                    complete.setCompletedHours(Double.parseDouble(String.valueOf(completeHour)));
-                }
-                updateCompletes.add(complete);
+    }
+
+    @Override
+    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo) {
+        QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.eq("work_no", workNo);
+        }
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            Calendar calendar = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                calendar.setTime(sdf.parse(endTime + " 00:00:00"));
+            } catch (ParseException e) {
+                e.printStackTrace();
+                throw new GlobalException("时间格式错误", ResultCode.FAILED);
             }
-        });
-        this.updateBatchById(updateCompletes);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
+
+        }
+        //获取当前登录用户角色列表
+        List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
+        List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
+//            BOMCO_ZF_JMAQ_LDGL;//领导
+//            role_tenant_admin;//租户管理员
+        //查询权限控制
+        if (roleCodeList.toString().contains("_LDGL") || roleCodeList.toString().contains("_TJ") || roleCodeList.contains("role_tenant_admin")) {
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+        } else {
+            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+        }
+        List<TrackComplete> completes = this.list(queryWrapper);
+        List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+        List<TrackComplete> dbRecords = completes;
+
+        if (!CollectionUtils.isEmpty(dbRecords)) {
+            //根据跟单id获取跟单数据
+            Set<String> trackIdList = dbRecords.stream().map(x -> x.getTrackId()).collect(Collectors.toSet());
+            List<TrackHead> trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
+            Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            //根据跟单工序id获取跟单工序
+            Set<String> tiIdList = dbRecords.stream().map(x -> x.getTiId()).collect(Collectors.toSet());
+            List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
+            //只获取数据计算工时
+            Map<String, TrackItem> trackMap = trackItems.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+            List<String> flowIdList = trackItems.stream().map(x -> x.getFlowId()).collect(Collectors.toList());
+            List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
+            Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (k, v) -> k));
+            //根据员工分组
+            Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
+            ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
+            Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
+            for (String id : userIdList) {
+                List<TrackComplete> trackCompletes = completesMap.get(id);
+                //统计每个员工
+                if (!CollectionUtils.isEmpty(trackCompletes)) {
+                    //总工时累计额值
+                    Double sumTotalHours = 0.00;
+                    //准结工时累计值
+                    Double sumPrepareEndHours = 0.00;
+                    //额定工时累计值
+                    Double sumSinglePieceHours = 0.00;
+                    TrackComplete track0 = new TrackComplete();
+                    TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
+                    for (TrackComplete track : trackCompletes) {
+                        //根据跟单工序id获取跟单工序
+                        TrackItem trackItem = trackMap.get(track.getTiId());
+                        if (null == trackItem) {
+                            continue;
+                        }
+                        //查询产品编号
+                        TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
+                        track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
+                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        //空校验
+                        if (trackItem.getPrepareEndHours() == null) {
+                            trackItem.setPrepareEndHours(0.00);
+                            track.setPrepareEndHours(0.00);
+                        } else {
+                            track.setPrepareEndHours(track.getCompletedHours());
+                        }
+                        if (trackItem.getSinglePieceHours() == null) {
+                            trackItem.setSinglePieceHours(0.00);
+                            track.setSinglePieceHours(0.00);
+                        } else {
+                            track.setSinglePieceHours(track.getCompletedHours());
+                        }
+                        if (track.getCompletedQty() == null) {
+                            track.setCompletedQty(0.00);
+                        }
+                        //计算总工时
+                        sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
+                        sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
+                        sumTotalHours = sumTotalHours + track.getCompletedQty() * (ObjectUtil.isEmpty(track.getCompletedHours())?0.0:track.getCompletedHours());
+                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * (ObjectUtil.isEmpty(track.getCompletedHours())?0.0:track.getCompletedHours())).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                        track.setUserName(tenantUserVo.getEmplName());
+                        track0.setUserName(tenantUserVo.getEmplName());
+                        track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
+                        track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
+                        track.setOptSequence(trackItem.getOptSequence());
+                        track.setOptName(trackItem.getOptName());
+                    }
+                    track0.setId(id);
+                    track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//准备工时
+                    track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//额定工时
+                    track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                    track0.setUserName(tenantUserVo.getEmplName());
+                    track0.setTrackCompleteList(trackCompletes);
+                    //判断是否包含叶子结点
+                    track0.setIsLeafNodes(trackCompletes != null && !CollectionUtils.isEmpty(trackCompletes));
+                    emptyTrackComplete.add(track0);
+                }
+            }
+        }
+        List<TrackComplete> records = completes;
+        Map<String, Object> stringObjectHashMap = new HashMap<>();
+        stringObjectHashMap.put("records", records);
+        stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
+        return stringObjectHashMap;
     }
 
 

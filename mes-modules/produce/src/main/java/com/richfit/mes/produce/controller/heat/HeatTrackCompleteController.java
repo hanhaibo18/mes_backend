@@ -23,9 +23,7 @@ import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.HeatTrackCompleteService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.OrderUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -219,6 +217,15 @@ public class HeatTrackCompleteController extends BaseController {
             complete.setNeurogenCool(trackComplete.getNeurogenCool());
         }
         return CommonResult.success(heatTrackCompleteService.updateBatchById(stepCompletes));
+    }
+
+    /**
+     * @return
+     */
+    @ApiOperation(value = "热工工时统计查询接口", notes = "热工工时统计查询接口")
+    @GetMapping("/pageOptimize")
+    public CommonResult<Map<String, Object>> pageOptimize(String trackNo, String startTime, String endTime, String branchCode, String workNo) {
+        return CommonResult.success(heatTrackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo));
     }
 
 
