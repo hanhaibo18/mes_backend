@@ -120,9 +120,9 @@ public class HotLongProductController extends BaseController {
             queryWrapper.like("product_drawing_no", hotLongProductQueryVo.getProductDrawingNo());
         }
         queryWrapper.eq("tenant_id", hotLongProductQueryVo.getTenantId());
-        queryWrapper.orderByDesc("create_time");
         //排序工具
         OrderUtil.query(queryWrapper, hotLongProductQueryVo.getOrderCol(), hotLongProductQueryVo.getOrder());
+        queryWrapper.orderByDesc("create_time");
         return CommonResult.success(hotLongProductService.page(new Page<HotLongProduct>(hotLongProductQueryVo.getPage(), hotLongProductQueryVo.getLimit()), queryWrapper), SUCCESS_MESSAGE);
     }
 

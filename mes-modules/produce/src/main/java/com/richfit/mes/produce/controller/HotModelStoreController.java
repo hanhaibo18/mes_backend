@@ -125,9 +125,9 @@ public class HotModelStoreController extends BaseController {
             queryWrapper.eq("model_type", hotModelStorQueryVo.getModelType());
         }
         queryWrapper.eq("tenant_id", hotModelStorQueryVo.getTenantId());
-        queryWrapper.orderByDesc("create_time");
         //排序工具
         OrderUtil.query(queryWrapper, hotModelStorQueryVo.getOrderCol(), hotModelStorQueryVo.getOrder());
+        queryWrapper.orderByDesc("create_time");
         return CommonResult.success(hotModelStoreService.page(new Page<HotModelStore>(hotModelStorQueryVo.getPage(), hotModelStorQueryVo.getLimit()), queryWrapper), SUCCESS_MESSAGE);
     }
 
