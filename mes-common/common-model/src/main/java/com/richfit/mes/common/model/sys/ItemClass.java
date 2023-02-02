@@ -1,10 +1,15 @@
 package com.richfit.mes.common.model.sys;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -20,6 +25,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class ItemClass extends BaseEntity<ItemClass> {
 
+    private static final long serialVersionUID = -8902787615609016290L;
     private String tenantId;
 
     /**
@@ -32,4 +38,7 @@ public class ItemClass extends BaseEntity<ItemClass> {
      */
     private String name;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "字典参数内容")
+    private List<ItemParam> itemParamList = new ArrayList<>();
 }
