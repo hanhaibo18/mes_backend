@@ -9,6 +9,7 @@ import com.richfit.mes.base.service.OperationDeviceService;
 import com.richfit.mes.base.service.OperatiponService;
 import com.richfit.mes.base.service.SequenceService;
 import com.richfit.mes.base.util.OptNameUtil;
+import com.richfit.mes.base.util.OrderUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.OperationDevice;
@@ -60,7 +61,7 @@ public class OperatiponController extends BaseController {
             @ApiImplicitParam(name = "optName", value = "工序字典名称", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType, String branchCode, String tenantId) {
+    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType, String branchCode, String tenantId,String orderCol,String order) {
         try {
 
             QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
@@ -80,7 +81,14 @@ public class OperatiponController extends BaseController {
             if (!StringUtils.isNullOrEmpty(optType)) {
                 queryWrapper.eq("opt_type", Integer.parseInt(optType));
             }
-            queryWrapper.orderByDesc("modify_time");
+            if(!StringUtils.isNullOrEmpty(orderCol)){
+                //排序
+                OrderUtil.query(queryWrapper, orderCol, order);
+            }else{
+                queryWrapper.orderByDesc("modify_time");
+            }
+
+
             IPage<Operatipon> routers = operatiponService.page(new Page<Operatipon>(page, limit), queryWrapper);
             if (!ObjectUtil.isEmpty(routers.getRecords()) && routers.getRecords().size() > 0) {
                 //获取工序绑定工艺信息
