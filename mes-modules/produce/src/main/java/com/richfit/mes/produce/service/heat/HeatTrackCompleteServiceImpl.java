@@ -233,13 +233,19 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         //派工状态设置为完成
         assign.setState(2);
         trackAssignService.updateById(assign);
-        //调用工序激活方法
-        Map<String, String> map = new HashMap<>(3);
-        map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
-        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), tiId);
-        map.put(IdEnum.ASSIGN_ID.getMessage(), assign.getId());
-        this.activationProcess(map,assign);
+        //判断是否调度和质检  没有才激活下工序
+        boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
+        if (next) {
+            trackItem.setIsFinalComplete(String.valueOf(1));
+            //调用工序激活方法
+            Map<String, String> map = new HashMap<>(3);
+            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+            map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
+            map.put(IdEnum.TRACK_ITEM_ID.getMessage(), tiId);
+            map.put(IdEnum.ASSIGN_ID.getMessage(), assign.getId());
+            this.activationProcess(map,assign);
+        }
+
     }
 
     /**
