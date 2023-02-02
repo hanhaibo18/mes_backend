@@ -82,7 +82,7 @@ public class PlanController extends BaseController {
             queryWrapper.eq("work_no", workNo);
         }
         if (!StringUtils.isNullOrEmpty(drawNo)) {
-            DrawingNoUtil.queryEq(queryWrapper,"draw_no", drawNo);
+            DrawingNoUtil.queryEq(queryWrapper, "draw_no", drawNo);
         }
         if (!StringUtils.isNullOrEmpty(projCode)) {
             queryWrapper.eq("proj_code", projCode);
@@ -133,13 +133,13 @@ public class PlanController extends BaseController {
             queryWrapper.like("work_no", planDto.getWorkNo());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getDrawNo())) {
-            DrawingNoUtil.queryLike(queryWrapper,"draw_no", planDto.getDrawNo());
+            DrawingNoUtil.queryLike(queryWrapper, "draw_no", planDto.getDrawNo());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getStartTime())) {
-            queryWrapper.ge("start_time", planDto.getStartTime());
+            queryWrapper.ge("start_time", planDto.getStartTime() + " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(planDto.getEndTime())) {
-            queryWrapper.le("end_time", planDto.getEndTime());
+            queryWrapper.le("end_time", planDto.getEndTime() + " 23:59:59");
         }
         if (planDto.getStatus() != -1) {
             queryWrapper.eq("status", planDto.getStatus());

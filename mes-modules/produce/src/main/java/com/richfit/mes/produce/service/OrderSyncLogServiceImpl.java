@@ -33,9 +33,9 @@ public class OrderSyncLogServiceImpl extends ServiceImpl<OrderSyncLogMapper, Ord
         //状态
         queryWrapper.eq(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getSyncState()), "sync_state", queryOrderSyncLogPageDto.getSyncState());
         //开始时间
-        queryWrapper.ge(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getStartTime()), "modify_time", queryOrderSyncLogPageDto.getStartTime());
+        queryWrapper.ge(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getStartTime()), "modify_time", queryOrderSyncLogPageDto.getStartTime() + " 00:00:00");
         //结束时间
-        queryWrapper.ge(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getEndTime()), "modify_time", queryOrderSyncLogPageDto.getEndTime());
+        queryWrapper.le(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getEndTime()), "modify_time", queryOrderSyncLogPageDto.getEndTime() + " 23:59:59");
         //根据租户查询
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //排序

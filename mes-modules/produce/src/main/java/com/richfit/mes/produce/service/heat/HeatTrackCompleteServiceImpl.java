@@ -427,8 +427,12 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         if(stepHourVer.size() == 0){
             throw new GlobalException("当前没有激活的工时标准版本，无法报工时！",ResultCode.FAILED);
         }
-        stepName = ("保温".equals(stepName) || "装炉".equals(stepName) || "出炉".equals(stepName) || "校直".equals(stepName))?stepName:"工序";
-        List<StepHour> stepHours = stepHourService.list(new QueryWrapper<StepHour>().eq("ver_id", stepHourVer.get(0).getId()).eq("step_type", stepType).eq("step_name",stepName));
+        List<String> steps = new ArrayList<>();
+        steps.add("保温");
+        steps.add("装炉");
+        steps.add("出炉");
+        steps.add("校直");
+        List<StepHour> stepHours = stepHourService.list(new QueryWrapper<StepHour>().eq("ver_id", stepHourVer.get(0).getId()).eq("step_type", stepType).eq("step_name",!steps.contains(stepName)?"工序":stepName));
         if(stepHours.size()>0){
             QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
             trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)

@@ -35,10 +35,10 @@ public class ActionController {
 
         QueryWrapper<Action> queryWrapper = new QueryWrapper<Action>();
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("action_time", startTime);
+            queryWrapper.ge("action_time", startTime + " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("action_time", endTime);
+            queryWrapper.le("action_time", endTime + " 23:59:59");
         }
         if (!StringUtils.isNullOrEmpty(user)) {
             queryWrapper.like("user", user);

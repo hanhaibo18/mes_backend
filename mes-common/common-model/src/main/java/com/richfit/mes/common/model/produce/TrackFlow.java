@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.TimeUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -113,8 +114,8 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
             Map<String, String> map) {
 
 
-        map.put("startDate", startDate);
-        map.put("endDate", endDate);
+        map.put("startDate", TimeUtil.queryStartTimeSql(startDate));
+        map.put("endDate", TimeUtil.queryEndTimeSql(endDate));
         map.put("isExamineCardData", isExamineCardData);
         map.put("isCardData", isCardData);
         map.put("templateCode", templateCode);

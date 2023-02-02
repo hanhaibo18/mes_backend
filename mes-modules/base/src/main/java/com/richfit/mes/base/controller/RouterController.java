@@ -242,7 +242,8 @@ public class RouterController extends BaseController {
             queryWrapper.eq("id", id);
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.eq("router_no", routerNo);
+            DrawingNoUtil.queryEq(queryWrapper, "router_no", routerNo);
+//            queryWrapper.eq("router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(routerName)) {
             queryWrapper.like("router_name", routerName);
@@ -552,8 +553,8 @@ public class RouterController extends BaseController {
     @ApiOperation(value = "查询工艺是否为历史工艺", notes = "查询工艺是否为历史工艺")
     @ApiImplicitParam(name = "routerId", value = "工艺Id", required = true, dataType = "String", paramType = "query")
     @GetMapping("/queryIsHistory")
-    public CommonResult<QueryIsHistory> queryIsHistory(String routerId) {
-        return CommonResult.success(routerService.queryIsHistory(routerId));
+    public CommonResult<QueryIsHistory> queryIsHistory(String routerId, String branchCode) {
+        return CommonResult.success(routerService.queryIsHistory(routerId, branchCode));
     }
 
     @ApiOperation(value = "查询新旧工艺", notes = "查询新旧工艺")

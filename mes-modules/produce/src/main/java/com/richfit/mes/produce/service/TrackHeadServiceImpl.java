@@ -866,8 +866,14 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 //                queryWrapperTrackItem.eq("is_schedule", 1);
 //                queryWrapperTrackItem.orderByDesc("opt_sequence");
 //                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
+                //查询最大当前工序
+                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
+                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
+                queryWrapperTrackItem.eq("is_current", 1);
+                queryWrapperTrackItem.orderByDesc("opt_sequence");
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
                 //查询已派工最大工序顺序下所有工序
-                List<TrackItem> trackItemList = trackItemMapper.getTrackItems(trackHead.getId());
+//                List<TrackItem> trackItemList = trackItemMapper.getTrackItems(trackHead.getId());
                 //取出最大的顺序数
                 int optSequence = 0;
                 if (!trackItemList.isEmpty()) {
