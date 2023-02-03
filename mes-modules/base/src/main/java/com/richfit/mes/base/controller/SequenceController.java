@@ -809,7 +809,7 @@ public class SequenceController extends BaseController {
     public CommonResult<Sequence> querySequenceById(String optName, String branchCode) {
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<>();
         OptNameUtil.queryEq(queryWrapper, "opt_name", optName);
-        queryWrapper.eq("branchCode", branchCode);
+        queryWrapper.eq("branch_code", branchCode);
         List<Sequence> sequence = sequenceService.list(queryWrapper);
         if (CollectionUtils.isEmpty(sequence)) {
             throw new GlobalException("未能查询到工序", ResultCode.FAILED);
