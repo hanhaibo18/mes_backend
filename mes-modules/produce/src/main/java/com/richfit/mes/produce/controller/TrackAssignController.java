@@ -265,7 +265,7 @@ public class TrackAssignController extends BaseController {
     @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
     @PostMapping("/batchAdd")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) throws Exception {
+    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) {
         try {
             for (Assign assign : assigns) {
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {
