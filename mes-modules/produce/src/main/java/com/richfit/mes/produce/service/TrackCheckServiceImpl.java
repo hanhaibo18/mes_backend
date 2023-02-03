@@ -62,4 +62,11 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
         return trackCheckMapper.queryTrackCheckPage(page, qw);
     }
 
+    @Override
+    public Boolean countQueryRules(String rulesId) {
+        QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
+        queryWrapper.eq("result", rulesId);
+        return this.count(queryWrapper) > 0;
+    }
+
 }

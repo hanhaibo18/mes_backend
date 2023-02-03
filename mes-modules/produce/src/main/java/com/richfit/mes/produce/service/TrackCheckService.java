@@ -48,4 +48,14 @@ public interface TrackCheckService extends IService<TrackCheck> {
      * @return: IPage<TrackCheck>
      **/
     IPage<TrackCheck> queryCheckPage(Page<TrackCheck> page, QueryWrapper<TrackCheck> qw);
+
+    /**
+     * 功能描述: 根据规则Id查询是否被使用
+     *
+     * @param rulesId
+     * @Author: xinYu.hou
+     * @Date: 2022/11/23 19:30
+     * @return: Boolean
+     **/
+    Boolean countQueryRules(String rulesId);
 }

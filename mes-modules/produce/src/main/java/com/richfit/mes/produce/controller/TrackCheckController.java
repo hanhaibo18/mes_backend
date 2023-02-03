@@ -911,4 +911,10 @@ public class TrackCheckController extends BaseController {
         List<TrackCheck> result = trackCheckService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
+
+    @ApiOperation(value = "查询质检规则是否被使用", notes = "查询质检规则是否被使用")
+    @GetMapping("/count_query_rules")
+    public CommonResult<Boolean> countQueryRules(String rulesId) {
+        return CommonResult.success(trackCheckService.countQueryRules(rulesId));
+    }
 }
