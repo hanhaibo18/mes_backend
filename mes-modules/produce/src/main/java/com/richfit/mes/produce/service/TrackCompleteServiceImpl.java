@@ -15,6 +15,7 @@ import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -32,8 +33,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,20 +88,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+            TimeUtil.queryStartTime(queryWrapper, startTime);
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            Calendar calendar = new GregorianCalendar();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            try {
-                calendar.setTime(sdf.parse(endTime + " 00:00:00"));
-            } catch (ParseException e) {
-                e.printStackTrace();
-                throw new GlobalException("时间格式错误", ResultCode.FAILED);
-            }
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-            queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
-
+            TimeUtil.queryEndTime(queryWrapper, startTime);
         }
         //获取当前登录用户角色列表
         List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
