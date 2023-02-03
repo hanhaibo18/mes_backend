@@ -6,24 +6,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.InspectionDictionary;
 import com.richfit.mes.common.model.produce.RgDevice;
-import com.richfit.mes.produce.service.InspectionDictionaryService;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.produce.service.RgDeviceService;
-import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @Author: renzewen
@@ -42,7 +35,7 @@ public class RgDeviceController {
      */
     @ApiOperation(value = "分页查询设备类别", notes = "分页查询设备类别")
     @GetMapping("/getTypePage")
-    public CommonResult<IPage> getTypePage(String typeCode, String typeName, int page, int limit,String orderCol,String order) throws GlobalException {
+    public CommonResult<IPage> getTypePage(String typeCode, String typeName, int page, int limit, String orderCol, String order) throws GlobalException {
         QueryWrapper<RgDevice> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(typeCode)) {
             queryWrapper.eq("type_code", typeCode);
@@ -53,10 +46,10 @@ public class RgDeviceController {
         //父节点为空 即为类别信息
         queryWrapper.isNull("type_id");
 
-        if(!StringUtils.isNullOrEmpty(orderCol)){
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
             //排序
             OrderUtil.query(queryWrapper, orderCol, order);
-        }else{
+        } else {
             //升序排列
             queryWrapper.orderByAsc("type_no+0");
         }
@@ -87,7 +80,7 @@ public class RgDeviceController {
     @ApiOperation(value = "新增或修改操作信息", notes = "新增或修改操作信息")
     @PostMapping("/addOrUpdate")
     public CommonResult<Boolean> addOrUpdate(@RequestBody RgDevice rgDevice) throws GlobalException {
-        if(!StringUtils.isNullOrEmpty(rgDevice.getTypeId())){
+        if (!StringUtils.isNullOrEmpty(rgDevice.getTypeId())) {
             rgDevice.setDeviceType(rgDeviceService.getById(rgDevice.getTypeId()).getTypeName());
         }
         return CommonResult.success(rgDeviceService.saveOrUpdate(rgDevice));
@@ -112,17 +105,17 @@ public class RgDeviceController {
      */
     @ApiOperation(value = "根据类别ID分页获取关联设备信息", notes = "根据类别ID分页获取关联设备信息")
     @GetMapping("/getListInfoById")
-    public CommonResult<IPage> getListInfoById(String typeId,String order,String orderCol,int page,int limit) throws GlobalException {
+    public CommonResult<IPage> getListInfoById(String typeId, String order, String orderCol, int page, int limit) throws GlobalException {
         QueryWrapper<RgDevice> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type_id", typeId);
-        if(!StringUtils.isNullOrEmpty(orderCol)){
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
             //排序
             OrderUtil.query(queryWrapper, orderCol, order);
-        }else{
+        } else {
             //升序排列
             queryWrapper.orderByDesc("modify_time");
         }
-        return CommonResult.success(rgDeviceService.page(new Page<RgDevice>(page,limit),queryWrapper));
+        return CommonResult.success(rgDeviceService.page(new Page<RgDevice>(page, limit), queryWrapper));
     }
 
     /**
@@ -133,9 +126,9 @@ public class RgDeviceController {
     public CommonResult<List> getListInfoById(String typeCode) throws GlobalException {
         List<RgDevice> rgDevices = new ArrayList<>();
         QueryWrapper<RgDevice> rgDeviceQueryWrapper = new QueryWrapper<>();
-        rgDeviceQueryWrapper.eq("type_code",typeCode);
+        rgDeviceQueryWrapper.eq("type_code", typeCode);
         List<RgDevice> list = rgDeviceService.list(rgDeviceQueryWrapper);
-        if(list.size()>0){
+        if (list.size() > 0) {
             QueryWrapper<RgDevice> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("type_id", list.get(0).getId());
             //升序排列

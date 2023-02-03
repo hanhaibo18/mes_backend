@@ -15,13 +15,13 @@ import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
-import com.richfit.mes.produce.utils.OrderUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ import java.util.*;
  * @Description 跟单派工服务
  */
 @Service
-public class  HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements HeatTrackAssignService {
+public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements HeatTrackAssignService {
     @Autowired
     public TrackAssignMapper trackAssignMapper;
     @Resource
@@ -128,6 +128,7 @@ public class  HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, 
 
     /**
      * 功能描述：热工跟单派工
+     *
      * @param assign
      * @return
      * @throws Exception
@@ -192,20 +193,21 @@ public class  HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, 
 
     /**
      * 工艺信息字段拼接
+     *
      * @param trackItem
      * @return
      */
     private String getRouterInfo(TrackItem trackItem) {
         StringBuilder routerInfo = new StringBuilder();
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-        trackItemQueryWrapper.eq("flow_id",trackItem.getFlowId())
+        trackItemQueryWrapper.eq("flow_id", trackItem.getFlowId())
                 .orderByAsc("sequence_order_by");
         List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
         for (TrackItem item : list) {
-            if(!StringUtils.isNullOrEmpty(String.valueOf(routerInfo))){
+            if (!StringUtils.isNullOrEmpty(String.valueOf(routerInfo))) {
                 routerInfo.append(";");
             }
-            routerInfo.append(item.getOptName()+" "+item.getTempWork()+" "+item.getHoldTime()+" "+item.getCoolType());
+            routerInfo.append(item.getOptName() + " " + item.getTempWork() + " " + item.getHoldTime() + " " + item.getCoolType());
         }
         return String.valueOf(routerInfo);
     }

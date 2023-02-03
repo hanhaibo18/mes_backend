@@ -1,4 +1,4 @@
-package com.richfit.mes.base.util;
+package com.richfit.mes.common.model.util;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

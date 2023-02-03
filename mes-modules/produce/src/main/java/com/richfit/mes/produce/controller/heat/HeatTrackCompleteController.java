@@ -14,6 +14,7 @@ import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
@@ -22,14 +23,18 @@ import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.HeatTrackCompleteService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
-import com.richfit.mes.produce.utils.OrderUtil;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -70,21 +75,21 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "开工")
     @GetMapping("/startWork")
-    public CommonResult<Boolean> startWork(@ApiParam(value = "预装炉id", required = true) @RequestParam String prechargeFurnaceId){
+    public CommonResult<Boolean> startWork(@ApiParam(value = "预装炉id", required = true) @RequestParam String prechargeFurnaceId) {
         return CommonResult.success(heatTrackCompleteService.startWork(prechargeFurnaceId));
     }
 
     @ApiOperation(value = "根据预装炉id获取报工信息")
     @GetMapping("/getCompleteInfoByFuId")
-    public CommonResult<Map<String,Object>> getCompleteInfoByFuId(@ApiParam(value = "预装炉id", required = true) String prechargeFurnaceId){
+    public CommonResult<Map<String, Object>> getCompleteInfoByFuId(@ApiParam(value = "预装炉id", required = true) String prechargeFurnaceId) {
         return CommonResult.success(heatTrackCompleteService.getCompleteInfoByFuId(prechargeFurnaceId));
     }
 
     @ApiOperation(value = "（已报工）分页查询已报工信息")
     @PostMapping("/alreadyCompletePage")
-    public CommonResult alreadyCompletePage(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto){
+    public CommonResult alreadyCompletePage(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) {
         TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
-        if(ObjectUtil.isEmpty(data)){
+        if (ObjectUtil.isEmpty(data)) {
             throw new GlobalException("用户不存在", ResultCode.FAILED);
         }
         //当前用户报过的步骤信息
@@ -93,24 +98,24 @@ public class HeatTrackCompleteController extends BaseController {
         List<TrackComplete> completeList = heatTrackCompleteService.list(completeQueryWrapper);
         //预装炉id集合
         List<String> fuIds = new ArrayList<>(completeList.stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
-        if(fuIds.size()>0){
+        if (fuIds.size() > 0) {
             QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
             if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
-                int tempWorkZ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())?"0":dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
-                int tempWorkQ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())?"0":dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
+                int tempWorkZ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
+                int tempWorkQ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
                 //小于等于
                 prechargeFurnaceQueryWrapper.le("temp_work", tempWorkZ);
                 //大于等于
                 prechargeFurnaceQueryWrapper.ge("temp_work", tempWorkQ);
             }
-            prechargeFurnaceQueryWrapper.in("id",fuIds);
-            if(StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())){
+            prechargeFurnaceQueryWrapper.in("id", fuIds);
+            if (StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())) {
                 prechargeFurnaceQueryWrapper.orderByAsc("modify_time");
-            }else{
-                OrderUtil.query(prechargeFurnaceQueryWrapper,dispatchingDto.getOrderCol(),dispatchingDto.getOrder());
+            } else {
+                OrderUtil.query(prechargeFurnaceQueryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
             }
 
-            return  CommonResult.success(prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(),dispatchingDto.getLimit()),prechargeFurnaceQueryWrapper));
+            return CommonResult.success(prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(), dispatchingDto.getLimit()), prechargeFurnaceQueryWrapper));
 
         }
         return CommonResult.success(new Page<PrechargeFurnace>());
@@ -119,13 +124,13 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "（已报工）已报工根据预装炉id查询当前用户报工的步骤及用户")
     @GetMapping("/queryStepListByFuId")
-    public CommonResult<Map> queryStepListByFuId(@ApiParam(value = "预装炉id", required = true) @RequestParam String id){
+    public CommonResult<Map> queryStepListByFuId(@ApiParam(value = "预装炉id", required = true) @RequestParam String id) {
         TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
-        if(ObjectUtil.isEmpty(data)){
+        if (ObjectUtil.isEmpty(data)) {
             throw new GlobalException("用户不存在", ResultCode.FAILED);
         }
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("precharge_furnace_id",id)
+        queryWrapper.eq("precharge_furnace_id", id)
                 .eq("complete_by", data.getUserAccount())
                 .orderByAsc("create_time");
         List<TrackComplete> completes = heatTrackCompleteService.queryList(queryWrapper);
@@ -133,7 +138,7 @@ public class HeatTrackCompleteController extends BaseController {
         List<TrackComplete> userList = new ArrayList<>();
         //根据步骤分组id分组 得到步骤集合
         Map<String, List<TrackComplete>> stepGroup = completes.stream().collect(Collectors.groupingBy(TrackComplete::getStepGroupId));
-        stepGroup.forEach((key,value)->{
+        stepGroup.forEach((key, value) -> {
             stepList.add(value.get(0));
             for (TrackComplete trackComplete : value) {
                 userList.add(trackComplete);
@@ -146,31 +151,31 @@ public class HeatTrackCompleteController extends BaseController {
             List<TrackComplete> completes1 = stepGroup.get(complete.getStepGroupId());
             for (TrackComplete trackComplete : completes1) {
                 CompleteUserInfoDto completeUserInfoDto = new CompleteUserInfoDto();
-                BeanUtils.copyProperties(trackComplete,completeUserInfoDto);
+                BeanUtils.copyProperties(trackComplete, completeUserInfoDto);
                 stepUserInfos.add(completeUserInfoDto);
             }
             complete.setUserInfos(stepUserInfos);
         }
 
-        stepList.sort((t1,t2)->t1.getCreateTime().compareTo(t2.getCreateTime()));
-        userList.sort((t1,t2)->t1.getCreateTime().compareTo(t2.getCreateTime()));
+        stepList.sort((t1, t2) -> t1.getCreateTime().compareTo(t2.getCreateTime()));
+        userList.sort((t1, t2) -> t1.getCreateTime().compareTo(t2.getCreateTime()));
 
-        returnMap.put("stepList",stepList);
-        returnMap.put("userList",userList);
+        returnMap.put("stepList", stepList);
+        returnMap.put("userList", userList);
         return CommonResult.success(returnMap);
     }
 
     @ApiOperation(value = "（已报工）根据步骤id查询跟单工序信息")
     @GetMapping("/queryItemListByStepGroupId")
-    public CommonResult<List<TrackItem>> queryItemListByStepGroupId(@ApiParam(value = "步骤分组id（stepGroupId）", required = true) @RequestParam String stepGroupId){
+    public CommonResult<List<TrackItem>> queryItemListByStepGroupId(@ApiParam(value = "步骤分组id（stepGroupId）", required = true) @RequestParam String stepGroupId) {
         TrackComplete trackComplete = heatTrackCompleteService.getById(stepGroupId);
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
-        wrapper.eq("step_group_id",trackComplete.getStepGroupId());
+        wrapper.eq("step_group_id", trackComplete.getStepGroupId());
         List<TrackComplete> stepCompletes = heatTrackCompleteService.list(wrapper);
         List<String> itemIds = stepCompletes.stream().map(TrackComplete::getTiId).collect(Collectors.toList());
-        if(itemIds.size()>0){
+        if (itemIds.size() > 0) {
             QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-            trackItemQueryWrapper.in("id",itemIds);
+            trackItemQueryWrapper.in("id", itemIds);
             List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
             for (TrackItem trackItem : list) {
                 TrackHead head = headService.getById(trackItem.getTrackHeadId());
@@ -186,10 +191,10 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "（已报工）人员批量删除")
     @PostMapping("/deleteCompleteBy")
-    public CommonResult<Boolean> deleteCompleteBy(@ApiParam(value = "人员列表的ids", required = true) @RequestBody List<String> ids){
-        if(!ObjectUtil.isEmpty(ids) && ids.size()>0){
+    public CommonResult<Boolean> deleteCompleteBy(@ApiParam(value = "人员列表的ids", required = true) @RequestBody List<String> ids) {
+        if (!ObjectUtil.isEmpty(ids) && ids.size() > 0) {
             QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
-            wrapper.in("id",ids);
+            wrapper.in("id", ids);
             return CommonResult.success(heatTrackCompleteService.remove(wrapper));
             //todo 删除人员得重新计算工时
 
@@ -199,12 +204,12 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "（已报工）报工信息编辑")
     @PostMapping("/updateCompleteInfo")
-    public CommonResult<Boolean> updateCompleteInfo(@ApiParam(value = "报工信息", required = true) @RequestBody TrackComplete trackComplete){
+    public CommonResult<Boolean> updateCompleteInfo(@ApiParam(value = "报工信息", required = true) @RequestBody TrackComplete trackComplete) {
         //步骤id
         String stepGroupId = trackComplete.getStepGroupId();
         //根据步骤id获取要修改的报工信息
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
-        wrapper.eq("step_group_id",stepGroupId);
+        wrapper.eq("step_group_id", stepGroupId);
         List<TrackComplete> stepCompletes = heatTrackCompleteService.list(wrapper);
         for (TrackComplete complete : stepCompletes) {
             complete.setWaterTempera(trackComplete.getWaterTempera());
@@ -227,9 +232,6 @@ public class HeatTrackCompleteController extends BaseController {
     public CommonResult<Map<String, Object>> pageOptimize(String trackNo, String startTime, String endTime, String branchCode, String workNo) {
         return CommonResult.success(heatTrackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo));
     }
-
-
-
 
 
 }

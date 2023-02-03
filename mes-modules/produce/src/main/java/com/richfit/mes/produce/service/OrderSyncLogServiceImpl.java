@@ -6,10 +6,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.OrderSyncLog;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.OrderSyncLogMapper;
 import com.richfit.mes.produce.entity.QueryOrderSyncLogPageDto;
-import com.richfit.mes.produce.utils.OrderUtil;
 import org.springframework.stereotype.Service;
 
 /**

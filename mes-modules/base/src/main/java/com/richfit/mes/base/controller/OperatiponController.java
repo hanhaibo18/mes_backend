@@ -8,13 +8,13 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.OperationDeviceService;
 import com.richfit.mes.base.service.OperatiponService;
 import com.richfit.mes.base.service.SequenceService;
-import com.richfit.mes.base.util.OptNameUtil;
-import com.richfit.mes.base.util.OrderUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.OperationDevice;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.util.OptNameUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.*;
@@ -61,7 +61,7 @@ public class OperatiponController extends BaseController {
             @ApiImplicitParam(name = "optName", value = "工序字典名称", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType, String branchCode, String tenantId,String orderCol,String order) {
+    public CommonResult<IPage<Operatipon>> page(int page, int limit, String routerId, String optCode, String optName, String optType, String branchCode, String tenantId, String orderCol, String order) {
         try {
 
             QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
@@ -81,10 +81,10 @@ public class OperatiponController extends BaseController {
             if (!StringUtils.isNullOrEmpty(optType)) {
                 queryWrapper.eq("opt_type", Integer.parseInt(optType));
             }
-            if(!StringUtils.isNullOrEmpty(orderCol)){
+            if (!StringUtils.isNullOrEmpty(orderCol)) {
                 //排序
                 OrderUtil.query(queryWrapper, orderCol, order);
-            }else{
+            } else {
                 queryWrapper.orderByDesc("modify_time");
             }
 

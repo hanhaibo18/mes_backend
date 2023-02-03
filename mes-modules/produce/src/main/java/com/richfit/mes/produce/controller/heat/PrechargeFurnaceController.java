@@ -9,11 +9,11 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
-import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -107,10 +107,10 @@ public class PrechargeFurnaceController extends BaseController {
             queryWrapper.eq("start_work_by", SecurityUtils.getCurrentUser().getUserId());
             queryWrapper.in("status", 2);
         }
-        if(StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())){
+        if (StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())) {
             queryWrapper.orderByAsc("modify_time");
-        }else{
-            OrderUtil.query(queryWrapper,dispatchingDto.getOrderCol(),dispatchingDto.getOrder());
+        } else {
+            OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
         }
 
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));

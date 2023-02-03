@@ -5,13 +5,14 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.StepHour;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.produce.service.heat.StepHourService;
-import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
@@ -31,14 +32,14 @@ public class StepHourController {
      */
     @ApiOperation(value = "查询步骤工时列表", notes = "查询步骤工时列表")
     @GetMapping("/list")
-    public CommonResult queryPage(String order,String orderCol,String verId) throws GlobalException {
+    public CommonResult queryPage(String order, String orderCol, String verId) throws GlobalException {
 
         QueryWrapper<StepHour> queryWrapper = new QueryWrapper<StepHour>();
-        queryWrapper.eq("ver_id",verId);
-        if(!StringUtils.isNullOrEmpty(orderCol)){
+        queryWrapper.eq("ver_id", verId);
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
             //排序
             OrderUtil.query(queryWrapper, orderCol, order);
-        }else{
+        } else {
             queryWrapper.orderByAsc("step_type")
                     .orderByAsc("step_name");
         }
@@ -54,13 +55,13 @@ public class StepHourController {
     @PostMapping("/saveOrUpdate")
     public CommonResult saveOrUpdate(@RequestBody StepHour stepHour) throws GlobalException {
         QueryWrapper<StepHour> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("step_type",stepHour.getStepType())
-                .eq("ver_id",stepHour.getVerId())
-                .eq("step_name",stepHour.getStepName());
+        queryWrapper.eq("step_type", stepHour.getStepType())
+                .eq("ver_id", stepHour.getVerId())
+                .eq("step_name", stepHour.getStepName());
         List<StepHour> list = stepHourService.list(queryWrapper);
-        if(list.size()>0){
-            if((!StringUtils.isNullOrEmpty(stepHour.getId()) && !list.get(0).getId().equals(stepHour.getId())) || StringUtils.isNullOrEmpty(stepHour.getId())){
-                return CommonResult.failed("此版本下已经存在报工类型（"+stepHour.getStepType()+"）步骤名（"+stepHour.getStepName()+"）的步骤工时，无法保存！");
+        if (list.size() > 0) {
+            if ((!StringUtils.isNullOrEmpty(stepHour.getId()) && !list.get(0).getId().equals(stepHour.getId())) || StringUtils.isNullOrEmpty(stepHour.getId())) {
+                return CommonResult.failed("此版本下已经存在报工类型（" + stepHour.getStepType() + "）步骤名（" + stepHour.getStepName() + "）的步骤工时，无法保存！");
             }
         }
         return CommonResult.success(stepHourService.saveOrUpdate(stepHour));
