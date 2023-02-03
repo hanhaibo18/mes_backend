@@ -226,15 +226,16 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         //最后一次报工进行下工序装炉
         //更改状态 标识当前工序完成
         trackItem.setIsDoing(2);
+        trackItem.setIsOperationComplete(1);
+        trackItem.setOperationCompleteTime(new Date());
+        //此工序完工
+        trackItemService.updateById(trackItem);
         //派工状态设置为完成
         assign.setState(2);
         trackAssignService.updateById(assign);
         //判断是否调度和质检  没有才激活下工序
         boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
         if (next) {
-            trackItem.setIsFinalComplete(String.valueOf(1));
-            trackItem.setIsOperationComplete(1);
-            trackItem.setOperationCompleteTime(new Date());
             //调用工序激活方法
             Map<String, String> map = new HashMap<>(3);
             map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
@@ -243,9 +244,6 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             map.put(IdEnum.ASSIGN_ID.getMessage(), assign.getId());
             this.activationProcess(map,assign);
         }
-        //此工序完工
-        trackItemService.updateById(trackItem);
-
     }
 
     /**
@@ -275,6 +273,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         }
         for (TrackItem trackItem : currentTrackItemList) {
             trackItem.setIsCurrent(0);
+            trackItem.setIsFinalComplete(String.valueOf(1));
             trackItemService.updateById(trackItem);
         }
         boolean activation = false;
