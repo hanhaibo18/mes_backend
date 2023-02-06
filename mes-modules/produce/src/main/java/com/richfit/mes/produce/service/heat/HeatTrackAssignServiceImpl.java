@@ -70,7 +70,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTrackNo())) {
             dispatchingDto.setTrackNo(dispatchingDto.getTrackNo().replaceAll(" ", ""));
-            queryWrapper.apply("replace(replace(replace(u.track_no2, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
+            queryWrapper.apply("replace(replace(replace(u.track_no, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
             queryWrapper.like("u.drawing_no", dispatchingDto.getRouterNo());
