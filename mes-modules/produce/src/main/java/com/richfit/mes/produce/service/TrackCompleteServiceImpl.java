@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,6 +26,7 @@ import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.OutsourceCompleteDto;
+import com.richfit.mes.produce.entity.OutsourceDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -619,13 +621,58 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         return massage.toString();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("track_head_id", outsource.getTrackHeadId());
         queryWrapper.in("product_no", outsource.getProdNoList());
         List<TrackItem> list = trackItemService.list(queryWrapper);
-        return null;
+        List<TrackItem> result = new ArrayList<>();
+        //获取正确的工序
+        for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
+            List<TrackItem> collect = list.stream().filter(trackItem ->
+                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && trackItem.getOptName().equals(outsourceDto.getOptName())
+            ).collect(Collectors.toList());
+            result.addAll(collect);
+        }
+        boolean bool = true;
+        for (TrackItem trackItem : result) {
+            if (StringUtils.isNullOrEmpty(trackItem.getStartDoingUser())) {
+                trackItem.setStartDoingTime(new Date());
+                trackItem.setStartDoingUser(outsource.getTrackComplete().getUserId());
+            }
+            //合计当前派工下的已报工数
+            int sum = outsource.getTrackComplete().getCompletedQty().intValue();
+            trackItem.setCompleteQty(ObjectUtil.isEmpty(trackItem.getCompleteQty()) ? 0 : trackItem.getCompleteQty() + sum);
+            trackItem.setAssignableQty(trackItem.getAssignableQty() - sum);
+            outsource.getTrackComplete().setTiId(trackItem.getId());
+            outsource.getTrackComplete().setModifyTime(new Date());
+            outsource.getTrackComplete().setCreateTime(new Date());
+            outsource.getTrackComplete().setCompleteBy(outsource.getTrackComplete().getUserId());
+            outsource.getTrackComplete().setCompleteTime(new Date());
+
+            trackItem.setOperationCompleteTime(new Date());
+            trackItem.setIsOperationComplete(1);
+            trackItem.setIsDoing(2);
+            trackItem.setQualityCheckBy(outsource.getTrackComplete().getQualityCheckBy());
+            trackItem.setQualityCheckBranch(outsource.getTrackComplete().getQualityCheckBranch());
+            bool = trackCompleteService.save(outsource.getTrackComplete());
+            trackItemService.updateById(trackItem);
+
+            //判断是否需要质检和调度审核 再激活下工序
+            boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
+            if (next) {
+                Map<String, String> map = new HashMap<String, String>(1);
+                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                publicService.activationProcess(map);
+            }
+        }
+        if (bool) {
+            return CommonResult.success(bool, "操作成功！");
+        } else {
+            return CommonResult.failed("操作失败，请重试！");
+        }
     }
 
 

@@ -18,6 +18,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -1196,5 +1197,11 @@ public class TrackCompleteController extends BaseController {
     @GetMapping("/rollBack")
     public CommonResult<Boolean> rollBack(String id) {
         return trackCompleteService.rollBack(id);
+    }
+
+    @ApiOperation(value = "外协报工(新)", notes = "外协报工(新)")
+    @PostMapping("/save_outsource")
+    public CommonResult<Boolean> saveOutsource(@RequestBody OutsourceCompleteDto outsource) {
+        return trackCompleteService.saveOutsource(outsource);
     }
 }
