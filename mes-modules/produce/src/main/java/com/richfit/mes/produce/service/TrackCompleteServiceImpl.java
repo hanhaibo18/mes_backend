@@ -80,7 +80,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo) {
+    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.eq("work_no", workNo);
@@ -105,6 +105,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
+            queryWrapper.eq(StrUtil.isNotBlank(userId), "user_id", userId);
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }

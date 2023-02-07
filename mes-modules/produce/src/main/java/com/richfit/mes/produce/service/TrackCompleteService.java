@@ -21,7 +21,7 @@ import java.util.Map;
 public interface TrackCompleteService extends IService<TrackComplete> {
     IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query);
 
-    Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo);
+    Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId);
 
     List<TrackComplete> queryList(String tiId, String branchCode, String order, String orderCol);
 
