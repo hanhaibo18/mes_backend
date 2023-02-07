@@ -184,7 +184,7 @@ public class HotDemandController extends BaseController {
         queryWrapper.in("id", idList);
         List<HotDemand> demands = hotDemandService.list(queryWrapper);
         for (HotDemand demand : demands) {
-            if (demand.getProduceRatifyState() == 1) {
+            if (demand.getProduceRatifyState()!=null && demand.getProduceRatifyState() == 1) {
                 return CommonResult.failed(demand.getDemandName() + " 已经批准生产,不可撤回");
             }
         }
