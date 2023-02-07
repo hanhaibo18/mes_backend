@@ -2,14 +2,16 @@ package com.richfit.mes.produce.service;
 
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.pagehelper.util.StringUtil;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
@@ -17,8 +19,6 @@ import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.WordUtil;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -117,6 +117,52 @@ public class PhyChemTestService{
         //保存委托单到中间表
         materialInspectionServiceClient.saveOrder(physChemOrderInners);
         return CommonResult.success(true);
+    }
+
+    /**
+     * 委托单保存校验
+     * @param physChemOrderInner
+     */
+    public void checkOrderInfo(PhysChemOrderInner physChemOrderInner){
+        StringBuilder waringStr = new StringBuilder();
+        if(StringUtils.isNullOrEmpty(physChemOrderInner.getDrawNo()) && StringUtils.isNullOrEmpty(physChemOrderInner.getAccepStandard())){
+            waringStr.append("″样品/零件图号″和″验收标准″二者必需填写一项");
+        }
+        //拉伸校验
+        if(1 == physChemOrderInner.getForceTensile()){
+            if(StringUtil.isEmpty(physChemOrderInner.getForceTensileStrength1())
+                    ||StringUtil.isEmpty(physChemOrderInner.getForceTensileElongation())
+                    ||StringUtil.isEmpty(physChemOrderInner.getForceTensileDirection())){
+                if(!StringUtil.isEmpty(String.valueOf(waringStr))){
+                    waringStr.append(";");
+                }
+                waringStr.append("选中拉伸试验时, ″屈服强度1″、″伸长率″、″试样方向″为必填");
+            }
+        }
+        //冲击校验
+        if(1 == physChemOrderInner.getForceImpact()){
+            List<PhysChemOrderImpactDto> impacts = physChemOrderInner.getImpacts();
+            if(ObjectUtil.isEmpty(impacts) || impacts.size()==0){
+                if(!StringUtil.isEmpty(String.valueOf(waringStr))){
+                    waringStr.append(";");
+                }
+                waringStr.append("选中冲击试验时, ″实验温度″、″缺口类型″、″试样方向″为必填");
+            }
+            for (PhysChemOrderImpactDto impact : impacts) {
+                if(StringUtil.isEmpty(impact.getForceImpactTemp())
+                        ||StringUtil.isEmpty(impact.getForceImpactGap())
+                        ||StringUtil.isEmpty(impact.getForceImpactDirection())){
+                    if(!StringUtil.isEmpty(String.valueOf(waringStr))){
+                        waringStr.append(";");
+                    }
+                    waringStr.append("选中冲击试验时, ″实验温度″、″缺口类型″、″试样方向″为必填");
+                    break;
+                }
+            }
+        }
+        if(!StringUtil.isEmpty(String.valueOf(waringStr))){
+            throw new GlobalException(String.valueOf(waringStr),ResultCode.FAILED);
+        }
     }
 
     /**

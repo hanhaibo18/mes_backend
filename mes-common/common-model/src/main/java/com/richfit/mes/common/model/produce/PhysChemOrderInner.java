@@ -95,7 +95,7 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "金相分析->其他(值)")
     private String metallOtherVal;
     @ApiModelProperty(value = "力学性能->拉伸")
-    private String forceTensile;
+    private int forceTensile;
     @ApiModelProperty(value = "力学性能->冲击")
     private int forceImpact;
     @ApiModelProperty(value = "力学性能->弯曲")
@@ -292,6 +292,18 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @TableField(exist = false)
     @ApiModelProperty(value = "审核时间")
     private String auditTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "合格状态：0合格，2不合格")
+    private String isStandard;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "合格判定人")
+    private String standardBy;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "合格判定时间")
+    private String standardTime;
 
 
 }

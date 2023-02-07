@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
 import com.richfit.mes.produce.service.PhyChemTestService;
 import com.richfit.mes.produce.service.PhysChemResultService;
 import freemarker.template.TemplateException;
@@ -42,11 +43,15 @@ public class PhysChemTestController extends BaseController {
     private PhyChemTestService phyChemTestService;
     @Autowired
     private PhysChemResultService physChemResultService;
+    @Autowired
+    private MaterialInspectionServiceClient materialInspectionServiceClient;
 
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单", paramType = "body", dataType = "physChemOrderInner")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> save(@RequestBody PhysChemOrderInner physChemOrderInner) throws Exception{
+        //委托单填写数据校验
+        phyChemTestService.checkOrderInfo(physChemOrderInner);
         //力学性能参数集合
         List<PhysChemOrderImpactDto> impacts = physChemOrderInner.getImpacts();
         //要保存的数据
@@ -121,6 +126,20 @@ public class PhysChemTestController extends BaseController {
     @GetMapping("/exportExcel")
     public void exportExcel(HttpServletResponse response, String orderNo) throws GlobalException {
         phyChemTestService.exportExcel(response,orderNo);
+    }
+
+    @ApiOperation(value = "已同步理化检测委托单审核", notes = "已同步理化检测委托单审核")
+    @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
+    @GetMapping("/auditSnyPhysChemOrder")
+    public CommonResult<Boolean> auditPhysChemOrder(List<String> reportNos,String isAudit){
+        return materialInspectionServiceClient.auditSnyPhysChemOrder(reportNos, isAudit);
+    }
+
+    @ApiOperation(value = "委托单合不合格判定", notes = "委托单合不合格判定")
+    @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
+    @GetMapping("/isStandard")
+    public CommonResult<Boolean> isStandard(List<String> reportNos,String isStandard){
+        return materialInspectionServiceClient.auditSnyPhysChemOrder(reportNos, isStandard);
     }
 
 }
