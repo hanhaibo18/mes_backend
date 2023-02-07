@@ -24,6 +24,7 @@ import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -79,7 +80,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo) {
+    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.eq("work_no", workNo);
@@ -104,6 +105,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
+            queryWrapper.eq(StrUtil.isNotBlank(userId), "user_id", userId);
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
@@ -169,12 +171,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             queryWrapperCheck.eq("ti_id", trackItem.getId());
                             List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
                             QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
-                            if (rules.getIsGiveTime() != 1) {
+                            if (rules == null || rules.getIsGiveTime() != 1) {
                                 continue;
                             }
                         }
                         //查询产品编号
-                        TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
+                        TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
                         //空校验
@@ -231,13 +233,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     track0.setUserName(tenantUserVo.getEmplName());
                     track0.setTrackCompleteList(trackCompleteShowList);
                     //判断是否包含叶子结点
-                    track0.setIsLeafNodes(trackCompletes != null && !CollectionUtils.isEmpty(trackCompletes));
+                    track0.setIsLeafNodes(!CollectionUtils.isEmpty(trackCompletes));
                     emptyTrackComplete.add(track0);
                 }
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
-//        stringObjectHashMap.put("records", completes);
+        stringObjectHashMap.put("records", completes);
         stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
         return stringObjectHashMap;
     }
@@ -615,6 +617,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         return massage.toString();
+    }
+
+    @Override
+    public CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("track_head_id", outsource.getTrackHeadId());
+        queryWrapper.in("product_no", outsource.getProdNoList());
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        return null;
     }
 
 
