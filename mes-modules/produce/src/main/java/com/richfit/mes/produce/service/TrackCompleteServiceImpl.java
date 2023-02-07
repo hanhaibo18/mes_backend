@@ -627,6 +627,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("track_head_id", outsource.getTrackHeadId());
         queryWrapper.in("product_no", outsource.getProdNoList());
+        queryWrapper.eq("branch_code", outsource.getBranchCode());
         List<TrackItem> list = trackItemService.list(queryWrapper);
         List<TrackItem> result = new ArrayList<>();
         //获取正确的工序
