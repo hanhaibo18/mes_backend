@@ -24,6 +24,7 @@ import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -136,8 +137,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
             for (String id : userIdList) {
                 List<TrackComplete> trackCompletes = completesMap.get(id);
-                //用来展示数据列表
-                List<TrackComplete> trackCompleteShowList = new ArrayList<>();
                 //统计每个员工
                 if (!CollectionUtils.isEmpty(trackCompletes)) {
                     //总工时累计额值
@@ -169,12 +168,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             queryWrapperCheck.eq("ti_id", trackItem.getId());
                             List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
                             QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
-                            if (rules.getIsGiveTime() != 1) {
+                            if (rules == null || rules.getIsGiveTime() != 1) {
                                 continue;
                             }
                         }
                         //查询产品编号
-                        TrackFlow trackFlow = trackFlowMap.get(trackItem == null ? "" : trackItem.getFlowId());
+                        TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
                         //空校验
@@ -219,7 +218,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                 track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
                             }
                         }
-                        trackCompleteShowList.add(track);
+
                     }
                     track0.setId(id);
                     //准备工时
@@ -229,7 +228,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //总工时
                     track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     track0.setUserName(tenantUserVo.getEmplName());
-                    track0.setTrackCompleteList(trackCompleteShowList);
+                    track0.setTrackCompleteList(trackCompletes);
                     //判断是否包含叶子结点
                     track0.setIsLeafNodes(trackCompletes != null && !CollectionUtils.isEmpty(trackCompletes));
                     emptyTrackComplete.add(track0);
@@ -615,6 +614,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         return massage.toString();
+    }
+
+    @Override
+    public CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("track_head_id", outsource.getTrackHeadId());
+        queryWrapper.in("");
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+//        outsource.getOutsourceDtoList().stream().collect(toMap);
+        return null;
     }
 
 

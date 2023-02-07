@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 
 import java.util.List;
@@ -71,8 +72,19 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * 功能描述: 校验前端输入字符的合法性
      *
      * @param trackComplete（报工实体信息），trackItem(跟单工序信息),companyCode(当前登录用户的公司信息)
-     * @return
+     * @return String
      * @Author: panshi.zhang
      */
     String verifyTrackComplete(TrackComplete trackComplete, TrackItem trackItem, String companyCode);
+
+    /**
+     * 功能描述: 外协报工
+     *
+     * @param outsource
+     * @Author: xinYu.hou
+     * @Date: 2023/2/7 10:28
+     * @return: CommonResult<Boolean>
+     **/
+    CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource);
+
 }
