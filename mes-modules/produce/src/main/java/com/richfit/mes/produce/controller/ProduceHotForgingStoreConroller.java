@@ -81,7 +81,7 @@ public class ProduceHotForgingStoreConroller {
     public CommonResult deleteHotForgingStore(@RequestBody List<String> forgingStoreIdList) {
         //先删除仿型参数
         QueryWrapper<HotForgingParam> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("forging_store_id",forgingStoreIdList);
+        queryWrapper.in("forging_store_id",forgingStoreIdList);
         boolean remove = produceHotForgingParamService.remove(queryWrapper);
         boolean b = hotForgingStoreService.removeByIds(forgingStoreIdList);
         if (b==true) return CommonResult.success(ResultCode.SUCCESS);
