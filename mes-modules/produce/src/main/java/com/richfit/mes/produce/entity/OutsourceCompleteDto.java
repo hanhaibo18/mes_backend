@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.entity;
 
+import com.richfit.mes.common.model.produce.TrackComplete;
 import lombok.Data;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public class OutsourceCompleteDto {
     private List<OutsourceDto> outsourceDtoList;
 
     private List<String> prodNoList;
+
+    private TrackComplete trackComplete;
 }
