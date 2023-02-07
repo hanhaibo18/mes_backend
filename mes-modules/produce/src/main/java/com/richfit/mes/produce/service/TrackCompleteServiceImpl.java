@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.service;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -633,7 +632,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //获取正确的工序
         for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
             List<TrackItem> collect = list.stream().filter(trackItem ->
-                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && trackItem.getOptName().equals(outsourceDto.getOptName())
+                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && trackItem.getOptName().equals(outsourceDto.getOptName()) && trackItem.getIsCurrent() == 1
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
@@ -643,15 +642,19 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackItem.setStartDoingTime(new Date());
                 trackItem.setStartDoingUser(outsource.getTrackComplete().getUserId());
             }
-            //合计当前派工下的已报工数
-            int sum = outsource.getTrackComplete().getCompletedQty().intValue();
-            trackItem.setCompleteQty(ObjectUtil.isEmpty(trackItem.getCompleteQty()) ? 0 : trackItem.getCompleteQty() + sum);
-            trackItem.setAssignableQty(trackItem.getAssignableQty() - sum);
+            trackItem.setCompleteQty(Double.valueOf(trackItem.getNumber()));
+            trackItem.setAssignableQty(0);
             outsource.getTrackComplete().setTiId(trackItem.getId());
+            outsource.getTrackComplete().setTrackId(trackItem.getTrackHeadId());
+            outsource.getTrackComplete().setProdNo(trackItem.getProductNo());
+            outsource.getTrackComplete().setAssignId("");
             outsource.getTrackComplete().setModifyTime(new Date());
             outsource.getTrackComplete().setCreateTime(new Date());
             outsource.getTrackComplete().setCompleteBy(outsource.getTrackComplete().getUserId());
             outsource.getTrackComplete().setCompleteTime(new Date());
+            outsource.getTrackComplete().setUserId(SecurityUtils.getCurrentUser().getUsername());
+            CommonResult<TenantUserVo> userVoCommonResult = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
+            outsource.getTrackComplete().setUserName(userVoCommonResult.getData().getEmplName());
 
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsOperationComplete(1);
