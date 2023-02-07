@@ -37,4 +37,11 @@ public class TrackCheckAttachmentController extends BaseController {
     public CommonResult<Boolean> saveCheckFile(@RequestBody CheckAttachment checkAttachment) {
         return CommonResult.success(checkAttachmentService.save(checkAttachment));
     }
+
+//    @ApiOperation(value = "文件上传用接口", notes = "文件上传用接口")
+//    @GetMapping("/saveCheckFile")
+//    @Transactional(rollbackFor = Exception.class)
+//    public CommonResult<Boolean> saveCheckFile(String tiId) {
+//        return CommonResult.success();
+//    }
 }

@@ -137,6 +137,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
             for (String id : userIdList) {
                 List<TrackComplete> trackCompletes = completesMap.get(id);
+                //用来展示数据列表
+                List<TrackComplete> trackCompleteShowList = new ArrayList<>();
                 //统计每个员工
                 if (!CollectionUtils.isEmpty(trackCompletes)) {
                     //总工时累计额值
@@ -218,7 +220,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                 track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
                             }
                         }
-
+                        trackCompleteShowList.add(track);
                     }
                     track0.setId(id);
                     //准备工时
@@ -228,15 +230,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //总工时
                     track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     track0.setUserName(tenantUserVo.getEmplName());
-                    track0.setTrackCompleteList(trackCompletes);
+                    track0.setTrackCompleteList(trackCompleteShowList);
                     //判断是否包含叶子结点
-                    track0.setIsLeafNodes(trackCompletes != null && !CollectionUtils.isEmpty(trackCompletes));
+                    track0.setIsLeafNodes(!CollectionUtils.isEmpty(trackCompletes));
                     emptyTrackComplete.add(track0);
                 }
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
-//        stringObjectHashMap.put("records", completes);
+        stringObjectHashMap.put("records", completes);
         stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
         return stringObjectHashMap;
     }
@@ -620,9 +622,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     public CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("track_head_id", outsource.getTrackHeadId());
-        queryWrapper.in("");
+        queryWrapper.in("product_no", outsource.getProdNoList());
         List<TrackItem> list = trackItemService.list(queryWrapper);
-//        outsource.getOutsourceDtoList().stream().collect(toMap);
         return null;
     }
 
