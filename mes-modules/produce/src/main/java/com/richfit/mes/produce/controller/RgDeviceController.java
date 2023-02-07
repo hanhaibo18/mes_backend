@@ -48,7 +48,11 @@ public class RgDeviceController {
 
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             //排序
-            OrderUtil.query(queryWrapper, orderCol, order);
+            if(orderCol.equals("typeNo")){
+                OrderUtil.query(queryWrapper, orderCol+"+0", order);
+            }else{
+                OrderUtil.query(queryWrapper, orderCol, order);
+            }
         } else {
             //升序排列
             queryWrapper.orderByAsc("type_no+0");
