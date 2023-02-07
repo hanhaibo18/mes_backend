@@ -21,8 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -308,4 +307,43 @@ public class ItemController extends BaseController {
         return CommonResult.success(list);
     }
 
+
+    @ApiOperation(value = "查询登录租户下字典全部内容", notes = "查询登录租户下字典全部内容")
+    @GetMapping("/query/all")
+    public CommonResult<List<ItemClass>> classParamList() {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+
+        QueryWrapper<ItemClass> queryWrapperItemClass = new QueryWrapper<>();
+        queryWrapperItemClass.eq("tenant_id", tenantId);
+        List<ItemClass> itemClassList = itemClassService.list(queryWrapperItemClass);
+
+        QueryWrapper<ItemParam> queryWrapperItemParam = new QueryWrapper<>();
+        queryWrapperItemParam.eq("tenant_id", tenantId);
+        List<ItemParam> itemParamList = itemParamService.list(queryWrapperItemParam);
+        for (ItemParam itemParam : itemParamList) {
+            itemParam.setValue(itemParam.getCode());
+        }
+        for (ItemClass itemClass : itemClassList) {
+            List<ItemParam> itemParams = new ArrayList<>();
+            for (ItemParam itemParam : itemParamList) {
+                if (itemClass.getId().equals(itemParam.getClassId())) {
+                    itemParams.add(itemParam);
+                }
+            }
+            itemClass.setItemParamList(itemParams);
+        }
+        return CommonResult.success(itemClassList, ITEM_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "查询登录租户下字典全部内容", notes = "查询登录租户下字典全部内容")
+    @GetMapping("/query/all/map")
+    public CommonResult<Map<String, List<ItemParam>>> classParamMap() {
+        CommonResult<List<ItemClass>> result = this.classParamList();
+        List<ItemClass> itemClassList = result.getData();
+        Map<String, List<ItemParam>> map = new HashMap<>(itemClassList.size());
+        for (ItemClass itemClass : itemClassList) {
+            map.put(itemClass.getCode(), itemClass.getItemParamList());
+        }
+        return CommonResult.success(map, ITEM_SUCCESS_MESSAGE);
+    }
 }

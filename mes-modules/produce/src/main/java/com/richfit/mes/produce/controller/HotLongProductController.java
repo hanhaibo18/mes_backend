@@ -8,9 +8,9 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.HotLongProduct;
 import com.richfit.mes.common.model.produce.HotLongProductQueryVo;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.HotLongProductService;
-import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -120,9 +120,9 @@ public class HotLongProductController extends BaseController {
             queryWrapper.like("product_drawing_no", hotLongProductQueryVo.getProductDrawingNo());
         }
         queryWrapper.eq("tenant_id", hotLongProductQueryVo.getTenantId());
-        queryWrapper.orderByDesc("create_time");
         //排序工具
         OrderUtil.query(queryWrapper, hotLongProductQueryVo.getOrderCol(), hotLongProductQueryVo.getOrder());
+        queryWrapper.orderByDesc("create_time");
         return CommonResult.success(hotLongProductService.page(new Page<HotLongProduct>(hotLongProductQueryVo.getPage(), hotLongProductQueryVo.getLimit()), queryWrapper), SUCCESS_MESSAGE);
     }
 

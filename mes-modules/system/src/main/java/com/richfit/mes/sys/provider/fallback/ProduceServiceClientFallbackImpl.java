@@ -1,7 +1,6 @@
 package com.richfit.mes.sys.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.CheckAttachment;
 import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
@@ -37,6 +36,11 @@ public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
 
     @Override
     public CommonResult<Boolean> batchSaveTrackHeadTemplate(List<ProduceTrackHeadTemplate> templates) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<Boolean> countQueryRules(String rulesId) {
         return CommonResult.success(null);
     }
 

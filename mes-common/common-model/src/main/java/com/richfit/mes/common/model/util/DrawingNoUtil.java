@@ -1,7 +1,7 @@
 package com.richfit.mes.common.model.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -53,7 +53,7 @@ public class DrawingNoUtil {
      *
      * @param queryWrapper 查询
      * @param colName      列名
-     * @param drawingNos    值
+     * @param drawingNos   值
      * @Author: renzewen
      * @Date: 2023.1.12
      */
@@ -104,7 +104,7 @@ public class DrawingNoUtil {
     /**
      * 功能描述: sql in
      *
-     * @param colName   列名
+     * @param colName    列名
      * @param drawingNos 值
      * @Author: renzewen
      * @Date: 2023.1.12
@@ -112,11 +112,11 @@ public class DrawingNoUtil {
     public static String queryInSql(String colName, List<String> drawingNos) {
         StringBuilder drawingNoStr = new StringBuilder();
         for (String drawingNo : drawingNos) {
-            if(!StringUtils.isEmpty(String.valueOf(drawingNoStr))){
+            if (!StrUtil.isBlank(String.valueOf(drawingNoStr))) {
                 drawingNoStr.append(",");
-                drawingNoStr.append("'"+DrawingNoUtil.drawingNo(drawingNo)+"'");
-            }else{
-                drawingNoStr.append("'"+DrawingNoUtil.drawingNo(drawingNo)+"'");
+                drawingNoStr.append("'" + DrawingNoUtil.drawingNo(drawingNo) + "'");
+            } else {
+                drawingNoStr.append("'" + DrawingNoUtil.drawingNo(drawingNo) + "'");
             }
         }
         return "replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', '') in (" + drawingNoStr + ")";

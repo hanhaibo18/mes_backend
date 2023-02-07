@@ -7,13 +7,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.dao.QualityInspectionRulesMapper;
+import com.richfit.mes.sys.provider.ProduceServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,6 +33,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspectionRulesMapper, QualityInspectionRules> implements QualityInspectionRulesService {
+
+    @Resource
+    private ProduceServiceClient produceServiceClient;
 
     @Override
     public CommonResult<Boolean> saveQualityInspectionRules(QualityInspectionRules qualityInspectionRules) {
@@ -51,6 +58,11 @@ public class QualityInspectionRulesServiceImpl extends ServiceImpl<QualityInspec
 
     @Override
     public boolean deleteQualityInspectionRules(String id) {
+        //增加验证 已被使用的不允许删除
+        CommonResult<Boolean> result = produceServiceClient.countQueryRules(id);
+        if (Boolean.TRUE.equals(result.getData())) {
+            throw new GlobalException("规则已被使用,未能删除", ResultCode.FAILED);
+        }
         return removeById(id);
     }
 

@@ -8,12 +8,12 @@ import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.entity.param.ExamineDrawingApplyParam;
 import com.richfit.mes.base.service.DrawingApplyService;
-import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.DrawingApply;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -61,7 +61,7 @@ public class DrawingApplyController extends BaseController {
             return CommonResult.failed(DRAWING_APPLY_NO_NULL_MESSAGE);
         } else {
             QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
-            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawingApply.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawingApply.getDrawingNo());
             queryWrapper.eq("branch_code", drawingApply.getBranchCode());
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
@@ -99,7 +99,7 @@ public class DrawingApplyController extends BaseController {
         } else {
             if (!drawingApply.getDrawingNo().equals(oldDrawingNo)) {
                 QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
-                DrawingNoUtil.queryEq(queryWrapper,"drawing_no",drawingApply.getDrawingNo());
+                DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawingApply.getDrawingNo());
                 queryWrapper.eq("branch_code", drawingApply.getBranchCode());
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 DrawingApply oldApply = drawingApplyService.getOne(queryWrapper);
@@ -267,7 +267,7 @@ public class DrawingApplyController extends BaseController {
         try {
             QueryWrapper<DrawingApply> queryWrapper = new QueryWrapper<DrawingApply>();
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
-                DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
+                DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
             }
             if (null != status) {
                 queryWrapper.eq("status", status);

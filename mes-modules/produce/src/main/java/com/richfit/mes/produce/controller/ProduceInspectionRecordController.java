@@ -1,31 +1,27 @@
 package com.richfit.mes.produce.controller;
 
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
+import com.richfit.mes.common.model.produce.InspectionPower;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
-import com.richfit.mes.produce.service.ProduceItemInspectInfoService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
-import com.richfit.mes.produce.utils.OrderUtil;
 import freemarker.template.TemplateException;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
@@ -34,6 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * 质量管理模块接口
+ *
  * @Author: renzewen
  * @Date: 2022/8/22 13:10
  */
@@ -69,6 +66,7 @@ public class ProduceInspectionRecordController extends BaseController {
     /**
      * ***
      * 分页查询待探伤工序
+     *
      * @return
      */
     @ApiOperation(value = "分页查询探伤记录列表", notes = "分页查询探伤记录列表")
@@ -91,21 +89,21 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "isAudit", value = "审核状态", paramType = "query", dataType = "string"),
     })
     @GetMapping("/queryRecordByPowerId")
-    public CommonResult queryRecordByPowerId(String powerId,String isAudit){
-        return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId,isAudit,"0"));
+    public CommonResult queryRecordByPowerId(String powerId, String isAudit) {
+        return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId, isAudit, "0"));
     }
 
     @ApiOperation(value = "根据探伤任务id查询最近一条探伤记录", notes = "根据探伤任务id查询最近一条探伤记录")
     @ApiImplicitParam(name = "powerId", value = "探伤任务id", required = true, paramType = "path", dataType = "string")
     @GetMapping("/queryLastInfoByPowerId/{powerId}")
-    public CommonResult queryLastInfoByPowerId(@PathVariable String powerId){
+    public CommonResult queryLastInfoByPowerId(@PathVariable String powerId) {
         return CommonResult.success(produceInspectionRecordService.queryLastInfoByPowerId(powerId));
     }
 
     @ApiOperation(value = "根据记录id查询探伤记录详情", notes = "根据记录id查询探伤记录详情")
     @ApiImplicitParam(name = "id", value = "记录id", required = true, paramType = "path", dataType = "string")
     @GetMapping("/queryInfoByRecordId/{id}")
-    public CommonResult<Object> queryInfoByRecordId(@PathVariable String id){
+    public CommonResult<Object> queryInfoByRecordId(@PathVariable String id) {
         return CommonResult.success(produceInspectionRecordService.queryInfoByRecordId(id));
     }
 
@@ -121,21 +119,21 @@ public class ProduceInspectionRecordController extends BaseController {
             @ApiImplicitParam(name = "itemId", value = "工序id", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "remark", value = "探伤备注", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "flawDetection", value = "探伤结果(0,1)", required = true, paramType = "query", dataType = "Integer"),
-            @ApiImplicitParam(name = "tempType", value = "探伤记录模板类型",required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tempType", value = "探伤记录模板类型", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "recordNo", value = "探伤记录编号", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "checkBy", value = "探伤检验人", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "auditBy", value = "探伤审核人", paramType = "query", dataType = "string")
     })
     @GetMapping("/auditSubmitRecord")
-    public CommonResult auditSubmitRecord(String itemId,String flawDetectioRemark,Integer flawDetection,String tempType,String recordNo,String checkBy,String auditBy){
-        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(itemId,flawDetectioRemark,flawDetection,tempType,recordNo,checkBy,auditBy));
+    public CommonResult auditSubmitRecord(String itemId, String flawDetectioRemark, Integer flawDetection, String tempType, String recordNo, String checkBy, String auditBy) {
+        return CommonResult.success(produceInspectionRecordService.auditSubmitRecord(itemId, flawDetectioRemark, flawDetection, tempType, recordNo, checkBy, auditBy));
     }
 
     @ApiOperation(value = "报告预览", notes = "报告预览")
     @ApiImplicitParam(name = "id", value = "探伤记录id", paramType = "query", dataType = "string")
     @GetMapping("/exoprtReport")
     public void exoprtReport(HttpServletResponse response, String id) throws IOException, TemplateException, GlobalException {
-        produceInspectionRecordService.exoprtReport(response,id);
+        produceInspectionRecordService.exoprtReport(response, id);
     }
 
     @ApiOperation(value = "探伤任务开工", notes = "探伤任务开工")
@@ -148,14 +146,14 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "探伤记录审核", notes = "探伤记录审核")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "探伤记录id", required = true, paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "tempType", value = "模板类型", required = true,paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "isAudit", value = "审核状态", required = true,paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "auditRemark", value = "审核备注", required = true,paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "inspector", value = "指派人", required = true,paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "tempType", value = "模板类型", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "isAudit", value = "审核状态", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "auditRemark", value = "审核备注", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "inspector", value = "指派人", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/auditRecord")
-    public CommonResult<Boolean> auditByRecordId(String id,String tempType,String isAudit,String auditRemark,String inspector,String checkBranch) {
-        return CommonResult.success(produceInspectionRecordService.auditByRecord(id,tempType,isAudit,auditRemark,inspector,checkBranch));
+    public CommonResult<Boolean> auditByRecordId(String id, String tempType, String isAudit, String auditRemark, String inspector, String checkBranch) {
+        return CommonResult.success(produceInspectionRecordService.auditByRecord(id, tempType, isAudit, auditRemark, inspector, checkBranch));
     }
 
     @Autowired
@@ -164,7 +162,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "分页查询委托单", notes = "分页查询委托单")
     @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
     @PostMapping("/inspectionPower/page")
-    public CommonResult<IPage> queryPowerOrderPage(@RequestBody InspectionPowerVo inspectionPowerVo){
+    public CommonResult<IPage> queryPowerOrderPage(@RequestBody InspectionPowerVo inspectionPowerVo) {
         return CommonResult.success(produceInspectionRecordService.queryPowerOrderPage(inspectionPowerVo));
     }
 
@@ -202,17 +200,17 @@ public class ProduceInspectionRecordController extends BaseController {
     @DeleteMapping("inspectionPower/delete/{id}")
     public CommonResult<Boolean> powerOrder(@PathVariable String id) throws Exception {
         InspectionPower inspectionPower = inspectionPowerService.getById(id);
-        if(inspectionPower.getStatus() == IS_STATUS){
+        if (inspectionPower.getStatus() == IS_STATUS) {
             return CommonResult.failed("该委托单已经委托，不能删除");
         }
         //同工序有开工的委托 不能删除
         String itemId = inspectionPower.getItemId();
-        if(!StringUtils.isEmpty(itemId)){
+        if (!StringUtils.isEmpty(itemId)) {
             QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("item_id",itemId);
+            queryWrapper.eq("item_id", itemId);
             List<InspectionPower> list = inspectionPowerService.list();
             List<InspectionPower> isDoingList = list.stream().filter(item -> "1".equals(item.getIsDoing())).collect(Collectors.toList());
-            if(isDoingList.size()>0){
+            if (isDoingList.size() > 0) {
                 return CommonResult.failed("关联跟单工序已经开工，不能删除委托单");
             }
         }
@@ -223,7 +221,7 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "导出委托单", notes = "导出委托单信息")
     @PostMapping("/inspectionPower/export_excel")
     public void exportExcel(@RequestBody InspectionPowerVo inspectionPowerVo, HttpServletResponse rsp) {
-        produceInspectionRecordService.exportExcel(inspectionPowerVo,rsp);
+        produceInspectionRecordService.exportExcel(inspectionPowerVo, rsp);
     }
 
 

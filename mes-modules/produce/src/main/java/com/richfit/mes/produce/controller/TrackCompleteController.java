@@ -13,14 +13,15 @@ import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
-import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -72,6 +73,9 @@ public class TrackCompleteController extends BaseController {
     @Resource
     private TrackHeadFlowService trackFlowService;
 
+    @Resource
+    private TrackCompleteMapper trackCompleteMapper;
+
     /**
      * ***
      * 分页查询
@@ -103,7 +107,7 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.eq("work_no", workNo);
             }
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-                DrawingNoUtil.queryLike(queryWrapper,"drawing_no", routerNo);
+                DrawingNoUtil.queryLike(queryWrapper, "drawing_no", routerNo);
             }
             if (!StringUtils.isNullOrEmpty(trackNo)) {
                 trackNo = trackNo.replaceAll(" ", "");
@@ -459,7 +463,7 @@ public class TrackCompleteController extends BaseController {
     /**
      * @return
      */
-    @ApiOperation(value = "派工分页查询优化接口", notes = "派工分页查询优化接口")
+    @ApiOperation(value = "工时统计接口", notes = "工时统计接口")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -668,7 +672,7 @@ public class TrackCompleteController extends BaseController {
 
             //合计当前派工下的已报工数
             int sum = complete.getCompletedQty().intValue();
-            trackItem.setCompleteQty(ObjectUtil.isEmpty(trackItem.getCompleteQty())?0:trackItem.getCompleteQty() + sum);
+            trackItem.setCompleteQty(ObjectUtil.isEmpty(trackItem.getCompleteQty()) ? 0 : trackItem.getCompleteQty() + sum);
             trackItem.setAssignableQty(trackItem.getAssignableQty() - sum);
             complete.setTiId(complete.getTiId());
             complete.setModifyTime(new Date());
@@ -890,6 +894,20 @@ public class TrackCompleteController extends BaseController {
         List<TrackComplete> result = trackCompleteService.list(queryWrapper);
         return CommonResult.success(result, "操作成功！");
     }
+
+    @ApiOperation(value = "报工查询(新)", notes = "报工查询(新)")
+    @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
+    @GetMapping("/find_by_id")
+    public CommonResult<List<TrackComplete>> findByItemId(String tiId) {
+        QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+        if (!StringUtils.isNullOrEmpty(tiId)) {
+            queryWrapper.eq("ti_id", tiId);
+        }
+        queryWrapper.orderByAsc("modify_time");
+        List<TrackComplete> result = trackCompleteMapper.queryList(queryWrapper);
+        return CommonResult.success(result, "操作成功！");
+    }
+
 
     @ApiOperation(value = "报工查询", notes = "报工查询")
     @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")

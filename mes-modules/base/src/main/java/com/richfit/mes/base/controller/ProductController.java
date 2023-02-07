@@ -12,7 +12,6 @@ import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
 import com.richfit.mes.base.service.RouterService;
-import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
@@ -24,6 +23,7 @@ import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -134,14 +134,16 @@ public class ProductController extends BaseController {
                     throw new GlobalException("物料号 " + byId.getMaterialNo() + " 存在订单,不能修改该物料号", ResultCode.FAILED);
                 }
                 //物料号有改动时检查是否存在该物料的跟单
-                if (!ObjectUtil.isEmpty(materialNoMap.get(byId.getMaterialNo())))
+                if (!ObjectUtil.isEmpty(materialNoMap.get(byId.getMaterialNo()))) {
                     throw new GlobalException("物料 " + byId.getMaterialNo() + " 存在跟单,不能修改该物料编号", ResultCode.FAILED);
+                }
             }
 
             if (byId.getDrawingNo() != null && !byId.getDrawingNo().equals(product.getDrawingNo())) {
                 //物料号有变动时,检查有没有该物料图号的跟单
-                if (!ObjectUtil.isEmpty(drawingNoMap.get(byId.getDrawingNo())))
+                if (!ObjectUtil.isEmpty(drawingNoMap.get(byId.getDrawingNo()))) {
                     throw new GlobalException("物料图号 " + byId.getDrawingNo() + " 存在跟单,不能修改该物料图号", ResultCode.FAILED);
+                }
             }
 
 
@@ -178,12 +180,14 @@ public class ProductController extends BaseController {
             Map<String, TrackHead> materialNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x, (value1, value2) -> value2));
             Map<String, TrackHead> drawingNoMap = trackHeads.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x, (value1, value2) -> value2));
             for (String materialCode : materialCodes) {
-                if (!ObjectUtil.isEmpty(materialNoMap.get(materialCode)))
+                if (!ObjectUtil.isEmpty(materialNoMap.get(materialCode))) {
                     throw new GlobalException("物料 " + materialCode + " 存在跟单,不能删除该物料", ResultCode.FAILED);
+                }
             }
             for (String drawingNo : drawingNos) {
-                if (!ObjectUtil.isEmpty(drawingNoMap.get(drawingNo)))
+                if (!ObjectUtil.isEmpty(drawingNoMap.get(drawingNo))) {
                     throw new GlobalException("物料图号 " + drawingNo + " 存在跟单,不能删除该物料", ResultCode.FAILED);
+                }
             }
             boolean bool = productService.removeByIds(ids);
             if (bool) {

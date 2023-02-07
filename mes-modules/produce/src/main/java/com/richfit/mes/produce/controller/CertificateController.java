@@ -8,12 +8,12 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackCertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.utils.DrawingNoUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -130,7 +130,7 @@ public class CertificateController {
             queryWrapper.eq("pc.cert_origin", origin);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
-            DrawingNoUtil.queryLike(queryWrapper,"drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
             queryWrapper.like("pc.certificate_no", certificateNo);

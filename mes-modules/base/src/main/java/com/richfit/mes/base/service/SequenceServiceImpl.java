@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.base.dao.SequenceMapper;
-import com.richfit.mes.base.util.OptNameUtil;
 import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.util.OptNameUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +20,7 @@ public class SequenceServiceImpl extends ServiceImpl<SequenceMapper, Sequence> i
     @Autowired
     private SequenceMapper sequenceMapper;
 
+    @Override
     public IPage<Sequence> selectPage(Page page, QueryWrapper<Sequence> qw) {
         return sequenceMapper.selectPage(page, qw);
     }

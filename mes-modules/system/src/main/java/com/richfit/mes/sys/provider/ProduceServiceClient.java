@@ -7,8 +7,10 @@ import com.richfit.mes.common.model.produce.CodeRuleItem;
 import com.richfit.mes.common.model.produce.ProduceTrackHeadTemplate;
 import com.richfit.mes.sys.provider.fallback.ProduceServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -39,5 +41,14 @@ public interface ProduceServiceClient {
     @PostMapping("/api/produce/produce-track-head-template/batchSave")
     public CommonResult<Boolean> batchSaveTrackHeadTemplate(@RequestBody List<ProduceTrackHeadTemplate> templates);
 
-
+    /**
+     * 功能描述: 查询规则是否被使用
+     *
+     * @param rulesId
+     * @Author: xinYu.hou
+     * @Date: 2023/2/3 16:39
+     * @return: CommonResult<Boolean>
+     **/
+    @GetMapping("/api/produce/trackcheck/count_query_rules")
+    public CommonResult<Boolean> countQueryRules(@RequestParam("rulesId") String rulesId);
 }

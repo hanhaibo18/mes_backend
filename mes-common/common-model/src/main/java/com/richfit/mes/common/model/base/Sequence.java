@@ -97,7 +97,6 @@ public class Sequence extends BaseEntity<Sequence> {
      * 机构编码
      */
     @ApiModelProperty(value = "机构编码", dataType = "String")
-    @TableId(type = IdType.ASSIGN_UUID)
     private String branchCode;
     /**
      * 工序ID

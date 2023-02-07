@@ -11,7 +11,6 @@ import com.richfit.mes.base.enmus.MessageEnum;
 import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.entity.SequenceExportVo;
 import com.richfit.mes.base.service.*;
-import com.richfit.mes.base.util.OptNameUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
@@ -19,6 +18,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.*;
@@ -809,7 +809,7 @@ public class SequenceController extends BaseController {
     public CommonResult<Sequence> querySequenceById(String optName, String branchCode) {
         QueryWrapper<Sequence> queryWrapper = new QueryWrapper<>();
         OptNameUtil.queryEq(queryWrapper, "opt_name", optName);
-        queryWrapper.eq("branchCode", branchCode);
+        queryWrapper.eq("branch_code", branchCode);
         List<Sequence> sequence = sequenceService.list(queryWrapper);
         if (CollectionUtils.isEmpty(sequence)) {
             throw new GlobalException("未能查询到工序", ResultCode.FAILED);

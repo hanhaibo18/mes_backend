@@ -10,10 +10,10 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.StepHour;
 import com.richfit.mes.common.model.produce.StepHourVer;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.heat.StepHourService;
 import com.richfit.mes.produce.service.heat.StepHourVerService;
-import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+
 /**
  * @Author: renzewen
  */
@@ -41,7 +42,7 @@ public class StepHourVerController {
      */
     @ApiOperation(value = "查询步骤工时版本列表", notes = "查询步骤工时版本列表")
     @GetMapping("/page")
-    public CommonResult queryPage(String startTime, String endTime, int page, int limit,String branchCode,String order,String orderCol) throws GlobalException {
+    public CommonResult queryPage(String startTime, String endTime, int page, int limit, String branchCode, String order, String orderCol) throws GlobalException {
 
         QueryWrapper<StepHourVer> queryWrapper = new QueryWrapper<StepHourVer>();
         if (!StringUtils.isNullOrEmpty(startTime)) {
@@ -53,10 +54,10 @@ public class StepHourVerController {
         //queryWrapper.eq(!StringUtils.isNullOrEmpty(branchCode),"branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
-        if(!StringUtils.isNullOrEmpty(orderCol)){
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
             //排序
             OrderUtil.query(queryWrapper, orderCol, order);
-        }else{
+        } else {
             queryWrapper.orderByAsc("ver");
         }
 
@@ -71,10 +72,10 @@ public class StepHourVerController {
     @PostMapping("/saveOrUpdate")
     public CommonResult<Boolean> saveOrUpdate(@RequestBody StepHourVer stepHourVer) throws GlobalException {
         QueryWrapper<StepHourVer> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("ver",stepHourVer.getVer());
+        queryWrapper.eq("ver", stepHourVer.getVer());
         List<StepHourVer> list = stepHourVerService.list(queryWrapper);
-        if(list.size()>0){
-            if((!StringUtils.isNullOrEmpty(stepHourVer.getId()) && !list.get(0).getId().equals(stepHourVer.getId())) || StringUtils.isNullOrEmpty(stepHourVer.getId())){
+        if (list.size() > 0) {
+            if ((!StringUtils.isNullOrEmpty(stepHourVer.getId()) && !list.get(0).getId().equals(stepHourVer.getId())) || StringUtils.isNullOrEmpty(stepHourVer.getId())) {
                 throw new GlobalException("版本信息以存在！", ResultCode.FAILED);
             }
         }
@@ -93,7 +94,7 @@ public class StepHourVerController {
         stepHourVerService.removeById(id);
         //删除步骤工时信息
         QueryWrapper<StepHour> stepHourQueryWrapper = new QueryWrapper<>();
-        stepHourQueryWrapper.eq("ver_id",id);
+        stepHourQueryWrapper.eq("ver_id", id);
         stepHourService.remove(stepHourQueryWrapper);
         return CommonResult.success(true);
     }
@@ -105,20 +106,20 @@ public class StepHourVerController {
     @GetMapping("/activate/{id}")
     public CommonResult<Boolean> activate(@PathVariable String id) throws GlobalException {
         StepHourVer stepHourVer = stepHourVerService.getById(id);
-        if(ObjectUtil.isEmpty(stepHourVer)){
+        if (ObjectUtil.isEmpty(stepHourVer)) {
             throw new GlobalException("版本信息不存在", ResultCode.FAILED);
         }
         //全部转非激活
         UpdateWrapper<StepHourVer> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.set("is_activate","0");
+        updateWrapper.set("is_activate", "0");
         boolean update = stepHourVerService.update(updateWrapper);
         //将选中的转激活
         UpdateWrapper<StepHourVer> updateWrapper2 = new UpdateWrapper<>();
-        updateWrapper2.eq("id",id)
-                .set("is_activate","1")
-                .set("is_activated","1")
-                .set("activate_time",new Date())
-                .set("activate_by",SecurityUtils.getCurrentUser().getUsername());
+        updateWrapper2.eq("id", id)
+                .set("is_activate", "1")
+                .set("is_activated", "1")
+                .set("activate_time", new Date())
+                .set("activate_by", SecurityUtils.getCurrentUser().getUsername());
         return CommonResult.success(stepHourVerService.update(updateWrapper2));
     }
 }

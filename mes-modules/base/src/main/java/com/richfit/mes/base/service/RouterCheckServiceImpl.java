@@ -9,13 +9,13 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.RouterCheckMapper;
 import com.richfit.mes.base.entity.RouterCheckDto;
 import com.richfit.mes.base.entity.RouterCheckQualityDto;
-import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +40,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
     @Autowired
     private RouterService routerService;
 
+    @Override
     public IPage<RouterCheck> selectPage(Page page, QueryWrapper<RouterCheck> qw) {
         return routerCheckMapper.selectPage(page, qw);
     }
@@ -98,14 +99,14 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
 
                 checkList = list2;
                 //校验
-                if((checkList.size()>0 && StringUtils.isNullOrEmpty(drawnos)) || !StringUtils.isNullOrEmpty(drawnos)){
+                if ((checkList.size() > 0 && StringUtils.isNullOrEmpty(drawnos)) || !StringUtils.isNullOrEmpty(drawnos)) {
                     String info = checkExportInfo(drawnos, checkList, branchCode);
-                    if(!StringUtils.isNullOrEmpty(isNull)){
-                        info = info+isNull;
+                    if (!StringUtils.isNullOrEmpty(isNull)) {
+                        info = info + isNull;
                     }
                     //校验错误信息
-                    if(!StringUtils.isNullOrEmpty(info)){
-                        return CommonResult.failed("工序质检技术导入校验错误如下：</br>"+info);
+                    if (!StringUtils.isNullOrEmpty(info)) {
+                        return CommonResult.failed("工序质检技术导入校验错误如下：</br>" + info);
                     }
                 }
 
@@ -117,7 +118,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                     queryWrapper.eq("type", "检查内容");
                     queryWrapper.eq("tenant_id", tenantId);
                     queryWrapper.eq("branch_code", branchCode);
-                    DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawnos.split(",")[i]);
+                    DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawnos.split(",")[i]);
                     this.remove(queryWrapper);
 
                     for (int j = 0; j < checkList.size(); j++) {
@@ -178,7 +179,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                 List<RouterCheckQualityDto> list3 = new ArrayList<>();
                 String drawnos = "";
                 //过滤获取导入状态为X的数据列
-                qualityList = qualityList.stream().filter(item->"X".equals(item.getIsImport())).collect(Collectors.toList());
+                qualityList = qualityList.stream().filter(item -> "X".equals(item.getIsImport())).collect(Collectors.toList());
                 for (int i = 0; i < qualityList.size(); i++) {
                     if (!StringUtils.isNullOrEmpty(qualityList.get(i).getRouterNo())) {
                         list3.add(qualityList.get(i));
@@ -198,7 +199,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                     queryWrapper.eq("type", "质量资料");
                     queryWrapper.eq("tenant_id", tenantId);
                     queryWrapper.eq("branch_code", branchCode);
-                    DrawingNoUtil.queryEq(queryWrapper,"drawing_no", drawnos.split(",")[i]);
+                    DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawnos.split(",")[i]);
                     this.remove(queryWrapper);
                     int check_order = 1;
                     // 插入新数据
@@ -248,31 +249,32 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
 
     /**
      * 校验导入的数据
+     *
      * @param drawnos
      * @param checkList
      * @return
      */
-    private String checkExportInfo(String drawnos,List<RouterCheckDto> checkList,String branchCode){
+    private String checkExportInfo(String drawnos, List<RouterCheckDto> checkList, String branchCode) {
         //提示信息
         StringBuilder info = new StringBuilder();
         //空值校验
         List<RouterCheckDto> nullList = checkList.stream().filter(
                 item -> StringUtils.isNullOrEmpty(item.getOptNo()) || StringUtils.isNullOrEmpty(item.getOptName())
         ).collect(Collectors.toList());
-        if(nullList.size()>0){
+        if (nullList.size() > 0) {
             info.append("工序号或工序名称不能为空</br>");
         }
         //工序号校验
         List<RouterCheckDto> orderList = checkList.stream().filter(
                 item -> !NumberUtil.isNumber(item.getOrderNo())
         ).collect(Collectors.toList());
-        if(orderList.size()>0){
+        if (orderList.size() > 0) {
             info.append("序号必须为数字</br>");
         }
 
         //图号集合
         List<String> drawnoList = Arrays.asList(drawnos.split(","));
-        if(drawnoList.size()>0){
+        if (drawnoList.size() > 0) {
             //图号查询的工艺
             List<Router> router = routerService.list(new QueryWrapper<Router>().in("router_no", drawnoList));
             //已有的图号
@@ -280,21 +282,21 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
             //1.图号校验
             for (String drawno : drawnoList) {
                 boolean exist = routerNos.contains(drawno);
-                if(!exist){
-                    info.append("(图号："+drawno+") 未维护工艺管理数据</br>");
+                if (!exist) {
+                    info.append("(图号：" + drawno + ") 未维护工艺管理数据</br>");
                 }
             }
             for (RouterCheckDto routerCheckDto : checkList) {
                 //2.工序校验
-                if(routerNos.contains(routerCheckDto.getRouterNo()) && !StringUtils.isNullOrEmpty(routerCheckDto.getOptNo()) && !StringUtils.isNullOrEmpty(routerCheckDto.getOptName())){
+                if (routerNos.contains(routerCheckDto.getRouterNo()) && !StringUtils.isNullOrEmpty(routerCheckDto.getOptNo()) && !StringUtils.isNullOrEmpty(routerCheckDto.getOptName())) {
                     QueryWrapper<Sequence> queryWrapper2 = new QueryWrapper<Sequence>();
                     queryWrapper2.eq("opt_name", routerCheckDto.getOptName().trim());
                     queryWrapper2.eq("op_no", routerCheckDto.getOptNo().trim());
                     queryWrapper2.eq("branch_code", branchCode);
                     queryWrapper2.inSql("router_id", "select id from base_router where is_active='1' and router_no ='" + routerCheckDto.getRouterNo() + "' and branch_code='" + branchCode + "'");
                     List<Sequence> sequences = sequenceService.list(queryWrapper2);
-                    if(sequences.size()==0){
-                        info.append("图号："+routerCheckDto.getRouterNo()+"的工艺，未维护工序（序号为:"+routerCheckDto.getOptNo()+"工序名为："+routerCheckDto.getOptName()+"）"+"的工序数据<br>");
+                    if (sequences.size() == 0) {
+                        info.append("图号：" + routerCheckDto.getRouterNo() + "的工艺，未维护工序（序号为:" + routerCheckDto.getOptNo() + "工序名为：" + routerCheckDto.getOptName() + "）" + "的工序数据<br>");
                     }
                 }
             }
@@ -309,6 +311,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
 
     /**
      * 规则校验
+     *
      * @param info
      * @param routerCheckDto
      */
@@ -319,10 +322,10 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
         String propertyLowerlimit = routerCheckDto.getPropertyLowerlimit();
         String propertyUplimit = routerCheckDto.getPropertyUplimit();
         String msg = "";
-        if(!NumberUtil.isNumber(StringUtils.isNullOrEmpty(propertyLowerlimit)?"0":propertyLowerlimit)
-                || !NumberUtil.isNumber(StringUtils.isNullOrEmpty(propertyUplimit)?"0":propertyUplimit)){
+        if (!NumberUtil.isNumber(StringUtils.isNullOrEmpty(propertyLowerlimit) ? "0" : propertyLowerlimit)
+                || !NumberUtil.isNumber(StringUtils.isNullOrEmpty(propertyUplimit) ? "0" : propertyUplimit)) {
             msg = "最大值最小值必须为数字</br>";
-        }else{
+        } else {
             if (
                     ("等于设定值".equals(propertySymbol) ||
                             "不等于设定值".equals(propertySymbol)) &&
@@ -352,7 +355,7 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                             (StringUtils.isNullOrEmpty(propertyUplimit) || StringUtils.isNullOrEmpty(propertyLowerlimit))
             ) {
                 msg = "最大值和最小值必须填写</br>";
-            } else{
+            } else {
                 if (
                         ("最小值 <= 结果 <= 最大值".equals(propertySymbol) ||
                                 "最小值 < 结果 <= 最大值".equals(propertySymbol) ||
@@ -369,8 +372,8 @@ public class RouterCheckServiceImpl extends ServiceImpl<RouterCheckMapper, Route
                 }
             }
         }
-        if(!StringUtils.isNullOrEmpty(msg)){
-            info.append("(图号："+routerCheckDto.getRouterNo()+"，工序号："+routerCheckDto.getOptNo()+"，工序名称："+routerCheckDto.getOptName()+") "+msg);
+        if (!StringUtils.isNullOrEmpty(msg)) {
+            info.append("(图号：" + routerCheckDto.getRouterNo() + "，工序号：" + routerCheckDto.getOptNo() + "，工序名称：" + routerCheckDto.getOptName() + ") " + msg);
         }
     }
 

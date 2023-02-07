@@ -16,7 +16,6 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.TrackAssignController;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.provider.BaseServiceClient;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -358,7 +357,6 @@ public class PublicServiceImpl implements PublicService {
      * @Author: xinYu.hou
      * @Date: 2022/8/23 15:08
      **/
-    @SneakyThrows
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean automaticProcess(Map<String, String> map) {

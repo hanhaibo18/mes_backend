@@ -17,7 +17,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.richfit.mes.base.dao.ProductionBomMapper;
 import com.richfit.mes.base.enmus.ProductBomExportEnum;
-import com.richfit.mes.base.util.DrawingNoUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -26,6 +25,7 @@ import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -114,14 +114,14 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     @Transactional(rollbackFor = Exception.class)
     public boolean updateStatus(ProductionBom bom) {
         UpdateWrapper<ProductionBom> update = new UpdateWrapper<ProductionBom>();
-        update.apply("("+DrawingNoUtil.queryEqSql("drawing_no",bom.getDrawingNo())+" or "+DrawingNoUtil.queryEqSql("main_drawing_no",bom.getDrawingNo())+" ) and bom_key = {0}",  bom.getBomKey());
+        update.apply("(" + DrawingNoUtil.queryEqSql("drawing_no", bom.getDrawingNo()) + " or " + DrawingNoUtil.queryEqSql("main_drawing_no", bom.getDrawingNo()) + " ) and bom_key = {0}", bom.getBomKey());
         return SqlHelper.retBool(productionBomMapper.update(null, update));
     }
 
     @Override
     public List<ProductionBom> getProductionBomByDrawingNoList(String drawingNo, String tenantId, String branchCode) {
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
-        DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no", drawingNo);
+        DrawingNoUtil.queryEq(queryWrapper, "main_drawing_no", drawingNo);
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.eq("branch_code", branchCode);
         return this.list(queryWrapper);
@@ -134,7 +134,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         ProductionBom productionBom = this.getById(id);
         QueryWrapper<ProjectBom> queryWrapperProject = new QueryWrapper<>();
         queryWrapperProject.eq("work_plan_no", workPlanNo);
-        DrawingNoUtil.queryEq(queryWrapperProject,"main_drawing_no", productionBom.getDrawingNo());
+        DrawingNoUtil.queryEq(queryWrapperProject, "main_drawing_no", productionBom.getDrawingNo());
         //处理逻辑判断问题   zhiqiang.lu   2023.1.4
         queryWrapperProject.eq("branch_code", productionBom.getBranchCode());
         queryWrapperProject.eq("tenant_id", productionBom.getTenantId());
@@ -148,7 +148,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         projectBomService.save(projectBom);
         //在处理L级别零件数据
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
-        DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no", productionBom.getDrawingNo());
+        DrawingNoUtil.queryEq(queryWrapper, "main_drawing_no", productionBom.getDrawingNo());
         queryWrapper.eq("branch_code", productionBom.getBranchCode());
         List<ProductionBom> productionBomList = this.list(queryWrapper);
         List<ProjectBom> projectBomList = productionBomList.stream().map(production -> {
@@ -163,7 +163,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteBom(String drawingNo, String tenantId, String branchCode) {
         QueryWrapper<ProjectBom> query = new QueryWrapper<>();
-        DrawingNoUtil.queryEq(query,"drawing_no", drawingNo);
+        DrawingNoUtil.queryEq(query, "drawing_no", drawingNo);
         query.eq("branch_code", branchCode);
         query.eq("grade", "H");
         int count = projectBomService.count(query);
@@ -173,7 +173,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.and(wrapper -> DrawingNoUtil.queryReturn(wrapper,"main_drawing_no",drawingNo).or(wrapper2->DrawingNoUtil.queryReturn(wrapper2,"drawing_no", drawingNo)));
+        queryWrapper.and(wrapper -> DrawingNoUtil.queryReturn(wrapper, "main_drawing_no", drawingNo).or(wrapper2 -> DrawingNoUtil.queryReturn(wrapper2, "drawing_no", drawingNo)));
         return this.remove(queryWrapper);
     }
 
@@ -187,7 +187,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     public IPage<ProductionBom> getProductionBomPage(String drawingNo, String tenantId, String branchCode, String order, String orderCol, int page, int limit) {
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
         if (!StringUtils.isEmpty(drawingNo)) {
-            DrawingNoUtil.queryLike(query,"drawing_no", drawingNo);
+            DrawingNoUtil.queryLike(query, "drawing_no", drawingNo);
         }
         if (!StringUtils.isEmpty(branchCode)) {
             query.eq("branch_code", branchCode);
@@ -229,9 +229,9 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 writer.resetRow();
                 writer.passRows(4);
                 QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
-                DrawingNoUtil.queryEq(queryWrapper,"drawing_no", productionBom.getDrawingNo());
+                DrawingNoUtil.queryEq(queryWrapper, "drawing_no", productionBom.getDrawingNo());
                 queryWrapper.or();
-                DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no", productionBom.getDrawingNo());
+                DrawingNoUtil.queryEq(queryWrapper, "main_drawing_no", productionBom.getDrawingNo());
                 queryWrapper.eq("branch_code", productionBom.getBranchCode());
                 queryWrapper.orderByAsc("order_no");
                 List<ProductionBom> productionBomList = this.list(queryWrapper);
@@ -326,9 +326,9 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             //从第三行开始
             writer.passRows(2);
             QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
-            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", productionBom.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", productionBom.getDrawingNo());
             queryWrapper.or();
-            DrawingNoUtil.queryEq(queryWrapper,"main_drawing_no", productionBom.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper, "main_drawing_no", productionBom.getDrawingNo());
             queryWrapper.eq("branch_code", productionBom.getBranchCode());
             queryWrapper.orderByAsc("order_no");
             //所以子节点
@@ -511,7 +511,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
             query.eq("grade", "H")
                     .eq("branch_code", branchCode);
-            DrawingNoUtil.queryEq(query,"drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(query, "drawing_no", drawingNo);
             List<ProductionBom> result = this.list(query);
             if (result != null && result.size() > 0) {
                 message.append("当前图号产品BOM已存在！</br>").toString();

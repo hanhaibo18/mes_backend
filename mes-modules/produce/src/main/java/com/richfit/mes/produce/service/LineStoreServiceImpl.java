@@ -23,13 +23,13 @@ import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
-import com.richfit.mes.produce.utils.DrawingNoUtil;
 import com.richfit.mes.produce.utils.FilesUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -128,7 +128,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreQueryWrapper
                 .eq("workblank_no", workblankNo.replace(trackHead.getDrawingNo(), ""))
                 .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        DrawingNoUtil.queryEq(lineStoreQueryWrapper,"drawing_no", trackHead.getDrawingNo());
+        DrawingNoUtil.queryEq(lineStoreQueryWrapper, "drawing_no", trackHead.getDrawingNo());
         LineStore lineStore1 = lineStoreMapper.selectOne(lineStoreQueryWrapper);
         if (lineStore1 != null) {
             if (lineStore1.getNumber() - lineStore1.getUseNum() <= num) {
@@ -415,7 +415,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 }
 
                 QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
-                DrawingNoUtil.queryEq(queryWrapper,"drawing_no", lineStore.getDrawingNo());
+                DrawingNoUtil.queryEq(queryWrapper, "drawing_no", lineStore.getDrawingNo());
                 queryWrapper.eq("workblank_no", workblankNo);
                 queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 List<LineStore> result = this.list(queryWrapper);
@@ -427,7 +427,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             //单件编号
         } else {
             QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
-            DrawingNoUtil.queryEq(queryWrapper,"drawing_no", lineStore.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", lineStore.getDrawingNo());
             queryWrapper.eq("workblank_no", lineStore.getWorkblankNo());
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<LineStore> result = this.list(queryWrapper);
@@ -476,7 +476,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         QueryWrapper<Order> orderWrapper = new QueryWrapper<>();
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         //根据物料号和订单号获取订单
-        orderWrapper.eq("tenant_id",currentUser.getTenantId());
+        orderWrapper.eq("tenant_id", currentUser.getTenantId());
         orderWrapper.eq("material_code", materialNo);
         orderWrapper.eq("order_sn", orderNo);
         orderWrapper.orderByAsc("delivery_date");
@@ -876,8 +876,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     public IPage<LineStoreSumZp> queryLineStoreSumZp(Page<LineStoreSumZp> page, Map parMap) {
 
         //图号查询处理
-        if(!ObjectUtil.isEmpty(parMap.get("drawingNo"))){
-            parMap.put("drawingNoSql",DrawingNoUtil.queryLikeSql("drawing_no",String.valueOf(parMap.get("drawingNo"))));
+        if (!ObjectUtil.isEmpty(parMap.get("drawingNo"))) {
+            parMap.put("drawingNoSql", DrawingNoUtil.queryLikeSql("drawing_no", String.valueOf(parMap.get("drawingNo"))));
         }
         //1 当前库存量
         IPage<LineStoreSumZp> storeList = this.lineStoreMapper.selectStoreNumForAssembly(page, parMap);
@@ -986,6 +986,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStoreCp.setBatchNo(trackHead.getBatchNo());
         lineStoreCp.setWeight(trackHead.getWeight());
         lineStoreCp.setTexture(trackHead.getTexture());
+        //添加订单信息
+        lineStoreCp.setProductionOrder(trackHead.getProductionOrder());
+        lineStoreCp.setProductionOrderId(trackHead.getProductionOrderId());
         //添加单件多个产品
         lineStoreCp.setNumber(number);
         lineStoreCp.setUseNum(0);

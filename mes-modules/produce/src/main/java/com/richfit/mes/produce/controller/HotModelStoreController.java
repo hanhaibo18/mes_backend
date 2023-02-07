@@ -9,10 +9,10 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.HotModelStore;
 import com.richfit.mes.common.model.produce.HotModelStoreExportExcelVo;
 import com.richfit.mes.common.model.produce.HotModelStoreQueryVo;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.HotModelStoreService;
-import com.richfit.mes.produce.utils.DrawingNoUtil;
-import com.richfit.mes.produce.utils.OrderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -54,7 +54,7 @@ public class HotModelStoreController extends BaseController {
     public CommonResult addHotModelStore(@RequestBody HotModelStore hotModelStore) {
         try {
             QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
-            DrawingNoUtil.queryEq(hotModelStoreQueryWrapper,"model_drawing_no", hotModelStore.getModelDrawingNo());
+            DrawingNoUtil.queryEq(hotModelStoreQueryWrapper, "model_drawing_no", hotModelStore.getModelDrawingNo());
             List<HotModelStore> list = hotModelStoreService.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
                 return CommonResult.failed(ModelDrawingNo_ISNULL_MESSAGE);
@@ -78,7 +78,7 @@ public class HotModelStoreController extends BaseController {
     public CommonResult updateHotModelStore(@RequestBody HotModelStore hotModelStore) {
         try {
             QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
-            DrawingNoUtil.queryEq(hotModelStoreQueryWrapper,"model_drawing_no", hotModelStore.getModelDrawingNo());
+            DrawingNoUtil.queryEq(hotModelStoreQueryWrapper, "model_drawing_no", hotModelStore.getModelDrawingNo());
             hotModelStoreQueryWrapper.ne("id", hotModelStore.getId());
             List<HotModelStore> list = hotModelStoreService.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
@@ -119,15 +119,15 @@ public class HotModelStoreController extends BaseController {
             queryWrapper.like("model_name", hotModelStorQueryVo.getModelName());
         }
         if (StringUtils.isNotEmpty(hotModelStorQueryVo.getModelDrawingNo())) {
-            DrawingNoUtil.queryLike(queryWrapper,"model_drawing_no", hotModelStorQueryVo.getModelDrawingNo());
+            DrawingNoUtil.queryLike(queryWrapper, "model_drawing_no", hotModelStorQueryVo.getModelDrawingNo());
         }
         if (hotModelStorQueryVo.getModelType() != null) {
             queryWrapper.eq("model_type", hotModelStorQueryVo.getModelType());
         }
         queryWrapper.eq("tenant_id", hotModelStorQueryVo.getTenantId());
-        queryWrapper.orderByDesc("create_time");
         //排序工具
         OrderUtil.query(queryWrapper, hotModelStorQueryVo.getOrderCol(), hotModelStorQueryVo.getOrder());
+        queryWrapper.orderByDesc("create_time");
         return CommonResult.success(hotModelStoreService.page(new Page<HotModelStore>(hotModelStorQueryVo.getPage(), hotModelStorQueryVo.getLimit()), queryWrapper), SUCCESS_MESSAGE);
     }
 
@@ -147,7 +147,7 @@ public class HotModelStoreController extends BaseController {
                 queryWrapper.like("model_name", hotModelStor.getModelName());
             }
             if (StringUtils.isNotEmpty(hotModelStor.getModelDrawingNo())) {
-                DrawingNoUtil.queryLike(queryWrapper,"model_drawing_no", hotModelStor.getModelDrawingNo());
+                DrawingNoUtil.queryLike(queryWrapper, "model_drawing_no", hotModelStor.getModelDrawingNo());
             }
             if (hotModelStor.getModelType() != null) {
                 queryWrapper.eq("model_type", hotModelStor.getModelType());
