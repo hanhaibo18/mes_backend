@@ -2,8 +2,11 @@ package com.richfit.mes.produce.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.model.produce.HotDemand;
 import com.richfit.mes.common.model.produce.HotForgingParam;
 import com.richfit.mes.common.model.produce.HotForgingStore;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -48,12 +51,12 @@ public class ProduceHotForgingStoreConroller {
     @ApiOperation(value = "锻件仿型列表查询", notes = "锻件仿型列表查询")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "profilingType", value = "所属类型（0：轴类，1：饼类，2：圈类，3：套类，4：四方类）", required = false, paramType = "query"),
-            @ApiImplicitParam(name = "profilingDrawingNo", value = "仿型图号", required = false, paramType = "query")
-//            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query"),
-//            @ApiImplicitParam(name = "limit", value = "每一页显示条数", required = true, paramType = "query")
+            @ApiImplicitParam(name = "profilingDrawingNo", value = "仿型图号", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = "每一页显示条数", required = true, paramType = "query")
     })
     @GetMapping("/hotForgingStoreList")
-    public CommonResult<List<HotForgingStore>> selectHotForgingStoreList(Integer profilingType, String profilingDrawingNo) {
+    public CommonResult<IPage<HotForgingStore>> selectHotForgingStoreList(int page, int limit, Integer profilingType, String profilingDrawingNo) {
         QueryWrapper<HotForgingStore> queryWrapper = new QueryWrapper<HotForgingStore>();
         if (ObjectUtils.isNotEmpty(profilingType)) {
             queryWrapper.eq("profiling_type", profilingType);
@@ -61,7 +64,7 @@ public class ProduceHotForgingStoreConroller {
         if (ObjectUtils.isNotEmpty(profilingDrawingNo)) {
             queryWrapper.eq("profiling_drawing_no", profilingDrawingNo);
         }
-        return CommonResult.success(hotForgingStoreService.list(queryWrapper), ResultCode.SUCCESS.getMessage());
+        return CommonResult.success(hotForgingStoreService.page(new Page<HotForgingStore>(page, limit), queryWrapper), ResultCode.SUCCESS.getMessage());
     }
 
 
