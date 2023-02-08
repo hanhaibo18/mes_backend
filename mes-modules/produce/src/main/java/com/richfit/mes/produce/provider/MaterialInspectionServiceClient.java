@@ -40,6 +40,8 @@ public interface MaterialInspectionServiceClient {
     @GetMapping("/api/material/queryByReportNo")
     public List<PhysChemOrderInner> queryByReportNo(@RequestParam("reportNo") String reportNo);
     @PostMapping("/api/material/auditSnyPhysChemOrder")
-    public CommonResult<Boolean> auditSnyPhysChemOrder(@RequestBody List<String> reportNos,@RequestParam("isAudit") String isAudit);
+    public CommonResult<Boolean> auditSnyPhysChemOrder(@RequestBody List<String> reportNos,@RequestParam("isAudit") String isAudit,@RequestParam("auditBy") String auditBy);
+    @PostMapping("/api/material/isStandard")
+    public CommonResult<Boolean> isStandard(@RequestBody List<String> reportNos,@RequestParam("isStandard") String isStandard,@RequestParam("standardBy") String standardBy);
 
 }

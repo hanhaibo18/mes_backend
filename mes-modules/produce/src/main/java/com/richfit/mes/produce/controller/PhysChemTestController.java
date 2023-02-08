@@ -1,6 +1,8 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -129,17 +131,17 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "已同步理化检测委托单审核", notes = "已同步理化检测委托单审核")
-    @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
-    @GetMapping("/auditSnyPhysChemOrder")
-    public CommonResult<Boolean> auditPhysChemOrder(List<String> reportNos,String isAudit){
-        return materialInspectionServiceClient.auditSnyPhysChemOrder(reportNos, isAudit);
+    @PostMapping("/auditSnyPhysChemOrder")
+    public CommonResult<Boolean> auditPhysChemOrder(@RequestBody JSONObject jsonObject){
+        List<String> reportNos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("reportNos")), String.class);
+        return materialInspectionServiceClient.auditSnyPhysChemOrder(reportNos, jsonObject.getString("isAudit"),SecurityUtils.getCurrentUser().getUsername());
     }
 
     @ApiOperation(value = "委托单合不合格判定", notes = "委托单合不合格判定")
-    @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
-    @GetMapping("/isStandard")
-    public CommonResult<Boolean> isStandard(List<String> reportNos,String isStandard){
-        return materialInspectionServiceClient.auditSnyPhysChemOrder(reportNos, isStandard);
+    @PostMapping("/isStandard")
+    public CommonResult<Boolean> isStandard(@RequestBody JSONObject jsonObject){
+        List<String> reportNos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("reportNos")), String.class);
+        return materialInspectionServiceClient.isStandard(reportNos, jsonObject.getString("isStandard"),SecurityUtils.getCurrentUser().getUsername());
     }
 
 }

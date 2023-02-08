@@ -62,7 +62,12 @@ public class MaterialInspectionServiceClientFallbackImpl implements MaterialInsp
     }
 
     @Override
-    public CommonResult<Boolean> auditSnyPhysChemOrder(List<String> reportNos, String isAudit) {
+    public CommonResult<Boolean> auditSnyPhysChemOrder(List<String> reportNos, String isAudit, String auditBy) {
+        return null;
+    }
+
+    @Override
+    public CommonResult<Boolean> isStandard(List<String> reportNos, String isStandard, String standardBy) {
         return null;
     }
 }
