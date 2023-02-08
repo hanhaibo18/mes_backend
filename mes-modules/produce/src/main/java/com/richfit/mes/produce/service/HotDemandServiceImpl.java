@@ -87,6 +87,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             }
             hotDemand.setTenantId(currentUser.getTenantId());
             hotDemand.setCreateBy(currentUser.getUsername());
+            hotDemand.setSubmitOrderTime(new Date());
+            hotDemand.setSubmitById(currentUser.getUserId());
             hotDemand.setBranchCode(branchCode);
             hotDemand.setCreateTime(new Date());
             hotDemand.setSubmitState(0);

@@ -69,7 +69,10 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "新增需求提报", notes = "新增需求提报")
     @PostMapping("/save")
     public CommonResult saveDemand(@RequestBody HotDemand hotDemand) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         hotDemand.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        hotDemand.setSubmitOrderTime(new Date());
+        hotDemand.setSubmitById(currentUser.getUserId());
         boolean save = hotDemandService.save(hotDemand);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);
