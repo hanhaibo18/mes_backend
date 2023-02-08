@@ -145,7 +145,7 @@ public class HotDemandController extends BaseController {
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
 
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
-            queryWrapper.apply("order by "+hotDemandParam.getOrderByColumns()+" asc");
+            queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
