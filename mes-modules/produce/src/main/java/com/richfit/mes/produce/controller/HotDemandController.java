@@ -105,6 +105,18 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkblankType())) {//毛坯类型
             queryWrapper.eq("workblank_type", hotDemandParam.getWorkblankType());
         }
+        if (hotDemandParam.getIsExistProcess()!=null) {//有无工艺
+            queryWrapper.eq("is_exist_process", hotDemandParam.getIsExistProcess());
+        }
+        if (hotDemandParam.getIsExistModel()!=null) {//有无模型
+            queryWrapper.eq("is_exist_model", hotDemandParam.getIsExistModel());
+        }
+        if (hotDemandParam.getProduceState()!=null) {//是否排产
+            queryWrapper.eq("produce_state", hotDemandParam.getProduceState());
+        }
+        if (hotDemandParam.getProduceState()!=null) {//是否排产
+            queryWrapper.eq("produce_state", hotDemandParam.getProduceState());
+        }
         //0 :未提报  1 :已提报'
         if (hotDemandParam.getSubmitState() != null) {
             queryWrapper.eq("submit_state", hotDemandParam.getSubmitState());
@@ -132,6 +144,9 @@ public class HotDemandController extends BaseController {
         //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
 
+        if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
+            queryWrapper.apply("order by "+hotDemandParam.getOrderByColumns()+" asc");
+        }
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
