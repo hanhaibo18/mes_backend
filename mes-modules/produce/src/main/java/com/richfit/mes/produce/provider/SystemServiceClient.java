@@ -34,6 +34,14 @@ public interface SystemServiceClient {
     @PostMapping("/api/sys/user/queryByUserAccountList")
     public Map<String, TenantUserVo> queryByUserAccountList(@RequestBody List<String> userAccountList);
 
+    /**
+     * 功能描述: 根据Id删除文件
+     *
+     * @param id
+     * @Author: xinYu.hou
+     * @Date: 2023/2/7 17:38
+     * @return: CommonResult<Boolean>
+     **/
     @DeleteMapping("/api/sys/attachment/{id}")
     public CommonResult<Boolean> delete(@PathVariable String id);
 
