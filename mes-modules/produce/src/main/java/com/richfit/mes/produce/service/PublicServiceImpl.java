@@ -55,8 +55,8 @@ public class PublicServiceImpl implements PublicService {
         //验证工序制作数量是否全部派工,全部派工才允许下工序激活
         String trackItemId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(trackItemId);
-        //派能派工情况下直接退出方法不执行工序激活
-        if (0 != trackItem.getAssignableQty()) {
+        //有派工数量情况下直接退出方法不执行工序激活 && 过滤探伤类型工序 探伤类型工序没有派工
+        if (!trackItem.getOptType().equals("6") && 0 != trackItem.getAssignableQty()) {
             return false;
         }
 
