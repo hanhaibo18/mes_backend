@@ -29,6 +29,7 @@ import com.richfit.mes.produce.entity.OutsourceDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -638,30 +639,32 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         boolean bool = true;
         for (TrackItem trackItem : result) {
+            TrackComplete trackComplete = new TrackComplete();
+            BeanUtils.copyProperties(outsource.getTrackComplete(), trackComplete);
             if (StringUtils.isNullOrEmpty(trackItem.getStartDoingUser())) {
                 trackItem.setStartDoingTime(new Date());
                 trackItem.setStartDoingUser(outsource.getTrackComplete().getUserId());
             }
             trackItem.setCompleteQty(Double.valueOf(trackItem.getNumber()));
             trackItem.setAssignableQty(0);
-            outsource.getTrackComplete().setTiId(trackItem.getId());
-            outsource.getTrackComplete().setTrackId(trackItem.getTrackHeadId());
-            outsource.getTrackComplete().setProdNo(trackItem.getProductNo());
-            outsource.getTrackComplete().setAssignId("");
-            outsource.getTrackComplete().setModifyTime(new Date());
-            outsource.getTrackComplete().setCreateTime(new Date());
-            outsource.getTrackComplete().setCompleteBy(outsource.getTrackComplete().getUserId());
-            outsource.getTrackComplete().setCompleteTime(new Date());
-            outsource.getTrackComplete().setUserId(SecurityUtils.getCurrentUser().getUsername());
+            trackComplete.setTiId(trackItem.getId());
+            trackComplete.setTrackId(trackItem.getTrackHeadId());
+            trackComplete.setProdNo(trackItem.getProductNo());
+            trackComplete.setAssignId("");
+            trackComplete.setModifyTime(new Date());
+            trackComplete.setCreateTime(new Date());
+            trackComplete.setCompleteBy(outsource.getTrackComplete().getUserId());
+            trackComplete.setCompleteTime(new Date());
+            trackComplete.setUserId(SecurityUtils.getCurrentUser().getUsername());
             CommonResult<TenantUserVo> userVoCommonResult = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
-            outsource.getTrackComplete().setUserName(userVoCommonResult.getData().getEmplName());
+            trackComplete.setUserName(userVoCommonResult.getData().getEmplName());
 
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsOperationComplete(1);
             trackItem.setIsDoing(2);
-            trackItem.setQualityCheckBy(outsource.getTrackComplete().getQualityCheckBy());
-            trackItem.setQualityCheckBranch(outsource.getTrackComplete().getQualityCheckBranch());
-            bool = trackCompleteService.save(outsource.getTrackComplete());
+            trackItem.setQualityCheckBy(trackComplete.getQualityCheckBy());
+            trackItem.setQualityCheckBranch(trackComplete.getQualityCheckBranch());
+            bool = trackCompleteService.save(trackComplete);
             trackItemService.updateById(trackItem);
 
             //判断是否需要质检和调度审核 再激活下工序
