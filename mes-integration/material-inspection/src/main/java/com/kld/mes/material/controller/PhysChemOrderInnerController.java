@@ -247,11 +247,11 @@ public class PhysChemOrderInnerController extends BaseController {
     @ApiOperation(value = "已同步理化检测委托单审核", notes = "已同步理化检测委托单审核")
     @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
     @PostMapping("/auditSnyPhysChemOrder")
-    public CommonResult<Boolean> auditPhysChemOrder(@RequestBody List<String> reportNos, String isAudit){
+    public CommonResult<Boolean> auditPhysChemOrder(@RequestBody List<String> reportNos, String isAudit,String auditBy){
         List<PhysChemOrderInner> physChemOrderInners = physChemOrderInnerService.synResultInfos(reportNos);
         for (PhysChemOrderInner order : physChemOrderInners) {
             //已同步的委托单才能审核
-            if(SYNC_STATUS.equals(order.getSyncStatus())){
+            if(!SYNC_STATUS.equals(order.getSyncStatus())){
                 throw new GlobalException("已同步实验数据的委托单才能审核！", ResultCode.FAILED);
             }
         }
@@ -261,14 +261,15 @@ public class PhysChemOrderInnerController extends BaseController {
                 //退回状态需要重置同步状态和报告生成状态
                 .set(!StringUtils.isNullOrEmpty(isAudit)&&isAudit.equals("2"),"sync_status",NO_SYNC_STATUS)
                 .set(!StringUtils.isNullOrEmpty(isAudit)&&isAudit.equals("2"),"report_status",NO_REPORT_STATUS)
-                .set("audit_time",new Date());
+                .set("audit_time",new Date())
+                .set("audit_by",auditBy);
         return CommonResult.success(physChemOrderInnerService.update(updateWrapper));
     }
 
     @ApiOperation(value = "已审核委托单合格判定", notes = "已审核委托单合格判定")
     @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
     @PostMapping("/isStandard")
-    public CommonResult<Boolean> isStandard(@RequestBody List<String> reportNos, String isStandard){
+    public CommonResult<Boolean> isStandard(@RequestBody List<String> reportNos, String isStandard,String standardBy){
         List<PhysChemOrderInner> physChemOrderInners = physChemOrderInnerService.synResultInfos(reportNos);
         for (PhysChemOrderInner order : physChemOrderInners) {
             //以审核的才能进行合格判定
@@ -279,7 +280,8 @@ public class PhysChemOrderInnerController extends BaseController {
         UpdateWrapper<PhysChemOrderInner> updateWrapper = new UpdateWrapper<>();
         updateWrapper.in("report_no",reportNos)
                 .set("is_standard",isStandard)
-                .set("standard_time",new Date());
+                .set("standard_time",new Date())
+                .set("standard_by",standardBy);
         return CommonResult.success(physChemOrderInnerService.update(updateWrapper));
     }
 

@@ -41,7 +41,7 @@ public class TrackCheckAttachmentController extends BaseController {
     }
 
     @ApiOperation(value = "质检文件删除接口", notes = "质检文件删除接口")
-    @GetMapping("/delete_check_file")
+    @DeleteMapping("/delete_check_file")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> deleteCheckFile(String fileId, String tiId) {
         QueryWrapper<CheckAttachment> queryWrapper = new QueryWrapper<>();
@@ -53,7 +53,8 @@ public class TrackCheckAttachmentController extends BaseController {
         }
         QueryWrapper<CheckAttachment> queryWrapperItem = new QueryWrapper<>();
         queryWrapperItem.eq("ti_id", tiId);
-        checkAttachmentService.removeById(queryWrapper);
+        queryWrapperItem.eq("file_id", fileId);
+        checkAttachmentService.remove(queryWrapperItem);
         return CommonResult.success(true);
     }
 }

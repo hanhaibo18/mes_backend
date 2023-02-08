@@ -281,27 +281,27 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     private List<PhysChemOrderImpactDto> impacts;
 
 
-    @TableField(exist = false)
+
     @ApiModelProperty(value = "审核状态:0未审核，1已审核，2以退回")
     private String isAudit;
 
-    @TableField(exist = false)
+
     @ApiModelProperty(value = "审核人")
     private String auditBy;
 
-    @TableField(exist = false)
+
     @ApiModelProperty(value = "审核时间")
     private String auditTime;
 
-    @TableField(exist = false)
-    @ApiModelProperty(value = "合格状态：0合格，2不合格")
+
+    @ApiModelProperty(value = "合格状态：0合格，1不合格")
     private String isStandard;
 
-    @TableField(exist = false)
+
     @ApiModelProperty(value = "合格判定人")
     private String standardBy;
 
-    @TableField(exist = false)
+
     @ApiModelProperty(value = "合格判定时间")
     private String standardTime;
 
