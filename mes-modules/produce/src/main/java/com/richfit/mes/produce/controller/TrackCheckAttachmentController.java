@@ -54,7 +54,7 @@ public class TrackCheckAttachmentController extends BaseController {
         QueryWrapper<CheckAttachment> queryWrapperItem = new QueryWrapper<>();
         queryWrapperItem.eq("ti_id", tiId);
         queryWrapperItem.eq("file_id", fileId);
-        checkAttachmentService.removeById(queryWrapperItem);
+        checkAttachmentService.remove(queryWrapperItem);
         return CommonResult.success(true);
     }
 }
