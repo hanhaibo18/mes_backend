@@ -74,8 +74,8 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
      * @Author: xinYu.hou
      * @return: Integer
      **/
-    @Select("SELECT assign.state FROM v_produce_assign assign WHERE assign.ti_id = #{trackItemId}")
-    Integer isDispatching(@Param("trackItemId") String trackItemId);
+    @Select("SELECT * FROM v_produce_assign assign WHERE assign.ti_id = #{trackItemId}")
+    List<Assign> isDispatching(@Param("trackItemId") String trackItemId);
 
     /**
      * 功能描述: 查询未派工工序数量
