@@ -92,6 +92,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setBranchCode(branchCode);
             hotDemand.setCreateTime(new Date());
             hotDemand.setSubmitState(0);
+            hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+            hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
             demandList.add(hotDemand);
         }
 

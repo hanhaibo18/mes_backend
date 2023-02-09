@@ -73,6 +73,8 @@ public class HotDemandController extends BaseController {
         hotDemand.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         hotDemand.setSubmitOrderTime(new Date());
         hotDemand.setSubmitById(currentUser.getUserId());
+        hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+        hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
         boolean save = hotDemandService.save(hotDemand);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);
@@ -162,6 +164,15 @@ public class HotDemandController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "导入需求提报", notes = "根据Excel文档导入导入需求提报")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/import_demand")
+    public CommonResult importExcelDemand(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
+        return hotDemandService.importDemand(file, branchCode);
+    }
 
     @ApiOperation(value = "删除需求提报", notes = "删除需求提报")
     @ApiImplicitParams({
@@ -180,15 +191,6 @@ public class HotDemandController extends BaseController {
         return CommonResult.failed();
     }
 
-    @ApiOperation(value = "导入需求提报", notes = "根据Excel文档导入导入需求提报")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path"),
-            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
-    })
-    @PostMapping("/import_demand")
-    public CommonResult importExcelDemand(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
-        return hotDemandService.importDemand(file, branchCode);
-    }
 
     @ApiOperation(value = "需求提报与撤回", notes = "需求提报与撤回")
     @ApiImplicitParams({
