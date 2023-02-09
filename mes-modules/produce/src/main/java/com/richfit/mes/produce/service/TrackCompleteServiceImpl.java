@@ -645,6 +645,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackItem.setStartDoingTime(new Date());
                 trackItem.setStartDoingUser(outsource.getTrackComplete().getUserId());
             }
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             trackItem.setCompleteQty(Double.valueOf(trackItem.getNumber()));
             trackItem.setAssignableQty(0);
             trackComplete.setTiId(trackItem.getId());
@@ -658,6 +659,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setUserId(SecurityUtils.getCurrentUser().getUsername());
             CommonResult<TenantUserVo> userVoCommonResult = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
             trackComplete.setUserName(userVoCommonResult.getData().getEmplName());
+            trackComplete.setBranchCode(outsource.getBranchCode());
+            trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+            trackComplete.setCompletedQty(Double.valueOf(trackItem.getNumber()));
+            trackComplete.setTrackNo(trackHead.getId());
 
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsOperationComplete(1);
