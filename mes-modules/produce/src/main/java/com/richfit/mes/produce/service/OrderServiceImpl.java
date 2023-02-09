@@ -1,10 +1,10 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
@@ -159,9 +159,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public void orderDataTrackHead(TrackHead trackHead) {
-        String orderId = trackHead.getProductionOrderId();
         String orderNo = trackHead.getProductionOrder();
-        if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(orderNo)) {
+        if (StrUtil.isNotBlank(orderNo)) {
             Map map = new HashMap();
             map.put("productionOrder", orderNo);
             map.put("branchCode", trackHead.getBranchCode());
