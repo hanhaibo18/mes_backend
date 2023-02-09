@@ -1,8 +1,8 @@
 package com.richfit.mes.produce.provider;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.PhyChemTaskVo;
-import com.richfit.mes.common.model.produce.PhysChemOrder;
 import com.richfit.mes.common.model.produce.PhysChemOrderInner;
 import com.richfit.mes.produce.provider.fallback.MaterialInspectionServiceClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -39,5 +39,9 @@ public interface MaterialInspectionServiceClient {
     public boolean changeOrderStatus(@RequestBody List<String> orderNos);
     @GetMapping("/api/material/queryByReportNo")
     public List<PhysChemOrderInner> queryByReportNo(@RequestParam("reportNo") String reportNo);
+    @PostMapping("/api/material/auditSnyPhysChemOrder")
+    public CommonResult<Boolean> auditSnyPhysChemOrder(@RequestBody List<String> reportNos,@RequestParam("isAudit") String isAudit,@RequestParam("auditBy") String auditBy);
+    @PostMapping("/api/material/isStandard")
+    public CommonResult<Boolean> isStandard(@RequestBody List<String> reportNos,@RequestParam("isStandard") String isStandard,@RequestParam("standardBy") String standardBy);
 
 }

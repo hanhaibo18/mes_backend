@@ -91,11 +91,11 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "金相分析->石墨")
     private int metallGraphite;
     @ApiModelProperty(value = "金相分析->其他")
-    private int metallOther;
+    private String metallOther;
     @ApiModelProperty(value = "金相分析->其他(值)")
-    private int metallOtherVal;
+    private String metallOtherVal;
     @ApiModelProperty(value = "力学性能->拉伸")
-    private String forceTensile;
+    private int forceTensile;
     @ApiModelProperty(value = "力学性能->冲击")
     private int forceImpact;
     @ApiModelProperty(value = "力学性能->弯曲")
@@ -279,4 +279,31 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
      */
     @TableField(exist = false)
     private List<PhysChemOrderImpactDto> impacts;
+
+
+
+    @ApiModelProperty(value = "审核状态:0未审核，1已审核，2以退回")
+    private String isAudit;
+
+
+    @ApiModelProperty(value = "审核人")
+    private String auditBy;
+
+
+    @ApiModelProperty(value = "审核时间")
+    private String auditTime;
+
+
+    @ApiModelProperty(value = "合格状态：0合格，1不合格")
+    private String isStandard;
+
+
+    @ApiModelProperty(value = "合格判定人")
+    private String standardBy;
+
+
+    @ApiModelProperty(value = "合格判定时间")
+    private String standardTime;
+
+
 }

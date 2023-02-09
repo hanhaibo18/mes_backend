@@ -1,6 +1,8 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,6 +12,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
 import com.richfit.mes.produce.service.PhyChemTestService;
 import com.richfit.mes.produce.service.PhysChemResultService;
 import freemarker.template.TemplateException;
@@ -42,11 +45,15 @@ public class PhysChemTestController extends BaseController {
     private PhyChemTestService phyChemTestService;
     @Autowired
     private PhysChemResultService physChemResultService;
+    @Autowired
+    private MaterialInspectionServiceClient materialInspectionServiceClient;
 
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单", paramType = "body", dataType = "physChemOrderInner")
     @PostMapping("/producePhysChemOrder/save")
     public CommonResult<Boolean> save(@RequestBody PhysChemOrderInner physChemOrderInner) throws Exception{
+        //委托单填写数据校验
+        phyChemTestService.checkOrderInfo(physChemOrderInner);
         //力学性能参数集合
         List<PhysChemOrderImpactDto> impacts = physChemOrderInner.getImpacts();
         //要保存的数据
@@ -121,6 +128,20 @@ public class PhysChemTestController extends BaseController {
     @GetMapping("/exportExcel")
     public void exportExcel(HttpServletResponse response, String orderNo) throws GlobalException {
         phyChemTestService.exportExcel(response,orderNo);
+    }
+
+    @ApiOperation(value = "已同步理化检测委托单审核", notes = "已同步理化检测委托单审核")
+    @PostMapping("/auditSnyPhysChemOrder")
+    public CommonResult<Boolean> auditPhysChemOrder(@RequestBody JSONObject jsonObject){
+        List<String> reportNos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("reportNos")), String.class);
+        return materialInspectionServiceClient.auditSnyPhysChemOrder(reportNos, jsonObject.getString("isAudit"),SecurityUtils.getCurrentUser().getUsername());
+    }
+
+    @ApiOperation(value = "委托单合不合格判定", notes = "委托单合不合格判定")
+    @PostMapping("/isStandard")
+    public CommonResult<Boolean> isStandard(@RequestBody JSONObject jsonObject){
+        List<String> reportNos = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("reportNos")), String.class);
+        return materialInspectionServiceClient.isStandard(reportNos, jsonObject.getString("isStandard"),SecurityUtils.getCurrentUser().getUsername());
     }
 
 }

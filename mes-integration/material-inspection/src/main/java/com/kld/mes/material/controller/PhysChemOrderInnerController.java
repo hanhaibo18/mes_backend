@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kld.mes.material.service.PhysChemOrderInnerService;
 import com.kld.mes.material.utils.OrderUtil;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.PhyChemTaskVo;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +40,15 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/material")
 public class PhysChemOrderInnerController extends BaseController {
+
+    //同步状态
+    private final static String SYNC_STATUS = "1";
+    //未同步状态
+    private final static String NO_SYNC_STATUS = "0";
+    //材料检测部门未生成报告
+    private final static String NO_REPORT_STATUS = "0";
+    //未审核状态
+    private final static String NO_AUDIT_STATUS = "0";
 
     @Autowired
     private PhysChemOrderInnerService physChemOrderInnerService;
@@ -214,10 +226,8 @@ public class PhysChemOrderInnerController extends BaseController {
         return physChemOrderInnerService.update(updateWrapper);
     }
 
-    /**
-     * 同步实验结果
-     */
-    @ApiOperation(value = "同步实验结果", notes = "同步实验结果")
+
+    @ApiOperation(value = "根据报告号查询数据", notes = "根据报告号查询数据")
     @ApiImplicitParam(name = "reportNo", value = "报告号", paramType = "body", dataType = "list")
     @PostMapping("/synResultInfos")
     public List<PhysChemOrderInner> synResultInfos(@RequestBody List<String> reportNos){
@@ -231,6 +241,51 @@ public class PhysChemOrderInnerController extends BaseController {
     public List<PhysChemOrderInner>  getListByBatchNo(String batchNo){
         return physChemOrderInnerService.getListByBatchNo(batchNo);
     }
+
+
+
+    @ApiOperation(value = "已同步理化检测委托单审核", notes = "已同步理化检测委托单审核")
+    @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
+    @PostMapping("/auditSnyPhysChemOrder")
+    public CommonResult<Boolean> auditPhysChemOrder(@RequestBody List<String> reportNos, String isAudit,String auditBy){
+        List<PhysChemOrderInner> physChemOrderInners = physChemOrderInnerService.synResultInfos(reportNos);
+        for (PhysChemOrderInner order : physChemOrderInners) {
+            //已同步的委托单才能审核
+            if(!SYNC_STATUS.equals(order.getSyncStatus())){
+                throw new GlobalException("已同步实验数据的委托单才能审核！", ResultCode.FAILED);
+            }
+        }
+        UpdateWrapper<PhysChemOrderInner> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.in("report_no",reportNos)
+                .set("is_audit",isAudit)
+                //退回状态需要重置同步状态和报告生成状态
+                .set(!StringUtils.isNullOrEmpty(isAudit)&&isAudit.equals("2"),"sync_status",NO_SYNC_STATUS)
+                .set(!StringUtils.isNullOrEmpty(isAudit)&&isAudit.equals("2"),"report_status",NO_REPORT_STATUS)
+                .set("audit_time",new Date())
+                .set("audit_by",auditBy);
+        return CommonResult.success(physChemOrderInnerService.update(updateWrapper));
+    }
+
+    @ApiOperation(value = "已审核委托单合格判定", notes = "已审核委托单合格判定")
+    @ApiImplicitParam(name = "reportNos", value = "报告号", required = true, paramType = "body", dataType = "list")
+    @PostMapping("/isStandard")
+    public CommonResult<Boolean> isStandard(@RequestBody List<String> reportNos, String isStandard,String standardBy){
+        List<PhysChemOrderInner> physChemOrderInners = physChemOrderInnerService.synResultInfos(reportNos);
+        for (PhysChemOrderInner order : physChemOrderInners) {
+            //以审核的才能进行合格判定
+            if(NO_AUDIT_STATUS.equals(order.getIsAudit())){
+                throw new GlobalException("以审核的委托单才能进行合格判定！", ResultCode.FAILED);
+            }
+        }
+        UpdateWrapper<PhysChemOrderInner> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.in("report_no",reportNos)
+                .set("is_standard",isStandard)
+                .set("standard_time",new Date())
+                .set("standard_by",standardBy);
+        return CommonResult.success(physChemOrderInnerService.update(updateWrapper));
+    }
+
+
 
 
 }

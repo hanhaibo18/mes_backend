@@ -281,8 +281,12 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                     break;
             }
             queryProcess.setOptState(stringBuffer.toString());
-            Integer state = trackAssignMapper.isDispatching(queryProcess.getId());
-            if (null != state) {
+            List<Assign> assignList = trackAssignMapper.isDispatching(queryProcess.getId());
+            boolean state = false;
+            for (Assign assign : assignList) {
+                state = assign.getState() == 2;
+            }
+            if (state) {
                 queryProcess.setIsDispatching("是");
             } else {
                 queryProcess.setIsDispatching("否");
