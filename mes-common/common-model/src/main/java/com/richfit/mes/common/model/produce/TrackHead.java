@@ -399,15 +399,15 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "下工序车间", dataType = "String")
-    private String certificate_next_opt_work;
+    private String certificateNextOptWork;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "交出日期", dataType = "String")
-    private String certificate_create_time;
+    private String certificateCreateTime;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "交出人", dataType = "String")
-    private String certificate_create_by;
+    private String certificateCreateBy;
 
 
     /**
