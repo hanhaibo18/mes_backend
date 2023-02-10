@@ -414,9 +414,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                                 item.setProductNo(flow.getProductNo());
                                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                                 //可分配数量
-                                item.setAssignableQty(trackHead.getNumber());
-                                item.setNumber(trackHead.getNumber());
-                                item.setBatchQty(trackHead.getNumber());
+                                item.setAssignableQty(flow.getNumber());
+                                item.setNumber(flow.getNumber());
+                                item.setBatchQty(flow.getNumber());
                                 item.setIsSchedule(0);
                                 item.setIsPrepare(0);
                                 item.setIsNotarize(0);

@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * @author zhiqiang.lu
@@ -31,5 +32,5 @@ public interface HeatTrackAssignService extends IService<Assign> {
      * @Date: 2023/1/5 16:24
      * @return: Assign
      **/
-    Assign assignItem(Assign assign) throws Exception;
+    boolean assignItem(List<Assign> assign) throws Exception;
 }

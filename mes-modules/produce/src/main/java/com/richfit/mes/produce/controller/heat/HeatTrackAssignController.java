@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * @author zhiqiang.lu
@@ -57,7 +58,7 @@ public class HeatTrackAssignController extends BaseController {
     @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "body")
     @PostMapping("/assignItem")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Assign> assignItem(@RequestBody Assign assign) throws Exception {
+    public CommonResult<Boolean> assignItem(@RequestBody List<Assign> assign) throws Exception {
         return CommonResult.success(heatTrackAssignService.assignItem(assign), "操作成功！");
     }
 }

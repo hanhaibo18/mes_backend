@@ -128,67 +128,71 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
 
     /**
      * 功能描述：热工跟单派工
-     *
-     * @param assign
+     * @param assigns
      * @return
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Assign assignItem(Assign assign) throws Exception {
-        try {
-            if (StringUtils.isNullOrEmpty(assign.getTiId())) {
-                throw new GlobalException("未关联工序", ResultCode.FAILED);
-            }
-            TrackItem trackItem = trackItemService.getById(assign.getTiId());
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-            //默认全部派工
-            assign.setQty(trackItem.getAssignableQty());
-            if (null != trackItem) {
-                trackItem.setIsCurrent(1);
-                trackItem.setIsDoing(0);
+    public boolean assignItem(List<Assign> assigns) throws Exception {
+        for (Assign assign : assigns) {
+            try {
+                if (StringUtils.isNullOrEmpty(assign.getTiId())) {
+                    throw new GlobalException("未关联工序", ResultCode.FAILED);
+                }
+                TrackItem trackItem = trackItemService.getById(assign.getTiId());
+                TrackFlow trackFlow = trackHeadFlowService.getById(trackItem.getFlowId());
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 //默认全部派工
-                trackItem.setAssignableQty(0);
-                //已派工
-                trackItem.setIsSchedule(1);
-                trackItem.setDeviceId(assign.getDeviceId());
-                //处理工艺信息
-                trackItem.setRouterInfo(getRouterInfo(trackItem));
-                trackItemService.updateById(trackItem);
-                assign.setTrackNo(trackHead.getTrackNo());
-                if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
-                    //将跟单状态改为在制
-                    trackHead.setStatus("1");
-                    trackHeadService.updateById(trackHead);
-                    UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
-                    update.set("status", "1");
-                    update.eq("id", trackItem.getFlowId());
-                    trackHeadFlowService.update(update);
+                assign.setQty(trackItem.getAssignableQty());
+                if (null != trackItem) {
+                    trackItem.setIsCurrent(1);
+                    trackItem.setIsDoing(0);
+                    //默认全部派工
+                    trackItem.setAssignableQty(0);
+                    //已派工
+                    trackItem.setIsSchedule(1);
+                    trackItem.setDeviceId(assign.getDeviceId());
+                    //处理工艺信息
+                    trackItem.setRouterInfo(getRouterInfo(trackItem));
+                    trackItemService.updateById(trackItem);
+                    assign.setTrackNo(trackHead.getTrackNo());
+                    if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
+                        //将跟单状态改为在制
+                        trackHead.setStatus("1");
+                        trackHeadService.updateById(trackHead);
+                        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                        update.set("status", "1");
+                        update.eq("id", trackItem.getFlowId());
+                        trackHeadFlowService.update(update);
+                    }
+                    assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    if (null != SecurityUtils.getCurrentUser()) {
+                        assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                        assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                    }
+                    CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
+                    assign.setAssignName(user.getData().getEmplName());
+                    assign.setAssignTime(new Date());
+                    assign.setModifyTime(new Date());
+                    assign.setCreateTime(new Date());
+                    assign.setAvailQty(assign.getQty());
+                    assign.setFlowId(trackItem.getFlowId());
+                    assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                    assign.setTrackNo(trackHead.getTrackNo());
+                    assign.setDeviceId(trackItem.getTypeCode());
+                    assign.setDeviceName(trackItem.getTypeName());
+                    assign.setClasses(trackHead.getClasses());
+                    assign.setQty(trackFlow.getNumber());
+                    assign.setAvailQty(trackFlow.getNumber());
+                    //保存派工信息
+                    trackAssignService.save(assign);
                 }
-                assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                if (null != SecurityUtils.getCurrentUser()) {
-                    assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
-                }
-                CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
-                assign.setAssignName(user.getData().getEmplName());
-                assign.setAssignTime(new Date());
-                assign.setModifyTime(new Date());
-                assign.setCreateTime(new Date());
-                assign.setAvailQty(assign.getQty());
-                assign.setFlowId(trackItem.getFlowId());
-                assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                assign.setTrackNo(trackHead.getTrackNo());
-                assign.setDeviceId(trackItem.getTypeCode());
-                assign.setDeviceName(trackItem.getTypeName());
-                assign.setClasses(trackHead.getClasses());
-                //保存派工信息
-                trackAssignService.save(assign);
+            } catch (Exception e) {
+                throw new GlobalException(e.getMessage(), ResultCode.FAILED);
             }
-            return assign;
-        } catch (Exception e) {
-            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+        return true;
     }
 
     /**
