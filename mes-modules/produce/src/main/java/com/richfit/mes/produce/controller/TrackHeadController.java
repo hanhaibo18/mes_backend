@@ -270,7 +270,8 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
                                                           @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                           @ApiParam(value = "条数") @RequestParam(required = false) int limit,
-                                                          @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes) {
+                                                          @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
+                                                          @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(classes)) {
             queryWrapper.ge("classes", classes);
@@ -323,6 +324,14 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
+        }
+        //热工是否绑定工艺
+        if (!StringUtils.isNullOrEmpty(isBindRouter)) {
+            if(isBindRouter.equals(0)){
+                queryWrapper.isNull("router_id");
+            }else{
+                queryWrapper.isNotNull("router_id");
+            }
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
