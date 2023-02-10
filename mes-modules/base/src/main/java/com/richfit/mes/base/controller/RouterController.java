@@ -569,11 +569,12 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "drawNos", value = "图号集合", required = true, paramType = "query", dataType = "list"),
             @ApiImplicitParam(name = "branchCode", value = "车间代码", required = true, paramType = "query", dataType = "string")
     })
-    @GetMapping("/get_by_drawNo")
+    @PostMapping("/get_by_drawNo")
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode) {
         try {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
             DrawingNoUtil.queryIn(queryWrapper, "draw_no", drawNos);
+//            queryWrapper.in("draw_no", drawNos);
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Router> routers = routerService.list(queryWrapper);

@@ -187,7 +187,7 @@ public interface BaseServiceClient {
     List<Operatipon> queryOptByOptNames(@ApiParam(value = "工序字典名称") @RequestBody List<String> optNams,
                                         @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode);
 
-    @GetMapping("/api/base/router/get_by_drawNo")
+    @PostMapping("/api/base/router/get_by_drawNo")
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode);
 
 

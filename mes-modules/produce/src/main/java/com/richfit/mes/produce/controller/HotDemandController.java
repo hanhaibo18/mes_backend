@@ -143,12 +143,12 @@ public class HotDemandController extends BaseController {
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(hotDemandParam.getSubmitEndTime() == null ? "" : hotDemandParam.getSubmitEndTime().toString())) {
             queryWrapper.le("submit_order_time", DateUtils.getEndOfDay(hotDemandParam.getSubmitEndTime()));
         }
-        //排序工具
-        OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
 
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
+         //排序工具
+        OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
@@ -231,7 +231,7 @@ public class HotDemandController extends BaseController {
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("is_long_period is null");
+        queryWrapper.apply("is_long_period is null or is_long_period=0");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
@@ -345,7 +345,7 @@ public class HotDemandController extends BaseController {
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.and(wapper -> wapper.eq("is_exist_repertory", 0).or().eq("is_exist_repertory", null));
+        queryWrapper.apply("(is_exist_repertory=0 or is_exist_repertory is null)");
         //查询出没有库存的数据
         List<HotDemand> list = hotDemandService.list(queryWrapper);
         for (HotDemand hotDemand : list) {
@@ -385,6 +385,7 @@ public class HotDemandController extends BaseController {
         if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
+        List<Router> data = byDrawNo.getData();
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
 

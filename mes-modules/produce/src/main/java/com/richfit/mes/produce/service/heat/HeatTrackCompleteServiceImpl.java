@@ -305,7 +305,9 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             Assign nextItemAssign = new Assign();
             BeanUtils.copyProperties(assign,nextItemAssign,new String[]{"id"});
             nextItemAssign.setTiId(trackItemEntity.getId());
-            heatTrackAssignService.assignItem(nextItemAssign);
+            ArrayList<Assign> assigns = new ArrayList<>();
+            assigns.add(nextItemAssign);
+            heatTrackAssignService.assignItem(assigns);
         }
         return update;
     }
