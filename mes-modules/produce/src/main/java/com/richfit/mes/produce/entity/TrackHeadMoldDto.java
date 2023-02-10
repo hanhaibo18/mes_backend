@@ -1,10 +1,17 @@
 package com.richfit.mes.produce.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.richfit.mes.common.model.produce.PhysChemOrder;
+import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: TrackHeadMoldDto.java
@@ -251,4 +258,175 @@ public class TrackHeadMoldDto {
      */
     @ApiModelProperty(value = "完工日期")
     private Date completionDate;
+
+
+    @ApiModelProperty(value = "跟单工序")
+    @TableField(exist = false)
+    private List<TrackItem> trackItems;
+
+    @ApiModelProperty(value = "物料产品信息列表，用于根据物料信息生产跟单")
+    @TableField(exist = false)
+    private List<Map> storeList;
+
+
+    /**
+     * 跟单分流表开始
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品来源")
+    private String productSource;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品来源名称")
+    private String productSourceName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "分流id", dataType = "String")
+    private String flowId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "完工资料附件")
+    private String completionData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检验记录卡审核状态  Y已审核 N审核未通过")
+    private String isExamineCardData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检验记录卡生成状态  Y已生成")
+    private String isCardData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检验记录卡文件")
+    private String cardData;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单id")
+    private String trackHeadId;
+    /**
+     * 跟单分流表结束
+     */
+    /**
+     * 跟单合格证
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序产品编码")
+    private String itemProductNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序产品数量")
+    private String itemNumber;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序顺序")
+    private String sequenceOrderBy;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序名称")
+    private String optName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序id")
+    private String optId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序id")
+    private String tiId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String finalProductNo;
+    /**
+     * 跟单合格证结束
+     */
+
+    /**
+     * 跟单台账料单信息
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "料单创建日期", dataType = "Date")
+    private Date storeCreateTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "料单创建人", dataType = "String")
+    private String storeCreateBy;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交来日期,入库时间", dataType = "Date")
+    private Date storeInTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交来日期，出库时间", dataType = "Date")
+    private Date storeOutTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "上工序，物料来源", dataType = "String")
+    private String storeMaterialSource;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单重", dataType = "String")
+    private String storeWeight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String storeTexture;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零件编号", dataType = "String")
+    private String storeWorkblankNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "炉号", dataType = "String")
+    private String storeBatchNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "下工序车间", dataType = "String")
+    private String certificateNextOptWork;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交出日期", dataType = "String")
+    private String certificateCreateTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "交出人", dataType = "String")
+    private String certificateCreateBy;
+
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "委托单信息")
+    private PhysChemOrder physChemOrder;
+
+
+    @TableId(type = IdType.ASSIGN_UUID)
+    protected String id;
+
+    /**
+     * 创建者
+     */
+    @TableField(fill = FieldFill.INSERT)
+    protected String createBy;
+
+    /**
+     * 创建日期
+     */
+    @TableField(fill = FieldFill.INSERT)
+    protected Date createTime;
+
+    /**
+     * 更新者
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected String modifyBy;
+
+    /**
+     * 更新日期
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected Date modifyTime;
+
+    /**
+     * 备注字段
+     */
+    protected String remark;
+
 }
