@@ -327,10 +327,10 @@ public class TrackHeadController extends BaseController {
         }
         //热工是否绑定工艺
         if (!StringUtils.isNullOrEmpty(isBindRouter)) {
-            if(isBindRouter.equals(0)){
-                queryWrapper.isNull("router_id");
+            if(isBindRouter.equals("0")){
+                queryWrapper.and(wrapper->wrapper.isNull("router_id").or(wrapper2->wrapper2.eq("router_id","")));
             }else{
-                queryWrapper.isNotNull("router_id");
+                queryWrapper.and(wrapper->wrapper.isNotNull("router_id").or(wrapper2->wrapper2.ne("router_id","")));
             }
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
