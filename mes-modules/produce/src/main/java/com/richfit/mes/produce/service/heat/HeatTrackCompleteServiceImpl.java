@@ -60,6 +60,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private SystemServiceClient systemServiceClient;
     @Resource
     private TrackHeadFlowService trackFlowService;
+    @Autowired
+    private CodeRuleService codeRuleService;
 
 
     @Override
@@ -354,6 +356,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         return itemCompleteMap.keySet().size();
     }
 
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
 
     /**
      * 功能描述: 热工报工开工
@@ -369,6 +373,22 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
         prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
         prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUserId());
+
+        //设置开工
+        List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_id", prechargeFurnaceId));
+        List<String> headIds = items.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
+        List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        //将跟单状态改为在制
+        UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+        trackHeadUpdateWrapper.set("status","1")
+                .eq("status","0")
+                .in("id",headIds);
+        trackHeadService.update(trackHeadUpdateWrapper);
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.set("status", "1")
+                .eq("status","0")
+                .in("id", flowIds);
+        trackHeadFlowService.update(update);
         return prechargeFurnaceService.updateById(prechargeFurnace);
     }
 
@@ -607,6 +627,32 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
         return stringObjectHashMap;
     }
+
+
+    /**
+     * 获取报工炉号
+     * @param deviceName
+     * @return
+     */
+    @Override
+    public String getFurnaceNo(String deviceName,String branchCode,String code){
+        //获取当前流水号
+        CodeRule codeValue = codeRuleService.gerCode(code, null, null, null, branchCode);
+        //设备编码
+        String furnaceNo = "";
+        //处理设备名称
+        if(deviceName.contains("-")){
+            String zm = deviceName.split("-")[1].replaceAll("[^(a-zA-Z)]","" );  //取出字母
+
+            String number = deviceName.split("-")[1].replaceAll("[^(0-9)]", "");   //取出数字
+            furnaceNo = zm+"-"+number+"-";
+        }
+        furnaceNo = furnaceNo+codeValue.getCurValue();
+
+        return furnaceNo;
+    }
+
+
 
 
 }

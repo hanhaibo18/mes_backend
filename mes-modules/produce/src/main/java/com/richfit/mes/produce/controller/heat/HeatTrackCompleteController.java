@@ -241,5 +241,14 @@ public class HeatTrackCompleteController extends BaseController {
         return CommonResult.success(heatTrackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo));
     }
 
+    /**
+     * @return
+     */
+    @ApiOperation(value = "热工报工获取炉号（设备名称不带DZ）", notes = "热工报工获取炉号")
+    @GetMapping("/getFurnaceNo")
+    public CommonResult<String> getFurnaceNo(String deviceName,String branchCode,String code){
+        return CommonResult.success(heatTrackCompleteService.getFurnaceNo(deviceName, branchCode, code));
+    }
+
 
 }
