@@ -684,91 +684,87 @@ public class TrackCheckController extends BaseController {
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> qualityTesting(@RequestBody List<TrackCheck> trackCheckList) {
         for (TrackCheck trackCheck : trackCheckList) {
-            try {
-                if (StringUtils.isNullOrEmpty(trackCheck.getThId())) {
-                    return CommonResult.failed("关联工序ID编码不能为空！");
-                }
-                if (StringUtils.isNullOrEmpty(trackCheck.getTiId())) {
-                    return CommonResult.failed("关联跟单ID编码不能为空！");
-                }
-                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-                trackCheck.setTenantId(tenantId);
-                trackCheck.setDealTime(new Date());
-                TrackItem item = trackItemService.getById(trackCheck.getTiId());
-                //处理下工序
-                if (!StringUtils.isNullOrEmpty(trackCheck.getNextProcess())) {
-                    saveNextProcess(trackCheck.getNextProcess(), trackCheck.getTiId(), trackCheck.getProcessMode());
-                }
-                item.setIsQualityComplete(1);
-                item.setQualityCheckBy(SecurityUtils.getCurrentUser().getUsername());
-                item.setQualityCompleteTime(new Date());
-                item.setQualityQty(trackCheck.getQualify());
+            if (StringUtils.isNullOrEmpty(trackCheck.getThId())) {
+                return CommonResult.failed("关联工序ID编码不能为空！");
+            }
+            if (StringUtils.isNullOrEmpty(trackCheck.getTiId())) {
+                return CommonResult.failed("关联跟单ID编码不能为空！");
+            }
+            String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+            trackCheck.setTenantId(tenantId);
+            trackCheck.setDealTime(new Date());
+            TrackItem item = trackItemService.getById(trackCheck.getTiId());
+            //处理下工序
+            if (!StringUtils.isNullOrEmpty(trackCheck.getNextProcess())) {
+                saveNextProcess(trackCheck.getNextProcess(), trackCheck.getTiId(), trackCheck.getProcessMode());
+            }
+            item.setIsQualityComplete(1);
+            item.setQualityCheckBy(SecurityUtils.getCurrentUser().getUsername());
+            item.setQualityCompleteTime(new Date());
+            item.setQualityQty(trackCheck.getQualify());
 //                item.setQualityUnqty(item.getBatchQty() - trackCheck.getQualify());
-                item.setQualityUnqty(trackCheck.getUnqualify());
-                //查询质检规则
-                CommonResult<QualityInspectionRules> rules = systemServiceClient.queryQualityInspectionRulesById(trackCheck.getResult());
-                //通过规则是否下一步控制已质检是否显示
-                item.setRuleId(rules.getData().getId());
-                item.setRuleName(rules.getData().getStateName());
-                if (1 == rules.getData().getIsNext()) {
-                    trackCheck.setIsShow("1");
-                    item.setIsRecheck("0");
-                    item.setIsScheduleCompleteShow(1);
-                } else {
-                    trackCheck.setIsShow("0");
-                    item.setIsRecheck("1");
-                    item.setIsScheduleCompleteShow(0);
-                }
-                if (1 == rules.getData().getIsCancellation()) {
-                    //调用报废流程
-                    trackHeadService.trackHeadUseless(item.getTrackHeadId());
-                }
-                trackItemService.updateById(item);
-                trackCheck.setFlowId(item.getFlowId());
-                //调用TrackHeadService 获取图号
-                TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
-                trackCheck.setDrawingNo(trackHead.getDrawingNo());
-                if (!StringUtils.isNullOrEmpty(trackCheck.getId())) {
-                    trackCheck.setModifyTime(new Date());
-                    trackCheckService.updateById(trackCheck);
-                } else {
-                    trackCheck.setCreateTime(new Date());
-                    trackCheck.setModifyTime(new Date());
-                    trackCheckService.save(trackCheck);
-                }
-                //控制是否下一步
-                if (1 == rules.getData().getIsNext() && 1 == item.getIsCurrent()) {
-                    Map<String, String> map = new HashMap<>(3);
-                    map.put(IdEnum.FLOW_ID.getMessage(), item.getFlowId());
-                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackCheck.getTiId());
-                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackCheck.getThId());
-                    publicService.publicUpdateState(map, PublicCodeEnum.QUALITY_TESTING.getCode());
-                }
-                item.setIsPrepare(rules.getData().getIsGiveTime());
-                UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.eq("ti_id", item.getId()).set("is_prepare", rules.getData().getIsGiveTime());
-                trackCompleteService.update(updateWrapper);
-                //处理审核详情信息
-                if (null != trackCheck.getCheckDetailsList()) {
-                    for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
-                        trackCheckDetail.setTenantId(tenantId);
-                        trackCheckDetail.setBranchCode(trackCheck.getBranchCode());
-                        trackCheckDetail.setFlowId(item.getFlowId());
-                        trackCheckDetail.setTrackCheckId(trackCheck.getId());
-                        if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
-                            List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
-                            if (!list.isEmpty()) {
-                                trackCheckDetailService.updateById(trackCheckDetail);
-                            } else {
-                                trackCheckDetailService.save(trackCheckDetail);
-                            }
-                        } else {
+            item.setQualityUnqty(trackCheck.getUnqualify());
+            //查询质检规则
+            CommonResult<QualityInspectionRules> rules = systemServiceClient.queryQualityInspectionRulesById(trackCheck.getResult());
+            //通过规则是否下一步控制已质检是否显示
+            item.setRuleId(rules.getData().getId());
+            item.setRuleName(rules.getData().getStateName());
+            if (1 == rules.getData().getIsNext()) {
+                trackCheck.setIsShow("1");
+                item.setIsRecheck("0");
+                item.setIsScheduleCompleteShow(1);
+            } else {
+                trackCheck.setIsShow("0");
+                item.setIsRecheck("1");
+                item.setIsScheduleCompleteShow(0);
+            }
+            if (1 == rules.getData().getIsCancellation()) {
+                //调用报废流程
+                trackHeadService.trackHeadUseless(item.getTrackHeadId());
+            }
+            trackItemService.updateById(item);
+            trackCheck.setFlowId(item.getFlowId());
+            //调用TrackHeadService 获取图号
+            TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
+            trackCheck.setDrawingNo(trackHead.getDrawingNo());
+            if (!StringUtils.isNullOrEmpty(trackCheck.getId())) {
+                trackCheck.setModifyTime(new Date());
+                trackCheckService.updateById(trackCheck);
+            } else {
+                trackCheck.setCreateTime(new Date());
+                trackCheck.setModifyTime(new Date());
+                trackCheckService.save(trackCheck);
+            }
+            //控制是否下一步
+            if (1 == rules.getData().getIsNext() && 1 == item.getIsCurrent()) {
+                Map<String, String> map = new HashMap<>(3);
+                map.put(IdEnum.FLOW_ID.getMessage(), item.getFlowId());
+                map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackCheck.getTiId());
+                map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackCheck.getThId());
+                publicService.publicUpdateState(map, PublicCodeEnum.QUALITY_TESTING.getCode());
+            }
+            item.setIsPrepare(rules.getData().getIsGiveTime());
+            UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("ti_id", item.getId()).set("is_prepare", rules.getData().getIsGiveTime());
+            trackCompleteService.update(updateWrapper);
+            //处理审核详情信息
+            if (null != trackCheck.getCheckDetailsList()) {
+                for (TrackCheckDetail trackCheckDetail : trackCheck.getCheckDetailsList()) {
+                    trackCheckDetail.setTenantId(tenantId);
+                    trackCheckDetail.setBranchCode(trackCheck.getBranchCode());
+                    trackCheckDetail.setFlowId(item.getFlowId());
+                    trackCheckDetail.setTrackCheckId(trackCheck.getId());
+                    if (StringUtils.isNullOrEmpty(trackCheckDetail.getId())) {
+                        List<TrackCheckDetail> list = trackCheckDetailService.list(new QueryWrapper<TrackCheckDetail>().eq("ti_id", trackCheckDetail.getTiId()).eq("check_id", trackCheckDetail.getCheckId()));
+                        if (!list.isEmpty()) {
                             trackCheckDetailService.updateById(trackCheckDetail);
+                        } else {
+                            trackCheckDetailService.save(trackCheckDetail);
                         }
+                    } else {
+                        trackCheckDetailService.updateById(trackCheckDetail);
                     }
                 }
-            } catch (Exception e) {
-                return CommonResult.failed(e.getMessage());
             }
         }
         return CommonResult.success(Boolean.TRUE);

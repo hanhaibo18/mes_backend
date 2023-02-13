@@ -73,6 +73,8 @@ public class HotDemandController extends BaseController {
         hotDemand.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         hotDemand.setSubmitOrderTime(new Date());
         hotDemand.setSubmitById(currentUser.getUserId());
+        hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+        hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
         boolean save = hotDemandService.save(hotDemand);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);
@@ -141,12 +143,12 @@ public class HotDemandController extends BaseController {
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(hotDemandParam.getSubmitEndTime() == null ? "" : hotDemandParam.getSubmitEndTime().toString())) {
             queryWrapper.le("submit_order_time", DateUtils.getEndOfDay(hotDemandParam.getSubmitEndTime()));
         }
-        //排序工具
-        OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
 
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
+         //排序工具
+        OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
@@ -162,6 +164,15 @@ public class HotDemandController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "导入需求提报", notes = "根据Excel文档导入导入需求提报")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/import_demand")
+    public CommonResult importExcelDemand(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
+        return hotDemandService.importDemand(file, branchCode);
+    }
 
     @ApiOperation(value = "删除需求提报", notes = "删除需求提报")
     @ApiImplicitParams({
@@ -180,15 +191,6 @@ public class HotDemandController extends BaseController {
         return CommonResult.failed();
     }
 
-    @ApiOperation(value = "导入需求提报", notes = "根据Excel文档导入导入需求提报")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path"),
-            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
-    })
-    @PostMapping("/import_demand")
-    public CommonResult importExcelDemand(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
-        return hotDemandService.importDemand(file, branchCode);
-    }
 
     @ApiOperation(value = "需求提报与撤回", notes = "需求提报与撤回")
     @ApiImplicitParams({
@@ -229,7 +231,7 @@ public class HotDemandController extends BaseController {
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("is_long_period is null");
+        queryWrapper.apply("is_long_period is null or is_long_period=0");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
@@ -343,7 +345,7 @@ public class HotDemandController extends BaseController {
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.and(wapper -> wapper.eq("is_exist_repertory", 0).or().eq("is_exist_repertory", null));
+        queryWrapper.apply("(is_exist_repertory=0 or is_exist_repertory is null)");
         //查询出没有库存的数据
         List<HotDemand> list = hotDemandService.list(queryWrapper);
         for (HotDemand hotDemand : list) {
@@ -383,6 +385,7 @@ public class HotDemandController extends BaseController {
         if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
+        List<Router> data = byDrawNo.getData();
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
 
@@ -577,5 +580,27 @@ public class HotDemandController extends BaseController {
         planNodeService.saveBatch(planNodes);
         return CommonResult.success("操作成功");
     }
+
+
+    @ApiOperation(value = "设置优先级", notes = "设置优先级")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "priority", value = "优先级 :高 ,中, 低", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/set_priority")
+    public CommonResult setPriority(@RequestBody List<String> idList, String priority) {
+
+        UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
+        updateWrapper.set("priority", priority);//优先级: 高 ,中, 低
+        updateWrapper.in("id", idList);
+        boolean update = hotDemandService.update(updateWrapper);
+        if (update) {
+            return CommonResult.success(ResultCode.SUCCESS);
+        }else {
+            return CommonResult.failed();
+        }
+    }
+
+
 
 }

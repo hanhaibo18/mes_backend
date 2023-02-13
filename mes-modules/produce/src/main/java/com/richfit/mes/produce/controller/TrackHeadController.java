@@ -251,6 +251,9 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
 
                                                           @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+
+                                                          @ApiParam(value = "订单编号") @RequestParam(required = false) String productionOrder,
+
                                                           @ApiParam(value = "工作计划id") @RequestParam(required = false) String workPlanId,
                                                           @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
                                                           @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
@@ -267,7 +270,8 @@ public class TrackHeadController extends BaseController {
                                                           @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
                                                           @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                           @ApiParam(value = "条数") @RequestParam(required = false) int limit,
-                                                          @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes) {
+                                                          @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
+                                                          @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(classes)) {
             queryWrapper.ge("classes", classes);
@@ -287,6 +291,9 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
+        }
+        if (!StringUtils.isNullOrEmpty(productionOrder)) {
+            queryWrapper.like("production_order", productionOrder);
         }
         if (!StringUtils.isNullOrEmpty(workPlanId)) {
             queryWrapper.like("work_plan_id", workPlanId);
@@ -317,6 +324,14 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
+        }
+        //热工是否绑定工艺
+        if (!StringUtils.isNullOrEmpty(isBindRouter)) {
+            if(isBindRouter.equals("0")){
+                queryWrapper.and(wrapper->wrapper.isNull("router_id").or(wrapper2->wrapper2.eq("router_id","")));
+            }else{
+                queryWrapper.and(wrapper->wrapper.isNotNull("router_id").or(wrapper2->wrapper2.ne("router_id","")));
+            }
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);

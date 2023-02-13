@@ -21,6 +21,19 @@ import java.util.Map;
 public interface TrackCompleteService extends IService<TrackComplete> {
     IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query);
 
+    /**
+     * 功能描述: 工时人员统计
+     *
+     * @param trackNo
+     * @param startTime
+     * @param endTime
+     * @param branchCode
+     * @param workNo
+     * @param userId
+     * @Author: xinYu.hou
+     * @Date: 2023/2/10 15:17
+     * @return: Map<String, Object>
+     **/
     Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId);
 
     List<TrackComplete> queryList(String tiId, String branchCode, String order, String orderCol);

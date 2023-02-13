@@ -95,7 +95,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             TimeUtil.queryStartTime(queryWrapper, startTime);
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            TimeUtil.queryEndTime(queryWrapper, startTime);
+            TimeUtil.queryEndTime(queryWrapper, endTime);
         }
         //获取当前登录用户角色列表
         List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());

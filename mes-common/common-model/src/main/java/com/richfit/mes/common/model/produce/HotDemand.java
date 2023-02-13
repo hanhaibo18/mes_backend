@@ -228,5 +228,11 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
     @ApiModelProperty(value = "是否生成过关键计划节点0 未生成  1已生成", dataType = "Integer")
     private Integer isExistPlanNode;
 
+    /**
+     * 优先级
+     */
+    @ApiModelProperty(value = "优先级: 高 ,中, 低", dataType = "String")
+    private String priority;
+
     private static final long serialVersionUID = 1L;
 }

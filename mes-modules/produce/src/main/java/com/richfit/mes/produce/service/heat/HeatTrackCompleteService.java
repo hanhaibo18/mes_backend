@@ -69,6 +69,8 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
      */
     Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo);
 
+    String getFurnaceNo(String deviceName,String branchCode,String code);
+
 
 
 }

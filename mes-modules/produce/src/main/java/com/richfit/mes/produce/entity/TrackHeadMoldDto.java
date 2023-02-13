@@ -1,9 +1,11 @@
-package com.richfit.mes.common.model.produce;
+package com.richfit.mes.produce.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.richfit.mes.common.core.base.BaseEntity;
-import io.swagger.annotations.ApiModel;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.richfit.mes.common.model.produce.PhysChemOrder;
+import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -12,96 +14,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author zhiqiang.lu
- * @Description 跟单
+ * @ClassName: TrackHeadMoldDto.java
+ * @Author: Hou XinYu
+ * @Description: Head和Mold 视图
+ * @CreateTime: 2023年02月09日 17:03:00
  */
 @Data
-@ApiModel(value = "跟单管理")
-public class TrackHead extends BaseEntity<TrackHead> {
-
-    private static final long serialVersionUID = 6336423092552908350L;
-
-    /**
-     * 跟单类型（机加）
-     */
-    public static final String TRACKHEAD_CLASSES_JJ = "1";
-
-    /**
-     * 跟单类型（装配）
-     */
-    public static final String TRACKHEAD_CLASSES_ZP = "2";
-
-    /**
-     * 跟单类型（热处理）
-     */
-    public static final String TRACKHEAD_CLASSES_RCL = "3";
-
-    /**
-     * 跟单类型（钢结构）
-     */
-    public static final String TRACKHEAD_CLASSES_GJG = "4";
-
-    /**
-     * 单件批量
-     */
-    public static final String TRACKHEAD_BATCH_YES = "Y";
-
-    /**
-     * 非单件批量
-     */
-    public static final String TRACKHEAD_BATCH_NO = "N";
-
-
-    /**
-     * 初始跟单
-     */
-    public static final String STATUS_0 = "0";
-
-    /**
-     * 跟单在制
-     */
-    public static final String STATUS_1 = "1";
-
-
-    /**
-     * 跟单完工
-     */
-    public static final String STATUS_2 = "2";
-
-    /**
-     * 打印跟单
-     */
-    public static final String STATUS_4 = "4";
-
-
-    /**
-     * 作废跟单
-     */
-    public static final String STATUS_5 = "5";
-
-
-    /**
-     * 生产完工资料
-     */
-    public static final String STATUS_8 = "8";
-
-
-    /**
-     * 已交库
-     */
-    public static final String STATUS_9 = "9";
-
-
-    /**
-     * 单价
-     */
-    public static final String TRACK_TYPE_0 = "0";
-
-    /**
-     * 批次
-     */
-    public static final String TRACK_TYPE_1 = "1";
-
+public class TrackHeadMoldDto {
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
@@ -174,13 +93,8 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "试棒跟单编号")
     private String testBarTrackNo;
 
-    @ApiModelProperty(value = "合格证号")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private String certificateNo;
-
     @ApiModelProperty(value = "合同编号")
     private String contractNo;
-
 
     @ApiModelProperty(value = "组织机构编号")
     private String branchCode;
@@ -190,15 +104,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     @ApiModelProperty(value = "跟单完工时间")
     private Date completeTime;
-
-    @ApiModelProperty(value = "跟单工序")
-    @TableField(exist = false)
-    private List<TrackItem> trackItems;
-
-    @ApiModelProperty(value = "物料产品信息列表，用于根据物料信息生产跟单")
-    @TableField(exist = false)
-    private List<Map> storeList;
-
 
     @ApiModelProperty(value = "零部件名称", dataType = "String")
     private String materialName;
@@ -242,10 +147,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "项目bomID", dataType = "String")
     private String projectBomId;
 
-    @TableField(exist = false)
-    @ApiModelProperty(value = "项目名称")
-    private String projectName;
-
     @ApiModelProperty(value = "关联项目BOM的workno", dataType = "String")
     private String projectBomWork;
 
@@ -267,7 +168,6 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "完成数量", dataType = "Integer")
     private Integer numberComplete;
 
-
     @ApiModelProperty(value = "原跟单id", dataType = "String")
     private String originalTrackId;
 
@@ -286,6 +186,88 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     @ApiModelProperty(value = "跟单附件id，多个用，隔开", dataType = "String")
     private String filesId;
+
+    /**
+     * 模具类别(0=制新,1=返修)
+     */
+    @ApiModelProperty(value = "模具类别")
+    private Integer moldType;
+
+    /**
+     * 模具材质(0=木质,1=气化模)
+     */
+    @ApiModelProperty(value = "模具材质")
+    private Integer dieMaterial;
+
+    /**
+     * 实样数量
+     */
+    @ApiModelProperty(value = "实样数量")
+    private Integer realSamplesQty;
+
+    /**
+     * 芯盒数量
+     */
+    @ApiModelProperty(value = "芯盒数量")
+    private Integer coreBoxQty;
+
+    /**
+     * 浇道数量
+     */
+    @ApiModelProperty(value = "浇道数量")
+    private Integer pouringGateQty;
+
+    /**
+     * 冒口数量
+     */
+    @ApiModelProperty(value = "冒口数量")
+    private Integer feedHeadQty;
+
+    /**
+     * 型板数量
+     */
+    @ApiModelProperty(value = "型板数量")
+    private Integer templateQty;
+
+    /**
+     * 胎垫数量
+     */
+    @ApiModelProperty(value = "胎垫数量")
+    private Integer tiresQty;
+
+    /**
+     * 活块数量
+     */
+    @ApiModelProperty(value = "活块数量")
+    private Integer dieInsertQty;
+
+    /**
+     * 冷铁数量
+     */
+    @ApiModelProperty(value = "冷铁数量")
+    private Integer chillingBlockQty;
+
+    /**
+     * 刮板数量
+     */
+    @ApiModelProperty(value = "刮板数量")
+    private Integer scraperQty;
+
+    /**
+     * 完工日期
+     */
+    @ApiModelProperty(value = "完工日期")
+    private Date completionDate;
+
+
+    @ApiModelProperty(value = "跟单工序")
+    @TableField(exist = false)
+    private List<TrackItem> trackItems;
+
+    @ApiModelProperty(value = "物料产品信息列表，用于根据物料信息生产跟单")
+    @TableField(exist = false)
+    private List<Map> storeList;
+
 
     /**
      * 跟单分流表开始
@@ -410,18 +392,41 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String certificateCreateBy;
 
 
-    /**
-     * 无用属性
-     */
-
-//    private Integer startNo;
-//    private Integer endNo;
-//    private String suffixNo;
-//    private String userMaterialNo;
-
-
     @TableField(exist = false)
     @ApiModelProperty(value = "委托单信息")
     private PhysChemOrder physChemOrder;
+
+
+    @TableId(type = IdType.ASSIGN_UUID)
+    protected String id;
+
+    /**
+     * 创建者
+     */
+    @TableField(fill = FieldFill.INSERT)
+    protected String createBy;
+
+    /**
+     * 创建日期
+     */
+    @TableField(fill = FieldFill.INSERT)
+    protected Date createTime;
+
+    /**
+     * 更新者
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected String modifyBy;
+
+    /**
+     * 更新日期
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected Date modifyTime;
+
+    /**
+     * 备注字段
+     */
+    protected String remark;
 
 }

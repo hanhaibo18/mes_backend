@@ -149,12 +149,20 @@ public class HeatTrackCompleteController extends BaseController {
         for (TrackComplete complete : stepList) {
             List<CompleteUserInfoDto> stepUserInfos = new ArrayList<>();
             List<TrackComplete> completes1 = stepGroup.get(complete.getStepGroupId());
-            for (TrackComplete trackComplete : completes1) {
-                CompleteUserInfoDto completeUserInfoDto = new CompleteUserInfoDto();
-                BeanUtils.copyProperties(trackComplete, completeUserInfoDto);
-                stepUserInfos.add(completeUserInfoDto);
+            //改步骤下的报工信息 按照跟单工序分组
+            Map<String, List<TrackComplete>> itemStepCompleteInfos = completes1.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
+            //查询步骤的报工人员（此步骤下的跟单工序 报工信息一直  所以取第一个的就行）
+            if(itemStepCompleteInfos.size()>0){
+                for (Map.Entry<String, List<TrackComplete>> itemStepCompleteInfo : itemStepCompleteInfos.entrySet()) {
+                    for (TrackComplete trackComplete : itemStepCompleteInfo.getValue()) {
+                        CompleteUserInfoDto completeUserInfoDto = new CompleteUserInfoDto();
+                        BeanUtils.copyProperties(trackComplete, completeUserInfoDto);
+                        stepUserInfos.add(completeUserInfoDto);
+                    }
+                    complete.setUserInfos(stepUserInfos);
+                    break;
+                }
             }
-            complete.setUserInfos(stepUserInfos);
         }
 
         stepList.sort((t1, t2) -> t1.getCreateTime().compareTo(t2.getCreateTime()));
@@ -231,6 +239,15 @@ public class HeatTrackCompleteController extends BaseController {
     @GetMapping("/pageOptimize")
     public CommonResult<Map<String, Object>> pageOptimize(String trackNo, String startTime, String endTime, String branchCode, String workNo) {
         return CommonResult.success(heatTrackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo));
+    }
+
+    /**
+     * @return
+     */
+    @ApiOperation(value = "热工报工获取炉号（设备名称不带DZ）", notes = "热工报工获取炉号")
+    @GetMapping("/getFurnaceNo")
+    public CommonResult<String> getFurnaceNo(String deviceName,String branchCode,String code){
+        return CommonResult.success(heatTrackCompleteService.getFurnaceNo(deviceName, branchCode, code));
     }
 
 
