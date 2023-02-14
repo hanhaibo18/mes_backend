@@ -250,5 +250,14 @@ public class HeatTrackCompleteController extends BaseController {
         return CommonResult.success(heatTrackCompleteService.getFurnaceNo(deviceName, branchCode, code));
     }
 
+    /**
+     * @return
+     */
+    @ApiOperation(value = "热工报工步骤回滚", notes = "热工报工步骤回滚")
+    @GetMapping("/rollBack")
+    public CommonResult<Boolean> rollBack(Long prechargeFurnaceId){
+        return CommonResult.success(heatTrackCompleteService.rollBack(prechargeFurnaceId));
+    }
+
 
 }
