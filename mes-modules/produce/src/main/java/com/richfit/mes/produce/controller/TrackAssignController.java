@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -25,6 +26,7 @@ import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.Api;
@@ -691,6 +693,8 @@ public class TrackAssignController extends BaseController {
 
     @Autowired
     private InspectionPowerService inspectionPowerService;
+    @Autowired
+    private PrechargeFurnaceService prechargeFurnaceService;
 
     @ApiOperation(value = "删除派工", notes = "根据id删除派工")
     @ApiImplicitParam(name = "ids", value = "ID", required = true, dataType = "String[]", paramType = "query")
@@ -746,6 +750,25 @@ public class TrackAssignController extends BaseController {
                     QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
                     inspectionPowerQueryWrapper.eq("item_id", assign.getTiId());
                     inspectionPowerService.remove(inspectionPowerQueryWrapper);
+                }
+                //热工预装炉处理
+                if(!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())){
+                    if(("1").equals(trackItem.getIsDoing())){
+                        return CommonResult.failed("工序【"+trackItem.getOptName()+"】已开工，无法回滚！");
+                    }
+                    QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
+                    wrapper.eq("precharge_furnace_id",trackItem.getPrechargeFurnaceId());
+                    List<TrackItem> list = trackItemService.list(wrapper);
+                    if(list.size()==1){
+                        //预装炉只有当前派工工序  回滚把预装炉删除
+                        prechargeFurnaceService.removeById(trackItem.getPrechargeFurnaceId());
+                    }else{
+                        //预装炉有其他的工序时  仅把此工序移除预装炉
+                        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+                        trackItemUpdateWrapper.eq("id",trackItem.getId())
+                                .set("precharge_furnace_id",null);
+                        trackItemService.update(trackItemUpdateWrapper);
+                    }
                 }
             }
         }
