@@ -447,8 +447,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackHead.setRouterId(routerId);
                 trackHead.setRouterVer(routerVer);
                 this.updateById(trackHead);
-                //用于在跟单存在第一道工序自动派工的情况
-                autoSchedule(trackHead);
+                //用于在跟单存在第一道工序自动派工的情况  2023/2/15 取消创建跟单第一道工序的自动派工
+                //autoSchedule(trackHead);
             }
 
         }
