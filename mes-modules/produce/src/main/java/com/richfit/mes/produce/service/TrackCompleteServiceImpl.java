@@ -167,16 +167,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         if (quality || schedule) {
                             continue;
                         }
-                        //已质检 校验不合格是否给工时
-                        if (trackItem.getIsQualityComplete() == 1) {
-                            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
-                            queryWrapperCheck.eq("ti_id", trackItem.getId());
-                            List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
-                            QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
-                            if (rules == null || rules.getIsGiveTime() != 1) {
-                                continue;
-                            }
-                        }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
@@ -202,7 +192,19 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         if (trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() == 1)) {
                             sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
                         }
-                        sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
+                        //已质检 校验不合格是否给工时(单件工时/额定工时)
+                        if (trackItem.getIsQualityComplete() == 1) {
+                            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
+                            queryWrapperCheck.eq("ti_id", trackItem.getId());
+                            List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
+                            QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
+                            if (rules.getIsGiveTime() == 1) {
+                                sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
+                            }
+                        } else if (trackItem.getIsExistQualityCheck() == 0) {
+                            //不质检也计算工时
+                            sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
+                        }
                         sumTotalHours = sumTotalHours + track.getCompletedQty() * trackItem.getSinglePieceHours() + trackItem.getPrepareEndHours();
                         //总工时
                         track.setTotalHours(new BigDecimal(track.getCompletedQty() * trackItem.getSinglePieceHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
