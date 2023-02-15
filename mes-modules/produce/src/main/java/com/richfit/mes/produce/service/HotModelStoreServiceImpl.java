@@ -34,7 +34,7 @@ public class HotModelStoreServiceImpl extends ServiceImpl<HotModelStoreMapper, H
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult importExcel(MultipartFile file, String tenantId) {
-        String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark"};
+        String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark","version"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -104,6 +104,8 @@ public class HotModelStoreServiceImpl extends ServiceImpl<HotModelStoreMapper, H
             }
             QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
             hotModelStoreQueryWrapper.eq("model_drawing_no", hotModelStore.getModelDrawingNo());
+            hotModelStoreQueryWrapper.eq("version",hotModelStore.getVersion());
+            //根据图号和版本查重
             List<HotModelStore> list1 = this.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list1)) {
                 message.append("图号：" + hotModelStore.getModelDrawingNo() + "在系统中存在重复数据，无法插入</br>");

@@ -58,6 +58,9 @@ public class HotModelStoreExportExcelVo extends BaseEntity<HotModelStoreExportEx
 
     @ApiModelProperty(value = "更新日期 ", dataType = "String")
     private Date modifyTime;
+
+    @ApiModelProperty(value = "版本号", dataType = "String")
+    private String version;
     @ApiModelProperty(value = "页码 ", dataType = "String")
     private int page;
     @ApiModelProperty(value = "条数 ", dataType = "String")
