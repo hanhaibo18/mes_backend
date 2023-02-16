@@ -44,7 +44,8 @@ public class HotModelStoreQueryVo extends BaseEntity<HotModelStoreQueryVo> {
 
     @ApiModelProperty(value = "备注 ", dataType = "String")
     private String remark;
-
+    @ApiModelProperty(value = "版本号", dataType = "String")
+    private String version;
 
     @ApiModelProperty(value = "创建者 ", dataType = "String")
     private String createBy;
