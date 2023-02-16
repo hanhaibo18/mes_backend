@@ -199,15 +199,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
                             QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
                             if (rules.getIsGiveTime() == 1) {
-                                sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
+                                sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
                             //不质检也计算工时
-                            sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
+                            sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
                         }
-                        sumTotalHours = sumTotalHours + track.getCompletedQty() * trackItem.getSinglePieceHours() + trackItem.getPrepareEndHours();
+                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * trackItem.getSinglePieceHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
                         track0.setUserName(tenantUserVo.getEmplName());
                         track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
