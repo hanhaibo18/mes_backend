@@ -701,8 +701,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo,
-                                   int number) {
+    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
 
@@ -716,7 +715,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setTrackHeadId(trackHead.getId());
             trackFlow.setProductSource(trackHead.getProductSource());
             trackFlow.setProductSourceName(trackHead.getProductSourceName());
-            if (!StrUtil.isBlank(productsNo)) {
+            if (StrUtil.isNotBlank(productsNo)) {
                 //试棒类型拼接S
                 if ("1".equals(trackHead.getIsTestBar())) {
                     productsNo = productsNo + "S";
@@ -735,6 +734,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
             } else {
                 trackFlow.setProductNo(null);
+            }
+            if (!"2".equals(trackHead.getClasses()) && trackFlow.getProductNo() == null) {
+                throw new GlobalException("机加产品编号不能为空", ResultCode.FAILED);
             }
             trackHeadFlowService.save(trackFlow);
 
