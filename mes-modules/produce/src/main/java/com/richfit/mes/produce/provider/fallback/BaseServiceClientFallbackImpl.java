@@ -4,6 +4,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
@@ -165,6 +166,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @PostMapping("/api/base/router/get_by_drawNo")
     @Override
     public CommonResult<List<Router>> getByDrawNo(List<String> drawNos, String branchCode) {
         return null;

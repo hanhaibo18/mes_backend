@@ -51,7 +51,7 @@ public class HotLongProductController extends BaseController {
         try {
             QueryWrapper<HotLongProduct> hotModelStoreQueryWrapper = new QueryWrapper<>();
             hotModelStoreQueryWrapper.eq("product_drawing_no", hotLongProduct.getProductDrawingNo());
-            hotModelStoreQueryWrapper.eq("version", hotLongProduct.getVersion());
+            //hotModelStoreQueryWrapper.eq("version", hotLongProduct.getVersion());
             List<HotLongProduct> list = hotLongProductService.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
                 return CommonResult.failed(productDrawingNoANDVERSION_ISNULL_MESSAGE);
@@ -76,7 +76,7 @@ public class HotLongProductController extends BaseController {
         try {
             QueryWrapper<HotLongProduct> hotModelStoreQueryWrapper = new QueryWrapper<>();
             hotModelStoreQueryWrapper.eq("product_drawing_no", hotLongProduct.getProductDrawingNo());
-            hotModelStoreQueryWrapper.eq("version", hotLongProduct.getVersion());
+           // hotModelStoreQueryWrapper.eq("version", hotLongProduct.getVersion());
             hotModelStoreQueryWrapper.ne("id", hotLongProduct.getId());
             List<HotLongProduct> list = hotLongProductService.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {

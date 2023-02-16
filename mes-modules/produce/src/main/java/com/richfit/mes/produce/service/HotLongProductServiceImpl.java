@@ -76,15 +76,16 @@ public class HotLongProductServiceImpl extends ServiceImpl<HotLongProductMapper,
                 return message.append("图号不能为空</br>").toString();
             }
 
-            if (org.apache.commons.lang3.StringUtils.isEmpty(hotLongProduct.getVersion())) {
-                return message.append("版本号不能为空</br>").toString();
-            }
+//            if (org.apache.commons.lang3.StringUtils.isEmpty(hotLongProduct.getVersion())) {
+//                return message.append("版本号不能为空</br>").toString();
+//            }
             QueryWrapper<HotLongProduct> hotLongProductQueryWrapper = new QueryWrapper<>();
             hotLongProductQueryWrapper.eq("product_drawing_no", hotLongProduct.getProductDrawingNo());
-            hotLongProductQueryWrapper.eq("version", hotLongProduct.getVersion());
+           // hotLongProductQueryWrapper.eq("version", hotLongProduct.getVersion());
             List<HotLongProduct> list1 = this.list(hotLongProductQueryWrapper);
             if (CollectionUtils.isNotEmpty(list1)) {
-                message.append("图号：" + hotLongProduct.getProductDrawingNo() + "版本号为：" + hotLongProduct.getVersion() + "在系统中存在重复数据，无法插入</br>");
+//                message.append("图号：" + hotLongProduct.getProductDrawingNo() + "版本号为：" + hotLongProduct.getVersion() + "在系统中存在重复数据，无法插入</br>");
+                message.append("图号：" + hotLongProduct.getProductDrawingNo() + "在系统中存在重复数据，无法插入</br>");
             }
         }
         return message.toString();
