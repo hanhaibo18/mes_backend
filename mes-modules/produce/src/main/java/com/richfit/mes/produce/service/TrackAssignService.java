@@ -115,4 +115,26 @@ public interface TrackAssignService extends IService<Assign> {
      * @return: IPage<Assign>
      **/
     IPage<Assign> queryNotAtWork(ForDispatchingDto dispatchingDto) throws ParseException;
+
+    /**
+     * 功能描述:派工查询
+     * 任泽文将代码逻辑移到service 未改动
+     * @param id
+     * @param tiId
+     * @param state
+     * @param trackId
+     * @param trackNo
+     * @param flowId
+     * @return
+     */
+    List<Assign> find(String id, String tiId, String state, String trackId, String trackNo, String flowId);
+
+
+    /**
+     * 功能描述:删除派工
+     * 任泽文将代码逻辑移到service 未改动
+     * @param ids
+     * @return
+     */
+    boolean deleteAssign(String[] ids);
 }

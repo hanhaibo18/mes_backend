@@ -88,7 +88,7 @@ public class HotDemandController extends BaseController {
     public CommonResult<IPage<HotDemand>> demandPage(@RequestBody HotDemandParam hotDemandParam) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
-        queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        //queryWrapper.eq("tenant_id", currentUser.getTenantId());
         if (StringUtils.isNotEmpty(hotDemandParam.getProjectName())) {//项目名称
             queryWrapper.eq("project_name", hotDemandParam.getProjectName());
         }
@@ -279,7 +279,6 @@ public class HotDemandController extends BaseController {
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("is_exist_model is null");
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
@@ -289,14 +288,16 @@ public class HotDemandController extends BaseController {
         modelWrapper.eq("tenant_id", currentUser.getTenantId());
         modelWrapper.in("model_drawing_no", drawNos);
         List<HotModelStore> list = hotModelStoreService.list(modelWrapper);
-        //模型
-        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo(), x -> x));
+        //模型map<图号@版本号,模型数据>
+        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo()+"@"+x.getVersion(), x -> x));
 
         List<String> ids = new ArrayList<>();
         //遍历毛坯需求数据,根据图号在模型map中获取,不为空则有模型
         for (HotDemand hotDemand : hotDemands) {
-            HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo());
-            if (ObjectUtils.isNotEmpty(hotModelStore)) {
+            //根据图号+@+版本号去获取模型
+            HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo()+"@"+hotDemand.getVersionNum());
+            //模型不为空且模型数量大于1判断为有模型
+            if (ObjectUtils.isNotEmpty(hotModelStore) && hotModelStore.getNormalNum()>1) {
                 //收集有模型的毛坯需求id
                 ids.add(hotDemand.getId());
             }
@@ -385,7 +386,6 @@ public class HotDemandController extends BaseController {
         if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
-        List<Router> data = byDrawNo.getData();
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
 

@@ -664,6 +664,7 @@ public class ProduceInspectionRecordService {
         //总数
         int total = inspects.size();
         Map<String, Object> returnMap = new HashMap<>();
+        maps.sort((t1,t2)->t1.get("modifyTime").toString().compareTo(t2.get("modifyTime").toString()));
         returnMap.put("records", maps);
         returnMap.put("pages", pages);
         returnMap.put("total", total);

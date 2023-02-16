@@ -31,6 +31,7 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zhiqiang.lu
@@ -127,7 +128,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
     }
 
     /**
-     * 功能描述：热工跟单派工
+     * 功能描述：热工跟单派工、编辑
      * @param assigns
      * @return
      * @throws Exception
@@ -135,6 +136,12 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean assignItem(List<Assign> assigns) throws Exception {
+        //如果有派工信息先回滚
+        List<String> assignIds = assigns.stream().map(Assign::getId).collect(Collectors.toList()).stream().filter(item->!StringUtils.isNullOrEmpty(item)).collect(Collectors.toList());
+        if(assignIds.size()>0){
+            trackAssignService.deleteAssign(assignIds.toArray(new String[assignIds.size()]));
+        }
+        //新增派工
         for (Assign assign : assigns) {
             try {
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {
