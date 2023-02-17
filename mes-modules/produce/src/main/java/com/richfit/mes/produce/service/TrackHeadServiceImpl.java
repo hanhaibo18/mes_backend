@@ -723,14 +723,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 if (!StrUtil.isBlank(productsNo)) {
                     trackFlow.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
                 }
-                //查询产品编码是否存在
-                QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("product_no", trackFlow.getProductNo());
-                queryWrapper.eq("branch_code", trackFlow.getBranchCode());
-                queryWrapper.eq("tenant_id", trackFlow.getTenantId());
-                List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
-                if (trackFlowList.size() > 0) {
-                    throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
+                //热处理查询产品编码是否存在
+                if (!"5".equals(trackHead.getClasses())) {
+                    QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("product_no", trackFlow.getProductNo());
+                    queryWrapper.eq("branch_code", trackFlow.getBranchCode());
+                    queryWrapper.eq("tenant_id", trackFlow.getTenantId());
+                    List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
+                    if (trackFlowList.size() > 0) {
+                        throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
+                    }
                 }
             } else {
                 trackFlow.setProductNo(null);
