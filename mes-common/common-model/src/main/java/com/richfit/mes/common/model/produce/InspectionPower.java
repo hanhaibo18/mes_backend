@@ -108,6 +108,8 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String startDoingUser;
     @ApiModelProperty(value = "开工时间", dataType = "Date")
     private Date startDoingTime;
+    @ApiModelProperty(value = "退回意见", dataType = "String")
+    private String backRemark;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "委托单状态导出展示", dataType = "String")

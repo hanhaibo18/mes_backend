@@ -1306,11 +1306,12 @@ public class ProduceInspectionRecordService {
     /**
      * 批量撤回
      */
-    public boolean backOutOrder(List<String> ids) {
+    public boolean backOutOrder(List<String> ids,String backRemark) {
         if (ids.size() > 0) {
             UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
             updateWrapper.in("id", ids)
-                    .set("status", BACKOUT_STATUS);
+                    .set("status", BACKOUT_STATUS)
+                    .set("back_remark",backRemark);
             return inspectionPowerService.update(updateWrapper);
         }
         return true;

@@ -192,8 +192,8 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "批量委托撤回", notes = "批量委托撤回")
     @ApiImplicitParam(name = "id", value = "委托单id", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/backOutOrder")
-    public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids) throws Exception {
-        return CommonResult.success(produceInspectionRecordService.backOutOrder(ids));
+    public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids,@RequestParam String backRemark) throws Exception {
+        return CommonResult.success(produceInspectionRecordService.backOutOrder(ids,backRemark));
     }
 
     @ApiOperation(value = "删除委托单", notes = "删除委托单")
