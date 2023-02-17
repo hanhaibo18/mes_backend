@@ -31,6 +31,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -195,6 +197,12 @@ public class HeatTrackCompleteController extends BaseController {
 
         }
         return CommonResult.success(new ArrayList<TrackItem>());
+    }
+
+    @ApiOperation(value = "（已报工）根据预装炉id导出热处理标签excel")
+    @GetMapping("/exportHeatTrackLabel")
+    public void exportHeatTrackLabel(HttpServletResponse response, @ApiParam(value = "预装炉id", required = true) @RequestParam String id ) throws IOException {
+        trackItemService.exportHeatTrackLabel(response, id);
     }
 
     @ApiOperation(value = "（已报工）人员批量删除")

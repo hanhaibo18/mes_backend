@@ -11,6 +11,9 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -148,4 +151,12 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return: List<TrackItem>
      **/
     List<TrackItem> queryItemByTrackHeadId(String trackHeadId);
+
+    /**
+     * 功能描述: 根据预装炉id生成excel文件
+     *
+     * @Author: Han Haibo
+     * @Date: 2023/2/17 10:59
+     **/
+    void exportHeatTrackLabel(HttpServletResponse response,String id) throws IOException;
 }
