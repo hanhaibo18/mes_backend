@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
@@ -39,28 +40,6 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String instrumentName;
     @ApiModelProperty(value = "仪器型号")
     private String instrumentModel;
-
-    public List<String> getInstrumentModelList() {
-        if(!StringUtils.isEmpty(instrumentModel) && instrumentModelList.size()==0){
-            return Arrays.asList(instrumentModel.split(","));
-
-        }
-        return instrumentModelList;
-    }
-
-    public String getInstrumentModel() {
-        StringBuilder stringBuilder = new StringBuilder();
-        if(this.instrumentModelList.size()>0){
-            for (String s : this.instrumentModelList) {
-                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
-                    stringBuilder.append(",");
-                }
-                stringBuilder.append(s);
-            }
-        }
-        return String.valueOf(stringBuilder);
-    }
-
     @TableField(exist = false)
     @ApiModelProperty(value = "仪器型号")
     private List<String> instrumentModelList;
@@ -78,6 +57,9 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String currentType;
     @ApiModelProperty(value = "磁化方向")
     private String magneticDirection;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "磁化方向")
+    private List<String> magneticDirectionList;
     @ApiModelProperty(value = "提升力")
     private String liftPower;
     @ApiModelProperty(value = "磁轭间距")
@@ -92,6 +74,9 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String concentrationMagneticSuspension;
     @ApiModelProperty(value = "磁粉施加方法")
     private String magneticPowderMethod;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "磁粉施加方法")
+    private List<String> magneticPowderMethodList;
     @ApiModelProperty(value = "磁化时间")
     private String magneticTime;
     @ApiModelProperty(value = "试验规范")
@@ -128,6 +113,71 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String isAudit;
     @ApiModelProperty(value = "审核意见")
     private String auditRemark;
+
+
+    public List<String> getInstrumentModelList() {
+        if(!StringUtils.isEmpty(instrumentModel) && (ObjectUtil.isEmpty(instrumentModelList) || instrumentModelList.size()==0)){
+            return Arrays.asList(instrumentModel.split(","));
+        }
+        return instrumentModelList;
+    }
+
+    public String getInstrumentModel() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!ObjectUtil.isEmpty(this.instrumentModelList) && this.instrumentModelList.size()>0){
+            for (String s : this.instrumentModelList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(s);
+            }
+            instrumentModel = String.valueOf(stringBuilder);
+        }
+        return instrumentModel;
+    }
+
+    public String getMagneticPowderMethod() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!ObjectUtil.isEmpty(this.magneticPowderMethodList) && this.magneticPowderMethodList.size()>0){
+            for (String s : this.magneticPowderMethodList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(s);
+            }
+            magneticPowderMethod = String.valueOf(stringBuilder);
+        }
+        return magneticPowderMethod;
+    }
+
+    public List<String> getMagneticPowderMethodList() {
+        if(!StringUtils.isEmpty(magneticPowderMethod) && (ObjectUtil.isEmpty(magneticPowderMethodList) || magneticPowderMethodList.size()==0)){
+            return Arrays.asList(magneticPowderMethod.split(","));
+        }
+        return magneticPowderMethodList;
+    }
+
+    public String getMagneticDirection() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!ObjectUtil.isEmpty(this.magneticDirectionList) && this.magneticDirectionList.size()>0){
+            for (String s : this.magneticDirectionList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(s);
+            }
+            magneticDirection = String.valueOf(stringBuilder);
+        }
+        return magneticDirection;
+    }
+
+    public List<String> getMagneticDirectionList() {
+        if(!StringUtils.isEmpty(magneticDirection) && (ObjectUtil.isEmpty(magneticDirectionList) || magneticDirectionList.size()==0)){
+            return Arrays.asList(magneticDirection.split(","));
+        }
+        return magneticDirectionList;
+    }
+
 
 
 
