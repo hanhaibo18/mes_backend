@@ -19,7 +19,7 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      * @Date: 2023/1/5 9:45
      * @return: void
      **/
-    public void furnaceCharging(List<Assign> assignList);
+    public void furnaceCharging(List<Assign> assignList, String tempWork);
 
     /**
      * 功能描述:查询装炉跟单列表

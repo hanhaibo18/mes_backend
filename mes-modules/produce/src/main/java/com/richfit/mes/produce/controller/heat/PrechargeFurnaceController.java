@@ -42,8 +42,9 @@ public class PrechargeFurnaceController extends BaseController {
 
     @ApiOperation(value = "装炉")
     @PostMapping("/furnace_charging")
-    public CommonResult furnaceCharging(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList) {
-        prechargeFurnaceService.furnaceCharging(assignList);
+    public CommonResult furnaceCharging(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList,
+                                        @ApiParam(value = "预装温度", required = true) @RequestParam String tempWork) {
+        prechargeFurnaceService.furnaceCharging(assignList, tempWork);
         return CommonResult.success("装炉成功");
     }
 
@@ -97,7 +98,7 @@ public class PrechargeFurnaceController extends BaseController {
                 .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()), "date_format(create_time, '%Y-%m-%d')", dispatchingDto.getEndTime());
         if ("0,1".equals(dispatchingDto.getState())) {
             //查询本部门未开工的 和  自己开工的
-            queryWrapper.and(wrapper3 -> wrapper3.and(wrapper4 -> wrapper4.eq("step_status", "0").apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',site_id)"))
+            queryWrapper.and(wrapper3 -> wrapper3.and(wrapper4 -> wrapper4.eq("step_status", "0").apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',site_id)"))
                     .or(wrapper -> wrapper.eq("step_status", "1").and(wrapper2 -> wrapper2.eq("start_work_by", SecurityUtils.getCurrentUser().getUserId()))));
             queryWrapper.in("status", 0, 1);
         }

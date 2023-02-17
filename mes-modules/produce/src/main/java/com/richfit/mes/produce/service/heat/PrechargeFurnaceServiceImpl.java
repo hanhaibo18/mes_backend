@@ -38,12 +38,12 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     public TrackAssignMapper trackAssignMapper;
 
     @Override
-    public void furnaceCharging(List<Assign> assignList) {
+    public void furnaceCharging(List<Assign> assignList, String tempWork) {
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要有装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = new PrechargeFurnace();
-        prechargeFurnace.setTempWork("");
+        prechargeFurnace.setTempWork(tempWork);
         prechargeFurnace.setOptName(optNames(assignList));
         prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
