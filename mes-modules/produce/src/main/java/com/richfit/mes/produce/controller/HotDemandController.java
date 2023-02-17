@@ -61,8 +61,6 @@ public class HotDemandController extends BaseController {
     private BaseServiceClient baseServiceClient;
 
     @Autowired
-    private PlanService planService;
-    @Autowired
     private HotPlanNodeService planNodeService;
 
 
@@ -89,6 +87,9 @@ public class HotDemandController extends BaseController {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
         //queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        if (StringUtils.isNotEmpty(hotDemandParam.getBranchCode())) {//车间代码
+            queryWrapper.eq("branch_code", hotDemandParam.getBranchCode());
+        }
         if (StringUtils.isNotEmpty(hotDemandParam.getProjectName())) {//项目名称
             queryWrapper.eq("project_name", hotDemandParam.getProjectName());
         }
@@ -443,27 +444,10 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/ratify")
     public CommonResult ratify(@RequestBody List<String> idList, Integer ratifyState, String branchCode) {
-        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        //检查无模型数据
-        List<String> ids = hotDemandService.checkModel(idList, branchCode);
-        if (CollectionUtils.isNotEmpty(ids)) return CommonResult.failed("存在无模型需求");
-
-        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.in("id", idList);
-        //无模型"且“未排产”产品
-        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        //将需求数据转换为生产计划并入库
-        this.convertAndSave(currentUser, hotDemands);
-        UpdateWrapper updateWrapper = new UpdateWrapper();
-        updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
-        updateWrapper.set("issue_time", new Date());//设置下发时间
-
-        updateWrapper.in("id", idList);
-        boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
-        return CommonResult.failed();
+        return hotDemandService.ratify(idList, ratifyState, branchCode);
     }
+
+
 
 
     @ApiOperation(value = "模型排产", notes = "模型排产")
@@ -472,61 +456,11 @@ public class HotDemandController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
     })
     @PostMapping("/model_production_scheduling")
-    public CommonResult ratify(@RequestBody List<String> idList, String branchCode) {
-        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("(is_exist_model=0 or is_exist_process is null)");
-        queryWrapper.in("id", idList);
-        //无模型"且“未排产”产品
-        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        //将需求数据转换为生产计划并入库
-        this.convertAndSave(currentUser, hotDemands);
-        UpdateWrapper updateWrapper = new UpdateWrapper();
-        updateWrapper.set("produce_state", 1);//设置排产状态 0: 未排产   1 :已排产',
-        updateWrapper.in("id", idList);
-        boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
 
-        return CommonResult.failed();
+    public CommonResult modelProductionScheduling(@RequestBody List<String> idList, String branchCode) {
+        return hotDemandService.modelProductionScheduling(idList, branchCode);
     }
 
-    /**
-     * 将需求数据转换为生产计划并入库
-     *
-     * @param currentUser
-     * @param hotDemands
-     */
-
-    private void convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands) {
-        ArrayList<Plan> plans = new ArrayList<>();
-        //根据需求信息自动生成生产计划数据
-        for (HotDemand hotDemand : hotDemands) {
-            Plan plan = new Plan();
-            plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));
-            plan.setWorkNo(hotDemand.getWorkNo());//工作号
-            plan.setDrawNo(hotDemand.getDrawNo());//图号
-            plan.setProjNum(hotDemand.getPlanNum());//计划数量
-            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
-            plan.setBranchCode(hotDemand.getBranchCode());//车间码
-            plan.setTenantId(hotDemand.getTenantId());//租户id
-            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
-            plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
-            plan.setTexture(hotDemand.getTexture());//材质
-            plan.setBlank(hotDemand.getWorkblankType());//毛坯
-            plan.setStartTime(new Date());//开始时间
-            plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
-            plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
-            plan.setCreateBy(currentUser.getUserId());//创建人
-            plan.setCreateTime(new Date());
-            plan.setModifyBy(currentUser.getUserId());
-            plan.setModifyTime(new Date());
-            plan.setDrawNoName("");//图号名称
-            plans.add(plan);
-        }
-        planService.saveBatch(plans);
-    }
 
     @ApiOperation(value = "自动生成工序计划", notes = "自动生成工序计划")
     @ApiImplicitParams({
