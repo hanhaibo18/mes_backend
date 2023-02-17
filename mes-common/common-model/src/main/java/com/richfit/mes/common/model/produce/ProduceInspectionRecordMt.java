@@ -1,9 +1,14 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.util.StringUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 @Data
@@ -34,6 +39,31 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String instrumentName;
     @ApiModelProperty(value = "仪器型号")
     private String instrumentModel;
+
+    public List<String> getInstrumentModelList() {
+        if(!StringUtils.isEmpty(instrumentModel) && instrumentModelList.size()==0){
+            return Arrays.asList(instrumentModel.split(","));
+
+        }
+        return instrumentModelList;
+    }
+
+    public String getInstrumentModel() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(this.instrumentModelList.size()>0){
+            for (String s : this.instrumentModelList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(s);
+            }
+        }
+        return String.valueOf(stringBuilder);
+    }
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "仪器型号")
+    private List<String> instrumentModelList;
     @ApiModelProperty(value = "灵敏度试片")
     private String sensitivityTestPiece;
     @ApiModelProperty(value = "检测比例")
@@ -98,6 +128,8 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String isAudit;
     @ApiModelProperty(value = "审核意见")
     private String auditRemark;
+
+
 
 
 }

@@ -1,6 +1,8 @@
 package com.richfit.mes.produce.controller;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -192,7 +194,9 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "批量委托撤回", notes = "批量委托撤回")
     @ApiImplicitParam(name = "id", value = "委托单id", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/backOutOrder")
-    public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids,@RequestParam String backRemark) throws Exception {
+    public CommonResult<Boolean> backOutOrder(@RequestBody JSONObject jsonObject){
+        List<String> ids = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("ids")), String.class);
+        String backRemark = jsonObject.getString("backRemark");
         return CommonResult.success(produceInspectionRecordService.backOutOrder(ids,backRemark));
     }
 
