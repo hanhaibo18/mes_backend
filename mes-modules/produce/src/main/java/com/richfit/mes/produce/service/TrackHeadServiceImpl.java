@@ -806,7 +806,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //只有机加、非试棒、状态为0时，创料建跟单时才会进行库存单关联
         if ("0".equals(trackHead.getStatus()) && "0".equals(trackHead.getIsTestBar())) {
             //机加+热处理
-            if ("1".equals(trackHead.getClasses()) || "5".equals(trackHead.getClasses())) {
+            if ("1".equals(trackHead.getClasses())) {
                 //修改库存状态  本次查到的料单能否匹配生产数量完成
                 //如果一个料单就能匹配数量，就1个料单匹配；否则执行多次，查询多个料单分别出库
                 Map retMap = lineStoreService.useItem(number, trackHead, productsNo);
