@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -222,6 +223,12 @@ public class ProduceInspectionRecordController extends BaseController {
     @PostMapping("/inspectionPower/export_excel")
     public void exportExcel(@RequestBody InspectionPowerVo inspectionPowerVo, HttpServletResponse rsp) {
         produceInspectionRecordService.exportExcel(inspectionPowerVo, rsp);
+    }
+
+    @ApiOperation(value = "导入委托单", notes = "导入委托单")
+    @PostMapping("/inspectionPower/importPowerInfosExcel")
+    public CommonResult importPowerInfosExcel(MultipartFile file, String branchCode) {
+        return produceInspectionRecordService.importPowerInfosExcel(file, branchCode);
     }
 
 
