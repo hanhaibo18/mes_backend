@@ -668,7 +668,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     writer.writeCellValue("E5", prechargeFurnace == null ? "" : prechargeFurnace.getFurnaceNo());
                     // TODO: 2023/2/17 备注
 
-                    writer.renameSheet(sheetNum,"sheet"+ (++sheetNum));
+                    writer.renameSheet(sheetNum, "sheet" + (++sheetNum));
                 }
                 ServletOutputStream outputStream = response.getOutputStream();
                 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
