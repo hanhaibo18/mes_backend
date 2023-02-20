@@ -123,6 +123,7 @@ public class InspectionDictionaryController {
                         Map<String, String> map = new HashMap<>();
                         map.put("label", inspectionDictionary.getDicCode());
                         map.put("value", inspectionDictionary.getDicValue());
+                        map.put("remark", inspectionDictionary.getRemark());
                         maps.add(map);
                     }
                 }
