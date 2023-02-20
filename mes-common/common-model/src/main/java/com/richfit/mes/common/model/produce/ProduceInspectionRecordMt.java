@@ -93,6 +93,9 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String acceptanceCriteria;
     @ApiModelProperty(value = "检测示意图")
     private String diagramAttachmentId;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检测示意图list")
+    private List<String> diagramAttachmentIdList;
     @ApiModelProperty(value = "检测示意图文字描述")
     private String pictureRemark;
     @ApiModelProperty(value = "检验员")
@@ -178,8 +181,24 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
         return magneticDirectionList;
     }
 
+    public String getDiagramAttachmentId() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!ObjectUtil.isEmpty(this.diagramAttachmentIdList) && this.diagramAttachmentIdList.size()>0){
+            for (String s : this.diagramAttachmentIdList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(s);
+            }
+            diagramAttachmentId = String.valueOf(stringBuilder);
+        }
+        return diagramAttachmentId;
+    }
 
-
-
-
+    public List<String> getDiagramAttachmentIdList() {
+        if(!StringUtils.isEmpty(diagramAttachmentId) && (ObjectUtil.isEmpty(diagramAttachmentIdList) || diagramAttachmentIdList.size()==0)){
+            return Arrays.asList(diagramAttachmentId.split(","));
+        }
+        return diagramAttachmentIdList;
+    }
 }

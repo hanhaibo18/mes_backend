@@ -1,11 +1,14 @@
 package com.richfit.mes.common.model.produce;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Data
@@ -118,5 +121,31 @@ public class ProduceInspectionRecordRt extends BaseEntity<ProduceInspectionRecor
     private String isAudit;
     @ApiModelProperty(value = "审核意见")
     private String auditRemark;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检测示意图list")
+    private List<String> diagramAttachmentIdList;
+
+
+    public String getDiagramAttachmentId() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!ObjectUtil.isEmpty(this.diagramAttachmentIdList) && this.diagramAttachmentIdList.size()>0){
+            for (String s : this.diagramAttachmentIdList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(s);
+            }
+            diagramAttachmentId = String.valueOf(stringBuilder);
+        }
+        return diagramAttachmentId;
+    }
+
+    public List<String> getDiagramAttachmentIdList() {
+        if(!StringUtils.isEmpty(diagramAttachmentId) && (ObjectUtil.isEmpty(diagramAttachmentIdList) || diagramAttachmentIdList.size()==0)){
+            return Arrays.asList(diagramAttachmentId.split(","));
+        }
+        return diagramAttachmentIdList;
+    }
 
 }

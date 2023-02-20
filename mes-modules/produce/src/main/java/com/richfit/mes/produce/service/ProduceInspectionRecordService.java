@@ -247,7 +247,12 @@ public class ProduceInspectionRecordService {
         queryWrapper.likeLeft(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo()), "draw_no", inspectionPowerVo.getDrawNo());
         //检测类型
         queryWrapper.eq(!StringUtils.isEmpty(inspectionPowerVo.getTempType()), "temp_type", inspectionPowerVo.getTempType());
-        queryWrapper.orderByDesc("power_time");
+        //排序
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("power_time");
+        }
         return queryWrapper;
     }
 
