@@ -236,6 +236,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         BeanUtils.copyProperties(disqualificationDto, disqualification);
         disqualification.setType(processJudge);
         disqualification.setQualityCheckBy(sb.toString());
+        disqualification.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //处理不合格类型
         if (CollectionUtils.isNotEmpty(disqualificationDto.getTypeList())) {
             String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
