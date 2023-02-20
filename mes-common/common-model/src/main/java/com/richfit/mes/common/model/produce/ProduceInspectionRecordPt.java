@@ -110,7 +110,7 @@ public class ProduceInspectionRecordPt extends BaseEntity<ProduceInspectionRecor
 
     public String getDiagramAttachmentId() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.diagramAttachmentIdList) && this.diagramAttachmentIdList.size()>0){
+        if(!ObjectUtil.isEmpty(this.diagramAttachmentIdList)){
             for (String s : this.diagramAttachmentIdList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");

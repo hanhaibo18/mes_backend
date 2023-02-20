@@ -127,21 +127,22 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
 
     public String getInstrumentModel() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.instrumentModelList) && this.instrumentModelList.size()>0){
+        if(!ObjectUtil.isEmpty(this.instrumentModelList)){
             for (String s : this.instrumentModelList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
                 }
                 stringBuilder.append(s);
             }
-            instrumentModel = String.valueOf(stringBuilder);
+            return String.valueOf(stringBuilder);
+        }else{
+            return instrumentModel;
         }
-        return instrumentModel;
     }
 
     public String getMagneticPowderMethod() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.magneticPowderMethodList) && this.magneticPowderMethodList.size()>0){
+        if(!ObjectUtil.isEmpty(this.magneticPowderMethodList)){
             for (String s : this.magneticPowderMethodList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
@@ -162,7 +163,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
 
     public String getMagneticDirection() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.magneticDirectionList) && this.magneticDirectionList.size()>0){
+        if(!ObjectUtil.isEmpty(this.magneticDirectionList)){
             for (String s : this.magneticDirectionList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
@@ -183,7 +184,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
 
     public String getDiagramAttachmentId() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.diagramAttachmentIdList) && this.diagramAttachmentIdList.size()>0){
+        if(!ObjectUtil.isEmpty(this.diagramAttachmentIdList)){
             for (String s : this.diagramAttachmentIdList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");

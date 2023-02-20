@@ -656,6 +656,14 @@ public class ProduceInspectionRecordService {
                     map.put("productNo", powers.get(0).getProductNo());
                     map.put("drawNo", powers.get(0).getDrawNo());
                     map.put("checkType", powers.get(0).getCheckType());
+                    //是否存在探伤记录赋值，便于前端按钮判断
+                    List<ProduceItemInspectInfo> list = new ArrayList<>();
+                    if (!StringUtils.isEmpty(powers.get(0))) {
+                        QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
+                        itemInspectInfoQueryWrapper.eq("power_id", powers.get(0).getId());
+                        list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+                    }
+                    map.put("isHaveRecord", list.size() > 0 ? 1 : 0);
                 }
                 //ge
                 maps.add(map);
