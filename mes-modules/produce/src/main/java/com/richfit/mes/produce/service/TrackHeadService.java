@@ -94,7 +94,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    boolean saveTrackHead(TrackHead trackHead);
+    boolean saveTrackHead(TrackHeadMoldDto trackHeadMoldDto);
 
     /**
      * 描述: 跟单更新
@@ -102,7 +102,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    boolean updataTrackHead(TrackHead trackHead, List<TrackItem> trackItems);
+    boolean updataTrackHead(TrackHeadMoldDto trackHeadMoldDto, List<TrackItem> trackItems);
 
     /**
      * 功能描述: 跟单完成
@@ -240,36 +240,36 @@ public interface TrackHeadService extends IService<TrackHead> {
     /**
      * 功能描述: 单件跟单拆分
      *
-     * @param trackHead    原跟单号信息
-     * @param trackNoNew   新跟单号
-     * @param trackFlow    原跟单产品列表
-     * @param trackFlowNew 新跟单产品列表
+     * @param trackHeadMoldDto 原跟单号信息
+     * @param trackNoNew       新跟单号
+     * @param trackFlow        原跟单产品列表
+     * @param trackFlowNew     新跟单产品列表
      */
-    void trackHeadSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
+    void trackHeadSplit(TrackHeadMoldDto trackHeadMoldDto, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
 
     /**
      * 功能描述: 批次跟单拆分
      *
-     * @param trackHead    原跟单号信息
-     * @param trackNoNew   新跟单号
-     * @param trackFlow    原跟单产品列表
-     * @param trackFlowNew 新跟单产品列表
+     * @param trackHeadMoldDto 原跟单号信息
+     * @param trackNoNew       新跟单号
+     * @param trackFlow        原跟单产品列表
+     * @param trackFlowNew     新跟单产品列表
      */
-    void trackHeadBatchSplit(TrackHead trackHead, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
+    void trackHeadBatchSplit(TrackHeadMoldDto trackHeadMoldDto, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew);
 
     /**
      * 功能描述: 单价跟单拆分回收
      *
-     * @param trackHead 回收的跟单信息
+     * @param trackHeadMoldDto 回收的跟单信息
      */
-    void trackHeadSplitBack(TrackHead trackHead);
+    void trackHeadSplitBack(TrackHeadMoldDto trackHeadMoldDto);
 
     /**
      * 功能描述: 批次跟单拆分回收
      *
-     * @param trackHead 回收的跟单信息
+     * @param trackHeadMoldDto 回收的跟单信息
      */
-    void trackHeadSplitBatchBack(TrackHead trackHead);
+    void trackHeadSplitBatchBack(TrackHeadMoldDto trackHeadMoldDto);
 
     /**
      * 功能描述: 跟单id查询分流（生产线）List
@@ -340,4 +340,14 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Date: 2022/12/30 9:38
      **/
     void changeProductNo(String trackHeadId, String productNo);
+
+    /**
+     * 功能描述: 根据跟单Id查询 跟单Dto数据
+     *
+     * @param trackHeadId
+     * @Author: xinYu.hou
+     * @Date: 2023/2/20 15:44
+     * @return: TrackHeadMoldDto
+     **/
+    TrackHeadMoldDto queryDtoById(String trackHeadId);
 }

@@ -145,7 +145,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
-    public CommonResult<TrackHead> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead) {
+    public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadMoldDto trackHead) {
 
         try {
             if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
@@ -164,8 +164,7 @@ public class TrackHeadController extends BaseController {
 
                 bool = trackHeadService.saveTrackHead(trackHead);
                 if (bool) {
-
-                    return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
+                    return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
                 } else {
                     return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
                 }
@@ -178,21 +177,21 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "修改跟单", notes = "修改跟单")
     @PutMapping("/track_head")
-    public CommonResult<TrackHead> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHead trackHead) {
-        if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
+    public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadMoldDto trackHeadMoldDto) {
+        if (StringUtils.isNullOrEmpty(trackHeadMoldDto.getTrackNo())) {
             return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
-        } else if (StringUtils.isNullOrEmpty(trackHead.getId())) {
+        } else if (StringUtils.isNullOrEmpty(trackHeadMoldDto.getId())) {
             return CommonResult.failed(TRACK_HEAD_ID_NULL_MESSAGE);
         } else {
-            boolean bool = trackHeadService.updataTrackHead(trackHead, trackHead.getTrackItems());
+            boolean bool = trackHeadService.updataTrackHead(trackHeadMoldDto, trackHeadMoldDto.getTrackItems());
             if (bool) {
                 //添加日志
                 Action action = new Action();
                 action.setActionType("1");
                 action.setActionItem("2");
-                action.setRemark("跟单号：" + trackHead.getTrackNo());
+                action.setRemark("跟单号：" + trackHeadMoldDto.getTrackNo());
                 actionService.saveAction(action);
-                return CommonResult.success(trackHead, TRACK_HEAD_SUCCESS_MESSAGE);
+                return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
             }
@@ -327,10 +326,10 @@ public class TrackHeadController extends BaseController {
         }
         //热工是否绑定工艺
         if (!StringUtils.isNullOrEmpty(isBindRouter)) {
-            if(isBindRouter.equals("0")){
-                queryWrapper.and(wrapper->wrapper.isNull("router_id").or(wrapper2->wrapper2.eq("router_id","")));
-            }else{
-                queryWrapper.and(wrapper->wrapper.isNotNull("router_id").and(wrapper2->wrapper2.ne("router_id","")));
+            if (isBindRouter.equals("0")) {
+                queryWrapper.and(wrapper -> wrapper.isNull("router_id").or(wrapper2 -> wrapper2.eq("router_id", "")));
+            } else {
+                queryWrapper.and(wrapper -> wrapper.isNotNull("router_id").and(wrapper2 -> wrapper2.ne("router_id", "")));
             }
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
@@ -663,11 +662,11 @@ public class TrackHeadController extends BaseController {
             String trackNoNew = map.get("trackNoNew").toString();
             List<TrackFlow> trackFlow = JSON.parseArray(JSON.toJSONString(map.get("trackList")), TrackFlow.class);
             List<TrackFlow> trackFlowNew = JSON.parseArray(JSON.toJSONString(map.get("trackListNew")), TrackFlow.class);
-            TrackHead trackHead = trackHeadService.getById(id);
-            if (TrackHead.TRACK_TYPE_0.equals(trackHead.getTrackType())) {
-                trackHeadService.trackHeadSplit(trackHead, trackNoNew, trackFlow, trackFlowNew);
+            TrackHeadMoldDto trackHeadMoldDto = trackHeadService.queryDtoById(id);
+            if (TrackHead.TRACK_TYPE_0.equals(trackHeadMoldDto.getTrackType())) {
+                trackHeadService.trackHeadSplit(trackHeadMoldDto, trackNoNew, trackFlow, trackFlowNew);
             } else {
-                trackHeadService.trackHeadBatchSplit(trackHead, trackNoNew, trackFlow, trackFlowNew);
+                trackHeadService.trackHeadBatchSplit(trackHeadMoldDto, trackNoNew, trackFlow, trackFlowNew);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -677,16 +676,16 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "跟单回收", notes = "跟单回收")
     @PostMapping("/split_back")
-    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHead> trackHeadList) throws
+    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHeadMoldDto> trackHeadMoldDtoList) throws
             Exception {
         try {
             //跟单号长度降序排序，避免批量还原时候出现中间跟单丢失问题，从最后一个处理
-            Collections.sort(trackHeadList, new TrackHeadComparator());
-            for (TrackHead trackHead : trackHeadList) {
-                if (TrackHead.TRACK_TYPE_0.equals(trackHead.getTrackType())) {
-                    trackHeadService.trackHeadSplitBack(trackHead);
+            Collections.sort(trackHeadMoldDtoList, new TrackHeadComparator());
+            for (TrackHeadMoldDto TrackHeadMoldDto : trackHeadMoldDtoList) {
+                if (TrackHead.TRACK_TYPE_0.equals(TrackHeadMoldDto.getTrackType())) {
+                    trackHeadService.trackHeadSplitBack(TrackHeadMoldDto);
                 } else {
-                    trackHeadService.trackHeadSplitBatchBack(trackHead);
+                    trackHeadService.trackHeadSplitBatchBack(TrackHeadMoldDto);
                 }
             }
         } catch (Exception e) {
@@ -696,10 +695,9 @@ public class TrackHeadController extends BaseController {
     }
 
     //跟单号List排序
-    class TrackHeadComparator implements Comparator<TrackHead> {
-
+    class TrackHeadComparator implements Comparator<TrackHeadMoldDto> {
         @Override
-        public int compare(TrackHead o1, TrackHead o2) {
+        public int compare(TrackHeadMoldDto o1, TrackHeadMoldDto o2) {
             return o2.getTrackNo().length() - o1.getTrackNo().length();
         }
     }
