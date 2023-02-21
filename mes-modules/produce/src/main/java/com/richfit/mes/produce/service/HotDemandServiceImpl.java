@@ -307,7 +307,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     private void disposeBranchCode(int branchType, HotDemand hotDemand, Plan plan) {
         if(branchType ==1){//模型排产
             plan.setProjType(1);//计划类型 1新制  2 返修(模型排产默认为新制)
-            plan.setBranchCode("BOMCO_RF_MX");//车间码(模型排产自动派发到模型车间)
+            plan.setBranchCode("BOMCO_RG_MX");//车间码(模型排产自动派发到模型车间)
         }else {
             //0锻件,1铸件,2钢锭
             switch (hotDemand.getWorkblankType()){

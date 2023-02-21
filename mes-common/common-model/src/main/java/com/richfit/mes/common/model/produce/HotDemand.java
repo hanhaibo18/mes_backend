@@ -57,9 +57,9 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
     private Integer num;
 
     /**
-     * 毛坯类型 0锻件,1主键,2钢锭
+     * 毛坯类型 0锻件,1铸件,2钢锭
      */
-    @ApiModelProperty(value = "毛坯类型 0锻件,1主键,2钢锭 ", dataType = "String")
+    @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭 ", dataType = "String")
     private String workblankType;
 
     /**

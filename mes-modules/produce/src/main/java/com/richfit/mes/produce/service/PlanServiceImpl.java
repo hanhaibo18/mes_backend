@@ -720,7 +720,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         for (Plan plan : planList) {
             PlanExtend planExtend = extendMap.get(plan.getId());
             if(!ObjectUtil.isEmpty(planExtend)){
-                BeanUtils.copyProperties(planExtend,plan);
+                BeanUtils.copyProperties(planExtend,plan,"id");
             }
         }
     }
