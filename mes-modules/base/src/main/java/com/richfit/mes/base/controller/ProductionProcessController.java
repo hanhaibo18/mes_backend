@@ -169,10 +169,13 @@ public class ProductionProcessController {
             }
             //当前所有idList中剔除传入的即为删除的idList
             allIdList.removeAll(currentIdList);
-            boolean result = productionProcessService.removeByIds(allIdList);
-            if (!result) {
-                return CommonResult.failed("删除失败");
+            if (!allIdList.isEmpty()){
+                boolean result = productionProcessService.removeByIds(allIdList);
+                if (!result) {
+                    return CommonResult.failed("删除失败");
+                }
             }
+
         }
         //获取id为null的新增list
         List<ProductionProcess> addList = Arrays.stream(productionProcesses).filter(process -> process.getId() == null).collect(Collectors.toList());
@@ -180,15 +183,19 @@ public class ProductionProcessController {
             process.setCreateTime(nowTime);
             process.setCreateBy(currentUser);
         }
-        boolean result = productionProcessService.saveBatch(addList);
-        if (!result){
-            return CommonResult.failed("新增失败");
+        if (!addList.isEmpty()){
+            boolean result = productionProcessService.saveBatch(addList);
+            if (!result){
+                return CommonResult.failed("新增失败");
+            }
         }
         //获取修改list
         List<ProductionProcess> updateList = Arrays.stream(productionProcesses).filter(process -> process.getId() != null).collect(Collectors.toList());
-        result = productionProcessService.updateBatchById(updateList);
-        if (!result){
-            return CommonResult.failed("修改失败");
+        if (!updateList.isEmpty()){
+            boolean result = productionProcessService.updateBatchById(updateList);
+            if (!result){
+                return CommonResult.failed("修改失败");
+            }
         }
         return CommonResult.success("批量修改成功！");
     }
