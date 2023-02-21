@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author HanHaiBo
@@ -138,39 +140,56 @@ public class ProductionProcessController {
 
     @ApiOperation(value = "批量修改工序", notes = "批量修改工序")
     @PutMapping("/updateBatch")
-    public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses) {
+    public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses,
+                                                          @ApiParam(value = "工艺路线id") @RequestParam String productionRouteId) {
+        String currentUser = "unknownUser";
+        Date nowTime = new Date();
+        if (null != SecurityUtils.getCurrentUser()) {
+            currentUser = SecurityUtils.getCurrentUser().getUsername();
+        }
         List<String> currentIdList = new ArrayList<>();
         for (ProductionProcess process : productionProcesses) {
             if (StringUtils.isNullOrEmpty(process.getProcessName())) {
                 return CommonResult.failed("工序名称不能为空");
             }
-            currentIdList.add(process.getId());
+            if (process.getId() != null) {
+                currentIdList.add(process.getId());
+            }
+            process.setModifyBy(currentUser);
+            process.setModifyTime(nowTime);
         }
         //获取当前所有idList
-        List<ProductionProcess> allProcess = productionProcessService.list();
-        if (!allProcess.isEmpty()){
+        QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("production_route_id", productionRouteId);
+        List<ProductionProcess> allProcess = productionProcessService.list(queryWrapper);
+        if (!allProcess.isEmpty()) {
             List<String> allIdList = new ArrayList<>();
             for (ProductionProcess process : allProcess) {
                 allIdList.add(process.getId());
             }
             //当前所有idList中剔除传入的即为删除的idList
             allIdList.removeAll(currentIdList);
-            productionProcessService.removeByIds(allIdList);
-        }
-        String currentUser = "unknownUser";
-        Date nowTime = new Date();
-        if (null != SecurityUtils.getCurrentUser()) {
-            currentUser = SecurityUtils.getCurrentUser().getUsername();
-        }
-        for (ProductionProcess process : productionProcesses) {
-            process.setModifyBy(currentUser);
-            process.setModifyTime(nowTime);
-            if (process.getId() == null){
-                process.setCreateBy(currentUser);
-                process.setCreateTime(nowTime);
-                productionProcessService.save(process);
+            boolean result = productionProcessService.removeByIds(allIdList);
+            if (!result) {
+                return CommonResult.failed("删除失败");
             }
-            productionProcessService.updateById(process);
+        }
+        //获取id为null的新增list
+        List<ProductionProcess> addList = Arrays.stream(productionProcesses).filter(process -> process.getId() == null).collect(Collectors.toList());
+        for (ProductionProcess process : addList) {
+            process.setCreateTime(nowTime);
+            process.setCreateBy(currentUser);
+            process.setProductionRouteId(productionRouteId);
+        }
+        boolean result = productionProcessService.saveBatch(addList);
+        if (!result){
+            return CommonResult.failed("新增失败");
+        }
+        //获取修改list
+        List<ProductionProcess> updateList = Arrays.stream(productionProcesses).filter(process -> process.getId() != null).collect(Collectors.toList());
+        result = productionProcessService.updateBatchById(updateList);
+        if (!result){
+            return CommonResult.failed("修改失败");
         }
         return CommonResult.success("批量修改成功！");
     }
@@ -182,7 +201,7 @@ public class ProductionProcessController {
             return CommonResult.failed("传入ID为空");
         }
         boolean result = productionProcessService.removeByIds(ids);
-        if (!result){
+        if (!result) {
             return CommonResult.failed("删除失败");
         }
         return CommonResult.success("删除成功");
