@@ -651,6 +651,7 @@ public class ProduceInspectionRecordService {
                     setHeadAndItemInfoToPower(powers);
                     map.put("optName", powers.get(0).getOptName());
                     map.put("optNo", powers.get(0).getOptNo());
+                    map.put("headId", powers.get(0).getHeadId());
                     map.put("trackNo", powers.get(0).getTrackNo());
                     map.put("texture", powers.get(0).getTexture());
                     map.put("productNo", powers.get(0).getProductNo());
