@@ -104,6 +104,16 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setSubmitState(0);
             hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+            //0锻件,1铸件,2钢锭
+            switch (hotDemand.getWorkblankType()){
+                case "锻件":  hotDemand.setWorkblankType("0");//锻造车间
+                    break;
+                case "铸件":  hotDemand.setWorkblankType("1");//铸造
+                    break;
+                case "钢锭":  hotDemand.setWorkblankType("2");//冶炼
+                    break;
+                default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围", ResultCode.FAILED);
+            }
             demandList.add(hotDemand);
         }
 
@@ -309,8 +319,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     break;
                 default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
             }
-
-            plan.setBranchCode(hotDemand.getProduceOrg());//车间码
         }
     }
 
