@@ -790,7 +790,7 @@ public class LineStoreController extends BaseController {
             Product product = result.getData().get(0);
             String productType = product.getMaterialType();
             if ("0".equals(materialType)) {
-                isMatch = "0".equals(productType) || "1".equals(productType) || "2".equals(productType) || "6".equals(productType);
+                isMatch = !"3".equals(productType);
             } else if ("1".equals(materialType)) {
                 isMatch = "3".equals(productType);
             }
