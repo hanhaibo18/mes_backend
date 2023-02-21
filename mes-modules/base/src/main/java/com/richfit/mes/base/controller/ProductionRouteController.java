@@ -43,7 +43,9 @@ public class ProductionRouteController extends BaseController {
         QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.like("production_route_name", "%" + routeName + "%");
+        if (routeName != null){
+            queryWrapper.like("production_route_name", "%" + routeName + "%");
+        }
         OrderUtil.query(queryWrapper, orderCol, order);
         return CommonResult.success(productionRouteService.page(new Page<>(page, limit), queryWrapper));
     }
