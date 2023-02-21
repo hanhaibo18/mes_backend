@@ -111,11 +111,11 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "删除生产路线", notes = "删除生产路线")
     @DeleteMapping("/delete")
-    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "要删除的路线ID") @RequestBody List<String> routeIds) {
-        if (routeIds.isEmpty()){
+    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "要删除的路线ID") @RequestBody List<String> ids) {
+        if (ids.isEmpty()){
             return CommonResult.failed("传入ID为空");
         }
-        boolean result = productionRouteService.removeByIds(routeIds);
+        boolean result = productionRouteService.removeByIds(ids);
         if (!result){
             return CommonResult.failed("删除失败");
         }
