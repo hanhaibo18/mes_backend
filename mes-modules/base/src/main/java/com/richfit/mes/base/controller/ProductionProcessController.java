@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -138,13 +139,23 @@ public class ProductionProcessController {
     @ApiOperation(value = "批量修改工序", notes = "批量修改工序")
     @PutMapping("/updateBatch")
     public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses) {
+        List<String> currentIdList = new ArrayList<>();
         for (ProductionProcess process : productionProcesses) {
             if (StringUtils.isNullOrEmpty(process.getProcessName())) {
                 return CommonResult.failed("工序名称不能为空");
             }
-            if (StringUtils.isNullOrEmpty(process.getId())) {
-                return CommonResult.failed("无法获取id！");
+            currentIdList.add(process.getId());
+        }
+        //获取当前所有idList
+        List<ProductionProcess> allProcess = productionProcessService.list();
+        if (!allProcess.isEmpty()){
+            List<String> allIdList = new ArrayList<>();
+            for (ProductionProcess process : allProcess) {
+                allIdList.add(process.getId());
             }
+            //当前所有idList中剔除传入的即为删除的idList
+            allIdList.removeAll(currentIdList);
+            productionProcessService.removeByIds(allIdList);
         }
         String currentUser = "unknownUser";
         Date nowTime = new Date();
@@ -154,6 +165,11 @@ public class ProductionProcessController {
         for (ProductionProcess process : productionProcesses) {
             process.setModifyBy(currentUser);
             process.setModifyTime(nowTime);
+            if (process.getId() == null){
+                process.setCreateBy(currentUser);
+                process.setCreateTime(nowTime);
+                productionProcessService.save(process);
+            }
             productionProcessService.updateById(process);
         }
         return CommonResult.success("批量修改成功！");
