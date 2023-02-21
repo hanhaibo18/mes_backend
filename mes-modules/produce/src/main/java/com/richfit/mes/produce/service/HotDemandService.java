@@ -11,4 +11,8 @@ public interface HotDemandService extends IService<HotDemand> {
     CommonResult importDemand(MultipartFile file, String branchCode);
 
     List<String> checkModel(List<String> idList, String branchCode);
+
+    CommonResult<?> ratify(List<String> idList, Integer ratifyState, String branchCode);
+
+    CommonResult modelProductionScheduling(List<String> idList, String branchCode);
 }

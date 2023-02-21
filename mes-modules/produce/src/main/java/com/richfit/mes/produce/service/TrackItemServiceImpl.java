@@ -1,19 +1,27 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.mysql.cj.util.TimeUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
@@ -24,11 +32,25 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.utils.Code;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -71,6 +93,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Autowired
     private LineStoreService lineStoreService;
+
+    @Autowired
+    private PrechargeFurnaceMapper prechargeFurnaceMapper;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -609,5 +634,55 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
             return trackItemList;
         }
+    }
+
+    @Override
+    public void exportHeatTrackLabel(HttpServletResponse response, String id) throws IOException {
+        //根据预装炉id获取跟单工序表
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        queryWrapper.eq("precharge_furnace_id", id);
+        List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapper);
+        if (!trackItemList.isEmpty()) {
+            //通过模板读入文件流
+            ClassPathResource classPathResource = new ClassPathResource("excel/" + "heatTreatLabel.xlsx");
+            int sheetNum = 0;
+            try {
+                ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
+                XSSFWorkbook wk = (XSSFWorkbook) writer.getWorkbook();
+                for (TrackItem trackItem : trackItemList) {
+                    if (sheetNum > 0) {
+                        writer.setSheet(wk.cloneSheet(0));
+                    }
+                    TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                    PrechargeFurnace prechargeFurnace = prechargeFurnaceMapper.selectById(id);
+                    writer.writeCellValue("B2", trackHead == null ? "" : trackHead.getWorkNo());
+                    // TODO: 2023/2/17  名称
+                    writer.writeCellValue("E2", "");
+
+                    writer.writeCellValue("B3", trackHead == null ? "" : trackHead.getDrawingNo());
+                    writer.writeCellValue("E3", trackItem.getNumber());
+                    writer.writeCellValue("B4", trackItem.getBranchCode());
+                    // TODO: 2023/2/17  送交单位
+
+                    writer.writeCellValue("B5", trackHead.getBatchNo());
+                    writer.writeCellValue("E5", prechargeFurnace == null ? "" : prechargeFurnace.getFurnaceNo());
+                    // TODO: 2023/2/17 备注
+
+                    writer.renameSheet(sheetNum, "sheet" + (++sheetNum));
+                }
+                ServletOutputStream outputStream = response.getOutputStream();
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+                String time = "heatTreatLabel" + LocalDateTime.now();
+                response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
+                        "ISO-8859-1") + ".xlsx");
+                writer.flush(outputStream, true);
+                IoUtil.close(outputStream);
+
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
     }
 }

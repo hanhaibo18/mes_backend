@@ -181,4 +181,15 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
             " </if> " +
             "</script>")
     List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead);
+
+    /**
+     * 功能描述: 根据跟单id查询跟单返回DTO对象
+     *
+     * @param trackHeadId
+     * @Author: xinYu.hou
+     * @Date: 2023/2/20 15:47
+     * @return: TrackHeadMoldDto
+     **/
+    @Select("SELECT * FROM produce_track_head WHERE id = #{trackHeadId}")
+    TrackHeadMoldDto queryDtoById(@Param("trackHeadId") String trackHeadId);
 }

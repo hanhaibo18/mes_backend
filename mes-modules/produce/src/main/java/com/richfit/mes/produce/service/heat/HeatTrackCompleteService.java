@@ -69,7 +69,21 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
      */
     Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo);
 
+    /**
+     * 报工获取炉号
+     * @param deviceName
+     * @param branchCode
+     * @param code
+     * @return
+     */
     String getFurnaceNo(String deviceName,String branchCode,String code);
+
+    /**
+     * 报工步骤回滚
+     * @param prechargeFurnaceId
+     * @return
+     */
+    boolean rollBack(Long prechargeFurnaceId);
 
 
 

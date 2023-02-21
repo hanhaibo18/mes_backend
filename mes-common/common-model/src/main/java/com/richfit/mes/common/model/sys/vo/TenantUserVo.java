@@ -128,4 +128,7 @@ public class TenantUserVo extends BaseVo<TenantUser> {
     @TableField(exist = false)
     @ApiModelProperty(value = "所在租户公司 code", dataType = "String")
     private String companyCode;
+
+    @ApiModelProperty(value = "工时比例")
+    private Integer ratioHours;
 }

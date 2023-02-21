@@ -575,7 +575,7 @@ public class RouterController extends BaseController {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
             DrawingNoUtil.queryIn(queryWrapper, "draw_no", drawNos);
 //            queryWrapper.in("draw_no", drawNos);
-            queryWrapper.eq("branch_code", branchCode);
+//            queryWrapper.eq("branch_code", branchCode);g
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Router> routers = routerService.list(queryWrapper);
             return CommonResult.success(routers);

@@ -91,10 +91,10 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "结束时间")
     private Date endTime;
 
-    @ApiModelProperty(value = "优先级")
+    @ApiModelProperty(value = "优先级 0低 1中 2高 ")
     private String priority;
 
-    @ApiModelProperty(value = "计划类型")
+    @ApiModelProperty(value = "计划类型 1新制  2 返修")
     private Integer projType;
 
     @ApiModelProperty(value = "所属机构")
@@ -143,6 +143,9 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "批准人")
     private String approvalBy;
 
+    @ApiModelProperty(value = "批准时间")
+    private Date approvalTime;
+
     @ApiModelProperty(value = "审核人")
     private String auditBy;
 
@@ -173,4 +176,48 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否导入")
     private String isExport;
+
+    /**
+     * -------------计划表扩展字段-----------------------------
+     */
+    
+    @TableField(exist = false)
+    @ApiModelProperty(value = "项目名称")
+    private String projectName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "实样数量")
+    private Integer sampleNum;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品名称")
+    private String productName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "重量")
+    private String weight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "需求日期")
+    private Date demandTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "提单人")
+    private String submitBy;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "提单单位")
+    private String submitOrderOrg;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "提单日期")
+    private Date submitOrderTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单重KG")
+    private String pieceWeight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "钢水KG")
+    private String steelWaterWeight;
 }

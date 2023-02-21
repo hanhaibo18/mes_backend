@@ -31,6 +31,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -197,6 +199,12 @@ public class HeatTrackCompleteController extends BaseController {
         return CommonResult.success(new ArrayList<TrackItem>());
     }
 
+    @ApiOperation(value = "（已报工）根据预装炉id导出热处理标签excel")
+    @GetMapping("/exportHeatTrackLabel")
+    public void exportHeatTrackLabel(HttpServletResponse response, @ApiParam(value = "预装炉id", required = true) @RequestParam String id ) throws IOException {
+        trackItemService.exportHeatTrackLabel(response, id);
+    }
+
     @ApiOperation(value = "（已报工）人员批量删除")
     @PostMapping("/deleteCompleteBy")
     public CommonResult<Boolean> deleteCompleteBy(@ApiParam(value = "人员列表的ids", required = true) @RequestBody List<String> ids) {
@@ -248,6 +256,15 @@ public class HeatTrackCompleteController extends BaseController {
     @GetMapping("/getFurnaceNo")
     public CommonResult<String> getFurnaceNo(String deviceName,String branchCode,String code){
         return CommonResult.success(heatTrackCompleteService.getFurnaceNo(deviceName, branchCode, code));
+    }
+
+    /**
+     * @return
+     */
+    @ApiOperation(value = "热工报工步骤回滚", notes = "热工报工步骤回滚")
+    @GetMapping("/rollBack")
+    public CommonResult<Boolean> rollBack(Long prechargeFurnaceId){
+        return CommonResult.success(heatTrackCompleteService.rollBack(prechargeFurnaceId));
     }
 
 

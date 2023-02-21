@@ -38,6 +38,9 @@ public class HotModelStore extends BaseEntity<HotModelStore> {
     @ApiModelProperty(value = "模型备注 ", dataType = "String")
     private String modelRemark;
 
+    @ApiModelProperty(value = "版本号", dataType = "String")
+    private String version;
+
 
 }
 

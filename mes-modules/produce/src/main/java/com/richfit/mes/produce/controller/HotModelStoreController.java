@@ -46,7 +46,7 @@ public class HotModelStoreController extends BaseController {
 
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败，请重试！";
-    public static String ModelDrawingNo_ISNULL_MESSAGE = "操作失败，图号不能重复！";
+    public static String ModelDrawingNo_ISNULL_MESSAGE = "操作失败，该图号的模型版本冲突";
     public static String TenantId_NULL_MESSAGE = "租戶ID不能为空！";
 
     @ApiOperation(value = "新增模型库", notes = "新增模型库")
@@ -55,6 +55,8 @@ public class HotModelStoreController extends BaseController {
         try {
             QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
             DrawingNoUtil.queryEq(hotModelStoreQueryWrapper, "model_drawing_no", hotModelStore.getModelDrawingNo());
+            hotModelStoreQueryWrapper.eq("version",hotModelStore.getVersion());
+            //根据图号和版本查重
             List<HotModelStore> list = hotModelStoreService.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
                 return CommonResult.failed(ModelDrawingNo_ISNULL_MESSAGE);
@@ -79,7 +81,8 @@ public class HotModelStoreController extends BaseController {
         try {
             QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
             DrawingNoUtil.queryEq(hotModelStoreQueryWrapper, "model_drawing_no", hotModelStore.getModelDrawingNo());
-            hotModelStoreQueryWrapper.ne("id", hotModelStore.getId());
+//            hotModelStoreQueryWrapper.ne("id", hotModelStore.getId());
+            hotModelStoreQueryWrapper.eq("version",hotModelStore.getVersion());
             List<HotModelStore> list = hotModelStoreService.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
                 return CommonResult.failed(ModelDrawingNo_ISNULL_MESSAGE);
@@ -188,9 +191,9 @@ public class HotModelStoreController extends BaseController {
             String fileName = "模型库信息_" + format.format(new Date()) + ".xlsx";
 
 
-            String[] columnHeaders = {"模型名称", "模型类型", "模型数量(正常)", "模型图号", "货位号", "模型数量(报废)", "模型备注"};
+            String[] columnHeaders = {"模型名称", "模型类型", "模型数量(正常)", "模型图号", "货位号", "模型数量(报废)", "模型备注","版本"};
 
-            String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark"};
+            String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark","version"};
 
             //export
             ExcelUtils.exportExcel(fileName, hotModelStores, columnHeaders, fieldNames, rsp);

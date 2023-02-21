@@ -31,6 +31,7 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zhiqiang.lu
@@ -102,7 +103,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
         } else {
             queryWrapper.isNull("u.precharge_furnace_id");
         }
-        queryWrapper.eq("u.site_id", SecurityUtils.getCurrentUser().getBelongOrgId());
+        queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',u.site_id)");
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
@@ -127,7 +128,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
     }
 
     /**
-     * 功能描述：热工跟单派工
+     * 功能描述：热工跟单派工、编辑
      * @param assigns
      * @return
      * @throws Exception
@@ -135,6 +136,12 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean assignItem(List<Assign> assigns) throws Exception {
+        //如果有派工信息先回滚
+        List<String> assignIds = assigns.stream().map(Assign::getId).collect(Collectors.toList()).stream().filter(item->!StringUtils.isNullOrEmpty(item)).collect(Collectors.toList());
+        if(assignIds.size()>0){
+            trackAssignService.deleteAssign(assignIds.toArray(new String[assignIds.size()]));
+        }
+        //新增派工
         for (Assign assign : assigns) {
             try {
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {
@@ -157,7 +164,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
                     trackItem.setRouterInfo(getRouterInfo(trackItem));
                     trackItemService.updateById(trackItem);
                     assign.setTrackNo(trackHead.getTrackNo());
-                    if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
+                    /*if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
                         //将跟单状态改为在制
                         trackHead.setStatus("1");
                         trackHeadService.updateById(trackHead);
@@ -165,7 +172,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
                         update.set("status", "1");
                         update.eq("id", trackItem.getFlowId());
                         trackHeadFlowService.update(update);
-                    }
+                    }*/
                     assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                     if (null != SecurityUtils.getCurrentUser()) {
                         assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());

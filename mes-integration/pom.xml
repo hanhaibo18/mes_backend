@@ -16,6 +16,7 @@
         <module>wms-kld</module>
         <module>erp-bs</module>
         <module>material-inspection</module>
+        <module>bsjby-data-sync</module>
     </modules>
     <dependencies>
 

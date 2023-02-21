@@ -61,8 +61,6 @@ public class HotDemandController extends BaseController {
     private BaseServiceClient baseServiceClient;
 
     @Autowired
-    private PlanService planService;
-    @Autowired
     private HotPlanNodeService planNodeService;
 
 
@@ -88,7 +86,10 @@ public class HotDemandController extends BaseController {
     public CommonResult<IPage<HotDemand>> demandPage(@RequestBody HotDemandParam hotDemandParam) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
-        queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        //queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        if (StringUtils.isNotEmpty(hotDemandParam.getBranchCode())) {//车间代码
+            queryWrapper.eq("branch_code", hotDemandParam.getBranchCode());
+        }
         if (StringUtils.isNotEmpty(hotDemandParam.getProjectName())) {//项目名称
             queryWrapper.eq("project_name", hotDemandParam.getProjectName());
         }
@@ -279,7 +280,6 @@ public class HotDemandController extends BaseController {
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("is_exist_model is null");
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
@@ -289,14 +289,16 @@ public class HotDemandController extends BaseController {
         modelWrapper.eq("tenant_id", currentUser.getTenantId());
         modelWrapper.in("model_drawing_no", drawNos);
         List<HotModelStore> list = hotModelStoreService.list(modelWrapper);
-        //模型
-        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo(), x -> x));
+        //模型map<图号@版本号,模型数据>
+        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo()+"@"+x.getVersion(), x -> x));
 
         List<String> ids = new ArrayList<>();
         //遍历毛坯需求数据,根据图号在模型map中获取,不为空则有模型
         for (HotDemand hotDemand : hotDemands) {
-            HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo());
-            if (ObjectUtils.isNotEmpty(hotModelStore)) {
+            //根据图号+@+版本号去获取模型
+            HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo()+"@"+hotDemand.getVersionNum());
+            //模型不为空且模型数量大于1判断为有模型
+            if (ObjectUtils.isNotEmpty(hotModelStore) && hotModelStore.getNormalNum()>1) {
                 //收集有模型的毛坯需求id
                 ids.add(hotDemand.getId());
             }
@@ -385,7 +387,6 @@ public class HotDemandController extends BaseController {
         if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
-        List<Router> data = byDrawNo.getData();
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
 
@@ -443,27 +444,10 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/ratify")
     public CommonResult ratify(@RequestBody List<String> idList, Integer ratifyState, String branchCode) {
-        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        //检查无模型数据
-        List<String> ids = hotDemandService.checkModel(idList, branchCode);
-        if (CollectionUtils.isNotEmpty(ids)) return CommonResult.failed("存在无模型需求");
-
-        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.in("id", idList);
-        //无模型"且“未排产”产品
-        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        //将需求数据转换为生产计划并入库
-        this.convertAndSave(currentUser, hotDemands);
-        UpdateWrapper updateWrapper = new UpdateWrapper();
-        updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
-        updateWrapper.set("issue_time", new Date());//设置下发时间
-
-        updateWrapper.in("id", idList);
-        boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
-        return CommonResult.failed();
+        return hotDemandService.ratify(idList, ratifyState, branchCode);
     }
+
+
 
 
     @ApiOperation(value = "模型排产", notes = "模型排产")
@@ -472,61 +456,11 @@ public class HotDemandController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
     })
     @PostMapping("/model_production_scheduling")
-    public CommonResult ratify(@RequestBody List<String> idList, String branchCode) {
-        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("(is_exist_model=0 or is_exist_process is null)");
-        queryWrapper.in("id", idList);
-        //无模型"且“未排产”产品
-        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        //将需求数据转换为生产计划并入库
-        this.convertAndSave(currentUser, hotDemands);
-        UpdateWrapper updateWrapper = new UpdateWrapper();
-        updateWrapper.set("produce_state", 1);//设置排产状态 0: 未排产   1 :已排产',
-        updateWrapper.in("id", idList);
-        boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
 
-        return CommonResult.failed();
+    public CommonResult modelProductionScheduling(@RequestBody List<String> idList, String branchCode) {
+        return hotDemandService.modelProductionScheduling(idList, branchCode);
     }
 
-    /**
-     * 将需求数据转换为生产计划并入库
-     *
-     * @param currentUser
-     * @param hotDemands
-     */
-
-    private void convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands) {
-        ArrayList<Plan> plans = new ArrayList<>();
-        //根据需求信息自动生成生产计划数据
-        for (HotDemand hotDemand : hotDemands) {
-            Plan plan = new Plan();
-            plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));
-            plan.setWorkNo(hotDemand.getWorkNo());//工作号
-            plan.setDrawNo(hotDemand.getDrawNo());//图号
-            plan.setProjNum(hotDemand.getPlanNum());//计划数量
-            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
-            plan.setBranchCode(hotDemand.getBranchCode());//车间码
-            plan.setTenantId(hotDemand.getTenantId());//租户id
-            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
-            plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
-            plan.setTexture(hotDemand.getTexture());//材质
-            plan.setBlank(hotDemand.getWorkblankType());//毛坯
-            plan.setStartTime(new Date());//开始时间
-            plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
-            plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
-            plan.setCreateBy(currentUser.getUserId());//创建人
-            plan.setCreateTime(new Date());
-            plan.setModifyBy(currentUser.getUserId());
-            plan.setModifyTime(new Date());
-            plan.setDrawNoName("");//图号名称
-            plans.add(plan);
-        }
-        planService.saveBatch(plans);
-    }
 
     @ApiOperation(value = "自动生成工序计划", notes = "自动生成工序计划")
     @ApiImplicitParams({

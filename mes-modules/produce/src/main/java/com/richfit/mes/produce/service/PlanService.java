@@ -83,6 +83,13 @@ public interface PlanService extends IService<Plan> {
      */
     void planPackageRouter(List<Plan> planList);
 
+
+    /**
+     * 完善扩展字段
+     * @param planList
+     */
+    void planPackageExtend(List<Plan> planList);
+
     /**
      * 计划列表动态数据封装（库存数量）
      *

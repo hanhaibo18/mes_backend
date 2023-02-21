@@ -82,6 +82,11 @@ public class TenantUser extends BaseEntity<TenantUser> {
     @TableField(exist = false)
     private Set<String> roleIds;
 
+    /**
+     * 工时比例
+     */
+    private Integer ratioHours;
+
 
     @TableField(exist = false)
     @ApiModelProperty(value = "用户类型(0=普通,1=普通质检,2=质检租户)")

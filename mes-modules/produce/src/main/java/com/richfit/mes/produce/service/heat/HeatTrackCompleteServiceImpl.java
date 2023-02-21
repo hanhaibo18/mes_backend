@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.util.StringUtil;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -376,6 +377,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
         //设置开工
         List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_id", prechargeFurnaceId));
+        List<String> itemIds = items.stream().map(TrackItem::getId).collect(Collectors.toList());
         List<String> headIds = items.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
         List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
         //将跟单状态改为在制
@@ -389,6 +391,13 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 .eq("status","0")
                 .in("id", flowIds);
         trackHeadFlowService.update(update);
+        UpdateWrapper<Assign> assignUpdate;
+        assignUpdate = new UpdateWrapper<>();
+        assignUpdate.set("state", "1")
+                .eq("state","0")
+                .in("ti_id", itemIds);
+        trackAssignService.update(assignUpdate);
+
         return prechargeFurnaceService.updateById(prechargeFurnace);
     }
 
@@ -650,6 +659,63 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         furnaceNo = furnaceNo+codeValue.getCurValue();
 
         return furnaceNo;
+    }
+
+
+    /**
+     * 报工步骤回滚
+     * @param prechargeFurnaceId
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean rollBack(Long prechargeFurnaceId){
+        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
+        if(StringUtil.isEmpty(prechargeFurnace.getCurrStep()) && StringUtil.isEmpty(prechargeFurnace.getUpStep())){
+            throw new GlobalException("当前预装炉没有报工步骤,无法回滚",ResultCode.FAILED);
+        }
+        //删除当前步骤
+        QueryWrapper<TrackComplete> deleteWrapper = new QueryWrapper<>();
+        deleteWrapper.eq("is_current",1)
+                .eq("precharge_furnace_id",prechargeFurnaceId);
+        this.remove(deleteWrapper);
+        //预装炉当前步骤、上步骤 、次数、开工状态赋值
+        String currStep = null;
+        String upStep = null;
+        String number = null;
+        QueryWrapper<TrackComplete> completeWrapper = new QueryWrapper<>();
+        completeWrapper.eq("precharge_furnace_id",prechargeFurnaceId)
+                .orderByDesc("complete_time");
+        List<TrackComplete> completes = this.list(completeWrapper);
+        Map<String, List<TrackComplete>> completeGroup = completes.stream().collect(Collectors.groupingBy(TrackComplete::getStepGroupId));
+        List<List<TrackComplete>> stepGroupList = new ArrayList<>(completeGroup.values());
+        stepGroupList.sort((t1,t2)->t2.get(0).getCompleteTime().compareTo(t1.get(0).getCompleteTime()));
+        currStep = stepGroupList.size()>0?stepGroupList.get(0).get(0).getStep():null;
+        upStep = stepGroupList.size()>1?stepGroupList.get(1).get(0).getStep():null;
+        if(StringUtil.isEmpty(currStep)){
+            number = "0";
+        }else{
+            number = String.valueOf(getNumber(prechargeFurnaceId, currStep));
+        }
+        //修改预装炉信息
+        UpdateWrapper<PrechargeFurnace> prechargeFurnaceUpdateWrapper = new UpdateWrapper<>();
+        prechargeFurnaceUpdateWrapper.eq("id",prechargeFurnaceId)
+                .set("curr_step",currStep)
+                .set("up_step",upStep)
+                .set("number",number)
+                .set(StringUtil.isEmpty(currStep),"furnace_no",null)
+                .set(StringUtil.isEmpty(currStep),"deal_furnace",null)
+                .set("step_status","0");
+        //修改当前报工当前步骤信息
+        if(stepGroupList.size()>0){
+            List<String> completeIds = stepGroupList.get(0).stream().map(TrackComplete::getId).collect(Collectors.toList());
+            UpdateWrapper<TrackComplete> trackCompleteUpdateWrapper = new UpdateWrapper<>();
+            trackCompleteUpdateWrapper.in("id",completeIds)
+                    .set("is_current","1");
+            this.update(trackCompleteUpdateWrapper);
+        }
+
+        return prechargeFurnaceService.update(prechargeFurnaceUpdateWrapper);
     }
 
 
