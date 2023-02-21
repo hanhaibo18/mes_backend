@@ -279,12 +279,16 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 finalResult.setTreatmentTwoTime(new Date());
                 break;
             case 5:
+                finalResult.setResponsibilityName(user.getEmplName());
+                finalResult.setResponsibilityTime(new Date());
+                break;
+            case 6:
                 finalResult.setTechnologyName(user.getEmplName());
                 finalResult.setTechnologyTime(new Date());
                 break;
-            case 6:
-                finalResult.setResponsibilityName(user.getEmplName());
-                finalResult.setResponsibilityTime(new Date());
+            case 7:
+                finalResult.setRecapUser(user.getEmplName());
+                finalResult.setRecapTime(new Date());
                 break;
             default:
                 break;
