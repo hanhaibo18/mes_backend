@@ -234,5 +234,14 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
     @ApiModelProperty(value = "优先级: 高 ,中, 低", dataType = "String")
     private String priority;
 
+    @ApiModelProperty(value = "单重KG")
+    private String pieceWeight;
+
+    @ApiModelProperty(value = "钢水KG")
+    private String steelWaterWeight;
+
+    @ApiModelProperty(value = "重量")
+    private String weight;
+
     private static final long serialVersionUID = 1L;
 }

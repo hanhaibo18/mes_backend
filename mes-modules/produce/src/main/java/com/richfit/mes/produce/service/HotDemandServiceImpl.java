@@ -237,10 +237,12 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             }else {
                 plan.setBranchCode(hotDemand.getProduceOrg());//车间码
             }
-            //--------------------------
-            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
-            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
             plan.setTexture(hotDemand.getTexture());//材质
+            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
+            plan.setApprovalBy(currentUser.getUsername());//审批人
+            plan.setApprovalTime(new Date());//审批时间
+            //--------------------------
+            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
             plan.setBlank(hotDemand.getWorkblankType());//毛坯
             plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
             plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
@@ -255,7 +257,24 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             planExtend.setSampleNum(0);//实样数量
             planExtend.setDemandId(hotDemand.getId());//需求表id
             planExtend.setPlanId(plan.getId());//生产计划id
+            planExtend.setWeight(hotDemand.getWeight());//重量
+            planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重
+            planExtend.setSteelWaterWeight(hotDemand.getSteelWaterWeight());//钢水重
+            planExtend.setDemandTime(hotDemand.getDemandTime());//需求日期
+            planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人
+            planExtend.setSubmitOrderOrg(hotDemand.getSubmitOrderOrg());//提单单位
+            planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
             planExtendService.save(planExtend);
+
+            //锻造缺补充字段
+            //重量KG
+            //需求日期
+            //提单人
+            //提单单位
+            //提单日期
+            //单重KG
+            //钢水KG
+
         }
 
     }

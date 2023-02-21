@@ -2,11 +2,11 @@ package com.richfit.mes.common.model.produce.store;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.richfit.mes.common.core.base.BaseEntity;
-import com.richfit.mes.common.model.produce.Plan;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 
 /**
@@ -35,4 +35,28 @@ public class PlanExtend {
 
     @ApiModelProperty(value = "产品名称")
     private String productName;
+
+    @ApiModelProperty(value = "重量")
+    private String weight;
+
+    @ApiModelProperty(value = "需求日期")
+    private Date demandTime;
+
+    @ApiModelProperty(value = "提单人")
+    private String submitBy;
+
+    @ApiModelProperty(value = "提单单位")
+    private String submitOrderOrg;
+
+    @ApiModelProperty(value = "提单日期")
+    private Date submitOrderTime;
+
+    @ApiModelProperty(value = "单重KG")
+    private String pieceWeight;
+
+    @ApiModelProperty(value = "钢水KG")
+    private String steelWaterWeight;
+
+
+
 }

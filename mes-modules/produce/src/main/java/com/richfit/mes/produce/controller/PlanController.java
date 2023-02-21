@@ -154,6 +154,7 @@ public class PlanController extends BaseController {
         OrderUtil.query(queryWrapper, planDto.getOrderCol(), planDto.getOrder());
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         planService.planPackageRouter(planList.getRecords());
+        planService.planPackageExtend(planList.getRecords());//完善扩展表信息
         return CommonResult.success(planList);
     }
 

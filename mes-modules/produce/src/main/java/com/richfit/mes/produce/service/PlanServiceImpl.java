@@ -16,11 +16,9 @@ import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.store.PlanExtend;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.dao.LineStoreMapper;
-import com.richfit.mes.produce.dao.PlanMapper;
-import com.richfit.mes.produce.dao.TrackHeadMapper;
-import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
@@ -29,6 +27,7 @@ import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +81,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Autowired
     private TrackAssemblyService trackAssemblyService;
+    @Autowired
+    private PlanExtendMapper planExtendMapper;
 
     /**
      * 功能描述: 物料齐套性检查
@@ -686,6 +687,24 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Override
+    public void planPackageExtend(List<Plan> planList) {
+
+        List<String> planIdList = planList.stream().map(x -> x.getId()).collect(Collectors.toList());
+
+        QueryWrapper<PlanExtend> queryWrapper=new QueryWrapper();
+        queryWrapper.in("plan_id",planIdList);
+        //根据id查扩展表信息
+        List<PlanExtend> planExtends = planExtendMapper.selectList(queryWrapper);
+        Map<String, PlanExtend> extendMap = planExtends.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
+        for (Plan plan : planList) {
+            PlanExtend planExtend = extendMap.get(plan.getId());
+            if(!ObjectUtil.isEmpty(planExtend)){
+                BeanUtils.copyProperties(planExtend,plan);
             }
         }
     }
