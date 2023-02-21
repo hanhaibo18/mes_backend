@@ -26,4 +26,13 @@ public interface DevicePersonService extends IService<DevicePerson> {
      * @return: List<Device>
      **/
     List<Device> queryDeviceByUserId(String userId,String branchCode);
+
+
+    /**
+     * 功能描述: 根据用户IDs查询设备交集
+     * @param userIds
+     * @param branchCode
+     * @return
+     */
+    List<Device> queryDeviceByUserIds(List<String> userIds,String branchCode);
 }
