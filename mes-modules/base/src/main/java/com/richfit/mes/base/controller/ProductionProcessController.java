@@ -160,18 +160,16 @@ public class ProductionProcessController {
     }
 
     @ApiOperation(value = "删除工序", notes = "删除工序")
-    @DeleteMapping("/delete/{processId}")
-    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "工艺路线ID") @PathVariable String processId) {
-        if (processId != null) {
-            boolean result = productionProcessService.removeById(processId);
-            if (result) {
-                return CommonResult.success("删除成功 ID:" + processId);
-            } else {
-                return CommonResult.failed("删除失败");
-            }
-        } else {
+    @DeleteMapping("/delete")
+    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "工艺路线ID") @RequestBody List<String> processIds) {
+        if (processIds.isEmpty()) {
+            return CommonResult.failed("传入ID为空");
+        }
+        boolean result = productionProcessService.removeByIds(processIds);
+        if (!result){
             return CommonResult.failed("删除失败");
         }
+        return CommonResult.success("删除成功");
     }
 
 

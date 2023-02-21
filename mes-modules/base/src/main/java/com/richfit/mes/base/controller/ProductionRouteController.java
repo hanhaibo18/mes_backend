@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author HanHaiBo
@@ -37,14 +38,14 @@ public class ProductionRouteController extends BaseController {
     public CommonResult<IPage<ProductionRoute>> page(@ApiParam(value = "页数") @RequestParam(defaultValue = "1") int page,
                                                      @ApiParam(value = "每页个数") @RequestParam(defaultValue = "10") int limit,
                                                      @ApiParam(value = "机构ID") @RequestParam String branchCode,
-                                                     @ApiParam(value = "排序列") String orderCol,
-                                                     @ApiParam(value = "asc/desc") String order,
-                                                     @ApiParam(value = "生产路线名称") String routeName) {
+                                                     @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                     @ApiParam(value = "asc/desc") @RequestParam(required = false) String order,
+                                                     @ApiParam(value = "生产路线名称") @RequestParam(required = false) String productionRouteName) {
         QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        if (routeName != null){
-            queryWrapper.like("production_route_name", "%" + routeName + "%");
+        if (productionRouteName != null) {
+            queryWrapper.like("production_route_name", "%" + productionRouteName + "%");
         }
         OrderUtil.query(queryWrapper, orderCol, order);
         return CommonResult.success(productionRouteService.page(new Page<>(page, limit), queryWrapper));
@@ -109,18 +110,16 @@ public class ProductionRouteController extends BaseController {
     }
 
     @ApiOperation(value = "删除生产路线", notes = "删除生产路线")
-    @DeleteMapping("/delete/{routeId}")
-    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "要删除的路线ID") @PathVariable String routeId) {
-        if (routeId != null) {
-            boolean result = productionRouteService.removeById(routeId);
-            if (result) {
-                return CommonResult.success("删除成功 ID:" + routeId);
-            } else {
-                return CommonResult.failed("删除失败");
-            }
-        } else {
+    @DeleteMapping("/delete")
+    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "要删除的路线ID") @RequestBody List<String> routeIds) {
+        if (routeIds.isEmpty()){
+            return CommonResult.failed("传入ID为空");
+        }
+        boolean result = productionRouteService.removeByIds(routeIds);
+        if (!result){
             return CommonResult.failed("删除失败");
         }
+        return CommonResult.success("删除成功");
     }
 
 
