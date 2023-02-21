@@ -44,7 +44,7 @@ public class ProductionRouteController extends BaseController {
     }
 
     @ApiOperation(value = "按名称获取生产路线", notes = "按名称获取生产路线")
-    @GetMapping("/get/{routeName}}")
+    @GetMapping("/get/{routeName}")
     public CommonResult<List<ProductionRoute>> getByName(@PathVariable String routeName, String branchCode, String orderCol, String order) {
         QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", branchCode);
