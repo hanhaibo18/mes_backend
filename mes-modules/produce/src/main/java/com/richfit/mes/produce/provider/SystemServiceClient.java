@@ -134,4 +134,7 @@ public interface SystemServiceClient {
      **/
     @GetMapping(value = "/api/sys/user/users_account")
     public CommonResult<Map<String, String>> usersAccount();
+
+    @PostMapping(value ="/api/sys/user/queryUserByBranchCodes")
+    public CommonResult<List<TenantUserVo>> queryUserByBranchCodes(@RequestBody List<String> branchCodeList);
 }

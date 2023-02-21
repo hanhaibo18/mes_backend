@@ -134,4 +134,9 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
         return null;
     }
 
+    @Override
+    public CommonResult<List<TenantUserVo>> queryUserByBranchCodes(List<String> branchCodeList) {
+        return null;
+    }
+
 }
