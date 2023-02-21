@@ -1,6 +1,8 @@
 package com.richfit.mes.produce.controller;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -191,8 +194,10 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "批量委托撤回", notes = "批量委托撤回")
     @ApiImplicitParam(name = "id", value = "委托单id", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/backOutOrder")
-    public CommonResult<Boolean> backOutOrder(@RequestBody List<String> ids) throws Exception {
-        return CommonResult.success(produceInspectionRecordService.backOutOrder(ids));
+    public CommonResult<Boolean> backOutOrder(@RequestBody JSONObject jsonObject){
+        List<String> ids = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("ids")), String.class);
+        String backRemark = jsonObject.getString("backRemark");
+        return CommonResult.success(produceInspectionRecordService.backOutOrder(ids,backRemark));
     }
 
     @ApiOperation(value = "删除委托单", notes = "删除委托单")
@@ -222,6 +227,12 @@ public class ProduceInspectionRecordController extends BaseController {
     @PostMapping("/inspectionPower/export_excel")
     public void exportExcel(@RequestBody InspectionPowerVo inspectionPowerVo, HttpServletResponse rsp) {
         produceInspectionRecordService.exportExcel(inspectionPowerVo, rsp);
+    }
+
+    @ApiOperation(value = "导入委托单", notes = "导入委托单")
+    @PostMapping("/inspectionPower/importPowerInfosExcel")
+    public CommonResult importPowerInfosExcel(MultipartFile file, String branchCode) {
+        return produceInspectionRecordService.importPowerInfosExcel(file, branchCode);
     }
 
 

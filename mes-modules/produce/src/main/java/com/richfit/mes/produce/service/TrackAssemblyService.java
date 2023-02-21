@@ -6,9 +6,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.TrackAssembly;
-import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
+import com.richfit.mes.produce.entity.TrackHeadMoldDto;
 
 import java.util.List;
 
@@ -95,5 +95,5 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/23 10:59
      **/
-    void addTrackAssemblyByTrackHead(TrackHead trackHead);
+    void addTrackAssemblyByTrackHead(TrackHeadMoldDto trackHeadMoldDto);
 }

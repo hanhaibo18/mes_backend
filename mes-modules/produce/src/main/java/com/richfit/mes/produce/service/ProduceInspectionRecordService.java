@@ -15,6 +15,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.OrderUtil;
@@ -35,9 +36,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -244,7 +247,12 @@ public class ProduceInspectionRecordService {
         queryWrapper.likeLeft(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo()), "draw_no", inspectionPowerVo.getDrawNo());
         //检测类型
         queryWrapper.eq(!StringUtils.isEmpty(inspectionPowerVo.getTempType()), "temp_type", inspectionPowerVo.getTempType());
-        queryWrapper.orderByDesc("power_time");
+        //排序
+        if(!StringUtils.isEmpty(inspectionPowerVo.getOrderCol())){
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        }else{
+            queryWrapper.orderByDesc("power_time");
+        }
         return queryWrapper;
     }
 
@@ -648,6 +656,14 @@ public class ProduceInspectionRecordService {
                     map.put("productNo", powers.get(0).getProductNo());
                     map.put("drawNo", powers.get(0).getDrawNo());
                     map.put("checkType", powers.get(0).getCheckType());
+                    //是否存在探伤记录赋值，便于前端按钮判断
+                    List<ProduceItemInspectInfo> list = new ArrayList<>();
+                    if (!StringUtils.isEmpty(powers.get(0))) {
+                        QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
+                        itemInspectInfoQueryWrapper.eq("power_id", powers.get(0).getId());
+                        list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+                    }
+                    map.put("isHaveRecord", list.size() > 0 ? 1 : 0);
                 }
                 //ge
                 maps.add(map);
@@ -1303,11 +1319,12 @@ public class ProduceInspectionRecordService {
     /**
      * 批量撤回
      */
-    public boolean backOutOrder(List<String> ids) {
+    public boolean backOutOrder(List<String> ids,String backRemark) {
         if (ids.size() > 0) {
             UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
             updateWrapper.in("id", ids)
-                    .set("status", BACKOUT_STATUS);
+                    .set("status", BACKOUT_STATUS)
+                    .set("back_remark",backRemark);
             return inspectionPowerService.update(updateWrapper);
         }
         return true;
@@ -1488,6 +1505,63 @@ public class ProduceInspectionRecordService {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+
+    public CommonResult importPowerInfosExcel(MultipartFile file, String branchCode) {
+        CommonResult result = CommonResult.success(true);
+        //封装工时信息实体类
+        String[] fieldNames = {"drilNo","drawNo","sampleName","inspectionDepart","checkType","tempType","weldString","castString","forgString","fluorescentString","num","single","length","reviseNum","priorityString"};
+
+        File excelFile = null;
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+            //模板校验
+            //将导入的excel数据生成实体类list
+            List<InspectionPower> checkInfo = ExcelUtils.importExcel(excelFile, InspectionPower.class, fieldNames, 2, 0, 0, tempName.toString());
+            if(checkInfo.size()>0){
+                if("钻机号".equals(checkInfo.get(0).getDrilNo()) &&
+                        "图号".equals(checkInfo.get(0).getDrawNo()) &&
+                        "样品名称".equals(checkInfo.get(0).getSampleName()) &&
+                        "探伤站机构编码".equals(checkInfo.get(0).getInspectionDepart())){
+
+                }else{
+                    return CommonResult.failed("模板不正确!");
+                }
+            }else{
+                return CommonResult.failed("模板不正确!");
+            }
+            //将导入的excel数据生成实体类list
+            List<InspectionPower> list = ExcelUtils.importExcel(excelFile, InspectionPower.class, fieldNames, 3, 0, 0, tempName.toString());
+            for (InspectionPower inspectionPower : list) {
+                inspectionPower.setBranchCode(branchCode);
+                inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                inspectionPower.setWeld(!StringUtils.isEmpty(inspectionPower.getWeldString())&& inspectionPower.getWeldString().equals("是")?1:0);
+                inspectionPower.setCast(!StringUtils.isEmpty(inspectionPower.getCastString())&& inspectionPower.getCastString().equals("是")?1:0);
+                inspectionPower.setForg(!StringUtils.isEmpty(inspectionPower.getForgString())&& inspectionPower.getForgString().equals("是")?1:0);
+                inspectionPower.setFluorescent(!StringUtils.isEmpty(inspectionPower.getFluorescentString())&& inspectionPower.getFluorescentString().equals("是")?1:0);
+                if(!StringUtils.isEmpty(inspectionPower.getPriorityString()) && inspectionPower.getPriorityString().equals("低")){
+                    inspectionPower.setPriority(0);
+                }
+                if(!StringUtils.isEmpty(inspectionPower.getPriorityString()) && inspectionPower.getPriorityString().equals("中")){
+                    inspectionPower.setPriority(1);
+                }
+                if(!StringUtils.isEmpty(inspectionPower.getPriorityString()) && inspectionPower.getPriorityString().equals("高")){
+                    inspectionPower.setPriority(2);
+                }
+            }
+            FileUtils.delete(excelFile);
+            //保存委托单
+            this.saveInspectionPowers(list);
+
+        } catch (Exception e) {
+            return CommonResult.failed();
+        }
+        return result;
     }
 
 

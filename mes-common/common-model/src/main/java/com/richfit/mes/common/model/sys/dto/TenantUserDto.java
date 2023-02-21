@@ -62,4 +62,7 @@ public class TenantUserDto extends BaseDto<TenantUser> {
     @TableField(exist = false)
     @ApiModelProperty(value = "用户类型(0=普通,1=普通质检,2=质检租户)")
     private String userRoleType;
+
+    @ApiModelProperty(value = "工时比例")
+    private Integer ratioHours;
 }

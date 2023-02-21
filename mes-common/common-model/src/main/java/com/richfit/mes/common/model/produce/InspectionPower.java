@@ -62,6 +62,8 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private double length;
     @ApiModelProperty(value = "处数", dataType = "Integer")
     private int reviseNum;
+    @ApiModelProperty(value = "优先级", dataType = "Integer")
+    private int priority;
     @ApiModelProperty(value = "branchCode", dataType = "String")
     private String branchCode;
     @ApiModelProperty(value = "tenantId", dataType = "String")
@@ -106,6 +108,8 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String startDoingUser;
     @ApiModelProperty(value = "开工时间", dataType = "Date")
     private Date startDoingTime;
+    @ApiModelProperty(value = "退回意见", dataType = "String")
+    private String backRemark;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "委托单状态导出展示", dataType = "String")
@@ -149,6 +153,21 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @TableField(exist = false)
     @ApiModelProperty(value = "最新探伤记录id", dataType = "String")
     private String recordId ;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "焊接String", dataType = "String")
+    private String weldString;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "铸造String", dataType = "String")
+    private String castString;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "锻压String", dataType = "String")
+    private String forgString;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "荧光String", dataType = "String")
+    private String fluorescentString;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "优先级String", dataType = "String")
+    private String priorityString;
     public String getProductType() {
         StringBuilder productType = new StringBuilder();
         if(this.weld ==1){

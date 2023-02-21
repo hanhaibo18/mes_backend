@@ -10,16 +10,20 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.produce.HotDemand;
 import com.richfit.mes.common.model.produce.HotModelStore;
+import com.richfit.mes.common.model.produce.Plan;
+import com.richfit.mes.common.model.produce.store.PlanExtend;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.HotDemandMapper;
 import com.richfit.mes.produce.entity.DemandExcel;
+import com.richfit.mes.produce.utils.DateUtils;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,12 +38,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Transactional(rollbackFor = Exception.class)
 @Service
 public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand> implements HotDemandService {
     @Resource
     private HotDemandService hotDemandService;
     @Resource
     public HotModelStoreService hotModelStoreService;
+    @Autowired
+    private PlanService planService;
+    @Resource
+    private PlanExtendService planExtendService;
     /**
      * 导入需求提报数据
      * @param file
@@ -142,7 +151,113 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         return ids;
     }
 
+    /**
+     * 生产批准
+     * @param idList
+     * @param ratifyState
+     * @param branchCode
+     * @return
+     */
+    @Override
+    public CommonResult<?> ratify(List<String> idList, Integer ratifyState, String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        //检查无模型数据
+        List<String> ids = hotDemandService.checkModel(idList, branchCode);
+        if (CollectionUtils.isNotEmpty(ids)) return CommonResult.failed("存在无模型需求");
+
+        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.in("id", idList);
+        //无模型"且“未排产”产品
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        //将需求数据转换为生产计划并入库
+        this.convertAndSave(currentUser, hotDemands,0);
+        UpdateWrapper updateWrapper = new UpdateWrapper();
+        updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
+        updateWrapper.set("issue_time", new Date());//设置下发时间
+
+        updateWrapper.in("id", idList);
+        boolean update = hotDemandService.update(updateWrapper);
+        if (update) return CommonResult.success(ResultCode.SUCCESS);
+        return CommonResult.failed();
+    }
 
 
+    /**
+     *模型排产
+     * @param idList
+     * @param branchCode
+     * @return
+     */
+    @Override
+    public CommonResult modelProductionScheduling(List<String> idList, String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.apply("(is_exist_model=0 or is_exist_process is null)");
+        queryWrapper.in("id", idList);
+        //无模型"且“未排产”产品
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        //将需求数据转换为生产计划并入库
+        this.convertAndSave(currentUser, hotDemands,1);
+        UpdateWrapper updateWrapper = new UpdateWrapper();
+        updateWrapper.set("produce_state", 1);//设置排产状态 0: 未排产   1 :已排产',
+        updateWrapper.in("id", idList);
+        boolean update = hotDemandService.update(updateWrapper);
+        if (update) return CommonResult.success(ResultCode.SUCCESS);
+
+        return CommonResult.failed();
+    }
+    /**
+     * 将需求数据转换为生产计划并入库
+     *
+     * @param currentUser
+     * @param hotDemands
+     * @param branchType  1 模型车间
+     */
+
+    private void convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands ,int branchType) {
+        //根据需求信息自动生成生产计划数据
+        for (HotDemand hotDemand : hotDemands) {
+            Plan plan = new Plan();
+            plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
+            plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));//计划编号
+            plan.setWorkNo(hotDemand.getWorkNo());//工作号
+            plan.setDrawNo(hotDemand.getDrawNo());//图号
+            plan.setProjNum(hotDemand.getPlanNum());//计划数量
+            plan.setStartTime(new Date());//开始时间
+            plan.setPriority("0");//优先级 0低 1中 2高
+            plan.setCreateBy(currentUser.getUsername());//创建人
+            plan.setCreateTime(new Date());//创建时间
+            plan.setTenantId(hotDemand.getTenantId());//租户id
+            if(branchType==1){//模型排产
+                plan.setProjType(1);//计划类型 1新制  2 返修(模型排产默认为新制)
+                plan.setBranchCode("BOMCO_RF_MX");//车间码(模型排产自动派发到模型车间)
+            }else {
+                plan.setBranchCode(hotDemand.getProduceOrg());//车间码
+            }
+            //--------------------------
+            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
+            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
+            plan.setTexture(hotDemand.getTexture());//材质
+            plan.setBlank(hotDemand.getWorkblankType());//毛坯
+            plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
+            plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
+            plan.setModifyBy(currentUser.getUserId());
+            plan.setModifyTime(new Date());
+            plan.setDrawNoName("");//图号名称
+            planService.save(plan);
+            //扩展字段保存
+            PlanExtend planExtend = new PlanExtend();
+            planExtend.setProjectName(hotDemand.getProjectName());//项目名称
+            planExtend.setProductName(hotDemand.getDemandName());//产品名称
+            planExtend.setSampleNum(0);//实样数量
+            planExtend.setDemandId(hotDemand.getId());//需求表id
+            planExtend.setPlanId(plan.getId());//生产计划id
+            planExtendService.save(planExtend);
+        }
+
+    }
 
 }
