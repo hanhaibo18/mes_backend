@@ -140,8 +140,8 @@ public class ProductionProcessController {
 
     @ApiOperation(value = "批量修改工序", notes = "批量修改工序")
     @PutMapping("/updateBatch")
-    public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses,
-                                                          @ApiParam(value = "工艺路线id") @RequestParam String productionRouteId) {
+    public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses) {
+        String productionRouteId = productionProcesses[0].getProductionRouteId();
         String currentUser = "unknownUser";
         Date nowTime = new Date();
         if (null != SecurityUtils.getCurrentUser()) {
@@ -179,7 +179,6 @@ public class ProductionProcessController {
         for (ProductionProcess process : addList) {
             process.setCreateTime(nowTime);
             process.setCreateBy(currentUser);
-            process.setProductionRouteId(productionRouteId);
         }
         boolean result = productionProcessService.saveBatch(addList);
         if (!result){
