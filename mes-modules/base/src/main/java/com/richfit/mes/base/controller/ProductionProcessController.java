@@ -136,7 +136,7 @@ public class ProductionProcessController {
     }
 
     @ApiOperation(value = "批量修改工序", notes = "批量修改工序")
-    @PutMapping("/updateList")
+    @PutMapping("/updateBatch")
     public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses) {
         for (ProductionProcess process : productionProcesses) {
             if (StringUtils.isNullOrEmpty(process.getProcessName())) {

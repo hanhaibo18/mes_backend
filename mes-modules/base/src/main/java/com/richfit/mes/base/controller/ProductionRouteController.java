@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author HanHaiBo
@@ -92,7 +91,7 @@ public class ProductionRouteController extends BaseController {
     }
 
     @ApiOperation(value = "批量修改生产路线", notes = "批量修改生产路线")
-    @PutMapping("/updates")
+    @PutMapping("/updateBatch")
     public CommonResult<String> updateProductionRoutes(@RequestBody ProductionRoute[] ProductionRoutes) {
         for (ProductionRoute route : ProductionRoutes) {
             if (StringUtils.isNullOrEmpty(route.getProductionRouteName())) {
