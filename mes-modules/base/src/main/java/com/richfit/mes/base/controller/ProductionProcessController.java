@@ -161,11 +161,11 @@ public class ProductionProcessController {
 
     @ApiOperation(value = "删除工序", notes = "删除工序")
     @DeleteMapping("/delete")
-    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "工艺路线ID") @RequestBody List<String> processIds) {
-        if (processIds.isEmpty()) {
+    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "工艺路线ID") @RequestBody List<String> ids) {
+        if (ids.isEmpty()) {
             return CommonResult.failed("传入ID为空");
         }
-        boolean result = productionProcessService.removeByIds(processIds);
+        boolean result = productionProcessService.removeByIds(ids);
         if (!result){
             return CommonResult.failed("删除失败");
         }
