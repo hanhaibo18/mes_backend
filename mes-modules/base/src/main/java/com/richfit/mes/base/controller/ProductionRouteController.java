@@ -24,7 +24,7 @@ import java.util.Date;
  */
 
 @Slf4j
-@Api("生产路线管理")
+@Api(value = "生产路线管理", tags = {"生产路线管理"})
 @RestController
 @RequestMapping("/api/base/production")
 public class ProductionRouteController extends BaseController {

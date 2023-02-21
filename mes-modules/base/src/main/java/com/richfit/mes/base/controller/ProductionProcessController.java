@@ -25,7 +25,7 @@ import java.util.List;
  * @date 2023/2/21 8:43
  */
 @Slf4j
-@Api("生产路线工序管理")
+@Api(value = "生产路线工序管理", tags = {"生产路线工序管理"})
 @RestController
 @RequestMapping("/api/base/process")
 public class ProductionProcessController {
