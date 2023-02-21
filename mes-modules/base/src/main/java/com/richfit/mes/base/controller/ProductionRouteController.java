@@ -7,12 +7,12 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.ProductionRouteService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProductionRoute;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -35,23 +35,18 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "分页获取生产路线", notes = "分页获取生产路线")
     @GetMapping("/page")
-    public CommonResult<IPage<ProductionRoute>> page(int page, int limit, String branchCode, String orderCol, String order) {
-        QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(productionRouteService.page(new Page<>(page, limit), queryWrapper));
-    }
-
-    @ApiOperation(value = "按名称获取生产路线", notes = "按名称获取生产路线")
-    @GetMapping("/get/{routeName}")
-    public CommonResult<List<ProductionRoute>> getByName(@PathVariable String routeName, String branchCode, String orderCol, String order) {
+    public CommonResult<IPage<ProductionRoute>> page(@ApiParam(value = "页数") @RequestParam(defaultValue = "1") int page,
+                                                     @ApiParam(value = "每页个数") @RequestParam(defaultValue = "10") int limit,
+                                                     @ApiParam(value = "机构ID") @RequestParam String branchCode,
+                                                     @ApiParam(value = "排序列") String orderCol,
+                                                     @ApiParam(value = "asc/desc") String order,
+                                                     @ApiParam(value = "生产路线名称") String routeName) {
         QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.like("production_route_name", "%" + routeName + "%");
         OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(productionRouteService.list(queryWrapper));
+        return CommonResult.success(productionRouteService.page(new Page<>(page, limit), queryWrapper));
     }
 
     @ApiOperation(value = "新增生产路线", notes = "新增生产路线")
@@ -114,7 +109,7 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "删除生产路线", notes = "删除生产路线")
     @DeleteMapping("/delete/{routeId}")
-    public CommonResult<String> deleteProductionRoute(@PathVariable String routeId) {
+    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "要删除的路线ID") @PathVariable String routeId) {
         if (routeId != null) {
             boolean result = productionRouteService.removeById(routeId);
             if (result) {
