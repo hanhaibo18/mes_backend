@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProductionRoute;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author HanHaiBo
@@ -33,11 +35,23 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "分页获取生产路线", notes = "分页获取生产路线")
     @GetMapping("/page")
-    public CommonResult<IPage<ProductionRoute>> page(int page, int limit, String branchCode) {
+    public CommonResult<IPage<ProductionRoute>> page(int page, int limit, String branchCode, String orderCol, String order) {
         QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_code",branchCode);
-        queryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
-        return CommonResult.success(productionRouteService.page(new Page<>(page, limit),queryWrapper));
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        OrderUtil.query(queryWrapper, orderCol, order);
+        return CommonResult.success(productionRouteService.page(new Page<>(page, limit), queryWrapper));
+    }
+
+    @ApiOperation(value = "按名称获取生产路线", notes = "按名称获取生产路线")
+    @GetMapping("/get/{routeName}}")
+    public CommonResult<List<ProductionRoute>> getByName(@PathVariable String routeName, String branchCode, String orderCol, String order) {
+        QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.like("production_route_name", "%" + routeName + "%");
+        OrderUtil.query(queryWrapper, orderCol, order);
+        return CommonResult.success(productionRouteService.list(queryWrapper));
     }
 
     @ApiOperation(value = "新增生产路线", notes = "新增生产路线")
@@ -86,7 +100,7 @@ public class ProductionRouteController extends BaseController {
     @PutMapping("/updates")
     public CommonResult<String> updateProductionRoutes(@RequestBody ProductionRoute[] ProductionRoutes) {
         for (ProductionRoute route : ProductionRoutes) {
-            if (StringUtils.isNullOrEmpty(route.getProductionRouteName())){
+            if (StringUtils.isNullOrEmpty(route.getProductionRouteName())) {
                 return CommonResult.failed("名称不能为空！");
             }
         }

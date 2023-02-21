@@ -36,26 +36,15 @@ public class ProductionProcessController {
     private ProductionRouteService productionRouteService;
 
     @ApiOperation(value = "根据productionRouteId查询工序列表", notes = "根据productionRouteId查询工序列表")
-    @GetMapping("/page")
-    public CommonResult<IPage<ProductionProcess>> list(@ApiParam(value = "工艺id", required = true) @RequestParam String routeId,
-                                                       Integer page, Integer limit, String processName) {
-        if (page == null) {
-            page = 1;
+    @GetMapping("/list")
+    public CommonResult<List<ProductionProcess>> list(@RequestParam String routeId, @RequestParam String processName) {
+        QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
+        if (processName != null) {
+            queryWrapper.like("process_name", "%" + processName + "%");
         }
-        if (limit == null) {
-            limit = 10;
-        }
-        try {
-            QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
-            if (processName != null) {
-                queryWrapper.like("process_name", "%" + processName + "%");
-            }
-            queryWrapper.eq("production_route_id", routeId);
-            queryWrapper.orderByAsc("process_sequence");
-            return CommonResult.success(productionProcessService.page(new Page<ProductionProcess>(page, limit), queryWrapper));
-        } catch (Exception e) {
-            return CommonResult.failed(e.getMessage());
-        }
+        queryWrapper.eq("production_route_id", routeId);
+        queryWrapper.orderByAsc("process_sequence");
+        return CommonResult.success(productionProcessService.list(queryWrapper));
     }
 
     @ApiOperation(value = "根据productionRouteId新增工序", notes = "根据productionRouteId新增工序")
@@ -95,7 +84,7 @@ public class ProductionProcessController {
     public CommonResult addProductionProcesses(@PathVariable String routeId, @RequestBody
             ProductionProcess[] productionProcesses) {
         for (ProductionProcess process : productionProcesses) {
-            if (StringUtils.isNullOrEmpty(process.getProcessName())){
+            if (StringUtils.isNullOrEmpty(process.getProcessName())) {
                 return CommonResult.failed("工序名称不能为空");
             }
         }
@@ -152,7 +141,7 @@ public class ProductionProcessController {
     @PutMapping("/updates")
     public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses) {
         for (ProductionProcess process : productionProcesses) {
-            if (StringUtils.isNullOrEmpty(process.getProcessName())){
+            if (StringUtils.isNullOrEmpty(process.getProcessName())) {
                 return CommonResult.failed("工序名称不能为空");
             }
             if (StringUtils.isNullOrEmpty(process.getId())) {
@@ -169,7 +158,7 @@ public class ProductionProcessController {
             process.setModifyTime(nowTime);
             productionProcessService.updateById(process);
         }
-       return CommonResult.success("批量修改成功！");
+        return CommonResult.success("批量修改成功！");
     }
 
     @ApiOperation(value = "删除工序", notes = "删除工序")
@@ -186,7 +175,6 @@ public class ProductionProcessController {
             return CommonResult.failed("删除失败");
         }
     }
-
 
 
 }
