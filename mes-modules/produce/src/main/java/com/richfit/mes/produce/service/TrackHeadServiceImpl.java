@@ -1,9 +1,12 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -18,6 +21,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.CodeRuleController;
@@ -653,6 +657,54 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public TrackHeadPublicDto queryDtoById(String trackHeadId) {
         return trackHeadMapper.queryDtoById(trackHeadId);
+    }
+
+    @Override
+    public void exportHeatReport(String trackHeadId, HttpServletResponse response) {
+        TrackHead trackHead = trackHeadMapper.selectById(trackHeadId);
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        CommonResult<Tenant> tenant = systemServiceClient.getTenantById(tenantId);
+        if (tenant.getStatus() != 200){
+            throw new GlobalException("获取公司名称失败",ResultCode.FAILED);
+        }
+            if (trackHead != null) {
+                ClassPathResource classPathResource = new ClassPathResource("excel/" + "heatTreatmentReport.xlsx");
+                ExcelWriter writer = null;
+                try {
+                    writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
+                } catch (IOException e) {
+                    log.error("获取输入流异常:", e);
+                    return;
+                }
+                XSSFWorkbook wk = (XSSFWorkbook) writer.getWorkbook();
+                writer.writeCellValue("C6", trackHeadId);
+                writer.writeCellValue("H6", LocalDate.now().toString());
+                writer.writeCellValue("C7", trackHead.getProductName());
+                writer.writeCellValue("H7", trackHead.getTexture());
+                writer.writeCellValue("C9", trackHead.getNumber());
+                writer.writeCellValue("H9", trackHead.getDrawingNo());
+                writer.writeCellValue("C11", tenant.getData().getTenantName());
+                // TODO: 2023/2/22
+
+                ServletOutputStream outputStream = null;
+                try {
+                    outputStream = response.getOutputStream();
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                    e.printStackTrace();
+                }
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+                String time = "heatTreatmentReport" + LocalDateTime.now();
+                try {
+                    response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
+                            "ISO-8859-1") + ".xlsx");
+                } catch (UnsupportedEncodingException e) {
+                    log.error(e.getMessage());
+                    e.printStackTrace();
+                }
+                writer.flush(outputStream, true);
+                IoUtil.close(outputStream);
+            }
     }
 
     @Override
