@@ -14,11 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author HanHaiBo
@@ -51,7 +48,7 @@ public class ProductionProcessController {
     @ApiOperation(value = "根据productionRouteId新增工序", notes = "根据productionRouteId新增工序")
     @PostMapping("/add/{routeId}")
     public CommonResult<ProductionProcess> addProductionProcess(@ApiParam(value = "工艺路线ID") @PathVariable String routeId,
-                                                                @RequestBody ProductionProcess productionProcess) {
+                                                                @ApiParam(value = "热工路线工序") @RequestBody ProductionProcess productionProcess) {
         if (StringUtils.isNullOrEmpty(productionProcess.getProcessName())) {
             return CommonResult.failed("工艺名称不能为空");
         }
@@ -83,7 +80,7 @@ public class ProductionProcessController {
     @ApiOperation(value = "根据productionRouteId批量新增工序", notes = "根据productionRouteId批量新增工序")
     @PostMapping("/addList/{routeId}")
     public CommonResult<String> addProductionProcesses(@ApiParam(value = "工艺路线ID") @PathVariable String routeId,
-                                                       @RequestBody ProductionProcess[] productionProcesses) {
+                                                       @ApiParam(value = "热工路线工序") @RequestBody ProductionProcess[] productionProcesses) {
         for (ProductionProcess process : productionProcesses) {
             if (StringUtils.isNullOrEmpty(process.getProcessName())) {
                 return CommonResult.failed("工序名称不能为空");
@@ -119,7 +116,7 @@ public class ProductionProcessController {
 
     @ApiOperation(value = "修改工序", notes = "修改工序")
     @PutMapping("/update")
-    public CommonResult<ProductionProcess> updateProductionProcess(@RequestBody ProductionProcess productionProcess) {
+    public CommonResult<ProductionProcess> updateProductionProcess(@ApiParam(value = "热工路线工序") @RequestBody ProductionProcess productionProcess) {
         if (StringUtils.isNullOrEmpty(productionProcess.getProcessName())) {
             return CommonResult.failed("工序名称不能为空！");
         }
@@ -140,62 +137,10 @@ public class ProductionProcessController {
 
     @ApiOperation(value = "批量修改工序", notes = "批量修改工序")
     @PutMapping("/updateBatch")
-    public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses) {
-        String productionRouteId = productionProcesses[0].getProductionRouteId();
-        String currentUser = "unknownUser";
-        Date nowTime = new Date();
-        if (null != SecurityUtils.getCurrentUser()) {
-            currentUser = SecurityUtils.getCurrentUser().getUsername();
-        }
-        List<String> currentIdList = new ArrayList<>();
-        for (ProductionProcess process : productionProcesses) {
-            if (StringUtils.isNullOrEmpty(process.getProcessName())) {
-                return CommonResult.failed("工序名称不能为空");
-            }
-            if (process.getId() != null) {
-                currentIdList.add(process.getId());
-            }
-            process.setModifyBy(currentUser);
-            process.setModifyTime(nowTime);
-        }
-        //获取当前所有idList
-        QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("production_route_id", productionRouteId);
-        List<ProductionProcess> allProcess = productionProcessService.list(queryWrapper);
-        if (!allProcess.isEmpty()) {
-            List<String> allIdList = new ArrayList<>();
-            for (ProductionProcess process : allProcess) {
-                allIdList.add(process.getId());
-            }
-            //当前所有idList中剔除传入的即为删除的idList
-            allIdList.removeAll(currentIdList);
-            if (!allIdList.isEmpty()){
-                boolean result = productionProcessService.removeByIds(allIdList);
-                if (!result) {
-                    return CommonResult.failed("删除失败");
-                }
-            }
-
-        }
-        //获取id为null的新增list
-        List<ProductionProcess> addList = Arrays.stream(productionProcesses).filter(process -> process.getId() == null).collect(Collectors.toList());
-        for (ProductionProcess process : addList) {
-            process.setCreateTime(nowTime);
-            process.setCreateBy(currentUser);
-        }
-        if (!addList.isEmpty()){
-            boolean result = productionProcessService.saveBatch(addList);
-            if (!result){
-                return CommonResult.failed("新增失败");
-            }
-        }
-        //获取修改list
-        List<ProductionProcess> updateList = Arrays.stream(productionProcesses).filter(process -> process.getId() != null).collect(Collectors.toList());
-        if (!updateList.isEmpty()){
-            boolean result = productionProcessService.updateBatchById(updateList);
-            if (!result){
-                return CommonResult.failed("修改失败");
-            }
+    public CommonResult<String> updateProductionProcesses(@ApiParam(value = "热工路线工序") @RequestBody ProductionProcess[] productionProcesses) {
+        boolean result = productionProcessService.updateBatch(productionProcesses);
+        if (!result) {
+            return CommonResult.failed("批量修改失败！");
         }
         return CommonResult.success("批量修改成功！");
     }

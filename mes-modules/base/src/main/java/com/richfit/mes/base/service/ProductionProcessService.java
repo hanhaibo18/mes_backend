@@ -8,4 +8,5 @@ import com.richfit.mes.common.model.base.ProductionProcess;
  * @date 2023/2/20 15:35
  */
 public interface ProductionProcessService extends IService<ProductionProcess> {
+    boolean updateBatch(ProductionProcess[] productionProcesses);
 }
