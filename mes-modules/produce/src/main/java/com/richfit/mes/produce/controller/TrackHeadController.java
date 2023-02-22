@@ -777,4 +777,10 @@ public class TrackHeadController extends BaseController {
         String routerVer = jsonObject.getString("routerVer");
         return CommonResult.success(trackHeadService.rgSaveTrackHead(trackNo, trackItems, routerId, routerVer));
     }
+
+    @ApiOperation(value = "导出热处理报告", notes = "通过Excel文档导出热处理报告")
+    @GetMapping("/exportHeatReport")
+    public void exportHeatReport(@ApiParam(value = "跟单工序表ID") String trackHeadId, HttpServletResponse rsp) {
+        trackHeadService.exportHeatReport(trackHeadId, rsp);
+    }
 }
