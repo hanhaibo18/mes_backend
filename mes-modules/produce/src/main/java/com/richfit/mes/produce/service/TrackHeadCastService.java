@@ -1,7 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.model.produce.ProduceTrackHeadCast;
+import com.richfit.mes.common.model.produce.TrackHeadCast;
 
 /**
  * @ClassName: TrackHeadCastService.java
@@ -9,5 +9,5 @@ import com.richfit.mes.common.model.produce.ProduceTrackHeadCast;
  * @Description: 铸造
  * @CreateTime: 2023年02月22日 11:15:00
  */
-public interface TrackHeadCastService extends IService<ProduceTrackHeadCast> {
+public interface TrackHeadCastService extends IService<TrackHeadCast> {
 }

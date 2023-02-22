@@ -86,5 +86,9 @@ public class TrackMold extends BaseEntity<TrackMold> {
     @ApiModelProperty(value = "完工日期")
     private Date completionDate;
 
+    private String branchCode;
+
+    private String tenantId;
+
     private static final long serialVersionUID = 1L;
 }

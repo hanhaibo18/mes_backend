@@ -767,15 +767,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //跟单创建铸造
             if (trackHeadPublicDto.getClasses().equals("6")) {
-                ProduceTrackHeadCast produceTrackHeadCast = new ProduceTrackHeadCast();
-                BeanUtils.copyProperties(trackHeadPublicDto, produceTrackHeadCast);
-                trackHeadCastService.save(produceTrackHeadCast);
+                TrackHeadCast trackHeadCast = new TrackHeadCast();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackHeadCast);
+                trackHeadCastService.save(trackHeadCast);
             }
             //跟单创建锻造
             if (trackHeadPublicDto.getClasses().equals("4")) {
-                ProduceTrackHeadForge produceTrackHeadForge = new ProduceTrackHeadForge();
-                BeanUtils.copyProperties(trackHeadPublicDto, produceTrackHeadForge);
-                trackHeadForgeService.save(produceTrackHeadForge);
+                TrackHeadForge trackHeadForge = new TrackHeadForge();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackHeadForge);
+                trackHeadForgeService.save(trackHeadForge);
             }
 
             //当跟单中存在bom(装配)
@@ -980,15 +980,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //跟单创建铸造
             if (trackHeadPublicDto.getClasses().equals("6")) {
-                ProduceTrackHeadCast produceTrackHeadCast = new ProduceTrackHeadCast();
-                BeanUtils.copyProperties(trackHeadPublicDto, produceTrackHeadCast);
-                trackHeadCastService.updateById(produceTrackHeadCast);
+                TrackHeadCast trackHeadCast = new TrackHeadCast();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackHeadCast);
+                trackHeadCastService.updateById(trackHeadCast);
             }
             //跟单创建锻造
             if (trackHeadPublicDto.getClasses().equals("4")) {
-                ProduceTrackHeadForge produceTrackHeadForge = new ProduceTrackHeadForge();
-                BeanUtils.copyProperties(trackHeadPublicDto, produceTrackHeadForge);
-                trackHeadForgeService.updateById(produceTrackHeadForge);
+                TrackHeadForge trackHeadForge = new TrackHeadForge();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackHeadForge);
+                trackHeadForgeService.updateById(trackHeadForge);
             }
 
             //工序批量修改（单件跟单多生产线、普通跟单判断）

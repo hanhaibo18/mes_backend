@@ -11,7 +11,7 @@ import java.util.Date;
  * @author Hou XinYu
  */
 @Data
-public class ProduceTrackHeadCast extends BaseEntity<ProduceTrackHeadCast> {
+public class TrackHeadCast extends BaseEntity<TrackHeadCast> {
 
     /**
      * 钢水重量
@@ -47,5 +47,9 @@ public class ProduceTrackHeadCast extends BaseEntity<ProduceTrackHeadCast> {
      * 毛坯探伤 1=有 0=无
      */
     private boolean blankInspection;
+
+    private String branchCode;
+
+    private String tenantId;
 
 }
