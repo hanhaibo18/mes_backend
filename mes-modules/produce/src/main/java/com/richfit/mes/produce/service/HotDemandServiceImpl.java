@@ -229,11 +229,14 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("(is_exist_model=0 or is_exist_process is null)");
+       // queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.apply("(produce_state=0 or produce_state is null)");
         queryWrapper.in("id", idList);
         //无模型"且“未排产”产品
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if(CollectionUtils.isEmpty(hotDemands)){
+            return CommonResult.success(ResultCode.SUCCESS,"所选需求均已排产");
+        }
         //将需求数据转换为生产计划并入库
         Map map = this.convertAndSave(currentUser, hotDemands, 1);
         for (HotDemand hotDemand : hotDemands) {
@@ -278,11 +281,12 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             plan.setApprovalTime(new Date());//审批时间
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
             //--------------------------
+            plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
             plan.setBlank(hotDemand.getWorkblankType());//毛坯
             plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
             plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
-            plan.setModifyBy(currentUser.getUserId());
+            plan.setModifyBy(currentUser.getUsername());
             plan.setModifyTime(new Date());
             plan.setDrawNoName("");//图号名称
             planService.save(plan);
