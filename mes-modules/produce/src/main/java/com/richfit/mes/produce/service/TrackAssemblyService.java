@@ -8,7 +8,7 @@ import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
-import com.richfit.mes.produce.entity.TrackHeadMoldDto;
+import com.richfit.mes.produce.entity.TrackHeadPublicDto;
 
 import java.util.List;
 
@@ -95,5 +95,5 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/23 10:59
      **/
-    void addTrackAssemblyByTrackHead(TrackHeadMoldDto trackHeadMoldDto);
+    void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto);
 }

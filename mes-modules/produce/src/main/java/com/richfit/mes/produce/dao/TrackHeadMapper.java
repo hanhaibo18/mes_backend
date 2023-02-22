@@ -191,5 +191,5 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      * @return: TrackHeadMoldDto
      **/
     @Select("SELECT * FROM produce_track_head WHERE id = #{trackHeadId}")
-    TrackHeadMoldDto queryDtoById(@Param("trackHeadId") String trackHeadId);
+    TrackHeadPublicDto queryDtoById(@Param("trackHeadId") String trackHeadId);
 }
