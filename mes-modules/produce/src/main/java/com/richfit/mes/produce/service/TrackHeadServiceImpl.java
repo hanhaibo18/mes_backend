@@ -772,6 +772,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 BeanUtils.copyProperties(trackHeadPublicDto, produceTrackHeadForge);
                 trackHeadForgeService.save(produceTrackHeadForge);
             }
+
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHeadPublicDto.getProjectBomId())) {
                 trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto);
@@ -965,6 +966,25 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             TrackHead newTrackHead = new TrackHead();
             BeanUtils.copyProperties(trackHeadPublicDto, newTrackHead);
             trackHeadMapper.updateById(newTrackHead);
+
+            //跟单创建模型
+            if (trackHeadPublicDto.getClasses().equals("3")) {
+                TrackMold trackMold = new TrackMold();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackMold);
+                trackHeadMoldService.updateById(trackMold);
+            }
+            //跟单创建铸造
+            if (trackHeadPublicDto.getClasses().equals("6")) {
+                ProduceTrackHeadCast produceTrackHeadCast = new ProduceTrackHeadCast();
+                BeanUtils.copyProperties(trackHeadPublicDto, produceTrackHeadCast);
+                trackHeadCastService.updateById(produceTrackHeadCast);
+            }
+            //跟单创建锻造
+            if (trackHeadPublicDto.getClasses().equals("4")) {
+                ProduceTrackHeadForge produceTrackHeadForge = new ProduceTrackHeadForge();
+                BeanUtils.copyProperties(trackHeadPublicDto, produceTrackHeadForge);
+                trackHeadForgeService.updateById(produceTrackHeadForge);
+            }
 
             //工序批量修改（单件跟单多生产线、普通跟单判断）
             if ("N".equals(trackHeadPublicDto.getIsBatch()) && trackHeadPublicDto.getFlowNumber().compareTo(1) > 0) {
