@@ -655,6 +655,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         return trackHeadMapper.queryDtoById(trackHeadId);
     }
 
+    @Override
+    public IPage<TrackHeadPublicVo> queryPage(IPage<TrackHead> page, QueryWrapper<TrackHead> queryWrapper) {
+        return trackHeadMapper.queryPage(page, queryWrapper);
+    }
+
 
     /**
      * 描述: 跟单添加方法

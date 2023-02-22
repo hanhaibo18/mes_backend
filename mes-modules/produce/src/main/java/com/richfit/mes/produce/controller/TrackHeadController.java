@@ -244,33 +244,33 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "分页查询跟单", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单")
     @GetMapping("/track_head")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
-                                                          @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
-                                                          @ApiParam(value = "id") @RequestParam(required = false) String id,
-                                                          @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+    public CommonResult<IPage<TrackHeadPublicVo>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                                                                  @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                                                  @ApiParam(value = "id") @RequestParam(required = false) String id,
+                                                                  @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
 
-                                                          @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                                  @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
 
-                                                          @ApiParam(value = "订单编号") @RequestParam(required = false) String productionOrder,
+                                                                  @ApiParam(value = "订单编号") @RequestParam(required = false) String productionOrder,
 
-                                                          @ApiParam(value = "工作计划id") @RequestParam(required = false) String workPlanId,
-                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
-                                                          @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
-                                                          @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
-                                                          @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                                  @ApiParam(value = "工作计划id") @RequestParam(required = false) String workPlanId,
+                                                                  @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
+                                                                  @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
+                                                                  @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
+                                                                  @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
 
-                                                          @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
-                                                          @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
-                                                          @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
-                                                          @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
-                                                          @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
-                                                          @ApiParam(value = "工艺id") @RequestParam(required = false) String routerId,
-                                                          @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
-                                                          @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
-                                                          @ApiParam(value = "页码") @RequestParam(required = false) int page,
-                                                          @ApiParam(value = "条数") @RequestParam(required = false) int limit,
-                                                          @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
-                                                          @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter) {
+                                                                  @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
+                                                                  @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
+                                                                  @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                                  @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                                  @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
+                                                                  @ApiParam(value = "工艺id") @RequestParam(required = false) String routerId,
+                                                                  @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                                                  @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
+                                                                  @ApiParam(value = "页码") @RequestParam(required = false) int page,
+                                                                  @ApiParam(value = "条数") @RequestParam(required = false) int limit,
+                                                                  @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
+                                                                  @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(classes)) {
             queryWrapper.ge("classes", classes);
@@ -339,7 +339,7 @@ public class TrackHeadController extends BaseController {
         }
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
+        return CommonResult.success(trackHeadService.queryPage(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "分页查询跟单分流表", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单分流信息")

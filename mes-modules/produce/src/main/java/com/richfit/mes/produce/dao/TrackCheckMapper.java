@@ -27,4 +27,6 @@ public interface TrackCheckMapper extends BaseMapper<TrackCheck> {
      **/
     @Select("SELECT track.* FROM produce_track_check track  LEFT JOIN produce_track_item item ON track.ti_id = item.id ${ew.customSqlSegment}")
     IPage<TrackCheck> queryTrackCheckPage(IPage<TrackCheck> page, @Param(Constants.WRAPPER) Wrapper<TrackCheck> query);
+
+
 }

@@ -350,4 +350,15 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @return: TrackHeadMoldDto
      **/
     TrackHeadPublicDto queryDtoById(String trackHeadId);
+
+    /**
+     * 功能描述: 分页查询视图
+     *
+     * @param page
+     * @param queryWrapper
+     * @Author: xinYu.hou
+     * @Date: 2023/2/22 16:24
+     * @return: IPage<TrackHeadPublicVo>
+     **/
+    IPage<TrackHeadPublicVo> queryPage(IPage<TrackHead> page, QueryWrapper<TrackHead> queryWrapper);
 }

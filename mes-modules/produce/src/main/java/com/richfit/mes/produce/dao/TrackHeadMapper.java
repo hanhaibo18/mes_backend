@@ -192,4 +192,16 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      **/
     @Select("SELECT * FROM produce_track_head WHERE id = #{trackHeadId}")
     TrackHeadPublicDto queryDtoById(@Param("trackHeadId") String trackHeadId);
+
+    /**
+     * 功能描述:视图分页查询
+     *
+     * @param page
+     * @param query
+     * @Author: xinYu.hou
+     * @Date: 2023/2/22 16:19
+     * @return: IPage<TrackHeadPublicDto>
+     **/
+    @Select("SELECT * FROM v_produce_track_head ${ew.customSqlSegment}")
+    IPage<TrackHeadPublicVo> queryPage(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
 }
