@@ -31,17 +31,21 @@ public interface MaterialInspectionServiceClient {
     public boolean changeOrderSyncSatus(@RequestParam("reportNo") String reportNo,@RequestParam("syncStatus")  String syncStatus);
     @GetMapping("/api/material/getListByBatchNo")
     public List<PhysChemOrderInner> getListByBatchNo(@RequestParam("batchNo") String batchNo);
+    @GetMapping("/api/material/queryByGroupId")
+    public List<PhysChemOrderInner> queryByGroupId(@RequestParam("groupId") String groupId);
     @GetMapping("/api/material/queryByOrderNo")
     public List<PhysChemOrderInner> queryByOrderNo(@RequestParam("orderNo") String orderNo);
-    @GetMapping("/api/material/deleteByOrderNo")
-    public boolean deleteByOrderNo(@RequestParam("orderNo") String orderNo);
+    @GetMapping("/api/material/deleteByGroupId")
+    public boolean deleteByGroupId(@RequestParam("groupId") String groupId);
     @PostMapping("/api/material/changeOrderStatus")
-    public boolean changeOrderStatus(@RequestBody List<String> orderNos);
+    public boolean changeOrderStatus(@RequestBody List<PhysChemOrderInner> physChemOrderInners);
     @GetMapping("/api/material/queryByReportNo")
     public List<PhysChemOrderInner> queryByReportNo(@RequestParam("reportNo") String reportNo);
     @PostMapping("/api/material/auditSnyPhysChemOrder")
     public CommonResult<Boolean> auditSnyPhysChemOrder(@RequestBody List<String> reportNos,@RequestParam("isAudit") String isAudit,@RequestParam("auditBy") String auditBy);
     @PostMapping("/api/material/isStandard")
     public CommonResult<Boolean> isStandard(@RequestBody List<String> reportNos,@RequestParam("isStandard") String isStandard,@RequestParam("standardBy") String standardBy);
+    @PostMapping("/api/material/getInnerListByGroupIds")
+    public List<PhysChemOrderInner> getInnerListByGroupIds(@RequestBody List<String> groupIds);
 
 }

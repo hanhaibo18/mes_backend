@@ -73,6 +73,22 @@ public class PhysChemOrderInnerServiceImpl extends ServiceImpl<PhysChemOrderInne
    }
 
     /**
+     * 根据委托单号获取数据
+     * @param groupIds
+     * @return
+     */
+    @Override
+    public List<PhysChemOrderInner> getInnerListByGroupIds(List<String> groupIds){
+        List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
+        if(groupIds.size()>0){
+            QueryWrapper<PhysChemOrderInner> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("group_id",groupIds);
+            physChemOrderInners = this.list(queryWrapper);
+        }
+        return physChemOrderInners;
+    }
+
+    /**
      * 根据炉批号获取最近的委托单数据
      * @param batchNo
      * @return

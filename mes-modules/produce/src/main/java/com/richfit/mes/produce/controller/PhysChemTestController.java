@@ -13,8 +13,10 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
+import com.richfit.mes.produce.service.CodeRuleService;
 import com.richfit.mes.produce.service.PhyChemTestService;
 import com.richfit.mes.produce.service.PhysChemResultService;
+import com.richfit.mes.produce.utils.Code;
 import freemarker.template.TemplateException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -29,6 +31,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -47,6 +52,8 @@ public class PhysChemTestController extends BaseController {
     private PhysChemResultService physChemResultService;
     @Autowired
     private MaterialInspectionServiceClient materialInspectionServiceClient;
+    @Autowired
+    private CodeRuleService codeRuleService;
 
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单", paramType = "body", dataType = "physChemOrderInner")
@@ -58,6 +65,14 @@ public class PhysChemTestController extends BaseController {
         List<PhysChemOrderImpactDto> impacts = physChemOrderInner.getImpacts();
         //要保存的数据
         List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
+        //新增委托（需要生产委托单号、报告号）
+        if(!StringUtils.isNullOrEmpty(physChemOrderInner.getStatus()) && physChemOrderInner.getStatus().equals("1") && StringUtils.isNullOrEmpty(physChemOrderInner.getOrderNo())){
+            //获取号
+            String orderNo = codeRuleService.gerCode("order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
+            String reportNo = codeRuleService.gerCode("m_report_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
+            physChemOrderInner.setOrderNo(orderNo);
+            physChemOrderInner.setReportNo(reportNo);
+        }
         //合并数据
         if(!ObjectUtil.isEmpty(impacts)){
             for (PhysChemOrderImpactDto impact : impacts) {
@@ -88,10 +103,10 @@ public class PhysChemTestController extends BaseController {
     }
 
     @ApiOperation(value = "批量委托", notes = "批量委托")
-    @ApiImplicitParam(name = "orderNos", value = "要委托的委托单单号集合", required = true, paramType = "body", dataType = "list")
+    @ApiImplicitParam(name = "groupIds", value = "要委托的委托组id集合", required = true, paramType = "body", dataType = "list")
     @PostMapping("/changeOrderStatus")
-    public CommonResult changeOrderStatus(@RequestBody List<String> orderNos){
-        return CommonResult.success(phyChemTestService.changeOrderStatus(orderNos));
+    public CommonResult changeOrderStatus(@RequestBody JSONObject jsonObject) throws Exception {
+        return CommonResult.success(phyChemTestService.changeOrderStatus(jsonObject));
     }
 
 
