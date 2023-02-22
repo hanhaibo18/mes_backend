@@ -88,10 +88,10 @@ public class PlanController extends BaseController {
             queryWrapper.eq("proj_code", projCode);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("start_time", startTime);
+            queryWrapper.ge("start_time", startTime + " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("end_time", endTime);
+            queryWrapper.le("end_time", endTime + " 23:59:59");
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -252,9 +252,9 @@ public class PlanController extends BaseController {
         action.setActionItem("1");
         action.setRemark("计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo());
         actionService.saveAction(action);
-       //删除扩展字段
+        //删除扩展字段
         HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("plan_id",id);
+        paramMap.put("plan_id", id);
         planExtendService.removeByMap(paramMap);
         return CommonResult.success(planService.delPlan(plan));
     }
