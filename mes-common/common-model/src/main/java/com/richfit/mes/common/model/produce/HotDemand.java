@@ -6,7 +6,6 @@ import java.util.Date;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.apache.ibatis.annotations.Delete;
 
 /**
  * produce_hot_demand
@@ -58,9 +57,9 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
     private Integer num;
 
     /**
-     * 毛坯类型
+     * 毛坯类型 0锻件,1铸件,2钢锭
      */
-    @ApiModelProperty(value = "毛坯类型 ", dataType = "String")
+    @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭 ", dataType = "String")
     private String workblankType;
 
     /**

@@ -241,6 +241,25 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
+    public List<TenantUserVo> queryUserByBranchCodeList(List<String> branchCodes) {
+        List<TenantUserVo> tenantUserList = new ArrayList<>();
+        for (String branchCode : branchCodes) {
+            CommonResult<List<Branch>> queryCode = baseServiceClient.queryCode(branchCode);
+            for (Branch branch : queryCode.getData()) {
+                QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("belong_org_id", branch.getBranchCode());
+                tenantUserList.addAll(tenantUserMapper.queryUserList(queryWrapper));
+            }
+        }
+        //去重
+        tenantUserList = tenantUserList.stream().collect(Collectors
+                .collectingAndThen(
+                        Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(TenantUserVo::getUserAccount))),
+                        ArrayList::new));
+        return tenantUserList;
+    }
+
+    @Override
     public List<TenantUserVo> queryUserByBranchCodePage(String branchCode) {
         CommonResult<List<Branch>> queryCode = baseServiceClient.queryCode(branchCode);
         List<TenantUserVo> tenantUserList = new ArrayList<>();

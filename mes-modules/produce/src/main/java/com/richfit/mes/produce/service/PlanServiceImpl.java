@@ -31,6 +31,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -418,8 +419,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 }
             }
         }
+        //获取计划的扩展信息
+        QueryWrapper<PlanExtend>queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("plan_id",plan.getId());
+        PlanExtend planExtend = planExtendMapper.selectOne(queryWrapper);
         boolean f = this.save(plan);
         this.planData(plan.getId());
+        //修改扩信息
+        BeanUtils.copyProperties(plan,planExtend);
+        planExtend.setPlanId(plan.getId());
+        planExtendMapper.updateById(planExtend);
         return CommonResult.success(f);
     }
 
@@ -693,18 +702,25 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Override
     public void planPackageExtend(List<Plan> planList) {
-
+        //判空
+        if(CollectionUtils.isEmpty(planList)){
+           return;
+        }
         List<String> planIdList = planList.stream().map(x -> x.getId()).collect(Collectors.toList());
 
         QueryWrapper<PlanExtend> queryWrapper=new QueryWrapper();
         queryWrapper.in("plan_id",planIdList);
         //根据id查扩展表信息
         List<PlanExtend> planExtends = planExtendMapper.selectList(queryWrapper);
+        //判空
+        if(CollectionUtils.isEmpty(planExtends)){
+            return;
+        }
         Map<String, PlanExtend> extendMap = planExtends.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
         for (Plan plan : planList) {
             PlanExtend planExtend = extendMap.get(plan.getId());
             if(!ObjectUtil.isEmpty(planExtend)){
-                BeanUtils.copyProperties(planExtend,plan);
+                BeanUtils.copyProperties(planExtend,plan,"id");
             }
         }
     }

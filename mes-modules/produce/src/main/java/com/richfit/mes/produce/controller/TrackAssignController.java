@@ -325,6 +325,12 @@ public class TrackAssignController extends BaseController {
                     assign.setCreateTime(new Date());
                     assign.setAvailQty(assign.getQty());
                     assign.setFlowId(trackItem.getFlowId());
+                    //处理派工人员信息
+                    boolean isAllUser = assign.getUserId().contains("/")?true:false;
+                    if(isAllUser){
+                        assign.setUserId("/");
+                        assign.setEmplName("/");
+                    }
                     trackAssignService.save(assign);
                     for (AssignPerson person : assign.getAssignPersons()) {
                         person.setModifyTime(new Date());

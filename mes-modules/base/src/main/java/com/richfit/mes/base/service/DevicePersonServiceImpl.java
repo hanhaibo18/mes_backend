@@ -14,6 +14,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author mafeng
@@ -48,6 +50,38 @@ public class DevicePersonServiceImpl extends ServiceImpl<DevicePersonMapper, Dev
                 }
             }
             return deviceList;
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Device> queryDeviceByUserIds(List<String> userIds,String branchCode) {
+        if(userIds.size()>0){
+            QueryWrapper<DevicePerson> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("user_id", userIds);
+            List<DevicePerson> devicePeople = this.list(queryWrapper);
+            //取所有人共有的设备
+            List<String> deviceIds = new ArrayList<>();
+            Map<String, List<DevicePerson>> deviceGroup = devicePeople.stream().collect(Collectors.groupingBy(DevicePerson::getDeviceId));
+            deviceGroup.forEach((key,values)->{
+                //一个人只能绑定同一个设备一次  因此同一个人同设备信息只能有一个  通过此属性  取人员的设备交集
+                if(values.size()==userIds.size()){
+                    deviceIds.add(key);
+                }
+            });
+            if (deviceIds.size()>0) {
+                List<Device> deviceList = new ArrayList<>();
+                for (DevicePerson devicePerson : devicePeople) {
+                    QueryWrapper<Device> queryWrapper1 = new QueryWrapper<>();
+                    queryWrapper1.eq("branch_code",branchCode)
+                            .in("id",deviceIds);
+                    List<Device> list = deviceService.list(queryWrapper1);
+                    if(list.size()>0){
+                        deviceList.add(list.get(0));
+                    }
+                }
+                return deviceList;
+            }
         }
         return Collections.emptyList();
     }

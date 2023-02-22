@@ -422,7 +422,23 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
         Assign assign = trackAssignMapper.queryAssign(assignId);
-        assign.setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId())));
+        //‘/’全部派工人员查询
+        if(assign.getUserId().contains("/")){
+            List<String> branchCodes = Arrays.asList(assign.getSiteId().split(","));
+            List<TenantUserVo> data = systemServiceClient.queryUserByBranchCodes(branchCodes).getData();
+            List<AssignPerson> assignPeople = new ArrayList<>();
+            for (TenantUserVo datum : data) {
+                AssignPerson assignPerson = new AssignPerson();
+                assignPerson.setAssignId(assignId);
+                assignPerson.setUserId(datum.getUserAccount());
+                assignPerson.setUserName(datum.getEmplName());
+                assignPeople.add(assignPerson);
+            }
+            assign.setAssignPersons(assignPeople);
+        }else{
+            assign.setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId())));
+        }
+
 
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", tiId);

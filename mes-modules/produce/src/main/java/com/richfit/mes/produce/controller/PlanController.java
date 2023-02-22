@@ -21,10 +21,7 @@ import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
-import com.richfit.mes.produce.service.ActionService;
-import com.richfit.mes.produce.service.PlanOptWarningService;
-import com.richfit.mes.produce.service.PlanService;
-import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -60,6 +58,8 @@ public class PlanController extends BaseController {
     @Autowired
     private TrackHeadService trackHeadService;
 
+    @Autowired
+    private PlanExtendService planExtendService;
 
     /**
      * 分页查询plan
@@ -216,6 +216,7 @@ public class PlanController extends BaseController {
     public CommonResult<Object> updatePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         plan.setTenantId(user.getTenantId());
+        //TODO
         return planService.updatePlan(plan);
     }
 
@@ -251,7 +252,10 @@ public class PlanController extends BaseController {
         action.setActionItem("1");
         action.setRemark("计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo());
         actionService.saveAction(action);
-
+       //删除扩展字段
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("plan_id",id);
+        planExtendService.removeByMap(paramMap);
         return CommonResult.success(planService.delPlan(plan));
     }
 

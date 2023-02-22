@@ -101,6 +101,15 @@ public interface TenantUserService {
      **/
     List<TenantUserVo> queryUserByBranchCode(String branchCode);
 
+    /**
+     * 功能描述:根据部门查询用户
+     *
+     * @param branchCodes
+     * @Author: renzewen
+     * @return:  List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryUserByBranchCodeList(List<String> branchCodes);
+
 
     /**
      * 功能描述: 根据用户编号查询用户信息

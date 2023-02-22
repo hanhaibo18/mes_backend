@@ -214,7 +214,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.like("u.product_no", productNo);
         }
         if (StrUtil.isNotBlank(userId)) {
-            queryWrapper.and(wrapper->wrapper.like("u.user_id", userId + ",").or(wrapper1->wrapper1.eq("u.user_id","/,")));
+            queryWrapper.and(wrapper->wrapper.like("u.user_id", userId + ",").or(wrapper1->wrapper1.eq("u.user_id","/,")).or(wrapper1->wrapper1.eq("u.user_id","/")));
         }
 
         if (!StringUtils.isNullOrEmpty(startTime)) {
@@ -238,7 +238,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         queryWrapper.eq("u.classes", classes);
         queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
+        //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
+        queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',u.site_id)");
 
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {

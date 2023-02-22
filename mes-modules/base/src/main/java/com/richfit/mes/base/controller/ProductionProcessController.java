@@ -1,14 +1,11 @@
 package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.service.ProductionProcessService;
 import com.richfit.mes.base.service.ProductionRouteService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProductionProcess;
-import com.richfit.mes.common.model.base.ProductionRoute;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,15 +14,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author HanHaiBo
  * @date 2023/2/21 8:43
  */
 @Slf4j
-@Api("生产路线工序管理")
+@Api(value = "生产路线工序管理", tags = {"生产路线工序管理"})
 @RestController
 @RequestMapping("/api/base/process")
 public class ProductionProcessController {
@@ -36,32 +36,22 @@ public class ProductionProcessController {
     private ProductionRouteService productionRouteService;
 
     @ApiOperation(value = "根据productionRouteId查询工序列表", notes = "根据productionRouteId查询工序列表")
-    @GetMapping("/page")
-    public CommonResult<IPage<ProductionProcess>> list(@ApiParam(value = "工艺id", required = true) @RequestParam String routeId,
-                                                       Integer page, Integer limit, String processName) {
-        if (page == null) {
-            page = 1;
+    @GetMapping("/list")
+    public CommonResult<List<ProductionProcess>> list(@ApiParam(value = "工艺路线ID") @RequestParam String routeId,
+                                                      @ApiParam(value = "工序名称，可不填") @RequestParam(required = false) String processName) {
+        QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
+        if (processName != null) {
+            queryWrapper.like("process_name", "%" + processName + "%");
         }
-        if (limit == null) {
-            limit = 10;
-        }
-        try {
-            QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
-            if (processName != null) {
-                queryWrapper.like("process_name", "%" + processName + "%");
-            }
-            queryWrapper.eq("production_route_id", routeId);
-            queryWrapper.orderByAsc("process_sequence");
-            return CommonResult.success(productionProcessService.page(new Page<ProductionProcess>(page, limit), queryWrapper));
-        } catch (Exception e) {
-            return CommonResult.failed(e.getMessage());
-        }
+        queryWrapper.eq("production_route_id", routeId);
+        queryWrapper.orderByAsc("process_sequence");
+        return CommonResult.success(productionProcessService.list(queryWrapper));
     }
 
     @ApiOperation(value = "根据productionRouteId新增工序", notes = "根据productionRouteId新增工序")
     @PostMapping("/add/{routeId}")
-    public CommonResult<ProductionProcess> addProductionProcess(@PathVariable String routeId, @RequestBody
-            ProductionProcess productionProcess) {
+    public CommonResult<ProductionProcess> addProductionProcess(@ApiParam(value = "工艺路线ID") @PathVariable String routeId,
+                                                                @RequestBody ProductionProcess productionProcess) {
         if (StringUtils.isNullOrEmpty(productionProcess.getProcessName())) {
             return CommonResult.failed("工艺名称不能为空");
         }
@@ -73,7 +63,7 @@ public class ProductionProcessController {
         productionProcess.setModifyTime(new Date());
         productionProcess.setProductionRouteId(routeId);
 
-        QueryWrapper queryWrapper = new QueryWrapper<ProductionProcess>();
+        QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
         queryWrapper.eq("production_route_id", routeId);
         queryWrapper.orderByDesc("process_sequence");
         List<ProductionProcess> processList = productionProcessService.list(queryWrapper);
@@ -92,10 +82,10 @@ public class ProductionProcessController {
 
     @ApiOperation(value = "根据productionRouteId批量新增工序", notes = "根据productionRouteId批量新增工序")
     @PostMapping("/addList/{routeId}")
-    public CommonResult addProductionProcesses(@PathVariable String routeId, @RequestBody
-            ProductionProcess[] productionProcesses) {
+    public CommonResult<String> addProductionProcesses(@ApiParam(value = "工艺路线ID") @PathVariable String routeId,
+                                                       @RequestBody ProductionProcess[] productionProcesses) {
         for (ProductionProcess process : productionProcesses) {
-            if (StringUtils.isNullOrEmpty(process.getProcessName())){
+            if (StringUtils.isNullOrEmpty(process.getProcessName())) {
                 return CommonResult.failed("工序名称不能为空");
             }
         }
@@ -104,7 +94,7 @@ public class ProductionProcessController {
         if (null != SecurityUtils.getCurrentUser()) {
             currentUser = SecurityUtils.getCurrentUser().getUsername();
         }
-        QueryWrapper queryWrapper = new QueryWrapper<ProductionProcess>();
+        QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
         queryWrapper.eq("production_route_id", routeId);
         queryWrapper.orderByDesc("process_sequence");
         List<ProductionProcess> processList = productionProcessService.list(queryWrapper);
@@ -149,44 +139,79 @@ public class ProductionProcessController {
     }
 
     @ApiOperation(value = "批量修改工序", notes = "批量修改工序")
-    @PutMapping("/updates")
+    @PutMapping("/updateBatch")
     public CommonResult<String> updateProductionProcesses(@RequestBody ProductionProcess[] productionProcesses) {
-        for (ProductionProcess process : productionProcesses) {
-            if (StringUtils.isNullOrEmpty(process.getProcessName())){
-                return CommonResult.failed("工序名称不能为空");
-            }
-            if (StringUtils.isNullOrEmpty(process.getId())) {
-                return CommonResult.failed("无法获取id！");
-            }
-        }
+        String productionRouteId = productionProcesses[0].getProductionRouteId();
         String currentUser = "unknownUser";
         Date nowTime = new Date();
         if (null != SecurityUtils.getCurrentUser()) {
             currentUser = SecurityUtils.getCurrentUser().getUsername();
         }
+        List<String> currentIdList = new ArrayList<>();
         for (ProductionProcess process : productionProcesses) {
+            if (StringUtils.isNullOrEmpty(process.getProcessName())) {
+                return CommonResult.failed("工序名称不能为空");
+            }
+            if (process.getId() != null) {
+                currentIdList.add(process.getId());
+            }
             process.setModifyBy(currentUser);
             process.setModifyTime(nowTime);
-            productionProcessService.updateById(process);
         }
-       return CommonResult.success("批量修改成功！");
+        //获取当前所有idList
+        QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("production_route_id", productionRouteId);
+        List<ProductionProcess> allProcess = productionProcessService.list(queryWrapper);
+        if (!allProcess.isEmpty()) {
+            List<String> allIdList = new ArrayList<>();
+            for (ProductionProcess process : allProcess) {
+                allIdList.add(process.getId());
+            }
+            //当前所有idList中剔除传入的即为删除的idList
+            allIdList.removeAll(currentIdList);
+            if (!allIdList.isEmpty()){
+                boolean result = productionProcessService.removeByIds(allIdList);
+                if (!result) {
+                    return CommonResult.failed("删除失败");
+                }
+            }
+
+        }
+        //获取id为null的新增list
+        List<ProductionProcess> addList = Arrays.stream(productionProcesses).filter(process -> process.getId() == null).collect(Collectors.toList());
+        for (ProductionProcess process : addList) {
+            process.setCreateTime(nowTime);
+            process.setCreateBy(currentUser);
+        }
+        if (!addList.isEmpty()){
+            boolean result = productionProcessService.saveBatch(addList);
+            if (!result){
+                return CommonResult.failed("新增失败");
+            }
+        }
+        //获取修改list
+        List<ProductionProcess> updateList = Arrays.stream(productionProcesses).filter(process -> process.getId() != null).collect(Collectors.toList());
+        if (!updateList.isEmpty()){
+            boolean result = productionProcessService.updateBatchById(updateList);
+            if (!result){
+                return CommonResult.failed("修改失败");
+            }
+        }
+        return CommonResult.success("批量修改成功！");
     }
 
     @ApiOperation(value = "删除工序", notes = "删除工序")
-    @DeleteMapping("/delete/{processId}")
-    public CommonResult<String> deleteProductionRoute(@PathVariable String processId) {
-        if (processId != null) {
-            boolean result = productionProcessService.removeById(processId);
-            if (result) {
-                return CommonResult.success("删除成功 ID:" + processId);
-            } else {
-                return CommonResult.failed("删除失败");
-            }
-        } else {
+    @DeleteMapping("/delete")
+    public CommonResult<String> deleteProductionRoute(@ApiParam(value = "工艺路线ID") @RequestBody List<String> ids) {
+        if (ids.isEmpty()) {
+            return CommonResult.failed("传入ID为空");
+        }
+        boolean result = productionProcessService.removeByIds(ids);
+        if (!result) {
             return CommonResult.failed("删除失败");
         }
+        return CommonResult.success("删除成功");
     }
-
 
 
 }

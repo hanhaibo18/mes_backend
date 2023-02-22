@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.produce.HotDemand;
@@ -103,6 +104,16 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setSubmitState(0);
             hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+            //0锻件,1铸件,2钢锭
+            switch (hotDemand.getWorkblankType()){
+                case "锻件":  hotDemand.setWorkblankType("0");//锻造车间
+                    break;
+                case "铸件":  hotDemand.setWorkblankType("1");//铸造
+                    break;
+                case "钢锭":  hotDemand.setWorkblankType("2");//冶炼
+                    break;
+                default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围", ResultCode.FAILED);
+            }
             demandList.add(hotDemand);
         }
 
@@ -231,16 +242,14 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             plan.setCreateBy(currentUser.getUsername());//创建人
             plan.setCreateTime(new Date());//创建时间
             plan.setTenantId(hotDemand.getTenantId());//租户id
-            if(branchType==1){//模型排产
-                plan.setProjType(1);//计划类型 1新制  2 返修(模型排产默认为新制)
-                plan.setBranchCode("BOMCO_RF_MX");//车间码(模型排产自动派发到模型车间)
-            }else {
-                plan.setBranchCode(hotDemand.getProduceOrg());//车间码
-            }
+            //车间码处理
+            this.disposeBranchCode(branchType, hotDemand, plan);
+
             plan.setTexture(hotDemand.getTexture());//材质
             plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
             plan.setApprovalBy(currentUser.getUsername());//审批人
             plan.setApprovalTime(new Date());//审批时间
+            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
             //--------------------------
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
             plan.setBlank(hotDemand.getWorkblankType());//毛坯
@@ -251,32 +260,66 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             plan.setDrawNoName("");//图号名称
             planService.save(plan);
             //扩展字段保存
-            PlanExtend planExtend = new PlanExtend();
-            planExtend.setProjectName(hotDemand.getProjectName());//项目名称
-            planExtend.setProductName(hotDemand.getDemandName());//产品名称
-            planExtend.setSampleNum(0);//实样数量
-            planExtend.setDemandId(hotDemand.getId());//需求表id
-            planExtend.setPlanId(plan.getId());//生产计划id
-            planExtend.setWeight(hotDemand.getWeight());//重量
-            planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重
-            planExtend.setSteelWaterWeight(hotDemand.getSteelWaterWeight());//钢水重
-            planExtend.setDemandTime(hotDemand.getDemandTime());//需求日期
-            planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人
-            planExtend.setSubmitOrderOrg(hotDemand.getSubmitOrderOrg());//提单单位
-            planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
-            planExtendService.save(planExtend);
-
-            //锻造缺补充字段
-            //重量KG
-            //需求日期
-            //提单人
-            //提单单位
-            //提单日期
-            //单重KG
-            //钢水KG
+            this.saveExtend(hotDemand, plan);
 
         }
 
+    }
+
+    /**
+     * 计划扩展字段保存
+     * @param hotDemand
+     * @param plan
+     */
+    private void saveExtend(HotDemand hotDemand, Plan plan) {
+        //扩展字段保存
+        PlanExtend planExtend = new PlanExtend();
+        planExtend.setProjectName(hotDemand.getProjectName());//项目名称
+        planExtend.setProductName(hotDemand.getDemandName());//产品名称
+        planExtend.setSampleNum(0);//实样数量
+        planExtend.setDemandId(hotDemand.getId());//需求表id
+        planExtend.setPlanId(plan.getId());//生产计划id
+        planExtend.setWeight(hotDemand.getWeight());//重量
+        planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重
+        planExtend.setSteelWaterWeight(hotDemand.getSteelWaterWeight());//钢水重
+        planExtend.setDemandTime(hotDemand.getDemandTime());//需求日期
+        planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人
+        planExtend.setSubmitOrderOrg(hotDemand.getSubmitOrderOrg());//提单单位
+        planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
+        planExtendService.save(planExtend);
+
+        //锻造缺补充字段
+        //重量KG
+        //需求日期
+        //提单人
+        //提单单位
+        //提单日期
+        //单重KG
+        //钢水KG
+    }
+
+    /**
+     * 插件吗处理
+     * @param branchType
+     * @param hotDemand
+     * @param plan
+     */
+    private void disposeBranchCode(int branchType, HotDemand hotDemand, Plan plan) {
+        if(branchType ==1){//模型排产
+            plan.setProjType(1);//计划类型 1新制  2 返修(模型排产默认为新制)
+            plan.setBranchCode("BOMCO_RG_MX");//车间码(模型排产自动派发到模型车间)
+        }else {
+            //0锻件,1铸件,2钢锭
+            switch (hotDemand.getWorkblankType()){
+                case "0":  plan.setBranchCode("BOMCO_RG_DZ");//锻造车间
+                    break;
+                case "1":  plan.setBranchCode("BOMCO_RG_ZG");//铸造
+                    break;
+                case "2":  plan.setBranchCode("BOMCO_RG_YL");//冶炼
+                    break;
+                default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
+            }
+        }
     }
 
 }
