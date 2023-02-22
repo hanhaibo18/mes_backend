@@ -6,6 +6,8 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.pagehelper.util.StringUtil;
 import com.mysql.cj.util.StringUtils;
@@ -86,8 +88,9 @@ public class PhyChemTestService{
     public CommonResult saveOrder(List<PhysChemOrderInner> physChemOrderInners) throws Exception {
         //获取第一个用于校验数据使用
         PhysChemOrderInner physChemOrderInner = physChemOrderInners.get(0);
-        //根据委托单号查询中间表的数据
-        List<PhysChemOrderInner> inners = materialInspectionServiceClient.queryByOrderNo(physChemOrderInner.getOrderNo());
+        //根据委托组id查询中间表的数据
+        List<PhysChemOrderInner> inners = materialInspectionServiceClient.queryByGroupId(StringUtils.isNullOrEmpty(physChemOrderInner.getGroupId())?"":physChemOrderInner.getGroupId());
+
         //校验是否能修改
         if(inners.size()>0){
             String status = inners.get(0).getStatus();
@@ -95,16 +98,17 @@ public class PhyChemTestService{
                 return CommonResult.failed("材料实验室已经确认委托，无法被修改");
             }
             //校验通过删除之前的数据
-            materialInspectionServiceClient.deleteByOrderNo(physChemOrderInner.getOrderNo());
+            materialInspectionServiceClient.deleteByGroupId(physChemOrderInner.getGroupId());
         }
-        //inners有数据说明是修改  没数据说明是新增 新增需要保存委托单号和报告号
-        if(inners.size()==0){
+        //inners有数据说明是修改  没数据说明是新增 新增并委托需要保存委托单号和报告号
+        if(inners.size()==0 && physChemOrderInner.getStatus().equals("1")){
             //保存委托单号
             Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
             //保存报告号
             Code.update("m_report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
         }
         //插入新的数据
+        String newGroupId = UUID.randomUUID().toString().replaceAll("-", "");
         for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
             //质检发起委托操作
             //设置委托单、报告未生成、实验数据未同步
@@ -113,6 +117,8 @@ public class PhyChemTestService{
             //委托人
             chemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
             chemOrderInner.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            //委托组id
+            chemOrderInner.setGroupId(newGroupId);
         }
         //保存委托单到中间表
         materialInspectionServiceClient.saveOrder(physChemOrderInners);
@@ -179,10 +185,38 @@ public class PhyChemTestService{
 
     /**
      * 修改委托单状态
-     * @param orderNos
+     * @param jsonObject
      */
-    public boolean changeOrderStatus(List<String> orderNos){
-        return materialInspectionServiceClient.changeOrderStatus(orderNos);
+    public boolean changeOrderStatus(JSONObject jsonObject) throws Exception {
+        //要委托的委托单单号集合
+        List<String> groupIds = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("groupIds")), String.class);
+        //组织机构
+        String branchCode = jsonObject.getString("branchCode");
+        //定义要修改的委托单集合
+        List<PhysChemOrderInner> updateInfos = new ArrayList<>();
+        List<PhysChemOrderInner> innerListByOrders = materialInspectionServiceClient.getInnerListByGroupIds(groupIds);
+        //根据委托组id分组
+        Map<String, List<PhysChemOrderInner>> groups = innerListByOrders.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getGroupId));
+        //修改委托单号、报告号、状态
+        for (List<PhysChemOrderInner> value : groups.values()) {
+            if(StringUtils.isNullOrEmpty(value.get(0).getOrderNo())){
+                String orderNo = Code.valueOnUpdate("order_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+                String reportNo = Code.valueOnUpdate("m_report_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+                for (PhysChemOrderInner physChemOrderInner : value) {
+                    physChemOrderInner.setOrderNo(orderNo);
+                    physChemOrderInner.setReportNo(reportNo);
+                    physChemOrderInner.setStatus("1");
+                    updateInfos.add(physChemOrderInner);
+                }
+            }else{
+                for (PhysChemOrderInner physChemOrderInner : value) {
+                    physChemOrderInner.setStatus("1");
+                    updateInfos.add(physChemOrderInner);
+                }
+            }
+
+        }
+        return materialInspectionServiceClient.changeOrderStatus(updateInfos);
     }
 
     /**
