@@ -380,7 +380,6 @@ public class HotDemandController extends BaseController {
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.apply("(is_exist_process=0 or is_exist_process is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
@@ -390,25 +389,23 @@ public class HotDemandController extends BaseController {
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
 
-        List<String> ids = new ArrayList<>();
         //遍历毛坯需求数据,根据图号在工艺map中获取,不为空则有工艺
         for (HotDemand hotDemand : hotDemands) {
             Router router = routerMap.get(hotDemand.getDrawNo());
             if (ObjectUtils.isNotEmpty(router)) {
-                //收集有模型的毛坯需求id
-                ids.add(hotDemand.getId());
+                //把有工艺的需求数据状态进行修改
+                UpdateWrapper updateWrapper = new UpdateWrapper();
+                updateWrapper.set("is_exist_process", 1);//设置为有工艺
+                updateWrapper.set("texture", router.getTexture());//设置材质
+                //updateWrapper.set("workblank_type", );//设置毛坯类型
+                updateWrapper.set("steel_water_weight",router.getWeightMolten() );//设置钢水重量
+                updateWrapper.set("piece_weight",router.getPieceWeight());//设置单重
+                updateWrapper.set("weight", router.getForgWeight());//设置重量
+                updateWrapper.eq("id", hotDemand.getId());
+                boolean update = hotDemandService.update(updateWrapper);
             }
         }
-        if (CollectionUtils.isNotEmpty(ids)) {
-            UpdateWrapper updateWrapper = new UpdateWrapper();
-            updateWrapper.set("is_exist_process", 1);//设置为有工艺
-            updateWrapper.in("id", ids);
-            boolean update = hotDemandService.update(updateWrapper);
-            if (update) return CommonResult.success(ResultCode.SUCCESS);
-            return CommonResult.failed();
-        } else {
             return CommonResult.success("操作成功");
-        }
     }
 
 
