@@ -18,4 +18,6 @@ public interface PhysChemOrderInnerService extends IService<PhysChemOrderInner> 
     public Boolean changeOrderSyncSatus(String reportNo, String reportStatus);
 
     public List<PhysChemOrderInner>  getListByBatchNo(String batchNo);
+
+    public List<PhysChemOrderInner> getInnerListByGroupIds(List<String> orders);
 }

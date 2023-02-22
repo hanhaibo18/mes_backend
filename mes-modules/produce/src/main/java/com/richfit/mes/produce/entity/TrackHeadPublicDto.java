@@ -20,7 +20,7 @@ import java.util.Map;
  * @CreateTime: 2023年02月09日 17:03:00
  */
 @Data
-public class TrackHeadMoldDto {
+public class TrackHeadPublicDto {
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
@@ -267,6 +267,82 @@ public class TrackHeadMoldDto {
     @ApiModelProperty(value = "物料产品信息列表，用于根据物料信息生产跟单")
     @TableField(exist = false)
     private List<Map> storeList;
+
+
+    /**
+     * 锻造开始
+     **/
+
+    /**
+     * 下料规格
+     */
+    @ApiModelProperty(value = "下料规格")
+    private String blankingSpecification;
+
+    /**
+     * 代用材质
+     */
+    @ApiModelProperty(value = "代用材质")
+    private String substituteMaterial;
+
+    /**
+     * 单号
+     */
+    @ApiModelProperty(value = "单号")
+    private String forgeNumber;
+    /**
+     * 锻造结束
+     **/
+
+
+    /**
+     * 铸造开始
+     **/
+
+    /**
+     * 钢水重量
+     */
+    @ApiModelProperty(value = "钢水重量")
+    private Double moltenSteel;
+
+    /**
+     * 铸件编号
+     */
+    @ApiModelProperty(value = "铸件编号")
+    private String castingPartsNumber;
+
+    /**
+     * 工艺保温时间
+     */
+    @ApiModelProperty(value = "工艺保温时间")
+    private Date processHoldingTime;
+
+    /**
+     * 浇铸温度
+     */
+    @ApiModelProperty(value = "浇铸温度")
+    private String pouringTemperature;
+
+    /**
+     * 浇铸速度
+     */
+    @ApiModelProperty(value = "浇铸速度")
+    private String pouringRate;
+
+    /**
+     * 毛坯调制 1=有 0=无
+     */
+    @ApiModelProperty(value = "毛坯调制 1=有 0=无")
+    private boolean blankConditioning;
+
+    /**
+     * 毛坯探伤 1=有 0=无
+     */
+    @ApiModelProperty(value = "毛坯探伤 1=有 0=无")
+    private boolean blankInspection;
+    /**
+     * 铸造结束
+     **/
 
 
     /**
