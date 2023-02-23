@@ -714,7 +714,9 @@ public class TrackHeadController extends BaseController {
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
         int index = trackHeadList.size() + 1;
-        return CommonResult.success(trackNo + "-" + index);
+        String substring = trackNo.substring(0, trackNo.length() - 6);
+        String end = trackNo.substring(trackNo.length() - 6);
+        return CommonResult.success(substring + "-" + index + " " + end);
     }
 
 
