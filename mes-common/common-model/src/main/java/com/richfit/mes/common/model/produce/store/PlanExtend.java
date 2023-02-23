@@ -57,6 +57,6 @@ public class PlanExtend {
     @ApiModelProperty(value = "钢水KG")
     private String steelWaterWeight;
 
-
-
+    @ApiModelProperty(value = "ERP物料编码")
+    private String erpProductCode;
 }

@@ -220,4 +220,8 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     @ApiModelProperty(value = "钢水KG")
     private String steelWaterWeight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "ERP物料编码")
+    private String erpProductCode;
 }

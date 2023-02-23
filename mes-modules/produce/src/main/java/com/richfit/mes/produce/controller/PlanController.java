@@ -151,6 +151,9 @@ public class PlanController extends BaseController {
         if (planDto.isFiterClose()) {
             queryWrapper.ne("status", 2);
         }
+        if (!StringUtils.isNullOrEmpty(planDto.getProjType())) {
+            queryWrapper.like("proj_type", planDto.getProjType());//计划类型 1新制  2 返修'
+        }
         if (!StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }
