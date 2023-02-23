@@ -7,7 +7,6 @@ import com.richfit.mes.base.dao.ProductionProcessMapper;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProductionProcess;
-import com.richfit.mes.common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,11 +34,6 @@ public class ProductionProcessServiceImpl extends ServiceImpl<ProductionProcessM
     public boolean updateBatch(ProductionProcess[] productionProcesses) {
 
         String productionRouteId = productionProcesses[0].getProductionRouteId();
-        String currentUser = "unknownUser";
-        Date nowTime = new Date();
-        if (null != SecurityUtils.getCurrentUser()) {
-            currentUser = SecurityUtils.getCurrentUser().getUsername();
-        }
         List<String> currentIdList = new ArrayList<>();
         for (ProductionProcess process : productionProcesses) {
             if (StringUtils.isNullOrEmpty(process.getProcessName())) {
@@ -49,8 +42,6 @@ public class ProductionProcessServiceImpl extends ServiceImpl<ProductionProcessM
             if (process.getId() != null) {
                 currentIdList.add(process.getId());
             }
-            process.setModifyBy(currentUser);
-            process.setModifyTime(nowTime);
         }
         //获取当前所有idList
         QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<>();
@@ -72,10 +63,6 @@ public class ProductionProcessServiceImpl extends ServiceImpl<ProductionProcessM
         }
         //获取id为null的新增list
         List<ProductionProcess> addList = Arrays.stream(productionProcesses).filter(process -> process.getId() == null).collect(Collectors.toList());
-        for (ProductionProcess process : addList) {
-            process.setCreateTime(nowTime);
-            process.setCreateBy(currentUser);
-        }
         if (!addList.isEmpty()) {
             for (ProductionProcess process : addList) {
                 if (productionProcessMapper.insert(process) == 0) {
@@ -92,7 +79,6 @@ public class ProductionProcessServiceImpl extends ServiceImpl<ProductionProcessM
                 }
             }
         }
-
         return true;
     }
 }

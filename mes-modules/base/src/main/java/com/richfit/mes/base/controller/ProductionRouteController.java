@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -58,12 +57,8 @@ public class ProductionRouteController extends BaseController {
             return CommonResult.failed("生产路线名称不能为空");
         }
         if (null != SecurityUtils.getCurrentUser()) {
-            productionRoute.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            productionRoute.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             productionRoute.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         }
-        productionRoute.setCreateTime(new Date());
-        productionRoute.setModifyTime(new Date());
         boolean saveResult = productionRouteService.save(productionRoute);
         if (saveResult) {
             return CommonResult.success(productionRoute, "新增成功");
@@ -81,10 +76,6 @@ public class ProductionRouteController extends BaseController {
         if (StringUtils.isNullOrEmpty(productionRoute.getId())) {
             return CommonResult.failed("id不能为空！");
         }
-        if (null != SecurityUtils.getCurrentUser()) {
-            productionRoute.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-        }
-        productionRoute.setModifyTime(new Date());
         boolean result = productionRouteService.updateById(productionRoute);
         if (result) {
             return CommonResult.success(productionRoute, "修改成功");
@@ -95,17 +86,13 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "批量修改生产路线", notes = "批量修改生产路线")
     @PutMapping("/updateBatch")
-    public CommonResult<String> updateProductionRoutes(@ApiParam(value = "热工路线") @RequestBody ProductionRoute[] ProductionRoutes) {
-        for (ProductionRoute route : ProductionRoutes) {
+    public CommonResult<String> updateProductionRoutes(@ApiParam(value = "热工路线") @RequestBody List<ProductionRoute> productionRoutes) {
+        for (ProductionRoute route : productionRoutes) {
             if (StringUtils.isNullOrEmpty(route.getProductionRouteName())) {
                 return CommonResult.failed("名称不能为空！");
             }
         }
-        for (ProductionRoute ProductionRoute : ProductionRoutes) {
-            ProductionRoute.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-            ProductionRoute.setModifyTime(new Date());
-            productionRouteService.updateById(ProductionRoute);
-        }
+        productionRouteService.updateBatchById(productionRoutes);
         return CommonResult.success("批量修改成功！");
     }
 

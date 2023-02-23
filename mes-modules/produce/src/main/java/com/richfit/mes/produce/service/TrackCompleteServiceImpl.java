@@ -707,6 +707,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
+    @Override
+    public Map<String, Object> queryTrackCompleteListByTrackNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
+        return null;
+    }
+
 
     private Boolean removeComplete(String tiId) {
         QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();

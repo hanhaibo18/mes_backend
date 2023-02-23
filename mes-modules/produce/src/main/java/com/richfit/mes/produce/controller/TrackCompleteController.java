@@ -24,10 +24,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -473,6 +470,17 @@ public class TrackCompleteController extends BaseController {
     @GetMapping("/pageOptimize")
     public CommonResult<Map<String, Object>> pageOptimize(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
         return CommonResult.success(trackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo, userId));
+    }
+
+    @ApiOperation(value = "工时统计by订单", notes = "工时统计by订单")
+    @GetMapping("/pageOptimizeByTrackNo")
+    public CommonResult<Map<String, Object>> pageOptimizeByTrackNo(@ApiParam(value = "订单号") @RequestParam(required = false) String trackNo,
+                                                                   @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                                                                   @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                                                   @ApiParam(value = "机构ID") @RequestParam String branchCode,
+                                                                   @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                                   @ApiParam(value = "用户id") @RequestParam(required = false) String userId) {
+        return CommonResult.success(trackCompleteService.queryTrackCompleteListByTrackNo(trackNo, startTime, endTime, branchCode, workNo, userId));
     }
 
 
