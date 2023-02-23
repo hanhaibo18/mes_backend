@@ -305,5 +305,8 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "合格判定时间")
     private String standardTime;
 
+    @ApiModelProperty(value = "委托单组id")
+    private String groupId;
+
 
 }

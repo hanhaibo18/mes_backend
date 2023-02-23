@@ -19,7 +19,7 @@ import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
-import com.richfit.mes.produce.entity.TrackHeadMoldDto;
+import com.richfit.mes.produce.entity.TrackHeadPublicDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import io.netty.util.internal.StringUtil;
@@ -318,12 +318,12 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     }
 
     @Override
-    public void addTrackAssemblyByTrackHead(TrackHeadMoldDto trackHeadMoldDto) {
-        List<TrackAssembly> trackAssemblyList = pojectBomList(trackHeadMoldDto);
+    public void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto) {
+        List<TrackAssembly> trackAssemblyList = pojectBomList(trackHeadPublicDto);
         for (TrackAssembly trackAssembly : trackAssemblyList) {
-            trackAssembly.setTrackHeadId(trackHeadMoldDto.getId());
-            trackAssembly.setTrackNo(trackHeadMoldDto.getTrackNo());
-            trackAssembly.setBranchCode(trackHeadMoldDto.getBranchCode());
+            trackAssembly.setTrackHeadId(trackHeadPublicDto.getId());
+            trackAssembly.setTrackNo(trackHeadPublicDto.getTrackNo());
+            trackAssembly.setBranchCode(trackHeadPublicDto.getBranchCode());
             trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
             trackAssembly.setCreateTime(new Date());
@@ -340,13 +340,13 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
      * @Author: zhiqiang.lu
      * @Date: 2022/8/23 10:59
      **/
-    List<TrackAssembly> pojectBomList(TrackHeadMoldDto trackHeadMoldDto) {
+    List<TrackAssembly> pojectBomList(TrackHeadPublicDto trackHeadPublicDto) {
         List<TrackAssembly> trackAssemblyList = new ArrayList<>();
-        if (!StringUtil.isNullOrEmpty(trackHeadMoldDto.getProjectBomId())) {
-            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHeadMoldDto.getProjectBomId());
+        if (!StringUtil.isNullOrEmpty(trackHeadPublicDto.getProjectBomId())) {
+            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHeadPublicDto.getProjectBomId());
             Map<String, String> group = new HashMap<>();
-            if (!StringUtil.isNullOrEmpty(trackHeadMoldDto.getProjectBomGroup())) {
-                group = JSON.parseObject(trackHeadMoldDto.getProjectBomGroup(), Map.class);
+            if (!StringUtil.isNullOrEmpty(trackHeadPublicDto.getProjectBomGroup())) {
+                group = JSON.parseObject(trackHeadPublicDto.getProjectBomGroup(), Map.class);
             }
             for (ProjectBom pb : projectBomList) {
                 TrackAssembly trackAssembly = new TrackAssembly();
@@ -354,8 +354,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 trackAssembly.setName(pb.getProdDesc());
                 trackAssembly.setDrawingNo(pb.getDrawingNo());
                 trackAssembly.setMaterialNo(pb.getMaterialNo());
-                trackAssembly.setTrackHeadId(trackHeadMoldDto.getId());
-                trackAssembly.setNumber(trackHeadMoldDto.getNumber() * pb.getNumber());
+                trackAssembly.setTrackHeadId(trackHeadPublicDto.getId());
+                trackAssembly.setNumber(trackHeadPublicDto.getNumber() * pb.getNumber());
                 trackAssembly.setIsKeyPart(pb.getIsKeyPart());
                 trackAssembly.setTrackType(pb.getTrackType());
                 if (pb.getWeight() != null) {

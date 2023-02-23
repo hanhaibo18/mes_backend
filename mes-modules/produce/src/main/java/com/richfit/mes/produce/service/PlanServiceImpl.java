@@ -425,10 +425,17 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         PlanExtend planExtend = planExtendMapper.selectOne(queryWrapper);
         boolean f = this.save(plan);
         this.planData(plan.getId());
-        //修改扩信息
-        BeanUtils.copyProperties(plan,planExtend);
-        planExtend.setPlanId(plan.getId());
-        planExtendMapper.updateById(planExtend);
+        if(ObjectUtil.isEmpty(planExtend)){
+            PlanExtend newplanExtend=new PlanExtend();
+            BeanUtils.copyProperties(plan,newplanExtend);
+            newplanExtend.setPlanId(plan.getId());
+            planExtendMapper.insert(newplanExtend);
+        }else {
+            //修改扩信息
+            BeanUtils.copyProperties(plan,planExtend);
+            planExtend.setPlanId(plan.getId());
+            planExtendMapper.updateById(planExtend);
+        }
         return CommonResult.success(f);
     }
 

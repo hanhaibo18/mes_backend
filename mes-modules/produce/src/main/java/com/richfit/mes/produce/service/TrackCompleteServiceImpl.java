@@ -215,6 +215,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
                         track.setOptSequence(trackItem.getOptSequence());
                         track.setOptName(trackItem.getOptName());
+                        track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
                         //通过工序Id查询质检记录
                         QueryWrapper<TrackCheck> queryCheck = new QueryWrapper<>();
                         queryCheck.eq("ti_id", trackItem.getId());
@@ -423,7 +424,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
         Assign assign = trackAssignMapper.queryAssign(assignId);
         //‘/’全部派工人员查询
-        if(assign.getUserId().contains("/")){
+        if (assign.getUserId().contains("/")) {
             List<String> branchCodes = Arrays.asList(assign.getSiteId().split(","));
             List<TenantUserVo> data = systemServiceClient.queryUserByBranchCodes(branchCodes).getData();
             List<AssignPerson> assignPeople = new ArrayList<>();
@@ -435,7 +436,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 assignPeople.add(assignPerson);
             }
             assign.setAssignPersons(assignPeople);
-        }else{
+        } else {
             assign.setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId())));
         }
 

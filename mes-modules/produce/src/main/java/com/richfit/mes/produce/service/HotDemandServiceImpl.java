@@ -136,8 +136,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
         queryWrapper.in("id",idList);
         queryWrapper.eq("tenant_id",currentUser.getTenantId());
-        queryWrapper.eq("branch_code",branchCode);
-        queryWrapper.apply("is_exist_model is null");
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
@@ -174,23 +172,49 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         //检查无模型数据
         List<String> ids = hotDemandService.checkModel(idList, branchCode);
-        if (CollectionUtils.isNotEmpty(ids)) return CommonResult.failed("存在无模型需求");
-
+        if (CollectionUtils.isNotEmpty(ids)){
+            return CommonResult.failed("存在无模型需求");
+        }
+        //通过模型检查后查出所有需求信息
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.in("id", idList);
-        //无模型"且“未排产”产品
+        //查出需求提报数据
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        //将需求数据转换为生产计划并入库
-        this.convertAndSave(currentUser, hotDemands,0);
-        UpdateWrapper updateWrapper = new UpdateWrapper();
-        updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
-        updateWrapper.set("issue_time", new Date());//设置下发时间
+        //批准状态为0时为撤销批准  执行删除创建的生产计划以及扩展字段
+        if(ratifyState.intValue()==0){
+            this.removPlane(hotDemands);
+            //修改批准状态
+            UpdateWrapper updateWrapper = new UpdateWrapper();
+            updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
+            updateWrapper.set("issue_time", "");//设置下发时间
+            updateWrapper.set("plan_id","");//设置计划id
+            updateWrapper.in("id", idList);
+        }else {
+            //将需求数据转换为生产计划并入库
+            Map map = this.convertAndSave(currentUser, hotDemands, 0);
+            //设置需求中的计划id和批准状态
+            for (HotDemand hotDemand : hotDemands) {
+                UpdateWrapper updateWrapper = new UpdateWrapper();
+                updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
+                updateWrapper.set("issue_time", new Date());//设置下发时间
+                updateWrapper.set("plan_id",map.get(hotDemand.getId()));//设置计划id
+                updateWrapper.eq("id", hotDemand.getId());
+            }
+        }
+        return CommonResult.success(ResultCode.SUCCESS);
+    }
 
-        updateWrapper.in("id", idList);
-        boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
-        return CommonResult.failed();
+    /**
+     * 删除对应的生产计划
+     * @param hotDemands
+     */
+    private void removPlane(List<HotDemand> hotDemands) {
+        List<String> planIdList = hotDemands.stream().map(x -> x.getPlanId()).collect(Collectors.toList());
+        planService.removeByIds(planIdList);
+        //删除扩展字段
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("plan_id",planIdList);
+        planExtendService.removeByMap(paramMap);
     }
 
 
@@ -205,20 +229,25 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.apply("(is_exist_model=0 or is_exist_process is null)");
+       // queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.apply("(produce_state=0 or produce_state is null)");
         queryWrapper.in("id", idList);
         //无模型"且“未排产”产品
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if(CollectionUtils.isEmpty(hotDemands)){
+            return CommonResult.success(ResultCode.SUCCESS,"所选需求均已排产");
+        }
         //将需求数据转换为生产计划并入库
-        this.convertAndSave(currentUser, hotDemands,1);
-        UpdateWrapper updateWrapper = new UpdateWrapper();
-        updateWrapper.set("produce_state", 1);//设置排产状态 0: 未排产   1 :已排产',
-        updateWrapper.in("id", idList);
-        boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
+        Map map = this.convertAndSave(currentUser, hotDemands, 1);
+        for (HotDemand hotDemand : hotDemands) {
+            UpdateWrapper updateWrapper = new UpdateWrapper();
+            updateWrapper.set("produce_state", 1);//设置排产状态 0: 未排产   1 :已排产',
+            updateWrapper.set("plan_id_model", map.get(hotDemand.getId()));//设置模型计划id
+            updateWrapper.eq("id", hotDemand.getId());
+            boolean update = hotDemandService.update(updateWrapper);
+        }
+        return CommonResult.success(ResultCode.SUCCESS);
 
-        return CommonResult.failed();
     }
     /**
      * 将需求数据转换为生产计划并入库
@@ -228,8 +257,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
      * @param branchType  1 模型车间
      */
 
-    private void convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands ,int branchType) {
+    private Map convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands ,int branchType) {
         //根据需求信息自动生成生产计划数据
+        Map<String,String> planIdMap=new HashMap<>();
         for (HotDemand hotDemand : hotDemands) {
             Plan plan = new Plan();
             plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
@@ -251,19 +281,20 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             plan.setApprovalTime(new Date());//审批时间
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
             //--------------------------
+            plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
             plan.setBlank(hotDemand.getWorkblankType());//毛坯
             plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
             plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
-            plan.setModifyBy(currentUser.getUserId());
+            plan.setModifyBy(currentUser.getUsername());
             plan.setModifyTime(new Date());
             plan.setDrawNoName("");//图号名称
             planService.save(plan);
             //扩展字段保存
             this.saveExtend(hotDemand, plan);
-
+            planIdMap.put(hotDemand.getId(),plan.getId());
         }
-
+        return planIdMap;
     }
 
     /**

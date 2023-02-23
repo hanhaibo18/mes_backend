@@ -73,7 +73,9 @@ public class PlanController extends BaseController {
                                     @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
                                     @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
                                     @ApiParam(value = "页码") @RequestParam(required = false) int page,
-                                    @ApiParam(value = "条数") @RequestParam(required = false) int limit) {
+                                    @ApiParam(value = "条数") @RequestParam(required = false) int limit,
+                                    @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                    @ApiParam(value = "排序方式") @RequestParam(required = false) String order) {
         QueryWrapper<Plan> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(projCode)) {
             queryWrapper.eq("proj_code", projCode);
@@ -88,14 +90,16 @@ public class PlanController extends BaseController {
             queryWrapper.eq("proj_code", projCode);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("start_time", startTime);
+            queryWrapper.ge("start_time", startTime + " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("end_time", endTime);
+            queryWrapper.le("end_time", endTime + " 23:59:59");
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
+        //排序工具
+        OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.gt("missing_num", 0);
         queryWrapper.orderByDesc("priority");
@@ -252,9 +256,9 @@ public class PlanController extends BaseController {
         action.setActionItem("1");
         action.setRemark("计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo());
         actionService.saveAction(action);
-       //删除扩展字段
+        //删除扩展字段
         HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("plan_id",id);
+        paramMap.put("plan_id", id);
         planExtendService.removeByMap(paramMap);
         return CommonResult.success(planService.delPlan(plan));
     }

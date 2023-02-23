@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.produce.PhyChemTaskVo;
 import com.richfit.mes.common.model.produce.PhysChemOrderInner;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -42,17 +43,22 @@ public class MaterialInspectionServiceClientFallbackImpl implements MaterialInsp
     }
 
     @Override
+    public List<PhysChemOrderInner> queryByGroupId(String groupId) {
+        return null;
+    }
+
+    @Override
     public List<PhysChemOrderInner> queryByOrderNo(String orderNo) {
         return null;
     }
 
     @Override
-    public boolean deleteByOrderNo(String orderNo) {
+    public boolean deleteByGroupId(String groupId) {
         return false;
     }
 
     @Override
-    public boolean changeOrderStatus(List<String> recordNos) {
+    public boolean changeOrderStatus(List<PhysChemOrderInner> physChemOrderInners) {
         return false;
     }
 
@@ -70,4 +76,10 @@ public class MaterialInspectionServiceClientFallbackImpl implements MaterialInsp
     public CommonResult<Boolean> isStandard(List<String> reportNos, String isStandard, String standardBy) {
         return null;
     }
+
+    @Override
+    public List<PhysChemOrderInner> getInnerListByGroupIds(List<String> groupIds) {
+        return null;
+    }
+
 }

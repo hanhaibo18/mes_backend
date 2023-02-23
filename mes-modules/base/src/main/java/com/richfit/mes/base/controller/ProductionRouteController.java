@@ -53,7 +53,7 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "新增生产路线", notes = "新增生产路线")
     @PostMapping("/add")
-    public CommonResult<ProductionRoute> addProductionRoute(@RequestBody ProductionRoute productionRoute) {
+    public CommonResult<ProductionRoute> addProductionRoute(@ApiParam(value = "热工路线") @RequestBody ProductionRoute productionRoute) {
         if (StringUtils.isNullOrEmpty(productionRoute.getProductionRouteName())) {
             return CommonResult.failed("生产路线名称不能为空");
         }
@@ -74,7 +74,7 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "修改生产路线", notes = "修改生产路线")
     @PutMapping("/update")
-    public CommonResult<ProductionRoute> updateProductionRoute(@RequestBody ProductionRoute productionRoute) {
+    public CommonResult<ProductionRoute> updateProductionRoute(@ApiParam(value = "热工路线") @RequestBody ProductionRoute productionRoute) {
         if (StringUtils.isNullOrEmpty(productionRoute.getProductionRouteName())) {
             return CommonResult.failed("生产路线名称不能为空！");
         }
@@ -95,7 +95,7 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "批量修改生产路线", notes = "批量修改生产路线")
     @PutMapping("/updateBatch")
-    public CommonResult<String> updateProductionRoutes(@RequestBody ProductionRoute[] ProductionRoutes) {
+    public CommonResult<String> updateProductionRoutes(@ApiParam(value = "热工路线") @RequestBody ProductionRoute[] ProductionRoutes) {
         for (ProductionRoute route : ProductionRoutes) {
             if (StringUtils.isNullOrEmpty(route.getProductionRouteName())) {
                 return CommonResult.failed("名称不能为空！");
@@ -112,11 +112,11 @@ public class ProductionRouteController extends BaseController {
     @ApiOperation(value = "删除生产路线", notes = "删除生产路线")
     @DeleteMapping("/delete")
     public CommonResult<String> deleteProductionRoute(@ApiParam(value = "要删除的路线ID") @RequestBody List<String> ids) {
-        if (ids.isEmpty()){
+        if (ids.isEmpty()) {
             return CommonResult.failed("传入ID为空");
         }
         boolean result = productionRouteService.removeByIds(ids);
-        if (!result){
+        if (!result) {
             return CommonResult.failed("删除失败");
         }
         return CommonResult.success("删除成功");

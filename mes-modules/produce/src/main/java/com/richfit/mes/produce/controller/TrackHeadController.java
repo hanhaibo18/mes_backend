@@ -145,7 +145,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
-    public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadMoldDto trackHead) {
+    public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHead) {
 
         try {
             if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
@@ -177,19 +177,19 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "修改跟单", notes = "修改跟单")
     @PutMapping("/track_head")
-    public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadMoldDto trackHeadMoldDto) {
-        if (StringUtils.isNullOrEmpty(trackHeadMoldDto.getTrackNo())) {
+    public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHeadPublicDto) {
+        if (StringUtils.isNullOrEmpty(trackHeadPublicDto.getTrackNo())) {
             return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
-        } else if (StringUtils.isNullOrEmpty(trackHeadMoldDto.getId())) {
+        } else if (StringUtils.isNullOrEmpty(trackHeadPublicDto.getId())) {
             return CommonResult.failed(TRACK_HEAD_ID_NULL_MESSAGE);
         } else {
-            boolean bool = trackHeadService.updataTrackHead(trackHeadMoldDto, trackHeadMoldDto.getTrackItems());
+            boolean bool = trackHeadService.updataTrackHead(trackHeadPublicDto, trackHeadPublicDto.getTrackItems());
             if (bool) {
                 //添加日志
                 Action action = new Action();
                 action.setActionType("1");
                 action.setActionItem("2");
-                action.setRemark("跟单号：" + trackHeadMoldDto.getTrackNo());
+                action.setRemark("跟单号：" + trackHeadPublicDto.getTrackNo());
                 actionService.saveAction(action);
                 return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
@@ -244,33 +244,33 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "分页查询跟单", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单")
     @GetMapping("/track_head")
-    public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
-                                                          @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
-                                                          @ApiParam(value = "id") @RequestParam(required = false) String id,
-                                                          @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+    public CommonResult<IPage<TrackHeadPublicVo>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                                                                  @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                                                  @ApiParam(value = "id") @RequestParam(required = false) String id,
+                                                                  @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
 
-                                                          @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                                  @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
 
-                                                          @ApiParam(value = "订单编号") @RequestParam(required = false) String productionOrder,
+                                                                  @ApiParam(value = "订单编号") @RequestParam(required = false) String productionOrder,
 
-                                                          @ApiParam(value = "工作计划id") @RequestParam(required = false) String workPlanId,
-                                                          @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
-                                                          @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
-                                                          @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
-                                                          @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                                                  @ApiParam(value = "工作计划id") @RequestParam(required = false) String workPlanId,
+                                                                  @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
+                                                                  @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
+                                                                  @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
+                                                                  @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
 
-                                                          @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
-                                                          @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
-                                                          @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
-                                                          @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
-                                                          @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
-                                                          @ApiParam(value = "工艺id") @RequestParam(required = false) String routerId,
-                                                          @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
-                                                          @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
-                                                          @ApiParam(value = "页码") @RequestParam(required = false) int page,
-                                                          @ApiParam(value = "条数") @RequestParam(required = false) int limit,
-                                                          @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
-                                                          @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter) {
+                                                                  @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
+                                                                  @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
+                                                                  @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                                  @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                                  @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
+                                                                  @ApiParam(value = "工艺id") @RequestParam(required = false) String routerId,
+                                                                  @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                                                                  @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
+                                                                  @ApiParam(value = "页码") @RequestParam(required = false) int page,
+                                                                  @ApiParam(value = "条数") @RequestParam(required = false) int limit,
+                                                                  @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
+                                                                  @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(classes)) {
             queryWrapper.ge("classes", classes);
@@ -339,7 +339,7 @@ public class TrackHeadController extends BaseController {
         }
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(trackHeadService.page(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
+        return CommonResult.success(trackHeadService.queryPage(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "分页查询跟单分流表", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单分流信息")
@@ -662,11 +662,11 @@ public class TrackHeadController extends BaseController {
             String trackNoNew = map.get("trackNoNew").toString();
             List<TrackFlow> trackFlow = JSON.parseArray(JSON.toJSONString(map.get("trackList")), TrackFlow.class);
             List<TrackFlow> trackFlowNew = JSON.parseArray(JSON.toJSONString(map.get("trackListNew")), TrackFlow.class);
-            TrackHeadMoldDto trackHeadMoldDto = trackHeadService.queryDtoById(id);
-            if (TrackHead.TRACK_TYPE_0.equals(trackHeadMoldDto.getTrackType())) {
-                trackHeadService.trackHeadSplit(trackHeadMoldDto, trackNoNew, trackFlow, trackFlowNew);
+            TrackHeadPublicDto trackHeadPublicDto = trackHeadService.queryDtoById(id);
+            if (TrackHead.TRACK_TYPE_0.equals(trackHeadPublicDto.getTrackType())) {
+                trackHeadService.trackHeadSplit(trackHeadPublicDto, trackNoNew, trackFlow, trackFlowNew);
             } else {
-                trackHeadService.trackHeadBatchSplit(trackHeadMoldDto, trackNoNew, trackFlow, trackFlowNew);
+                trackHeadService.trackHeadBatchSplit(trackHeadPublicDto, trackNoNew, trackFlow, trackFlowNew);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -676,16 +676,16 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "跟单回收", notes = "跟单回收")
     @PostMapping("/split_back")
-    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHeadMoldDto> trackHeadMoldDtoList) throws
+    public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHeadPublicDto> trackHeadPublicDtoList) throws
             Exception {
         try {
             //跟单号长度降序排序，避免批量还原时候出现中间跟单丢失问题，从最后一个处理
-            Collections.sort(trackHeadMoldDtoList, new TrackHeadComparator());
-            for (TrackHeadMoldDto TrackHeadMoldDto : trackHeadMoldDtoList) {
-                if (TrackHead.TRACK_TYPE_0.equals(TrackHeadMoldDto.getTrackType())) {
-                    trackHeadService.trackHeadSplitBack(TrackHeadMoldDto);
+            Collections.sort(trackHeadPublicDtoList, new TrackHeadComparator());
+            for (TrackHeadPublicDto TrackHeadPublicDto : trackHeadPublicDtoList) {
+                if (TrackHead.TRACK_TYPE_0.equals(TrackHeadPublicDto.getTrackType())) {
+                    trackHeadService.trackHeadSplitBack(TrackHeadPublicDto);
                 } else {
-                    trackHeadService.trackHeadSplitBatchBack(TrackHeadMoldDto);
+                    trackHeadService.trackHeadSplitBatchBack(TrackHeadPublicDto);
                 }
             }
         } catch (Exception e) {
@@ -695,9 +695,9 @@ public class TrackHeadController extends BaseController {
     }
 
     //跟单号List排序
-    class TrackHeadComparator implements Comparator<TrackHeadMoldDto> {
+    class TrackHeadComparator implements Comparator<TrackHeadPublicDto> {
         @Override
-        public int compare(TrackHeadMoldDto o1, TrackHeadMoldDto o2) {
+        public int compare(TrackHeadPublicDto o1, TrackHeadPublicDto o2) {
             return o2.getTrackNo().length() - o1.getTrackNo().length();
         }
     }
@@ -776,5 +776,11 @@ public class TrackHeadController extends BaseController {
         //工艺版本
         String routerVer = jsonObject.getString("routerVer");
         return CommonResult.success(trackHeadService.rgSaveTrackHead(trackNo, trackItems, routerId, routerVer));
+    }
+
+    @ApiOperation(value = "导出热处理报告", notes = "通过Excel文档导出热处理报告")
+    @GetMapping("/exportHeatReport")
+    public void exportHeatReport(@ApiParam(value = "跟单工序表 trackHeadId") String trackHeadId, HttpServletResponse rsp) {
+        trackHeadService.exportHeatReport(trackHeadId, rsp);
     }
 }

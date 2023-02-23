@@ -63,7 +63,7 @@ public class PhysChemOrderInnerController extends BaseController {
     public Page<PhysChemOrderInner> page(@RequestBody PhyChemTaskVo phyChemTaskVo) throws GlobalException {
         //分组去数据  由于委托单和试验结果数据存一张表  造成委托单数据冗余
         QueryWrapper<PhysChemOrderInner> queryWrapper = new QueryWrapper<>();
-        queryWrapper.inSql("id","SELECT max(id) as id FROM produce_phys_chem_order_inner GROUP BY order_no");
+        queryWrapper.inSql("id","SELECT max(id) as id FROM produce_phys_chem_order_inner GROUP BY group_id");
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getBatchNo())){
             queryWrapper.eq("batch_no",phyChemTaskVo.getBatchNo());
         }
@@ -94,17 +94,17 @@ public class PhysChemOrderInnerController extends BaseController {
         Page<PhysChemOrderInner> page = physChemOrderInnerService.page(new Page<>(phyChemTaskVo.getPage(), phyChemTaskVo.getLimit()), queryWrapper);
 
         if(page.getRecords().size()>0) {
-            //查询出的委托单号集合
-            List<String> orderNos = page.getRecords().stream().map(PhysChemOrderInner::getOrderNo).collect(Collectors.toList());
+            //查询出的委托组id集合
+            List<String> groupIds = page.getRecords().stream().map(PhysChemOrderInner::getGroupId).collect(Collectors.toList());
             QueryWrapper<PhysChemOrderInner> physChemOrderInnerQueryWrapper = new QueryWrapper<>();
-            physChemOrderInnerQueryWrapper.in("order_no", orderNos);
+            physChemOrderInnerQueryWrapper.in("group_id", groupIds);
             List<PhysChemOrderInner> list = physChemOrderInnerService.list(physChemOrderInnerQueryWrapper);
             //分组便于取值赋值
-            Map<String, List<PhysChemOrderInner>> orderMap = list.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getOrderNo));
+            Map<String, List<PhysChemOrderInner>> orderMap = list.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getGroupId));
             for (PhysChemOrderInner record : page.getRecords()) {
                 List<PhysChemOrderImpactDto> impacts = new ArrayList<>();
                 //力学性能-冲击赋值
-                List<PhysChemOrderInner> physChemOrderInners = orderMap.get(record.getOrderNo());
+                List<PhysChemOrderInner> physChemOrderInners = orderMap.get(record.getGroupId());
                 for (PhysChemOrderInner physChemOrderInner : physChemOrderInners) {
                     if(StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactDirection())
                     && StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactGap())
@@ -127,16 +127,35 @@ public class PhysChemOrderInnerController extends BaseController {
     /**
      * 根据委托单号查询委托单
      */
-    @ApiOperation(value = "根据委托单号查询委托单", notes = "根据委托单号查询委托单")
+    @ApiOperation(value = "根据委托组id查询委托单", notes = "根据委托组id查询委托单")
+    @ApiImplicitParam(name = "groupId", value = "委托组id", paramType = "query", dataType = "String")
+    @GetMapping("/queryByGroupId")
+    public List<PhysChemOrderInner> queryByGroupId(@RequestParam("groupId") String groupId){
+        List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
+        //分组去数据  由于委托单和试验结果数据存一张表  造成委托单数据冗余
+        QueryWrapper<PhysChemOrderInner> queryWrapper = new QueryWrapper<>();
+        if(!StringUtils.isNullOrEmpty(groupId)){
+            queryWrapper.eq("group_id",groupId);
+            physChemOrderInners = physChemOrderInnerService.list(queryWrapper);
+        }
+        return  physChemOrderInners;
+    }
+
+    /**
+     * 根据委托单号查询委托单
+     */
+    @ApiOperation(value = "根据orderNo查询委托单", notes = "根据orderNo查询委托单")
     @ApiImplicitParam(name = "orderNo", value = "委托单号", paramType = "query", dataType = "String")
     @GetMapping("/queryByOrderNo")
     public List<PhysChemOrderInner> queryByOrderNo(@RequestParam("orderNo") String orderNo){
+        List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
         //分组去数据  由于委托单和试验结果数据存一张表  造成委托单数据冗余
         QueryWrapper<PhysChemOrderInner> queryWrapper = new QueryWrapper<>();
         if(!StringUtils.isNullOrEmpty(orderNo)){
             queryWrapper.eq("order_no",orderNo);
+            physChemOrderInners = physChemOrderInnerService.list(queryWrapper);
         }
-        return  physChemOrderInnerService.list(queryWrapper);
+        return  physChemOrderInners;
     }
 
     /**
@@ -154,15 +173,15 @@ public class PhysChemOrderInnerController extends BaseController {
     }
 
     /**
-     * 根据委托单号删除委托单
+     * 根据委托组Id删除委托单
      */
-    @ApiOperation(value = "根据委托单号删除委托单", notes = "根据委托单号删除委托单")
-    @ApiImplicitParam(name = "orderNo", value = "委托单号", paramType = "query", dataType = "String")
-    @GetMapping("/deleteByOrderNo")
-    public boolean deleteByOrderNo(@RequestParam("orderNo") String orderNo){
+    @ApiOperation(value = "根据委托组Id删除委托单", notes = "根据委托组Id删除委托单")
+    @ApiImplicitParam(name = "groupId", value = "委托组Id", paramType = "query", dataType = "String")
+    @GetMapping("/deleteByGroupId")
+    public boolean deleteByGroupId(@RequestParam("groupId") String groupId){
         //删除委托单号对应的所有数据
         QueryWrapper<PhysChemOrderInner> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("order_no",orderNo);
+        queryWrapper.eq("group_id",groupId);
         return  physChemOrderInnerService.remove(queryWrapper);
     }
 
@@ -214,16 +233,13 @@ public class PhysChemOrderInnerController extends BaseController {
     }
 
     /**
-     * 批量委托
+     * 批量修改
      */
-    @ApiOperation(value = "批量委托", notes = "批量委托")
+    @ApiOperation(value = "批量修改", notes = "批量修改")
     @ApiImplicitParam(name = "orderNos", value = "委托单号", paramType = "query", dataType = "String")
     @PostMapping("/changeOrderStatus")
-    public boolean changeOrderStatus(@RequestBody List<String> orderNos){
-        UpdateWrapper<PhysChemOrderInner> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.in("order_no",orderNos)
-                .set("status","1");
-        return physChemOrderInnerService.update(updateWrapper);
+    public boolean changeOrderStatus(@RequestBody List<PhysChemOrderInner> physChemOrderInners){
+        return physChemOrderInnerService.updateBatchById(physChemOrderInners);
     }
 
 
@@ -232,6 +248,13 @@ public class PhysChemOrderInnerController extends BaseController {
     @PostMapping("/synResultInfos")
     public List<PhysChemOrderInner> synResultInfos(@RequestBody List<String> reportNos){
         return physChemOrderInnerService.synResultInfos(reportNos);
+    }
+
+    @ApiOperation(value = "根据委托组id获取数据", notes = "根据委托组id获取数据")
+    @ApiImplicitParam(name = "groupIds", value = "委托组ids", paramType = "body", dataType = "list")
+    @PostMapping("/getInnerListByGroupIds")
+    public List<PhysChemOrderInner> getInnerListByGroupIds(@RequestBody List<String> groupIds){
+        return physChemOrderInnerService.getInnerListByGroupIds(groupIds);
     }
 
 
