@@ -141,6 +141,7 @@ public class HourStandardController {
             hourQueryWrapper.eq("ver_id", id);
             List<Hour> hours = hourService.list(hourQueryWrapper);
             for (Hour hour : hours) {
+                hour.setId(null);
                 hour.setVerId(hourStandard.getId());
             }
             return CommonResult.success(hourService.saveBatch(hours));

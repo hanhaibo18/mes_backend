@@ -12,6 +12,7 @@ import com.richfit.mes.common.model.produce.StepHour;
 import com.richfit.mes.common.model.produce.StepHourVer;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.StepHourService;
 import com.richfit.mes.produce.service.heat.StepHourVerService;
 import io.swagger.annotations.Api;
@@ -36,6 +37,8 @@ public class StepHourVerController {
     private StepHourVerService stepHourVerService;
     @Autowired
     private StepHourService stepHourService;
+    @Autowired
+    private SystemServiceClient systemServiceClient;
 
     /**
      * 查询步骤工时版本列表
@@ -61,7 +64,13 @@ public class StepHourVerController {
             queryWrapper.orderByAsc("ver");
         }
 
-        return CommonResult.success(stepHourVerService.page(new Page<StepHourVer>(page, limit), queryWrapper));
+        Page<StepHourVer> stepHourVerPage = stepHourVerService.page(new Page<StepHourVer>(page, limit), queryWrapper);
+        for (StepHourVer record : stepHourVerPage.getRecords()) {
+            if (!StringUtils.isNullOrEmpty(record.getActivateBy()) && !ObjectUtil.isEmpty(systemServiceClient.queryByUserAccount(record.getActivateBy()).getData())) {
+                record.setActivateBy(systemServiceClient.queryByUserAccount(record.getActivateBy()).getData().getEmplName());
+            }
+        }
+        return CommonResult.success(stepHourVerPage);
 
     }
 
