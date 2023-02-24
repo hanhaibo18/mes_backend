@@ -473,14 +473,14 @@ public class TrackCompleteController extends BaseController {
     }
 
     @ApiOperation(value = "工时统计by订单", notes = "工时统计by订单")
-    @GetMapping("/pageOptimizeByTrackNo")
-    public CommonResult<Map<String, Object>> pageOptimizeByTrackNo(@ApiParam(value = "订单号") @RequestParam(required = false) String trackNo,
+    @GetMapping("/pageOptimizeByOrder")
+    public CommonResult<Map<String, Object>> pageOptimizeByOrder(@ApiParam(value = "订单号") @RequestParam(required = false) String trackNo,
                                                                    @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
                                                                    @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
                                                                    @ApiParam(value = "机构ID") @RequestParam String branchCode,
                                                                    @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                                                    @ApiParam(value = "用户id") @RequestParam(required = false) String userId) {
-        return CommonResult.success(trackCompleteService.queryTrackCompleteListByTrackNo(trackNo, startTime, endTime, branchCode, workNo, userId));
+        return CommonResult.success(trackCompleteService.queryTrackCompleteListByOrder(trackNo, startTime, endTime, branchCode, workNo, userId));
     }
 
 
