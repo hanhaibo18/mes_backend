@@ -277,8 +277,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
 
             plan.setTexture(hotDemand.getTexture());//材质
             plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
-            plan.setApprovalBy(currentUser.getUsername());//审批人
-            plan.setApprovalTime(new Date());//审批时间
+//            plan.setApprovalBy(currentUser.getUsername());//审批人
+//            plan.setApprovalTime(new Date());//审批时间
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
             //--------------------------
             plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
