@@ -836,6 +836,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         trackCompleteShowList.add(track);
                     }
                     track0.setProductionOrder(orderno);
+                    track0.setId(orderno);
                     //准备工时
                     track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //额定工时
@@ -983,6 +984,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         trackCompleteShowList.add(track);
                     }
                     track0.setWorkNo(workno);
+                    track0.setId(workno);
                     //准备工时
                     track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //额定工时
