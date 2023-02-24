@@ -11,7 +11,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
@@ -681,11 +683,16 @@ public class TrackHeadController extends BaseController {
         try {
             //跟单号长度降序排序，避免批量还原时候出现中间跟单丢失问题，从最后一个处理
             Collections.sort(trackHeadPublicDtoList, new TrackHeadComparator());
-            for (TrackHeadPublicDto TrackHeadPublicDto : trackHeadPublicDtoList) {
-                if (TrackHead.TRACK_TYPE_0.equals(TrackHeadPublicDto.getTrackType())) {
-                    trackHeadService.trackHeadSplitBack(TrackHeadPublicDto);
+            for (TrackHeadPublicDto trackHeadPublicDto : trackHeadPublicDtoList) {
+                QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("original_track_id", trackHeadPublicDto.getOriginalTrackId());
+                if (trackHeadService.count() > 0) {
+                    throw new GlobalException("此跟单已被拆分,请回收当前跟单被拆分的跟单", ResultCode.FAILED);
+                }
+                if (TrackHead.TRACK_TYPE_0.equals(trackHeadPublicDto.getTrackType())) {
+                    trackHeadService.trackHeadSplitBack(trackHeadPublicDto);
                 } else {
-                    trackHeadService.trackHeadSplitBatchBack(TrackHeadPublicDto);
+                    trackHeadService.trackHeadSplitBatchBack(trackHeadPublicDto);
                 }
             }
         } catch (Exception e) {
@@ -717,6 +724,21 @@ public class TrackHeadController extends BaseController {
         String substring = trackNo.substring(0, trackNo.length() - 6);
         String end = trackNo.substring(trackNo.length() - 6);
         return CommonResult.success(substring + "-" + index + " " + end);
+    }
+
+    @ApiOperation(value = "跟单拆分跟单号", notes = "跟单拆分跟单号")
+    @GetMapping("/split_number")
+    public CommonResult<String> splitNumber(@ApiParam(value = "跟单编号") @RequestParam(required = false) String trackNo,
+                                            @ApiParam(value = "工厂代码", required = true) @RequestParam String branchCode) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            queryWrapper.eq("original_track_no", trackNo);
+        }
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
+        int index = trackHeadList.size() + 1;
+        return CommonResult.success(Integer.toString(index));
     }
 
 
