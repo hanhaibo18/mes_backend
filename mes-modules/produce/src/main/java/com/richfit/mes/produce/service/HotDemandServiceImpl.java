@@ -12,10 +12,12 @@ import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.produce.HotDemand;
 import com.richfit.mes.common.model.produce.HotModelStore;
 import com.richfit.mes.common.model.produce.Plan;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.HotDemandMapper;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.DemandExcel;
 import com.richfit.mes.produce.utils.DateUtils;
 import io.swagger.annotations.ApiImplicitParam;
@@ -50,6 +52,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     private PlanService planService;
     @Resource
     private PlanExtendService planExtendService;
+    @Autowired
+    private TrackHeadMapper trackHeadMapper;
     /**
      * 导入需求提报数据
      * @param file
@@ -182,6 +186,17 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         //批准状态为0时为撤销批准  执行删除创建的生产计划以及扩展字段
         if(ratifyState.intValue()==0){
+            Map<String, HotDemand> DemandMap = hotDemands.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
+            List<String> planIdList = hotDemands.stream().map(x -> x.getPlanId()).collect(Collectors.toList());
+            //检查计划有没有跟单,跟单是否开工,开工不可回滚
+            List<TrackHead> trackHeads = trackHeadMapper.selectBatchIds(planIdList);
+            for (TrackHead trackHead : trackHeads) {
+                if(!"0".equals(trackHead.getStatus())){
+                    HotDemand hotDemand = DemandMap.get(trackHead.getWorkPlanId());
+                    throw new GlobalException("已生成跟单并开工,名称 : "+hotDemand.getDemandName(),ResultCode.FAILED);
+                }
+            }
+            //删除对应的生产计划
             this.removPlane(hotDemands);
             //修改批准状态
             UpdateWrapper updateWrapper = new UpdateWrapper();
