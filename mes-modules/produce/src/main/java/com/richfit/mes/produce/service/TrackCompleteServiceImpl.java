@@ -82,10 +82,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
+    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where work_no = '" + workNo + "')");
+        }
+        if (!StringUtils.isNullOrEmpty(orderNo)) {
+            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where production_order = '" + orderNo + "')");
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -708,9 +711,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> queryTrackCompleteListByOrder(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
+    public Map<String, Object> queryTrackCompleteListByOrder(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         //获取filter过滤后的报工列表
-        List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId);
+        List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
         List<TrackComplete> emptyTrackComplete = new ArrayList<>();
 
         if (!allCompletes.isEmpty()) {
@@ -739,8 +742,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Map<String, List<TrackHead>> trackHeadMapByOrder = trackHeadList.stream().filter(trackHead -> StrUtil.isNotBlank(trackHead.getProductionOrder())).collect(Collectors.groupingBy(TrackHead::getProductionOrder));
             //获取orderList
             List<String> orderList = new ArrayList<>(trackHeadMapByOrder.keySet());
-            for (String orderNo : orderList) {
-                List<TrackHead> trackHeadListByOrder = trackHeadMapByOrder.get(orderNo);
+            for (String orderno : orderList) {
+                List<TrackHead> trackHeadListByOrder = trackHeadMapByOrder.get(orderno);
                 Set<String> trackHeadIdSet = trackHeadListByOrder.stream().map(TrackHead::getId).collect(Collectors.toSet());
                 List<TrackComplete> completes = allCompletes.stream().filter(x -> trackHeadIdSet.contains(x.getTrackId())).collect(Collectors.toList());
 
@@ -832,7 +835,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         trackCompleteShowList.add(track);
                     }
-                    track0.setProductionOrder(orderNo);
+                    track0.setProductionOrder(orderno);
                     //准备工时
                     track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //额定工时
@@ -854,9 +857,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
+    public Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         //获取filter过滤后的报工列表
-        List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId);
+        List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
         List<TrackComplete> emptyTrackComplete = new ArrayList<>();
 
         if (!allCompletes.isEmpty()) {
@@ -883,12 +886,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Set<String> trackIds = allCompletes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
             List<TrackHead> trackHeadList = trackHeadService.listByIds(new ArrayList<>(trackIds));
 
-            Map<String, List<TrackHead>> trackHeadMapByOrder = trackHeadList.stream().filter(trackHead -> StrUtil.isNotBlank(trackHead.getProductionOrder())).collect(Collectors.groupingBy(TrackHead::getProductionOrder));
+            Map<String, List<TrackHead>> trackHeadMapByWorkNo = trackHeadList.stream().filter(trackHead -> StrUtil.isNotBlank(trackHead.getWorkNo())).collect(Collectors.groupingBy(TrackHead::getWorkNo));
             //获取workNoList
-            List<String> orderList = new ArrayList<>(trackHeadMapByOrder.keySet());
-            for (String orderNo : orderList) {
-                List<TrackHead> trackHeadListByOrder = trackHeadMapByOrder.get(orderNo);
-                Set<String> trackHeadIdSet = trackHeadListByOrder.stream().map(TrackHead::getId).collect(Collectors.toSet());
+            List<String> workNoList = new ArrayList<>(trackHeadMapByWorkNo.keySet());
+            for (String workno : workNoList) {
+                List<TrackHead> trackHeadListByWorkNo = trackHeadMapByWorkNo.get(workno);
+                Set<String> trackHeadIdSet = trackHeadListByWorkNo.stream().map(TrackHead::getId).collect(Collectors.toSet());
                 List<TrackComplete> completes = allCompletes.stream().filter(x -> trackHeadIdSet.contains(x.getTrackId())).collect(Collectors.toList());
 
                 if (!CollectionUtils.isEmpty(completes)) {
@@ -979,7 +982,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         trackCompleteShowList.add(track);
                     }
-                    track0.setId(orderNo);
+                    track0.setWorkNo(workno);
                     //准备工时
                     track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //额定工时
@@ -1000,10 +1003,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         return stringObjectHashMap;
     }
 
-    private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
+    private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where work_no = '" + workNo + "')");
+        }
+        if (!StringUtils.isNullOrEmpty(orderNo)) {
+            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where production_order = '" + orderNo + "')");
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
