@@ -101,4 +101,6 @@ public interface TrackCompleteService extends IService<TrackComplete> {
     CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource);
 
     Map<String, Object> queryTrackCompleteListByOrder(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId);
+
+    Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId);
 }
