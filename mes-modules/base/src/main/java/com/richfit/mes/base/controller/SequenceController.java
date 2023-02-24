@@ -794,11 +794,12 @@ public class SequenceController extends BaseController {
         return CommonResult.success(operationAssignService.remove(queryWrapper), "操作成功！");
     }
 
-    @ApiOperation(value = "查询工序派工", notes = "根据工艺ID查询工序派工")
+    @ApiOperation(value = "查询工序派工", notes = "根据工序name查询工序派工")
     @GetMapping("/assign/get")
-    public CommonResult<OperationAssign> assignGet(String sequenceId) {
+    public CommonResult<OperationAssign> assignGet(String optName,String branchCode) {
         QueryWrapper<OperationAssign> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("operation_id", sequenceId);
+        queryWrapper.eq("opt_name", optName);
+        queryWrapper.eq("branch_code", branchCode);
         if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }

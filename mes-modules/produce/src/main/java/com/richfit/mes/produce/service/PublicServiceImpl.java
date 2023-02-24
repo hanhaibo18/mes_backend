@@ -363,7 +363,7 @@ public class PublicServiceImpl implements PublicService {
         TrackItem trackItem = trackItemService.getById(map.get("trackItemId"));
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
         CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptName(), trackItem.getBranchCode());
-        CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptId());
+        CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptName(),trackHead.getBranchCode());
         if (null == assignGet.getData()) {
             throw new GlobalException("未查询到自动派工信息", ResultCode.FAILED);
         }
