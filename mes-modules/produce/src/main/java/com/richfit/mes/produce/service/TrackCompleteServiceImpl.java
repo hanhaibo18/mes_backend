@@ -740,8 +740,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //获取orderList
             List<String> orderList = new ArrayList<>(trackHeadMapByOrder.keySet());
             for (String orderNo : orderList) {
-                List<TrackHead> trackHeadListByOrderId = trackHeadMapByOrder.get(orderNo);
-                Set<String> trackHeadIdSet = trackHeadListByOrderId.stream().map(TrackHead::getTrackHeadId).collect(Collectors.toSet());
+                List<TrackHead> trackHeadListByOrder = trackHeadMapByOrder.get(orderNo);
+                Set<String> trackHeadIdSet = trackHeadListByOrder.stream().map(TrackHead::getId).collect(Collectors.toSet());
                 List<TrackComplete> completes = allCompletes.stream().filter(x -> trackHeadIdSet.contains(x.getTrackId())).collect(Collectors.toList());
 
                 if (!CollectionUtils.isEmpty(completes)) {
