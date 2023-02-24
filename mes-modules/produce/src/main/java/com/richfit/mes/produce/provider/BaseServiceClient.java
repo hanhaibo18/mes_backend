@@ -87,7 +87,7 @@ public interface BaseServiceClient {
     public ProjectBom queryBom(@RequestParam("workPlanNo") String workPlanNo, @RequestParam("branchCode") String branchCode);
 
     @GetMapping("/api/base/sequence/assign/get")
-    public CommonResult<OperationAssign> assignGet(@RequestParam("sequenceId") String sequenceId);
+    public CommonResult<OperationAssign> assignGet(@RequestParam("optName") String optName,@RequestParam("branchCode") String branchCode);
 
     @GetMapping("/api/base/sequence/querySequenceById")
     public CommonResult<Sequence> querySequenceById(@RequestParam("optName") String optName, @RequestParam("branchCode") String branchCode);
