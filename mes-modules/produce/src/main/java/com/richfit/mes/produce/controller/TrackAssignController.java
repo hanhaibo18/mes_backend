@@ -325,7 +325,21 @@ public class TrackAssignController extends BaseController {
                     assign.setCreateTime(new Date());
                     assign.setAvailQty(assign.getQty());
                     assign.setFlowId(trackItem.getFlowId());
-                    //处理派工人员信息
+                    //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
+                    if(StringUtils.isNullOrEmpty(assign.getUserId())){
+                        StringBuilder userId = new StringBuilder();
+                        StringBuilder userName = new StringBuilder();
+                        for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                            if(!StringUtils.isNullOrEmpty(String.valueOf(userId))){
+                                userId.append(",");
+                                userName.append(",");
+                            }
+                            userId.append(assignPerson.getUserId());
+                            userName.append(assignPerson.getUserName());
+                        }
+                        assign.setUserId(String.valueOf(userId));
+                        assign.setEmplName(String.valueOf(userName));
+                    }
                     boolean isAllUser = assign.getUserId().contains("/")?true:false;
                     if(isAllUser){
                         assign.setUserId("/");
@@ -382,6 +396,8 @@ public class TrackAssignController extends BaseController {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
+
+
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
         CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());
