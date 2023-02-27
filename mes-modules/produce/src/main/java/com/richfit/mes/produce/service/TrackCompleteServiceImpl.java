@@ -1028,26 +1028,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     private void getBasicInfo(List<TrackComplete> allCompletes, Map<String, QualityInspectionRules> rulesMap, Map<String, Device> deviceMap,
-                     Map<String, TrackHead> trackHeadMap, Map<String, TrackItem> trackMap, Map<String, TrackFlow> trackFlowMap, List<TrackHead> trackHeadList) {
+                              Map<String, TrackHead> trackHeadMap, Map<String, TrackItem> trackMap, Map<String, TrackFlow> trackFlowMap, List<TrackHead> trackHeadList) {
         List<QualityInspectionRules> rulesList = systemServiceClient.queryQualityInspectionRulesList(allCompletes.get(0).getBranchCode()).getData();
-        rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
+        rulesMap.putAll(rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x)));
         //获取设备信息
         Set<String> deviceIds = allCompletes.stream().map(TrackComplete::getDeviceId).collect(Collectors.toSet());
         List<Device> deviceByIdList = baseServiceClient.getDeviceByIdList(new ArrayList<>(deviceIds));
-        deviceMap = deviceByIdList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
+        deviceMap.putAll(deviceByIdList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x)));
         //根据跟单id获取跟单数据
         Set<String> trackIdList = allCompletes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
         List<TrackHead> trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
-        trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
+        trackHeadMap.putAll(trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x)));
         //根据跟单工序id获取跟单工序
         Set<String> tiIdList = allCompletes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
         List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
-        trackMap = trackItems.stream().filter(item -> item.getIsDoing() == 2).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
+        trackMap.putAll(trackItems.stream().filter(item -> item.getIsDoing() == 2).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k)));
         List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
         List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
-        trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
+        trackFlowMap.putAll(trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k)));
         //根据报工表获取订单id对应的trackHeadList
         Set<String> trackIds = allCompletes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
-        trackHeadList = trackHeadService.listByIds(new ArrayList<>(trackIds));
+        trackHeadList.addAll(trackHeadService.listByIds(new ArrayList<>(trackIds)));
     }
 }

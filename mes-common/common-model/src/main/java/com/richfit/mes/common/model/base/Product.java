@@ -108,6 +108,9 @@ public class Product extends BaseEntity<Product> {
     @ApiModelProperty(value = "是否自动同步  y 是  n 否,---为空默认为自动同步")
     private String autosyns;
 
+    @ApiModelProperty(value = "物料规格")
+    private String specification;
+
     @TableField(exist = false)
     private Integer haveRouter;
 

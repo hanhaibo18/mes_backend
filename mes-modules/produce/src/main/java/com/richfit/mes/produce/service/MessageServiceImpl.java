@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.richfit.mes.produce.entity.MessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,17 +21,17 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public String sentGzhMessage(MessageDto messageInfo) {
-        String token = getToken(appkey,appsecret);
-        if (token.startsWith("\r\n")){
+        String token = getToken(appkey, appsecret);
+        if (token.startsWith("\r\n")) {
             token = token.substring(2);
         }
-        String url = "http://10.134.100.222:909/sendmsg.php?Token="+token;
+        String url = "http://10.134.100.222:909/sendmsg.php?Token=" + token;
         String result = restTemplate.postForObject(url, messageInfo, String.class);
         return result;
     }
 
-    private String getToken(String appkey,String appsecret) {
-        String url = "http://10.134.100.222:909/get_token.php?act=login&appkey="+appkey+"&appsecret="+appsecret;
+    private String getToken(String appkey, String appsecret) {
+        String url = "http://10.134.100.222:909/get_token.php?act=login&appkey=" + appkey + "&appsecret=" + appsecret;
         String token = restTemplate.getForEntity(url, String.class).getBody();
         return token;
     }
