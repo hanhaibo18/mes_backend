@@ -146,7 +146,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 //步骤分组id
                 trackComplete.setStepGroupId(stepGroupId);
             }
-            //最后一道工序需要激活下工序
+            //最后一道步骤需要激活下工序
             if(isFinal){
                 //检验人
                 trackItem.setQualityCheckBy(complete.getQualityCheckBy());
