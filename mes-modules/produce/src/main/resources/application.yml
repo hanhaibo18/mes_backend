@@ -1,5 +1,7 @@
 server:
   port: ${SERVER_PORT:8012}
+  tomcat:
+    connection-timeout: 600000
 spring:
   application:
     name: produce-service
@@ -75,8 +77,8 @@ switch: true
 
 feign.client.config:
   default:
-    connect-timeout: 100000
-    read-timeout: 300000
+    connect-timeout: 600000
+    read-timeout: 600000
 
 secure:
   ignore:
