@@ -396,6 +396,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Object> savePlan(Plan plan) {
 
         checkPlan(plan);
@@ -474,6 +475,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Object> addPlan(Plan plan) {
 
         CommonResult<Object> result = savePlan(plan);

@@ -359,7 +359,7 @@ public class HotDemandController extends BaseController {
                     updateWrapper.set("repertory_num", count);//设置库存数量
                     updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
                     updateWrapper.in("id", hotDemand.getId());
-                    boolean update = hotDemandService.update(updateWrapper);
+                    hotDemandService.update(updateWrapper);
                 }
             }
         }
@@ -382,8 +382,8 @@ public class HotDemandController extends BaseController {
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         queryWrapper.apply("(is_exist_process=0 or is_exist_process is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(hotDemands)) return CommonResult.success("所有均已校验完成");
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
         //工艺库数据
@@ -402,7 +402,7 @@ public class HotDemandController extends BaseController {
                 updateWrapper.set("piece_weight",router.getPieceWeight());//设置单重
                 updateWrapper.set("weight", router.getForgWeight());//设置重量
                 updateWrapper.eq("id", hotDemand.getId());
-                boolean update = hotDemandService.update(updateWrapper);
+                hotDemandService.update(updateWrapper);
             }
         }
             return CommonResult.success("操作成功");
