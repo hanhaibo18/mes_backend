@@ -41,13 +41,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String importMaterialByExcle(MultipartFile file, String tenantId, String branchCode) {
-        //封装证件信息实体类
-        java.lang.reflect.Field[] fields = Product.class.getDeclaredFields();
-        //封装证件信息实体类
-        String[] fieldNames = new String[fields.length];
-        for (int i = 0; i < fields.length; i++) {
-            fieldNames[i] = fields[i].getName();
-        }
+        String[] fieldNames = new String[]{"productName", "materialType", "materialNo", "drawingNo", "materialDate",
+                "objectType", "weight", "texture", "unit", "materialDesc", "autosyns", "specification"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -70,13 +65,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 return "以下物料编码已存在:" + JSONObject.toJSONString(materialNoList);
             }
             boolean result = productService.saveBatch(list);
-            if (!result){
-                throw new GlobalException("excel批量导入失败",ResultCode.FAILED);
+            if (!result) {
+                throw new GlobalException("excel批量导入失败", ResultCode.FAILED);
             }
-
-
         } catch (Exception e) {
-            log.error("excel导入失败",e);
+            log.error("excel导入失败", e);
             return "failed";
         }
         return "success";
