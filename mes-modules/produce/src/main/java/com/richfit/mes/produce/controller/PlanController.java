@@ -323,4 +323,15 @@ public class PlanController extends BaseController {
         planService.exportPlan(file);
         return CommonResult.success(null);
     }
+
+
+    @ApiOperation(value = "计划数据维护", notes = "计划数据维护")
+    @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
+    @PostMapping("/completeness/plan/data")
+    public CommonResult<Object> data(@RequestBody List<Plan> planList) throws GlobalException {
+        for (Plan plan : planList) {
+            planService.planData(plan.getId());
+        }
+        return CommonResult.success(null);
+    }
 }
