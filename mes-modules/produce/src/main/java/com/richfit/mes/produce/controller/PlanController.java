@@ -327,7 +327,7 @@ public class PlanController extends BaseController {
 
     @ApiOperation(value = "计划数据维护", notes = "计划数据维护")
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
-    @PostMapping("/data")
+    @PostMapping("/data/maintenance")
     public CommonResult<Object> data(@RequestBody List<Plan> planList) throws GlobalException {
         for (Plan plan : planList) {
             planService.planData(plan.getId());
