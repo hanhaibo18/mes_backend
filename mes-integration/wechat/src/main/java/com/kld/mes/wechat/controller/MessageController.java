@@ -1,6 +1,6 @@
 package com.kld.mes.wechat.controller;
 
-import com.kld.mes.wechat.entity.MessageDto;
+import com.richfit.mes.common.model.produce.dto.MessageDto;
 import com.kld.mes.wechat.service.MessageService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
