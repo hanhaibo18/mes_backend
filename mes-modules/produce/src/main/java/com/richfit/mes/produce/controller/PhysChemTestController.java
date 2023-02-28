@@ -159,4 +159,11 @@ public class PhysChemTestController extends BaseController {
         return materialInspectionServiceClient.isStandard(reportNos, jsonObject.getString("isStandard"),SecurityUtils.getCurrentUser().getUsername());
     }
 
+    @ApiOperation(value = "委托单复制", notes = "委托单复制")
+    @ApiImplicitParam(name = "groupId", value = "要复制的委托单组id", required = true, paramType = "query", dataType = "String")
+    @GetMapping("/copyOrder")
+    public CommonResult<Boolean> copyOrder(@RequestParam("groupId") String groupId) throws GlobalException {
+        return CommonResult.success(phyChemTestService.copyOrder(groupId));
+    }
+
 }
