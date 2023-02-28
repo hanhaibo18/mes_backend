@@ -5,6 +5,8 @@ import com.kld.mes.erp.entity.order.ZC80PPIF009;
 import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
 import com.kld.mes.erp.entity.order.ZPPS0008;
 import com.kld.mes.erp.utils.WsTemplateFactory;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +44,14 @@ public class OrderServiceImpl implements OrderService {
 
         //获取调用服务接口类实例
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
-        ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL, zc80PPIF009);
+        List<ZPPS0008> list = new ArrayList<>();
+        try {
+            ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL, zc80PPIF009);
+            list = o.getTAUFK().getItem();
+        } catch (Exception e) {
+            throw new GlobalException("ERP接口异常", ResultCode.FAILED);
+        }
         List<Order> orders = new ArrayList<>();
-        List<ZPPS0008> list = o.getTAUFK().getItem();
         char zero = 48;
         for (int i = 0; i < list.size(); i++) {
             Order p = new Order();
