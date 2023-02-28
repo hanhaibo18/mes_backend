@@ -34,17 +34,12 @@ public class ProductionRouteController extends BaseController {
 
     @ApiOperation(value = "分页获取生产路线", notes = "分页获取生产路线")
     @GetMapping("/page")
-    public CommonResult<IPage<ProductionRoute>> page(@ApiParam(value = "页数") @RequestParam(defaultValue = "1") int page,
-                                                     @ApiParam(value = "每页个数") @RequestParam(defaultValue = "10") int limit,
-                                                     @ApiParam(value = "机构ID") @RequestParam String branchCode,
-                                                     @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
-                                                     @ApiParam(value = "asc/desc") @RequestParam(required = false) String order,
-                                                     @ApiParam(value = "生产路线名称") @RequestParam(required = false) String productionRouteName) {
+    public CommonResult<IPage<ProductionRoute>> page(@ApiParam(value = "页数") @RequestParam(defaultValue = "1") int page, @ApiParam(value = "每页个数") @RequestParam(defaultValue = "10") int limit, @ApiParam(value = "机构ID") @RequestParam String branchCode, @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol, @ApiParam(value = "asc/desc") @RequestParam(required = false) String order, @ApiParam(value = "生产路线名称") @RequestParam(required = false) String productionRouteName) {
         QueryWrapper<ProductionRoute> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         if (productionRouteName != null) {
-            queryWrapper.like("production_route_name", "%" + productionRouteName + "%");
+            queryWrapper.like("production_route_name", productionRouteName);
         }
         OrderUtil.query(queryWrapper, orderCol, order);
         return CommonResult.success(productionRouteService.page(new Page<>(page, limit), queryWrapper));
@@ -77,11 +72,10 @@ public class ProductionRouteController extends BaseController {
             return CommonResult.failed("id不能为空！");
         }
         boolean result = productionRouteService.updateById(productionRoute);
-        if (result) {
-            return CommonResult.success(productionRoute, "修改成功");
-        } else {
+        if (!result) {
             return CommonResult.failed("修改失败");
         }
+        return CommonResult.success(productionRoute, "修改成功");
     }
 
     @ApiOperation(value = "批量修改生产路线", notes = "批量修改生产路线")
@@ -92,7 +86,10 @@ public class ProductionRouteController extends BaseController {
                 return CommonResult.failed("名称不能为空！");
             }
         }
-        productionRouteService.updateBatchById(productionRoutes);
+        boolean result = productionRouteService.updateBatchById(productionRoutes);
+        if (!result) {
+            return CommonResult.failed("修改失败");
+        }
         return CommonResult.success("批量修改成功！");
     }
 

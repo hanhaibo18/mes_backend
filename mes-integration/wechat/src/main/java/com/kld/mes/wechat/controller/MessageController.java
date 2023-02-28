@@ -1,9 +1,9 @@
-package com.richfit.mes.produce.controller;
+package com.kld.mes.wechat.controller;
 
+import com.kld.mes.wechat.entity.MessageDto;
+import com.kld.mes.wechat.service.MessageService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.produce.entity.MessageDto;
-import com.richfit.mes.produce.service.MessageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -21,13 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @Api(tags = "消息管理")
 @RestController
-@RequestMapping("/api/produce/message")
-public class MessageController extends BaseController{
+@RequestMapping("/api/wechat/message")
+public class MessageController extends BaseController {
     @Autowired
     private MessageService messageService;
+
     @ApiOperation(value = "公众号发送模板消息", notes = "公众号发送模板消息")
     @PostMapping("/sendMessage")
-    public CommonResult<String> sendMessage(@ApiParam(value = "消息参数") @RequestBody MessageDto messageInfo){
+    public CommonResult<String> sendMessage(@ApiParam(value = "消息参数") @RequestBody MessageDto messageInfo) {
         return CommonResult.success(messageService.sentGzhMessage(messageInfo));
     }
 }

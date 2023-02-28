@@ -1,0 +1,46 @@
+server:
+  port: ${SERVER_PORT:8023}
+spring:
+  application:
+    name: wechat-service
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos0
+      discovery:
+        enabled: ${DISCOVERY_ENABLED:true}
+        server-addr: ${DISCOVERY_HOST:11.54.85.62}:${DISCOVERY_PORT:8848}
+        group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:${DATASOURCE_DBTYPE:mysql}://${DATASOURCE_HOST:11.54.85.62}:${DATASOURCE_PORT:3306}/${DB_SYSTEM:mes_produce}?characterEncoding=UTF-8&useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=CTT
+    username: ${DATASOURCE_USERNAME:mes_produce}
+    password: ${DATASOURCE_PASSWORD:Mes_produce@mes}
+    jackson:
+      time-zone: GMT+8
+
+# Mybatis-plus
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  global-config:
+    db-config:
+      table-prefix: produce_
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+message:
+  appkey: "baoshi_742e8a0da47b03d691e4b3be69f067d2"
+  appsecret: "c24c762889f933e78700611c562a61c1973d5d23d496e798e166e70f955373f6"
+
+
+secure:
+  ignore:
+    urls:
+
+feign.client.config:
+  default:
+    connect-timeout: 100000
+    read-timeout: 300000

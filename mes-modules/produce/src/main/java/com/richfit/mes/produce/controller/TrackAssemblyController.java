@@ -88,6 +88,16 @@ public class TrackAssemblyController extends BaseController {
         return CommonResult.success(trackAssemblyService.queryTrackAssemblyPage(new Page<>(page, limit), trackHeadId, branchCode, order, orderCol));
     }
 
+    @ApiOperation(value = "分页查询绑定信息(新,跟单综合查询)", notes = "分页查询绑定信息(新,跟单综合查询)")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "车间Code", required = true, dataType = "String", paramType = "query"),
+    })
+    @GetMapping("/query_track_head_assembly_page")
+    public CommonResult<IPage<TrackAssembly>> queryTrackHeadAssemblyPage(Long page, Long limit, String trackHeadId, String branchCode, String order, String orderCol) {
+        return CommonResult.success(trackAssemblyService.queryTrackHeadAssemblyPage(new Page<>(page, limit), trackHeadId, branchCode, order, orderCol));
+    }
+
 
     @ApiOperation(value = "绑定非关键件(新)", notes = "绑定非关键件(新)")
     @ApiImplicitParam(name = "idList", value = "Id列表", required = true, dataType = "List<String>", paramType = "body")

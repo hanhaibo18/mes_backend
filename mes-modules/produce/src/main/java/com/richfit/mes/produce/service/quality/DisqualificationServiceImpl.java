@@ -17,7 +17,6 @@ import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
-import com.richfit.mes.produce.dao.quality.DisqualificationUserOpinionMapper;
 import com.richfit.mes.produce.enmus.UnitEnum;
 import com.richfit.mes.produce.entity.quality.DisqualificationDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
@@ -52,9 +51,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private DisqualificationUserOpinionService userOpinionService;
-
-    @Resource
-    private DisqualificationUserOpinionMapper userOpinionMapper;
 
     @Resource
     private SystemServiceClient systemServiceClient;
@@ -366,6 +362,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwo())) {
                     return 4;
                 }
+                //没有返回处理单位1
                 return 3;
             }
             //技术裁决结束返回处理单位1
@@ -374,6 +371,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 if (StrUtil.isNotBlank(disqualificationDto.getUnitTreatmentTwo())) {
                     return 4;
                 }
+                //没有返回处理单位1
                 return 3;
             }
         }
@@ -391,33 +389,35 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
      **/
     private void processingRecord(DisqualificationDto disqualificationDto, String id, DisqualificationFinalResult finalResult) {
         Integer type = disqualificationDto.getType();
-        //申请人提交
-        if (1 == type) {
-            saveRecord(id, UnitEnum.getMessage(type) + "提交。不合格情况:" + disqualificationDto.getDisqualificationCondition(), type, finalResult.getDisqualificationName());
-        }
-        //质控提交
-        if (2 == type) {
-            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getQualityName());
-        }
-        //处理单位一提交
-        if (3 == type) {
-            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentOneOpinion(), type, finalResult.getTreatmentOneName());
-        }
-        //处理单位二提交
-        if (4 == type) {
-            saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentTwoOpinion(), type, finalResult.getTreatmentTwoName());
-        }
-        //责任裁决
-        if (5 == type) {
-            saveRecord(id, UnitEnum.getMessage(type) + "提交。责任裁决:" + disqualificationDto.getResponsibilityOpinion(), type, finalResult.getResponsibilityName());
-        }
-        //技术裁决
-        if (6 == type) {
-            saveRecord(id, UnitEnum.getMessage(type) + "提交。技术裁决:" + disqualificationDto.getTechnologyOpinion(), type, finalResult.getTechnologyName());
-        }
-        //申请人最后一步填写意见
-        if (7 == type) {
-            saveRecord(id, UnitEnum.getMessage(1) + "提交。返修情况:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getDisqualificationName());
+        switch (type) {
+            case 1:
+                //申请人提交
+                saveRecord(id, UnitEnum.getMessage(type) + "提交。不合格情况:" + disqualificationDto.getDisqualificationCondition(), type, finalResult.getDisqualificationName());
+                break;
+            case 2:
+                //质控提交
+                saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getQualityName());
+                break;
+            case 3:
+                //处理单位一提交
+                saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentOneOpinion(), type, finalResult.getTreatmentOneName());
+                break;
+            case 4:
+                //处理单位二提交
+                saveRecord(id, UnitEnum.getMessage(type) + "提交。意见:" + disqualificationDto.getUnitTreatmentTwoOpinion(), type, finalResult.getTreatmentTwoName());
+                break;
+            case 5:
+                //责任裁决
+                saveRecord(id, UnitEnum.getMessage(type) + "提交。责任裁决:" + disqualificationDto.getResponsibilityOpinion(), type, finalResult.getResponsibilityName());
+                break;
+            case 6:
+                //技术裁决
+                saveRecord(id, UnitEnum.getMessage(type) + "提交。技术裁决:" + disqualificationDto.getTechnologyOpinion(), type, finalResult.getTechnologyName());
+                break;
+            case 7:
+                //申请人最后一步填写意见
+                saveRecord(id, UnitEnum.getMessage(1) + "提交。返修情况:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getDisqualificationName());
+                break;
         }
     }
 
@@ -576,6 +576,50 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualification.setType(1);
         } else {
             disqualification.setType(0);
+        }
+        return this.updateById(disqualification);
+    }
+
+    @Override
+    public Boolean sendBack(String id, Integer type) {
+        Disqualification disqualification = this.getById(id);
+        switch (type) {
+            //传入是1 需要判断 是回滚状态2 还是回滚状态8
+            case 1:
+                if (disqualification.getType() == 2) {
+                    disqualification.setType(1);
+                } else if (disqualification.getType() == 8) {
+                    disqualification.setType(7);
+                }
+                break;
+            case 2:
+                if (disqualification.getType() == 3) {
+                    disqualification.setType(2);
+                }
+                break;
+            case 3:
+                //判断是状态3 还是状态4
+                DisqualificationFinalResult finalResult = finalResultService.getById(disqualification.getId());
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                //是处理单位1
+                if (finalResult.getUnitTreatmentOne().equals(tenantId)) {
+                    if (disqualification.getType() == 4) {
+                        disqualification.setType(3);
+                    }
+                }
+                //处理单位2
+                if (finalResult.getUnitTreatmentTwo().equals(tenantId)) {
+                    if (disqualification.getType() == 7) {
+                        disqualification.setType(4);
+                    }
+                }
+                break;
+            default:
+                //获取当前登录人姓名
+                CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
+                saveRecord(id, "打回到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
+                break;
+
         }
         return this.updateById(disqualification);
     }

@@ -32,7 +32,9 @@ public class ProductionProcessServiceImpl extends ServiceImpl<ProductionProcessM
 
     @Override
     public boolean updateBatch(ProductionProcess[] productionProcesses) {
-
+        if (productionProcesses.length == 0){
+            return false;
+        }
         String productionRouteId = productionProcesses[0].getProductionRouteId();
         List<String> currentIdList = new ArrayList<>();
         for (ProductionProcess process : productionProcesses) {
