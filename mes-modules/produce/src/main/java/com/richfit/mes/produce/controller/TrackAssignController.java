@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -104,6 +103,7 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
+    @Deprecated
     public CommonResult<IPage<Assign>> page(int page, int limit, String tiId, String state, String trackId, String trackNo, String routerNo, String startTime, String endTime, String branchCode, String order, String orderCol, String assignBy) {
         try {
             QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
@@ -319,15 +319,34 @@ public class TrackAssignController extends BaseController {
                     }
                     CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
                     assign.setAssignName(user.getData().getEmplName());
-
                     assign.setAssignTime(new Date());
                     assign.setModifyTime(new Date());
                     assign.setCreateTime(new Date());
                     assign.setAvailQty(assign.getQty());
                     assign.setFlowId(trackItem.getFlowId());
-                    //处理派工人员信息
-                    boolean isAllUser = assign.getUserId().contains("/")?true:false;
-                    if(isAllUser){
+                    if(StringUtils.isNullOrEmpty(assign.getTrackId())){
+                        assign.setTrackId(trackHead.getId());
+                    }
+                    if(StringUtils.isNullOrEmpty(assign.getTenantId())){
+                        assign.setTenantId(trackHead.getTenantId());
+                    }
+                    //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
+                    if(StringUtils.isNullOrEmpty(assign.getUserId())){
+                        StringBuilder userId = new StringBuilder();
+                        StringBuilder userName = new StringBuilder();
+                        for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                            if(!StringUtils.isNullOrEmpty(String.valueOf(userId))){
+                                userId.append(",");
+                                userName.append(",");
+                            }
+                            userId.append(assignPerson.getUserId());
+                            userName.append(assignPerson.getUserName());
+                        }
+                        assign.setUserId(String.valueOf(userId));
+                        assign.setEmplName(String.valueOf(userName));
+                    }
+                    boolean isAllUser = assign.getUserId().contains("/") ? true : false;
+                    if (isAllUser) {
                         assign.setUserId("/");
                         assign.setEmplName("/");
                     }
@@ -382,6 +401,8 @@ public class TrackAssignController extends BaseController {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
+
+
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
         CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());
@@ -523,7 +544,7 @@ public class TrackAssignController extends BaseController {
     @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, dataType = "String", paramType = "path")
     @GetMapping("/find")
     public CommonResult<List<Assign>> find(String id, String tiId, String state, String trackId, String trackNo, String flowId) {
-        return CommonResult.success(trackAssignService.find(id,tiId,state,trackId,trackNo,flowId), "操作成功！");
+        return CommonResult.success(trackAssignService.find(id, tiId, state, trackId, trackNo, flowId), "操作成功！");
     }
 
     @ApiOperation(value = "派工查询", notes = "派工查询")
