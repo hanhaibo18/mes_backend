@@ -130,6 +130,6 @@ public class DisqualificationController extends BaseController {
     @ApiOperation(value = "打回", notes = "打回")
     @GetMapping("/send_back")
     public CommonResult<Boolean> sendBack(String id, Integer type) {
-        return CommonResult.success(disqualificationService.rollBack(id, type));
+        return CommonResult.success(disqualificationService.sendBack(id, type));
     }
 }
