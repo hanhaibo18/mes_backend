@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.config;
+package com.kld.mes.wechat.config;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;

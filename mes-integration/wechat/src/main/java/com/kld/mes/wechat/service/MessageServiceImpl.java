@@ -1,6 +1,6 @@
-package com.richfit.mes.produce.service;
+package com.kld.mes.wechat.service;
 
-import com.richfit.mes.produce.entity.MessageDto;
+import com.kld.mes.wechat.entity.MessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
  * @author HanHaiBo
  * @date 2023/2/27 9:55
  */
+
 @Service
 public class MessageServiceImpl implements MessageService {
     @Autowired

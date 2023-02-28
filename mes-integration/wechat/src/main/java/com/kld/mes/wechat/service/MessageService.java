@@ -1,6 +1,6 @@
-package com.richfit.mes.produce.service;
+package com.kld.mes.wechat.service;
 
-import com.richfit.mes.produce.entity.MessageDto;
+import com.kld.mes.wechat.entity.MessageDto;
 
 /**
  * @author HanHaiBo

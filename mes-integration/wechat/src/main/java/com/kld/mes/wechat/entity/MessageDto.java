@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.entity;
+package com.kld.mes.wechat.entity;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
