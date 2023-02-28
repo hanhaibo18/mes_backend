@@ -106,6 +106,41 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     }
 
     @Override
+    public IPage<TrackAssembly> queryTrackHeadAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
+        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (!StringUtils.isNullOrEmpty(order)) {
+                if ("desc".equals(order)) {
+                    queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+                } else if ("asc".equals(order)) {
+                    queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
+                }
+            } else {
+                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
+            }
+        } else {
+            queryWrapper.orderByDesc("modify_time");
+        }
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        IPage<TrackAssembly> trackAssemblyPage = this.page(page, queryWrapper);
+        for (TrackAssembly trackAssembly : trackAssemblyPage.getRecords()) {
+            trackAssembly.setNumberRemaining(trackAssembly.getNumber() - trackAssembly.getNumberInstall());
+            if (trackAssembly.getNumber() == trackAssembly.getNumberInstall()) {
+                trackAssembly.setIsComplete(1);
+            } else {
+                trackAssembly.setIsComplete(0);
+            }
+            QueryWrapper<TrackAssemblyBinding> queryWrapperBinding = new QueryWrapper<>();
+            queryWrapperBinding.eq("assembly_id", trackAssembly.getId());
+            queryWrapperBinding.eq("is_binding", 1);
+            trackAssembly.setAssemblyBinding(assemblyBindingService.list(queryWrapperBinding));
+        }
+        return trackAssemblyPage;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> updateComplete(List<String> idList, String itemId) {
         boolean isComplete = false;
