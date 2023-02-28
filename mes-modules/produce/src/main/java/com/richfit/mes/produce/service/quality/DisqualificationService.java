@@ -154,4 +154,15 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: Boolean
      **/
     Boolean rollBackAll(String id);
+
+    /**
+     * 功能描述: 退回
+     *
+     * @param id
+     * @param type
+     * @Author: xinYu.hou
+     * @Date: 2023/2/27 9:57
+     * @return: Boolean
+     **/
+    Boolean sendBack(String id, Integer type);
 }

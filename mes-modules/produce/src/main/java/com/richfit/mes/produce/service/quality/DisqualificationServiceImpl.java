@@ -580,6 +580,50 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return this.updateById(disqualification);
     }
 
+    @Override
+    public Boolean sendBack(String id, Integer type) {
+        Disqualification disqualification = this.getById(id);
+        switch (type) {
+            //传入是1 需要判断 是回滚状态2 还是回滚状态8
+            case 1:
+                if (disqualification.getType() == 2) {
+                    disqualification.setType(1);
+                } else if (disqualification.getType() == 8) {
+                    disqualification.setType(7);
+                }
+                break;
+            case 2:
+                if (disqualification.getType() == 3) {
+                    disqualification.setType(2);
+                }
+                break;
+            case 3:
+                //判断是状态3 还是状态4
+                DisqualificationFinalResult finalResult = finalResultService.getById(disqualification.getId());
+                String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+                //是处理单位1
+                if (finalResult.getUnitTreatmentOne().equals(tenantId)) {
+                    if (disqualification.getType() == 4) {
+                        disqualification.setType(3);
+                    }
+                }
+                //处理单位2
+                if (finalResult.getUnitTreatmentTwo().equals(tenantId)) {
+                    if (disqualification.getType() == 7) {
+                        disqualification.setType(4);
+                    }
+                }
+                break;
+            default:
+                //获取当前登录人姓名
+                CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
+                saveRecord(id, "打回到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
+                break;
+
+        }
+        return this.updateById(disqualification);
+    }
+
 
     private void saveRecord(String id, String record, Integer type, String name) {
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();

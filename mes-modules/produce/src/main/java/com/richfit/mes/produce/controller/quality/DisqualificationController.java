@@ -63,7 +63,7 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")
     @ApiImplicitParams({
-           @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "disqualificat ionId", value = "申请单Id", paramType = "query", dataType = "string")
     })
@@ -125,5 +125,11 @@ public class DisqualificationController extends BaseController {
     @GetMapping("/roll_back_all")
     public CommonResult<Boolean> rollBackAll(String id) {
         return CommonResult.success(disqualificationService.rollBackAll(id));
+    }
+
+    @ApiOperation(value = "打回", notes = "打回")
+    @GetMapping("/send_back")
+    public CommonResult<Boolean> sendBack(String id, Integer type) {
+        return CommonResult.success(disqualificationService.sendBack(id, type));
     }
 }

@@ -49,7 +49,7 @@ public class OrderServiceImpl implements OrderService {
             ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL, zc80PPIF009);
             list = o.getTAUFK().getItem();
         } catch (Exception e) {
-            throw new GlobalException("ERP接口异常", ResultCode.FAILED);
+            throw new GlobalException("ERP接口异常：" + URL, ResultCode.FAILED);
         }
         List<Order> orders = new ArrayList<>();
         char zero = 48;
