@@ -12,14 +12,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @Author: GaoLiang
  * @Date: 2022/7/21 14:32
  */
-@SpringBootApplication(scanBasePackages="com.kld.mes")
-@EnableAutoConfiguration(exclude = { FreeMarkerAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = "com.kld.mes")
+@EnableAutoConfiguration(exclude = {FreeMarkerAutoConfiguration.class})
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableScheduling
-public class WechatServiceApplication {
+public class WeChatServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(WechatServiceApplication.class, args);
+        SpringApplication.run(WeChatServiceApplication.class, args);
     }
 }
