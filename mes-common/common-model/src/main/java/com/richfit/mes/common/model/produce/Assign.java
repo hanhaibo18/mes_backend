@@ -269,7 +269,7 @@ public class Assign extends BaseEntity<Assign> {
      */
     @TableField(exist = false)
     @ApiModelProperty(value = "派工班组list")
-    private List<String> siteIdList;
+    private List<String> siteList;
 
     public String getUserId() {
         return userId;
@@ -277,8 +277,8 @@ public class Assign extends BaseEntity<Assign> {
 
     public String getSiteId() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.siteIdList)){
-            for (String siteId : this.siteIdList) {
+        if(!ObjectUtil.isEmpty(this.siteList)){
+            for (String siteId : this.siteList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
                 }
@@ -289,10 +289,10 @@ public class Assign extends BaseEntity<Assign> {
         return siteId;
     }
 
-    public List<String> getSiteIdList() {
-        if(!StringUtils.isEmpty(siteId) && (ObjectUtil.isEmpty(siteIdList) || siteIdList.size()==0)){
+    public List<String> getSiteList() {
+        if(!StringUtils.isEmpty(siteId) && (ObjectUtil.isEmpty(siteList) || siteList.size()==0)){
             return Arrays.asList(siteId.split(","));
         }
-        return siteIdList;
+        return siteList;
     }
 }
