@@ -509,4 +509,35 @@ public class PhyChemTestService{
     }
 
 
+    /**
+     * 委托单复制
+     * @param groupId
+     * @return
+     * @throws GlobalException
+     */
+    public boolean copyOrder(String groupId) throws GlobalException {
+        String newGroupId = UUID.randomUUID().toString().replaceAll("-", "");
+        //要复制的数据
+        List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByGroupId(groupId);
+
+        for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
+            chemOrderInner.setId(null);
+            chemOrderInner.setStatus("0");
+            chemOrderInner.setReportNo(null);
+            chemOrderInner.setOrderNo(null);
+            //质检发起委托操作
+            //设置委托单、报告未生成、实验数据未同步
+            chemOrderInner.setSyncStatus(NO_SYNC_STATUS);
+            chemOrderInner.setReportStatus(NO_REPORT_STATUS);
+            //委托人
+            chemOrderInner.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+            chemOrderInner.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            //委托组id
+            chemOrderInner.setGroupId(newGroupId);
+        }
+        //保存委托单到中间表
+        return materialInspectionServiceClient.saveOrder(physChemOrderInners);
+    }
+
+
 }
