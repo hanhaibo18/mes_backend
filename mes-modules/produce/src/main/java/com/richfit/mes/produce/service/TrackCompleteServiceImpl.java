@@ -82,10 +82,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId) {
+    public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
         if (!StringUtils.isNullOrEmpty(workNo)) {
-            queryWrapper.eq("work_no", workNo);
+            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where work_no = '" + workNo + "')");
+        }
+        if (!StringUtils.isNullOrEmpty(orderNo)) {
+            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where production_order = '" + orderNo + "')");
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -707,10 +710,344 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
+    @Override
+    public Map<String, Object> queryTrackCompleteListByOrder(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
+        //获取filter过滤后的报工列表
+        List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
+        List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+
+        if (!allCompletes.isEmpty()) {
+            //查询当前车间下所有质检规则
+            Map<String, QualityInspectionRules> rulesMap = new HashMap<>();
+            //获取设备信息
+            Map<String, Device> deviceMap = new HashMap<>();
+            //根据跟单id获取跟单数据
+            Map<String, TrackHead> trackHeadMap = new HashMap<>();
+            //根据跟单工序id获取跟单工序
+            Map<String, TrackItem> trackMap = new HashMap<>();
+            Map<String, TrackFlow> trackFlowMap = new HashMap<>();
+            //根据报工表获取订单id对应的trackHeadList
+            List<TrackHead> trackHeadList = new ArrayList<>();
+            getBasicInfo(allCompletes, rulesMap, deviceMap, trackHeadMap, trackMap, trackFlowMap, trackHeadList);
+            Map<String, List<TrackHead>> trackHeadMapByOrder = trackHeadList.stream().filter(trackHead -> StrUtil.isNotBlank(trackHead.getProductionOrder())).collect(Collectors.groupingBy(TrackHead::getProductionOrder));
+            //获取orderList
+            List<String> orderList = new ArrayList<>(trackHeadMapByOrder.keySet());
+            for (String orderno : orderList) {
+                List<TrackHead> trackHeadListByOrder = trackHeadMapByOrder.get(orderno);
+                Set<String> trackHeadIdSet = trackHeadListByOrder.stream().map(TrackHead::getId).collect(Collectors.toSet());
+                //获取包含了orderNo的completes
+                List<TrackComplete> completes = allCompletes.stream().filter(x -> trackHeadIdSet.contains(x.getTrackId())).collect(Collectors.toList());
+
+                if (!CollectionUtils.isEmpty(completes)) {
+                    //用来展示数据列表
+                    List<TrackComplete> trackCompleteShowList = new ArrayList<>();
+                    //总工时累计额值
+                    double sumTotalHours = 0.00;
+                    //准结工时累计值
+                    double sumPrepareEndHours = 0.00;
+                    //额定工时累计值
+                    double sumSinglePieceHours = 0.00;
+                    TrackComplete track0 = new TrackComplete();
+                    //for循环计算时间
+                    for (TrackComplete track : completes) {
+                        //获取当前用户信息
+                        TenantUserVo tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId()).getData();
+                        //根据跟单工序id获取跟单工序
+                        TrackItem trackItem = trackMap.get(track.getTiId());
+                        if (null == trackItem) {
+                            continue;
+                        }
+                        //加入校验 需要质检未质检 不记录 需要调度审核 未审核 不计入
+                        //需要质检,质检未完成 不计入审核
+                        boolean quality = trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 0;
+                        //需要调度审核,调度未完成不计入审核
+                        boolean schedule = trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 0;
+                        if (quality || schedule) {
+                            continue;
+                        }
+                        //查询产品编号
+                        TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
+                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        //空校验
+                        if (trackItem.getPrepareEndHours() == null) {
+                            trackItem.setPrepareEndHours(0.00);
+                            track.setPrepareEndHours(0.00);
+                        } else {
+                            track.setPrepareEndHours(trackItem.getPrepareEndHours());
+                        }
+                        if (trackItem.getSinglePieceHours() == null) {
+                            trackItem.setSinglePieceHours(0.00);
+                            track.setSinglePieceHours(0.00);
+                        } else {
+                            track.setSinglePieceHours(trackItem.getSinglePieceHours());
+                        }
+                        if (track.getCompletedQty() == null) {
+                            track.setCompletedQty(0.00);
+                        }
+                        //计算总工时
+                        //没有调度审核或者 调度已审核并且给予准结工时进入
+                        if (trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() == 1)) {
+                            sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
+                        }
+                        //已质检 校验不合格是否给工时(单件工时/额定工时)
+                        if (trackItem.getIsQualityComplete() == 1) {
+                            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
+                            queryWrapperCheck.eq("ti_id", trackItem.getId());
+                            List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
+                            QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
+                            if (rules.getIsGiveTime() == 1) {
+                                sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            }
+                        } else if (trackItem.getIsExistQualityCheck() == 0) {
+                            //不质检也计算工时
+                            sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                        }
+                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
+                        //总工时
+                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        track.setUserName(tenantUserVo.getEmplName());
+                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                        track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
+                        track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
+                        track.setOptSequence(trackItem.getOptSequence());
+                        track.setOptName(trackItem.getOptName());
+                        track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
+                        //通过工序Id查询质检记录
+                        QueryWrapper<TrackCheck> queryCheck = new QueryWrapper<>();
+                        queryCheck.eq("ti_id", trackItem.getId());
+                        queryCheck.orderByAsc("modify_time");
+                        List<TrackCheck> list = trackCheckService.list(queryCheck);
+                        if (!CollectionUtils.isEmpty(list)) {
+                            if (rulesMap.get(list.get(0).getResult()) != null) {
+                                track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
+                            }
+                        }
+                        trackCompleteShowList.add(track);
+                    }
+                    track0.setProductionOrder(orderno);
+                    track0.setId(orderno);
+                    //准备工时
+                    track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    //额定工时
+                    track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    //总工时
+                    track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setTrackCompleteList(trackCompleteShowList);
+                    //判断是否包含叶子结点
+                    track0.setIsLeafNodes(!CollectionUtils.isEmpty(completes));
+                    emptyTrackComplete.add(track0);
+
+                }
+            }
+        }
+        Map<String, Object> stringObjectHashMap = new HashMap<>();
+        stringObjectHashMap.put("records", allCompletes);
+        stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
+        return stringObjectHashMap;
+    }
+
+    @Override
+    public Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
+        //获取filter过滤后的报工列表
+        List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
+        List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+
+        if (!allCompletes.isEmpty()) {
+            //查询当前车间下所有质检规则
+            Map<String, QualityInspectionRules> rulesMap = new HashMap<>();
+            //获取设备信息
+            Map<String, Device> deviceMap = new HashMap<>();
+            //根据跟单id获取跟单数据
+            Map<String, TrackHead> trackHeadMap = new HashMap<>();
+            //根据跟单工序id获取跟单工序
+            Map<String, TrackItem> trackMap = new HashMap<>();
+            Map<String, TrackFlow> trackFlowMap = new HashMap<>();
+            //根据报工表获取订单id对应的trackHeadList
+            List<TrackHead> trackHeadList = new ArrayList<>();
+            getBasicInfo(allCompletes, rulesMap, deviceMap, trackHeadMap, trackMap, trackFlowMap, trackHeadList);
+
+            Map<String, List<TrackHead>> trackHeadMapByWorkNo = trackHeadList.stream().filter(trackHead -> StrUtil.isNotBlank(trackHead.getWorkNo())).collect(Collectors.groupingBy(TrackHead::getWorkNo));
+            //获取workNoList
+            List<String> workNoList = new ArrayList<>(trackHeadMapByWorkNo.keySet());
+            for (String workno : workNoList) {
+                List<TrackHead> trackHeadListByWorkNo = trackHeadMapByWorkNo.get(workno);
+                Set<String> trackHeadIdSet = trackHeadListByWorkNo.stream().map(TrackHead::getId).collect(Collectors.toSet());
+                //获取包含了workNo的completes
+                List<TrackComplete> completes = allCompletes.stream().filter(x -> trackHeadIdSet.contains(x.getTrackId())).collect(Collectors.toList());
+
+                if (!CollectionUtils.isEmpty(completes)) {
+                    //用来展示数据列表
+                    List<TrackComplete> trackCompleteShowList = new ArrayList<>();
+                    //总工时累计额值
+                    double sumTotalHours = 0.00;
+                    //准结工时累计值
+                    double sumPrepareEndHours = 0.00;
+                    //额定工时累计值
+                    double sumSinglePieceHours = 0.00;
+                    TrackComplete track0 = new TrackComplete();
+                    //for循环计算时间
+                    for (TrackComplete track : completes) {
+                        //获取当前用户信息
+                        TenantUserVo tenantUserVo = systemServiceClient.queryByUserAccount(track.getUserId()).getData();
+                        //根据跟单工序id获取跟单工序
+                        TrackItem trackItem = trackMap.get(track.getTiId());
+                        if (null == trackItem) {
+                            continue;
+                        }
+                        //加入校验 需要质检未质检 不记录 需要调度审核 未审核 不计入
+                        //需要质检,质检未完成 不计入审核
+                        boolean quality = trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 0;
+                        //需要调度审核,调度未完成不计入审核
+                        boolean schedule = trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 0;
+                        if (quality || schedule) {
+                            continue;
+                        }
+                        //查询产品编号
+                        TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
+                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        //空校验
+                        if (trackItem.getPrepareEndHours() == null) {
+                            trackItem.setPrepareEndHours(0.00);
+                            track.setPrepareEndHours(0.00);
+                        } else {
+                            track.setPrepareEndHours(trackItem.getPrepareEndHours());
+                        }
+                        if (trackItem.getSinglePieceHours() == null) {
+                            trackItem.setSinglePieceHours(0.00);
+                            track.setSinglePieceHours(0.00);
+                        } else {
+                            track.setSinglePieceHours(trackItem.getSinglePieceHours());
+                        }
+                        if (track.getCompletedQty() == null) {
+                            track.setCompletedQty(0.00);
+                        }
+                        //计算总工时
+                        //没有调度审核或者 调度已审核并且给予准结工时进入
+                        if (trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() == 1)) {
+                            sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
+                        }
+                        //已质检 校验不合格是否给工时(单件工时/额定工时)
+                        if (trackItem.getIsQualityComplete() == 1) {
+                            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
+                            queryWrapperCheck.eq("ti_id", trackItem.getId());
+                            List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
+                            QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
+                            if (rules.getIsGiveTime() == 1) {
+                                sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            }
+                        } else if (trackItem.getIsExistQualityCheck() == 0) {
+                            //不质检也计算工时
+                            sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                        }
+                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
+                        //总工时
+                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        track.setUserName(tenantUserVo.getEmplName());
+                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                        track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
+                        track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
+                        track.setOptSequence(trackItem.getOptSequence());
+                        track.setOptName(trackItem.getOptName());
+                        track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
+                        //通过工序Id查询质检记录
+                        QueryWrapper<TrackCheck> queryCheck = new QueryWrapper<>();
+                        queryCheck.eq("ti_id", trackItem.getId());
+                        queryCheck.orderByAsc("modify_time");
+                        List<TrackCheck> list = trackCheckService.list(queryCheck);
+                        if (!CollectionUtils.isEmpty(list)) {
+                            if (rulesMap.get(list.get(0).getResult()) != null) {
+                                track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
+                            }
+                        }
+                        trackCompleteShowList.add(track);
+                    }
+                    track0.setWorkNo(workno);
+                    track0.setId(workno);
+                    //准备工时
+                    track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    //额定工时
+                    track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    //总工时
+                    track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setTrackCompleteList(trackCompleteShowList);
+                    //判断是否包含叶子结点
+                    track0.setIsLeafNodes(!CollectionUtils.isEmpty(completes));
+                    emptyTrackComplete.add(track0);
+
+                }
+            }
+        }
+        Map<String, Object> stringObjectHashMap = new HashMap<>();
+        stringObjectHashMap.put("records", allCompletes);
+        stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
+        return stringObjectHashMap;
+    }
+
+    private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
+        QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where work_no = '" + workNo + "')");
+        }
+        if (!StringUtils.isNullOrEmpty(orderNo)) {
+            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where production_order = '" + orderNo + "')");
+        }
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            TimeUtil.queryStartTime(queryWrapper, startTime);
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            TimeUtil.queryEndTime(queryWrapper, endTime);
+        }
+        //获取当前登录用户角色列表
+        List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
+        List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
+//            BOMCO_ZF_JMAQ_LDGL;//领导
+//            role_tenant_admin;//租户管理员
+        //查询权限控制
+        if (roleCodeList.toString().contains("_LDGL") || roleCodeList.toString().contains("_TJ") || roleCodeList.contains("role_tenant_admin")) {
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            queryWrapper.eq(StrUtil.isNotBlank(userId), "user_id", userId);
+        } else {
+            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+        }
+        return trackCompleteService.list(queryWrapper);
+    }
+
 
     private Boolean removeComplete(String tiId) {
         QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
         removeComplete.eq("ti_id", tiId);
         return this.remove(removeComplete);
+    }
+
+    private void getBasicInfo(List<TrackComplete> allCompletes, Map<String, QualityInspectionRules> rulesMap, Map<String, Device> deviceMap,
+                              Map<String, TrackHead> trackHeadMap, Map<String, TrackItem> trackMap, Map<String, TrackFlow> trackFlowMap, List<TrackHead> trackHeadList) {
+        List<QualityInspectionRules> rulesList = systemServiceClient.queryQualityInspectionRulesList(allCompletes.get(0).getBranchCode()).getData();
+        rulesMap.putAll(rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x)));
+        //获取设备信息
+        Set<String> deviceIds = allCompletes.stream().map(TrackComplete::getDeviceId).collect(Collectors.toSet());
+        List<Device> deviceByIdList = baseServiceClient.getDeviceByIdList(new ArrayList<>(deviceIds));
+        deviceMap.putAll(deviceByIdList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x)));
+        //根据跟单id获取跟单数据
+        Set<String> trackIdList = allCompletes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
+        List<TrackHead> trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
+        trackHeadMap.putAll(trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x)));
+        //根据跟单工序id获取跟单工序
+        Set<String> tiIdList = allCompletes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
+        List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
+        trackMap.putAll(trackItems.stream().filter(item -> item.getIsDoing() == 2).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k)));
+        List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
+        trackFlowMap.putAll(trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k)));
+        //根据报工表获取订单id对应的trackHeadList
+        Set<String> trackIds = allCompletes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
+        trackHeadList.addAll(trackHeadService.listByIds(new ArrayList<>(trackIds)));
     }
 }

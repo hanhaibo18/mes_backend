@@ -13,6 +13,7 @@ import com.richfit.mes.common.model.produce.HourStandard;
 import com.richfit.mes.common.model.produce.RgDevice;
 import com.richfit.mes.produce.dao.HourMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,6 +46,8 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
     private RgDeviceService rgDeviceService;
     @Autowired
     private HourStandardService hourStandardService;
+    @Autowired
+    private SystemServiceClient systemServiceClient;
     /**
      * 工时标准导入
      * @param file
@@ -105,10 +108,10 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
                 hour.setVerId(verId);
             }
             FileUtils.delete(excelFile);
-            //删除旧数据
+            /*//删除旧数据
             QueryWrapper<Hour> hourQueryWrapper = new QueryWrapper<>();
             hourQueryWrapper.eq("ver_id",verId);
-            this.remove(hourQueryWrapper);
+            this.remove(hourQueryWrapper);*/
 
             //保存工时
             this.saveBatch(exportList);
@@ -134,14 +137,22 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
 
             for (Hour hour : list) {
                 hour.setVer(hourStandard.getVer());
+                if("1".equals(hour.getIsHighTemp())){
+                    hour.setIsHighTemp("是");
+                }else{
+                    hour.setIsHighTemp("否");
+                }
+                if (!StringUtils.isNullOrEmpty(hour.getModifyBy()) && !ObjectUtil.isEmpty(systemServiceClient.queryByUserAccount(hour.getModifyBy()).getData())) {
+                    hour.setModifyBy(systemServiceClient.queryByUserAccount(hour.getModifyBy()).getData().getEmplName());
+                }
             }
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 
             String fileName = "热工工时标准列表_" + format.format(new Date()) + ".xlsx";
 
-            String[] columnHeaders = {"ID", "版本号", "设备类型", "设备名", "工序id", "工序名", "重量下限", "重量上限", "碳化上限", "碳化下限", "氮化上限","氮化下限","是否高温","工时","变更时间","变更人"};
+            String[] columnHeaders = {"ID", "版本号", "设备类别代码", "设备名", "工序id", "工序名", "重量下限", "重量上限", "碳化上限", "碳化下限", "氮化上限","氮化下限","是否高温","工时","变更时间","变更人"};
 
-            String[] fieldNames = {"id", "ver", "typeCode", "deviceName", "optId", "optName", "weightUp", "weightDown", "layerDepthCarbonCeiling","layerDepthCarbonFloor","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour","modifyTime","modifyBy"};
+            String[] fieldNames = {"id", "ver", "typeCode", "typeName", "optId", "optName", "weightUp", "weightDown", "layerDepthCarbonCeiling","layerDepthCarbonFloor","layerDepthNitrogenCeiling","layerDepthNitrogenFloor","isHighTemp","hour","modifyTime","modifyBy"};
 
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);

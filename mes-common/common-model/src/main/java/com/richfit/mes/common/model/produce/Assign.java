@@ -1,10 +1,13 @@
 package com.richfit.mes.common.model.produce;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -264,4 +267,32 @@ public class Assign extends BaseEntity<Assign> {
     /**
      * 预装炉（止）
      */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "派工班组list")
+    private List<String> siteIdList;
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getSiteId() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!ObjectUtil.isEmpty(this.siteIdList)){
+            for (String siteId : this.siteIdList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(siteId);
+            }
+            siteId = String.valueOf(stringBuilder);
+        }
+        return siteId;
+    }
+
+    public List<String> getSiteIdList() {
+        if(!StringUtils.isEmpty(siteId) && (ObjectUtil.isEmpty(siteIdList) || siteIdList.size()==0)){
+            return Arrays.asList(siteId.split(","));
+        }
+        return siteIdList;
+    }
 }

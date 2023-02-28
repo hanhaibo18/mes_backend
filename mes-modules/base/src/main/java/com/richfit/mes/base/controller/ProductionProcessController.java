@@ -38,7 +38,7 @@ public class ProductionProcessController {
                                                       @ApiParam(value = "工序名称，可不填") @RequestParam(required = false) String processName) {
         QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
         if (processName != null) {
-            queryWrapper.like("process_name", "%" + processName + "%");
+            queryWrapper.like("process_name", processName);
         }
         queryWrapper.eq("production_route_id", routeId);
         queryWrapper.orderByAsc("process_sequence");
@@ -52,12 +52,6 @@ public class ProductionProcessController {
         if (StringUtils.isNullOrEmpty(productionProcess.getProcessName())) {
             return CommonResult.failed("工艺名称不能为空");
         }
-        if (null != SecurityUtils.getCurrentUser()) {
-            productionProcess.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            productionProcess.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-        }
-        productionProcess.setCreateTime(new Date());
-        productionProcess.setModifyTime(new Date());
         productionProcess.setProductionRouteId(routeId);
 
         QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
@@ -86,11 +80,6 @@ public class ProductionProcessController {
                 return CommonResult.failed("工序名称不能为空");
             }
         }
-        String currentUser = "unknownUser";
-        Date nowTime = new Date();
-        if (null != SecurityUtils.getCurrentUser()) {
-            currentUser = SecurityUtils.getCurrentUser().getUsername();
-        }
         QueryWrapper<ProductionProcess> queryWrapper = new QueryWrapper<ProductionProcess>();
         queryWrapper.eq("production_route_id", routeId);
         queryWrapper.orderByDesc("process_sequence");
@@ -105,10 +94,6 @@ public class ProductionProcessController {
         for (ProductionProcess process : productionProcesses) {
             process.setProductionRouteId(routeId);
             process.setProcessSequence(processSequence++);
-            process.setCreateBy(currentUser);
-            process.setModifyBy(currentUser);
-            process.setCreateTime(nowTime);
-            process.setModifyTime(nowTime);
             productionProcessService.save(process);
         }
         return CommonResult.success("批量修改成功！");
@@ -123,10 +108,6 @@ public class ProductionProcessController {
         if (StringUtils.isNullOrEmpty(productionProcess.getId())) {
             return CommonResult.failed("无法获取id！");
         }
-        if (null != SecurityUtils.getCurrentUser()) {
-            productionProcess.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-        }
-        productionProcess.setModifyTime(new Date());
         boolean result = productionProcessService.updateById(productionProcess);
         if (result) {
             return CommonResult.success(productionProcess, "修改成功");

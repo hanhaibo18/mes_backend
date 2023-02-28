@@ -140,11 +140,11 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "编制人员")
     private String prepareBy;
 
-    @ApiModelProperty(value = "批准人")
-    private String approvalBy;
-
-    @ApiModelProperty(value = "批准时间")
-    private Date approvalTime;
+//    @ApiModelProperty(value = "批准人")
+//    private String approvalBy;
+//
+//    @ApiModelProperty(value = "批准时间")
+//    private Date approvalTime;
 
     @ApiModelProperty(value = "审核人")
     private String auditBy;
@@ -220,4 +220,8 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     @ApiModelProperty(value = "钢水KG")
     private String steelWaterWeight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "ERP物料编码")
+    private String erpProductCode;
 }

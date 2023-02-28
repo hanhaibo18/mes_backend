@@ -364,7 +364,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
 //                String workblankNo = oldWorkblankNo + "" + i;
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
-                    workblankNo += "_" + suffixNo;
+                    workblankNo +=suffixNo;
                 }
                 entity.setWorkblankNo(workblankNo);
                 entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());

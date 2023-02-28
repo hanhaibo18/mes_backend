@@ -151,6 +151,9 @@ public class PlanController extends BaseController {
         if (planDto.isFiterClose()) {
             queryWrapper.ne("status", 2);
         }
+        if (!StringUtils.isNullOrEmpty(planDto.getProjType())) {
+            queryWrapper.like("proj_type", planDto.getProjType());//计划类型 1新制  2 返修'
+        }
         if (!StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }
@@ -318,6 +321,16 @@ public class PlanController extends BaseController {
     @PostMapping("/import_excel")
     public CommonResult importExcel(@RequestParam("file") MultipartFile file) throws IOException {
         planService.exportPlan(file);
+        return CommonResult.success(null);
+    }
+
+    @ApiOperation(value = "计划数据维护", notes = "计划数据维护")
+    @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
+    @PostMapping("/data/maintenance")
+    public CommonResult<Object> data(@RequestBody List<Plan> planList) throws GlobalException {
+        for (Plan plan : planList) {
+            planService.planData(plan.getId());
+        }
         return CommonResult.success(null);
     }
 }

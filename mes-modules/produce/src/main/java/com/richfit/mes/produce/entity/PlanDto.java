@@ -2,6 +2,7 @@ package com.richfit.mes.produce.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.richfit.mes.common.core.base.BasePageDto;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -73,4 +74,8 @@ public class PlanDto extends BasePageDto<PlanDto> {
      * 是否列表显示
      */
     private boolean showList;
+    /**
+     * 计划类型 1新制  2 返修'
+     */
+    private String projType;
 }

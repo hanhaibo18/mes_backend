@@ -100,6 +100,8 @@ public class HeatTrackCompleteController extends BaseController {
         List<TrackComplete> completeList = heatTrackCompleteService.list(completeQueryWrapper);
         //预装炉id集合
         List<String> fuIds = new ArrayList<>(completeList.stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
+        //带回滚的预装炉id
+        List<String> rollBackFuIds = new ArrayList<>(completeList.stream().filter(item->item.getIsCurrent().equals(1)).collect(Collectors.toList()).stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
         if (fuIds.size() > 0) {
             QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
             if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
@@ -116,9 +118,13 @@ public class HeatTrackCompleteController extends BaseController {
             } else {
                 OrderUtil.query(prechargeFurnaceQueryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
             }
-
-            return CommonResult.success(prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(), dispatchingDto.getLimit()), prechargeFurnaceQueryWrapper));
-
+            Page<PrechargeFurnace> prechargeFurnacePage = prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(), dispatchingDto.getLimit()), prechargeFurnaceQueryWrapper);
+            for (PrechargeFurnace record : prechargeFurnacePage.getRecords()) {
+                if(rollBackFuIds.contains(String.valueOf(record.getId()))){
+                    record.setIsRollBack(1);
+                }
+            }
+            return CommonResult.success(prechargeFurnacePage);
         }
         return CommonResult.success(new Page<PrechargeFurnace>());
     }

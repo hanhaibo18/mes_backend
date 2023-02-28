@@ -33,4 +33,12 @@ public interface HeatTrackAssignService extends IService<Assign> {
      * @return: Assign
      **/
     boolean assignItem(List<Assign> assign) throws Exception;
+
+    /**
+     * 功能描述:热工自动派工
+     * @param itemId
+     * @return
+     * @throws Exception
+     */
+    Boolean automaticProcess(String itemId) throws Exception;
 }

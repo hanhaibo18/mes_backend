@@ -70,6 +70,15 @@ public class ProductController extends BaseController {
     @Autowired
     private RouterService routerService;
 
+    @ApiOperation(value = "根据excel导入物料")
+    @PostMapping("/importMaterialByExcle")
+    public CommonResult<String> importMaterialByExcle(@ApiParam(value = "excel文件") @RequestParam("file") MultipartFile file,
+                                    @ApiParam(value = "tenantId") @RequestParam String tenantId,
+                                    @ApiParam(value = "branchCode") @RequestParam String branchCode) {
+
+        return CommonResult.success(productService.importMaterialByExcle(file,tenantId,branchCode));
+    }
+
 
     @ApiOperation(value = "新增物料", notes = "新增物料信息")
     @ApiImplicitParam(name = "product", value = "物料", required = true, dataType = "Branch", paramType = "path")

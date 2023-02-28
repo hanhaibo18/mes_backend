@@ -3,7 +3,7 @@ package com.richfit.mes.produce.controller.heat;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.service.heat.HeatTrackAssignService;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author zhiqiang.lu
@@ -54,7 +54,7 @@ public class HeatTrackAssignController extends BaseController {
      * @return
      * @throws Exception
      */
-    @ApiOperation(value = "热工批量新增派工", notes = "热工批量新增派工")
+    @ApiOperation(value = "热处理批量新增派工", notes = "热处理批量新增派工")
     @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "body")
     @PostMapping("/assignItem")
     @Transactional(rollbackFor = Exception.class)

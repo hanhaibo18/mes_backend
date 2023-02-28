@@ -146,7 +146,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 //步骤分组id
                 trackComplete.setStepGroupId(stepGroupId);
             }
-            //最后一道工序需要激活下工序
+            //最后一道步骤需要激活下工序
             if(isFinal){
                 //检验人
                 trackItem.setQualityCheckBy(complete.getQualityCheckBy());
@@ -282,7 +282,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         boolean activation = false;
         if (!currentTrackItemList.isEmpty() && currentTrackItemList.get(0).getNextOptSequence() != 0) {
             //激活下工序
-            activation = activation(currentTrackItemList.get(0),assign);
+            activation = activation(currentTrackItemList.get(0));
         }
         return activation;
     }
@@ -293,26 +293,19 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
      * @Author: renzewen
      * @Date: 2023/1/10 15:08
      **/
-    private boolean activation(TrackItem trackItem,Assign assign) throws Exception {
+    private boolean activation(TrackItem trackItem) throws Exception {
         //激活下工序
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("flow_id", trackItem.getFlowId());
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
-        boolean update = false;
         for (TrackItem trackItemEntity : trackItemList) {
-            trackItemEntity.setIsCurrent(1);
-            trackItemEntity.setModifyTime(new Date());
-            update = trackItemService.updateById(trackItemEntity);
-            //下工序派工(继承上工序的派工信息)
-            Assign nextItemAssign = new Assign();
-            BeanUtils.copyProperties(assign,nextItemAssign,new String[]{"id"});
-            nextItemAssign.setTiId(trackItemEntity.getId());
-            ArrayList<Assign> assigns = new ArrayList<>();
-            assigns.add(nextItemAssign);
-            heatTrackAssignService.assignItem(assigns);
+            if(trackItemEntity.getIsAutoSchedule().equals(1)){
+                //自动派工
+                heatTrackAssignService.automaticProcess(trackItemEntity.getId());
+            }
         }
-        return update;
+        return true;
     }
 
     /**

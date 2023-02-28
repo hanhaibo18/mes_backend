@@ -40,10 +40,10 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     @Select("select u.* from v_produce_assign u ${ew.customSqlSegment}")
     IPage<Assign> queryPageNew(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 
-    @Select("select u.* from v_produce_assign_store u ${ew.customSqlSegment}")
+    @Select("select u.* from v_produce_assign_furnace u ${ew.customSqlSegment}")
     IPage<Assign> queryPageAssignTrackStore(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 
-    @Select("select u.* from v_produce_assign_store u ${ew.customSqlSegment}")
+    @Select("select u.* from v_produce_assign_furnace u ${ew.customSqlSegment}")
     List<Assign> queryListAssignTrackStore(@Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 
     /**

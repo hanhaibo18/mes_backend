@@ -34,7 +34,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2023/2/10 15:17
      * @return: Map<String, Object>
      **/
-    Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId);
+    Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
 
     List<TrackComplete> queryList(String tiId, String branchCode, String order, String orderCol);
 
@@ -100,4 +100,31 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      **/
     CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource);
 
+    /**
+     * 功能描述: 根据订单id统计工时
+     *
+     * @param trackNo
+     * @param startTime
+     * @param endTime
+     * @param branchCode
+     * @param workNo
+     * @param userId
+     * @param orderNo
+     * @return
+     */
+    Map<String, Object> queryTrackCompleteListByOrder(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
+
+    /**
+     * 功能描述: 根据工作号统计工时
+     *
+     * @param trackNo
+     * @param startTime
+     * @param endTime
+     * @param branchCode
+     * @param workNo
+     * @param userId
+     * @param orderNo
+     * @return
+     */
+    Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
 }

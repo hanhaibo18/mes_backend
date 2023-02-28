@@ -10,10 +10,9 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.TrackFlow;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.base.OperationAssign;
+import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -222,4 +221,44 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
         }
         return String.valueOf(routerInfo);
     }
+
+    /**
+     * 功能描述: 热处理自动派工
+     *
+     * @Author:renzewen
+     * @Date: 2022/8/23 15:08
+     **/
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean automaticProcess(String itemId) throws Exception {
+        TrackItem trackItem = trackItemService.getById(itemId);
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptName(), trackItem.getBranchCode());
+        CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptName(),trackHead.getBranchCode());
+        if (null == assignGet.getData()) {
+            throw new GlobalException("未查询到自动派工信息", ResultCode.FAILED);
+        }
+        Assign assign = new Assign();
+        assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        assign.setBranchCode(trackItem.getBranchCode());
+        assign.setTiId(trackItem.getId());
+        assign.setTrackId(trackItem.getTrackHeadId());
+        assign.setUserId(assignGet.getData().getUserId() + ",");
+        assign.setEmplName(assignGet.getData().getUserName());
+        assign.setSiteId(assignGet.getData().getSiteId());
+        assign.setSiteName(assignGet.getData().getSiteName());
+        assign.setDeviceId(assignGet.getData().getDeviceId());
+        assign.setDeviceName(assignGet.getData().getDeviceName());
+        assign.setPriority(assignGet.getData().getPriority());
+        assign.setQty(trackItem.getNumber());
+        assign.setAvailQty(assignGet.getData().getQty());
+        assign.setState(0);
+        assign.setAssignBy(assignGet.getData().getCreateBy());
+        assign.setAssignTime(new Date());
+        assign.setTrackNo(trackHead.getTrackNo());
+        assign.setClasses(trackHead.getClasses());
+        List<Assign> assigns = Arrays.asList(assign);
+        return this.assignItem(assigns);
+    }
+
 }
