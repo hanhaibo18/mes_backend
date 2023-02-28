@@ -319,12 +319,17 @@ public class TrackAssignController extends BaseController {
                     }
                     CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
                     assign.setAssignName(user.getData().getEmplName());
-
                     assign.setAssignTime(new Date());
                     assign.setModifyTime(new Date());
                     assign.setCreateTime(new Date());
                     assign.setAvailQty(assign.getQty());
                     assign.setFlowId(trackItem.getFlowId());
+                    if(StringUtils.isNullOrEmpty(assign.getTrackId())){
+                        assign.setTrackId(trackHead.getId());
+                    }
+                    if(StringUtils.isNullOrEmpty(assign.getTenantId())){
+                        assign.setTenantId(trackHead.getTenantId());
+                    }
                     //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
                     if(StringUtils.isNullOrEmpty(assign.getUserId())){
                         StringBuilder userId = new StringBuilder();
