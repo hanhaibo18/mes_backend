@@ -15,4 +15,6 @@ public interface HotDemandService extends IService<HotDemand> {
     CommonResult<?> ratify(List<String> idList, Integer ratifyState, String branchCode);
 
     CommonResult modelProductionScheduling(List<String> idList, String branchCode);
+
+    CommonResult<?> initPlanNode(List<String> idList, String branchCode);
 }
