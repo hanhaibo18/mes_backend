@@ -485,8 +485,6 @@ public class PhyChemTestService{
             writer.writeCellValue("I13",forceImpactDirection);
 
             writer.writeCellValue("J13", physChemOrderInner.getMetallOtherVal());
-            writer.writeCellValue("L13", physChemOrderInner.getMetallOtherVal());
-            writer.writeCellValue("M13", physChemOrderInner.getMetallOtherVal());
             writer.writeCellValue("L13", physChemOrderInner.getForceBendType());
             writer.writeCellValue("M13", physChemOrderInner.getForceBendPart());
             //数量
