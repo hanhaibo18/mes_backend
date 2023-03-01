@@ -448,7 +448,7 @@ public class PhyChemTestService{
             cellStyle1.setAlignment(HorizontalAlignment.LEFT);
             writer.renameSheet(physChemOrderInner.getOrderNo());
             writer.writeCellValue("A3", physChemOrderInner.getOrderNo());
-            writer.writeCellValue("C4", physChemOrderInner.getSampleTime().substring(0,10));
+            writer.writeCellValue("C4", !StringUtils.isNullOrEmpty(physChemOrderInner.getSampleTime())?physChemOrderInner.getSampleTime().substring(0,10):physChemOrderInner.getSampleTime());
             writer.writeCellValue("G4", physChemOrderInner.getSampleReceive());
             writer.writeCellValue("J4", physChemOrderInner.getSampleDept());
             writer.writeCellValue("N4", physChemOrderInner.getManufacturer());
@@ -475,8 +475,8 @@ public class PhyChemTestService{
             writer.writeCellValue("O10", physChemOrderInner.getMetallGraphite()==0?"":"是");
             writer.writeCellValue("P10", physChemOrderInner.getMetallOtherVal());
             //力学性能
-            writer.writeCellValue("C13", physChemOrderInner.getOthertestParameter1());
-            writer.writeCellValue("D13", physChemOrderInner.getOthertestParameter2());
+            writer.writeCellValue("C13", physChemOrderInner.getForceTensileStrength1());
+            writer.writeCellValue("D13", physChemOrderInner.getForceTensileStrength2());
             writer.writeCellValue("E13", physChemOrderInner.getForceTensileElongation());
             writer.writeCellValue("F13", physChemOrderInner.getForceTensileDirection());
 
@@ -485,8 +485,6 @@ public class PhyChemTestService{
             writer.writeCellValue("I13",forceImpactDirection);
 
             writer.writeCellValue("J13", physChemOrderInner.getMetallOtherVal());
-            writer.writeCellValue("L13", physChemOrderInner.getMetallOtherVal());
-            writer.writeCellValue("M13", physChemOrderInner.getMetallOtherVal());
             writer.writeCellValue("L13", physChemOrderInner.getForceBendType());
             writer.writeCellValue("M13", physChemOrderInner.getForceBendPart());
             //数量
