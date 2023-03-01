@@ -93,7 +93,7 @@ public class TrackAssemblyController extends BaseController {
             @ApiImplicitParam(name = "trackHeadId", value = "跟单Id", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "branchCode", value = "车间Code", required = true, dataType = "String", paramType = "query"),
     })
-    @GetMapping("/query_track_Head_Assembly_Page")
+    @GetMapping("/query_track_head_assembly_page")
     public CommonResult<IPage<TrackAssembly>> queryTrackHeadAssemblyPage(Long page, Long limit, String trackHeadId, String branchCode, String order, String orderCol) {
         return CommonResult.success(trackAssemblyService.queryTrackHeadAssemblyPage(new Page<>(page, limit), trackHeadId, branchCode, order, orderCol));
     }
