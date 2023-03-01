@@ -101,11 +101,13 @@ public class PhyChemTestService{
             materialInspectionServiceClient.deleteByGroupId(physChemOrderInner.getGroupId());
         }
         //inners有数据说明是修改  没数据说明是新增 新增并委托需要保存委托单号和报告号
-        if(inners.size()==0 && physChemOrderInner.getStatus().equals("1")){
-            //保存委托单号
-            Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
-            //保存报告号
-            Code.update("m_report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+        if(physChemOrderInner.getStatus().equals("1")){
+            if((inners.size()>0 && StringUtils.isNullOrEmpty(inners.get(0).getOrderNo())) || inners.size()==0){
+                //保存委托单号
+                Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+                //保存报告号
+                Code.update("m_report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+            }
         }
         //插入新的数据
         String newGroupId = UUID.randomUUID().toString().replaceAll("-", "");
@@ -446,7 +448,7 @@ public class PhyChemTestService{
             cellStyle1.setAlignment(HorizontalAlignment.LEFT);
             writer.renameSheet(physChemOrderInner.getOrderNo());
             writer.writeCellValue("A3", physChemOrderInner.getOrderNo());
-            writer.writeCellValue("C4", physChemOrderInner.getSampleTime().substring(0,10));
+            writer.writeCellValue("C4", !StringUtils.isNullOrEmpty(physChemOrderInner.getSampleTime())?physChemOrderInner.getSampleTime().substring(0,10):physChemOrderInner.getSampleTime());
             writer.writeCellValue("G4", physChemOrderInner.getSampleReceive());
             writer.writeCellValue("J4", physChemOrderInner.getSampleDept());
             writer.writeCellValue("N4", physChemOrderInner.getManufacturer());
@@ -473,8 +475,8 @@ public class PhyChemTestService{
             writer.writeCellValue("O10", physChemOrderInner.getMetallGraphite()==0?"":"是");
             writer.writeCellValue("P10", physChemOrderInner.getMetallOtherVal());
             //力学性能
-            writer.writeCellValue("C13", physChemOrderInner.getOthertestParameter1());
-            writer.writeCellValue("D13", physChemOrderInner.getOthertestParameter2());
+            writer.writeCellValue("C13", physChemOrderInner.getForceTensileStrength1());
+            writer.writeCellValue("D13", physChemOrderInner.getForceTensileStrength2());
             writer.writeCellValue("E13", physChemOrderInner.getForceTensileElongation());
             writer.writeCellValue("F13", physChemOrderInner.getForceTensileDirection());
 
@@ -483,8 +485,6 @@ public class PhyChemTestService{
             writer.writeCellValue("I13",forceImpactDirection);
 
             writer.writeCellValue("J13", physChemOrderInner.getMetallOtherVal());
-            writer.writeCellValue("L13", physChemOrderInner.getMetallOtherVal());
-            writer.writeCellValue("M13", physChemOrderInner.getMetallOtherVal());
             writer.writeCellValue("L13", physChemOrderInner.getForceBendType());
             writer.writeCellValue("M13", physChemOrderInner.getForceBendPart());
             //数量
