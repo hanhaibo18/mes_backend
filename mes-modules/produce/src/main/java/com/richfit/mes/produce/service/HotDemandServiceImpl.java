@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.*;
@@ -20,9 +21,6 @@ import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.DemandExcel;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.utils.DateUtils;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -30,8 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -403,6 +399,11 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         if (CollectionUtils.isEmpty(sequences)) return CommonResult.failed("工艺没有工序信息");
         //根据工艺id分组
         Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
+        //根据工序id查询工序字典(拿到关键工序字段)
+        List<String> optIdList = sequences.stream().map(x -> x.getOptId()).collect(Collectors.toList());//工序字典id
+        List<Operatipon> operatipons = baseServiceClient.queryOptByIds(optIdList);
+        Map<String, Operatipon> optMap = operatipons.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
         ArrayList<HotPlanNode> planNodes = new ArrayList<>();
         ArrayList<String> demandIdList = new ArrayList<>();
         //根据需求信息自动生成生产计划数据
@@ -414,16 +415,19 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 //工艺有工序的情况
                 if (CollectionUtils.isNotEmpty(sequencesList)) {
                     for (Sequence sequence : sequencesList) {
-                        HotPlanNode planNode = new HotPlanNode();
-                        planNode.setDemandId(hotDemand.getId());//毛坯需求id
-                        planNode.setOptName(sequence.getOptName());//工序名称
-                        planNode.setDemandNum(hotDemand.getNum());//需求数量
-                        planNode.setOptStatus("0");//工序状态 0:未开始,1: 进行中,2:已结束
-                        planNode.setBranchCode(hotDemand.getBranchCode());//车间码
-                        planNode.setTenantId(hotDemand.getTenantId());//租户id
-                        planNodes.add(planNode);
-                        //收集已生成关键计划节点的需求id
-                        demandIdList.add(hotDemand.getId());
+                        //工序为关键工序时才产生计划节点
+                        if(optMap.get(sequence.getOptId()).getIsKey()==1){
+                            HotPlanNode planNode = new HotPlanNode();
+                            planNode.setDemandId(hotDemand.getId());//毛坯需求id
+                            planNode.setOptName(sequence.getOptName());//工序名称
+                            planNode.setDemandNum(hotDemand.getNum());//需求数量
+                            planNode.setOptStatus("0");//工序状态 0:未开始,1: 进行中,2:已结束
+                            planNode.setBranchCode(hotDemand.getBranchCode());//车间码
+                            planNode.setTenantId(hotDemand.getTenantId());//租户id
+                            planNodes.add(planNode);
+                            //收集已生成关键计划节点的需求id
+                            demandIdList.add(hotDemand.getId());
+                        }
                     }
 
                 }

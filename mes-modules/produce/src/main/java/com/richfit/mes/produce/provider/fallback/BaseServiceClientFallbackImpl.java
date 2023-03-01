@@ -4,6 +4,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
@@ -162,6 +163,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @GetMapping("/api/base/opt/queryOptByOptNames")
     @Override
     public List<Operatipon> queryOptByOptNames(List<String> optNams, String branchCode) {
         return null;
@@ -173,6 +175,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @GetMapping("/api/base/sequence/query_by_routerIds")
     @Override
     public List<Sequence> querySequenceByRouterIds(List<String> routerIds) {
         return null;
