@@ -41,13 +41,13 @@ security:
     client:
       client-id: web_app
       client-secret: mes-web-secret
-      access-token-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/token
-      user-authorization-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/authorize
+      access-token-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/token
+      user-authorization-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/authorize
       grant-type: password
       scope: read
     resource:
       loadBalanced: true
-      token-info-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/check_token
+      token-info-uri: http://${AUTH_SERVICE_HOST:11.11.62.2}:${AUTH_SERVICE_PORT:80}/oauth/check_token
 
 #      jwt:
 #        key-value: test
@@ -97,6 +97,3 @@ secure:
 logging:
   level:
     root: INFO
-
-password:
-  default: mes@123456
