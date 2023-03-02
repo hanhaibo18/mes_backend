@@ -34,6 +34,8 @@ mybatis-plus:
 message:
   appkey: "baoshi_742e8a0da47b03d691e4b3be69f067d2"
   appsecret: "c24c762889f933e78700611c562a61c1973d5d23d496e798e166e70f955373f6"
+  tokenUrl: "http://10.134.100.222:909/get_token.php?"
+  sendMessageUrl: "http://10.134.100.222:909/sendmsg.php?"
 
 
 secure:
