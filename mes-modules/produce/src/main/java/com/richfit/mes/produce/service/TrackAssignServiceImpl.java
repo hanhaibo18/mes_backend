@@ -214,7 +214,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.like("u.product_no", productNo);
         }
         if (StrUtil.isNotBlank(userId)) {
-            queryWrapper.and(wrapper->wrapper.like("u.user_id", userId + ",").or(wrapper1->wrapper1.eq("u.user_id","/,")).or(wrapper1->wrapper1.eq("u.user_id","/")));
+            queryWrapper.and(wrapper -> wrapper.like("u.user_id", userId + ",").or().or(wrapper1 -> wrapper1.like("u.user_id", "/")));
         }
 
         if (!StringUtils.isNullOrEmpty(startTime)) {
@@ -239,7 +239,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
-        queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',u.site_id)");
+        queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
 
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
@@ -533,7 +533,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     }
 
     @Override
-    public List<Assign> find(String id, String tiId, String state, String trackId, String trackNo, String flowId){
+    public List<Assign> find(String id, String tiId, String state, String trackId, String trackNo, String flowId) {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -560,7 +560,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
 
     @Override
-    public boolean deleteAssign(String[] ids){
+    public boolean deleteAssign(String[] ids) {
         for (int i = 0; i < ids.length; i++) {
             Assign assign = this.getById(ids[i]);
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
@@ -568,23 +568,23 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 this.removeById(ids[i]);
             } else {
                 if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
-                    throw new GlobalException("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！",ResultCode.FAILED);
+                    throw new GlobalException("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！", ResultCode.FAILED);
                 }
                 if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
-                    throw new GlobalException("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！",ResultCode.FAILED);
+                    throw new GlobalException("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！", ResultCode.FAILED);
                 }
                 List<Assign> ca = this.find(null, null, null, null, null, trackItem.getFlowId());
                 for (int j = 0; j < ca.size(); j++) {
                     TrackItem cstrackItem = trackItemService.getById(ca.get(j).getTiId());
                     if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
-                        throw new GlobalException("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工",ResultCode.FAILED);
+                        throw new GlobalException("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工", ResultCode.FAILED);
                     }
                 }
                 QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
                 queryWrapper.eq("ti_id", assign.getTiId());
                 List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
                 if (cs.size() > 0) {
-                    throw new GlobalException("无法回滚，已有报工提交，需要先取消工序【" + trackItem.getOptName() + "】的报工！",ResultCode.FAILED);
+                    throw new GlobalException("无法回滚，已有报工提交，需要先取消工序【" + trackItem.getOptName() + "】的报工！", ResultCode.FAILED);
                 }
                 //将前置工序状态改为待派工
                 List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("flow_id", trackItem.getFlowId()).orderByAsc("opt_sequence"));
@@ -609,21 +609,21 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                     inspectionPowerService.remove(inspectionPowerQueryWrapper);
                 }
                 //热工预装炉处理
-                if(!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())){
-                    if(("1").equals(trackItem.getIsDoing())){
-                        throw new GlobalException("工序【"+trackItem.getOptName()+"】已开工，无法回滚！",ResultCode.FAILED);
+                if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                    if (("1").equals(trackItem.getIsDoing())) {
+                        throw new GlobalException("工序【" + trackItem.getOptName() + "】已开工，无法回滚！", ResultCode.FAILED);
                     }
                     QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
-                    wrapper.eq("precharge_furnace_id",trackItem.getPrechargeFurnaceId());
+                    wrapper.eq("precharge_furnace_id", trackItem.getPrechargeFurnaceId());
                     List<TrackItem> list = trackItemService.list(wrapper);
-                    if(list.size()==1){
+                    if (list.size() == 1) {
                         //预装炉只有当前派工工序  回滚把预装炉删除
                         prechargeFurnaceService.removeById(trackItem.getPrechargeFurnaceId());
-                    }else{
+                    } else {
                         //预装炉有其他的工序时  仅把此工序移除预装炉
                         UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
-                        trackItemUpdateWrapper.eq("id",trackItem.getId())
-                                .set("precharge_furnace_id",null);
+                        trackItemUpdateWrapper.eq("id", trackItem.getId())
+                                .set("precharge_furnace_id", null);
                         trackItemService.update(trackItemUpdateWrapper);
                     }
                 }
