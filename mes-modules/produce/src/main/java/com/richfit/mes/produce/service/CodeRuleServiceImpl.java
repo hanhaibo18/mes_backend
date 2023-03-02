@@ -212,23 +212,25 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                 switch (cris.get(i).getSnResetDependency()) {
                     case "year":
                         if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
-                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentValue(String.valueOf
+                                    (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
                             cris.get(i).setSnCurrentDate(new Date());
                         }
                         break;
                     case "month":
                         if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
                                 new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
-                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentValue(String.valueOf
+                                    (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
                             cris.get(i).setSnCurrentDate(new Date());
                         }
                         break;
                     case "date":
                         if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
                                 new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth() ||
-                                new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()
-                        ) {
-                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                                new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf
+                                    (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
                             cris.get(i).setSnCurrentDate(new Date());
                         }
                         break;
