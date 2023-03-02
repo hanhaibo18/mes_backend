@@ -23,6 +23,10 @@ public class MessageServiceImpl implements MessageService {
     private String appkey;
     @Value("${message.appsecret}")
     private String appsecret;
+    @Value("${message.tokenUrl}")
+    private String tokenUrl;
+    @Value("${message.sendMessageUrl}")
+    private String sendMessageUrl;
 
     @Override
     public String sentGzhMessage(MessageDto messageInfo) {
@@ -35,7 +39,7 @@ public class MessageServiceImpl implements MessageService {
         if (StringUtils.isNullOrEmpty(token)) {
             return "获取token失败";
         }
-        String url = "http://10.134.100.222:909/sendmsg.php?Token=" + token;
+        String url = sendMessageUrl + "Token=" + token;
         String result = restTemplate.postForObject(url, messageInfo, String.class);
         matcher = pattern.matcher(result);
         result = matcher.replaceAll("");
@@ -43,7 +47,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private String getToken(String appkey, String appsecret) {
-        String url = "http://10.134.100.222:909/get_token.php?act=login&appkey=" + appkey + "&appsecret=" + appsecret;
+        String url = tokenUrl + "act=login&appkey=" + appkey + "&appsecret=" + appsecret;
         return restTemplate.getForEntity(url, String.class).getBody();
     }
 }

@@ -182,6 +182,7 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         item.setCurValue("");
         int index = 0;
         String value = "";
+        Date nowDate = new Date();
         List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null, tenantId, branchCode);
         for (int i = 0; i < cris.size(); i++) {
             String subvalue = "";
@@ -211,27 +212,30 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                 }
                 switch (cris.get(i).getSnResetDependency()) {
                     case "year":
-                        if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
+                        //年份重置，当前年份在SnCurrentDate年份之后，重置流水号为默认流水号
+                        if (nowDate.getYear() > cris.get(i).getSnCurrentDate().getYear()) {
                             cris.get(i).setSnCurrentValue(String.valueOf
                                     (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            cris.get(i).setSnCurrentDate(new Date());
+                            cris.get(i).setSnCurrentDate(nowDate);
                         }
                         break;
                     case "month":
-                        if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
-                                new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
+                        //月份重置 当前月份在SnCurrentDate年份之后，重置流水号为默认流水号
+                        if (nowDate.getYear() > cris.get(i).getSnCurrentDate().getYear() ||
+                                nowDate.getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
                             cris.get(i).setSnCurrentValue(String.valueOf
                                     (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            cris.get(i).setSnCurrentDate(new Date());
+                            cris.get(i).setSnCurrentDate(nowDate);
                         }
                         break;
                     case "date":
-                        if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
-                                new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth() ||
-                                new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()) {
+                        //当前日期在SnCurrentDate年份之后，重置流水号为默认流水号
+                        if (nowDate.getYear() > cris.get(i).getSnCurrentDate().getYear() ||
+                                nowDate.getMonth() > cris.get(i).getSnCurrentDate().getMonth() ||
+                                nowDate.getDay() > cris.get(i).getSnCurrentDate().getDay()) {
                             cris.get(i).setSnCurrentValue(String.valueOf
                                     (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            cris.get(i).setSnCurrentDate(new Date());
+                            cris.get(i).setSnCurrentDate(nowDate);
                         }
                         break;
                     case "input":
