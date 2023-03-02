@@ -1,6 +1,6 @@
 package com.kld.mes.wechat.service;
 
-import com.kld.mes.wechat.entity.MessageDto;
+import com.richfit.mes.common.model.produce.dto.MessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,11 +23,18 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public String sentGzhMessage(MessageDto messageInfo) {
         String token = getToken(appkey, appsecret);
+        if (token.startsWith("\r\n")){
+            token = token.substring(2);
+        }
         if (token.isEmpty()) {
             return "获取token失败";
         }
         String url = "http://10.134.100.222:909/sendmsg.php?Token=" + token;
-        return restTemplate.postForObject(url, messageInfo, String.class);
+        String result = restTemplate.postForObject(url, messageInfo, String.class);
+        if (result.startsWith("\r\n")){
+            result = result.substring(2);
+        }
+        return result;
     }
 
     private String getToken(String appkey, String appsecret) {
