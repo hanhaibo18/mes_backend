@@ -451,7 +451,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             return "该跟单没有当前工序！";
         }
         TrackItem item = items.get(0);
-        
+
         if (item.getOptSequence() == 1) {
             return "当前工序已是跟单第一步有效工序,不可回退！";
         }
@@ -486,6 +486,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     @Override
     public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId) {
         if (trackItems != null && trackItems.size() > 0) {
+            int i = 1;
             for (TrackItem item : trackItems) {
                 item.setId(UUID.randomUUID().toString().replace("-", ""));
                 item.setTrackHeadId(trackHead.getId());
@@ -499,6 +500,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setIsSchedule(0);
                 item.setIsPrepare(0);
                 item.setIsNotarize(0);
+                item.setOptSequence(i++);
                 //需要调度审核时展示
                 if (1 == item.getIsExistScheduleCheck()) {
                     item.setIsScheduleCompleteShow(1);
