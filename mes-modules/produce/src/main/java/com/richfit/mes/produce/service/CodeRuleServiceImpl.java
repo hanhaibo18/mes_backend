@@ -206,39 +206,39 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
             //流水号
             if ("2".equals(cris.get(i).getType())) {
                 //如果规则项 值重置的逻辑处理，根据年，月，日，最大值的变化来重置
-                if (StringUtils.isNullOrEmpty(cris.get(i).getSnResetDependency())){
-                    throw new GlobalException("请填写流水号重置条件！",ResultCode.FAILED);
+                if (StringUtils.isNullOrEmpty(cris.get(i).getSnResetDependency())) {
+                    throw new GlobalException("请填写流水号重置条件！", ResultCode.FAILED);
                 }
-                    switch (cris.get(i).getSnResetDependency()) {
-                        case "year":
-                            if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
-                                cris.get(i).setSnCurrentDate(new Date());
-                            }
-                            break;
-                        case "month":
-                            if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
-                                    new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
-                                cris.get(i).setSnCurrentDate(new Date());
-                            }
-                            break;
-                        case "date":
-                            if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
-                                    new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth() ||
-                                    new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()
-                            ) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
-                                cris.get(i).setSnCurrentDate(new Date());
-                            }
-                            break;
-                        case "input":
-                            break;
-                        default:
-                            if (Integer.parseInt(cris.get(i).getSnCurrentValue()) >= Integer.parseInt(cris.get(i).getSnResetDependency())) {
-                                cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
-                            }
-                    }
+                switch (cris.get(i).getSnResetDependency()) {
+                    case "year":
+                        if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentDate(new Date());
+                        }
+                        break;
+                    case "month":
+                        if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
+                                new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentDate(new Date());
+                        }
+                        break;
+                    case "date":
+                        if (new Date().getYear() > cris.get(i).getSnCurrentDate().getYear() ||
+                                new Date().getMonth() > cris.get(i).getSnCurrentDate().getMonth() ||
+                                new Date().getDay() > cris.get(i).getSnCurrentDate().getDay()
+                        ) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault())));
+                            cris.get(i).setSnCurrentDate(new Date());
+                        }
+                        break;
+                    case "input":
+                        break;
+                    default:
+                        if (Integer.parseInt(cris.get(i).getSnCurrentValue()) >= Integer.parseInt(cris.get(i).getSnResetDependency())) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                        }
+                }
                 subvalue = cris.get(i).getPrefixChar() + (Integer.parseInt(cris.get(i).getSnCurrentValue()) + Integer.parseInt(cris.get(i).getSnStep())) + cris.get(i).getSuffixChar();
             }
             //用户输入项
@@ -248,14 +248,12 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
                     if (!java.util.regex.Pattern.matches("^[0-9]*$", inputs[index])) {
                         throw new NullPointerException("不是数字");
                     }
-                }
-                if ("1".equals(cris.get(i).getCheckType())) {
+                } else if ("1".equals(cris.get(i).getCheckType())) {
 
                     if (!java.util.regex.Pattern.matches("[a-zA-Z]+", inputs[index])) {
                         throw new NullPointerException("不是字母");
                     }
-                }
-                if ("2".equals(cris.get(i).getCheckType()) && !StringUtils.isNullOrEmpty(cris.get(i).getCheckRegex())) {
+                } else if ("2".equals(cris.get(i).getCheckType()) && !StringUtils.isNullOrEmpty(cris.get(i).getCheckRegex())) {
 
                     if (!java.util.regex.Pattern.matches(cris.get(i).getCheckRegex(), inputs[index])) {
                         throw new NullPointerException("不满足正则校验");
@@ -266,8 +264,6 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
             }
             //GUID
             if ("4".equals(cris.get(i).getType())) {
-
-
                 subvalue = cris.get(i).getPrefixChar() + java.util.UUID.randomUUID() + cris.get(i).getSuffixChar();
                 index++;
             }
