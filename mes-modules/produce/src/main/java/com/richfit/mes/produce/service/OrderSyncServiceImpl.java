@@ -138,8 +138,8 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                         order.setDeliveryDate(order.getEndTime());
                         order.setPriority("1");
                         order.setStatus(0);
-                        order.setInChargeOrg(collectCode.get(order.getController()));
-                        order.setBranchCode(order.getInChargeOrg());
+                        order.setInChargeOrg(itemParam.getCode());
+                        order.setBranchCode(collectCode.get(order.getController()));
                         if (order.getMaterialCode() == null) {
                             continue;
                         }

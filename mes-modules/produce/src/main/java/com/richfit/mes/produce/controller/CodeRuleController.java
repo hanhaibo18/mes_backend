@@ -51,6 +51,9 @@ public class CodeRuleController extends BaseController {
     public static String ID_NULL_MESSAGE = "ID不能为空!";
     public static String CLASS_NAME_NULL_MESSAGE = "名称不能为空!";
     public static String SUCCESS_MESSAGE = "操作成功！";
+    public static String CODE_IS_EXIST = "编码已存在！";
+    public static String DEFAULT_LENGTH = "10";
+    public static String DEFAULT_WIDTH = "4";
 
 
     @ApiOperation(value = "分页查询编码规则", notes = "根据编码、名称、分类分页查询编码规则")
@@ -58,10 +61,10 @@ public class CodeRuleController extends BaseController {
     public CommonResult<IPage<CodeRule>> pageCodeRule(String code, String name, int page, int limit, String tenantId, String branchCode) {
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
         if (!StringUtils.isNullOrEmpty(code)) {
-            queryWrapper.like("code", "%" + code + "%");
+            queryWrapper.like("code", code);
         }
         if (!StringUtils.isNullOrEmpty(name)) {
-            queryWrapper.like("name", "%" + name + "%");
+            queryWrapper.like("name", name);
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
@@ -109,25 +112,15 @@ public class CodeRuleController extends BaseController {
     @ApiOperation(value = "新增编码规则", notes = "新增编码规则")
     @PostMapping("/save")
     public CommonResult<Boolean> saveCodeRule(@RequestBody CodeRule entity) throws GlobalException {
-
-        entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-        entity.setCreateTime(new Date());
-        if (StringUtils.isNullOrEmpty(entity.getName())) {
-            return CommonResult.failed(CLASS_NAME_NULL_MESSAGE);
+        if (StringUtils.isNullOrEmpty(entity.getMaxLength())){
+            entity.setMaxLength(DEFAULT_LENGTH);
         }
+            if (StringUtils.isNullOrEmpty(entity.getName())) {
+                return CommonResult.failed(CLASS_NAME_NULL_MESSAGE);
+            }
+        //新增编码已存在校验
+        if (CheckCodeExist(entity)) return CommonResult.failed(CODE_IS_EXIST);
         return CommonResult.success(codeRuleService.save(entity));
-    }
-
-    @ApiOperation(value = "批量新增编码规则", notes = "批量新增编码规则")
-    @PostMapping("/batchSave")
-    public CommonResult<Boolean> batchSaveCodeRule(@RequestBody List<CodeRule> rules) throws GlobalException {
-        return CommonResult.success(codeRuleService.saveBatch(rules));
-    }
-
-    @ApiOperation(value = "批量新增编码规则项", notes = "批量新增编码规则项")
-    @PostMapping("/item/batchSave")
-    public CommonResult<Boolean> batchSaveCodeRuleItem(@RequestBody List<CodeRuleItem> items) throws GlobalException {
-        return CommonResult.success(codeRuleItemService.saveBatch(items));
     }
 
     @ApiOperation(value = "修改编码规则", notes = "修改编码规则")
@@ -139,9 +132,32 @@ public class CodeRuleController extends BaseController {
         if (StringUtils.isNullOrEmpty(entity.getName())) {
             return CommonResult.failed(CLASS_NAME_NULL_MESSAGE);
         }
-        entity.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-        entity.setModifyTime(new Date());
+        //新增编码已存在校验
+        if (CheckCodeExist(entity)) {
+            QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("code", entity.getCode());
+            queryWrapper.eq("branch_code", entity.getBranchCode());
+            queryWrapper.eq("tenant_id", entity.getTenantId());
+            List<CodeRule> codeRules = codeRuleService.list(queryWrapper);
+            if (codeRules.size() > 1) {
+                return CommonResult.failed(CODE_IS_EXIST);
+            } else if (!codeRules.get(0).getId().equals(entity.getId())) {
+                return CommonResult.failed(CODE_IS_EXIST);
+            }
+        }
         return CommonResult.success(codeRuleService.updateById(entity));
+    }
+
+    private boolean CheckCodeExist(@RequestBody CodeRule entity) {
+        QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("code", entity.getCode());
+        queryWrapper.eq("branch_code", entity.getBranchCode());
+        queryWrapper.eq("tenant_id", entity.getTenantId());
+        List<CodeRule> codeRules = codeRuleService.list(queryWrapper);
+        if (!codeRules.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     @ApiOperation(value = "删除编码规则", notes = "删除编码规则")
@@ -231,10 +247,12 @@ public class CodeRuleController extends BaseController {
     @ApiOperation(value = "新增编码规则项", notes = "新增编码规则项")
     @PostMapping("/item/save")
     public CommonResult<Boolean> saveCodeRuleItem(@RequestBody CodeRuleItem entity) throws GlobalException {
-
-        entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-        entity.setCreateTime(new Date());
-
+        if (StringUtils.isNullOrEmpty(entity.getMaxLength())) {
+            entity.setMaxLength(DEFAULT_LENGTH);
+        }
+        if (StringUtils.isNullOrEmpty(entity.getWidth())) {
+            entity.setWidth(DEFAULT_WIDTH);
+        }
         return CommonResult.success(codeRuleItemService.save(entity));
     }
 
@@ -244,9 +262,12 @@ public class CodeRuleController extends BaseController {
         if (StringUtils.isNullOrEmpty(entity.getId())) {
             return CommonResult.failed(ID_NULL_MESSAGE);
         }
-
-        entity.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-        entity.setModifyTime(new Date());
+        if (StringUtils.isNullOrEmpty(entity.getMaxLength())) {
+            entity.setMaxLength(DEFAULT_LENGTH);
+        }
+        if (StringUtils.isNullOrEmpty(entity.getWidth())) {
+            entity.setWidth(DEFAULT_WIDTH);
+        }
         return CommonResult.success(codeRuleItemService.updateById(entity));
     }
 

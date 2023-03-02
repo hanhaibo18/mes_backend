@@ -1,8 +1,15 @@
 package com.richfit.mes.common.model.base;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.produce.AssignPerson;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.util.StringUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author 马峰
@@ -74,7 +81,22 @@ public class OperationAssign extends BaseEntity<OperationAssign> {
 
     @ApiModelProperty(value = "工序code", dataType = "String")
     private String optCode;
-    
+
     @ApiModelProperty(value = "工序name", dataType = "String")
     private String optName;
+
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "派工班组list")
+    private List<String> siteList;
+
+    @TableField(exist = false)
+    private List<AssignPerson> assignPersons;
+
+    public List<String> getSiteList() {
+        if(!StringUtils.isEmpty(siteId) && (ObjectUtil.isEmpty(siteList) || siteList.size()==0)){
+            return Arrays.asList(siteId.split(","));
+        }
+        return siteList;
+    }
 }

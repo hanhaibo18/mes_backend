@@ -91,7 +91,7 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @ApiModelProperty(value = "金相分析->石墨")
     private int metallGraphite;
     @ApiModelProperty(value = "金相分析->其他")
-    private String metallOther;
+    private int metallOther;
     @ApiModelProperty(value = "金相分析->其他(值)")
     private String metallOtherVal;
     @ApiModelProperty(value = "力学性能->拉伸")
