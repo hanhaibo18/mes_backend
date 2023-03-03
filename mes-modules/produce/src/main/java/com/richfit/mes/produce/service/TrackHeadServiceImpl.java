@@ -443,7 +443,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                                 //可分配数量
                                 item.setAssignableQty(flow.getNumber());
                                 item.setNumber(flow.getNumber());
-                                item.setBatchQty(flow.getNumber());
                                 item.setIsSchedule(0);
                                 item.setIsPrepare(0);
                                 item.setIsNotarize(0);
@@ -1581,7 +1580,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if (trackItem.getIsSchedule() == 0) {
                 trackItem.setNumber(trackHeadPublicDto.getNumber());
                 trackItem.setAssignableQty(trackHeadPublicDto.getNumber());
-                trackItem.setBatchQty(trackHeadPublicDto.getNumber());
                 trackItemService.updateById(trackItem);
             }
         }
@@ -1619,7 +1617,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackItem.setFlowId(tfn.getId());
                 trackItem.setNumber(trackHeadNew.getNumber());
                 trackItem.setAssignableQty(trackHeadNew.getNumber());
-                trackItem.setBatchQty(trackHeadNew.getNumber());
                 trackItem.setIsDoing(0);
                 trackItem.setIsQualityComplete(0);
                 trackItem.setQualityCheckBy(null);

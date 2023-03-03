@@ -903,8 +903,8 @@ public class TrackCompleteController extends BaseController {
                                 assign.setTiId(items.get(i).getId());
                                 assign.setTrackId(items.get(i).getTrackHeadId());
                                 assign.setTrackNo(trackHead.getTrackNo());
-                                assign.setQty(items.get(i).getBatchQty());
-                                assign.setAvailQty(items.get(i).getBatchQty());
+                                assign.setQty(items.get(i).getNumber());
+                                assign.setAvailQty(items.get(i).getNumber());
                                 assign.setDeviceId(deviceId);
                                 assign.setUserId(userId);
                                 assign.setPriority(0);

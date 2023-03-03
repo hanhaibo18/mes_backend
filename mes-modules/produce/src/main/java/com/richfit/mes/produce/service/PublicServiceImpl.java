@@ -193,7 +193,7 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setIsOperationComplete(1);
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsFinalComplete("1");
-            trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+            trackItem.setCompleteQty(trackItem.getNumber().doubleValue());
             trackItemService.updateById(trackItem);
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
@@ -221,7 +221,7 @@ public class PublicServiceImpl implements PublicService {
         if (null != SecurityUtils.getCurrentUser()) {
             trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
         }
-        trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+        trackItem.setCompleteQty(trackItem.getNumber().doubleValue());
         trackItem.setIsFinalComplete("1");
         trackItem.setScheduleCompleteTime(new Date());
         trackItem.setIsOperationComplete(1);
