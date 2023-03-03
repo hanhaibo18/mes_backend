@@ -17,7 +17,6 @@
         <module>produce</module>
     </modules>
     <dependencies>
-
         <!-- common-core -->
         <dependency>
             <groupId>com.richfit.mes</groupId>
@@ -27,6 +26,11 @@
         <dependency>
             <groupId>com.richfit.mes</groupId>
             <artifactId>common-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.richfit.mes</groupId>
+            <artifactId>common-operation-log</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

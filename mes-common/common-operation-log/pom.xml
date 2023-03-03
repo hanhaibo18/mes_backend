@@ -3,34 +3,30 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>mes</artifactId>
+        <artifactId>mes-common</artifactId>
         <groupId>com.richfit.mes</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>mes-integration</artifactId>
-    <packaging>pom</packaging>
-    <description>第三方接口服务</description>
-    <modules>
-        <module>erp-sap</module>
-        <module>wms-kld</module>
-        <module>erp-bs</module>
-        <module>material-inspection</module>
-        <module>bsjby-data-sync</module>
-        <module>wechat</module>
-    </modules>
+    <artifactId>common-operation-log</artifactId>
     <dependencies>
-
         <!-- common-core -->
         <dependency>
             <groupId>com.richfit.mes</groupId>
             <artifactId>common-core</artifactId>
+            <scope>provided</scope>
         </dependency>
-        <!-- common-model -->
         <dependency>
-            <groupId>com.richfit.mes</groupId>
-            <artifactId>common-model</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
         </dependency>
     </dependencies>
-
 </project>
