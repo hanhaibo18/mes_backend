@@ -214,10 +214,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "跟单顺序完成", dataType = "Integer")
     private Integer isTrackSequenceComplete;
-
-    @ApiModelProperty(value = "batchQty", dataType = "Integer")
-    private Integer batchQty;
-
+    
     @ApiModelProperty(value = "eventId", dataType = "Integer")
     private Integer eventId;
 
