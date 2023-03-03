@@ -17,6 +17,7 @@
         <module>erp-bs</module>
         <module>material-inspection</module>
         <module>bsjby-data-sync</module>
+        <module>wechat</module>
     </modules>
     <dependencies>
 
