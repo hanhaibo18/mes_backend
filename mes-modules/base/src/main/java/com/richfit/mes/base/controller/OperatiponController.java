@@ -311,4 +311,19 @@ public class OperatiponController extends BaseController {
         List<Operatipon> operatiponList = operatiponService.list(queryWrapper);
         return operatiponList;
     }
+
+    /**
+     * 功能描述:根据id查询工序字典列表
+     *
+     * @Author: hujia
+     **/
+    @ApiOperation(value = "根据id查询工序字典列表", notes = "根据id查询工序字典列表")
+    @GetMapping("/queryOptByIds")
+    public List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds){
+        QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
+        queryWrapper.in("id",optIds);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<Operatipon> operatiponList = operatiponService.list(queryWrapper);
+        return operatiponList;
+    }
 }

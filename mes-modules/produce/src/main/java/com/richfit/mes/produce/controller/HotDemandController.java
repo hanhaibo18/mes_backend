@@ -60,9 +60,6 @@ public class HotDemandController extends BaseController {
     @Resource
     private BaseServiceClient baseServiceClient;
 
-    @Autowired
-    private HotPlanNodeService planNodeService;
-
 
     @ApiOperation(value = "新增需求提报", notes = "新增需求提报")
     @PostMapping("/save")
@@ -231,7 +228,7 @@ public class HotDemandController extends BaseController {
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
+//        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.apply("is_long_period is null or is_long_period=0");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
@@ -279,7 +276,7 @@ public class HotDemandController extends BaseController {
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
+//        queryWrapper.eq("branch_code", branchCode);
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
@@ -359,7 +356,7 @@ public class HotDemandController extends BaseController {
                     updateWrapper.set("repertory_num", count);//设置库存数量
                     updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
                     updateWrapper.in("id", hotDemand.getId());
-                    boolean update = hotDemandService.update(updateWrapper);
+                    hotDemandService.update(updateWrapper);
                 }
             }
         }
@@ -382,8 +379,8 @@ public class HotDemandController extends BaseController {
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         queryWrapper.apply("(is_exist_process=0 or is_exist_process is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(hotDemands)) return CommonResult.success("所有均已校验完成");
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
         //工艺库数据
@@ -402,7 +399,7 @@ public class HotDemandController extends BaseController {
                 updateWrapper.set("piece_weight",router.getPieceWeight());//设置单重
                 updateWrapper.set("weight", router.getForgWeight());//设置重量
                 updateWrapper.eq("id", hotDemand.getId());
-                boolean update = hotDemandService.update(updateWrapper);
+                hotDemandService.update(updateWrapper);
             }
         }
             return CommonResult.success("操作成功");
@@ -466,51 +463,10 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/create_plan_node")
     public CommonResult initPlanNode(@RequestBody List<String> idList, String branchCode) {
-        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        queryWrapper.eq("branch_code", branchCode);
-        queryWrapper.in("id", idList);
-        //查出需求信息
-        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-
-        //根据图号查出工艺信息
-        List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoList, branchCode).getData();
-        if (CollectionUtils.isEmpty(byDrawNo)) return CommonResult.failed("没有工艺信息");
-        List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
-        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x.getId()));
-        //根据工艺id查出工序信息
-        List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
-        if (CollectionUtils.isEmpty(sequences)) return CommonResult.failed("工艺没有工序信息");
-        //根据工艺id分组
-        Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
-        ArrayList<HotPlanNode> planNodes = new ArrayList<>();
-        //根据需求信息自动生成生产计划数据
-        for (HotDemand hotDemand : hotDemands) {
-            String s = routerIdMap.get(hotDemand.getDrawNo());
-            if (StringUtils.isNotEmpty(s)) {
-                //有工艺的情况下
-                List<Sequence> sequencesList = sequencesMap.get(s);
-                if (CollectionUtils.isNotEmpty(sequencesList)) {
-                    //工艺有工序的情况
-                    for (Sequence sequence : sequencesList) {
-                        HotPlanNode planNode = new HotPlanNode();
-                        planNode.setDemandId(hotDemand.getId());//毛坯需求id
-                        planNode.setOptName(sequence.getOptName());//工序名称
-                        planNode.setDemandNum(hotDemand.getNum());//需求数量
-                        planNode.setOptStatus("0");//工序状态 0:未开始,1: 进行中,2:已结束
-                        planNode.setBranchCode(hotDemand.getBranchCode());//车间码
-                        planNode.setTenantId(hotDemand.getTenantId());//租户id
-                        planNodes.add(planNode);
-                    }
-
-                }
-            }
-        }
-        planNodeService.saveBatch(planNodes);
-        return CommonResult.success("操作成功");
+        return hotDemandService.initPlanNode(idList, branchCode);
     }
+
+
 
 
     @ApiOperation(value = "设置优先级", notes = "设置优先级")

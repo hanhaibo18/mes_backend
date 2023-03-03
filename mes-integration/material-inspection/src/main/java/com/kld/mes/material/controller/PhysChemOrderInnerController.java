@@ -24,10 +24,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -103,22 +100,38 @@ public class PhysChemOrderInnerController extends BaseController {
             Map<String, List<PhysChemOrderInner>> orderMap = list.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getGroupId));
             for (PhysChemOrderInner record : page.getRecords()) {
                 List<PhysChemOrderImpactDto> impacts = new ArrayList<>();
-                //力学性能-冲击赋值
-                List<PhysChemOrderInner> physChemOrderInners = orderMap.get(record.getGroupId());
-                for (PhysChemOrderInner physChemOrderInner : physChemOrderInners) {
-                    if(StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactDirection())
-                    && StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactGap())
-                    && StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactTemp())){
-                        continue;
-                    }else{
-                        PhysChemOrderImpactDto physChemOrderImpactDto = new PhysChemOrderImpactDto();
-                        BeanUtils.copyProperties(physChemOrderInner, physChemOrderImpactDto);
-                        impacts.add(physChemOrderImpactDto);
+                Set<Map<String, String>> batchNos = new HashSet<>();
+                //炉号回显
+                StringBuilder batchNoStr = new StringBuilder();
+                List<PhysChemOrderInner> groupIdGroup = orderMap.get(record.getGroupId());
+                Map<String, List<PhysChemOrderInner>> batchGroup = groupIdGroup.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getBatchNo));
+                for (String batchNo : batchGroup.keySet()) {
+                    HashMap<String, String> batchNoMap = new HashMap<>();
+                    batchNoMap.put("batchNo",batchNo);
+                    batchNos.add(batchNoMap);
+                    if(!org.springframework.util.StringUtils.isEmpty(String.valueOf(batchNoStr))){
+                        batchNoStr.append(",");
                     }
-
-
+                    batchNoStr.append(batchNo);
                 }
-                record.setImpacts(impacts);
+                record.setBatchNo(String.valueOf(batchNoStr));
+                record.setBatchNos(batchNos);
+                //力学性能-冲击赋值值回显
+                if(batchGroup.values().size()>0){
+                    List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>(batchGroup.values()).get(0);
+                    for (PhysChemOrderInner physChemOrderInner : physChemOrderInners) {
+                        if(StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactDirection())
+                                && StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactGap())
+                                && StringUtils.isNullOrEmpty(physChemOrderInner.getForceImpactTemp())){
+                            continue;
+                        }else{
+                            PhysChemOrderImpactDto physChemOrderImpactDto = new PhysChemOrderImpactDto();
+                            BeanUtils.copyProperties(physChemOrderInner, physChemOrderImpactDto);
+                            impacts.add(physChemOrderImpactDto);
+                        }
+                    }
+                    record.setImpacts(impacts);
+                }
             }
         }
         return  page;
