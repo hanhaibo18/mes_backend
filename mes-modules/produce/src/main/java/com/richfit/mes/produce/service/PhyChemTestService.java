@@ -106,7 +106,7 @@ public class PhyChemTestService{
                 //保存委托单号
                 Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
                 //保存报告号
-                Code.update("m_report_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+                Code.update("m_report_no",physChemOrderInner.getReportNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
             }
         }
         //插入新的数据
