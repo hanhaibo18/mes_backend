@@ -396,10 +396,16 @@ public class PhyChemTestService{
     //导出理化委托单
     public void exportExcel(HttpServletResponse rsp,String orderNo) {
         PhysChemOrderInner physChemOrderInner = new PhysChemOrderInner();
+        List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
         //中间表数据 用于生成报告
-        List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByOrderNo(orderNo);
-        if(physChemOrderInners.size()>0){
-            physChemOrderInner = physChemOrderInners.get(0);
+        List<PhysChemOrderInner> allPhysChemOrderInners = materialInspectionServiceClient.queryByOrderNo(orderNo);
+        if(allPhysChemOrderInners.size()>0){
+            Map<String, List<PhysChemOrderInner>> batchNoGroup = allPhysChemOrderInners.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getBatchNo));
+            physChemOrderInner = new ArrayList<>(batchNoGroup.values()).get(0).get(0);
+            //冲击参数赋值
+            physChemOrderInners = new ArrayList<>(batchNoGroup.values()).get(0);
+            //炉号赋值
+            physChemOrderInner.setBatchNo(org.apache.commons.lang.StringUtils.join(batchNoGroup.keySet(),","));
         }
         //多选值拼接显示
         StringBuilder forceImpactTemp = new StringBuilder();

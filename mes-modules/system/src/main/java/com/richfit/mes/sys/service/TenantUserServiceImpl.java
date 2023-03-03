@@ -383,7 +383,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             String steelworkRole = branchCode + "_JMAQ_JJZJ";
         }
         if ("5".equals(classes) || StrUtil.isBlank(classes)) {
-            String machiningRole = branchCode + "_JMAQ_JJZJ";
+            String machiningRole = branchCode + "_JMAQ_RGZJ";
             codeList.add(machiningRole);
         }
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
