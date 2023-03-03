@@ -133,7 +133,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Set<String> tiIdList = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
             List<TrackItem> trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
             //只获取已完工数据计算工时
-            Map<String, TrackItem> trackMap = trackItems.stream().filter(item -> item.getIsDoing() == 2).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
+            Map<String, TrackItem> trackMap = trackItems.stream().filter(item -> item.getIsOperationComplete() == 1).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
             List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
             List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
             Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
