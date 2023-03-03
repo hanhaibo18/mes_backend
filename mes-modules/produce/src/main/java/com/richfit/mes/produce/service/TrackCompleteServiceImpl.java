@@ -201,7 +201,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             queryWrapperCheck.eq("ti_id", trackItem.getId());
                             List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
                             QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
-                            if (rules.getIsGiveTime() == 1) {
+                            if (rules != null && rules.getIsGiveTime() == 1) {
                                 sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
