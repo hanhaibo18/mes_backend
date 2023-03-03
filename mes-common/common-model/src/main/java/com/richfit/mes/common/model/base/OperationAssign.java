@@ -99,4 +99,18 @@ public class OperationAssign extends BaseEntity<OperationAssign> {
         }
         return siteList;
     }
+
+    public String getSiteId() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!ObjectUtil.isEmpty(this.siteList)){
+            for (String siteId : this.siteList) {
+                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(siteId);
+            }
+            siteId = String.valueOf(stringBuilder);
+        }
+        return siteId;
+    }
 }
