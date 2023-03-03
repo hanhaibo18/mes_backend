@@ -328,14 +328,14 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         List<TrackItem> items = this.list(queryWrapper);
         boolean isComplete = true;
         for (TrackItem item : items) {
-            if (item != null && item.getIsOperationComplete() == 0) {
+            if (item != null && "0".equals(item.getIsFinalComplete())) {
                 isComplete = false;
                 break;
             }
         }
         if (!isComplete) {
             return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
-        } else if (items.size() > 0) {
+        } else if (!items.isEmpty()) {
             TrackItem item = items.get(0);
             if (item.getNextOptSequence() == 0) {
                 trackHeadService.trackHeadFinish(flowId);
@@ -439,40 +439,39 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Override
     public String backSequence(String flowId) {
+        //查询所有最终完成的工序
+        QueryWrapper<TrackItem> finalWrapper = new QueryWrapper<>();
+        finalWrapper.eq("flow_id", flowId);
+        finalWrapper.eq("is_final_complete", 1);
+        finalWrapper.orderByDesc("opt_sequence");
+        List<TrackItem> finalItems = this.list(finalWrapper);
 
-        QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
-        wrapper.eq("flow_id", flowId);
-        wrapper.eq("is_current", 1);
-        wrapper.orderByDesc("opt_sequence");
-        List<TrackItem> items = this.list(wrapper);
 
-
-        if (CollectionUtils.isEmpty(items)) {
-            return "该跟单没有当前工序！";
+        if (CollectionUtils.isEmpty(finalItems)) {
+            return "此跟单没有工序完成";
         }
-        TrackItem item = items.get(0);
 
-        if (item.getOptSequence() == 1) {
+        TrackItem item = finalItems.get(0);
+
+        if (item.getOptSequence() == 10) {
             return "当前工序已是跟单第一步有效工序,不可回退！";
         }
 
-        //判断自己是否是第一道工序,第一道工序不修改状态
-        if (item.getOriginalOptSequence() != 10) {
-            // 将当前工序is_current设为0
-            UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
-            updateWrapperOld.eq("flow_id", flowId);
-            updateWrapperOld.eq("is_current", 1);
-            updateWrapperOld.orderByDesc("opt_sequence");
-            updateWrapperOld.set("is_current", 0);
-            this.update(updateWrapperOld);
-            // 将上道工序is_current设为1
-            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.set("is_current", 1);
-            updateWrapper.set("is_track_sequence_complete", 0);
-            updateWrapper.eq("flow_id", flowId);
-            updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
-            this.update(updateWrapper);
-        }
+        // 将当前工序is_current设为0
+        UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
+        updateWrapperOld.eq("flow_id", flowId);
+        updateWrapperOld.eq("is_current", 1);
+        updateWrapperOld.orderByDesc("opt_sequence");
+        updateWrapperOld.set("is_current", 0);
+        this.update(updateWrapperOld);
+        // 将上道工序is_current设为1
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.set("is_current", 1);
+        updateWrapper.set("is_track_sequence_complete", 0);
+        updateWrapper.set("is_final_complete", 0);
+        updateWrapper.eq("flow_id", flowId);
+        updateWrapper.eq("opt_sequence", item.getOptSequence());
+        this.update(updateWrapper);
         //生产线状态改为在制
         UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
         updateWrapperTrackFlow.set("status", "1");
@@ -482,6 +481,54 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         trackHeadService.trackHeadData(item.getTrackHeadId());
         return "success";
     }
+
+
+//    @Override
+//    public String backSequence(String flowId) {
+//
+//        QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
+//        wrapper.eq("flow_id", flowId);
+//        wrapper.eq("is_current", 1);
+//        wrapper.orderByDesc("opt_sequence");
+//        List<TrackItem> items = this.list(wrapper);
+//
+//
+//        if (CollectionUtils.isEmpty(items)) {
+//            return "该跟单没有当前工序！";
+//        }
+//        TrackItem item = items.get(0);
+//
+//        if (item.getOptSequence() == 1) {
+//            return "当前工序已是跟单第一步有效工序,不可回退！";
+//        }
+//
+//        //判断自己是否是第一道工序,第一道工序不修改状态
+//        if (item.getOriginalOptSequence() != 10) {
+//            // 将当前工序is_current设为0
+//            UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
+//            updateWrapperOld.eq("flow_id", flowId);
+//            updateWrapperOld.eq("is_current", 1);
+//            updateWrapperOld.orderByDesc("opt_sequence");
+//            updateWrapperOld.set("is_current", 0);
+//            this.update(updateWrapperOld);
+//            // 将上道工序is_current设为1
+//            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+//            updateWrapper.set("is_current", 1);
+//            updateWrapper.set("is_track_sequence_complete", 0);
+//            updateWrapper.eq("flow_id", flowId);
+//            updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
+//            this.update(updateWrapper);
+//        }
+//        //生产线状态改为在制
+//        UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
+//        updateWrapperTrackFlow.set("status", "1");
+//        updateWrapperTrackFlow.eq("id", item.getFlowId());
+//        trackHeadFlowService.update(updateWrapperTrackFlow);
+//        //重置跟单状态
+//        trackHeadService.trackHeadData(item.getTrackHeadId());
+//        return "success";
+//    }
+
 
     @Override
     public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId) {

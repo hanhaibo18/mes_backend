@@ -217,20 +217,36 @@ public class PublicServiceImpl implements PublicService {
         String tiId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(tiId);
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
-        if (0 == trackItem.getNextOptSequence()) {
-            trackHeadService.trackHeadFinish(trackItem.getFlowId());
-            trackItem.setIsFinalComplete("1");
-        }
-        trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+
         if (null != SecurityUtils.getCurrentUser()) {
             trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
         }
+        trackItem.setCompleteQty(trackItem.getBatchQty().doubleValue());
+        trackItem.setIsFinalComplete("1");
         trackItem.setScheduleCompleteTime(new Date());
         trackItem.setIsOperationComplete(1);
         trackItem.setOperationCompleteTime(new Date());
         trackItemService.updateById(trackItem);
         if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
             planService.planData(trackHead.getWorkPlanId());
+        }
+        //最后一道工序并行 校验完成
+        if (0 == trackItem.getNextOptSequence()) {
+            //校验是否并行 并行执行跟单状态修改 需要校验其他工序是否完成
+            if (trackItem.getOptParallelType() == 1) {
+                //查询分流Id下 当前工序 没有最终完成的
+                QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("flow_id", trackItem.getFlowId());
+                queryWrapper.eq("opt_sequence", trackItem.getOptSequence());
+                queryWrapper.eq("is_final_complete", "0");
+                int count = trackItemService.count(queryWrapper);
+                //数量为0 表示当前工序全部完场 执行跟单状态修改
+                if (count == 0) {
+                    trackHeadService.trackHeadFinish(trackItem.getFlowId());
+                }
+            } else {
+                trackHeadService.trackHeadFinish(trackItem.getFlowId());
+            }
         }
         return this.activationProcess(map);
     }
@@ -363,7 +379,7 @@ public class PublicServiceImpl implements PublicService {
         TrackItem trackItem = trackItemService.getById(map.get("trackItemId"));
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
         CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptName(), trackItem.getBranchCode());
-        CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptName(),trackHead.getBranchCode());
+        CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptName(), trackHead.getBranchCode());
         if (null == assignGet.getData()) {
             throw new GlobalException("未查询到自动派工信息", ResultCode.FAILED);
         }
