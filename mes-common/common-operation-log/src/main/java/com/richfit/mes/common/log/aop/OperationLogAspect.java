@@ -19,12 +19,12 @@ import java.net.InetAddress;
  */
 @Aspect
 @Component
-public class SysLogAspect {
+public class OperationLogAspect {
 
 
     //定义切点 @Pointcut
     //在注解的位置切入代码
-    @Pointcut("@annotation( com.richfit.mes.common.log.aop.Mylog)")
+    @Pointcut("@annotation( com.richfit.mes.common.log.aop.OperationLog)")
     public void logPoinCut() {
     }
 
@@ -32,27 +32,22 @@ public class SysLogAspect {
     @AfterReturning("logPoinCut()")
     public void saveSysLog(JoinPoint joinPoint) {
         System.out.println("切面。。。。。");
-        //保存日志
-        Syslog sysLog = new Syslog();
-
         //从切面织入点处通过反射机制获取织入点处的方法
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         //获取切入点所在的方法
         Method method = signature.getMethod();
-
         //获取操作
-        Mylog myLog = method.getAnnotation(Mylog.class);
+        OperationLog myLog = method.getAnnotation(OperationLog.class);
         if (myLog != null) {
             String value = myLog.value();
-            sysLog.setOperation(value);//保存获取的操作
+            System.out.println(value);//保存获取的操作
         }
         //获取请求的类名
         String className = joinPoint.getTarget().getClass().getName();
         //获取请求的方法名
         String methodName = method.getName();
-        sysLog.setMethod(className + "." + methodName);
-        System.out.println(sysLog.getMethod());
-        System.out.println(sysLog.getOperation());
+        System.out.println(className);
+        System.out.println(methodName);
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         // 获取请求用户IP
         System.out.println(getIpAdrress(request));
