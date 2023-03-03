@@ -181,5 +181,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public List<Operatipon> queryOptByIds(List<String> optIds) {
+        return null;
+    }
+
 
 }

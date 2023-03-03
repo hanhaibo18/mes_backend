@@ -38,6 +38,11 @@ public class PlanOptWarningController extends BaseController {
         return CommonResult.success(planOptWarningService.queryList(planId));
     }
 
+    @ApiOperation(value = "热工--工序预警", notes = "热工--查询计划工序预警信息")
+    @GetMapping("/query_hot")
+    public CommonResult queryHot(@ApiParam(value = "计划id", required = true) @RequestParam String planId) throws Exception {
+        return CommonResult.success(planOptWarningService.queryListHot(planId));
+    }
     @ApiOperation(value = "保存&更新", notes = "工序预警保存&更新")
     @PostMapping("/save_or_update")
     public void saveOrUpdate(@ApiParam(value = "工序预警信息", required = true) @RequestBody List<PlanOptWarning> planOptWarningList) {

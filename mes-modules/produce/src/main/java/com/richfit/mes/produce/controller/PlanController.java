@@ -176,6 +176,14 @@ public class PlanController extends BaseController {
         return CommonResult.success(planList);
     }
 
+    @ApiOperation(value = "热工--封装计划信息工序预警状态", notes = "热工--封装计划信息工序预警状态")
+    @PostMapping("/warning_hot")
+    public CommonResult warningHot(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) throws Exception {
+        for (Plan plan : planList) {
+            planOptWarningService.warningHot(plan);
+        }
+        return CommonResult.success(planList);
+    }
     @ApiOperation(value = "入库品数量统计", notes = "入库品数量统计")
     @PostMapping("/select_track_store_count")
     public CommonResult selectTrackStoreCount(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) {

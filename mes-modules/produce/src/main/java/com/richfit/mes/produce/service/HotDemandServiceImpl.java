@@ -347,7 +347,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     }
 
     /**
-     * 插件吗处理
+     * 车间码处理
      * @param branchType
      * @param hotDemand
      * @param plan
@@ -424,6 +424,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                             planNode.setOptStatus("0");//工序状态 0:未开始,1: 进行中,2:已结束
                             planNode.setBranchCode(hotDemand.getBranchCode());//车间码
                             planNode.setTenantId(hotDemand.getTenantId());//租户id
+                            planNode.setOpNo(sequence.getOpNo());//工序序号
+                            planNode.setOptId(sequence.getOptId());//工序字典id
+                            planNode.setSequenceId(sequence.getId());//工序id
                             planNodes.add(planNode);
                             //收集已生成关键计划节点的需求id
                             demandIdList.add(hotDemand.getId());

@@ -30,7 +30,7 @@ public class PlanOptWarning extends BaseEntity<PlanOptWarning> {
     @ApiModelProperty(value = "工序名称", dataType = "String")
     private String optName;
 
-    @ApiModelProperty(value = "工序名称", dataType = "Integer")
+    @ApiModelProperty(value = "工序顺序", dataType = "Integer")
     private Integer sequenceOrderBy;
 
     @ApiModelProperty(value = "预警时间", dataType = "String")
