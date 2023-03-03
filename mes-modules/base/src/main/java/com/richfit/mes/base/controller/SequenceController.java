@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -18,6 +19,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.produce.AssignPerson;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -33,10 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -773,6 +772,21 @@ public class SequenceController extends BaseController {
     @ApiImplicitParam(name = "assign", value = "工序派工", required = true, dataType = "SequenceAssign", paramType = "path")
     @PostMapping("/assign/save")
     public CommonResult<Boolean> assignSave(@RequestBody OperationAssign assign) {
+        //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
+        if(StringUtils.isNullOrEmpty(assign.getUserId())){
+            StringBuilder userId = new StringBuilder();
+            StringBuilder userName = new StringBuilder();
+            for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                if(!StringUtils.isNullOrEmpty(String.valueOf(userId))){
+                    userId.append(",");
+                    userName.append(",");
+                }
+                userId.append(assignPerson.getUserId());
+                userName.append(assignPerson.getUserName());
+            }
+            assign.setUserId(String.valueOf(userId));
+            assign.setSiteName(String.valueOf(userName));
+        }
         return CommonResult.success(operationAssignService.save(assign), "操作成功！");
     }
 
@@ -780,6 +794,21 @@ public class SequenceController extends BaseController {
     @ApiImplicitParam(name = "assign", value = "工序派工", required = true, dataType = "SequenceAssign", paramType = "path")
     @PutMapping("/assign/update")
     public CommonResult<Boolean> assignUpdate(@RequestBody OperationAssign assign) {
+        //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
+        if(StringUtils.isNullOrEmpty(assign.getUserId())){
+            StringBuilder userId = new StringBuilder();
+            StringBuilder userName = new StringBuilder();
+            for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                if(!StringUtils.isNullOrEmpty(String.valueOf(userId))){
+                    userId.append(",");
+                    userName.append(",");
+                }
+                userId.append(assignPerson.getUserId());
+                userName.append(assignPerson.getUserName());
+            }
+            assign.setUserId(String.valueOf(userId));
+            assign.setSiteName(String.valueOf(userName));
+        }
         return CommonResult.success(operationAssignService.updateById(assign), "操作成功！");
     }
 
@@ -803,7 +832,19 @@ public class SequenceController extends BaseController {
         if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
-        return CommonResult.success(operationAssignService.getOne(queryWrapper), "操作成功！");
+        OperationAssign one = operationAssignService.getOne(queryWrapper);
+        ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
+
+        if(!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())){
+            List<String> list = Arrays.asList(one.getUserId().split(","));
+            for (String userId : list) {
+                AssignPerson assignPerson = new AssignPerson();
+                assignPerson.setUserId(userId);
+                assignPeoples.add(assignPerson);
+            }
+            one.setAssignPersons(assignPeoples);
+        }
+        return CommonResult.success(one, "操作成功！");
     }
 
     @GetMapping("/querySequenceById")

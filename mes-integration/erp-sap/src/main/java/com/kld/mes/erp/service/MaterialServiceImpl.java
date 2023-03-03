@@ -83,10 +83,8 @@ public class MaterialServiceImpl implements MaterialService {
                     p.setMaterialTypeName("成品");
                 } else {
                     String[] data = name.split("\\s+");
-
                     p.setProductName(data[1]);
-
-                    if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1])) {
+                    if (data[data.length - 1].matches("[a-zA-Z]+") || "/".equals(data[data.length - 1]) || "半".equals(data[data.length - 1])) {
                         MaterialTypeDto type = materialType().get(data[data.length - 1]);
                         if (type != null) {
                             p.setMaterialType(type.getNewCode());

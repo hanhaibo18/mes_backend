@@ -7,19 +7,16 @@ import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
-import com.mysql.cj.util.TimeUtil;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
-import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
@@ -32,10 +29,6 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.utils.Code;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -45,12 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -457,14 +446,11 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         wrapper.orderByDesc("opt_sequence");
         List<TrackItem> items = this.list(wrapper);
 
-        TrackItem item = new TrackItem();
-        if (items.size() > 0) {
-            item = items.get(0);
-        }
 
-        if (item == null) {
+        if (CollectionUtils.isEmpty(items)) {
             return "该跟单没有当前工序！";
         }
+        TrackItem item = items.get(0);
 
         if (item.getOptSequence() == 1) {
             return "当前工序已是跟单第一步有效工序,不可回退！";
@@ -500,6 +486,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     @Override
     public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId) {
         if (trackItems != null && trackItems.size() > 0) {
+            int i = 1;
             for (TrackItem item : trackItems) {
                 item.setId(UUID.randomUUID().toString().replace("-", ""));
                 item.setTrackHeadId(trackHead.getId());
@@ -513,6 +500,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setIsSchedule(0);
                 item.setIsPrepare(0);
                 item.setIsNotarize(0);
+                item.setOptSequence(i++);
                 //需要调度审核时展示
                 if (1 == item.getIsExistScheduleCheck()) {
                     item.setIsScheduleCompleteShow(1);
