@@ -221,15 +221,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setOptSequence(trackItem.getOptSequence());
                         track.setOptName(trackItem.getOptName());
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-//                        QueryWrapper<TrackCheck> queryCheck = new QueryWrapper<>();
-//                        queryCheck.eq("ti_id", trackItem.getId());
-//                        queryCheck.orderByAsc("modify_time");
-//                        List<TrackCheck> list = trackCheckService.list(queryWrapperCheck);
-                        if (!CollectionUtils.isEmpty(trackCheckList)) {
-                            if (rulesMap.get(trackCheckList.get(0).getResult()) != null) {
-                                track.setQualityResult(rulesMap.get(trackCheckList.get(0).getResult()).getStateName());
-                            }
-                        }
+                        track.setQualityResult(trackItem.getRuleName());
+                        track.setOptNo(trackItem.getOptNo());
                         trackCompleteShowList.add(track);
                     }
                     track0.setId(id);
