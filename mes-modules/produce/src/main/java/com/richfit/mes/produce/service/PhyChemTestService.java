@@ -283,8 +283,23 @@ public class PhyChemTestService{
     public void exoprtReport(HttpServletResponse response,String reportNo) throws IOException, TemplateException {
         //中间表数据 用于生成报告
         List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByReportNo(reportNo);
+        //根据炉号排序
+        physChemOrderInners.sort((t1,t2)->t1.getBatchNo().compareTo(t2.getBatchNo()));
         //相同报告的委托单信息大体一致（除了冲击试验数据） 所以委托单信息取第一条就好
         PhysChemOrderInner physChemOrderInner = physChemOrderInners.get(0);
+        //冲击参数
+        List<PhysChemOrderInner> cjs = new ArrayList<>();
+
+        //中间表数据 用于生成报告
+        List<PhysChemOrderInner> allPhysChemOrderInners = materialInspectionServiceClient.queryByOrderNo(physChemOrderInner.getOrderNo());
+        if(allPhysChemOrderInners.size()>0){
+            Map<String, List<PhysChemOrderInner>> batchNoGroup = allPhysChemOrderInners.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getBatchNo));
+            physChemOrderInner = new ArrayList<>(batchNoGroup.values()).get(0).get(0);
+            //冲击参数赋值
+            cjs = new ArrayList<>(batchNoGroup.values()).get(0);
+            //炉号赋值
+            physChemOrderInner.setBatchNo(org.apache.commons.lang.StringUtils.join(batchNoGroup.keySet(),","));
+        }
         //构造填充数据
         Map<String, Object> dataMap = new HashMap<>();
         //1、报告头信息
