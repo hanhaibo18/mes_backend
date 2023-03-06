@@ -3156,7 +3156,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>${result.batchno!""}</w:t>
+                                        <w:t>${result.batchNo!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

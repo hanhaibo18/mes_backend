@@ -9,7 +9,7 @@ import lombok.Data;
 
 /**
  * @author 马峰
- * @Description 工艺
+ * @Description 工序
  */
 @Data
 public class Sequence extends BaseEntity<Sequence> {

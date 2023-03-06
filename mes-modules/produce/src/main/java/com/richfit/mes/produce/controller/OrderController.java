@@ -11,11 +11,11 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.log.aop.OperationLog;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.entity.OrderDto;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.OrderService;
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -61,7 +62,7 @@ public class OrderController extends BaseController {
             @ApiImplicitParam(name = "queryDto", value = "订单属性", paramType = "BasePageDto")
     })
     @GetMapping("/query/page")
-    @OperationLog(value = "123123123123")
+    @OperationLog
     public CommonResult queryByCondition(BasePageDto<String> queryDto) throws GlobalException {
 
         OrderDto orderDto = null;
@@ -152,18 +153,12 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "新增计划信息", notes = "新增计划信息")
     @ApiImplicitParam(name = "order", value = "订单", required = true, dataType = "Order", paramType = "body")
     @PostMapping("/save")
+    @OperationLog(actionType = "0", actionItem = "0")
     public CommonResult<Boolean> savePlan(@RequestBody Order order) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         order.setStartTime(order.getOrderDate());
         order.setEndTime(order.getDeliveryDate());
         order.setTenantId(user.getTenantId());
-
-        Action action = new Action();
-        action.setActionType("0");
-        action.setActionItem("0");
-        action.setRemark("订单号：" + order.getOrderSn());
-        actionService.saveAction(action);
-
         return CommonResult.success(orderService.save(order));
     }
 
@@ -185,15 +180,10 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "修改计划信息", notes = "修改计划信息")
     @ApiImplicitParam(name = "order", value = "订单", required = true, dataType = "Order", paramType = "body")
     @PutMapping("/update")
+    @OperationLog(actionType = "1", actionItem = "0")
     public CommonResult<Boolean> updateOrder(@RequestBody Order order) throws GlobalException {
         order.setStartTime(order.getOrderDate());
         order.setEndTime(order.getDeliveryDate());
-
-        Action action = new Action();
-        action.setActionType("1");
-        action.setActionItem("0");
-        action.setRemark("订单号：" + order.getOrderSn());
-        actionService.saveAction(action);
         return CommonResult.success(orderService.updateById(order));
     }
 
@@ -203,8 +193,8 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "删除计划信息", notes = "根据计划id删除计划记录")
     @ApiImplicitParam(name = "id", value = "订单id", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/delete/{id}")
-    public void delById(@PathVariable String id) throws GlobalException {
-        orderService.deleteOrder(id);
+    public void delById(@PathVariable String id, HttpServletRequest request) throws GlobalException {
+        orderService.deleteOrder(id, request);
     }
 
     @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")

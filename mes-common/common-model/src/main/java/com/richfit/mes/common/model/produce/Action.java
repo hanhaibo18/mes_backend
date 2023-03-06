@@ -36,5 +36,9 @@ public class Action extends BaseEntity<Action> {
      * 操作对象 0订单 1计划 2跟单 3质检 4库存
      */
     private String actionItem;
+    /**
+     * ip地址
+     */
+    private String ipAddress;
 
 }

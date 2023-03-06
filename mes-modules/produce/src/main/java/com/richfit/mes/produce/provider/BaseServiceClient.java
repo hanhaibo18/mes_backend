@@ -3,6 +3,7 @@ package com.richfit.mes.produce.provider;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -95,7 +96,6 @@ public interface BaseServiceClient {
     /**
      * 功能描述:查询工艺版本
      *
-     * @param id
      * @Author: xinYu.hou
      * @Date: 2022/8/18 16:41
      * @return: String
@@ -193,4 +193,12 @@ public interface BaseServiceClient {
 
     @GetMapping("/api/base/sequence/query_by_routerIds")
     public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds);
+    /**
+     * 功能描述:根据id查询工序字典列表
+     *
+     * @Author: hujia
+     **/
+    @ApiOperation(value = "根据id查询工序字典列表", notes = "根据id查询工序字典列表")
+    @GetMapping("/api/base/opt/queryOptByIds")
+    List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds);
 }

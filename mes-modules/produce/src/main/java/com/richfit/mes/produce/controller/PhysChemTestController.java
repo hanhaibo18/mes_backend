@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -29,11 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 
 /**
@@ -63,12 +60,14 @@ public class PhysChemTestController extends BaseController {
         phyChemTestService.checkOrderInfo(physChemOrderInner);
         //力学性能参数集合
         List<PhysChemOrderImpactDto> impacts = physChemOrderInner.getImpacts();
-        //要保存的数据
+        //炉批号集合
+        Set<Map<String, String>> batchNos = physChemOrderInner.getBatchNos();
+        //多力学参数委托单
         List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
         //新增委托（需要生产委托单号、报告号）
         if(!StringUtils.isNullOrEmpty(physChemOrderInner.getStatus()) && physChemOrderInner.getStatus().equals("1") && StringUtils.isNullOrEmpty(physChemOrderInner.getOrderNo())){
             //获取号
-            String orderNo = codeRuleService.gerCode("order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
+            String orderNo = codeRuleService.gerCode("m_order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
             String reportNo = codeRuleService.gerCode("m_report_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
             physChemOrderInner.setOrderNo(orderNo);
             physChemOrderInner.setReportNo(reportNo);
@@ -92,7 +91,19 @@ public class PhysChemTestController extends BaseController {
         if(physChemOrderInners.size() == 0){
             physChemOrderInners.add(physChemOrderInner);
         }
-        return phyChemTestService.saveOrder(physChemOrderInners);
+        //最终要保存的委托单
+        List<PhysChemOrderInner> savePhysChemOrderInners = new ArrayList<>();
+        //多炉批号
+        for (Map<String, String> map : batchNos) {
+            String batchNo = map.get("batchNo");
+            for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
+                PhysChemOrderInner add = new PhysChemOrderInner();
+                BeanUtil.copyProperties(chemOrderInner,add);
+                add.setBatchNo(batchNo);
+                savePhysChemOrderInners.add(add);
+            }
+        }
+        return phyChemTestService.saveOrder(savePhysChemOrderInners);
     }
 
     @ApiOperation(value = "委托任务列表", notes = "委托任务列表")

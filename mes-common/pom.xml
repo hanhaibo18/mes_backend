@@ -20,6 +20,5 @@
         <module>common-feign</module>
         <module>common-security</module>
         <module>common-log</module>
-        <module>common-operation-log</module>
     </modules>
 </project>

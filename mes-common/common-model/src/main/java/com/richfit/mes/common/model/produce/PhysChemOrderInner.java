@@ -8,8 +8,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -280,7 +281,11 @@ public class PhysChemOrderInner extends BaseEntity<PhysChemOrderInner> {
     @TableField(exist = false)
     private List<PhysChemOrderImpactDto> impacts;
 
-
+    /**
+     * 多炉号(可以传string,但是前端联调让传Object [{},{}])
+     */
+    @TableField(exist = false)
+    private Set<Map<String,String>> batchNos;
 
     @ApiModelProperty(value = "审核状态:0未审核，1已审核，2以退回")
     private String isAudit;

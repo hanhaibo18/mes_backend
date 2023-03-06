@@ -16,6 +16,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
@@ -147,7 +149,8 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
     @PostMapping("/track_head")
-    public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHead) {
+    public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHead,
+                                              HttpServletRequest request) {
 
         try {
             if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
@@ -164,7 +167,7 @@ public class TrackHeadController extends BaseController {
                 trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 trackHead.setCreateTime(new Date());
 
-                bool = trackHeadService.saveTrackHead(trackHead);
+                bool = trackHeadService.saveTrackHead(trackHead, request);
                 if (bool) {
                     return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
                 } else {
@@ -179,7 +182,8 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "修改跟单", notes = "修改跟单")
     @PutMapping("/track_head")
-    public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHeadPublicDto) {
+    public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHeadPublicDto,
+                                                 HttpServletRequest request) {
         if (StringUtils.isNullOrEmpty(trackHeadPublicDto.getTrackNo())) {
             return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(trackHeadPublicDto.getId())) {
@@ -188,11 +192,8 @@ public class TrackHeadController extends BaseController {
             boolean bool = trackHeadService.updataTrackHead(trackHeadPublicDto, trackHeadPublicDto.getTrackItems());
             if (bool) {
                 //添加日志
-                Action action = new Action();
-                action.setActionType("1");
-                action.setActionItem("2");
-                action.setRemark("跟单号：" + trackHeadPublicDto.getTrackNo());
-                actionService.saveAction(action);
+                actionService.saveAction(ActionUtil.buildAction
+                        (trackHeadPublicDto.getBranchCode(), "1", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), request.getRemoteAddr()));
                 return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
@@ -226,18 +227,16 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "删除跟单", notes = "删除跟单")
     @DeleteMapping("/track_head")
-    public CommonResult deleteTrackHead(@ApiParam(value = "跟单信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
+    public CommonResult deleteTrackHead(@ApiParam(value = "跟单信息列表", required = true) @RequestBody List<TrackHead> trackHeads,
+                                        HttpServletRequest request) {
         boolean bool = trackHeadService.deleteTrackHead(trackHeads);
         if (bool) {
-            Action action = new Action();
-            action.setActionType("2");
-            action.setActionItem("2");
             String trackNos = "";
             for (TrackHead trackHead : trackHeads) {
                 trackNos += trackHead.getTrackNo() + ",";
             }
-            action.setRemark("跟单号：" + trackNos);
-            actionService.saveAction(action);
+            actionService.saveAction(ActionUtil.buildAction
+                    (trackHeads.get(0).getBranchCode(), "2", "2", "跟单号：" + trackNos, request.getRemoteAddr()));
             return CommonResult.success(trackHeads, TRACK_HEAD_SUCCESS_MESSAGE);
         } else {
             return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);

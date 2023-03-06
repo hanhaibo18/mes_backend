@@ -10,6 +10,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto);
+    boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto, HttpServletRequest request);
 
     /**
      * 描述: 跟单更新

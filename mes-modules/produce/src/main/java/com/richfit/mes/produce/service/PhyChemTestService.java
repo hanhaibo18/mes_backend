@@ -104,7 +104,7 @@ public class PhyChemTestService{
         if(physChemOrderInner.getStatus().equals("1")){
             if((inners.size()>0 && StringUtils.isNullOrEmpty(inners.get(0).getOrderNo())) || inners.size()==0){
                 //保存委托单号
-                Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+                Code.update("m_order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
                 //保存报告号
                 Code.update("m_report_no",physChemOrderInner.getReportNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
             }
@@ -202,7 +202,7 @@ public class PhyChemTestService{
         //修改委托单号、报告号、状态
         for (List<PhysChemOrderInner> value : groups.values()) {
             if(StringUtils.isNullOrEmpty(value.get(0).getOrderNo())){
-                String orderNo = Code.valueOnUpdate("order_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+                String orderNo = Code.valueOnUpdate("m_order_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
                 String reportNo = Code.valueOnUpdate("m_report_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
                 for (PhysChemOrderInner physChemOrderInner : value) {
                     physChemOrderInner.setOrderNo(orderNo);
@@ -283,8 +283,23 @@ public class PhyChemTestService{
     public void exoprtReport(HttpServletResponse response,String reportNo) throws IOException, TemplateException {
         //中间表数据 用于生成报告
         List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByReportNo(reportNo);
+        //根据炉号排序
+        physChemOrderInners.sort((t1,t2)->t1.getBatchNo().compareTo(t2.getBatchNo()));
         //相同报告的委托单信息大体一致（除了冲击试验数据） 所以委托单信息取第一条就好
         PhysChemOrderInner physChemOrderInner = physChemOrderInners.get(0);
+        //冲击参数
+        List<PhysChemOrderInner> cjs = new ArrayList<>();
+
+        //中间表数据 用于生成报告
+        List<PhysChemOrderInner> allPhysChemOrderInners = materialInspectionServiceClient.queryByOrderNo(physChemOrderInner.getOrderNo());
+        if(allPhysChemOrderInners.size()>0){
+            Map<String, List<PhysChemOrderInner>> batchNoGroup = allPhysChemOrderInners.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getBatchNo));
+            physChemOrderInner = new ArrayList<>(batchNoGroup.values()).get(0).get(0);
+            //冲击参数赋值
+            cjs = new ArrayList<>(batchNoGroup.values()).get(0);
+            //炉号赋值
+            physChemOrderInner.setBatchNo(org.apache.commons.lang.StringUtils.join(batchNoGroup.keySet(),","));
+        }
         //构造填充数据
         Map<String, Object> dataMap = new HashMap<>();
         //1、报告头信息
@@ -396,10 +411,16 @@ public class PhyChemTestService{
     //导出理化委托单
     public void exportExcel(HttpServletResponse rsp,String orderNo) {
         PhysChemOrderInner physChemOrderInner = new PhysChemOrderInner();
+        List<PhysChemOrderInner> physChemOrderInners = new ArrayList<>();
         //中间表数据 用于生成报告
-        List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.queryByOrderNo(orderNo);
-        if(physChemOrderInners.size()>0){
-            physChemOrderInner = physChemOrderInners.get(0);
+        List<PhysChemOrderInner> allPhysChemOrderInners = materialInspectionServiceClient.queryByOrderNo(orderNo);
+        if(allPhysChemOrderInners.size()>0){
+            Map<String, List<PhysChemOrderInner>> batchNoGroup = allPhysChemOrderInners.stream().collect(Collectors.groupingBy(PhysChemOrderInner::getBatchNo));
+            physChemOrderInner = new ArrayList<>(batchNoGroup.values()).get(0).get(0);
+            //冲击参数赋值
+            physChemOrderInners = new ArrayList<>(batchNoGroup.values()).get(0);
+            //炉号赋值
+            physChemOrderInner.setBatchNo(org.apache.commons.lang.StringUtils.join(batchNoGroup.keySet(),","));
         }
         //多选值拼接显示
         StringBuilder forceImpactTemp = new StringBuilder();

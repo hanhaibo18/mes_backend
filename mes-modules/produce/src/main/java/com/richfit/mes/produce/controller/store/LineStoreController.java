@@ -21,8 +21,10 @@ import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.LineStoreService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
@@ -76,6 +78,9 @@ public class LineStoreController extends BaseController {
     @Autowired
     private SystemServiceClient systemServiceClient;
 
+    @Autowired
+    private ActionService actionService;
+
     @ApiOperation(value = "获取订单数量和剩余数量", notes = "获取订单数量和剩余数量")
     @PostMapping("/get_order_surplusNum")
     public HashMap<String, Integer> getOrderNumAndInNum(@ApiParam(value = "启始序列号") @RequestParam(required = false) String materialNo,
@@ -85,6 +90,7 @@ public class LineStoreController extends BaseController {
 
 
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
+    @OperationLog(actionType = "0", actionItem = "3")
     @PostMapping("/line_store")
     public CommonResult<LineStore> addLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore,
                                                 @ApiParam(value = "启始序列号") @RequestParam(required = false) String startNo,
@@ -160,6 +166,7 @@ public class LineStoreController extends BaseController {
     }
 
     @ApiOperation(value = "修改入库信息", notes = "修改入库信息")
+    @OperationLog(actionType = "1", actionItem = "3")
     @PutMapping("/line_store")
     public CommonResult<LineStore> updateLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore) {
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {

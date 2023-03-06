@@ -786,6 +786,7 @@ public class SequenceController extends BaseController {
             }
             assign.setUserId(String.valueOf(userId));
             assign.setSiteName(String.valueOf(userName));
+            assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         }
         return CommonResult.success(operationAssignService.save(assign), "操作成功！");
     }

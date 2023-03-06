@@ -396,6 +396,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Object> savePlan(Plan plan) {
 
         checkPlan(plan);
@@ -444,12 +445,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         checkPlan(plan);
         delPlan(plan);
 
-        Action action = new Action();
-        action.setActionType("1");
-        action.setActionItem("1");
-        action.setRemark("计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo());
-        actionService.saveAction(action);
-
         return savePlan(plan);
     }
 
@@ -474,15 +469,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Object> addPlan(Plan plan) {
 
         CommonResult<Object> result = savePlan(plan);
-
-        Action action = new Action();
-        action.setActionType("0");
-        action.setActionItem("1");
-        action.setRemark("计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo());
-        actionService.saveAction(action);
 
         return result;
     }

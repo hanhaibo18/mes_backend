@@ -8,10 +8,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.dao.TrackFlowMapper;
 import com.richfit.mes.produce.entity.OrderDto;
@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,7 +209,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public Order deleteOrder(String id) {
+    public Order deleteOrder(String id, HttpServletRequest request) {
         Order order = this.getById(id);
         //通过状态判断是否关联计划
         if (0 != order.getStatus()) {
@@ -234,11 +235,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         this.removeById(order);
         //操作日志记录
-        Action action = new Action();
-        action.setActionType("2");
-        action.setActionItem("0");
-        action.setRemark("订单号：" + order.getOrderSn());
-        actionService.saveAction(action);
+        actionService.saveAction(ActionUtil.buildAction
+                (order.getBranchCode(), "2", "0", "订单号：" + order.getOrderSn(), request.getRemoteAddr()));
         return order;
     }
 

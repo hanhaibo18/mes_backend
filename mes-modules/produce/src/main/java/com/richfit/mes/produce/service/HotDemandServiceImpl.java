@@ -9,28 +9,25 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
-import com.richfit.mes.common.model.produce.HotDemand;
-import com.richfit.mes.common.model.produce.HotModelStore;
-import com.richfit.mes.common.model.produce.Plan;
-import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.base.Operatipon;
+import com.richfit.mes.common.model.base.Router;
+import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.HotDemandMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.DemandExcel;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.utils.DateUtils;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -54,6 +51,11 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     private PlanExtendService planExtendService;
     @Autowired
     private TrackHeadMapper trackHeadMapper;
+    @Resource
+    private BaseServiceClient baseServiceClient;
+
+    @Autowired
+    private HotPlanNodeService planNodeService;
     /**
      * 导入需求提报数据
      * @param file
@@ -345,7 +347,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     }
 
     /**
-     * 插件吗处理
+     * 车间码处理
      * @param branchType
      * @param hotDemand
      * @param plan
@@ -366,6 +368,89 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
             }
         }
+    }
+
+    /**
+     * 自动生成工序计划
+     * @param idList
+     * @param branchCode
+     * @return
+     */
+    @Override
+    public CommonResult<?> initPlanNode(List<String> idList, String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        queryWrapper.apply("(is_exist_plan_node=0 or is_exist_plan_node is null)");
+        queryWrapper.in("id", idList);
+        //查出需求信息
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(hotDemands)){
+            return CommonResult.failed("工序计划已生成");
+        }
+        List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
+        //根据图号查出工艺信息
+        List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoList, branchCode).getData();
+        if (CollectionUtils.isEmpty(byDrawNo)) return CommonResult.failed("没有工艺信息");
+        List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
+        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x.getId()));
+        //根据工艺id查出工序信息
+        List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
+        if (CollectionUtils.isEmpty(sequences)) return CommonResult.failed("工艺没有工序信息");
+        //根据工艺id分组
+        Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
+        //根据工序id查询工序字典(拿到关键工序字段)
+        List<String> optIdList = sequences.stream().map(x -> x.getOptId()).collect(Collectors.toList());//工序字典id
+        List<Operatipon> operatipons = baseServiceClient.queryOptByIds(optIdList);
+        Map<String, Operatipon> optMap = operatipons.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
+        ArrayList<HotPlanNode> planNodes = new ArrayList<>();
+        ArrayList<String> demandIdList = new ArrayList<>();
+        //根据需求信息自动生成生产计划数据
+        for (HotDemand hotDemand : hotDemands) {
+            String s = routerIdMap.get(hotDemand.getDrawNo());
+            //有工艺的情况下
+            if (StringUtils.isNotEmpty(s)) {
+                List<Sequence> sequencesList = sequencesMap.get(s);
+                //工艺有工序的情况
+                if (CollectionUtils.isNotEmpty(sequencesList)) {
+                    for (Sequence sequence : sequencesList) {
+                        //工序为关键工序时才产生计划节点
+                        if(optMap.get(sequence.getOptId()).getIsKey()==1){
+                            HotPlanNode planNode = new HotPlanNode();
+                            planNode.setDemandId(hotDemand.getId());//毛坯需求id
+                            planNode.setOptName(sequence.getOptName());//工序名称
+                            planNode.setDemandNum(hotDemand.getNum());//需求数量
+                            planNode.setOptStatus("0");//工序状态 0:未开始,1: 进行中,2:已结束
+                            planNode.setBranchCode(hotDemand.getBranchCode());//车间码
+                            planNode.setTenantId(hotDemand.getTenantId());//租户id
+                            planNode.setOpNo(sequence.getOpNo());//工序序号
+                            planNode.setOptId(sequence.getOptId());//工序字典id
+                            planNode.setSequenceId(sequence.getId());//工序id
+                            planNodes.add(planNode);
+                            //收集已生成关键计划节点的需求id
+                            demandIdList.add(hotDemand.getId());
+                        }
+                    }
+
+                }
+            }
+        }
+        planNodeService.saveBatch(planNodes);
+        //更新关键计划节点生成状态
+        this.updateDemand(demandIdList);
+        return CommonResult.success("操作成功");
+    }
+
+    /**
+     * 更新关键计划节点生成状态
+     * @param demandIdList
+     */
+    private void updateDemand(ArrayList<String> demandIdList) {
+        UpdateWrapper<HotDemand> updateWrapper =new UpdateWrapper<>();
+        updateWrapper.set("is_exist_plan_node",1);//是否生成过关键计划节点0 未生成  1已生成'
+        updateWrapper.in("id", demandIdList);
+        hotDemandService.update(updateWrapper);
     }
 
 }

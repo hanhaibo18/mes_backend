@@ -184,7 +184,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @ApiModelProperty(value = "KR7280min", dataType = "Integer")
     protected Double krCool;
     @ApiModelProperty(value = "实际干活时间", dataType = "String")
-    @JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd mm:dd:ss")
+    @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd mm:dd:ss")
     protected Date actualWorkTime;
     @ApiModelProperty(value = "是否当前步骤", dataType = "Integer")
     protected Integer isCurrent;
@@ -222,7 +222,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private Integer optType;
     @TableField(exist = false)
-    private Integer optNo;
+    private String optNo;
     @TableField(exist = false)
     private Integer optSequence;
     @TableField(exist = false)

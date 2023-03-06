@@ -63,7 +63,7 @@ public class ActionController {
      */
     @ApiOperation(value = "新增操作信息", notes = "新增操作信息")
     @PostMapping("/action")
-    public CommonResult<Boolean> saveAction(@RequestBody Action action) throws GlobalException {
+    public CommonResult<Boolean> saveAction(@RequestBody Action action) {
         return CommonResult.success(actionService.saveAction(action));
     }
 

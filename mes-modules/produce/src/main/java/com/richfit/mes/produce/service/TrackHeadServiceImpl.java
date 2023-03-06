@@ -22,6 +22,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.CodeRuleController;
@@ -43,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
@@ -371,12 +373,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    public boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto) {
+    public boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto, HttpServletRequest request) {
         //单件跟单处理
         try {
             List<TrackHeadPublicDto> trackHeadList = TrackHeadUtil.saveInfo(trackHeadPublicDto, codeRuleService);
             for (TrackHeadPublicDto th : trackHeadList) {
-                trackHeadAdd(th, th.getTrackItems(), th.getProductNo(), th.getNumber());
+                trackHeadAdd(th, th.getTrackItems(), th.getProductNo(), th.getNumber(), request);
             }
             //当匹配计划时更新计划状态
             planService.planData(trackHeadPublicDto.getWorkPlanId());
@@ -443,7 +445,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                                 //可分配数量
                                 item.setAssignableQty(flow.getNumber());
                                 item.setNumber(flow.getNumber());
-                                item.setBatchQty(flow.getNumber());
                                 item.setIsSchedule(0);
                                 item.setIsPrepare(0);
                                 item.setIsNotarize(0);
@@ -728,7 +729,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     public boolean trackHeadAdd(TrackHeadPublicDto trackHeadPublicDto, List<TrackItem> trackItems, String productsNo,
-                                int number) {
+                                int number, HttpServletRequest request) {
         try {
             this.beforeSaveItemDeal(trackItems);
             //查询跟单号码是否存在
@@ -787,11 +788,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             autoSchedule(trackHeadPublicDto);
 
             //添加日志
-            Action action = new Action();
-            action.setActionType("0");
-            action.setActionItem("2");
-            action.setRemark("跟单号：" + trackHeadPublicDto.getTrackNo());
-            actionService.saveAction(action);
+            actionService.saveAction(ActionUtil.buildAction
+                    (trackHeadPublicDto.getBranchCode(), "0", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), request.getRemoteAddr()));
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -1581,7 +1579,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             if (trackItem.getIsSchedule() == 0) {
                 trackItem.setNumber(trackHeadPublicDto.getNumber());
                 trackItem.setAssignableQty(trackHeadPublicDto.getNumber());
-                trackItem.setBatchQty(trackHeadPublicDto.getNumber());
                 trackItemService.updateById(trackItem);
             }
         }
@@ -1619,7 +1616,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackItem.setFlowId(tfn.getId());
                 trackItem.setNumber(trackHeadNew.getNumber());
                 trackItem.setAssignableQty(trackHeadNew.getNumber());
-                trackItem.setBatchQty(trackHeadNew.getNumber());
                 trackItem.setIsDoing(0);
                 trackItem.setIsQualityComplete(0);
                 trackItem.setQualityCheckBy(null);
