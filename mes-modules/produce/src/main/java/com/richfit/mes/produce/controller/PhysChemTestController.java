@@ -67,7 +67,7 @@ public class PhysChemTestController extends BaseController {
         //新增委托（需要生产委托单号、报告号）
         if(!StringUtils.isNullOrEmpty(physChemOrderInner.getStatus()) && physChemOrderInner.getStatus().equals("1") && StringUtils.isNullOrEmpty(physChemOrderInner.getOrderNo())){
             //获取号
-            String orderNo = codeRuleService.gerCode("order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
+            String orderNo = codeRuleService.gerCode("m_order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
             String reportNo = codeRuleService.gerCode("m_report_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
             physChemOrderInner.setOrderNo(orderNo);
             physChemOrderInner.setReportNo(reportNo);

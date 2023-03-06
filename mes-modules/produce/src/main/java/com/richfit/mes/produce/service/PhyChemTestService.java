@@ -104,7 +104,7 @@ public class PhyChemTestService{
         if(physChemOrderInner.getStatus().equals("1")){
             if((inners.size()>0 && StringUtils.isNullOrEmpty(inners.get(0).getOrderNo())) || inners.size()==0){
                 //保存委托单号
-                Code.update("order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+                Code.update("m_order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
                 //保存报告号
                 Code.update("m_report_no",physChemOrderInner.getReportNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
             }
@@ -202,7 +202,7 @@ public class PhyChemTestService{
         //修改委托单号、报告号、状态
         for (List<PhysChemOrderInner> value : groups.values()) {
             if(StringUtils.isNullOrEmpty(value.get(0).getOrderNo())){
-                String orderNo = Code.valueOnUpdate("order_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+                String orderNo = Code.valueOnUpdate("m_order_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
                 String reportNo = Code.valueOnUpdate("m_report_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
                 for (PhysChemOrderInner physChemOrderInner : value) {
                     physChemOrderInner.setOrderNo(orderNo);
