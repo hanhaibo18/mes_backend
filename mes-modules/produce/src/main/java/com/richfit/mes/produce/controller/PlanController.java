@@ -12,9 +12,11 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.log.aop.OperationLog;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
@@ -28,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -196,6 +199,7 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "新增计划信息", notes = "新增计划信息")
     @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
+    @OperationLog(actionType = "0", actionItem = "1")
     @PostMapping("/save")
     public CommonResult<Object> savePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -227,6 +231,7 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "修改计划信息", notes = "修改计划信息")
     @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
+    @OperationLog(actionType = "1", actionItem = "1")
     @PutMapping("/update")
     public CommonResult<Object> updatePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -255,18 +260,15 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "删除计划信息", notes = "根据计划id删除计划记录")
     @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/delete/{id}")
-    public CommonResult<Boolean> delPlanById(@PathVariable String id) throws GlobalException {
+    public CommonResult<Boolean> delPlanById(@PathVariable String id, HttpServletRequest request) throws GlobalException {
         //计划状态为‘0’ 未开始时，才能删除
         Plan plan = planService.getById(id);
         if (0 != plan.getStatus()) {
             return CommonResult.failed("计划已开始，不能删除!");
         }
 
-        Action action = new Action();
-        action.setActionType("2");
-        action.setActionItem("1");
-        action.setRemark("计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo());
-        actionService.saveAction(action);
+        actionService.saveAction(ActionUtil.buildAction
+                (plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo(), request.getRemoteAddr()));
         //删除扩展字段
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("plan_id", id);

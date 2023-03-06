@@ -7,6 +7,7 @@ import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.OrderDto;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -40,5 +41,5 @@ public interface OrderService extends IService<Order> {
      */
     void orderDataTrackHead(TrackHead trackHead);
 
-    Order deleteOrder(String id);
+    Order deleteOrder(String id, HttpServletRequest request);
 }
