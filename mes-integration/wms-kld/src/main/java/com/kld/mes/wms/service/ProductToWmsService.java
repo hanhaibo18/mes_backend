@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
@@ -60,11 +59,7 @@ public class ProductToWmsService {
 
     //接口格式，详见条码-mes接口文档
     public Boolean sendRequest(Certificate cert) {
-
-        if (StringUtils.isEmpty(mesUploadApi)) {
-            init();
-        }
-
+        init();
         String sqd = cert.getCertificateNo() + DateUtil.format(new Date(), "MMddHHmmss");
         String gc = SecurityUtils.getCurrentUser().getTenantErpCode();
 
@@ -94,15 +89,14 @@ public class ProductToWmsService {
 
     //泵业查询接口
     public int queryMaterialCount(String materialNo) {
-        if (StringUtils.isEmpty(mesUrlQueryMaterialCountApi)) {
-            init();
-        }
+        init();
         //构造访问参数
         Map<String, Object> params = new HashMap<>(3);
         params.put("wstr", materialNo);
         params.put("page", 1);
         params.put("token", mesUrlToken);
         //调用接口
+        System.out.println(mesUrlQueryMaterialCountApi);
         String number = HttpUtil.get(mesUrlQueryMaterialCountApi, params);
         if (StrUtil.isBlank(number)) {
             return 0;
@@ -114,9 +108,7 @@ public class ProductToWmsService {
 
     //配料申请单上传接口
     public ApplicationResult anApplicationForm(IngredientApplicationDto ingredientApplicationDto) throws Exception {
-        if (StringUtils.isEmpty(mesScddUploadApi)) {
-            init();
-        }
+        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(ingredientApplicationDto);
         //加密后的16进制字符串
@@ -129,6 +121,4 @@ public class ProductToWmsService {
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
-
-
 }
