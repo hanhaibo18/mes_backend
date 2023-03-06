@@ -62,7 +62,6 @@ public class OrderController extends BaseController {
             @ApiImplicitParam(name = "queryDto", value = "订单属性", paramType = "BasePageDto")
     })
     @GetMapping("/query/page")
-    @OperationLog
     public CommonResult queryByCondition(BasePageDto<String> queryDto) throws GlobalException {
 
         OrderDto orderDto = null;
