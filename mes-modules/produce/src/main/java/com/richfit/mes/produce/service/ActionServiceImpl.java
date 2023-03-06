@@ -25,7 +25,6 @@ public class ActionServiceImpl extends ServiceImpl<ActionMapper, Action> impleme
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         action.setUser(user.getUsername());
         action.setTenantId(user.getTenantId());
-        action.setBranchId(user.getOrgId());
         action.setActionTime(new Date());
         return actionMapper.insert(action) > 0 ? true : false;
     }

@@ -1,5 +1,7 @@
 package com.richfit.mes.produce.aop;
 
+import io.swagger.annotations.ApiParam;
+
 import java.lang.annotation.*;
 
 /**
@@ -11,8 +13,8 @@ import java.lang.annotation.*;
 
 public @interface OperationLog {
     String value() default "saveAction";
-
+    @ApiParam(value = "0-新增，1-修改，2-删除，3-撤回，4-其他")
     String actionType() default "";
-
+    @ApiParam(value = "0-订单，1-计划，2-跟单，3-库存")
     String actionItem() default "";
 }

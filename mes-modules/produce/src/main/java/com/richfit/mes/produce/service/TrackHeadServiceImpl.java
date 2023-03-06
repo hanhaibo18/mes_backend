@@ -25,6 +25,7 @@ import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.controller.CodeRuleController;
 import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.*;
@@ -789,7 +790,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //添加日志
             actionService.saveAction(ActionUtil.buildAction
-                    (trackHeadPublicDto.getBranchCode(), "0", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), request.getRemoteAddr()));
+                    (trackHeadPublicDto.getBranchCode(), "0", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), OperationLogAspect.getIpAddress(request)));
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
