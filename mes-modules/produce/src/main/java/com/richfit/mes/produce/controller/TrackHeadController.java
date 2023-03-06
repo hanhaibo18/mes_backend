@@ -21,6 +21,7 @@ import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
@@ -193,7 +194,7 @@ public class TrackHeadController extends BaseController {
             if (bool) {
                 //添加日志
                 actionService.saveAction(ActionUtil.buildAction
-                        (trackHeadPublicDto.getBranchCode(), "1", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), request.getRemoteAddr()));
+                        (trackHeadPublicDto.getBranchCode(), "1", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), OperationLogAspect.getIpAddress(request)));
                 return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
@@ -236,7 +237,7 @@ public class TrackHeadController extends BaseController {
                 trackNos += trackHead.getTrackNo() + ",";
             }
             actionService.saveAction(ActionUtil.buildAction
-                    (trackHeads.get(0).getBranchCode(), "2", "2", "跟单号：" + trackNos, request.getRemoteAddr()));
+                    (trackHeads.get(0).getBranchCode(), "2", "2", "跟单号：" + trackNos, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success(trackHeads, TRACK_HEAD_SUCCESS_MESSAGE);
         } else {
             return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);

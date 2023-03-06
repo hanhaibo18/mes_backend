@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -69,30 +68,28 @@ public class OperationLogAspect {
                 lineStore = (LineStore) object;
             }
         }
-        System.out.println("-------------------1");
-        actionService.saveAction(ActionUtil.buildAction("", "", "", "订单号：" + "", getIpAddress(request)));
         //获取操作
         OperationLog myLog = method.getAnnotation(OperationLog.class);
-//        if (myLog != null) {
-//            String value = myLog.value();
-//            if ("saveAction".equals(value)) {
-//                String actionType = myLog.actionType();
-//                String actionItem = myLog.actionItem();
-//                if (order != null) {
-//                    saveAction.saveAction(ActionUtil.buildAction
-//                            (order.getBranchCode(), actionType, actionItem, "订单号：" + order.getOrderSn(), getIpAddress(request)));
-//                } else if (plan != null) {
-//                    saveAction.saveAction(ActionUtil.buildAction
-//                            (plan.getBranchCode(), actionType, actionItem, "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
-//                } else if (trackHead != null) {
-//                    saveAction.saveAction(ActionUtil.buildAction
-//                            (trackHead.getBranchCode(), actionType, actionItem, "跟单号：" + trackHead.getTrackNo(), getIpAddress(request)));
-//                } else if (lineStore != null) {
-//                    saveAction.saveAction(ActionUtil.buildAction
-//                            (lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
-//                }
-//            }
-//        }
+        if (myLog != null) {
+            String value = myLog.value();
+            if ("saveAction".equals(value)) {
+                String actionType = myLog.actionType();
+                String actionItem = myLog.actionItem();
+                if (order != null) {
+                    actionService.saveAction(ActionUtil.buildAction
+                            (order.getBranchCode(), actionType, actionItem, "订单号：" + order.getOrderSn(), getIpAddress(request)));
+                } else if (plan != null) {
+                    actionService.saveAction(ActionUtil.buildAction
+                            (plan.getBranchCode(), actionType, actionItem, "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
+                } else if (trackHead != null) {
+                    actionService.saveAction(ActionUtil.buildAction
+                            (trackHead.getBranchCode(), actionType, actionItem, "跟单号：" + trackHead.getTrackNo(), getIpAddress(request)));
+                } else if (lineStore != null) {
+                    actionService.saveAction(ActionUtil.buildAction
+                            (lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
+                }
+            }
+        }
         //获取请求的类名
         String className = joinPoint.getTarget().getClass().getName();
         //获取请求的方法名

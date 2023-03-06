@@ -12,6 +12,7 @@ import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.ActionUtil;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.dao.TrackFlowMapper;
 import com.richfit.mes.produce.entity.OrderDto;
@@ -236,7 +237,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         this.removeById(order);
         //操作日志记录
         actionService.saveAction(ActionUtil.buildAction
-                (order.getBranchCode(), "2", "0", "订单号：" + order.getOrderSn(), request.getRemoteAddr()));
+                (order.getBranchCode(), "2", "0", "订单号：" + order.getOrderSn(), OperationLogAspect.getIpAddress(request)));
         return order;
     }
 

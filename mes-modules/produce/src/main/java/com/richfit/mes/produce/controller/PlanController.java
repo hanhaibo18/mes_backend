@@ -21,6 +21,7 @@ import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.service.*;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -187,6 +189,7 @@ public class PlanController extends BaseController {
         }
         return CommonResult.success(planList);
     }
+
     @ApiOperation(value = "入库品数量统计", notes = "入库品数量统计")
     @PostMapping("/select_track_store_count")
     public CommonResult selectTrackStoreCount(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) {
@@ -268,7 +271,7 @@ public class PlanController extends BaseController {
         }
 
         actionService.saveAction(ActionUtil.buildAction
-                (plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo(), request.getRemoteAddr()));
+                (plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo(), OperationLogAspect.getIpAddress(request)));
         //删除扩展字段
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("plan_id", id);
@@ -342,5 +345,39 @@ public class PlanController extends BaseController {
             planService.planData(plan.getId());
         }
         return CommonResult.success(null);
+    }
+
+    /**
+     * 获取IP地址
+     */
+    public static String getIpAddress(HttpServletRequest request) {
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+            if ("127.0.0.1".equals(ipAddress) || "0:0:0:0:0:0:0:1".equals(ipAddress)) {
+                // 根据网卡取本机配置的IP
+                InetAddress inet = null;
+                try {
+                    inet = InetAddress.getLocalHost();
+                } catch (Exception e) {
+                }
+                if (inet.getHostAddress() != null) {
+                    ipAddress = inet.getHostAddress();
+                }
+            }
+        }
+        // 对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
+        if (ipAddress != null && ipAddress.length() > 15) {
+            if (ipAddress.indexOf(",") > 0) {
+                ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
+            }
+        }
+        return ipAddress;
     }
 }
