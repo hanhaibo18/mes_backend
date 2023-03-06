@@ -68,12 +68,6 @@
             <version>2.3.23</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.richfit.mes</groupId>
-            <artifactId>common-operation-log</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>

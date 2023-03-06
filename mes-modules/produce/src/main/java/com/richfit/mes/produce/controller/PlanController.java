@@ -12,7 +12,6 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.log.aop.OperationLog;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -21,6 +20,8 @@ import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLog;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.PlanDto;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.service.*;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -187,6 +189,7 @@ public class PlanController extends BaseController {
         }
         return CommonResult.success(planList);
     }
+
     @ApiOperation(value = "入库品数量统计", notes = "入库品数量统计")
     @PostMapping("/select_track_store_count")
     public CommonResult selectTrackStoreCount(@ApiParam(value = "计划列表", required = true) @RequestBody List<Plan> planList) {
@@ -268,7 +271,7 @@ public class PlanController extends BaseController {
         }
 
         actionService.saveAction(ActionUtil.buildAction
-                (plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo(), request.getRemoteAddr()));
+                (plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo(), OperationLogAspect.getIpAddress(request)));
         //删除扩展字段
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("plan_id", id);

@@ -1,13 +1,12 @@
-package com.richfit.mes.common.log.aop;
+package com.richfit.mes.produce.aop;
 
 
-import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.log.provider.ProduceServiceClient;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.ActionUtil;
+import com.richfit.mes.produce.service.ActionService;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -30,13 +28,13 @@ import java.net.InetAddress;
 @Component
 public class OperationLogAspect {
 
-    @Resource
-    private ProduceServiceClient saveAction;
+    @Autowired
+    private ActionService actionService;
 
 
     //定义切点 @Pointcut
     //在注解的位置切入代码
-    @Pointcut("@annotation( com.richfit.mes.common.log.aop.OperationLog)")
+    @Pointcut("@annotation(OperationLog)")
     public void logPoinCut() {
     }
 
@@ -78,16 +76,16 @@ public class OperationLogAspect {
                 String actionType = myLog.actionType();
                 String actionItem = myLog.actionItem();
                 if (order != null) {
-                    saveAction.saveAction(ActionUtil.buildAction
+                    actionService.saveAction(ActionUtil.buildAction
                             (order.getBranchCode(), actionType, actionItem, "订单号：" + order.getOrderSn(), getIpAddress(request)));
                 } else if (plan != null) {
-                    saveAction.saveAction(ActionUtil.buildAction
+                    actionService.saveAction(ActionUtil.buildAction
                             (plan.getBranchCode(), actionType, actionItem, "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
                 } else if (trackHead != null) {
-                    saveAction.saveAction(ActionUtil.buildAction
+                    actionService.saveAction(ActionUtil.buildAction
                             (trackHead.getBranchCode(), actionType, actionItem, "跟单号：" + trackHead.getTrackNo(), getIpAddress(request)));
                 } else if (lineStore != null) {
-                    saveAction.saveAction(ActionUtil.buildAction
+                    actionService.saveAction(ActionUtil.buildAction
                             (lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
                 }
             }
