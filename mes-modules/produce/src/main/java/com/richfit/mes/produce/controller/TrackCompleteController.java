@@ -675,6 +675,7 @@ public class TrackCompleteController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tiId)) {
             queryWrapper.eq("ti_id", tiId);
         }
+        queryWrapper.lt("completed_qty", 0);
         queryWrapper.orderByAsc("modify_time");
         List<TrackComplete> result = trackCompleteMapper.queryList(queryWrapper);
         return CommonResult.success(result, "操作成功！");
