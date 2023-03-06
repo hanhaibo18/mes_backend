@@ -100,7 +100,7 @@ public class HotDemandController extends BaseController {
             queryWrapper.eq("voucher_no", hotDemandParam.getVoucherNo());
         }
         if (StringUtils.isNotEmpty(hotDemandParam.getSubmitOrderOrg())) {//提单单位
-            queryWrapper.eq("submit_order_org", hotDemandParam.getSubmitOrderOrg());
+            queryWrapper.eq("submit_order_org_id", hotDemandParam.getSubmitOrderOrg());
         }
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkblankType())) {//毛坯类型
             queryWrapper.eq("workblank_type", hotDemandParam.getWorkblankType());
