@@ -773,7 +773,8 @@ public class SequenceController extends BaseController {
     @PostMapping("/assign/save")
     public CommonResult<Boolean> assignSave(@RequestBody OperationAssign assign) {
         //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
-        if(StringUtils.isNullOrEmpty(assign.getUserId())){
+        //热处理派工派到班组  所以没有人员 （assign.getAssignPersons()为空）
+        if(StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())){
             StringBuilder userId = new StringBuilder();
             StringBuilder userName = new StringBuilder();
             for (AssignPerson assignPerson : assign.getAssignPersons()) {
@@ -786,8 +787,8 @@ public class SequenceController extends BaseController {
             }
             assign.setUserId(String.valueOf(userId));
             assign.setSiteName(String.valueOf(userName));
-            assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         }
+        assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(operationAssignService.save(assign), "操作成功！");
     }
 

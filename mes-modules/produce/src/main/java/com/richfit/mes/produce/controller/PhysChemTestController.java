@@ -51,6 +51,11 @@ public class PhysChemTestController extends BaseController {
     private MaterialInspectionServiceClient materialInspectionServiceClient;
     @Autowired
     private CodeRuleService codeRuleService;
+    //租户id
+    private final static String TENANT_ID = "12345678901234567890123456789100";
+    //
+    private final static String BRANCH_CODE = "BOMCO_ZJ_JCS";
+
 
     @ApiOperation(value = "创建或修改理化检测委托单", notes = "创建或修改理化检测委托单")
     @ApiImplicitParam(name = "physChemOrderInner", value = "委托单", paramType = "body", dataType = "physChemOrderInner")
@@ -67,8 +72,8 @@ public class PhysChemTestController extends BaseController {
         //新增委托（需要生产委托单号、报告号）
         if(!StringUtils.isNullOrEmpty(physChemOrderInner.getStatus()) && physChemOrderInner.getStatus().equals("1") && StringUtils.isNullOrEmpty(physChemOrderInner.getOrderNo())){
             //获取号
-            String orderNo = codeRuleService.gerCode("m_order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
-            String reportNo = codeRuleService.gerCode("m_report_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode()).getCurValue();
+            String orderNo = codeRuleService.gerCode("m_order_no", null, null, TENANT_ID, BRANCH_CODE).getCurValue();
+            String reportNo = codeRuleService.gerCode("m_report_no", null, null, TENANT_ID, BRANCH_CODE).getCurValue();
             physChemOrderInner.setOrderNo(orderNo);
             physChemOrderInner.setReportNo(reportNo);
         }
