@@ -11,11 +11,11 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.log.aop.OperationLog;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.entity.OrderDto;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.OrderService;
@@ -62,6 +62,7 @@ public class OrderController extends BaseController {
             @ApiImplicitParam(name = "queryDto", value = "订单属性", paramType = "BasePageDto")
     })
     @GetMapping("/query/page")
+    @OperationLog
     public CommonResult queryByCondition(BasePageDto<String> queryDto) throws GlobalException {
 
         OrderDto orderDto = null;

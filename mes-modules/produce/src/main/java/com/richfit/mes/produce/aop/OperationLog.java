@@ -1,4 +1,4 @@
-package com.richfit.mes.common.log.aop;
+package com.richfit.mes.produce.aop;
 
 import java.lang.annotation.*;
 
