@@ -31,7 +31,7 @@ interface:
     #北石ERP系统数据库密码
     password: qwe@123
     #北石ERP系统数据库连接（?前URL）
-    sql-server-url: jdbc:jtds:sqlserver://11.2.107.134:1433;DatabaseName=BPMF01
+    sql-server-url: jdbc:jtds:sqlserver://172.29.11.192:1433;DatabaseName=BPMF01
     #ERP北石工时推送URL
     work-hour-sync: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF024/service/PS/PS_ZC80_PPIF024
     #查询生产订单
