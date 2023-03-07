@@ -212,10 +212,11 @@ public class LineStoreController extends BaseController {
             materialNos = materialNos + lineStore.getMaterialNo() + ",";
         }
         materialNos = materialNos.substring(0, materialNos.lastIndexOf(","));
+        String branchCode = lineStoreService.getById(ids.get(0)).getBranchCode();
         boolean bool = lineStoreService.removeByIds(ids);
         if (bool) {
             actionService.saveAction(ActionUtil.buildAction
-                    (lineStoreService.getById(ids.get(0)).getBranchCode(), "2", "3", "删除入库，物料号:" + materialNos, OperationLogAspect.getIpAddress(request)));
+                    (branchCode, "2", "3", "删除入库，物料号:" + materialNos, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success(true, SUCCESS_MESSAGE);
         } else {
             return CommonResult.failed(FAILED_MESSAGE);
