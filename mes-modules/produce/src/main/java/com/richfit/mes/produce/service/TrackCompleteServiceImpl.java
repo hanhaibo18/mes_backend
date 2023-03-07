@@ -211,9 +211,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             //不质检也计算工时
                             sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
                         }
-                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
+                        sumTotalHours = sumTotalHours + track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        track.setTotalHours(new BigDecimal(track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
                         track0.setUserName(tenantUserVo.getEmplName());
                         track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
