@@ -175,6 +175,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
                         //空校验
+                        //TODO:赋值问题
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
                             track.setPrepareEndHours(0.00);

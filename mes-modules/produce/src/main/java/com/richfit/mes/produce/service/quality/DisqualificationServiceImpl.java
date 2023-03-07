@@ -418,6 +418,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 //申请人最后一步填写意见
                 saveRecord(id, UnitEnum.getMessage(1) + "提交。返修情况:" + disqualificationDto.getQualityControlOpinion(), type, finalResult.getDisqualificationName());
                 break;
+            default:
+                break;
         }
     }
 
@@ -465,7 +467,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error(e.getMessage());
-                throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
+                throw new GlobalException("获取申请单编号错误:disqualification_no", ResultCode.FAILED);
             }
             disqualificationItemVo.setType("0");
             disqualificationItemVo.setSourceType(0);
@@ -503,6 +505,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         }
         //2022/12/27  zhiqiang.lu  缺失预设值信息
         disqualificationItemVo.setTrackItemId(tiId);
+        disqualificationItemVo.setBranchCode(branchCode);
         return disqualificationItemVo;
     }
 
