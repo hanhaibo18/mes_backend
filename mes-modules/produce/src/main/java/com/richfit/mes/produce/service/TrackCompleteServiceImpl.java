@@ -141,6 +141,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
             Map<String, TenantUserVo> stringTenantUserVoMap = systemServiceClient.queryByUserAccountList(userIdList);
+            //根据工序Id查询质检记录 2023/3/7 移至到完工查询，减少查询次数
+            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
+            queryWrapperCheck.in("ti_id", new ArrayList<>(tiIdList));
+            queryWrapperCheck.orderByDesc("modify_time");
+            List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
+            Map<String, List<TrackCheck>> trackChecksMap = trackCheckList.stream().filter(complete -> StrUtil.isNotBlank(complete.getTiId())).collect(Collectors.groupingBy(TrackCheck::getTiId));
             for (String id : userIdList) {
                 List<TrackComplete> trackCompletes = completesMap.get(id);
                 //用来展示数据列表
@@ -196,15 +202,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         if (trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() == 1)) {
                             sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
                         }
-                        //根据工序Id查询质检记录
-                        QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
-                        queryWrapperCheck.eq("ti_id", trackItem.getId());
-                        queryWrapperCheck.orderByAsc("modify_time");
-                        List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
-                            if (trackCheckList != null && trackCheckList.size() > 0) {
-                                QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
+                            List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
+                            if (trackChecks != null && trackChecks.size() > 0) {
+                                QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
                                 if (rules != null && rules.getIsGiveTime() == 1) {
                                     sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
                                 }
