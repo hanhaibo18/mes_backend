@@ -42,6 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -1205,6 +1207,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 t.setProjectBomGroup(plan.getProjectBomGroup());
 
                 trackHeadMapper.updateById(t);
+                HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+                actionService.saveAction(ActionUtil.buildAction
+                        (t.getBranchCode(), "1", "2", "跟单号：" + t.getTrackNo(), OperationLogAspect.getIpAddress(request)));
 
                 //修改老跟单匹配计划
                 planService.planData(trackHeadOld.getWorkPlanId());
@@ -1451,7 +1456,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         TrackHead trackHead = this.getOne(queryWrapper);
         trackHead.setPriority(priority);
-        return this.updateById(trackHead);
+        boolean result = this.updateById(trackHead);
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        actionService.saveAction(ActionUtil.buildAction
+                (trackHead.getBranchCode(), "1", "2", "修改跟单优先级，跟单号：" + trackHead.getTrackNo(), OperationLogAspect.getIpAddress(request)));
+        return result;
     }
 
     @Override

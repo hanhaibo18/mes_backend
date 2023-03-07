@@ -69,6 +69,10 @@ public class PhyChemTestService{
     private final static String YES_REPORT_STATUS = "1";
     //材料检测部门未生成报告
     private final static String NO_REPORT_STATUS = "0";
+    //租户id
+    private final static String TENANT_ID = "12345678901234567890123456789100";
+    //
+    private final static String BRANCH_CODE = "BOMCO_ZJ_JCS";
 
 
     /**
@@ -104,9 +108,9 @@ public class PhyChemTestService{
         if(physChemOrderInner.getStatus().equals("1")){
             if((inners.size()>0 && StringUtils.isNullOrEmpty(inners.get(0).getOrderNo())) || inners.size()==0){
                 //保存委托单号
-                Code.update("m_order_no",physChemOrderInner.getOrderNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+                Code.update("m_order_no",physChemOrderInner.getOrderNo(),TENANT_ID, BRANCH_CODE,codeRuleService);
                 //保存报告号
-                Code.update("m_report_no",physChemOrderInner.getReportNo(),SecurityUtils.getCurrentUser().getTenantId(), physChemOrderInner.getBranchCode(),codeRuleService);
+                Code.update("m_report_no",physChemOrderInner.getReportNo(),TENANT_ID, BRANCH_CODE,codeRuleService);
             }
         }
         //插入新的数据
@@ -202,8 +206,8 @@ public class PhyChemTestService{
         //修改委托单号、报告号、状态
         for (List<PhysChemOrderInner> value : groups.values()) {
             if(StringUtils.isNullOrEmpty(value.get(0).getOrderNo())){
-                String orderNo = Code.valueOnUpdate("m_order_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
-                String reportNo = Code.valueOnUpdate("m_report_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+                String orderNo = Code.valueOnUpdate("m_order_no", TENANT_ID, BRANCH_CODE, codeRuleService);
+                String reportNo = Code.valueOnUpdate("m_report_no", TENANT_ID, BRANCH_CODE, codeRuleService);
                 for (PhysChemOrderInner physChemOrderInner : value) {
                     physChemOrderInner.setOrderNo(orderNo);
                     physChemOrderInner.setReportNo(reportNo);

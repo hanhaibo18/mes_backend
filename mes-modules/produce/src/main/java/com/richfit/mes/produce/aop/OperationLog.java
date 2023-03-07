@@ -17,4 +17,10 @@ public @interface OperationLog {
     String actionType() default "";
     @ApiParam(value = "0-订单，1-计划，2-跟单，3-库存")
     String actionItem() default "";
+    @ApiParam(value = "是否是计划号")
+    boolean isPlanId() default false;
+    @ApiParam(value = "是否是跟单")
+    boolean isTrackHead() default false;
+    @ApiParam(value = "是否是订单")
+    boolean isOrder() default false;
 }

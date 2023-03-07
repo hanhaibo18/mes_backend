@@ -98,13 +98,15 @@ public class TrackHeadController extends BaseController {
     @ApiOperation(value = "取消计划", notes = "通过跟单id、取消计划")
     @PostMapping("/plan_cancel/{id}")
     public void planCancel(
-            @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
+            @ApiParam(value = "跟单号", required = true) @PathVariable String id, HttpServletRequest request) throws Exception {
         TrackHead trackHead = trackHeadService.getById(id);
         String workPlanId = trackHead.getWorkPlanId();
         trackHead.setWorkPlanId("");
         trackHead.setWorkPlanNo("");
         trackHead.setProductionOrder("");
         trackHeadService.updateById(trackHead);
+        actionService.saveAction(ActionUtil.buildAction
+                (trackHead.getBranchCode(), "1", "2", "取消跟单计划，跟单号：" + trackHead.getTrackNo(), OperationLogAspect.getIpAddress(request)));
         planService.planData(workPlanId);
     }
 
@@ -206,7 +208,8 @@ public class TrackHeadController extends BaseController {
     @PutMapping("/track_head/change_status")
     public CommonResult changeTrackHeadStatus(@ApiParam(value = "0修改审批状态  1修改跟单状态", required = true) @RequestParam String type,
                                               @ApiParam(value = "状态代码", required = true) @RequestParam String status,
-                                              @ApiParam(value = "跟新信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
+                                              @ApiParam(value = "跟新信息列表", required = true) @RequestBody List<TrackHead> trackHeads,
+                                              HttpServletRequest request) {
         if ("0".equals(type)) { //修改审批状态
             trackHeads.stream().forEach(trackHead -> {
                 trackHead.setApprovalStatus(status);
@@ -220,6 +223,10 @@ public class TrackHeadController extends BaseController {
 
         boolean bool = trackHeadService.updateBatchById(trackHeads);
         if (bool) {
+            List<String> trackNoList = trackHeads.stream().map(TrackHead::getTrackNo).collect(Collectors.toList());
+            String branchCode = trackHeads.get(0).getBranchCode();
+            actionService.saveAction(ActionUtil.buildAction
+                    (branchCode, "1", "2", "批量修改计划号:" + trackNoList, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success(trackHeads, TRACK_HEAD_SUCCESS_MESSAGE);
         } else {
             return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
@@ -236,6 +243,8 @@ public class TrackHeadController extends BaseController {
             for (TrackHead trackHead : trackHeads) {
                 trackNos += trackHead.getTrackNo() + ",";
             }
+            //去掉最后一个 ","
+            trackNos = trackNos.substring(0, trackNos.lastIndexOf(","));
             actionService.saveAction(ActionUtil.buildAction
                     (trackHeads.get(0).getBranchCode(), "2", "2", "跟单号：" + trackNos, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success(trackHeads, TRACK_HEAD_SUCCESS_MESSAGE);
