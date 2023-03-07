@@ -74,7 +74,8 @@ public class OrderServiceImpl implements OrderService {
                 if (StringUtils.isNotBlank(ta010)) {
                     p.setEndTime(sdf.parse(ta010));
                 }
-                p.setMaterialDesc(mb002);
+                //跟随宝鸡订单描述拼接，图号+空格+订单描述
+                p.setMaterialDesc(ta006+" "+mb002);
                 orders.add(p);
             }
             log.info("ERP工单查询成功------");
