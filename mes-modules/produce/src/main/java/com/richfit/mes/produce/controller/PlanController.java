@@ -12,7 +12,6 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -33,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -248,6 +246,7 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "计划关闭", notes = "计划关闭")
     @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
+    @OperationLog(actionType = "1", actionItem = "1")
     @PostMapping("/close")
     public CommonResult<Object> close(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -305,7 +304,9 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "拆分计划", notes = "拆分计划")
     @ApiImplicitParam(name = "planSplitDto", value = "原计划", required = true, dataType = "PlanSplitDto", paramType = "body")
     @PostMapping("/splitPlan")
-    public CommonResult<Object> splitPlan(@RequestBody PlanSplitDto planSplitDto) throws GlobalException {
+    public CommonResult<Object> splitPlan(@RequestBody PlanSplitDto planSplitDto, HttpServletRequest request) throws GlobalException {
+        actionService.saveAction(ActionUtil.buildAction
+                (planSplitDto.getOldPlan().getBranchCode(), "4", "1", "拆分计划，原计划号：" + planSplitDto.getOldPlan().getProjNum(), OperationLogAspect.getIpAddress(request)));
         return planService.splitPlan(planSplitDto);
     }
 
@@ -325,15 +326,18 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "撤销计划", notes = "撤销计划")
     @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
     @GetMapping("/backoutPlan/{id}")
-    public CommonResult<Object> backoutPlan(@PathVariable String id) throws GlobalException {
+    public CommonResult<Object> backoutPlan(@PathVariable String id, HttpServletRequest request) throws GlobalException {
+        Plan plan = planService.getById(id);
+        actionService.saveAction(ActionUtil.buildAction
+                (plan.getBranchCode(), "3", "1", "撤销计划，原计划id:" + plan.getProjNum(), OperationLogAspect.getIpAddress(request)));
         return planService.backoutPlan(id);
     }
 
     @ApiOperation(value = "导入计划", notes = "根据Excel文档导入计划")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
-    public CommonResult importExcel(@RequestParam("file") MultipartFile file) throws IOException {
-        planService.exportPlan(file);
+    public CommonResult importExcel(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
+        planService.exportPlan(file, request);
         return CommonResult.success(null);
     }
 

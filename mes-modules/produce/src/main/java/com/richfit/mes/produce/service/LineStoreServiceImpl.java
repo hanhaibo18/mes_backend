@@ -23,9 +23,11 @@ import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -36,8 +38,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
 
@@ -82,6 +87,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Autowired
     private PublicService publicService;
+
+    @Autowired
+    private ActionService actionService;
 
     @Resource
     private TrackHeadRelationService trackHeadRelationService;
@@ -233,7 +241,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         //0 原合格证推送状态改为已推送
         certificateService.certPushComplete(certificate);
-
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         //1 保存新合格证信息
 
 
@@ -253,6 +261,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 changeStatus(lineStore);
                 this.save(lineStore);
+                //记录入库日志
+                actionService.saveAction(ActionUtil.buildAction
+                        (lineStore.getBranchCode(), "0", "3", "物料号：" + lineStore.getMaterialNo(), OperationLogAspect.getIpAddress(request)));
             }
             //3 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
             //3 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
@@ -364,7 +375,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
 //                String workblankNo = oldWorkblankNo + "" + i;
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
-                    workblankNo +=suffixNo;
+                    workblankNo += suffixNo;
                 }
                 entity.setWorkblankNo(workblankNo);
                 entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());
