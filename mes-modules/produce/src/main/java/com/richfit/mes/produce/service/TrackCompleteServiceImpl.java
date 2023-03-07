@@ -203,9 +203,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         List<TrackCheck> trackCheckList = trackCheckService.list(queryWrapperCheck);
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
-                            QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
-                            if (rules != null && rules.getIsGiveTime() == 1) {
-                                sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            if (trackCheckList != null && trackCheckList.size() > 0) {
+                                QualityInspectionRules rules = rulesMap.get(trackCheckList.get(0).getResult());
+                                if (rules != null && rules.getIsGiveTime() == 1) {
+                                    sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                }
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
                             //不质检也计算工时
