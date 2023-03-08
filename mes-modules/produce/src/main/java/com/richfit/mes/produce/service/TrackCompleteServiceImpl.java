@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -127,13 +128,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteService.list(queryWrapper);
         PageInfo<TrackHead> page = new PageInfo(completes);
-        System.out.println("------------------------" + page.getPages());
         for (int i = 1; i <= page.getPages(); i++) {
             PageHelper.startPage(i, 1000);
             completes.addAll(trackCompleteService.list(queryWrapper));
         }
-        System.out.println("------------------------" + completes.size());
-        List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+        List<TrackComplete> summary = new ArrayList<>();
+        List<TrackComplete> details = new ArrayList<>();
         if (!CollectionUtils.isEmpty(completes)) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
@@ -252,7 +252,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setQualityResult(trackItem.getRuleName());
                         track.setOptNo(trackItem.getOptNo());
                         track.setParentId(id);
-                        trackCompleteShowList.add(track);
+                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
+                        details.add(track);
                     }
                     track0.setId(id);
                     //准备工时
@@ -265,14 +266,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     track0.setTrackCompleteList(trackCompleteShowList);
                     //判断是否包含叶子结点
                     track0.setIsLeafNodes(!CollectionUtils.isEmpty(trackCompletes));
-                    emptyTrackComplete.add(track0);
-                    emptyTrackComplete.addAll(trackCompleteShowList);
+                    summary.add(track0);
                 }
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
-//        stringObjectHashMap.put("records", completes);
-        stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
+        stringObjectHashMap.put("details", details);
+        stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
     }
 
