@@ -315,6 +315,14 @@ public class TenantUserController extends BaseController {
         return tenantUserService.queryByUserAccountList(userAccountList);
     }
 
+    @ApiOperation(value = "根据用户编码List获取人员信息", notes = "根据用户编码List获取人员信息")
+    @ApiImplicitParam(name = "userAccountList", value = "用户编码List", required = true, dataType = "List<String>")
+    @PostMapping("/queryByUserAccountListInner")
+    @Inner
+    public Map<String, TenantUserVo> queryByUserAccountListInner(@RequestBody List<String> userAccountList) {
+        return tenantUserService.queryByUserAccountList(userAccountList);
+    }
+
     @ApiOperation(value = "根据组织机构获取质检人员", notes = "根据组织机构获取质检人员")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
     @GetMapping("/queryByBranchCode")

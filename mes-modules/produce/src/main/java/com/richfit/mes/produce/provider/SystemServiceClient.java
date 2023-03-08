@@ -34,6 +34,9 @@ public interface SystemServiceClient {
     @PostMapping("/api/sys/user/queryByUserAccountList")
     public Map<String, TenantUserVo> queryByUserAccountList(@RequestBody List<String> userAccountList);
 
+    @PostMapping("/api/sys/user/queryByUserAccountListInner")
+    public Map<String, TenantUserVo> queryByUserAccountListInner(@RequestBody List<String> userAccountList, @RequestHeader(value = SecurityConstants.FROM) String header);
+
     /**
      * 功能描述: 根据Id删除文件
      *
@@ -71,6 +74,9 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesList")
     public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(@RequestParam("branchCode") String branchCode);
+
+    @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesListInner")
+    public List<QualityInspectionRules> queryQualityInspectionRulesListInner(@RequestParam("branchCode") String branchCode, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesById")
     public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(@RequestParam("id") String id);
@@ -135,6 +141,6 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/users_account")
     public CommonResult<Map<String, String>> usersAccount();
 
-    @PostMapping(value ="/api/sys/user/queryUserByBranchCodes")
+    @PostMapping(value = "/api/sys/user/queryUserByBranchCodes")
     public CommonResult<List<TenantUserVo>> queryUserByBranchCodes(@RequestBody List<String> branchCodeList);
 }

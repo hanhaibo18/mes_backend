@@ -1,12 +1,17 @@
 package com.richfit.mes.produce.aop;
 
 
+import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.OrderService;
+import com.richfit.mes.produce.service.PlanService;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -30,6 +35,10 @@ public class OperationLogAspect {
 
     @Autowired
     private ActionService actionService;
+    @Autowired
+    private PlanService planService;
+    @Autowired
+    private OrderService orderService;
 
 
     //定义切点 @Pointcut
@@ -55,17 +64,23 @@ public class OperationLogAspect {
         TrackHead trackHead = null;
         //库存
         LineStore lineStore = null;
+        //计划id
+        String id = null;
         //获取参数列表
         Object[] objects = joinPoint.getArgs();
         for (Object object : objects) {
-            if (object.getClass() == Order.class) {
-                order = (Order) object;
-            } else if (object.getClass() == Plan.class) {
-                plan = (Plan) object;
-            } else if (object.getClass() == TrackHead.class) {
-                trackHead = (TrackHead) object;
-            } else if (object.getClass() == LineStore.class) {
-                lineStore = (LineStore) object;
+            if (object != null) {
+                if (object.getClass() == Order.class) {
+                    order = (Order) object;
+                } else if (object.getClass() == Plan.class) {
+                    plan = (Plan) object;
+                } else if (object.getClass() == TrackHead.class) {
+                    trackHead = (TrackHead) object;
+                } else if (object.getClass() == LineStore.class) {
+                    lineStore = (LineStore) object;
+                } else if (object.getClass() == String.class) {
+                    id = (String) object;
+                }
             }
         }
         //获取操作
@@ -75,18 +90,30 @@ public class OperationLogAspect {
             if ("saveAction".equals(value)) {
                 String actionType = myLog.actionType();
                 String actionItem = myLog.actionItem();
+                boolean isPlanId = myLog.isPlanId();
+                boolean idOrder = myLog.isOrder();
                 if (order != null) {
                     actionService.saveAction(ActionUtil.buildAction
                             (order.getBranchCode(), actionType, actionItem, "订单号：" + order.getOrderSn(), getIpAddress(request)));
                 } else if (plan != null) {
                     actionService.saveAction(ActionUtil.buildAction
                             (plan.getBranchCode(), actionType, actionItem, "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
-                } else if (trackHead != null) {
+                } else if (trackHead != null && !idOrder) {
                     actionService.saveAction(ActionUtil.buildAction
                             (trackHead.getBranchCode(), actionType, actionItem, "跟单号：" + trackHead.getTrackNo(), getIpAddress(request)));
                 } else if (lineStore != null) {
                     actionService.saveAction(ActionUtil.buildAction
                             (lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
+                } else if (isPlanId && !StringUtils.isNullOrEmpty(id)) {
+                    Plan curPlan = planService.getById(id);
+                    if (curPlan == null){
+                        throw new GlobalException("planId error", ResultCode.FAILED);
+                    }
+                    actionService.saveAction(ActionUtil.buildAction
+                            (curPlan.getBranchCode(), "1", "1", "计划号：" + curPlan.getProjNum(), getIpAddress(request)));
+                } else if (idOrder && trackHead != null) {
+                    actionService.saveAction(ActionUtil.buildAction
+                            (trackHead.getBranchCode(), "1", "0", "订单号：" + trackHead.getProductionOrder(), getIpAddress(request)));
                 }
             }
         }

@@ -19,9 +19,11 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.store.LineStoreSum;
 import com.richfit.mes.common.model.produce.store.LineStoreSumZp;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ActionService;
@@ -194,21 +196,27 @@ public class LineStoreController extends BaseController {
 
     @ApiOperation(value = "删除入库信息", notes = "删除入库信息")
     @DeleteMapping("/line_store")
-    public CommonResult deleteLineStore(@ApiParam(value = "料单Id数组") @RequestBody List<String> ids) {
+    public CommonResult deleteLineStore(@ApiParam(value = "料单Id数组") @RequestBody List<String> ids, HttpServletRequest request) {
 
+        String materialNos = "";
         //增加check逻辑  状态不是原始入库的，不能删除
         for (String id : ids) {
             LineStore lineStore = lineStoreService.getById(id);
+            lineStore.getMaterialNo();
             if (lineStore.getInputType().equals(StoreInputTypeEnum.CERT_ACCEPT.getCode())) {
                 return CommonResult.failed("来料接收料单不能删除,编号:" + lineStore.getWorkblankNo());
             }
             if (!isStatusFinish(lineStore)) {
                 return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT + ",编号:" + lineStore.getWorkblankNo());
             }
+            materialNos = materialNos + lineStore.getMaterialNo() + ",";
         }
-
+        materialNos = materialNos.substring(0, materialNos.lastIndexOf(","));
+        String branchCode = lineStoreService.getById(ids.get(0)).getBranchCode();
         boolean bool = lineStoreService.removeByIds(ids);
         if (bool) {
+            actionService.saveAction(ActionUtil.buildAction
+                    (branchCode, "2", "3", "删除入库，物料号:" + materialNos, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success(true, SUCCESS_MESSAGE);
         } else {
             return CommonResult.failed(FAILED_MESSAGE);
@@ -678,6 +686,7 @@ public class LineStoreController extends BaseController {
 
             boolean bool = lineStoreService.saveBatch(lineStores);
             if (bool) {
+
                 return CommonResult.success(null, "导入成功!");
             } else {
                 return CommonResult.failed("操作失败，请重试！");

@@ -3,6 +3,7 @@ package com.richfit.mes.sys.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.sys.service.QualityInspectionRulesService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -72,6 +73,14 @@ public class QualityInspectionRulesController {
     @GetMapping("/queryQualityInspectionRulesList")
     public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(String branchCode) {
         return CommonResult.success(qualityInspectionRulesService.queryQualityInspectionRulesList(branchCode));
+    }
+
+    @ApiOperation(value = "查询质量规则列表", notes = "根据车间编码查询")
+    @ApiImplicitParam(name = "branchCode", value = "车间", dataType = "String", paramType = "query")
+    @GetMapping("/queryQualityInspectionRulesListInner")
+    @Inner
+    public List<QualityInspectionRules> queryQualityInspectionRulesListInner(String branchCode) {
+        return qualityInspectionRulesService.queryQualityInspectionRulesList(branchCode);
     }
 
     @ApiOperation(value = "查询质检规则", notes = "根据Id查询质检规则")

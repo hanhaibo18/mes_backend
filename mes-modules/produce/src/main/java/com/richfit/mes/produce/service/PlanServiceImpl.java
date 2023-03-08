@@ -17,7 +17,10 @@ import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLog;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
@@ -36,6 +39,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -84,7 +88,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     private TrackAssemblyService trackAssemblyService;
     @Autowired
     private PlanExtendMapper planExtendMapper;
-
+    @Autowired
+    private HotDemandService hotDemandService;
     /**
      * 功能描述: 物料齐套性检查
      *
@@ -279,6 +284,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @Date: 2022/7/8 11:37
      **/
     @Override
+    @OperationLog(isPlanId = true)
     public void planData(String planId) {
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planId)) {
             Plan plan = planMapper.selectById(planId);
@@ -367,6 +373,31 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     }
                 }
                 planMapper.updateById(plan);
+                //更新交付数量同时更新需求提报交付数量
+                this.updateDeliveryNum(plan);
+            }
+        }
+    }
+
+    /**
+     * 更新需求提拔交付数量
+     * @param plan
+     */
+    private void updateDeliveryNum(Plan plan) {
+        //热工分公司的数据需要更新需求提报表中的交付数量字段
+        if (plan.getTenantId().equals("12345678901234567890123456789001")){
+            QueryWrapper<HotDemand> demandQueryWrapper=new QueryWrapper<>();
+            demandQueryWrapper.eq("tenant_id", plan.getTenantId());
+            demandQueryWrapper.apply("(plan_id='"+ plan.getId() +"' or plan_id_model ='"+ plan.getId() +"')");
+            HotDemand hotDemand = hotDemandService.getOne(demandQueryWrapper);
+            if(!ObjectUtil.isEmpty(hotDemand)){
+                UpdateWrapper<HotDemand> updateWrapper =new UpdateWrapper<>();
+                int DeliveryNum= hotDemand.getDeliveryNum();
+                DeliveryNum+=plan.getDeliveryNum();
+                updateWrapper.set("delivery_num", DeliveryNum);
+                updateWrapper.eq("tenant_id", plan.getTenantId());
+                updateWrapper.apply("(plan_id='"+ plan.getId() +"' or plan_id_model ='"+ plan.getId() +"')");
+                hotDemandService.update(updateWrapper);
             }
         }
     }
@@ -421,19 +452,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             }
         }
         //获取计划的扩展信息
-        QueryWrapper<PlanExtend>queryWrapper=new QueryWrapper<>();
-        queryWrapper.eq("plan_id",plan.getId());
+        QueryWrapper<PlanExtend> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("plan_id", plan.getId());
         PlanExtend planExtend = planExtendMapper.selectOne(queryWrapper);
         boolean f = this.save(plan);
         this.planData(plan.getId());
-        if(ObjectUtil.isEmpty(planExtend)){
-            PlanExtend newplanExtend=new PlanExtend();
-            BeanUtils.copyProperties(plan,newplanExtend);
+        if (ObjectUtil.isEmpty(planExtend)) {
+            PlanExtend newplanExtend = new PlanExtend();
+            BeanUtils.copyProperties(plan, newplanExtend);
             newplanExtend.setPlanId(plan.getId());
             planExtendMapper.insert(newplanExtend);
-        }else {
+        } else {
             //修改扩信息
-            BeanUtils.copyProperties(plan,planExtend);
+            BeanUtils.copyProperties(plan, planExtend);
             planExtend.setPlanId(plan.getId());
             planExtendMapper.updateById(planExtend);
         }
@@ -587,7 +618,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     @Override
-    public void exportPlan(MultipartFile file) throws IOException {
+    public void exportPlan(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
         String[] fieldNames3 = {"isExport", "sortNo", "workNo", "drawNo", "drawNoName", "texture", "singleNumber", "projNum", "totalNumber"
                 , "blank", "remark", "prepareBy", "approvalBy", "auditBy", "branchCode", "inchargeOrg", "storeNumber", "processNum", "materialProductionUnit"
@@ -614,7 +645,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         && !StringUtils.isEmpty(t.getEndTime())      //交货期必填
                         && !StringUtils.isEmpty(t.getProjectNo());   //项目号必填
             }).collect(Collectors.toList());
-
             for (Plan plan : sheetList) {
                 plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 //车间代码判断，并取中文名称
@@ -663,6 +693,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setDeliveryNum(0);
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
+                actionService.saveAction(ActionUtil.buildAction
+                        (result.getData().getBranchCode(), "0", "1", "Excel导入计划单号：" + plan.getProjNum(), OperationLogAspect.getIpAddress(request)));
             }
             //保存计划列表
             this.saveBatch(sheetList);
@@ -700,24 +732,24 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Override
     public void planPackageExtend(List<Plan> planList) {
         //判空
-        if(CollectionUtils.isEmpty(planList)){
-           return;
+        if (CollectionUtils.isEmpty(planList)) {
+            return;
         }
         List<String> planIdList = planList.stream().map(x -> x.getId()).collect(Collectors.toList());
 
-        QueryWrapper<PlanExtend> queryWrapper=new QueryWrapper();
-        queryWrapper.in("plan_id",planIdList);
+        QueryWrapper<PlanExtend> queryWrapper = new QueryWrapper();
+        queryWrapper.in("plan_id", planIdList);
         //根据id查扩展表信息
         List<PlanExtend> planExtends = planExtendMapper.selectList(queryWrapper);
         //判空
-        if(CollectionUtils.isEmpty(planExtends)){
+        if (CollectionUtils.isEmpty(planExtends)) {
             return;
         }
         Map<String, PlanExtend> extendMap = planExtends.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
         for (Plan plan : planList) {
             PlanExtend planExtend = extendMap.get(plan.getId());
-            if(!ObjectUtil.isEmpty(planExtend)){
-                BeanUtils.copyProperties(planExtend,plan,"id");
+            if (!ObjectUtil.isEmpty(planExtend)) {
+                BeanUtils.copyProperties(planExtend, plan, "id");
             }
         }
     }

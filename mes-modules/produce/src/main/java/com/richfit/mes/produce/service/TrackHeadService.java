@@ -59,6 +59,14 @@ public interface TrackHeadService extends IService<TrackHead> {
     List<TrackHead> selectTrackFlowList(Map<String, String> map) throws Exception;
 
     /**
+     * 功能描述: 跟单分流信息查询
+     *
+     * @Author: linhui.long
+     * @Date: 2023/3/7 10:02
+     **/
+    List<TrackHeadPublicVo> selectTrackFlowInfoList(Map<String, String> map) throws Exception;
+
+    /**
      * 描述: 其他资料列表
      *
      * @Author: zhiqiang.lu
