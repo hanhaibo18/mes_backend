@@ -321,6 +321,17 @@ public class PhysChemOrderInnerController extends BaseController {
         return CommonResult.success(physChemOrderInnerService.update(updateWrapper));
     }
 
+    @ApiOperation(value = "删除委托单", notes = "删除委托单")
+    @ApiImplicitParam(name = "groupId", value = "委托单组id", required = true, paramType = "body", dataType = "list")
+    @GetMapping("/delete")
+    public CommonResult<Boolean> delete(@RequestParam String groupId){
+        QueryWrapper<PhysChemOrderInner> deleteWrapper = new QueryWrapper<>();
+        deleteWrapper.eq("group_id",groupId);
+        return CommonResult.success(physChemOrderInnerService.remove(deleteWrapper));
+    }
+
+
+
 
 
 
