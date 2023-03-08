@@ -125,13 +125,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        PageHelper.startPage(1, 1000);
+//        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteService.list(queryWrapper);
-        PageInfo<TrackHead> page = new PageInfo(completes);
-        for (int i = 1; i <= page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteService.list(queryWrapper));
-        }
+//        PageInfo<TrackHead> page = new PageInfo(completes);
+//        for (int i = 1; i <= page.getPages(); i++) {
+//            PageHelper.startPage(i, 1000);
+//            completes.addAll(trackCompleteService.list(queryWrapper));
+//        }
         List<TrackComplete> summary = new ArrayList<>();
         List<TrackComplete> details = new ArrayList<>();
         if (!CollectionUtils.isEmpty(completes)) {
@@ -739,7 +739,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     public Map<String, Object> queryTrackCompleteListByOrder(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         //获取filter过滤后的报工列表
         List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
-        List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+        List<TrackComplete> summary = new ArrayList<>();
+        List<TrackComplete> details = new ArrayList<>();
 
         if (!allCompletes.isEmpty()) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
@@ -865,17 +866,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setOptSequence(trackItem.getOptSequence());
                         track.setOptName(trackItem.getOptName());
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        //通过工序Id查询质检记录
-                        QueryWrapper<TrackCheck> queryCheck = new QueryWrapper<>();
-                        queryCheck.eq("ti_id", trackItem.getId());
-                        queryCheck.orderByAsc("modify_time");
-                        List<TrackCheck> list = trackCheckService.list(queryCheck);
-                        if (!CollectionUtils.isEmpty(list)) {
-                            if (rulesMap.get(list.get(0).getResult()) != null) {
-                                track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
-                            }
-                        }
-                        trackCompleteShowList.add(track);
+                        track.setQualityResult(trackItem.getRuleName());
+                        track.setOptNo(trackItem.getOptNo());
+                        track.setParentId(track.getUserId());
+                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
+                        details.add(track);
                     }
                     track0.setProductionOrder(orderno);
                     track0.setId(orderno);
@@ -888,14 +883,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     track0.setTrackCompleteList(trackCompleteShowList);
                     //判断是否包含叶子结点
                     track0.setIsLeafNodes(!CollectionUtils.isEmpty(completes));
-                    emptyTrackComplete.add(track0);
+                    summary.add(track0);
 
                 }
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
-        stringObjectHashMap.put("records", allCompletes);
-        stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
+        stringObjectHashMap.put("details", details);
+        stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
     }
 
@@ -905,6 +900,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //获取filter过滤后的报工列表
         List<TrackComplete> allCompletes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
         List<TrackComplete> emptyTrackComplete = new ArrayList<>();
+        List<TrackComplete> summary = new ArrayList<>();
+        List<TrackComplete> details = new ArrayList<>();
 
         if (!allCompletes.isEmpty()) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
@@ -1030,17 +1027,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setOptSequence(trackItem.getOptSequence());
                         track.setOptName(trackItem.getOptName());
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        //通过工序Id查询质检记录
-                        QueryWrapper<TrackCheck> queryCheck = new QueryWrapper<>();
-                        queryCheck.eq("ti_id", trackItem.getId());
-                        queryCheck.orderByAsc("modify_time");
-                        List<TrackCheck> list = trackCheckService.list(queryCheck);
-                        if (!CollectionUtils.isEmpty(list)) {
-                            if (rulesMap.get(list.get(0).getResult()) != null) {
-                                track.setQualityResult(rulesMap.get(list.get(0).getResult()).getStateName());
-                            }
-                        }
-                        trackCompleteShowList.add(track);
+                        track.setQualityResult(trackItem.getRuleName());
+                        track.setOptNo(trackItem.getOptNo());
+                        track.setParentId(track.getUserId());
+                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
+                        details.add(track);
                     }
                     track0.setWorkNo(workno);
                     track0.setId(workno);
@@ -1053,14 +1044,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     track0.setTrackCompleteList(trackCompleteShowList);
                     //判断是否包含叶子结点
                     track0.setIsLeafNodes(!CollectionUtils.isEmpty(completes));
-                    emptyTrackComplete.add(track0);
+                    summary.add(track0);
 
                 }
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
-        stringObjectHashMap.put("records", allCompletes);
-        stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
+        stringObjectHashMap.put("details", details);
+        stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
     }
 
@@ -1096,7 +1087,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        return trackCompleteService.list(queryWrapper);
+
+        PageHelper.startPage(1, 1000);
+        List<TrackComplete> completes = trackCompleteService.list(queryWrapper);
+        PageInfo<TrackHead> page = new PageInfo(completes);
+        for (int i = 1; i <= page.getPages(); i++) {
+            PageHelper.startPage(i, 1000);
+            completes.addAll(trackCompleteService.list(queryWrapper));
+        }
+        return completes;
     }
 
 
