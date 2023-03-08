@@ -47,5 +47,7 @@ public interface MaterialInspectionServiceClient {
     public CommonResult<Boolean> isStandard(@RequestBody List<String> reportNos,@RequestParam("isStandard") String isStandard,@RequestParam("standardBy") String standardBy);
     @PostMapping("/api/material/getInnerListByGroupIds")
     public List<PhysChemOrderInner> getInnerListByGroupIds(@RequestBody List<String> groupIds);
+    @GetMapping("/api/material/delete")
+    public CommonResult<Boolean> delete(@RequestParam("groupId") String groupId);
 
 }

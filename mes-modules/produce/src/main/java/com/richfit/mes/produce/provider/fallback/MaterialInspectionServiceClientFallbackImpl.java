@@ -82,4 +82,9 @@ public class MaterialInspectionServiceClientFallbackImpl implements MaterialInsp
         return null;
     }
 
+    @Override
+    public CommonResult<Boolean> delete(String groupId) {
+        return null;
+    }
+
 }

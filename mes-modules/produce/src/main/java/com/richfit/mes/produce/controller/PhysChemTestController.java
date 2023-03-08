@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
@@ -181,5 +182,16 @@ public class PhysChemTestController extends BaseController {
     public CommonResult<Boolean> copyOrder(@RequestParam("groupId") String groupId) throws GlobalException {
         return CommonResult.success(phyChemTestService.copyOrder(groupId));
     }
+
+    @ApiOperation(value = "删除委托单", notes = "删除委托单")
+    @ApiImplicitParam(name = "groupId", value = "删除委托单组id", required = true, paramType = "query", dataType = "String")
+    @GetMapping("/delete")
+    public CommonResult<Boolean> delete(@RequestParam("groupId") String groupId) throws GlobalException {
+        if(StringUtils.isNullOrEmpty(groupId)){
+            throw new GlobalException("groupId为空无法删除", ResultCode.FAILED);
+        }
+        return materialInspectionServiceClient.delete(groupId);
+    }
+
 
 }
