@@ -67,16 +67,18 @@ public class OperationLogAspect {
         //获取参数列表
         Object[] objects = joinPoint.getArgs();
         for (Object object : objects) {
-            if (object.getClass() == Order.class) {
-                order = (Order) object;
-            } else if (object.getClass() == Plan.class) {
-                plan = (Plan) object;
-            } else if (object.getClass() == TrackHead.class) {
-                trackHead = (TrackHead) object;
-            } else if (object.getClass() == LineStore.class) {
-                lineStore = (LineStore) object;
-            } else if (object.getClass() == String.class) {
-                id = (String) object;
+            if (object != null) {
+                if (object.getClass() == Order.class) {
+                    order = (Order) object;
+                } else if (object.getClass() == Plan.class) {
+                    plan = (Plan) object;
+                } else if (object.getClass() == TrackHead.class) {
+                    trackHead = (TrackHead) object;
+                } else if (object.getClass() == LineStore.class) {
+                    lineStore = (LineStore) object;
+                } else if (object.getClass() == String.class) {
+                    id = (String) object;
+                }
             }
         }
         //获取操作

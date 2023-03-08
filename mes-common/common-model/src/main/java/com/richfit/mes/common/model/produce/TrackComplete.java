@@ -280,4 +280,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     @ApiModelProperty(value = "步骤人员信息", dataType = "List<Map>")
     private List<CompleteUserInfoDto> userInfos;
+
+    @ApiModelProperty(value = "optId", dataType = "String")
+    @TableField(exist = false)
+    private String parentId;
 }
