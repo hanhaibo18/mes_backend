@@ -88,7 +88,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     private TrackAssemblyService trackAssemblyService;
     @Autowired
     private PlanExtendMapper planExtendMapper;
-
+    @Autowired
+    private HotDemandService hotDemandService;
     /**
      * 功能描述: 物料齐套性检查
      *
@@ -372,6 +373,31 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     }
                 }
                 planMapper.updateById(plan);
+                //更新交付数量同时更新需求提报交付数量
+                this.updateDeliveryNum(plan);
+            }
+        }
+    }
+
+    /**
+     * 更新需求提拔交付数量
+     * @param plan
+     */
+    private void updateDeliveryNum(Plan plan) {
+        //热工分公司的数据需要更新需求提报表中的交付数量字段
+        if (plan.getTenantId().equals("12345678901234567890123456789001")){
+            QueryWrapper<HotDemand> demandQueryWrapper=new QueryWrapper<>();
+            demandQueryWrapper.eq("tenant_id", plan.getTenantId());
+            demandQueryWrapper.apply("(plan_id='"+ plan.getId() +"' or plan_id_model ='"+ plan.getId() +"')");
+            HotDemand hotDemand = hotDemandService.getOne(demandQueryWrapper);
+            if(!ObjectUtil.isEmpty(hotDemand)){
+                UpdateWrapper<HotDemand> updateWrapper =new UpdateWrapper<>();
+                int DeliveryNum= hotDemand.getDeliveryNum();
+                DeliveryNum+=plan.getDeliveryNum();
+                updateWrapper.set("delivery_num", DeliveryNum);
+                updateWrapper.eq("tenant_id", plan.getTenantId());
+                updateWrapper.apply("(plan_id='"+ plan.getId() +"' or plan_id_model ='"+ plan.getId() +"')");
+                hotDemandService.update(updateWrapper);
             }
         }
     }
