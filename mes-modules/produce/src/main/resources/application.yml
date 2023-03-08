@@ -28,8 +28,8 @@ mybatis-plus:
   global-config:
     db-config:
       table-prefix: produce_
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 security:
   oauth2:
     client:

@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -122,7 +124,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
+        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteService.list(queryWrapper);
+        PageInfo<TrackHead> page = new PageInfo(completes);
+        System.out.println("------------------------" + page.getPages());
+        for (int i = 1; i <= page.getPages(); i++) {
+            PageHelper.startPage(i, 1000);
+            completes.addAll(trackCompleteService.list(queryWrapper));
+        }
+        System.out.println("------------------------" + completes.size());
         List<TrackComplete> emptyTrackComplete = new ArrayList<>();
         if (!CollectionUtils.isEmpty(completes)) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
@@ -241,6 +251,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
                         track.setQualityResult(trackItem.getRuleName());
                         track.setOptNo(trackItem.getOptNo());
+                        track.setParentId(id);
                         trackCompleteShowList.add(track);
                     }
                     track0.setId(id);
@@ -255,11 +266,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //判断是否包含叶子结点
                     track0.setIsLeafNodes(!CollectionUtils.isEmpty(trackCompletes));
                     emptyTrackComplete.add(track0);
+                    emptyTrackComplete.addAll(trackCompleteShowList);
                 }
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
-        stringObjectHashMap.put("records", completes);
+//        stringObjectHashMap.put("records", completes);
         stringObjectHashMap.put("TrackComplete", emptyTrackComplete);
         return stringObjectHashMap;
     }
