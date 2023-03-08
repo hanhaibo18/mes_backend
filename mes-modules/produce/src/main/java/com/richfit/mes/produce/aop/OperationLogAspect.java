@@ -2,6 +2,8 @@ package com.richfit.mes.produce.aop;
 
 
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.Plan;
@@ -102,6 +104,9 @@ public class OperationLogAspect {
                             (lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
                 } else if (isPlanId && !StringUtils.isNullOrEmpty(id)) {
                     Plan curPlan = planService.getById(id);
+                    if (curPlan == null){
+                        throw new GlobalException("planId error", ResultCode.FAILED);
+                    }
                     actionService.saveAction(ActionUtil.buildAction
                             (curPlan.getBranchCode(), "1", "1", "计划号：" + curPlan.getProjNum(), getIpAddress(request)));
                 } else if (idOrder && trackHead != null) {
