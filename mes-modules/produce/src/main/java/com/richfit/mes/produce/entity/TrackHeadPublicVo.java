@@ -511,5 +511,5 @@ public class TrackHeadPublicVo {
      * 设备名称
      */
     @TableField(exist = false)
-    private String name;
+    private String deviceName;
 }
