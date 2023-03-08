@@ -442,6 +442,47 @@ public class TrackHeadController extends BaseController {
         return CommonResult.success(trackHeadService.selectTrackFlowList(map), TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
+    @ApiOperation(value = "查询跟单分流表List", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态查询跟单分流表List信息")
+    @GetMapping("/track_flow_info_list")
+    public CommonResult<List<TrackHeadPublicVo>> selectTrackFLowInfoList(
+            @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+            @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+            @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+            @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+            @ApiParam(value = "打印模板编码") @RequestParam(required = false) String templateCode,
+            @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+            @ApiParam(value = "完工资料生成") @RequestParam(required = false) String isCompletionData,
+            @ApiParam(value = "合格证生成/Y以生产 N未生成") @RequestParam(required = false) String isCertificate,
+            @ApiParam(value = "产品编码") @RequestParam(required = false) String productNo,
+            @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+            @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+            @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+            @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
+            @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
+            @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
+            @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        TrackFlow.param(startTime,
+                endTime,
+                null,
+                null,
+                templateCode,
+                status,
+                isCompletionData,
+                isCertificate,
+                productNo,
+                trackNo,
+                workNo,
+                drawingNo,
+                batchNo,
+                productionOrder,
+                workPlanId,
+                null,
+                branchCode,
+                SecurityUtils.getCurrentUser().getTenantId(), orderCol, order, map);
+        return CommonResult.success(trackHeadService.selectTrackFlowInfoList(map), TRACK_HEAD_SUCCESS_MESSAGE);
+    }
+
     @ApiOperation(value = "工艺跟踪", notes = "根据图号、工艺版本号分页查询跟单工艺信息")
     @GetMapping("/track_head/router")
     public CommonResult<IPage<TrackHead>> selectTrackHead(@ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,

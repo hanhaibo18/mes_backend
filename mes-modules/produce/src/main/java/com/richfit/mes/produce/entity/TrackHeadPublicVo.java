@@ -501,4 +501,15 @@ public class TrackHeadPublicVo {
      */
     protected String remark;
 
+    /**
+     * 工序名称
+     */
+    @TableField(exist = false)
+    private List<String> optNameList;
+
+    /**
+     * 设备名称
+     */
+    @TableField(exist = false)
+    private String name;
 }

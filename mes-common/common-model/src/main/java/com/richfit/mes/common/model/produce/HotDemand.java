@@ -247,5 +247,8 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
 
     @ApiModelProperty(value = "模型车间计划id")
     private String planIdModel;
+
+    @ApiModelProperty(value = "交付数量", dataType = "Integer")
+    private Integer deliveryNum = 0;
     private static final long serialVersionUID = 1L;
 }

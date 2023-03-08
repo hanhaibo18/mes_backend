@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,6 +19,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -29,6 +31,7 @@ import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.controller.CodeRuleController;
 import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
@@ -119,10 +122,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     private TemplateService templateService;
 
     @Autowired
+    private TrackFlowMapper trackFlowMapper;
+
+
+    @Autowired
     private ProduceInspectionRecordCardService produceInspectionRecordCardService;
 
     @Resource
     private TrackItemMapper trackItemMapper;
+
+    @Autowired
+    private BaseServiceClient baseServiceClient;
+
 
     //锻造
     @Resource
@@ -188,6 +199,53 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Override
     public List<TrackHead> selectTrackFlowList(Map<String, String> map) throws Exception {
         return trackHeadFlowService.selectTrackFlowList(map);
+    }
+
+    /**
+     * 功能描述: 跟单分流信息查询
+     *
+     * @Author: longlinhui
+     * @Date: 2023/3/7 15:23
+     **/
+    @Override
+    public List<TrackHeadPublicVo> selectTrackFlowInfoList(Map<String, String> map) throws Exception {
+        List<TrackHeadPublicVo> trackHeads = trackFlowMapper.selectTrackFlowInfoList(map);
+        // 返回集增加optNameList 工序名称
+        for (TrackHeadPublicVo trackHeadPublicVo : trackHeads) {
+            // 查询跟单工序表
+            QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
+            queryWrapperTrackItem.eq("track_head_id",trackHeadPublicVo.getId());
+            queryWrapperTrackItem.eq("is_current","1");
+            List<TrackItem>  trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+            List<String> optNameCollect = trackItemList.stream().map(e -> e.getOptName()).collect(Collectors.toList());
+            trackHeadPublicVo.setOptNameList(optNameCollect);
+            List<String> deviceIdCollect = trackItemList.stream().map(e -> e.getDeviceId())
+                                                .collect(Collectors.toList());
+            if (!deviceIdCollect.isEmpty()) {
+                for (String deviceId : deviceIdCollect) {
+                    if(StringUtils.isNullOrEmpty(deviceId) && ("/").equals(deviceId)) {
+                        deviceIdCollect.remove(deviceId);
+                    }
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(deviceIdCollect)) {
+                // 返回集增加name 设备名称
+                for (String deviceId : deviceIdCollect) {
+                    CommonResult<Device> device = baseServiceClient.getDeviceById(deviceId);
+                    if (ObjectUtil.isEmpty(device.getData())) {
+                    } else {
+                        String name = device.getData().getName();
+                        for (TrackHeadPublicVo tpv : trackHeads) {
+                            tpv.setName(name);
+                        }
+                    }
+
+                }
+            }
+
+        }
+        return trackHeads;
     }
 
     /**
