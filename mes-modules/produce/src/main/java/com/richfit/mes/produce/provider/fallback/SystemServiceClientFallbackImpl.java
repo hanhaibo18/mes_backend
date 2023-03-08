@@ -39,6 +39,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public Map<String, TenantUserVo> queryByUserAccountListInner(List<String> userAccountList, String header) {
+        return null;
+    }
+
+    @Override
     public CommonResult<Boolean> delete(String id) {
         return CommonResult.success(null);
     }
@@ -82,6 +87,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     @Override
     public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(String branchCode) {
         return CommonResult.success(null);
+    }
+
+    @Override
+    public List<QualityInspectionRules> queryQualityInspectionRulesListInner(String branchCode, String header) {
+        return null;
     }
 
     @Override
