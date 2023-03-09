@@ -110,6 +110,12 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
      * 报工时间
      */
     protected Date completeTime;
+
+    /**
+     * 报工时间
+     */
+    @TableField(exist = false)
+    protected String completeTimeStr;
     /**
      * 质检人
      */

@@ -237,7 +237,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     } else {
                         String name = device.getData().getName();
                         for (TrackHeadPublicVo tpv : trackHeads) {
-                            tpv.setName(name);
+                            tpv.setDeviceName(name);
                         }
                     }
 
