@@ -245,7 +245,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         } else {
                             realityPrepareEndHours = new BigDecimal(0);
                         }
-                        track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
                             List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
