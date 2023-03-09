@@ -2,7 +2,6 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -38,11 +37,9 @@ import com.richfit.mes.produce.utils.ConcurrentUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -175,8 +172,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 List<TrackComplete> trackCompletes = completesMap.get(id);
                 //用来展示数据列表
                 List<TrackComplete> trackCompleteShowList = new ArrayList<>();
+                TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
                 //统计每个员工
-                if (!CollectionUtils.isEmpty(trackCompletes)) {
+                if (!CollectionUtils.isEmpty(trackCompletes) && tenantUserVo != null) {
                     //总工时累计额值
                     double sumTotalHours = 0.00;
                     //准结工时累计值
@@ -184,7 +182,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //额定工时累计值
                     double sumSinglePieceHours = 0.00;
                     TrackComplete track0 = new TrackComplete();
-                    TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
                     //for循环计算时间
                     for (TrackComplete track : trackCompletes) {
                         //根据跟单工序id获取跟单工序
