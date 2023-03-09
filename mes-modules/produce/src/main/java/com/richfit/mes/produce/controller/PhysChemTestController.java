@@ -104,7 +104,7 @@ public class PhysChemTestController extends BaseController {
             String batchNo = map.get("batchNo");
             for (PhysChemOrderInner chemOrderInner : physChemOrderInners) {
                 PhysChemOrderInner add = new PhysChemOrderInner();
-                BeanUtil.copyProperties(chemOrderInner,add);
+                BeanUtil.copyProperties(chemOrderInner,add,new String[]{"id"});
                 add.setBatchNo(batchNo);
                 savePhysChemOrderInners.add(add);
             }
