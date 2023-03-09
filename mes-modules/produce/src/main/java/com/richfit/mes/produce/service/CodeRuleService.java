@@ -1,8 +1,11 @@
 package com.richfit.mes.produce.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -43,8 +46,17 @@ public interface CodeRuleService extends IService<CodeRule> {
      */
     public CodeRule gerCode(String code, String name, String[] inputs, String tenantId, String branchCode);
 
+    /**
+     * 根据编码规则id获取编码
+     * @param id
+     * @return
+     */
+    public CodeRule getCodeByRuleId(String id);
 
-    public List<CodeRuleItem> listCodeRuleItem(String codeRuleId, String code, String type, String tenantId, String branchCode);
 
+    public List<CodeRuleItem> listCodeRuleItem(String codeRuleId);
+
+
+    Boolean editRuleValue(@RequestBody JSONObject jsonObject) throws GlobalException;
 
 }

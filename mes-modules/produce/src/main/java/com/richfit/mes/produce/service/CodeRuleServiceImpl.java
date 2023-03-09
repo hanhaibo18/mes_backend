@@ -1,23 +1,31 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.core.api.IErrorCode;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
 import com.richfit.mes.common.model.produce.CodeRuleValue;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CodeRuleItemMapper;
 import com.richfit.mes.produce.dao.CodeRuleMapper;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -44,6 +52,10 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
     public static String ID_NULL_MESSAGE = "ID不能为空!";
     public static String CLASS_NAME_NULL_MESSAGE = "名称不能为空!";
     public static String SUCCESS_MESSAGE = "操作成功！";
+    public static String RULE_ID_NULL_MESSAGE = "编码规则ID不能为空!";
+    public static final String IS_COMPANY_RULE = "0";
+    public static final String IS_SITE_RULE = "1";
+    public static final String IS_ROLE_RULE = "2";
 
     /********
      *
@@ -147,6 +159,8 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         }
     }
 
+    @Autowired
+    public SystemServiceClient systemServiceClient;
 
     /**
      * 获取编码
@@ -167,15 +181,38 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
-
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
+        queryWrapper.orderByAsc("create_time");
         List<CodeRule> items = codeRuleService.list(queryWrapper);
+
         CodeRule item = null;
         if (items.size() > 0) {
-            item = items.get(0);
-
+            //权限判断
+            if(IS_ROLE_RULE.equals(items.get(0).getLevel())){
+                //根据userId获取角色
+                List<String> roles = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId()).stream().map(Role::getRoleCode).collect(Collectors.toList());
+                for (CodeRule codeRule : items) {
+                    List<String> newRoles = new ArrayList<>(roles);
+                    List<String> roleIdList = codeRule.getRoleIdList();
+                    newRoles.retainAll(roleIdList);
+                    if(newRoles.size()>0){
+                        item = codeRule;
+                        break;
+                    }
+                }
+                if(ObjectUtil.isEmpty(item)){
+                    throw new GlobalException("找不到当前登录人编码规则或该编码规则已停用:"+items.get(0).getCode()+"的权限级编码",ResultCode.FAILED);
+                }
+            }else if(IS_COMPANY_RULE.equals(items.get(0).getLevel())){
+                item = items.get(0);
+            }else {
+                List<CodeRule> siteRules = items.stream().filter(i -> i.getBranchCode().equals(branchCode)).collect(Collectors.toList());
+                if(siteRules.size()>0){
+                    item = siteRules.get(0);
+                }
+                if(ObjectUtil.isEmpty(item)){
+                    throw new GlobalException("找不到当前登录人编码规则或该编码规则已停用:"+items.get(0).getCode()+"的车间级编码",ResultCode.FAILED);
+                }
+            }
         } else {
             throw new NullPointerException("找不到该编码规则或该编码规则已停用:" + code);
         }
@@ -183,7 +220,7 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         int index = 0;
         String value = "";
         Date nowDate = new Date();
-        List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId(), null, null, tenantId, branchCode);
+        List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId());
         for (int i = 0; i < cris.size(); i++) {
             String subvalue = "";
             if (StringUtils.isNullOrEmpty(cris.get(i).getSuffixChar())) {
@@ -291,6 +328,104 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         return item;
     }
 
+    /**
+     * 根据编码规则id获取编码样列（不区分启不启用）
+     *
+     * @param
+     * @return
+     */
+    @Override
+    public CodeRule getCodeByRuleId(String id) {
+        CodeRule item = codeRuleService.getById(id);
+        if(ObjectUtil.isEmpty(item)){
+            return item;
+        }
+        item.setCurValue("");
+        int index = 0;
+        String value = "";
+        Date nowDate = new Date();
+        List<CodeRuleItem> cris = this.listCodeRuleItem(item.getId());
+        for (int i = 0; i < cris.size(); i++) {
+            String subvalue = "";
+            if (StringUtils.isNullOrEmpty(cris.get(i).getSuffixChar())) {
+                cris.get(i).setSuffixChar("");
+            }
+            if (StringUtils.isNullOrEmpty(cris.get(i).getPrefixChar())) {
+                cris.get(i).setPrefixChar("");
+            }
+            // 常量
+            if ("0".equals(cris.get(i).getType())) {
+                subvalue = cris.get(i).getPrefixChar() + cris.get(i).getConstant() + cris.get(i).getSuffixChar();
+            }
+            // 日期
+            if ("1".equals(cris.get(i).getType())) {
+                Date currentTime = new Date();
+                SimpleDateFormat formatter = new SimpleDateFormat(cris.get(i).getDateFormat());
+                String dateString = formatter.format(currentTime);
+
+                subvalue = cris.get(i).getPrefixChar() + dateString + cris.get(i).getSuffixChar();
+            }
+            //流水号
+            if ("2".equals(cris.get(i).getType())) {
+                //如果规则项 值重置的逻辑处理，根据年，月，日，最大值的变化来重置
+                if (StringUtils.isNullOrEmpty(cris.get(i).getSnResetDependency())) {
+                    throw new GlobalException("请填写流水号重置条件！", ResultCode.FAILED);
+                }
+                switch (cris.get(i).getSnResetDependency()) {
+                    case "year":
+                        //年份重置，当前年份在SnCurrentDate年份之后，重置流水号为默认流水号
+                        if (nowDate.getYear() > cris.get(i).getSnCurrentDate().getYear()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf
+                                    (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                            cris.get(i).setSnCurrentDate(nowDate);
+                        }
+                        break;
+                    case "month":
+                        //月份重置 当前月份在SnCurrentDate年份之后，重置流水号为默认流水号
+                        if (nowDate.getYear() > cris.get(i).getSnCurrentDate().getYear() ||
+                                nowDate.getMonth() > cris.get(i).getSnCurrentDate().getMonth()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf
+                                    (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                            cris.get(i).setSnCurrentDate(nowDate);
+                        }
+                        break;
+                    case "date":
+                        //当前日期在SnCurrentDate年份之后，重置流水号为默认流水号
+                        if (nowDate.getYear() > cris.get(i).getSnCurrentDate().getYear() ||
+                                nowDate.getMonth() > cris.get(i).getSnCurrentDate().getMonth() ||
+                                nowDate.getDay() > cris.get(i).getSnCurrentDate().getDay()) {
+                            cris.get(i).setSnCurrentValue(String.valueOf
+                                    (Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                            cris.get(i).setSnCurrentDate(nowDate);
+                        }
+                        break;
+                    case "input":
+                        break;
+                    default:
+                        if (Integer.parseInt(cris.get(i).getSnCurrentValue()) >= Integer.parseInt(cris.get(i).getSnResetDependency())) {
+                            cris.get(i).setSnCurrentValue(String.valueOf(Integer.parseInt(cris.get(i).getSnDefault()) - Integer.parseInt(cris.get(i).getSnStep())));
+                        }
+                }
+                subvalue = cris.get(i).getPrefixChar() + (Integer.parseInt(cris.get(i).getSnCurrentValue()) + Integer.parseInt(cris.get(i).getSnStep())) + cris.get(i).getSuffixChar();
+            }
+            //GUID
+            if ("4".equals(cris.get(i).getType())) {
+                subvalue = cris.get(i).getPrefixChar() + java.util.UUID.randomUUID() + cris.get(i).getSuffixChar();
+                index++;
+            }
+            if (!StringUtils.isNullOrEmpty(cris.get(i).getCompChar())) {
+                if ("0".equals(cris.get(i).getCompDirect())) {
+                    subvalue = org.apache.commons.lang.StringUtils.leftPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
+                } else {
+                    subvalue = org.apache.commons.lang.StringUtils.rightPad(subvalue, Integer.parseInt(cris.get(i).getMaxLength()), cris.get(i).getCompChar());
+                }
+            }
+            value = value + subvalue;
+        }
+        item.setCurValue(value);
+        return item;
+    }
+
 
     /**
      * 更新编码，以便自增
@@ -311,15 +446,36 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
-
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
         // 获取编码项列表
         List<CodeRule> items = codeRuleService.list(queryWrapper);
         CodeRule item = null;
         if (items.size() > 0) {
-            item = items.get(0);
+            //权限判断
+            if(IS_ROLE_RULE.equals(items.get(0).getLevel())){
+                //根据userId获取角色
+                List<Role> roles = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
+                for (CodeRule codeRule : items) {
+                    List<Role> newRoles = new ArrayList<>(roles);
+                    List<String> roleIdList = codeRule.getRoleIdList();
+                    newRoles.retainAll(roleIdList);
+                    if(newRoles.size()>0){
+                        item = codeRule;
+                    }
+                }
+                if(ObjectUtil.isEmpty(item)){
+                    throw new GlobalException("找不到当前登录人编码规则或该编码规则已停用:"+items.get(0).getCode()+"的权限级编码",ResultCode.FAILED);
+                }
+            }else if(IS_COMPANY_RULE.equals(items.get(0).getLevel())){
+                item = items.get(0);
+            }else {
+                List<CodeRule> siteRules = items.stream().filter(i -> i.getBranchCode().equals(branchCode)).collect(Collectors.toList());
+                if(siteRules.size()>0){
+                    item = siteRules.get(0);
+                }
+                if(ObjectUtil.isEmpty(item)){
+                    throw new GlobalException("找不到当前登录人编码规则或该编码规则已停用:"+items.get(0).getCode()+"的车间级编码",ResultCode.FAILED);
+                }
+            }
             // 输入依赖项
             CodeRuleItem inputTtem = null;
             // 日期项
@@ -437,14 +593,38 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
+        queryWrapper.orderByAsc("create_time");
         // 获取编码项列表
         List<CodeRule> items = codeRuleService.list(queryWrapper);
         CodeRule item = null;
         if (items.size() > 0) {
-            item = items.get(0);
+            //权限判断
+            if(IS_ROLE_RULE.equals(items.get(0).getLevel())){
+                //根据userId获取角色
+                List<String> roles = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId()).stream().map(Role::getRoleCode).collect(Collectors.toList());
+                for (CodeRule codeRule : items) {
+                    List<String> newRoles = new ArrayList<>(roles);
+                    List<String> roleIdList = codeRule.getRoleIdList();
+                    newRoles.retainAll(roleIdList);
+                    if(newRoles.size()>0){
+                        item = codeRule;
+                        break;
+                    }
+                }
+                if(ObjectUtil.isEmpty(item)){
+                    throw new GlobalException("找不到当前登录人编码规则或该编码规则已停用:"+items.get(0).getCode()+"的权限级编码",ResultCode.FAILED);
+                }
+            }else if(IS_COMPANY_RULE.equals(items.get(0).getLevel())){
+                item = items.get(0);
+            }else {
+                List<CodeRule> siteRules = items.stream().filter(i -> i.getBranchCode().equals(branchCode)).collect(Collectors.toList());
+                if(siteRules.size()>0){
+                    item = siteRules.get(0);
+                }
+                if(ObjectUtil.isEmpty(item)){
+                    throw new GlobalException("找不到当前登录人编码规则或该编码规则已停用:"+items.get(0).getCode()+"的车间级编码",ResultCode.FAILED);
+                }
+            }
             // 获取编码项
             List<CodeRuleItem> list2 = codeRuleItemService.list(new QueryWrapper<CodeRuleItem>().eq("code_rule_id", item.getId()));
             for (int i = 0; i < list2.size(); i++) {
@@ -492,45 +672,49 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
     }
 
     @Override
-    public List<CodeRuleItem> listCodeRuleItem(String codeRuleId, String code, String type, String tenantId, String branchCode) {
+    public List<CodeRuleItem> listCodeRuleItem(String codeRuleId) {
         QueryWrapper<CodeRuleItem> queryWrapper = new QueryWrapper<CodeRuleItem>();
-        if (!StringUtils.isNullOrEmpty(code)) {
-
-            List<CodeRule> list = codeRuleService.list(new QueryWrapper<CodeRule>().eq("code", code).eq("branch_code", branchCode).eq("tenant_id", tenantId));
-            if (!list.isEmpty()) {
-                queryWrapper.eq("code_rule_id", list.get(0).getId());
-            } else {
-                IErrorCode iErrorCode = new IErrorCode() {
-                    @Override
-                    public long getCode() {
-                        return ResultCode.FAILED.getCode();
-                    }
-
-                    @Override
-                    public String getMessage() {
-                        return code + ":暂无编码规则";
-                    }
-                };
-                throw new NullPointerException(iErrorCode.getMessage());
-
-            }
-
-        }
         if (!StringUtils.isNullOrEmpty(codeRuleId)) {
             queryWrapper.eq("code_rule_id", codeRuleId);
         }
-        if (!StringUtils.isNullOrEmpty(type)) {
-            queryWrapper.eq("type", type);
-        }
         queryWrapper.orderByAsc("order_no");
-        if (!StringUtils.isNullOrEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id", tenantId);
-        }
-
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
         return codeRuleItemService.list(queryWrapper);
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean editRuleValue(@RequestBody JSONObject jsonObject) throws GlobalException {
+        //修改项
+        List<CodeRuleItem> ruleItemList = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("ruleItemList")), CodeRuleItem.class);
+        //校验
+        for (CodeRuleItem codeRuleItem : ruleItemList) {
+            if("2".equals(codeRuleItem.getType())){
+                if(StringUtils.isNullOrEmpty(codeRuleItem.getSnDefault()) && StringUtils.isNullOrEmpty(codeRuleItem.getSnCurrentValue())){
+                    throw new GlobalException("流水号初始值大小和当前值不能同时为空！",ResultCode.FAILED);
+                }
+                if(StringUtils.isNullOrEmpty(codeRuleItem.getSnStep())){
+                    throw new GlobalException("流水号步长不能为空！",ResultCode.FAILED);
+                }
+            }
+        }
+        //编码规则id
+        String codeRuleId = jsonObject.getString("codeRuleId");
+
+        if (StringUtils.isNullOrEmpty(codeRuleId)) {
+            throw new GlobalException(RULE_ID_NULL_MESSAGE,ResultCode.FAILED);
+        }
+        //先把之前的删除了
+        QueryWrapper<CodeRuleItem> deleteWrapper = new QueryWrapper<>();
+        deleteWrapper.eq("code_rule_id",codeRuleId);
+        boolean remove = codeRuleItemService.remove(deleteWrapper);
+        //保存当前的编码项
+        for (CodeRuleItem codeRuleItem : ruleItemList) {
+            codeRuleItem.setId(null);
+            codeRuleItem.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        }
+        boolean save = codeRuleItemService.saveBatch(ruleItemList);
+        return remove&&save;
     }
 
 }

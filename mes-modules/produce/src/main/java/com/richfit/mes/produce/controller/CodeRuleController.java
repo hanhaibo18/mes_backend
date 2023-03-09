@@ -1,17 +1,19 @@
 package com.richfit.mes.produce.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.core.api.IErrorCode;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
 import com.richfit.mes.common.model.produce.CodeRuleValue;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.CodeRuleItemService;
 import com.richfit.mes.produce.service.CodeRuleService;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -54,11 +57,14 @@ public class CodeRuleController extends BaseController {
     public static String CODE_IS_EXIST = "编码已存在！";
     public static String DEFAULT_LENGTH = "10";
     public static String DEFAULT_WIDTH = "4";
+    public static final String IS_COMPANY_RULE = "0";
+    public static final String IS_SITE_RULE = "1";
+    public static final String IS_ROLE_RULE = "2";
 
 
     @ApiOperation(value = "分页查询编码规则", notes = "根据编码、名称、分类分页查询编码规则")
     @GetMapping("/page")
-    public CommonResult<IPage<CodeRule>> pageCodeRule(String code, String name, int page, int limit, String tenantId, String branchCode) {
+    public CommonResult<IPage<CodeRule>> pageCodeRule(String code, String name, int page, int limit, String tenantId, String branchCode,String order,String orderCol) {
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<CodeRule>();
         if (!StringUtils.isNullOrEmpty(code)) {
             queryWrapper.like("code", code);
@@ -69,12 +75,15 @@ public class CodeRuleController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
         }
-
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
         if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(queryWrapper, orderCol, order);
+        } else {
+            //升序排列
+            queryWrapper.orderByAsc("create_time");
         }
         return CommonResult.success(codeRuleService.page(new Page<CodeRule>(page, limit), queryWrapper), SUCCESS_MESSAGE);
     }
@@ -89,6 +98,17 @@ public class CodeRuleController extends BaseController {
     public CommonResult<CodeRule> gerCode(String code, String name, String[] inputs, String tenantId, String branchCode) {
         try {
             return CommonResult.success(codeRuleService.gerCode(code, name, inputs, tenantId, branchCode), SUCCESS_MESSAGE);
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "根据编码规则id获取默认值", notes = "根据编码规则id获取默认值")
+    @ApiImplicitParam(name = "id", value = "编码规则id", required = true, paramType = "query", dataType = "string")
+    @GetMapping("/gerCodeByRuleId")
+    public CommonResult<CodeRule> gerCodeByRuleId(String id) {
+        try {
+            return CommonResult.success(codeRuleService.getCodeByRuleId(id), SUCCESS_MESSAGE);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
@@ -115,11 +135,18 @@ public class CodeRuleController extends BaseController {
         if (StringUtils.isNullOrEmpty(entity.getMaxLength())){
             entity.setMaxLength(DEFAULT_LENGTH);
         }
-            if (StringUtils.isNullOrEmpty(entity.getName())) {
-                return CommonResult.failed(CLASS_NAME_NULL_MESSAGE);
-            }
+        if (StringUtils.isNullOrEmpty(entity.getName())) {
+            return CommonResult.failed(CLASS_NAME_NULL_MESSAGE);
+        }
+        if(!IS_ROLE_RULE.equals(entity.getLevel())){
+            entity.setRoleId(null);
+        }
+        if(!IS_SITE_RULE.equals(entity.getLevel())){
+            entity.setBranchCode(null);
+        }
         //新增编码已存在校验
-        if (CheckCodeExist(entity)) return CommonResult.failed(CODE_IS_EXIST);
+        CheckCodeExist(entity);
+
         return CommonResult.success(codeRuleService.save(entity));
     }
 
@@ -133,31 +160,91 @@ public class CodeRuleController extends BaseController {
             return CommonResult.failed(CLASS_NAME_NULL_MESSAGE);
         }
         //新增编码已存在校验
-        if (CheckCodeExist(entity)) {
-            QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("code", entity.getCode());
-            queryWrapper.eq("branch_code", entity.getBranchCode());
-            queryWrapper.eq("tenant_id", entity.getTenantId());
-            List<CodeRule> codeRules = codeRuleService.list(queryWrapper);
-            if (codeRules.size() > 1) {
-                return CommonResult.failed(CODE_IS_EXIST);
-            } else if (!codeRules.get(0).getId().equals(entity.getId())) {
-                return CommonResult.failed(CODE_IS_EXIST);
-            }
+        CheckCodeExist(entity);
+        //更新
+        codeRuleService.updateById(entity);
+        //非权限级 清空角色字段
+        if(!IS_ROLE_RULE.equals(entity.getLevel())){
+            UpdateWrapper<CodeRule> codeRuleUpdateWrapper = new UpdateWrapper<>();
+            codeRuleUpdateWrapper.set("role_id",null)
+                    .eq("id",entity.getId());
+           codeRuleService.update(codeRuleUpdateWrapper);
         }
-        return CommonResult.success(codeRuleService.updateById(entity));
+        //非车间级 清空branchCode字段
+        if(!IS_SITE_RULE.equals(entity.getLevel())){
+            UpdateWrapper<CodeRule> codeRuleUpdateWrapper = new UpdateWrapper<>();
+            codeRuleUpdateWrapper.set("branch_code",null)
+                    .eq("id",entity.getId());
+            codeRuleService.update(codeRuleUpdateWrapper);
+        }
+        return CommonResult.success(true);
     }
 
+
+
     private boolean CheckCodeExist(@RequestBody CodeRule entity) {
+        String errorStr = new String();
         QueryWrapper<CodeRule> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("code", entity.getCode());
-        queryWrapper.eq("branch_code", entity.getBranchCode());
         queryWrapper.eq("tenant_id", entity.getTenantId());
         List<CodeRule> codeRules = codeRuleService.list(queryWrapper);
-        if (!codeRules.isEmpty()) {
-            return true;
+        //修改操作判断时 过滤掉自己
+        if(!StringUtils.isNullOrEmpty(entity.getId())){
+            codeRules = codeRules.stream().filter(item -> !item.getId().equals(entity.getId())).collect(Collectors.toList());
         }
-        return false;
+        //公司级别的校验
+        if(IS_COMPANY_RULE.equals(entity.getLevel())){
+            if(codeRules.size()>0){
+                if(IS_COMPANY_RULE.equals(codeRules.get(0).getLevel())){
+                    errorStr = "公司级编码"+entity.getCode()+"已存在，切勿重复添加";
+                }else if(IS_SITE_RULE.equals(codeRules.get(0).getLevel())){
+                    errorStr = "车间级编码"+entity.getCode()+"已存在，无法再添加公司级编码";
+                }else {
+                    errorStr = "权限级编码"+entity.getCode()+"已存在，无法再添加公司级编码";
+                }
+            }
+        }else if(IS_SITE_RULE.equals(entity.getLevel())){
+            //公司级别
+            List<CodeRule> companyRules = codeRules.stream().filter(item -> item.getLevel().equals(IS_COMPANY_RULE)).collect(Collectors.toList());
+            //车间级别
+            List<CodeRule> siteRules = codeRules.stream().filter(item -> item.getLevel().equals(IS_SITE_RULE)&& item.getBranchCode().equals(entity.getBranchCode())).collect(Collectors.toList());
+            //角色级别
+            List<CodeRule> roleRules = codeRules.stream().filter(item -> item.getLevel().equals(IS_ROLE_RULE)).collect(Collectors.toList());
+            if(companyRules.size()>0){
+                errorStr = "公司级编码"+entity.getCode()+"已存在，无法再添加车间级";
+            }
+            if(siteRules.size()>0){
+                errorStr = "已选车间已存在编码"+entity.getCode()+"，无法再添加";
+            }
+            if(roleRules.size()>0){
+                errorStr = "权限级编码"+entity.getCode()+"已存在，无法再添加车间级";
+            }
+        }else {
+            //公司级别
+            List<CodeRule> companyRules = codeRules.stream().filter(item -> item.getLevel().equals(IS_COMPANY_RULE)).collect(Collectors.toList());
+            //车间级别
+            List<CodeRule> siteRules = codeRules.stream().filter(item -> item.getLevel().equals(IS_SITE_RULE)).collect(Collectors.toList());
+            //角色级别
+            List<CodeRule> roleRules = codeRules.stream().filter(item -> item.getLevel().equals(IS_ROLE_RULE)).collect(Collectors.toList());
+            if(companyRules.size()>0){
+                errorStr = "公司级编码"+entity.getCode()+"已存在，无法再添加权限级";
+            }
+            if(siteRules.size()>0){
+                errorStr = "车间级编码"+entity.getCode()+"已存在，无法再添加权限级";
+            }
+            if(roleRules.size()>0){
+                List<String> roleIdList = entity.getRoleIdList();
+                List<String> roleIdList1 = roleRules.get(0).getRoleIdList();
+                roleIdList.retainAll(roleIdList1);
+                if(roleIdList.size()>0){
+                    errorStr = "角色"+org.apache.commons.lang.StringUtils.join(roleIdList,",")+"已被赋予编码"+entity.getCode()+"，无法再为此角色分配相同编码的权限";
+                }
+            }
+        }
+        if (!StringUtils.isNullOrEmpty(errorStr)) {
+            throw new GlobalException(errorStr,ResultCode.FAILED);
+        }
+        return true;
     }
 
     @ApiOperation(value = "删除编码规则", notes = "删除编码规则")
@@ -175,44 +262,8 @@ public class CodeRuleController extends BaseController {
 
     @ApiOperation(value = "查询编码规则项列表", notes = "查询编码规则项列表")
     @GetMapping("/item/list")
-    public CommonResult<List<CodeRuleItem>> listCodeRuleItem(String codeRuleId, String code, String type, String tenantId, String branchCode) {
-        QueryWrapper<CodeRuleItem> queryWrapper = new QueryWrapper<CodeRuleItem>();
-        if (!StringUtils.isNullOrEmpty(code)) {
-
-            List<CodeRule> list = codeRuleService.list(new QueryWrapper<CodeRule>().eq("code", code).eq("branch_code", branchCode).eq("tenant_id", tenantId));
-            if (!list.isEmpty()) {
-                queryWrapper.eq("code_rule_id", list.get(0).getId());
-            } else {
-                IErrorCode iErrorCode = new IErrorCode() {
-                    @Override
-                    public long getCode() {
-                        return ResultCode.FAILED.getCode();
-                    }
-
-                    @Override
-                    public String getMessage() {
-                        return code + ":暂无编码规则";
-                    }
-                };
-                return CommonResult.failed(iErrorCode);
-            }
-
-        }
-        if (!StringUtils.isNullOrEmpty(codeRuleId)) {
-            queryWrapper.eq("code_rule_id", codeRuleId);
-        }
-        if (!StringUtils.isNullOrEmpty(type)) {
-            queryWrapper.eq("type", type);
-        }
-        queryWrapper.orderByAsc("order_no");
-        if (!StringUtils.isNullOrEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id", tenantId);
-        }
-
-        if (!StringUtils.isNullOrEmpty(branchCode)) {
-            queryWrapper.eq("branch_code", branchCode);
-        }
-        return CommonResult.success(codeRuleItemService.list(queryWrapper), SUCCESS_MESSAGE);
+    public CommonResult<List<CodeRuleItem>> listCodeRuleItem(String codeRuleId) {
+        return CommonResult.success(codeRuleService.listCodeRuleItem(codeRuleId), SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询编码流水号值列表", notes = "查询编码流水号值列表")
@@ -277,8 +328,6 @@ public class CodeRuleController extends BaseController {
         if (StringUtils.isNullOrEmpty(id)) {
             return CommonResult.failed(ID_NULL_MESSAGE);
         }
-
-
         return CommonResult.success(codeRuleItemService.removeById(id));
     }
 
@@ -329,5 +378,11 @@ public class CodeRuleController extends BaseController {
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
+    }
+
+    @ApiOperation(value = "编辑编码规则项", notes = "编辑编码规则项")
+    @PostMapping("/value/edit")
+    public CommonResult<Boolean> editRuleValue(@RequestBody JSONObject jsonObject) throws GlobalException {
+        return CommonResult.success(codeRuleService.editRuleValue(jsonObject));
     }
 }
