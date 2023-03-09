@@ -202,8 +202,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        TrackHead trackHead = trackHeadMap.get(track.getTrackId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
-                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        track.setProductName(trackHead == null ? "" : trackHead.getProductName());
+                        track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
                         //空校验
                         //TODO:赋值问题
                         if (trackItem.getPrepareEndHours() == null) {
@@ -218,6 +220,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         } else {
                             track.setSinglePieceHours(trackItem.getSinglePieceHours());
                         }
+                        //报工数量
                         if (track.getCompletedQty() == null) {
                             track.setCompletedQty(0.00);
                         }
@@ -245,7 +248,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         sumTotalHours = sumTotalHours + track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -823,8 +829,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        TrackHead trackHead = trackHeadMap.get(track.getTrackId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
-                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        track.setProductName(trackHead == null ? "" : trackHead.getProductName());
+                        track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -865,7 +873,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -987,8 +998,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        TrackHead trackHead = trackHeadMap.get(track.getTrackId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
-                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        track.setProductName(trackHead == null ? "" : trackHead.getProductName());
+                        track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -1029,7 +1042,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
