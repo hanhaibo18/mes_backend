@@ -187,7 +187,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     private void disqualificationQueryWrapper(QueryWrapper<Disqualification> queryWrapper, QueryCheckDto queryCheckDto) {
         //图号查询
-        queryWrapper.like(StrUtil.isNotBlank(queryCheckDto.getDrawingNo()), "dis.drawing_no", queryCheckDto.getDrawingNo());
+        queryWrapper.like(StrUtil.isNotBlank(queryCheckDto.getDrawingNo()), "dis.part_drawing_no", queryCheckDto.getDrawingNo());
         //产品名称
         queryWrapper.like(StrUtil.isNotBlank(queryCheckDto.getProductName()), "dis.product_name", queryCheckDto.getProductName());
         //申请单号

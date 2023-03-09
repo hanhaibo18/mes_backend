@@ -202,8 +202,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        TrackHead trackHead = trackHeadMap.get(track.getTrackId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
-                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        track.setProductName(trackHead == null ? "" : trackHead.getProductName());
+                        track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
                         //空校验
                         //TODO:赋值问题
                         if (trackItem.getPrepareEndHours() == null) {
@@ -218,6 +220,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         } else {
                             track.setSinglePieceHours(trackItem.getSinglePieceHours());
                         }
+                        //报工数量
                         if (track.getCompletedQty() == null) {
                             track.setCompletedQty(0.00);
                         }
@@ -231,17 +234,24 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
                             if (trackChecks != null && trackChecks.size() > 0) {
                                 QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
-                                if (rules != null && rules.getIsGiveTime() == 1) {
-                                    sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                if (rules != null) {
+                                    if (rules.getIsGiveTime() == 1) {
+                                        sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                    }
+                                    track.setQualityResult(rules.getStateName());
                                 }
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
                             //不质检也计算工时
                             sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            track.setQualityResult("合格（非质检）");
                         }
                         sumTotalHours = sumTotalHours + track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -249,10 +259,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setOptSequence(trackItem.getOptSequence());
                         track.setOptName(trackItem.getOptName());
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        track.setQualityResult(trackItem.getRuleName());
                         track.setOptNo(trackItem.getOptNo());
                         track.setParentId(id);
-                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
+                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
                         details.add(track);
                     }
                     track0.setId(id);
@@ -820,8 +829,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        TrackHead trackHead = trackHeadMap.get(track.getTrackId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
-                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        track.setProductName(trackHead == null ? "" : trackHead.getProductName());
+                        track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -848,17 +859,24 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
                             if (trackChecks != null && trackChecks.size() > 0) {
                                 QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
-                                if (rules != null && rules.getIsGiveTime() == 1) {
-                                    sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                if (rules != null) {
+                                    if (rules.getIsGiveTime() == 1) {
+                                        sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                    }
+                                    track.setQualityResult(rules.getStateName());
                                 }
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
                             //不质检也计算工时
                             sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            track.setQualityResult("合格（非质检）");
                         }
                         sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -866,10 +884,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setOptSequence(trackItem.getOptSequence());
                         track.setOptName(trackItem.getOptName());
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        track.setQualityResult(trackItem.getRuleName());
                         track.setOptNo(trackItem.getOptNo());
                         track.setParentId(orderno);
-                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
+                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
                         details.add(track);
                     }
                     track0.setProductionOrder(orderno);
@@ -981,8 +998,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //查询产品编号
                         TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
+                        TrackHead trackHead = trackHeadMap.get(track.getTrackId());
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
-                        track.setProductName(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductName());
+                        track.setProductName(trackHead == null ? "" : trackHead.getProductName());
+                        track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -1009,17 +1028,24 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
                             if (trackChecks != null && trackChecks.size() > 0) {
                                 QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
-                                if (rules != null && rules.getIsGiveTime() == 1) {
-                                    sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                if (rules != null) {
+                                    if (rules.getIsGiveTime() == 1) {
+                                        sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                    }
+                                    track.setQualityResult(rules.getStateName());
                                 }
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
                             //不质检也计算工时
                             sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            track.setQualityResult("合格（非质检）");
                         }
                         sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -1027,10 +1053,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setOptSequence(trackItem.getOptSequence());
                         track.setOptName(trackItem.getOptName());
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        track.setQualityResult(trackItem.getRuleName());
                         track.setOptNo(trackItem.getOptNo());
                         track.setParentId(workno);
-                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
+                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
                         details.add(track);
                     }
                     track0.setWorkNo(workno);
