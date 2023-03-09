@@ -834,11 +834,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //用来展示数据列表
                     List<TrackComplete> trackCompleteShowList = new ArrayList<>();
                     //总工时累计额值
-                    double sumTotalHours = 0.00;
+                    BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
-                    double sumPrepareEndHours = 0.00;
+                    BigDecimal sumPrepareEndHours = new BigDecimal(0);
                     //额定工时累计值
-                    double sumSinglePieceHours = 0.00;
+                    BigDecimal sumSinglePieceHours = new BigDecimal(0);
+                    //实际准结工时累计值
+                    BigDecimal sumRealityPrepareEndHours = new BigDecimal(0);
+                    //实际额定工时累计值
+                    BigDecimal sumRealitySinglePieceHours = new BigDecimal(0);
                     TrackComplete track0 = new TrackComplete();
                     //for循环计算时间
                     for (TrackComplete track : completes) {
@@ -879,10 +883,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         if (track.getCompletedQty() == null) {
                             track.setCompletedQty(0.00);
                         }
-                        //计算总工时
+                        //数量
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        //额定工时
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        //准结工时
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        //实际额定工时
+                        BigDecimal realitySinglePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        //实际准结工时
+                        BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        //累计准结工时
+                        sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
+                        //累计额定工时
+                        sumSinglePieceHours = sumSinglePieceHours.add(singlePieceHours);
                         //没有调度审核或者 调度已审核并且给予准结工时进入
                         if (trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() == 1)) {
-                            sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
+                            //累计实际准结工时
+                            sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
+                        } else {
+                            realityPrepareEndHours = new BigDecimal(0);
                         }
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
@@ -891,24 +911,34 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                 QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
                                 if (rules != null) {
                                     if (rules.getIsGiveTime() == 1) {
-                                        sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                        //累计实际额定工时
+                                        sumRealitySinglePieceHours = sumRealitySinglePieceHours.add(realitySinglePieceHours);
+                                    } else {
+                                        realitySinglePieceHours = new BigDecimal(0);
                                     }
                                     track.setQualityResult(rules.getStateName());
+                                } else {
+                                    realitySinglePieceHours = new BigDecimal(0);
+                                    track.setQualityResult("没有质检内容");
                                 }
+                            } else {
+                                realitySinglePieceHours = new BigDecimal(0);
+                                track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
                             //不质检也计算工时
-                            sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            //累计实际额定工时
+                            sumRealitySinglePieceHours = sumRealitySinglePieceHours.add(realitySinglePieceHours);
                             track.setQualityResult("合格（非质检）");
                         }
-                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        BigDecimal number = new BigDecimal(track.getCompletedQty());
-                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
-                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
-                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal totalHours = number.multiply(realitySinglePieceHours).add(realityPrepareEndHours);
+                        track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        sumTotalHours = sumTotalHours.add(totalHours);
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                        track.setRealitySinglePieceHours(realitySinglePieceHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
                         track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
                         track.setOptSequence(trackItem.getOptSequence());
@@ -921,12 +951,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                     track0.setProductionOrder(orderno);
                     track0.setId(orderno);
+                    //实际准备工时
+                    track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    //实际额定工时
+                    track0.setRealitySinglePieceHours(sumRealitySinglePieceHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //准备工时
-                    track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setPrepareEndHours(sumPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //额定工时
-                    track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setSinglePieceHours(sumSinglePieceHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //总工时
-                    track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setTotalHours(sumTotalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     track0.setTrackCompleteList(trackCompleteShowList);
                     //判断是否包含叶子结点
                     track0.setIsLeafNodes(!CollectionUtils.isEmpty(completes));
@@ -1003,11 +1037,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //用来展示数据列表
                     List<TrackComplete> trackCompleteShowList = new ArrayList<>();
                     //总工时累计额值
-                    double sumTotalHours = 0.00;
+                    BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
-                    double sumPrepareEndHours = 0.00;
+                    BigDecimal sumPrepareEndHours = new BigDecimal(0);
                     //额定工时累计值
-                    double sumSinglePieceHours = 0.00;
+                    BigDecimal sumSinglePieceHours = new BigDecimal(0);
+                    //实际准结工时累计值
+                    BigDecimal sumRealityPrepareEndHours = new BigDecimal(0);
+                    //实际额定工时累计值
+                    BigDecimal sumRealitySinglePieceHours = new BigDecimal(0);
                     TrackComplete track0 = new TrackComplete();
                     //for循环计算时间
                     for (TrackComplete track : completes) {
@@ -1048,10 +1086,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         if (track.getCompletedQty() == null) {
                             track.setCompletedQty(0.00);
                         }
-                        //计算总工时
+                        //数量
+                        BigDecimal number = new BigDecimal(track.getCompletedQty());
+                        //额定工时
+                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        //准结工时
+                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        //实际额定工时
+                        BigDecimal realitySinglePieceHours = new BigDecimal(track.getSinglePieceHours());
+                        //实际准结工时
+                        BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        //累计准结工时
+                        sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
+                        //累计额定工时
+                        sumSinglePieceHours = sumSinglePieceHours.add(singlePieceHours);
                         //没有调度审核或者 调度已审核并且给予准结工时进入
                         if (trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() == 1)) {
-                            sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
+                            //累计实际准结工时
+                            sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
+                        } else {
+                            realityPrepareEndHours = new BigDecimal(0);
                         }
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
@@ -1060,24 +1114,34 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                 QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
                                 if (rules != null) {
                                     if (rules.getIsGiveTime() == 1) {
-                                        sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                                        //累计实际额定工时
+                                        sumRealitySinglePieceHours = sumRealitySinglePieceHours.add(realitySinglePieceHours);
+                                    } else {
+                                        realitySinglePieceHours = new BigDecimal(0);
                                     }
                                     track.setQualityResult(rules.getStateName());
+                                } else {
+                                    realitySinglePieceHours = new BigDecimal(0);
+                                    track.setQualityResult("没有质检内容");
                                 }
+                            } else {
+                                realitySinglePieceHours = new BigDecimal(0);
+                                track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
                             //不质检也计算工时
-                            sumSinglePieceHours = sumSinglePieceHours + track.getReportHours();
+                            //累计实际额定工时
+                            sumRealitySinglePieceHours = sumRealitySinglePieceHours.add(realitySinglePieceHours);
                             track.setQualityResult("合格（非质检）");
                         }
-                        sumTotalHours = sumTotalHours + track.getCompletedQty() * track.getReportHours() + trackItem.getPrepareEndHours();
                         //总工时
-                        BigDecimal number = new BigDecimal(track.getCompletedQty());
-                        BigDecimal singlePieceHours = new BigDecimal(track.getSinglePieceHours());
-                        BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
-                        track.setTotalHours(number.multiply(singlePieceHours).add(prepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        BigDecimal totalHours = number.multiply(realitySinglePieceHours).add(realityPrepareEndHours);
+                        track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        sumTotalHours = sumTotalHours.add(totalHours);
                         track.setUserName(tenantUserVo.getEmplName());
 //                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                        track.setRealitySinglePieceHours(realitySinglePieceHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                        track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
                         track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
                         track.setOptSequence(trackItem.getOptSequence());
@@ -1090,12 +1154,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                     track0.setWorkNo(workno);
                     track0.setId(workno);
+                    //实际准备工时
+                    track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    //实际额定工时
+                    track0.setRealitySinglePieceHours(sumRealitySinglePieceHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //准备工时
-                    track0.setPrepareEndHours(new BigDecimal(sumPrepareEndHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setPrepareEndHours(sumPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //额定工时
-                    track0.setSinglePieceHours(new BigDecimal(sumSinglePieceHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setSinglePieceHours(sumSinglePieceHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //总工时
-                    track0.setTotalHours(new BigDecimal(sumTotalHours).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    track0.setTotalHours(sumTotalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     track0.setTrackCompleteList(trackCompleteShowList);
                     //判断是否包含叶子结点
                     track0.setIsLeafNodes(!CollectionUtils.isEmpty(completes));
@@ -1143,13 +1211,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
 
-        PageHelper.startPage(1, 1000);
+//        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteService.list(queryWrapper);
-        PageInfo<TrackHead> page = new PageInfo(completes);
-        for (int i = 1; i <= page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteService.list(queryWrapper));
-        }
+//        PageInfo<TrackHead> page = new PageInfo(completes);
+//        for (int i = 1; i <= page.getPages(); i++) {
+//            PageHelper.startPage(i, 1000);
+//            completes.addAll(trackCompleteService.list(queryWrapper));
+//        }
         return completes;
     }
 
