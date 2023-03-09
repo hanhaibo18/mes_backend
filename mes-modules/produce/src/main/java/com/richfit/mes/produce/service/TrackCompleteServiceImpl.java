@@ -868,7 +868,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
                         track.setQualityResult(trackItem.getRuleName());
                         track.setOptNo(trackItem.getOptNo());
-                        track.setParentId(track.getUserId());
+                        track.setParentId(orderno);
                         track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
                         details.add(track);
                     }
@@ -1029,7 +1029,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
                         track.setQualityResult(trackItem.getRuleName());
                         track.setOptNo(trackItem.getOptNo());
-                        track.setParentId(track.getUserId());
+                        track.setParentId(workno);
                         track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd"));
                         details.add(track);
                     }
