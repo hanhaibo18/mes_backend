@@ -1515,7 +1515,7 @@ public class ProduceInspectionRecordService {
     public CommonResult importPowerInfosExcel(MultipartFile file, String branchCode) {
         CommonResult result = CommonResult.success(true);
         //封装工时信息实体类
-        String[] fieldNames = {"drilNo", "drawNo", "sampleName", "inspectionDepart", "checkType", "tempType", "weldString", "castString", "forgString", "fluorescentString", "num", "single", "length", "reviseNum", "priorityString"};
+        String[] fieldNames = {"drilNo", "drawNo", "sampleName", "inspectionDepart", "checkType", "tempType", "weldString", "castString", "forgString", "fluorescentString", "num", "single", "length", "reviseNum", "priorityString","workpieceAddress"};
 
         File excelFile = null;
         //给导入的excel一个临时的文件名

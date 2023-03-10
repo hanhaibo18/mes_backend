@@ -62,6 +62,8 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private double length;
     @ApiModelProperty(value = "处数", dataType = "Integer")
     private int reviseNum;
+    @ApiModelProperty(value = "工件地点", dataType = "String")
+    private String workpieceAddress;
     @ApiModelProperty(value = "优先级", dataType = "Integer")
     private int priority;
     @ApiModelProperty(value = "branchCode", dataType = "String")
