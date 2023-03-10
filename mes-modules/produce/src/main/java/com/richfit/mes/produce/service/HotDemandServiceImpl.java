@@ -201,11 +201,14 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             //删除对应的生产计划
             this.removPlane(hotDemands);
             //修改批准状态
-            UpdateWrapper updateWrapper = new UpdateWrapper();
-            updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
-            updateWrapper.set("issue_time", "");//设置下发时间
-            updateWrapper.set("plan_id","");//设置计划id
-            updateWrapper.in("id", idList);
+            for (HotDemand hotDemand : hotDemands) {
+                UpdateWrapper updateWrapper = new UpdateWrapper();
+                updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
+                updateWrapper.set("issue_time", "");//设置下发时间
+                updateWrapper.set("plan_id","");//设置计划id
+                updateWrapper.in("id", idList);
+                boolean update = hotDemandService.update(updateWrapper);
+            }
         }else {
             //将需求数据转换为生产计划并入库
             Map map = this.convertAndSave(currentUser, hotDemands, 0);
@@ -216,6 +219,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 updateWrapper.set("issue_time", new Date());//设置下发时间
                 updateWrapper.set("plan_id",map.get(hotDemand.getId()));//设置计划id
                 updateWrapper.eq("id", hotDemand.getId());
+                boolean update = hotDemandService.update(updateWrapper);
             }
         }
         return CommonResult.success(ResultCode.SUCCESS);
