@@ -97,10 +97,11 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
 
     /**
      * 获取质量检测部门和本公司及其子部门的质检人员
+     *
      * @return
      */
     @Override
-    public List<TenantUserVo> queryZjAndBranchCodeUsers(){
+    public List<TenantUserVo> queryZjAndBranchCodeUsers() {
         List<TenantUserVo> tenantUserList = new ArrayList<>();
 
         //本公司的质检
@@ -116,7 +117,7 @@ public class BranchServiceImpl extends ServiceImpl<BranchMapper, Branch> impleme
     public List<Branch> queryAllCode() {
         List<Branch> branchList = new ArrayList<>();
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.isNull("main_branch_code");
+        queryWrapper.eq("branch_type", "A");
         List<Branch> branches = this.list(queryWrapper);
         Branch branch = new Branch();
         branch.setBranchName("总公司");
