@@ -184,8 +184,12 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //通过模型检查后查出所有需求信息
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
+        queryWrapper.apply("(produce_ratify_state=0 or produce_ratify_state is null)");
         //查出需求提报数据
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if(CollectionUtils.isEmpty(hotDemands)){
+            return  CommonResult.success(ResultCode.SUCCESS,"不可重复批准生产");
+        }
         //批准状态为0时为撤销批准  执行删除创建的生产计划以及扩展字段
         if(ratifyState.intValue()==0){
             Map<String, HotDemand> DemandMap = hotDemands.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
