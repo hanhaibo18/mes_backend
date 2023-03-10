@@ -4,9 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
@@ -19,9 +16,6 @@ import java.util.List;
  * @since 2020-09-07
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Accessors(chain = true)
-@NoArgsConstructor
 public class CodeRule extends BaseEntity<CodeRule> {
 
     /**
@@ -80,6 +74,8 @@ public class CodeRule extends BaseEntity<CodeRule> {
     public List<String> roleIdList;
 
     public String getRoleId() {
+        System.out.println("getRoleId"+roleId);
+        System.out.println("getRoleId"+roleIdList);
         StringBuilder stringBuilder = new StringBuilder();
         if(!ObjectUtil.isEmpty(this.roleIdList)){
             for (String siteId : this.roleIdList) {
@@ -94,8 +90,10 @@ public class CodeRule extends BaseEntity<CodeRule> {
     }
 
     public List<String> getRoleIdList() {
+        System.out.println("getRoleIdList"+roleId);
+        System.out.println("getRoleIdList"+roleIdList);
         if(!StringUtils.isEmpty(roleId) && (ObjectUtil.isEmpty(roleIdList) || roleIdList.size()==0)){
-            return Arrays.asList(roleId.split(","));
+            roleIdList = Arrays.asList(roleId.split(","));
         }
         return roleIdList;
     }

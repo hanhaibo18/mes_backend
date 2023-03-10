@@ -27,6 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -233,12 +235,15 @@ public class CodeRuleController extends BaseController {
                 errorStr = "车间级编码"+entity.getCode()+"已存在，无法再添加权限级";
             }
             if(roleRules.size()>0){
-                List<String> roleIdList = entity.getRoleIdList();
-                List<String> roleIdList1 = roleRules.get(0).getRoleIdList();
-                roleIdList.retainAll(roleIdList1);
-                if(roleIdList.size()>0){
-                    errorStr = "角色"+org.apache.commons.lang.StringUtils.join(roleIdList,",")+"已被赋予编码"+entity.getCode()+"，无法再为此角色分配相同编码的权限";
+                List<String> roleIdList = new ArrayList<>(Arrays.asList(entity.getRoleId().split(",")));
+                for (CodeRule roleRule : roleRules) {
+                    List<String> roleIdList1 = new ArrayList<>(Arrays.asList(roleRule.getRoleId().split(",")));
+                    roleIdList.retainAll(roleIdList1);
+                    if(roleIdList.size()>0){
+                        errorStr = "角色"+org.apache.commons.lang.StringUtils.join(roleIdList,",")+"已被赋予编码"+entity.getCode()+"，无法再为此角色分配相同编码的权限";
+                    }
                 }
+
             }
         }
         if (!StringUtils.isNullOrEmpty(errorStr)) {
