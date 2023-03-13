@@ -1,5 +1,6 @@
 package com.richfit.mes.sys.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.log.annotation.SysLog;
@@ -109,6 +110,18 @@ public class RoleController extends BaseController {
         RoleQueryParam roleQueryParam = roleQueryPageParam.toParam(RoleQueryParam.class);
         roleQueryParam.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(roleService.query(roleQueryPageParam.toPage(), roleQueryParam));
+    }
+
+    @ApiOperation(value = "查询角色", notes = "查询角色")
+    @GetMapping("/list")
+    public CommonResult queryRoleList(@Valid RoleQueryPageParam roleQueryPageParam) {
+        //如果是系统管理员，那其不能查询角色
+        if (SecurityUtils.getCurrentUser().isSysAdmin()) {
+            return CommonResult.success(null);
+        }
+        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return CommonResult.success(roleService.list(queryWrapper));
     }
 
     @ApiOperation(value = "查询用户已分配角色", notes = "")
