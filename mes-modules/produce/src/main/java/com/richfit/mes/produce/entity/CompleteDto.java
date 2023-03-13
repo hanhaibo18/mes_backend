@@ -30,6 +30,4 @@ public class CompleteDto {
     private String prodNo;
     @ApiModelProperty(value = "报工人", dataType = "String")
     private String completeBy;
-    @ApiModelProperty(value = "质检人车间")
-    private String qualityCheckBranch;
 }
