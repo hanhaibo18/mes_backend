@@ -418,10 +418,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (numDouble > assign.getQty()) {
                 return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
             }
-            if (numDouble < intervalNumber - 0.1) {
-                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.1));
+            if (numDouble < intervalNumber - 0.01) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.01));
             }
-            if (assign.getQty() >= numDouble && intervalNumber - 0.1 <= numDouble) {
+            if (assign.getQty() >= numDouble && intervalNumber - 0.01 <= numDouble) {
                 //最后一次报工进行下工序激活
                 if (queryIsComplete(assign)) {
                     //更改状态 标识当前工序完成
@@ -568,8 +568,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (numDouble > assign.getQty()) {
             return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得大于" + assign.getQty());
         }
-        if (numDouble < intervalNumber - 0.1) {
-            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得少于" + +(intervalNumber - 0.1));
+        if (numDouble < intervalNumber - 0.01) {
+            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得少于" + +(intervalNumber - 0.01));
         }
         //跟新工序完成数量
         trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
