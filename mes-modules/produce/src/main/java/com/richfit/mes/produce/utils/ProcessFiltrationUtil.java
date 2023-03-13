@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.utils;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseEntity;
@@ -29,7 +30,7 @@ public class ProcessFiltrationUtil {
         List<String> roleId = result.getData().getRoleList().stream().map(BaseEntity::getId).collect(Collectors.toList());
         queryWrapperRole.in("role_id", roleId);
         List<ProduceRoleOperation> operationList = role.list(queryWrapperRole);
-        Set<String> set = operationList.stream().map(ProduceRoleOperation::getOperationName).collect(Collectors.toSet());
+        Set<String> set = operationList.stream().filter(optName -> StrUtil.isNotBlank(optName.getOperationName())).map(ProduceRoleOperation::getOperationName).collect(Collectors.toSet());
         Set<String> names = new HashSet<>();
         for (String name : set) {
             names.add(name.replaceAll(" ", ""));
