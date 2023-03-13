@@ -2,46 +2,46 @@ package com.richfit.mes.common.model.wms;
 import lombok.Data;
 
 /**
- * @author LLh
- * @Description MES系统物料基础
+ *
+ * material_basis MES物料基础数据同步
  */
 @Data
 public class MaterialBasis {
 
     /**
-     * 工厂  泵业/热工等
+     * 工厂 泵业/热工等
      */
-    private String factory;
+    private Integer workCode;
 
     /**
      * 物料编码
      */
-    private String matterCode;
+    private String materialNum;
 
     /**
      * 物料描述
      */
-    private String matterDescribe;
+    private String materialDesc;
 
     /**
      * 计量单位
      */
-    private String unitMeasurement;
+    private String unit;
 
     /**
-     * 关键件  是/否
+     * 关键件 是/否
      */
-    private Integer keyPart;
+    private Integer crucialFlag;
 
     /**
-     * 跟踪方式  单件/批次
+     * 跟踪方式 单件/批次
      */
-    private Integer trackingMethod;
+    private Integer trackingMode;
 
     /**
-     * 材质  为零件材料
+     * 材质 为零件材料
      */
-    private String materialQuality;
+    private String partsMaterial;
 
     /**
      * 规格
@@ -51,46 +51,51 @@ public class MaterialBasis {
     /**
      * 单重
      */
-    private Float singleWeight;
+    private Double singleWeight;
 
     /**
-     * 实物配送  是/否
+     * 实物配送 是/否
      */
-    private Integer physicalDistribution;
+    private Integer deliveryFlag;
 
     /**
-     * 制造类型  外购、外协、自制
+     * 制造类型 外购、外协、自制
      */
-    private Integer makeType;
+    private Integer produceType;
 
     /**
-     * 物料类型  毛坯、成品、半成品
+     * 物料类型 毛坯、成品、半成品
      */
-    private Integer matterType;
+    private Integer materialType;
+
+    /**
+     * 车间
+     */
+    private String workshop;
 
     /**
      * 预留字段1
      */
-    private String reserve;
+    private String field1;
 
     /**
      * 预留字段2
      */
-    private String reserveTwo;
+    private String field2;
 
     /**
      * 预留字段3
      */
-    private String reserveThree;
+    private String field3;
 
     /**
      * 预留字段4
      */
-    private String reserveFour;
+    private String field4;
 
     /**
      * 预留字段5
      */
-    private String reserveFive;
+    private String field5;
 
 }
