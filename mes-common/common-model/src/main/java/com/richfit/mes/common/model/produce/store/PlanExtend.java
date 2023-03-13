@@ -59,4 +59,7 @@ public class PlanExtend {
 
     @ApiModelProperty(value = "ERP物料编码")
     private String erpProductCode;
+
+    @ApiModelProperty(value = "锭型")
+    private String ingotCase;
 }

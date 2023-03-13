@@ -224,4 +224,8 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     @ApiModelProperty(value = "ERP物料编码")
     private String erpProductCode;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "锭型")
+    private String ingotCase;
 }
