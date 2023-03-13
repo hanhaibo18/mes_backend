@@ -184,8 +184,12 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //通过模型检查后查出所有需求信息
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
+        queryWrapper.apply("(produce_ratify_state=0 or produce_ratify_state is null)");
         //查出需求提报数据
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if(CollectionUtils.isEmpty(hotDemands)){
+            return  CommonResult.success(ResultCode.SUCCESS,"不可重复批准生产");
+        }
         //批准状态为0时为撤销批准  执行删除创建的生产计划以及扩展字段
         if(ratifyState.intValue()==0){
             Map<String, HotDemand> DemandMap = hotDemands.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
@@ -201,11 +205,14 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             //删除对应的生产计划
             this.removPlane(hotDemands);
             //修改批准状态
-            UpdateWrapper updateWrapper = new UpdateWrapper();
-            updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
-            updateWrapper.set("issue_time", "");//设置下发时间
-            updateWrapper.set("plan_id","");//设置计划id
-            updateWrapper.in("id", idList);
+            for (HotDemand hotDemand : hotDemands) {
+                UpdateWrapper updateWrapper = new UpdateWrapper();
+                updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
+                updateWrapper.set("issue_time", "");//设置下发时间
+                updateWrapper.set("plan_id","");//设置计划id
+                updateWrapper.in("id", idList);
+                boolean update = hotDemandService.update(updateWrapper);
+            }
         }else {
             //将需求数据转换为生产计划并入库
             Map map = this.convertAndSave(currentUser, hotDemands, 0);
@@ -216,6 +223,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 updateWrapper.set("issue_time", new Date());//设置下发时间
                 updateWrapper.set("plan_id",map.get(hotDemand.getId()));//设置计划id
                 updateWrapper.eq("id", hotDemand.getId());
+                boolean update = hotDemandService.update(updateWrapper);
             }
         }
         return CommonResult.success(ResultCode.SUCCESS);
