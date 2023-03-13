@@ -342,7 +342,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人
         planExtend.setSubmitOrderOrg(hotDemand.getSubmitOrderOrg());//提单单位
         planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
-        planExtend.setIngotCase(hotDemand.getIngotCase());//锭型
+        planExtend.setIngotCase(hotDemand.getIngotCase());//锭 型
         planExtendService.save(planExtend);
     }
 
