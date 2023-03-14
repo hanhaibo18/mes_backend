@@ -796,8 +796,10 @@ public class SequenceController extends BaseController {
     @ApiImplicitParam(name = "assign", value = "工序派工", required = true, dataType = "SequenceAssign", paramType = "path")
     @PutMapping("/assign/update")
     public CommonResult<Boolean> assignUpdate(@RequestBody OperationAssign assign) {
-        //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
-        if(StringUtils.isNullOrEmpty(assign.getUserId())){
+        //1、处理派工人员信息  机加userid和username前端拼接好了，所以可以直接用
+        //2、热工前端没拼接，所以后端得处理 从assignPerson里边取值
+        //3、热处理车间分配到车间  不涉及人员
+        if(StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())){
             StringBuilder userId = new StringBuilder();
             StringBuilder userName = new StringBuilder();
             for (AssignPerson assignPerson : assign.getAssignPersons()) {
