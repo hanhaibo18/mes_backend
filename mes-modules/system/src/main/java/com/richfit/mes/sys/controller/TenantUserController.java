@@ -387,5 +387,12 @@ public class TenantUserController extends BaseController {
     public CommonResult<Map<String, String>> usersAccount() {
         return CommonResult.success(tenantUserService.usersAccount());
     }
+
+    @ApiOperation(value = "根据车间查询探伤记录审核人", notes = "根据车间查询探伤记录审核人")
+    @GetMapping("/query_audit_poeples")
+    public CommonResult<List<TenantUserVo>> queryAuditsList(@RequestParam String branchCode) {
+        return CommonResult.success(tenantUserService.queryAuditsList(branchCode));
+    }
+
 }
 

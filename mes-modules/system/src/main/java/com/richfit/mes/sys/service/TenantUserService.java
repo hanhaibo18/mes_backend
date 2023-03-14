@@ -211,4 +211,6 @@ public interface TenantUserService {
 查询全部人员账户姓名
  */
     Map usersAccount();
+
+    List<TenantUserVo> queryAuditsList(String branchCode);
 }

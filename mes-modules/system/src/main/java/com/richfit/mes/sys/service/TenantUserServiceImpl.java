@@ -66,6 +66,8 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Value("${password.default:mes@123456}")
     private String defaultPassword;
 
+    public static final  String RECORD_AUDIT_PEOPLE = "ZJ_JLSH";
+
     @Override
     //@Cacheable(value = CacheConstant.SYS_USER_DETAILS, key = "#uniqueId")
     public TenantUser getByUniqueId(String uniqueId) {
@@ -501,6 +503,23 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             map.put(user.getUserAccount(), user.getEmplName());
         }
         return map;
+    }
+
+    @Override
+    public List<TenantUserVo> queryAuditsList(String branchCode) {
+        List<TenantUserVo> tenantUserVos = new ArrayList<>();
+        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("role_code", RECORD_AUDIT_PEOPLE);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
+                .eq("org_id",branchCode);
+        List<Role> roleList = roleService.list(queryWrapper);
+        List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(roleIdList)) {
+            QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
+            queryUser.in("role_id", roleIdList);
+            tenantUserVos = tenantUserMapper.queryByCondition(queryUser);
+        }
+        return tenantUserVos;
     }
 
 }
