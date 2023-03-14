@@ -152,18 +152,18 @@ public class PublicServiceImpl implements PublicService {
             if (assignById.getQty() > sum && sum > doubleQty - 0.01) {
                 //当前工序是否报工完成
                 trackItem.setIsOperationComplete(isComplete);
-                trackItem.setOperationCompleteTime(new Date());
                 //控制下工序激活 还需验证并行工序是否完成
                 if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
                     trackItem.setIsFinalComplete(String.valueOf(isComplete));
+                    //校验并行工序是否最终完成
+                    if (verifyParallel(trackItem.getOptSequence(), trackItem.getFlowId())) {
+                        isNext = true;
+                    }
                 }
             }
+            trackItem.setOperationCompleteTime(new Date());
             trackItem.setCompleteQty(sum);
             trackItemService.updateById(trackItem);
-        }
-        //校验并行工序是否最终完成
-        if (verifyParallel(trackItem.getOptSequence(), trackItem.getFlowId())) {
-            isNext = true;
         }
         if (isNext) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -192,16 +192,16 @@ public class PublicServiceImpl implements PublicService {
         //如果不需要调度审核，则将工序设置为完成
         if (trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsQualityComplete() == 1) {
             trackItem.setIsFinalComplete("1");
+            //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
+            if (verifyParallel(trackItem.getOptSequence(), trackItem.getFlowId())) {
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+                    planService.planData(trackHead.getWorkPlanId());
+                }
+                return activationProcess(map);
+            }
         }
         trackItemService.updateById(trackItem);
-        //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
-        if (verifyParallel(trackItem.getOptSequence(), trackItem.getFlowId())) {
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-            if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                planService.planData(trackHead.getWorkPlanId());
-            }
-            return activationProcess(map);
-        }
         return true;
     }
 

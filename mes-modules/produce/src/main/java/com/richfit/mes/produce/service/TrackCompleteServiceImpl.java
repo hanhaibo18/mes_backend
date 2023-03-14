@@ -160,6 +160,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             List<TrackCheck> trackCheckList = ConcurrentUtil.futureGet(trackCheckListFuture);
             Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
+            //过滤跟单工序只计算最终完成工序
             Map<String, TrackItem> trackMap = trackItems.stream().filter(item -> item.getIsOperationComplete() == 1).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
             //只获取已完工数据计算工时
             List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
