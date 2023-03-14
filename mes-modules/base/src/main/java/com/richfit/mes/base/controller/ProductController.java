@@ -658,4 +658,15 @@ public class ProductController extends BaseController {
     }
 
 
+    @ApiOperation(value = "根据产品名称模糊查询物料信息", notes = "根据产品名称模糊查询物料信息")
+    @GetMapping("/list_by_product_name")
+    public List<Product> listByProductName(@ApiParam(value = "产品名称", required = true) @RequestParam String productName) {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        if (!StringUtils.isNullOrEmpty(productName)) {
+            queryWrapper.like("product_name", productName);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return productService.list(queryWrapper);
+    }
+
 }
