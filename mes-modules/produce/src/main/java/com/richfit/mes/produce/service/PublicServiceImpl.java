@@ -162,7 +162,7 @@ public class PublicServiceImpl implements PublicService {
             trackItemService.updateById(trackItem);
         }
         //校验并行工序是否最终完成
-        if (verifyParallel(trackItem.getOptSequence(), trackItem.getTrackHeadId())) {
+        if (verifyParallel(trackItem.getOptSequence(), trackItem.getFlowId())) {
             isNext = true;
         }
         if (isNext) {
@@ -195,7 +195,7 @@ public class PublicServiceImpl implements PublicService {
         }
         trackItemService.updateById(trackItem);
         //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
-        if (verifyParallel(trackItem.getOptSequence(), trackItem.getTrackHeadId())) {
+        if (verifyParallel(trackItem.getOptSequence(), trackItem.getFlowId())) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                 planService.planData(trackHead.getWorkPlanId());
@@ -230,7 +230,7 @@ public class PublicServiceImpl implements PublicService {
             planService.planData(trackHead.getWorkPlanId());
         }
         //校验是否并行完成,全部完成执行下工序激活
-        if (verifyParallel(trackItem.getOptSequence(), trackItem.getTrackHeadId())) {
+        if (verifyParallel(trackItem.getOptSequence(), trackItem.getFlowId())) {
             //校验是否是最后一道工序
             if (0 == trackItem.getNextOptSequence()) {
                 //并行全部完成,而且还是最后一道工序,执行跟单完成方法
@@ -472,11 +472,11 @@ public class PublicServiceImpl implements PublicService {
         }
     }
 
-    private boolean verifyParallel(int optSequence, String trackHeadId) {
+    private boolean verifyParallel(int optSequence, String flowId) {
         boolean verify = false;
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
         queryWrapper.eq("opt_sequence", optSequence);
-        queryWrapper.eq("track_head_id", trackHeadId);
+        queryWrapper.eq("flow_id", flowId);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
         if (trackItemList.size() > 1) {
             //过滤并行工序中是否存在未最终完成的工序
