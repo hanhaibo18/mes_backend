@@ -277,9 +277,9 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     protected Double realityPrepareEndHours;
 
-    @ApiModelProperty(value = "实际额定工时", dataType = "Double")
+    @ApiModelProperty(value = "实际报告工时", dataType = "Double")
     @TableField(exist = false)
-    protected Double realitySinglePieceHours;
+    protected Double realityReportHours;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "叶子结点数据", dataType = "List<TrackComplete>")

@@ -429,10 +429,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Object> savePlan(Plan plan) {
-
         checkPlan(plan);
         //根据计划图号判断计划类型  机加or装配or？
-//
         CommonResult<Router> router = baseServiceClient.getByRouterNo(plan.getDrawNo(), null);
 //        plan.setDrawNoType(router.getData() != null ? router.getData().getType() : null);
         //更新对应订单状态
