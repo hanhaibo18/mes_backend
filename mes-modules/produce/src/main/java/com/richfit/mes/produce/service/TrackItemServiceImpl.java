@@ -548,6 +548,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setIsPrepare(0);
                 item.setIsNotarize(0);
                 item.setIsDoing(0);
+                item.setIsScheduleCompleteShow(1);
                 item.setOptSequence(i++);
                 //需要调度审核时展示
                 if (1 == item.getIsExistScheduleCheck()) {
