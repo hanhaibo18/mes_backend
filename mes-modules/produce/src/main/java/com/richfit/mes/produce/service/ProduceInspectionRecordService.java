@@ -244,7 +244,7 @@ public class ProduceInspectionRecordService {
         //已经委托的探伤委托单
         queryWrapper.eq("status", IS_STATUS);
         //图号查询
-        queryWrapper.likeLeft(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo()), "draw_no", inspectionPowerVo.getDrawNo());
+        queryWrapper.likeRight(!StringUtils.isEmpty(inspectionPowerVo.getDrawNo()), "draw_no", inspectionPowerVo.getDrawNo());
         //检测类型
         queryWrapper.eq(!StringUtils.isEmpty(inspectionPowerVo.getTempType()), "temp_type", inspectionPowerVo.getTempType());
         //排序
