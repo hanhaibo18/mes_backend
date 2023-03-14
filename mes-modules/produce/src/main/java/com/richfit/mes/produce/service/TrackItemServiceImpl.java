@@ -41,7 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author 王瑞
@@ -192,6 +191,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     @Override
     public String resetStatus(String tiId, Integer resetType) {
         TrackItem item = this.getById(tiId);
+        if (item.getIsCurrent() != 1){
+            return "只能操作当前工序！";
+        }
         // resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录
         if (resetType != null && item != null) {
             QueryWrapper<TrackHead> headQueryWrapper = new QueryWrapper<>();
@@ -326,13 +328,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         //获取该flowId的所有工序
         queryWrapper.eq("flow_id", flowId);
+        queryWrapper.orderByAsc("sequence_order_by");
         List<TrackItem> allItems = this.list(queryWrapper);
         if (allItems == null || allItems.isEmpty()) {
             return "该跟单没有工序！";
         }
         List<TrackItem> updateItems = new ArrayList<>();
-        //将工序按照工序顺序排序
-        allItems = allItems.stream().sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.toList());
         queryWrapper.eq("is_current", 1);
         List<TrackItem> items = this.list(queryWrapper);
         //可能由于某些原因导致当前跟单工序没有当前工序，设置第一个工序为当前工序
@@ -476,7 +477,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         currQueryWrapper.eq("is_current", 1);
         currQueryWrapper.orderByAsc("opt_sequence");
         List<TrackItem> currItems = this.list(currQueryWrapper);
-
+        if (CollectionUtils.isEmpty(currItems)) {
+            return "此跟单没有当前工序！";
+        }
 
         if (CollectionUtils.isEmpty(finalItems)) {
             return "此跟单没有工序完成";
@@ -484,10 +487,16 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
         TrackItem item = currItems.get(0);
 
-        if (item.getOptSequence() == 1) {
+        if (item.getSequenceOrderBy() == 1) {
             return "当前工序已是跟单第一步有效工序,不可回退！";
         }
-
+        //回退前检查当前工序状态
+        for (TrackItem currItem : currItems) {
+            if ("1".equals(currItem.getIsFinalComplete()) || item.getIsScheduleComplete() != 0 || item.getIsExistScheduleCheck() != 0
+                    || item.getIsDoing() != 0 || item.getIsSchedule() != 0){
+                return "回退前清清除当前工序状态！";
+            }
+        }
         // 将当前工序is_current设为0
         UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
         updateWrapperOld.eq("flow_id", flowId);
@@ -498,8 +507,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         // 将上道工序is_current设为1
         UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
         updateWrapper.set("is_current", 1);
-        updateWrapper.set("is_track_sequence_complete", 0);
-        updateWrapper.set("is_final_complete", 0);
         updateWrapper.eq("flow_id", flowId);
         updateWrapper.eq("next_opt_sequence", item.getOptSequence());
         this.update(updateWrapper);
