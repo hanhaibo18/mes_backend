@@ -162,7 +162,7 @@ public class PublicServiceImpl implements PublicService {
             trackItemService.updateById(trackItem);
         }
         //校验并行工序是否最终完成
-        if (verifyParallel(trackItem.getOptSequence())) {
+        if (verifyParallel(trackItem.getOptSequence(), trackItem.getTrackHeadId())) {
             isNext = true;
         }
         if (isNext) {
@@ -195,7 +195,7 @@ public class PublicServiceImpl implements PublicService {
         }
         trackItemService.updateById(trackItem);
         //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
-        if (verifyParallel(trackItem.getOptSequence())) {
+        if (verifyParallel(trackItem.getOptSequence(), trackItem.getTrackHeadId())) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                 planService.planData(trackHead.getWorkPlanId());
@@ -224,12 +224,13 @@ public class PublicServiceImpl implements PublicService {
         trackItem.setIsFinalComplete("1");
         trackItem.setScheduleCompleteTime(new Date());
         trackItem.setIsOperationComplete(1);
+        trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
         trackItemService.updateById(trackItem);
         if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
             planService.planData(trackHead.getWorkPlanId());
         }
         //校验是否并行完成,全部完成执行下工序激活
-        if (verifyParallel(trackItem.getOptSequence())) {
+        if (verifyParallel(trackItem.getOptSequence(), trackItem.getTrackHeadId())) {
             //校验是否是最后一道工序
             if (0 == trackItem.getNextOptSequence()) {
                 //并行全部完成,而且还是最后一道工序,执行跟单完成方法
@@ -259,10 +260,10 @@ public class PublicServiceImpl implements PublicService {
         if (CollectionUtils.isEmpty(currentTrackItemList)) {
             throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
         }
-        //判断所有并行工序是否全部最终完成
-        if (!verifyParallel(currentTrackItemList.get(0).getOptSequence())) {
-            return false;
-        }
+//        //判断所有并行工序是否全部最终完成
+//        if (!verifyParallel(currentTrackItemList.get(0).getOptSequence(), currentTrackItemList.get(0).getTrackHeadId())) {
+//            return false;
+//        }
 //        for (TrackItem trackItem : currentTrackItemList) {
 //            if (2 != trackItem.getIsDoing()) {
 //                return false;
@@ -471,10 +472,11 @@ public class PublicServiceImpl implements PublicService {
         }
     }
 
-    private boolean verifyParallel(int optSequence) {
+    private boolean verifyParallel(int optSequence, String trackHeadId) {
         boolean verify = false;
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
         queryWrapper.eq("opt_sequence", optSequence);
+        queryWrapper.eq("track_head_id", trackHeadId);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
         if (trackItemList.size() > 1) {
             //过滤并行工序中是否存在未最终完成的工序
