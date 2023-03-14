@@ -293,8 +293,8 @@ public class HotDemandController extends BaseController {
         for (HotDemand hotDemand : hotDemands) {
             //根据图号+@+版本号去获取模型
             HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo()+"@"+hotDemand.getVersionNum());
-            //模型不为空且模型数量大于1判断为有模型
-            if (ObjectUtils.isNotEmpty(hotModelStore) && hotModelStore.getNormalNum()>1) {
+            //模型不为空且模型数量大于0判断为有模型
+            if (ObjectUtils.isNotEmpty(hotModelStore) && hotModelStore.getNormalNum()>0) {
                 //收集有模型的毛坯需求id
                 ids.add(hotDemand.getId());
             }
