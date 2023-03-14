@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * 
- * @TableName apply_list_upload MES申请单上传WMS（已上线）
+ * apply_list_upload MES申请单上传WMS（已上线）
  */
 @Data
 public class ApplyListUpload {
