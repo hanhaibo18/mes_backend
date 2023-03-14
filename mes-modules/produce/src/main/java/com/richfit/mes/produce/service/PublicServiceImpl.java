@@ -127,20 +127,13 @@ public class PublicServiceImpl implements PublicService {
 
         String assignId = map.get("assignId");
         Assign assignById = trackAssignService.getById(assignId);
-
         int isComplete = 1;
-
-
         Boolean activationProcess = false;
         boolean isNext = false;
-
-        if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
-            trackItem.setIsFinalComplete(String.valueOf(isComplete));
-            isNext = true;
-        }
         //判断整个工序是否完成，如果完成，则将完成数量和完成状态写入
         double doubleQty = assignById.getQty();
         //trackItem.getCompleteQty() == assignById.getQty()
+        //派工数量大于报工数量 && 报工数量大于 派工数量-0.01
         if (assignById.getQty() > trackItem.getCompleteQty() && trackItem.getCompleteQty() > doubleQty - 0.01) {
             QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
             queryWrapper.eq("ti_id", trackItem.getId());
@@ -155,13 +148,22 @@ public class PublicServiceImpl implements PublicService {
                 //计算派工数量
                 sum += assign.getQty();
             }
-
-            trackItem.setOperationCompleteTime(new Date());
+            //新派工数量进行校验判断当前工序是否完场 是否最终完成
+            if (assignById.getQty() > sum && sum > doubleQty - 0.01) {
+                //当前工序是否报工完成
+                trackItem.setIsOperationComplete(isComplete);
+                trackItem.setOperationCompleteTime(new Date());
+                //控制下工序激活 还需验证并行工序是否完成
+                if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
+                    trackItem.setIsFinalComplete(String.valueOf(isComplete));
+                }
+            }
             trackItem.setCompleteQty(sum);
-            //当前工序是否完成
-            trackItem.setIsOperationComplete(isComplete);
-            trackItem.setOperationCompleteTime(new Date());
             trackItemService.updateById(trackItem);
+        }
+        //校验并行工序是否最终完成
+        if (verifyParallel(trackItem.getOptSequence())) {
+            isNext = true;
         }
         if (isNext) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -186,22 +188,20 @@ public class PublicServiceImpl implements PublicService {
         TrackItem trackItem = trackItemService.getById(tiId);
         //质检完成
         trackItem.setIsQualityComplete(1);
-        trackItem.setQualityResult(1);
         trackItem.setQualityCompleteTime(new Date());
-        //如果不需要调度审核，则将工序设置为完成，并激活下个工序
+        //如果不需要调度审核，则将工序设置为完成
         if (trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsQualityComplete() == 1) {
-            trackItem.setIsOperationComplete(1);
-            trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsFinalComplete("1");
-            trackItem.setCompleteQty(trackItem.getNumber().doubleValue());
-            trackItemService.updateById(trackItem);
+        }
+        trackItemService.updateById(trackItem);
+        //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
+        if (verifyParallel(trackItem.getOptSequence())) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
                 planService.planData(trackHead.getWorkPlanId());
             }
             return activationProcess(map);
         }
-        trackItemService.updateById(trackItem);
         return true;
     }
 
@@ -221,34 +221,23 @@ public class PublicServiceImpl implements PublicService {
         if (null != SecurityUtils.getCurrentUser()) {
             trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
         }
-        trackItem.setCompleteQty(trackItem.getNumber().doubleValue());
         trackItem.setIsFinalComplete("1");
         trackItem.setScheduleCompleteTime(new Date());
         trackItem.setIsOperationComplete(1);
-        trackItem.setOperationCompleteTime(new Date());
         trackItemService.updateById(trackItem);
         if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
             planService.planData(trackHead.getWorkPlanId());
         }
-        //最后一道工序并行 校验完成
-        if (0 == trackItem.getNextOptSequence()) {
-            //校验是否并行 并行执行跟单状态修改 需要校验其他工序是否完成
-            if (trackItem.getOptParallelType() == 1) {
-                //查询分流Id下 当前工序 没有最终完成的
-                QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("flow_id", trackItem.getFlowId());
-                queryWrapper.eq("opt_sequence", trackItem.getOptSequence());
-                queryWrapper.eq("is_final_complete", "0");
-                int count = trackItemService.count(queryWrapper);
-                //数量为0 表示当前工序全部完场 执行跟单状态修改
-                if (count == 0) {
-                    trackHeadService.trackHeadFinish(trackItem.getFlowId());
-                }
-            } else {
+        //校验是否并行完成,全部完成执行下工序激活
+        if (verifyParallel(trackItem.getOptSequence())) {
+            //校验是否是最后一道工序
+            if (0 == trackItem.getNextOptSequence()) {
+                //并行全部完成,而且还是最后一道工序,执行跟单完成方法
                 trackHeadService.trackHeadFinish(trackItem.getFlowId());
             }
+            return this.activationProcess(map);
         }
-        return this.activationProcess(map);
+        return true;
     }
 
     /**
@@ -270,19 +259,24 @@ public class PublicServiceImpl implements PublicService {
         if (CollectionUtils.isEmpty(currentTrackItemList)) {
             throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
         }
-        //判断所有并行工序是否全部完成
-        for (TrackItem trackItem : currentTrackItemList) {
-            if (2 != trackItem.getIsDoing()) {
-                return false;
-            }
+        //判断所有并行工序是否全部最终完成
+        if (!verifyParallel(currentTrackItemList.get(0).getOptSequence())) {
+            return false;
         }
+//        for (TrackItem trackItem : currentTrackItemList) {
+//            if (2 != trackItem.getIsDoing()) {
+//                return false;
+//            }
+//        }
         //过滤已完工数据,获取未完工/未开工数据
         List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsDoing() != 2).collect(Collectors.toList());
-        //判断是最后一道工序和没有未完工/未开工数据
+        //判断是最后一道工序 和 没有未完工/未开工数据 调用跟单状态修改
         if (currentTrackItemList.get(0).getNextOptSequence() == 0 && CollectionUtils.isEmpty(collect)) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
+            //不修改最后状态
             return true;
         }
+        //修改当前工序状态
         for (TrackItem trackItem : currentTrackItemList) {
             trackItem.setIsCurrent(0);
             trackItemService.updateById(trackItem);
@@ -477,5 +471,20 @@ public class PublicServiceImpl implements PublicService {
         }
     }
 
+    private boolean verifyParallel(int optSequence) {
+        boolean verify = false;
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("opt_sequence", optSequence);
+        List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+        if (trackItemList.size() > 1) {
+            //过滤并行工序中是否存在未最终完成的工序
+            long count = trackItemList.stream().filter(item -> "0".equals(item.getIsFinalComplete())).count();
+            //没有未完成为true
+            verify = count == 0;
+        } else {
+            verify = true;
+        }
+        return verify;
+    }
 
 }
