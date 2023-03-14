@@ -58,7 +58,7 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "灵敏度x参数")
     private double xValue;
     @ApiModelProperty(value = "灵敏度γ参数")
-    private double γValue;
+    private double lambda;
     @ApiModelProperty(value = "补偿")
     private String compensation;
     @ApiModelProperty(value = "扫描量程复核")
@@ -93,6 +93,14 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     private String isAudit;
     @ApiModelProperty(value = "审核意见")
     private String auditRemark;
+    @ApiModelProperty(value = "无源委托的项目名称")
+    private String projectName;
+    @ApiModelProperty(value = "无源委托的材质")
+    private String texture;
+    @ApiModelProperty(value = "无源委托的产品名称")
+    private String productName;
+    @ApiModelProperty(value = "无源委托的产品编码")
+    private String productNo;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "检测示意图list")

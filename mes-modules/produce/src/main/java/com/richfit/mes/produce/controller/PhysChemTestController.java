@@ -116,6 +116,7 @@ public class PhysChemTestController extends BaseController {
     @ApiImplicitParam(name = "phyChemTaskVo", value = "检验任务查询实体", paramType = "body", dataType = "PhyChemTaskVo")
     @PostMapping("/page")
     public CommonResult page(@RequestBody PhyChemTaskVo phyChemTaskVo) {
+        phyChemTaskVo.setConsignor(SecurityUtils.getCurrentUser().getUserId());
         return CommonResult.success(phyChemTestService.page(phyChemTaskVo));
     }
 

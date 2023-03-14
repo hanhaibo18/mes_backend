@@ -1631,6 +1631,10 @@
                                 <w:tcPr>
                                     <w:tcW w:w="2605" w:type="dxa"/>
                                     <w:gridSpan w:val="5"/>
+                                    <w:tcBorders>
+                                        <w:bottom w:val="nil"/>
+                                        <w:right w:val="nil"/>
+                                    </w:tcBorders>
                                     <w:noWrap w:val="0"/>
                                     <w:vAlign w:val="top"/>
                                 </w:tcPr>
@@ -1674,6 +1678,11 @@
                                     <w:tcW w:w="2321" w:type="dxa"/>
                                     <w:gridSpan w:val="5"/>
                                     <w:noWrap w:val="0"/>
+                                    <w:tcBorders>
+                                        <w:bottom w:val="nil"/>
+                                        <w:left w:val="nil"/>
+                                        <w:right w:val="nil"/>
+                                    </w:tcBorders>
                                     <w:vAlign w:val="top"/>
                                 </w:tcPr>
                                 <w:p>
@@ -1716,6 +1725,10 @@
                                     <w:tcW w:w="2874" w:type="dxa"/>
                                     <w:gridSpan w:val="4"/>
                                     <w:noWrap w:val="0"/>
+                                    <w:tcBorders>
+                                        <w:bottom w:val="nil"/>
+                                        <w:left w:val="nil"/>
+                                    </w:tcBorders>
                                     <w:vAlign w:val="top"/>
                                 </w:tcPr>
                                 <w:p>

@@ -88,6 +88,8 @@ public class PhysChemOrderInnerController extends BaseController {
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getStatus())){
             queryWrapper.in("status",phyChemTaskVo.getStatus().split(","));
         }
+        //查看自己的委托
+        queryWrapper.eq("consignor", phyChemTaskVo.getConsignor());
         //排序
         OrderUtil.query(queryWrapper, phyChemTaskVo.getOrderCol(), phyChemTaskVo.getOrder());
         //分页
