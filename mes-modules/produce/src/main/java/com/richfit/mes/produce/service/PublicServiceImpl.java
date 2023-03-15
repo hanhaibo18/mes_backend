@@ -192,6 +192,7 @@ public class PublicServiceImpl implements PublicService {
         //如果不需要调度审核，则将工序设置为完成
         if (trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsQualityComplete() == 1) {
             trackItem.setIsFinalComplete("1");
+            trackItemService.updateById(trackItem);
             //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
             if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -201,7 +202,6 @@ public class PublicServiceImpl implements PublicService {
                 return activationProcess(map);
             }
         }
-        trackItemService.updateById(trackItem);
         return true;
     }
 
