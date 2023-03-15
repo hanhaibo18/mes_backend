@@ -380,7 +380,8 @@ public class ProduceInspectionRecordService {
                     .set(StringUtils.isEmpty(String.valueOf(jsonObject.get("reportNo"))), "report_no", String.valueOf(jsonObject.get("reportNo")))
                     .set("insp_temp_type", tempType)
                     .set("flaw_detection", String.valueOf(jsonObject.get("inspectionResults")))
-                    .set("audit_status", 0);
+                    .set("audit_status", 0)
+                    .set("audit_remark",null);
             inspectionPowerService.update(updateWrapper);
         }
 
@@ -407,7 +408,7 @@ public class ProduceInspectionRecordService {
     }
 
     /**
-     * 根据工序id查询探伤记录
+     * 根据委托单id查询探伤记录
      *
      * @param powerId
      * @return
@@ -465,6 +466,23 @@ public class ProduceInspectionRecordService {
             listMap.sort((t1, t2) ->
                     t2.get("modifyTime").toString().compareTo(t1.get("modifyTime").toString())
             );
+        }
+        //探伤记录基本信息赋值
+        InspectionPower power = inspectionPowerService.getById(powerId);
+        //赋跟单属性
+        TrackHead trackHead = trackHeadMapper.selecProjectNametById(power.getHeadId());
+
+        for (Map<String, Object> map : listMap) {
+            if (!ObjectUtil.isEmpty(trackHead)) {
+                map.put("trackNo",trackHead.getTrackNo());
+                map.put("workNo",trackHead.getWorkNo());
+                map.put("productName",trackHead.getProductName());
+                map.put("projectName",trackHead.getProjectName());
+                map.put("texture",trackHead.getTexture());
+            }
+            map.put("drawNo",power.getDrawNo());
+            map.put("sampleName",power.getSampleName());
+            map.put("num",power.getNum());
         }
 
         return listMap;
@@ -537,6 +555,10 @@ public class ProduceInspectionRecordService {
                 //租户id便于审核时查询对应公司的质检人员
                 map.put("tenantId", item.getTenantId());
             }
+
+            map.put("drawNo",power.getDrawNo());
+            map.put("sampleName",power.getSampleName());
+            map.put("num",power.getNum());
             return map;
 
         }

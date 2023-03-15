@@ -2466,99 +2466,100 @@
                 <w:tr>
                     <w:tblPrEx>
                         <w:tblBorders>
-                            <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                            <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                            <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                            <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                            <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                            <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
+                            <w:top w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:left w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:right w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0"/>
                         </w:tblBorders>
                         <w:tblCellMar>
-                            <w:top w:w="0" w:type="dxa" />
-                            <w:left w:w="108" w:type="dxa" />
-                            <w:bottom w:w="0" w:type="dxa" />
-                            <w:right w:w="108" w:type="dxa" />
+                            <w:top w:w="0" w:type="dxa"/>
+                            <w:left w:w="108" w:type="dxa"/>
+                            <w:bottom w:w="0" w:type="dxa"/>
+                            <w:right w:w="108" w:type="dxa"/>
                         </w:tblCellMar>
                     </w:tblPrEx>
                     <w:trPr>
-                        <w:cantSplit />
-                        <w:trHeight w:val="2806" w:hRule="exact" />
-                        <w:jc w:val="center" />
+                        <w:cantSplit/>
+                        <w:trHeight w:val="1393" w:hRule="atLeast"/>
+                        <w:jc w:val="center"/>
                     </w:trPr>
                     <w:tc>
                         <w:tcPr>
-                            <w:tcW w:w="2077" w:type="dxa" />
-                            <w:noWrap w:val="0" />
-                            <w:vAlign w:val="center" />
+                            <w:tcW w:w="2077" w:type="dxa"/>
+                            <w:vMerge w:val="restart"/>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="center"/>
                         </w:tcPr>
                         <w:p>
                             <w:pPr>
-                                <w:jc w:val="center" />
+                                <w:jc w:val="center"/>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                             </w:pPr>
                             <w:r>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                                 <w:t>检验区域</w:t>
                             </w:r>
                         </w:p>
                         <w:p>
                             <w:pPr>
-                                <w:jc w:val="center" />
+                                <w:jc w:val="center"/>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                             </w:pPr>
                             <w:r>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                                 <w:t>Examination Area</w:t>
                             </w:r>
                         </w:p>
                         <w:p>
                             <w:pPr>
-                                <w:jc w:val="center" />
+                                <w:jc w:val="center"/>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                             </w:pPr>
                             <w:r>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                                 <w:t>位置标记号</w:t>
                             </w:r>
                         </w:p>
                         <w:p>
                             <w:pPr>
-                                <w:jc w:val="center" />
+                                <w:jc w:val="center"/>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                             </w:pPr>
                             <w:r>
                                 <w:rPr>
-                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
+                                    <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
                                 </w:rPr>
                                 <w:t>Marks No</w:t>
                             </w:r>
@@ -2566,38 +2567,112 @@
                     </w:tc>
                     <w:tc>
                         <w:tcPr>
-                            <w:tcW w:w="8895" w:type="dxa" />
-                            <w:gridSpan w:val="10" />
-                            <w:noWrap w:val="0" />
-                            <w:vAlign w:val="top" />
+                            <w:tcW w:w="8895" w:type="dxa"/>
+                            <w:gridSpan w:val="10"/>
+                            <w:tcBorders>
+                                <w:bottom w:val="nil"/>
+                            </w:tcBorders>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="center"/>
                         </w:tcPr>
                         <w:p>
                             <w:pPr>
+                                <w:jc w:val="left"/>
                                 <w:rPr>
-                                    <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
-                                    <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                    <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                 </w:rPr>
                             </w:pPr>
                             <w:r>
                                 <w:rPr>
-                                    <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
-                                    <w:sz w:val="18" />
-                                    <w:szCs w:val="18" />
-                                    <w:lang w:val="en-US" w:eastAsia="zh-CN" />
+                                    <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                 </w:rPr>
                                 <w:pict>
-                                    <v:shape id="_x0000_i1025" o:spt="75" alt="图片四" type="#_x0000_t75" style="height:119.35pt;width:191.1pt;" filled="f" o:preferrelative="t" stroked="f" coordsize="21600,21600">
-                                        <v:path />
-                                        <v:fill on="f" focussize="0,0" />
-                                        <v:stroke on="f" />
-                                        <v:imagedata r:id="rId6" o:title="图片四" />
-                                        <o:lock v:ext="edit" aspectratio="t" />
-                                        <w10:wrap type="none" />
-                                        <w10:anchorlock />
+                                    <v:shape id="_x0000_i1026" o:spt="75" alt="图片四" type="#_x0000_t75" style="height:119.35pt;width:191.1pt;" filled="f" o:preferrelative="t" stroked="f" coordsize="21600,21600">
+                                        <v:path/>
+                                        <v:fill on="f" focussize="0,0"/>
+                                        <v:stroke on="f"/>
+                                        <v:imagedata r:id="rId6" o:title="图片四"/>
+                                        <o:lock v:ext="edit" aspectratio="t"/>
+                                        <w10:wrap type="none"/>
+                                        <w10:anchorlock/>
                                     </v:shape>
                                 </w:pict>
+                            </w:r>
+                            <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+                            <w:bookmarkEnd w:id="0"/>
+                        </w:p>
+                    </w:tc>
+                </w:tr>
+                <w:tr>
+                    <w:tblPrEx>
+                        <w:tblBorders>
+                            <w:top w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:left w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:right w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                        </w:tblBorders>
+                        <w:tblCellMar>
+                            <w:top w:w="0" w:type="dxa"/>
+                            <w:left w:w="108" w:type="dxa"/>
+                            <w:bottom w:w="0" w:type="dxa"/>
+                            <w:right w:w="108" w:type="dxa"/>
+                        </w:tblCellMar>
+                    </w:tblPrEx>
+                    <w:trPr>
+                        <w:cantSplit/>
+                        <w:trHeight w:val="331" w:hRule="atLeast"/>
+                        <w:jc w:val="center"/>
+                    </w:trPr>
+                    <w:tc>
+                        <w:tcPr>
+                            <w:tcW w:w="2077" w:type="dxa"/>
+                            <w:vMerge w:val="continue"/>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="center"/>
+                        </w:tcPr>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="left"/>
+                            </w:pPr>
+                        </w:p>
+                    </w:tc>
+                    <w:tc>
+                        <w:tcPr>
+                            <w:tcW w:w="8895" w:type="dxa"/>
+                            <w:gridSpan w:val="10"/>
+                            <w:tcBorders>
+                                <w:top w:val="nil"/>
+                            </w:tcBorders>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="top"/>
+                        </w:tcPr>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="both"/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                                    <w:color w:val="0000FF"/>
+                                    <w:sz w:val="13"/>
+                                    <w:szCs w:val="13"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <w:t>${pictureRemark!""}</w:t>
                             </w:r>
                         </w:p>
                     </w:tc>
@@ -2810,6 +2885,7 @@
                         </w:tcPr>
                         <w:p>
                             <w:pPr>
+                                <w:jc w:val="center" />
                                 <w:rPr>
                                     <w:rFonts w:hint="default" w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" />
                                     <w:sz w:val="18" />
