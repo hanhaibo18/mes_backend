@@ -18,6 +18,7 @@ import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
 import com.richfit.mes.common.model.util.ActionUtil;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
@@ -766,14 +767,17 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     plan.setFinalAssemblyContractorUnit(null);
                 }
                 //数量的为空赋值0
-                //计划
-                plan.setProjNum(StringUtils.isEmpty(plan.getProjNum()) ? 0 : plan.getProjNum());
+
                 //单机
                 plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber()) ? 0 : plan.getSingleNumber());
                 //总台数
                 plan.setTotalNumber(StringUtils.isEmpty(plan.getTotalNumber()) ? 0 : plan.getTotalNumber());
                 //生产数量
                 plan.setProcessNum(StringUtils.isEmpty(plan.getProcessNum()) ? 0 : plan.getProcessNum());
+                TenantUserDetails user = SecurityUtils.getCurrentUser();
+                plan.setTenantId(user.getTenantId());
+                plan.setTrackHeadNumber(0);
+                plan.setTrackHeadFinishNumber(0);
                 plan.setOptNumber(0);
                 plan.setOptFinishNumber(0);
                 plan.setDeliveryNum(0);
