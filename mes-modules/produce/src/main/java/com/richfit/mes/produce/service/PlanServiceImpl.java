@@ -702,6 +702,116 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
     }
 
+    /**
+     * 模型车间导入计划
+     * @param file
+     * @param request
+     * @throws IOException
+     */
+    //@Override
+    @Transactional(rollbackFor = Exception.class)
+    public void exportPlanMX(MultipartFile file, HttpServletRequest request) throws IOException {
+        //sheet计划列表
+        String[] fieldNames3 = {"productName", "drawNo", "texture","priority", "projType","workNo", "sampleNum","projNum"};
+
+        File excelFile = null;
+
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+
+            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 1, tempName.toString());
+
+
+            FileUtils.delete(excelFile);
+            //sheet1过滤要导入的数据
+            List<Plan> sheetList = list3.stream().filter(t -> {
+                return !StringUtils.isEmpty(t.getIsExport())
+                        && !StringUtils.isEmpty(t.getBranchCode())   //部门必填
+                        && !StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
+                        && !StringUtils.isEmpty(t.getEndTime())      //交货期必填
+                        && !StringUtils.isEmpty(t.getProjectNo());   //项目号必填
+            }).collect(Collectors.toList());
+            for (Plan plan : sheetList) {
+                plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                //车间代码判断，并取中文名称
+                CommonResult<Branch> result = baseServiceClient.selectBranchByCodeAndTenantId(plan.getInchargeOrg(), plan.getTenantId());
+                if (result.getData() == null) {
+                    throw new GlobalException("加工车间代码错误:" + plan.getInchargeOrg(), ResultCode.FAILED);
+                }
+                plan.setInchargeOrgName(result.getData().getBranchName());
+
+                if (!ObjectUtil.isEmpty(plan.getDrawNoName()) && plan.getDrawNoName().equals("0")) {
+                    plan.setDrawNoName(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getTexture()) && plan.getTexture().equals("0")) {
+                    plan.setTexture(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getRemark()) && plan.getRemark().equals("0")) {
+                    plan.setRemark(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getMaterialProductionUnit()) && plan.getMaterialProductionUnit().equals("0")) {
+                    plan.setMaterialProductionUnit(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getRivetingWeldingUnit()) && plan.getRivetingWeldingUnit().equals("0")) {
+                    plan.setRivetingWeldingUnit(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getAssemblyContractorUnit()) && plan.getAssemblyContractorUnit().equals("0")) {
+                    plan.setAssemblyContractorUnit(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getFinalAssemblyContractorUnit()) && plan.getFinalAssemblyContractorUnit().equals("0")) {
+                    plan.setFinalAssemblyContractorUnit(null);
+                }
+                //数量的为空赋值0
+                //计划
+                plan.setProjNum(StringUtils.isEmpty(plan.getProjNum()) ? 0 : plan.getProjNum());
+                //单机
+                plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber()) ? 0 : plan.getSingleNumber());
+                //总台数
+                plan.setTotalNumber(StringUtils.isEmpty(plan.getTotalNumber()) ? 0 : plan.getTotalNumber());
+                //生产数量
+                plan.setProcessNum(StringUtils.isEmpty(plan.getProcessNum()) ? 0 : plan.getProcessNum());
+                plan.setOptNumber(0);
+                plan.setOptFinishNumber(0);
+                plan.setDeliveryNum(0);
+                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
+                plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
+                actionService.saveAction(ActionUtil.buildAction
+                        (result.getData().getBranchCode(), "0", "1", "Excel导入计划单号：" + plan.getProjNum(), OperationLogAspect.getIpAddress(request)));
+            }
+            //保存计划列表
+            this.saveBatch(sheetList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+    /**
+     * 热工各个车间导入计划入库操作
+     * @param plan
+     * @return
+     */
+    public CommonResult<Object> savePlanHot(Plan plan) {
+        checkPlan(plan);
+        //获取计划的扩展信息
+        QueryWrapper<PlanExtend> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("plan_id", plan.getId());
+        PlanExtend planExtend = planExtendMapper.selectOne(queryWrapper);
+        boolean f = this.save(plan);
+        this.planData(plan.getId());
+
+        PlanExtend newplanExtend = new PlanExtend();
+        BeanUtils.copyProperties(plan, newplanExtend);
+        newplanExtend.setPlanId(plan.getId());
+        planExtendMapper.insert(newplanExtend);
+        return CommonResult.success(f);
+    }
+
+
     @Override
     public void planPackageRouter(List<Plan> planList) {
         String branchCode = null;
