@@ -278,7 +278,9 @@ public class ProduceInspectionRecordService {
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
             List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
             produceInspectionRecordDto.setPowerIds(powerIds);
-            jsonObject.remove("id");
+            if(!String.valueOf(jsonObject.get("isAudit")).equals("0")){
+                jsonObject.remove("id");
+            }
         } else {
             //如果是新增委托，保存流水号
             if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
@@ -600,11 +602,11 @@ public class ProduceInspectionRecordService {
                 //探伤任务最新记录改为最新的信息
                 UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("id", key)
-                        .set("audit_by", String.valueOf(value.get(0).getAuditBy()))
+                        .set("audit_by", value.get(0).getAuditBy())
                         .set("check_by", SecurityUtils.getCurrentUser().getUserId())
                         .set("insp_temp_type", String.valueOf(value.get(0).getTempType()))
                         .set("audit_status", String.valueOf(value.get(0).getIsAudit()))
-                        .set("audit_remark", String.valueOf(value.get(0).getAuditRemark()));
+                        .set("audit_remark", value.get(0).getAuditRemark());
                 inspectionPowerService.update(updateWrapper);
             }
         });
