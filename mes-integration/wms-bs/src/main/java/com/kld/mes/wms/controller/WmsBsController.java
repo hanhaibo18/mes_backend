@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @Api("北石wms 仓储接口")
 @RestController
-@RequestMapping("/api/integration/bswms")
+@RequestMapping("/api/integration/wmsbs")
 public class WmsBsController {
 
     @Autowired
