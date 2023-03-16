@@ -77,7 +77,10 @@ public interface PlanService extends IService<Plan> {
 
 
     @Transactional(rollbackFor = Exception.class)
-    void exportPlanMX(MultipartFile file, HttpServletRequest request) throws IOException;
+    void importPlanMX(MultipartFile file, HttpServletRequest request) throws IOException;
+
+    @Transactional(rollbackFor = Exception.class)
+    void importPlanDZ(MultipartFile file, HttpServletRequest request) throws IOException;
 
     /**
      * 计划列表动态数据封装（工艺状态）
