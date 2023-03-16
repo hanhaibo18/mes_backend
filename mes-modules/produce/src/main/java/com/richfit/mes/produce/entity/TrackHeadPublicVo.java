@@ -344,6 +344,18 @@ public class TrackHeadPublicVo {
      * 铸造结束
      **/
 
+    /**
+     * 钢锭开始
+     **/
+    @ApiModelProperty(value = "锭型", dataType = "String")
+    private String ingotCase;
+
+
+    @ApiModelProperty(value = "浇筑数量", dataType = "Integer")
+    private Integer pouringQty;
+    /**
+     * 钢锭结束
+     **/
 
     /**
      * 跟单分流表开始
