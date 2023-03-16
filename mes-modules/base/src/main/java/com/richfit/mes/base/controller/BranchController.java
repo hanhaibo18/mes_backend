@@ -276,13 +276,14 @@ public class BranchController extends BaseController {
         List<Branch> result = branchService.list(queryWrapper);
         //当前机构的代码等于顶级机构的代码时返回所有的工厂列表
         for (Branch branch : result) {
-            if (tenantUserDetails.getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
-                //用于车间及车间下级组织添加车间列表
-                branchList.add(branch);
-            } else if (branch.getBranchCode().replaceAll("_", "").startsWith(tenantUserDetails.getBelongOrgId().replaceAll("_", ""))) {
+            if (branch.getBranchCode().replaceAll("_", "").startsWith(tenantUserDetails.getBelongOrgId().replaceAll("_", ""))) {
                 //用于车间上级添加车间列表
                 branchList.add(branch);
             }
+        }
+        //非车间用户加入全部车间列表
+        if (branchList == null || branchList.size() == 0) {
+            branchList.addAll(result);
         }
         return CommonResult.success(branchList, BRANCH_SUCCESS_MESSAGE);
     }
