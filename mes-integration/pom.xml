@@ -18,6 +18,7 @@
         <module>material-inspection</module>
         <module>bsjby-data-sync</module>
         <module>wechat</module>
+        <module>wms-bs</module>
     </modules>
     <dependencies>
 
