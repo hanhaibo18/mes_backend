@@ -28,6 +28,7 @@ import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -427,6 +428,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         return planMapper.queryPlanTrackItem(planId);
     }
 
+    /**
+     * 保存计划
+     * @param plan
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Object> savePlan(Plan plan) {
@@ -709,11 +715,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @param request
      * @throws IOException
      */
-    //@Override
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void exportPlanMX(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
-        String[] fieldNames3 = {"productName", "drawNo", "texture","priority", "projType","workNo", "sampleNum","projNum"};
+        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "projType","workNo", "sampleNum","projNum","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
 
         File excelFile = null;
 
@@ -724,20 +730,20 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
 
-            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 1, tempName.toString());
+            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 0, tempName.toString());
 
 
             FileUtils.delete(excelFile);
             //sheet1过滤要导入的数据
             List<Plan> sheetList = list3.stream().filter(t -> {
-                return !StringUtils.isEmpty(t.getIsExport())
-                        && !StringUtils.isEmpty(t.getBranchCode())   //部门必填
+                return  !StringUtils.isEmpty(t.getBranchCode())   //部门必填
                         && !StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
                         && !StringUtils.isEmpty(t.getEndTime())      //交货期必填
                         && !StringUtils.isEmpty(t.getProjectNo());   //项目号必填
             }).collect(Collectors.toList());
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
             for (Plan plan : sheetList) {
-                plan.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                plan.setTenantId(user.getTenantId());
                 //车间代码判断，并取中文名称
                 CommonResult<Branch> result = baseServiceClient.selectBranchByCodeAndTenantId(plan.getInchargeOrg(), plan.getTenantId());
                 if (result.getData() == null) {
@@ -747,9 +753,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
                 if (!ObjectUtil.isEmpty(plan.getDrawNoName()) && plan.getDrawNoName().equals("0")) {
                     plan.setDrawNoName(null);
-                }
-                if (!ObjectUtil.isEmpty(plan.getTexture()) && plan.getTexture().equals("0")) {
-                    plan.setTexture(null);
                 }
                 if (!ObjectUtil.isEmpty(plan.getRemark()) && plan.getRemark().equals("0")) {
                     plan.setRemark(null);
@@ -767,15 +770,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     plan.setFinalAssemblyContractorUnit(null);
                 }
                 //数量的为空赋值0
-
+                plan.setProjCode(DateUtils.formatDate(new Date(),"yyyy-MM"));
+                plan.setCreateTime(new Date());
                 //单机
                 plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber()) ? 0 : plan.getSingleNumber());
                 //总台数
                 plan.setTotalNumber(StringUtils.isEmpty(plan.getTotalNumber()) ? 0 : plan.getTotalNumber());
                 //生产数量
                 plan.setProcessNum(StringUtils.isEmpty(plan.getProcessNum()) ? 0 : plan.getProcessNum());
-                TenantUserDetails user = SecurityUtils.getCurrentUser();
-                plan.setTenantId(user.getTenantId());
                 plan.setTrackHeadNumber(0);
                 plan.setTrackHeadFinishNumber(0);
                 plan.setOptNumber(0);
@@ -783,11 +785,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setDeliveryNum(0);
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
+                //保存计划
+                this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction
                         (result.getData().getBranchCode(), "0", "1", "Excel导入计划单号：" + plan.getProjNum(), OperationLogAspect.getIpAddress(request)));
             }
-            //保存计划列表
-            this.saveBatch(sheetList);
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -795,19 +797,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
     /**
-     * 热工各个车间导入计划入库操作
+     * 热工各个车间导入计划入库操作以及扩展字段的入库
      * @param plan
      * @return
      */
     public CommonResult<Object> savePlanHot(Plan plan) {
         checkPlan(plan);
-        //获取计划的扩展信息
-        QueryWrapper<PlanExtend> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("plan_id", plan.getId());
-        PlanExtend planExtend = planExtendMapper.selectOne(queryWrapper);
         boolean f = this.save(plan);
-        this.planData(plan.getId());
-
+        //this.planData(plan.getId());
         PlanExtend newplanExtend = new PlanExtend();
         BeanUtils.copyProperties(plan, newplanExtend);
         newplanExtend.setPlanId(plan.getId());

@@ -341,6 +341,14 @@ public class PlanController extends BaseController {
         return CommonResult.success(null);
     }
 
+    @ApiOperation(value = "导入计划--模型车间", notes = "根据Excel文档导入计划--模型车间")
+    @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
+    @PostMapping("/import_excel_MX")
+    public CommonResult importExcelMX(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
+        planService.exportPlanMX(file, request);
+        return CommonResult.success(null);
+    }
+
     @ApiOperation(value = "计划数据维护", notes = "计划数据维护")
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
     @PostMapping("/data/maintenance")

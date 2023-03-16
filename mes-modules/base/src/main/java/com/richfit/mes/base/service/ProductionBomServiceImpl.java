@@ -397,7 +397,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult newImportExcel(@RequestParam("file") MultipartFile file) throws IOException {
+    public CommonResult newImportExcel(@RequestParam("file") MultipartFile file, String branchCode) throws IOException {
 
         //封装证件信息实体类
         String[] fieldNames = {"isImport", "orderNo", "branchCode", "grade", "mainDrawingNo", "drawingNo",
@@ -444,6 +444,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             String tenantId = SecurityUtils.getCurrentUser().getTenantId();
             list.forEach(item -> {
                 item.setTenantId(tenantId);
+                item.setBranchCode(branchCode);
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
                 if ("单件".equals(item.getTrackType())) {

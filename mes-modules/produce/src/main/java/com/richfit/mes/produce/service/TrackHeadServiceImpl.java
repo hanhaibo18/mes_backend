@@ -147,6 +147,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Resource
     private TrackHeadCastService trackHeadCastService;
 
+    @Resource
+    private TrackHeadSteelIngotService trackHeadSteelIngotService;
+
     @Override
     public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
         if (!StringUtils.isNullOrEmpty(trackHead.getDrawingNo())) {
@@ -840,6 +843,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 TrackHeadForge trackHeadForge = new TrackHeadForge();
                 BeanUtils.copyProperties(trackHeadPublicDto, trackHeadForge);
                 trackHeadForgeService.save(trackHeadForge);
+            }
+            //跟单创建冶炼
+            if (trackHeadPublicDto.getClasses().equals("7")) {
+                TrackHeadSteelIngot trackHeadSteelIngot = new TrackHeadSteelIngot();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackHeadSteelIngot);
+                trackHeadSteelIngotService.save(trackHeadSteelIngot);
             }
 
             //当跟单中存在bom(装配)

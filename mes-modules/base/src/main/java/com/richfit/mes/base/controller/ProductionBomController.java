@@ -361,8 +361,8 @@ public class ProductionBomController extends BaseController {
     @ApiOperation(value = "导入产品Bom", notes = "根据Excel文档导入产品Bom")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel")
-    public CommonResult newImportExcel(@ApiIgnore HttpServletRequest request, @RequestParam("file") MultipartFile file) throws IOException {
-        return productionBomService.newImportExcel(file);
+    public CommonResult newImportExcel(@ApiIgnore HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) throws IOException {
+        return productionBomService.newImportExcel(file, branchCode);
     }
 
 
