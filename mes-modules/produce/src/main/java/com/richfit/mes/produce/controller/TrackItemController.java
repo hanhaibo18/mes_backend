@@ -328,7 +328,7 @@ public class TrackItemController extends BaseController {
     public CommonResult<String> nextSequence(String flowId) {
         String error = trackItemService.nextSequence(flowId);
         if ("success".equals(error)) {
-            return CommonResult.success(trackItemService.nextSequence(flowId));
+            return CommonResult.success("success");
         } else {
             return CommonResult.failed(error);
         }

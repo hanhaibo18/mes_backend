@@ -116,6 +116,15 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
     private String isAudit;
     @ApiModelProperty(value = "审核意见")
     private String auditRemark;
+    @ApiModelProperty(value = "无源委托的项目名称")
+    private String projectName;
+    @ApiModelProperty(value = "无源委托的材质")
+    private String texture;
+    @ApiModelProperty(value = "无源委托的产品名称")
+    private String productName;
+    @ApiModelProperty(value = "无源委托的产品编码")
+    private String productNo;
+
 
 
     public List<String> getInstrumentModelList() {

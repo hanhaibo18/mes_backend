@@ -658,4 +658,18 @@ public class ProductController extends BaseController {
     }
 
 
+    @ApiOperation(value = "根据产品名称模糊查询物料信息", notes = "根据产品名称模糊查询物料信息")
+    @GetMapping("/list_by_product_name")
+    public CommonResult<List<Product>> listByProductName(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page,
+                                           @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit,
+                                           @ApiParam(value = "产品名称", required = false) @RequestParam String productName) {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        if (!StringUtils.isNullOrEmpty(productName)) {
+            queryWrapper.like("product_name", productName);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        IPage<Product> result=productService.page(new Page<Product>(page, limit),queryWrapper);
+        return CommonResult.success(result.getRecords());
+    }
+
 }

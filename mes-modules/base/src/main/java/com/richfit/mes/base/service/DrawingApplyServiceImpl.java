@@ -43,9 +43,9 @@ public class DrawingApplyServiceImpl extends ServiceImpl<DrawingApplyMapper, Dra
     @Override
     public CommonResult importExcelDrawingApply(MultipartFile file, String branchCode) {
         CommonResult result = null;
-        //封装证件信息实体类
+        //封装字段信息实体类
         java.lang.reflect.Field[] fields = DrawingApplyExcelEntity.class.getDeclaredFields();
-        //封装证件信息实体类
+
         String[] fieldNames = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
             fieldNames[i] = fields[i].getName();

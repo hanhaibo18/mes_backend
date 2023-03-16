@@ -50,6 +50,8 @@ public class ProduceInspectionRecordController extends BaseController {
     private ProduceInspectionRecordService produceInspectionRecordService;
     @Autowired
     private InspectionPowerService inspectionPowerService;
+    @Autowired
+    private SystemServiceClient systemServiceClient;
 
 
     /**
@@ -158,9 +160,6 @@ public class ProduceInspectionRecordController extends BaseController {
     public CommonResult<Boolean> auditByRecordId(String id, String tempType, String isAudit, String auditRemark, String inspector, String checkBranch) {
         return CommonResult.success(produceInspectionRecordService.auditByRecord(id, tempType, isAudit, auditRemark, inspector, checkBranch));
     }
-
-    @Autowired
-    SystemServiceClient systemServiceClient;
 
     @ApiOperation(value = "分页查询委托单", notes = "分页查询委托单")
     @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")

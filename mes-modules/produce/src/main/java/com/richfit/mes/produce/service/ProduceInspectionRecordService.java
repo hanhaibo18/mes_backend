@@ -278,7 +278,9 @@ public class ProduceInspectionRecordService {
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
             List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
             produceInspectionRecordDto.setPowerIds(powerIds);
-            jsonObject.remove("id");
+            if(!String.valueOf(jsonObject.get("isAudit")).equals("0")){
+                jsonObject.remove("id");
+            }
         } else {
             //如果是新增委托，保存流水号
             if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
@@ -380,7 +382,8 @@ public class ProduceInspectionRecordService {
                     .set(StringUtils.isEmpty(String.valueOf(jsonObject.get("reportNo"))), "report_no", String.valueOf(jsonObject.get("reportNo")))
                     .set("insp_temp_type", tempType)
                     .set("flaw_detection", String.valueOf(jsonObject.get("inspectionResults")))
-                    .set("audit_status", 0);
+                    .set("audit_status", 0)
+                    .set("audit_remark",null);
             inspectionPowerService.update(updateWrapper);
         }
 
@@ -407,7 +410,7 @@ public class ProduceInspectionRecordService {
     }
 
     /**
-     * 根据工序id查询探伤记录
+     * 根据委托单id查询探伤记录
      *
      * @param powerId
      * @return
@@ -465,6 +468,23 @@ public class ProduceInspectionRecordService {
             listMap.sort((t1, t2) ->
                     t2.get("modifyTime").toString().compareTo(t1.get("modifyTime").toString())
             );
+        }
+        //探伤记录基本信息赋值
+        InspectionPower power = inspectionPowerService.getById(powerId);
+        //赋跟单属性
+        TrackHead trackHead = trackHeadMapper.selecProjectNametById(power.getHeadId());
+
+        for (Map<String, Object> map : listMap) {
+            if (!ObjectUtil.isEmpty(trackHead)) {
+                map.put("trackNo",trackHead.getTrackNo());
+                map.put("workNo",trackHead.getWorkNo());
+                map.put("productName",trackHead.getProductName());
+                map.put("projectName",trackHead.getProjectName());
+                map.put("texture",trackHead.getTexture());
+            }
+            map.put("drawNo",power.getDrawNo());
+            map.put("sampleName",power.getSampleName());
+            map.put("num",power.getNum());
         }
 
         return listMap;
@@ -537,6 +557,10 @@ public class ProduceInspectionRecordService {
                 //租户id便于审核时查询对应公司的质检人员
                 map.put("tenantId", item.getTenantId());
             }
+
+            map.put("drawNo",power.getDrawNo());
+            map.put("sampleName",power.getSampleName());
+            map.put("num",power.getNum());
             return map;
 
         }
@@ -578,11 +602,11 @@ public class ProduceInspectionRecordService {
                 //探伤任务最新记录改为最新的信息
                 UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("id", key)
-                        .set("audit_by", String.valueOf(value.get(0).getAuditBy()))
+                        .set("audit_by", value.get(0).getAuditBy())
                         .set("check_by", SecurityUtils.getCurrentUser().getUserId())
                         .set("insp_temp_type", String.valueOf(value.get(0).getTempType()))
                         .set("audit_status", String.valueOf(value.get(0).getIsAudit()))
-                        .set("audit_remark", String.valueOf(value.get(0).getAuditRemark()));
+                        .set("audit_remark", value.get(0).getAuditRemark());
                 inspectionPowerService.update(updateWrapper);
             }
         });

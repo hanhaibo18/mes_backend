@@ -1732,7 +1732,7 @@
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                         </w:rPr>
-                                        <w:t>${rayDistance!""}</w:t>
+                                        <w:t>${focusSize!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2075,7 +2075,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{}</w:t>
+                                        <w:t>${filmSize!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2121,28 +2121,8 @@
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:color w:val="0000FF" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>底片标记</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:color w:val="0000FF" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${s!""}}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2188,28 +2168,8 @@
                                             <w:color w:val="0000FF" />
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>{</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:color w:val="0000FF" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>有效尺寸</w:t>
-                                    </w:r>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:color w:val="0000FF" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <w:t>}</w:t>
+                                        <w:t>${ss!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2950,179 +2910,255 @@
                             </w:tc>
                         </w:tr>
                         </#if>
-                        <w:tr>
-                            <w:tblPrEx>
-                                <w:tblBorders>
-                                    <w:top w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:left w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:right w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                </w:tblBorders>
-                                <w:tblCellMar>
-                                    <w:top w:w="0" w:type="dxa" />
-                                    <w:left w:w="108" w:type="dxa" />
-                                    <w:bottom w:w="0" w:type="dxa" />
-                                    <w:right w:w="108" w:type="dxa" />
-                                </w:tblCellMar>
-                            </w:tblPrEx>
-                            <w:trPr>
-                                <w:cantSplit />
-                                <w:trHeight w:val="875" w:hRule="atLeast" />
-                                <w:jc w:val="center" />
-                            </w:trPr>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="2367" w:type="dxa" />
-                                    <w:gridSpan w:val="2" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                    <w:noWrap w:val="0" />
-                                    <w:vAlign w:val="center" />
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>检验方法区域</w:t>
-                                    </w:r>
-                                </w:p>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>Examination Method and Area</w:t>
-                                    </w:r>
-                                </w:p>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>位置标记号</w:t>
-                                    </w:r>
-                                </w:p>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="center" />
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                        </w:rPr>
-                                        <w:t>Position Code</w:t>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                            <w:tc>
-                                <w:tcPr>
-                                    <w:tcW w:w="7101" w:type="dxa" />
-                                    <w:gridSpan w:val="10" />
-                                    <w:tcBorders>
-                                        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0" />
-                                    </w:tcBorders>
-                                    <w:noWrap w:val="0" />
-                                    <w:vAlign w:val="top" />
-                                </w:tcPr>
-                                <w:p>
-                                    <w:pPr>
-                                        <w:jc w:val="left" />
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                    </w:pPr>
-                                    <w:r>
-                                        <w:rPr>
-                                            <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman" />
-                                            <w:sz w:val="18" />
-                                            <w:szCs w:val="18" />
-                                            <w:lang w:val="en-US" w:eastAsia="zh-CN" />
-                                        </w:rPr>
-                                        <w:drawing>
-                                            <wp:inline distT="0" distB="0" distL="114300" distR="114300">
-                                                <wp:extent cx="1963420" cy="1226185" />
-                                                <wp:effectExtent l="0" t="0" r="5080" b="5715" />
-                                                <wp:docPr id="1" name="图片 1" descr="图片5" />
-                                                <wp:cNvGraphicFramePr>
-                                                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1" />
-                                                </wp:cNvGraphicFramePr>
-                                                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-                                                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                                                        <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                                                            <pic:nvPicPr>
-                                                                <pic:cNvPr id="1" name="图片 1" descr="图片5" />
-                                                                <pic:cNvPicPr>
-                                                                    <a:picLocks noChangeAspect="1" />
-                                                                </pic:cNvPicPr>
-                                                            </pic:nvPicPr>
-                                                            <pic:blipFill>
-                                                                <a:blip r:embed="rId12" />
-                                                                <a:stretch>
-                                                                    <a:fillRect />
-                                                                </a:stretch>
-                                                            </pic:blipFill>
-                                                            <pic:spPr>
-                                                                <a:xfrm>
-                                                                    <a:off x="0" y="0" />
-                                                                    <a:ext cx="1963420" cy="1226185" />
-                                                                </a:xfrm>
-                                                                <a:prstGeom prst="rect">
-                                                                    <a:avLst />
-                                                                </a:prstGeom>
-                                                            </pic:spPr>
-                                                        </pic:pic>
-                                                    </a:graphicData>
-                                                </a:graphic>
-                                            </wp:inline>
-                                        </w:drawing>
-                                    </w:r>
-                                </w:p>
-                            </w:tc>
-                        </w:tr>
+                <w:tr>
+                    <w:tblPrEx>
+                        <w:tblBorders>
+                            <w:top w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:left w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:right w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                        </w:tblBorders>
+                        <w:tblCellMar>
+                            <w:top w:w="0" w:type="dxa"/>
+                            <w:left w:w="108" w:type="dxa"/>
+                            <w:bottom w:w="0" w:type="dxa"/>
+                            <w:right w:w="108" w:type="dxa"/>
+                        </w:tblCellMar>
+                    </w:tblPrEx>
+                    <w:trPr>
+                        <w:cantSplit/>
+                        <w:trHeight w:val="965" w:hRule="atLeast"/>
+                        <w:jc w:val="center"/>
+                    </w:trPr>
+                    <w:tc>
+                        <w:tcPr>
+                            <w:tcW w:w="2367" w:type="dxa"/>
+                            <w:gridSpan w:val="2"/>
+                            <w:vMerge w:val="restart"/>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="center"/>
+                        </w:tcPr>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="center"/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                                <w:t>检验方法区域</w:t>
+                            </w:r>
+                        </w:p>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="center"/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                                <w:t>Examination Method and Area</w:t>
+                            </w:r>
+                        </w:p>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="center"/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                                <w:t>位置标记号</w:t>
+                            </w:r>
+                        </w:p>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="center"/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                </w:rPr>
+                                <w:t>Position Code</w:t>
+                            </w:r>
+                        </w:p>
+                    </w:tc>
+                    <w:tc>
+                        <w:tcPr>
+                            <w:tcW w:w="7101" w:type="dxa"/>
+                            <w:gridSpan w:val="10"/>
+                            <w:tcBorders>
+                                <w:bottom w:val="nil"/>
+                            </w:tcBorders>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="top"/>
+                        </w:tcPr>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="left"/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <w:drawing>
+                                    <wp:inline distT="0" distB="0" distL="114300" distR="114300">
+                                        <wp:extent cx="1963420" cy="1226185"/>
+                                        <wp:effectExtent l="0" t="0" r="5080" b="5715"/>
+                                        <wp:docPr id="1" name="图片 1" descr="图片5"/>
+                                        <wp:cNvGraphicFramePr>
+                                            <a:graphicFrameLocks
+                                                    xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                                        </wp:cNvGraphicFramePr>
+                                        <a:graphic
+                                                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                                            <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                                <pic:pic
+                                                        xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                                    <pic:nvPicPr>
+                                                        <pic:cNvPr id="1" name="图片 1" descr="图片5"/>
+                                                        <pic:cNvPicPr>
+                                                            <a:picLocks noChangeAspect="1"/>
+                                                        </pic:cNvPicPr>
+                                                    </pic:nvPicPr>
+                                                    <pic:blipFill>
+                                                        <a:blip r:embed="rId12"/>
+                                                        <a:stretch>
+                                                            <a:fillRect/>
+                                                        </a:stretch>
+                                                    </pic:blipFill>
+                                                    <pic:spPr>
+                                                        <a:xfrm>
+                                                            <a:off x="0" y="0"/>
+                                                            <a:ext cx="1963420" cy="1226185"/>
+                                                        </a:xfrm>
+                                                        <a:prstGeom prst="rect">
+                                                            <a:avLst/>
+                                                        </a:prstGeom>
+                                                    </pic:spPr>
+                                                </pic:pic>
+                                            </a:graphicData>
+                                        </a:graphic>
+                                    </wp:inline>
+                                </w:drawing>
+                            </w:r>
+                            <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+                            <w:bookmarkEnd w:id="0"/>
+                        </w:p>
+                    </w:tc>
+                </w:tr>
+                <w:tr>
+                    <w:tblPrEx>
+                        <w:tblBorders>
+                            <w:top w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:left w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:right w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                        </w:tblBorders>
+                        <w:tblCellMar>
+                            <w:top w:w="0" w:type="dxa"/>
+                            <w:left w:w="108" w:type="dxa"/>
+                            <w:bottom w:w="0" w:type="dxa"/>
+                            <w:right w:w="108" w:type="dxa"/>
+                        </w:tblCellMar>
+                    </w:tblPrEx>
+                    <w:trPr>
+                        <w:cantSplit/>
+                        <w:trHeight w:val="362" w:hRule="atLeast"/>
+                        <w:jc w:val="center"/>
+                    </w:trPr>
+                    <w:tc>
+                        <w:tcPr>
+                            <w:tcW w:w="2367" w:type="dxa"/>
+                            <w:gridSpan w:val="2"/>
+                            <w:vMerge w:val="continue"/>
+                            <w:tcBorders>
+                                <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            </w:tcBorders>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="center"/>
+                        </w:tcPr>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="left"/>
+                            </w:pPr>
+                        </w:p>
+                    </w:tc>
+                    <w:tc>
+                        <w:tcPr>
+                            <w:tcW w:w="7101" w:type="dxa"/>
+                            <w:gridSpan w:val="10"/>
+                            <w:tcBorders>
+                                <w:top w:val="nil"/>
+                                <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+                            </w:tcBorders>
+                            <w:noWrap w:val="0"/>
+                            <w:vAlign w:val="top"/>
+                        </w:tcPr>
+                        <w:p>
+                            <w:pPr>
+                                <w:jc w:val="both"/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="default" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:sz w:val="15"/>
+                                    <w:szCs w:val="15"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
+                                    <w:color w:val="0000FF"/>
+                                    <w:sz w:val="15"/>
+                                    <w:szCs w:val="15"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <w:t>${pictureRemark!""}</w:t>
+                            </w:r>
+                        </w:p>
+                    </w:tc>
+                </w:tr>
                         <w:tr>
                             <w:tblPrEx>
                                 <w:tblBorders>
