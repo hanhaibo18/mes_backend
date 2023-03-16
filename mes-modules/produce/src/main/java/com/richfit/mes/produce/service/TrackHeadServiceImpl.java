@@ -214,16 +214,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         for (TrackHeadPublicVo trackHeadPublicVo : trackHeads) {
             // 查询跟单工序表
             QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
-            queryWrapperTrackItem.eq("track_head_id",trackHeadPublicVo.getId());
-            queryWrapperTrackItem.eq("is_current","1");
-            List<TrackItem>  trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
+            queryWrapperTrackItem.eq("track_head_id", trackHeadPublicVo.getId());
+            queryWrapperTrackItem.eq("is_current", "1");
+            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
             List<String> optNameCollect = trackItemList.stream().map(e -> e.getOptName()).collect(Collectors.toList());
             trackHeadPublicVo.setOptNameList(optNameCollect);
             List<String> deviceIdCollect = trackItemList.stream().map(e -> e.getDeviceId())
-                                                .collect(Collectors.toList());
+                    .collect(Collectors.toList());
             if (!deviceIdCollect.isEmpty()) {
                 for (String deviceId : deviceIdCollect) {
-                    if(StringUtils.isNullOrEmpty(deviceId) && ("/").equals(deviceId)) {
+                    if (StringUtils.isNullOrEmpty(deviceId) && ("/").equals(deviceId)) {
                         deviceIdCollect.remove(deviceId);
                     }
                 }
@@ -400,8 +400,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     file.getParentFile().mkdirs();
                 }
                 FileUtil.writeBytes(data.getData(), file);
+            } else if (data.getStatus() == 404) {
+                throw new GlobalException("文件服务器没有找到该文件：" + data.getMessage(), ResultCode.FAILED);
             } else {
-                throw new GlobalException("从文件服务器下载文件失败", ResultCode.FAILED);
+                throw new GlobalException("从文件服务器下载文件失败：" + data.getMessage(), ResultCode.FAILED);
             }
         } catch (Exception e) {
             e.printStackTrace();
