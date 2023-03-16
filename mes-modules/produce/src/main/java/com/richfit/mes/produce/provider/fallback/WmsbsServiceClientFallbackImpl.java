@@ -4,13 +4,13 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
-import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.provider.WmsbsServiceClient;
 
 /**
  * @Author: GaoLiang
  * @Date: 2022/7/25 11:29
  */
-public class WmsbsServiceClientFallbackImpl implements WmsServiceClient {
+public class WmsbsServiceClientFallbackImpl implements WmsbsServiceClient {
     @Override
     public CommonResult<Boolean> sendJkInfo(Certificate certificate) {
         return null;
