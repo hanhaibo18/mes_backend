@@ -6,6 +6,7 @@ import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,6 +75,9 @@ public interface PlanService extends IService<Plan> {
 
     void exportPlan(MultipartFile file, HttpServletRequest request) throws IOException;
 
+
+    @Transactional(rollbackFor = Exception.class)
+    void exportPlanMX(MultipartFile file, HttpServletRequest request) throws IOException;
 
     /**
      * 计划列表动态数据封装（工艺状态）
