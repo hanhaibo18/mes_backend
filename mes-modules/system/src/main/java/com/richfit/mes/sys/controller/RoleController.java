@@ -2,7 +2,9 @@ package com.richfit.mes.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.log.annotation.SysLog;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.RoleMenu;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author sun
@@ -77,7 +80,24 @@ public class RoleController extends BaseController {
         if (!SecurityUtils.getCurrentUser().isSysAdmin() && TENANT_ROLE_CODE.equals(role.getRoleCode())) {
             return CommonResult.forbidden("租户管理员角色为系统默认,请勿修改");
         }
-
+        //编码名称重复
+        QueryWrapper<Role> codeWrapper = new QueryWrapper<>();
+        codeWrapper.eq("role_code",role.getRoleCode())
+                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                .ne("id",role.getId());
+        List<Role> codes = roleService.list(codeWrapper);
+        //编码重复
+        QueryWrapper<Role> nameWrapper = new QueryWrapper<>();
+        nameWrapper.eq("role_name",role.getRoleName())
+                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                .ne("id",role.getId());
+        List<Role> names = roleService.list(nameWrapper);
+        if(names.size()>0){
+            throw new GlobalException("角色名称重复，请检查", ResultCode.FAILED);
+        }
+        if(codes.size()>0){
+            throw new GlobalException("角色编码重复，请检查", ResultCode.FAILED);
+        }
         return CommonResult.success(roleService.update(role));
     }
 
