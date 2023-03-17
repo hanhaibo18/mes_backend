@@ -6,32 +6,26 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
- * reject_inspection_doc MES报检单驳回WMS
+ * WMS报检单上传MES(产品编号明细列表)
+ * reverse_inspection_line_list
  */
 @Data
-public class RejectInspectionDoc implements Serializable {
+public class ReverseInspectionLineList implements Serializable {
     /**
-     * WMS报检单ID 唯一
+     * 报检单ID
      */
     private String id;
 
     /**
-     * 驳回原因
+     * 产品编号
      */
-    private String returnReason;
+    private String productNo;
 
     /**
-     * 驳回操作人
+     * 数量
      */
-    private String returnUser;
-
-    /**
-     * 驳回操作日期
-     */
-    private String returnDate;
+    private String number;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
 }

@@ -1,12 +1,15 @@
 package com.richfit.mes.common.model.wms;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  *
  * material_basis MES物料基础数据同步
  */
 @Data
-public class MaterialBasis {
+public class MaterialBasis implements Serializable {
 
     /**
      * 工厂 泵业/热工等
@@ -97,5 +100,8 @@ public class MaterialBasis {
      * 预留字段5
      */
     private String field5;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 
 }
