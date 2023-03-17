@@ -76,9 +76,6 @@ public class PhysChemOrderInnerController extends BaseController {
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getSampleDept())){
             queryWrapper.eq("sample_dept",phyChemTaskVo.getSampleDept());
         }
-        if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getBranchCode())){
-            queryWrapper.eq("branch_code",phyChemTaskVo.getBranchCode());
-        }
         if(!StringUtils.isNullOrEmpty(phyChemTaskVo.getStartTime())){
             queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')",phyChemTaskVo.getStartTime());
         }
@@ -89,7 +86,8 @@ public class PhysChemOrderInnerController extends BaseController {
             queryWrapper.in("status",phyChemTaskVo.getStatus().split(","));
         }
         //查看自己的委托
-        queryWrapper.eq("consignor", phyChemTaskVo.getConsignor());
+        //queryWrapper.eq("consignor", phyChemTaskVo.getConsignor());
+        queryWrapper.eq("tenant_id",phyChemTaskVo.getTenantId());
         //排序
         OrderUtil.query(queryWrapper, phyChemTaskVo.getOrderCol(), phyChemTaskVo.getOrder());
         //分页
