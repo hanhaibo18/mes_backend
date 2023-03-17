@@ -276,8 +276,8 @@ public class BranchController extends BaseController {
         List<Branch> result = branchService.list(queryWrapper);
         //当前机构的代码等于顶级机构的代码时返回所有的工厂列表
         for (Branch branch : result) {
-            if (branch.getBranchCode().replaceAll("_", "").startsWith(tenantUserDetails.getBelongOrgId().replaceAll("_", ""))) {
-                //用于车间上级添加车间列表
+            if (tenantUserDetails.getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
+                //用于车间及车间下级组织添加车间列表
                 branchList.add(branch);
             }
         }
