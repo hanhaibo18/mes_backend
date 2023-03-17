@@ -2,6 +2,8 @@ package com.richfit.mes.common.model.wms;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  *  inspection_doc_upload  MES报检单质检结果上传WMS
  */
 @Data
-public class InspectionDocUpload {
+public class InspectionDocUpload implements Serializable {
     /**
      * 报检单ID 唯一
      */
@@ -113,5 +115,8 @@ public class InspectionDocUpload {
      */
     @TableField(exist = false)
     private List<AdmissionAcceptanceList> reinsList;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 
 }

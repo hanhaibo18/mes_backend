@@ -6,32 +6,26 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
- * product_no_list  产品编号列表
+ * WMS出库信息上传MES(产品编号明细列表)
+ * reverse_output_database_product_list
  */
 @Data
-public class ProductNoList implements Serializable {
+public class ReverseOutputDatabaseProductList implements Serializable {
     /**
-     * 报检单ID
+     * 参考单行项目ID
      */
-    private String insId;
+    private String lineItemId;
 
     /**
      * 产品编号
      */
-    private Integer productNum;
+    private String productNo;
 
     /**
-     * 合格数量
+     * 数量
      */
-    private String qualifiedQuantity;
-
-    /**
-     * 不合格数量
-     */
-    private String unqualifiedQuantity;
+    private String number;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
 }

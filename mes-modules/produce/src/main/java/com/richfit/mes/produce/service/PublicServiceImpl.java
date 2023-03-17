@@ -134,38 +134,34 @@ public class PublicServiceImpl implements PublicService {
         double doubleQty = assignById.getQty();
         //trackItem.getCompleteQty() == assignById.getQty()
         //派工数量大于报工数量 && 报工数量大于 派工数量-0.01
-        if (assignById.getQty() >= trackItem.getCompleteQty() && trackItem.getCompleteQty() > doubleQty - 0.01) {
-            QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
-            queryWrapper.eq("ti_id", trackItem.getId());
-            List<Assign> assigns = trackAssignService.list(queryWrapper);
-            double sum = 0;
+//        if (assignById.getQty() >= trackItem.getCompleteQty() && trackItem.getCompleteQty() > doubleQty - 0.01) {
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
+        queryWrapper.eq("ti_id", trackItem.getId());
+        List<Assign> assigns = trackAssignService.list(queryWrapper);
+        double sum = 0;
 
-            for (Assign assign : assigns) {
-                //判断当前工序其他派工是否完成
-                if (!assign.getId().equals(assignById.getId()) && assign.getState() != 2) {
-                    isComplete = 0;
-                }
-                //计算派工数量
-                sum += assign.getQty();
+        for (Assign assign : assigns) {
+            //判断当前工序其他派工是否完成
+            if (!assign.getId().equals(assignById.getId()) && assign.getState() != 2) {
+                isComplete = 0;
             }
-            //新派工数量进行校验判断当前工序是否完场 是否最终完成
-            if (assignById.getQty() >= sum && sum > doubleQty - 0.01) {
-                //当前工序是否报工完成
-                trackItem.setIsOperationComplete(isComplete);
-                //控制下工序激活 还需验证并行工序是否完成
-                if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
-                    trackItem.setIsFinalComplete(String.valueOf(isComplete));
-                    //校验并行工序是否最终完成
-                    if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
-                        isNext = true;
-                    }
-                }
-            }
+            //计算派工数量
+            sum += assign.getQty();
+        }
+        //新派工数量进行校验判断当前工序是否完场 是否最终完成
+        if (assignById.getQty() >= sum && sum > doubleQty - 0.01) {
+            //当前工序是否报工完成
+            trackItem.setIsOperationComplete(isComplete);
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setCompleteQty(sum);
+            //控制下工序激活 还需验证并行工序是否完成
+            if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
+                trackItem.setIsFinalComplete(String.valueOf(isComplete));
+            }
             trackItemService.updateById(trackItem);
         }
-        if (isNext) {
+//        }
+        if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (null != trackHead.getWorkPlanId()) {
                 planService.planData(trackHead.getWorkPlanId());
