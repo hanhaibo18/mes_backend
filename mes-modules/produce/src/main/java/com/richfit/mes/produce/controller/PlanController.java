@@ -345,7 +345,7 @@ public class PlanController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel_MX")
     public CommonResult importExcelMX(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
-        planService.exportPlanMX(file, request);
+        planService.importPlanMX(file, request);
         return CommonResult.success(null);
     }
 

@@ -717,22 +717,40 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void exportPlanMX(MultipartFile file, HttpServletRequest request) throws IOException {
+    public void importPlanMX(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
         String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "projType","workNo", "sampleNum","projNum","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
-
+        this.importPlan(file, request, fieldNames3);
+    }
+    /**
+     * 锻造车间导入计划
+     * @param file
+     * @param request
+     * @throws IOException
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void importPlanDZ(MultipartFile file, HttpServletRequest request) throws IOException {
+        //sheet计划列表
+        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "projType","workNo", "sampleNum","weight","projectName","orderNo","demandTime",
+                "projNum","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
+        this.importPlan(file, request, fieldNames3);
+    }
+    /**
+     * 导入计划(热工个性化)
+     * @param file
+     * @param request
+     * @param fieldNames3
+     */
+    private void importPlan(MultipartFile file, HttpServletRequest request, String[] fieldNames3) {
         File excelFile = null;
-
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
         tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
         try {
             excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
-
             List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 0, tempName.toString());
-
-
             FileUtils.delete(excelFile);
             //sheet1过滤要导入的数据
             List<Plan> sheetList = list3.stream().filter(t -> {
