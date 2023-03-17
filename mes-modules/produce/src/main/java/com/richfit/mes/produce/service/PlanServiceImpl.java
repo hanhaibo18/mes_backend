@@ -736,6 +736,21 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 "projNum","demandTime","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
         this.importPlan(file, request, fieldNames3);
     }
+
+    /**
+     * 铸钢车间导入计划
+     * @param file
+     * @param request
+     * @throws IOException
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void importPlanZG(MultipartFile file, HttpServletRequest request) throws IOException {
+        //sheet计划列表
+        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "workNo", "pieceWeight","steelWaterWeight","projectName","orderNo",
+                "projNum","demandTime","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
+        this.importPlan(file, request, fieldNames3);
+    }
     /**
      * 导入计划(热工个性化)
      * @param file
