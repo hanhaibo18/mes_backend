@@ -1,13 +1,16 @@
 package com.richfit.mes.common.model.wms;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 
  * inventory_query  MES实时查询WMS库存
  */
 @Data
-public class InventoryQuery {
+public class InventoryQuery implements Serializable {
     /**
      * 库存ID
      */
@@ -62,5 +65,8 @@ public class InventoryQuery {
      * 仓位
      */
     private String location;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 
 }

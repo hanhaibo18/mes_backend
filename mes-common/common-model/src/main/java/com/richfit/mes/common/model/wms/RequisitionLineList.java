@@ -3,6 +3,7 @@ package com.richfit.mes.common.model.wms;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * requisition_line_list  明细列表
  */
 @Data
-public class RequisitionLineList {
+public class RequisitionLineList implements Serializable {
     /**
      * MES领料单行id
      */
@@ -68,4 +69,7 @@ public class RequisitionLineList {
 
     @TableField(exist = false)
     private List<RequisitionLineInfoList> lineList;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 }

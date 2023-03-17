@@ -732,8 +732,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Transactional(rollbackFor = Exception.class)
     public void importPlanDZ(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
-        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "projType","workNo", "sampleNum","weight","projectName","orderNo","demandTime",
-                "projNum","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
+        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "workNo", "weight","projectName","orderNo",
+                "projNum","demandTime","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
         this.importPlan(file, request, fieldNames3);
     }
     /**
@@ -803,6 +803,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setDeliveryNum(0);
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
+                plan.setSubmitOrderOrg(plan.getBranchCode());//提单单位
+                plan.setSubmitOrderTime(new Date());//提单时间
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction

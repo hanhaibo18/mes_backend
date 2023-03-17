@@ -1,13 +1,16 @@
 package com.richfit.mes.common.model.wms;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 
  * system_upload  MES系统将锁定、释放的工厂锁定库存上传WMS
  */
 @Data
-public class SystemUpload {
+public class SystemUpload implements Serializable {
     /**
      * 库存ID
      */
@@ -92,5 +95,13 @@ public class SystemUpload {
      * 操作人
      */
     private String optUser;
+
+    /**
+     * 操作时间
+     */
+    private String optDate;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 
 }
