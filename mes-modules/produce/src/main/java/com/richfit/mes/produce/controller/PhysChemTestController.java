@@ -117,6 +117,7 @@ public class PhysChemTestController extends BaseController {
     @PostMapping("/page")
     public CommonResult page(@RequestBody PhyChemTaskVo phyChemTaskVo) {
         phyChemTaskVo.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        phyChemTaskVo.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(phyChemTestService.page(phyChemTaskVo));
     }
 
