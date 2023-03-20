@@ -429,7 +429,7 @@ public class HotDemandController extends BaseController {
     }
 
 
-    @ApiOperation(value = "生产批准与撤销批准", notes = "生产批准与撤销批准")
+    @ApiOperation(value = "生产批准", notes = "生产批准")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
             @ApiImplicitParam(name = "ratifyState", value = "生产批准状态 0 :未批准 ,1 已批准", required = true, paramType = "query"),
@@ -440,6 +440,16 @@ public class HotDemandController extends BaseController {
         return hotDemandService.ratify(idList, ratifyState, branchCode);
     }
 
+
+
+    @ApiOperation(value = "撤销批准", notes = "撤销批准")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
+    })
+    @PostMapping("/revocation")
+    public CommonResult revocation(@RequestBody List<String> idList) {
+        return hotDemandService.revocation(idList);
+    }
 
 
 
