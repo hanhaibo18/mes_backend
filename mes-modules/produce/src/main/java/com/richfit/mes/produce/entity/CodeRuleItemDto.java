@@ -1,25 +1,18 @@
-package com.richfit.mes.common.model.produce;
+package com.richfit.mes.produce.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
-import java.util.Date;
+import com.richfit.mes.common.model.produce.CodeRuleItem;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
+
+import java.util.Date;
 
 /**
- * 编码规则字段模块
- *
- * @author 马峰
- * @since 2020-09-07
+ * @author HanHaiBo
+ * @date 2023/3/20 11:21
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Accessors(chain = true)
-@NoArgsConstructor
-public class CodeRuleItem extends BaseEntity<CodeRuleItem> {
-
+public class CodeRuleItemDto extends BaseEntity<CodeRuleItemDto> {
     /**
      * 租户ID
      */
@@ -64,11 +57,11 @@ public class CodeRuleItem extends BaseEntity<CodeRuleItem> {
      * 流水号重置依赖 $year-按年重置 $month按月重置 $date按日期重置 $quarter 按季度重置 按最大值重置
      */
     public String snResetDependency;
-      /**
+    /**
      * 流水号日期
      */
     public Date snCurrentDate;
-        /**
+    /**
      * 流水号值
      */
     public String snCurrentValue;
@@ -83,8 +76,8 @@ public class CodeRuleItem extends BaseEntity<CodeRuleItem> {
     /**
      * 前缀字符
      */
-    public String prefixChar;         
-            
+    public String prefixChar;
+
     /**
      * 后缀字符
      */
@@ -101,7 +94,7 @@ public class CodeRuleItem extends BaseEntity<CodeRuleItem> {
      * 补齐字符
      */
     public String compChar;
-     /**
+    /**
      * 宽度
      */
     public String width;

@@ -34,6 +34,111 @@ public class CodeRule extends BaseEntity<CodeRule> {
      * 分类名称
      */
     public String code;
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public String getBranchCode() {
+        return branchCode;
+    }
+
+    public void setBranchCode(String branchCode) {
+        this.branchCode = branchCode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public int getIsInner() {
+        return isInner;
+    }
+
+    public void setIsInner(int isInner) {
+        this.isInner = isInner;
+    }
+
+    public int getCodeType() {
+        return codeType;
+    }
+
+    public void setCodeType(int codeType) {
+        this.codeType = codeType;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getCurValue() {
+        return curValue;
+    }
+
+    public void setCurValue(String curValue) {
+        this.curValue = curValue;
+    }
+
+    public String getMaxLength() {
+        return maxLength;
+    }
+
+    public void setMaxLength(String maxLength) {
+        this.maxLength = maxLength;
+    }
+
+    public String getIsFixed() {
+        return isFixed;
+    }
+
+    public void setIsFixed(String isFixed) {
+        this.isFixed = isFixed;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    public void setRoleId(String roleId) {
+        this.roleId = roleId;
+    }
+
+    public void setRoleIdList(List<String> roleIdList) {
+        this.roleIdList = roleIdList;
+    }
+
+    public String getRuleNo() {
+        return ruleNo;
+    }
+
+    public void setRuleNo(String ruleNo) {
+        this.ruleNo = ruleNo;
+    }
+
     /**
      * 是否内置 0-否 1-是
      */
@@ -72,6 +177,12 @@ public class CodeRule extends BaseEntity<CodeRule> {
      */
     @TableField(exist = false)
     public List<String> roleIdList;
+
+    /**
+     * 规则号，Excel导入使用
+     */
+    @TableField(exist = false)
+    public String ruleNo;
 
     public String getRoleId() {
         System.out.println("getRoleId"+roleId);
