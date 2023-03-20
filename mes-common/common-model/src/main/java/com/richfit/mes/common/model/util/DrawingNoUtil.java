@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class DrawingNoUtil {
 
-    static String drawingNo(String drawingNo) {
+    public static String drawingNo(String drawingNo) {
         drawingNo = drawingNo.trim();
         drawingNo = drawingNo.replaceAll("-", "");
         drawingNo = drawingNo.replaceAll("[.]", "");
