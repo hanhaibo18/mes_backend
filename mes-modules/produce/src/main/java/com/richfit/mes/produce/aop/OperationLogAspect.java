@@ -106,11 +106,11 @@ public class OperationLogAspect {
                             (lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
                 } else if (isPlanId && !StringUtils.isNullOrEmpty(id)) {
                     Plan curPlan = planService.getById(id);
-                    if (curPlan == null){
+                    if (curPlan == null) {
                         throw new GlobalException("planId error", ResultCode.FAILED);
                     }
                     actionService.saveAction(ActionUtil.buildAction
-                            (curPlan.getBranchCode(), "1", "1", "计划号：" + curPlan.getProjNum(), getIpAddress(request)));
+                            (curPlan.getBranchCode(), "1", "1", "计划号：" + curPlan.getProjNum() + "图号：" + curPlan.getDrawNo(), getIpAddress(request)));
                 } else if (idOrder && trackHead != null) {
                     actionService.saveAction(ActionUtil.buildAction
                             (trackHead.getBranchCode(), "1", "0", "订单号：" + trackHead.getProductionOrder(), getIpAddress(request)));

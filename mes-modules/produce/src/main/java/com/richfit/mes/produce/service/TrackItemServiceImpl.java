@@ -17,7 +17,9 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
@@ -34,9 +36,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -85,6 +90,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Autowired
     private PrechargeFurnaceMapper prechargeFurnaceMapper;
+
+    @Autowired
+    private ActionService actionService;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -189,9 +197,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
-    public String resetStatus(String tiId, Integer resetType) {
+    public String resetStatus(String tiId, Integer resetType, HttpServletRequest request) {
         TrackItem item = this.getById(tiId);
-        if (item.getIsCurrent() != 1){
+        String actionMessage = "工序ID：" + item.getId();
+        if (item.getIsCurrent() != 1) {
             return "只能操作当前工序！";
         }
         // resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录
@@ -199,7 +208,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             QueryWrapper<TrackHead> headQueryWrapper = new QueryWrapper<>();
             headQueryWrapper.eq("id", item.getTrackHeadId());
             TrackHead trackHead = trackHeadService.getOne(headQueryWrapper);
-
             if (resetType == 5) {
                 item.setIsFinalComplete("0");
                 item.setIsTrackSequenceComplete(0);
@@ -210,6 +218,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setQualityCertificateDestination("");
                 item.setScheduleCompleteBy("");
                 item.setScheduleCompleteTime(null);
+                actionMessage = actionMessage + ",重置调度审核";
             }
 
             if (resetType == 3 || resetType == 5) {
@@ -234,6 +243,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 QueryWrapper<CheckAttachment> attachmentQueryWrapper = new QueryWrapper<>();
                 attachmentQueryWrapper.eq("ti_id", item.getId());
                 trackCheckAttachmentService.remove(attachmentQueryWrapper);
+
+                actionMessage = actionMessage + ",重置质检";
             }
 
             if (resetType == 2 || resetType == 5) {
@@ -276,6 +287,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                         trackAssemblyBindingService.remove(bindingQueryWrapper);
                     }
                 }
+                actionMessage = actionMessage + ",重置报工";
             }
 
             if (resetType == 1 || resetType == 5) {
@@ -313,9 +325,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     trackHeadFlowService.update(updateWrapperTrackFlow);
                     trackHeadService.trackHeadData(item.getTrackHeadId());
                 }
+                actionMessage = actionMessage + ",重置派工";
             }
-
         }
+        actionService.saveAction(ActionUtil.buildAction(item.getBranchCode(), "3", "2", actionMessage, OperationLogAspect.getIpAddress(request)));
         return this.updateById(item) ? "success" : "修改跟单工序失败！";
     }
 
@@ -493,7 +506,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         //回退前检查当前工序状态
         for (TrackItem currItem : currItems) {
             if ("1".equals(currItem.getIsFinalComplete()) || item.getIsScheduleComplete() != 0 || item.getIsExistScheduleCheck() != 0
-                    || item.getIsDoing() != 0 || item.getIsSchedule() != 0){
+                    || item.getIsDoing() != 0 || item.getIsSchedule() != 0) {
                 return "回退前清清除当前工序状态！";
             }
         }
