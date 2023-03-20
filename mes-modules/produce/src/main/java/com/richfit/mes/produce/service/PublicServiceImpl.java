@@ -157,11 +157,13 @@ public class PublicServiceImpl implements PublicService {
             //控制下工序激活 还需验证并行工序是否完成
             if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
                 trackItem.setIsFinalComplete(String.valueOf(isComplete));
+                trackItem.setFinalCompleteTime(new Date());
+                isNext = true;
             }
             trackItemService.updateById(trackItem);
         }
 //        }
-        if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
+        if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId()) && isNext) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (null != trackHead.getWorkPlanId()) {
                 planService.planData(trackHead.getWorkPlanId());
@@ -188,6 +190,7 @@ public class PublicServiceImpl implements PublicService {
         //如果不需要调度审核，则将工序设置为完成
         if (trackItem.getIsExistScheduleCheck() == 0 && trackItem.getIsQualityComplete() == 1) {
             trackItem.setIsFinalComplete("1");
+            trackItem.setFinalCompleteTime(new Date());
             trackItemService.updateById(trackItem);
             //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
             if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
@@ -218,6 +221,7 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
         }
         trackItem.setIsFinalComplete("1");
+        trackItem.setFinalCompleteTime(new Date());
         trackItem.setScheduleCompleteTime(new Date());
         trackItem.setIsOperationComplete(1);
         trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
