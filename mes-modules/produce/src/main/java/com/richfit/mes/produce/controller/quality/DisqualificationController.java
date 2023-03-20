@@ -1,10 +1,13 @@
 package com.richfit.mes.produce.controller.quality;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.service.quality.DisqualificationAttachmentService;
 import com.richfit.mes.produce.service.quality.DisqualificationFinalResultService;
@@ -70,6 +73,24 @@ public class DisqualificationController extends BaseController {
     @GetMapping("/queryItem")
     public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode, String disqualificationId) {
         return CommonResult.success(disqualificationService.inquiryRequestForm(tiId, branchCode, disqualificationId));
+    }
+
+    @ApiOperation(value = "删除不合格记录", notes = "删除不合格记录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "disqualificat ionId", value = "申请单Id", paramType = "query", dataType = "string")
+    })
+    @GetMapping("/delete/{disqualificationId}")
+    public CommonResult<String> delete(@PathVariable(value = "disqualificationId") String disqualificationId) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        Disqualification disqualification = disqualificationService.getById(disqualificationId);
+        if (ObjectUtils.isEmpty(disqualification)){
+            return CommonResult.failed("没有找到该不合格记录！");
+        }else if (!disqualification.getCreateBy().equals(currentUser.getUserId())){
+            return CommonResult.failed("您不能删除不是您创建的记录！");
+        }
+        return CommonResult.success(disqualificationService.deleteById(disqualificationId));
     }
 
     @ApiOperation(value = "查询质量检测部", notes = "第一次提交申请单查询质量检测部人员")

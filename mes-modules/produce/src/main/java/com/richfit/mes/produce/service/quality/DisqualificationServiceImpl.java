@@ -31,12 +31,14 @@ import com.richfit.mes.produce.utils.Code;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: DisqualificationServiceImpl.java
@@ -72,6 +74,15 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
     @Resource
     private CodeRuleService codeRuleService;
+
+    @Autowired
+    private DisqualificationAttachmentService disqualificationAttachmentService;
+
+    @Autowired
+    private DisqualificationFinalResultService disqualificationFinalResultService;
+
+    @Autowired
+    private DisqualificationUserOpinionService disqualificationUserOpinionService;
 
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
@@ -625,6 +636,31 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
         }
         return this.updateById(disqualification);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String deleteById(String disqualificationId) {
+        //删除不合格品列表 表记录
+        disqualificationMapper.deleteById(disqualificationId);
+        //删除produce_disqualification_attachment表记录
+        QueryWrapper<DisqualificationAttachment> disqualificationAttachmentQueryWrapper = new QueryWrapper<>();
+        disqualificationAttachmentQueryWrapper.eq("disqualification_id", disqualificationId);
+        List<DisqualificationAttachment> disqualificationAttachments = disqualificationAttachmentService.list(disqualificationAttachmentQueryWrapper);
+        //获取关联file_id
+        List<String> fileIds = disqualificationAttachments.stream().map(DisqualificationAttachment::getFileId).collect(Collectors.toList());
+        disqualificationAttachmentService.remove(disqualificationAttachmentQueryWrapper);
+        //删除produce_disqualification_final_result 表记录
+        disqualificationFinalResultService.removeById(disqualificationId);
+        //删除produce_disqualification_user_opinion 表记录
+        QueryWrapper<DisqualificationUserOpinion> disqualificationUserOpinionQueryWrapper = new QueryWrapper<>();
+        disqualificationUserOpinionQueryWrapper.eq("disqualification_id", disqualificationId);
+        disqualificationUserOpinionService.remove(disqualificationUserOpinionQueryWrapper);
+        //删除关联文件
+        for (String id : fileIds) {
+            systemServiceClient.delete(id);
+        }
+        return "success";
     }
 
 
