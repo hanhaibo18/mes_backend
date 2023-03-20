@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.entity;
 
 import com.richfit.mes.common.model.produce.TrackComplete;
+import com.richfit.mes.common.model.produce.TrackCompleteExtra;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -30,4 +31,6 @@ public class CompleteDto {
     private String prodNo;
     @ApiModelProperty(value = "报工人", dataType = "String")
     private String completeBy;
+    @ApiModelProperty(value = "报工额外信息", dataType = "List<TrackCompleteExtra>")
+    private List<TrackCompleteExtra> trackCompleteExtraList;
 }
