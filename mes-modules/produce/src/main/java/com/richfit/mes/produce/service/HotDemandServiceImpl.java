@@ -316,6 +316,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
 //            plan.setApprovalBy(currentUser.getUsername());//审批人
 //            plan.setApprovalTime(new Date());//审批时间
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
+            plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
             //--------------------------
             plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
