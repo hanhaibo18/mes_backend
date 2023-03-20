@@ -33,9 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author 马峰
@@ -81,7 +79,7 @@ public class RouterController extends BaseController {
 
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
             if (!StringUtils.isNullOrEmpty(routerNo)) {
-                queryWrapper.like("router_no", routerNo);
+                DrawingNoUtil.queryLike(queryWrapper, "router_no", routerNo);
             }
             if (!StringUtils.isNullOrEmpty(routerName)) {
                 queryWrapper.like("router_name", routerName);
@@ -129,10 +127,10 @@ public class RouterController extends BaseController {
             //校验能否新增
             //校验 如果存在图号+版本号+类型的工艺 跳过发布
             QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
-            routerQueryWrapper.eq("router_no", router.getDrawNo())
-                    .eq("version", router.getVersion())
+            routerQueryWrapper.eq("version", router.getVersion())
                     .eq("router_type", router.getRouterType())
                     .eq("branch_code", router.getBranchCode());
+            DrawingNoUtil.queryEq(routerQueryWrapper, "router_no", router.getDrawNo());
             List<Router> list = routerService.list(routerQueryWrapper);
             //存在的话跳过发布
             if (list.size() > 0) {
@@ -146,7 +144,7 @@ public class RouterController extends BaseController {
                 routerOlds.setStatus("2");
                 QueryWrapper<Router> queryWrapperRouter = new QueryWrapper<>();
                 queryWrapperRouter.eq("status", "1");
-                queryWrapperRouter.eq("router_no", router.getRouterNo());
+                DrawingNoUtil.queryEq(routerQueryWrapper, "router_no", router.getRouterNo());
                 queryWrapperRouter.eq("branch_code", router.getBranchCode());
                 //工艺唯一  工艺类型+图号（历史数据）
                 queryWrapperRouter.eq("router_type", router.getRouterType());
@@ -206,7 +204,7 @@ public class RouterController extends BaseController {
                 routerOlds.setStatus("2");
                 QueryWrapper<Router> queryWrapperRouter = new QueryWrapper<>();
                 queryWrapperRouter.eq("status", "1");
-                queryWrapperRouter.eq("router_no", router.getRouterNo());
+                DrawingNoUtil.queryEq(queryWrapperRouter, "router_no", router.getRouterNo());
                 queryWrapperRouter.eq("branch_code", router.getBranchCode());
                 queryWrapperRouter.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
                 queryWrapperRouter.eq("router_type", router.getRouterType());
@@ -300,7 +298,7 @@ public class RouterController extends BaseController {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
 
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.eq("router_no", routerNo);
+            DrawingNoUtil.queryEq(queryWrapper, "router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -325,7 +323,9 @@ public class RouterController extends BaseController {
     public CommonResult<List<Router>> getByRouterNos(String routerNos, String branchCode) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(routerNos)) {
-            queryWrapper.in("router_no", routerNos.split(","));
+            List<String> list = new ArrayList<>();
+            Collections.addAll(list, routerNos.split(","));
+            DrawingNoUtil.queryIn(queryWrapper, "router_no", list);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
@@ -509,7 +509,7 @@ public class RouterController extends BaseController {
 
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.like("router_no", routerNo);
+            DrawingNoUtil.queryLike(queryWrapper, "router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(routerName)) {
             queryWrapper.like("router_name", routerName);

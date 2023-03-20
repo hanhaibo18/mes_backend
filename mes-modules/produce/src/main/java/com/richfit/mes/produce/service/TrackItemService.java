@@ -11,6 +11,7 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -93,7 +94,7 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return
      * @Author WangRui
      */
-    String resetStatus(String tiId, Integer resetType);
+    String resetStatus(String tiId, Integer resetType, HttpServletRequest request);
 
     /**
      * 更新至下工序
@@ -158,5 +159,5 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Author: Han Haibo
      * @Date: 2023/2/17 10:59
      **/
-    void exportHeatTrackLabel(HttpServletResponse response,String id) throws IOException;
+    void exportHeatTrackLabel(HttpServletResponse response, String id) throws IOException;
 }
