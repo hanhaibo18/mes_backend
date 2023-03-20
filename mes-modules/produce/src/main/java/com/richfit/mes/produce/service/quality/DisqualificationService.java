@@ -165,4 +165,6 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: Boolean
      **/
     Boolean sendBack(String id, Integer type);
+
+    String  deleteById(String disqualificationId);
 }
