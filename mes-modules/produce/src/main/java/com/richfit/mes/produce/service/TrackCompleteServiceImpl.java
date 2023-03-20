@@ -394,11 +394,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             double numDouble = 0.00;
             for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
                 //验证输入值是否合法
-                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
-                //如果返回值不等于空则代表验证不通过，将提示信息返回
-                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
-                    return CommonResult.failed(s);
-                }
+//                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
+//                //如果返回值不等于空则代表验证不通过，将提示信息返回
+//                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
+//                    return CommonResult.failed(s);
+//                }
 
                 trackComplete.setId(null);
                 trackComplete.setAssignId(completeDto.getAssignId());
@@ -414,7 +414,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             //跟新工序完成数量
-            trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
+            trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
             double intervalNumber = assign.getQty() + 0.0;
             if (numDouble > assign.getQty()) {
                 return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
