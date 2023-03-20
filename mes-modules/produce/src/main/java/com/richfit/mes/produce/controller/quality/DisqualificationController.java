@@ -77,12 +77,10 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "删除不合格记录", notes = "删除不合格记录")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "disqualificat ionId", value = "申请单Id", paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "disqualificationId", value = "申请单Id", paramType = "query", dataType = "string")
     })
-    @GetMapping("/delete/{disqualificationId}")
-    public CommonResult<String> delete(@PathVariable(value = "disqualificationId") String disqualificationId) {
+    @DeleteMapping("/delete/{disqualificationId}")
+    public CommonResult<String> delete(@PathVariable String disqualificationId) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         Disqualification disqualification = disqualificationService.getById(disqualificationId);
         if (ObjectUtils.isEmpty(disqualification)){
