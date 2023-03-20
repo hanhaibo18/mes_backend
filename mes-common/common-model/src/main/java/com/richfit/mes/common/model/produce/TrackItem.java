@@ -212,9 +212,12 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "是否最终完成", dataType = "String")
     private String isFinalComplete;
 
+    @ApiModelProperty(value = "最终完成时间", dataType = "Date")
+    private Date finalCompleteTime;
+
     @ApiModelProperty(value = "跟单顺序完成", dataType = "Integer")
     private Integer isTrackSequenceComplete;
-    
+
     @ApiModelProperty(value = "eventId", dataType = "Integer")
     private Integer eventId;
 

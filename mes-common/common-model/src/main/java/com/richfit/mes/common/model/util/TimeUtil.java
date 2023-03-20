@@ -64,4 +64,35 @@ public class TimeUtil {
         endTime = endTime + " 23:59:59";
         return " create_time <= '" + endTime + "' ";
     }
+
+
+    /**
+     * 功能描述: sql 语句拼接
+     *
+     * @param startTime
+     * @Author: zhiqiang.lu
+     * @Date: 2023.2.1
+     */
+    public static String startTime(String startTime) {
+        if (StrUtil.isBlank(startTime)) {
+            return "";
+        }
+        startTime = startTime + " 00:00:00";
+        return startTime;
+    }
+
+
+    /**
+     * 功能描述: sql 语句拼接
+     *
+     * @param endTime
+     * @Author: zhiqiang.lu
+     * @Date: 2023.2.1
+     */
+    public static String endTime(String endTime) {
+        if (StrUtil.isBlank(endTime)) {
+            return "";
+        }
+        return endTime + " 23:59:59";
+    }
 }
