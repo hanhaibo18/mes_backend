@@ -6,12 +6,16 @@ import com.kld.mes.wms.provider.SystemServiceClient;
 import com.kld.mes.wms.utils.AESUtil;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.wms.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
+@Service
 public class ProductToWmsThreeService {
 
     protected final RestTemplate restTemplate = new RestTemplate();
