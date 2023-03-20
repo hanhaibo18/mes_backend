@@ -20,6 +20,7 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.AssignPerson;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -446,7 +447,7 @@ public class SequenceController extends BaseController {
         QueryWrapper<Router> query = new QueryWrapper<Router>();
 
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            query.eq("router_no", routerNo);
+            DrawingNoUtil.queryEq(query, "router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             query.eq("branch_code", branchCode);
@@ -715,7 +716,7 @@ public class SequenceController extends BaseController {
             queryWrapper2.eq("id", routerId);
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper2.eq("router_no", routerNo);
+            DrawingNoUtil.queryEq(queryWrapper2, "router_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper2.eq("branch_code", branchCode);
@@ -774,11 +775,11 @@ public class SequenceController extends BaseController {
     public CommonResult<Boolean> assignSave(@RequestBody OperationAssign assign) {
         //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
         //热处理派工派到班组  所以没有人员 （assign.getAssignPersons()为空）
-        if(StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())){
+        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
             StringBuilder userId = new StringBuilder();
             StringBuilder userName = new StringBuilder();
             for (AssignPerson assignPerson : assign.getAssignPersons()) {
-                if(!StringUtils.isNullOrEmpty(String.valueOf(userId))){
+                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
                     userId.append(",");
                     userName.append(",");
                 }
@@ -799,11 +800,11 @@ public class SequenceController extends BaseController {
         //1、处理派工人员信息  机加userid和username前端拼接好了，所以可以直接用
         //2、热工前端没拼接，所以后端得处理 从assignPerson里边取值
         //3、热处理车间分配到车间  不涉及人员
-        if(StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())){
+        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
             StringBuilder userId = new StringBuilder();
             StringBuilder userName = new StringBuilder();
             for (AssignPerson assignPerson : assign.getAssignPersons()) {
-                if(!StringUtils.isNullOrEmpty(String.valueOf(userId))){
+                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
                     userId.append(",");
                     userName.append(",");
                 }
@@ -829,7 +830,7 @@ public class SequenceController extends BaseController {
 
     @ApiOperation(value = "查询工序派工", notes = "根据工序name查询工序派工")
     @GetMapping("/assign/get")
-    public CommonResult<OperationAssign> assignGet(String optName,String branchCode) {
+    public CommonResult<OperationAssign> assignGet(String optName, String branchCode) {
         QueryWrapper<OperationAssign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("opt_name", optName);
         queryWrapper.eq("branch_code", branchCode);
@@ -839,7 +840,7 @@ public class SequenceController extends BaseController {
         OperationAssign one = operationAssignService.getOne(queryWrapper);
         ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
 
-        if(!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())){
+        if (!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())) {
             List<String> list = Arrays.asList(one.getUserId().split(","));
             for (String userId : list) {
                 AssignPerson assignPerson = new AssignPerson();

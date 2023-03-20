@@ -73,10 +73,10 @@ public class ProductController extends BaseController {
     @ApiOperation(value = "根据excel导入物料")
     @PostMapping("/importMaterialByExcle")
     public CommonResult<String> importMaterialByExcle(@ApiParam(value = "excel文件") @RequestParam("file") MultipartFile file,
-                                    @ApiParam(value = "tenantId") @RequestParam String tenantId,
-                                    @ApiParam(value = "branchCode") @RequestParam String branchCode) {
+                                                      @ApiParam(value = "tenantId") @RequestParam String tenantId,
+                                                      @ApiParam(value = "branchCode") @RequestParam String branchCode) {
 
-        return CommonResult.success(productService.importMaterialByExcle(file,tenantId,branchCode));
+        return CommonResult.success(productService.importMaterialByExcle(file, tenantId, branchCode));
     }
 
 
@@ -275,7 +275,7 @@ public class ProductController extends BaseController {
             // 查询物料是否有对应的工艺
             // p.drawing_no = r.router_no and p.tenant_id = r.tenant_id and r.status = 1
             QueryWrapper<Router> routerQuery = new QueryWrapper<>();
-            routerQuery.eq("router_no", product.getDrawingNo());
+            DrawingNoUtil.queryEq(routerQuery, "router_no", product.getDrawingNo());
             routerQuery.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             routerQuery.eq("is_active", "1");
 
@@ -661,14 +661,14 @@ public class ProductController extends BaseController {
     @ApiOperation(value = "根据产品名称模糊查询物料信息", notes = "根据产品名称模糊查询物料信息")
     @GetMapping("/list_by_product_name")
     public CommonResult<List<Product>> listByProductName(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page,
-                                           @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit,
-                                           @ApiParam(value = "产品名称", required = false) @RequestParam String productName) {
+                                                         @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit,
+                                                         @ApiParam(value = "产品名称", required = false) @RequestParam String productName) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(productName)) {
             queryWrapper.like("product_name", productName);
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        IPage<Product> result=productService.page(new Page<Product>(page, limit),queryWrapper);
+        IPage<Product> result = productService.page(new Page<Product>(page, limit), queryWrapper);
         return CommonResult.success(result.getRecords());
     }
 
