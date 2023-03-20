@@ -91,50 +91,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
-
-        QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
-//        if (!StringUtils.isNullOrEmpty(workNo)) {
-//            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where work_no = '" + workNo + "')");
-//        }
-//        if (!StringUtils.isNullOrEmpty(orderNo)) {
-//            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where production_order = '" + orderNo + "')");
-//        }
-        if (!StringUtils.isNullOrEmpty(trackNo)) {
-            trackNo = trackNo.replaceAll(" ", "");
-            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
-        }
-        if (!StringUtils.isNullOrEmpty(workNo)) {
-            queryWrapper.eq("work_no", workNo);
-        }
-        if (!StringUtils.isNullOrEmpty(orderNo)) {
-            queryWrapper.eq("production_order", orderNo);
-        }
-        if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("final_complete_time", TimeUtil.startTime(startTime));
-        }
-        if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("final_complete_time", TimeUtil.endTime(endTime));
-        }
-        queryWrapper.eq("is_final_complete", "1");
-        //获取当前登录用户角色列表
-        List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
-        List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
-        //查询权限控制
-        if (roleCodeList.toString().contains("_LDGL") || roleCodeList.toString().contains("_TJ") || roleCodeList.contains("role_tenant_admin")) {
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
-            }
-            queryWrapper.eq(StrUtil.isNotBlank(userId), "user_id", userId);
-        } else {
-            queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
-        }
-        PageHelper.startPage(1, 1000);
-        List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        PageInfo<TrackComplete> page = new PageInfo(completes);
-        for (int i = 1; i < page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-        }
+        List<TrackComplete> completes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
         List<TrackComplete> summary = new ArrayList<>();
         List<TrackComplete> details = new ArrayList<>();
         if (!CollectionUtils.isEmpty(completes)) {
@@ -1195,27 +1152,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
-        if (!StringUtils.isNullOrEmpty(workNo)) {
-            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where work_no = '" + workNo + "')");
-        }
-        if (!StringUtils.isNullOrEmpty(orderNo)) {
-            queryWrapper.inSql("ti_id", "select id from  produce_track_item where track_head_id in ( select id from produce_track_head where production_order = '" + orderNo + "')");
-        }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
             queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.eq("work_no", workNo);
+        }
+        if (!StringUtils.isNullOrEmpty(orderNo)) {
+            queryWrapper.eq("production_order", orderNo);
+        }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            TimeUtil.queryStartTime(queryWrapper, startTime);
+            queryWrapper.ge("final_complete_time", TimeUtil.startTime(startTime));
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            TimeUtil.queryEndTime(queryWrapper, endTime);
+            queryWrapper.le("final_complete_time", TimeUtil.endTime(endTime));
         }
+        queryWrapper.eq("is_final_complete", "1");
         //获取当前登录用户角色列表
         List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
         List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
-//            BOMCO_ZF_JMAQ_LDGL;//领导
-//            role_tenant_admin;//租户管理员
         //查询权限控制
         if (roleCodeList.toString().contains("_LDGL") || roleCodeList.toString().contains("_TJ") || roleCodeList.contains("role_tenant_admin")) {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -1225,14 +1181,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-
-//        PageHelper.startPage(1, 1000);
-        List<TrackComplete> completes = trackCompleteService.list(queryWrapper);
-//        PageInfo<TrackHead> page = new PageInfo(completes);
-//        for (int i = 1; i <= page.getPages(); i++) {
-//            PageHelper.startPage(i, 1000);
-//            completes.addAll(trackCompleteService.list(queryWrapper));
-//        }
+        PageHelper.startPage(1, 1000);
+        List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
+        PageInfo<TrackComplete> page = new PageInfo(completes);
+        for (int i = 1; i < page.getPages(); i++) {
+            PageHelper.startPage(i, 1000);
+            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
+        }
         return completes;
     }
 
