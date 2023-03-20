@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -336,7 +337,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
-
+    @Autowired
+    private TrackCompleteExtraService trackCompleteExtraService;
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
@@ -411,7 +413,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             log.error(completeDto.getTrackCompleteList().toString());
             this.saveBatch(completeDto.getTrackCompleteList());
-
+            //锻造车间 填写的额外报工信息
+            if(!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size()>0){
+                trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
+            }
         }
         return CommonResult.success(true);
     }
