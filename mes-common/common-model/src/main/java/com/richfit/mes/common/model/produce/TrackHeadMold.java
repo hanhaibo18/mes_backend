@@ -12,7 +12,7 @@ import java.util.Date;
  * @author Hou XinYu
  */
 @Data
-public class TrackMold extends BaseEntity<TrackMold> {
+public class TrackHeadMold extends BaseEntity<TrackHeadMold> {
 
     /**
      * 模具类别(0=制新,1=返修)
@@ -85,6 +85,12 @@ public class TrackMold extends BaseEntity<TrackMold> {
      */
     @ApiModelProperty(value = "完工日期")
     private Date completionDate;
+
+    /**
+     * 模型版本
+     */
+    @ApiModelProperty(value = "模型版本")
+    private String modelVersion;
 
     private String branchCode;
 
