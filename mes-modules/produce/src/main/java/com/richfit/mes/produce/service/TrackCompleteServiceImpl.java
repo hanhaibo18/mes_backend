@@ -7,8 +7,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -339,6 +337,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Autowired
     private TrackCompleteExtraService trackCompleteExtraService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
@@ -414,7 +413,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             log.error(completeDto.getTrackCompleteList().toString());
             this.saveBatch(completeDto.getTrackCompleteList());
             //锻造车间 填写的额外报工信息
-            if(!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size()>0){
+            if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
                 trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
             }
         }
@@ -1186,13 +1185,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        PageHelper.startPage(1, 1000);
+//        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        PageInfo<TrackComplete> page = new PageInfo(completes);
-        for (int i = 1; i < page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-        }
+//        PageInfo<TrackComplete> page = new PageInfo(completes);
+//        for (int i = 1; i < page.getPages(); i++) {
+//            PageHelper.startPage(i, 1000);
+//            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
+//        }
         return completes;
     }
 
