@@ -7,10 +7,14 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.OperationTypeSpec;
 import com.richfit.mes.common.model.base.RouterCheck;
+import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
@@ -19,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +44,8 @@ public class TrackItemController extends BaseController {
     public BaseServiceClient baseServiceClient;
     @Autowired
     public TrackHeadService trackHeadService;
+    @Autowired
+    private ActionService actionService;
 
     public static String TRACK_HEAD_ID_NULL_MESSAGE = "跟单ID不能为空！";
     public static String TRACK_ITEM_ID_NULL_MESSAGE = "跟单工序ID不能为空！";
@@ -319,15 +326,24 @@ public class TrackItemController extends BaseController {
 
     @ApiOperation(value = "重置跟单工序状态", notes = "重置跟单工序状态 （resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录）")
     @GetMapping("/resetStatus")
-    public CommonResult<String> resetStatus(String tiId, Integer resetType) {
-        return CommonResult.success(trackItemService.resetStatus(tiId, resetType));
+    public CommonResult<String> resetStatus(String tiId, Integer resetType, HttpServletRequest request) {
+        return CommonResult.success(trackItemService.resetStatus(tiId, resetType, request));
     }
 
     @ApiOperation(value = "更新至下工序", notes = "根据跟单ID更新至下工序")
     @GetMapping("/nextSequence")
-    public CommonResult<String> nextSequence(String flowId) {
+    public CommonResult<String> nextSequence(String flowId, HttpServletRequest request) {
         String error = trackItemService.nextSequence(flowId);
         if ("success".equals(error)) {
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            //获取该flowId的当前工序
+            queryWrapper.eq("flow_id", flowId);
+            queryWrapper.eq("is_current", 1);
+            List<TrackItem> list = trackItemService.list(queryWrapper);
+            List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
+            actionService.saveAction(
+                    ActionUtil.buildAction(list.get(0).getBranchCode(), "3", "2",
+                            "更新至下工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success("success");
         } else {
             return CommonResult.failed(error);
@@ -336,8 +352,21 @@ public class TrackItemController extends BaseController {
 
     @ApiOperation(value = "回滚至上工序", notes = "根据跟单ID回滚至上工序")
     @GetMapping("/backSequence")
-    public CommonResult<String> backSequence(String flowId) {
-        return CommonResult.success(trackItemService.backSequence(flowId));
+    public CommonResult<String> backSequence(String flowId, HttpServletRequest request) {
+        String result = trackItemService.backSequence(flowId);
+        if ("success".equals(result)) {
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            //获取该flowId的当前工序
+            queryWrapper.eq("flow_id", flowId);
+            queryWrapper.eq("is_current", 1);
+            List<TrackItem> list = trackItemService.list(queryWrapper);
+            List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
+            actionService.saveAction(
+                    ActionUtil.buildAction(list.get(0).getBranchCode(), "3", "2",
+                            "回滚至上工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
+            return CommonResult.success("success");
+        }
+        return CommonResult.failed(result);
     }
 
 

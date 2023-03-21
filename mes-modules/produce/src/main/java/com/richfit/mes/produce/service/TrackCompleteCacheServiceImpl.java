@@ -49,11 +49,11 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
             List<TrackCompleteCache> trackCompleteCacheList = new ArrayList<>();
             for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
                 //验证输入值是否合法
-                String s = trackCompleteService.verifyTrackComplete(trackComplete, trackItem, companyCode);
+                /*String s = trackCompleteService.verifyTrackComplete(trackComplete, trackItem, companyCode);
                 //如果返回值不等于空则代表验证不通过，将提示信息返回
                 if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
                     return CommonResult.failed(s);
-                }
+                }*/
                 TrackCompleteCache trackCompleteCache = new TrackCompleteCache();
                 trackCompleteCache.setAssignId(completeDto.getAssignId());
                 trackCompleteCache.setTiId(completeDto.getTiId());

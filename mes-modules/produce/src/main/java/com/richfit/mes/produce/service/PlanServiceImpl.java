@@ -18,6 +18,7 @@ import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
 import com.richfit.mes.common.model.util.ActionUtil;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
@@ -92,6 +93,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     private PlanExtendMapper planExtendMapper;
     @Autowired
     private HotDemandService hotDemandService;
+
     /**
      * 功能描述: 物料齐套性检查
      *
@@ -375,30 +377,31 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     }
                 }
                 planMapper.updateById(plan);
-                //更新交付数量同时更新需求提报交付数量
-                this.updateDeliveryNum(plan);
             }
         }
     }
 
     /**
-     * 更新需求提拔交付数量
-     * @param plan
+     * 更新需求提报表中交付数量
+     *
+     * @param planId
      */
-    private void updateDeliveryNum(Plan plan) {
+    @Override
+    public void updateDeliveryNum(String planId) {
+        Plan plan = planMapper.selectById(planId);
         //热工分公司的数据需要更新需求提报表中的交付数量字段
-        if (plan.getTenantId().equals("12345678901234567890123456789001")){
-            QueryWrapper<HotDemand> demandQueryWrapper=new QueryWrapper<>();
+        if (plan.getTenantId().equals("12345678901234567890123456789001")) {
+            QueryWrapper<HotDemand> demandQueryWrapper = new QueryWrapper<>();
             demandQueryWrapper.eq("tenant_id", plan.getTenantId());
-            demandQueryWrapper.apply("(plan_id='"+ plan.getId() +"' or plan_id_model ='"+ plan.getId() +"')");
+            demandQueryWrapper.apply("(plan_id='" + plan.getId() + "' or plan_id_model ='" + plan.getId() + "')");
             HotDemand hotDemand = hotDemandService.getOne(demandQueryWrapper);
-            if(!ObjectUtil.isEmpty(hotDemand)){
-                UpdateWrapper<HotDemand> updateWrapper =new UpdateWrapper<>();
-                int DeliveryNum= hotDemand.getDeliveryNum();
-                DeliveryNum+=plan.getDeliveryNum();
+            if (!ObjectUtil.isEmpty(hotDemand)) {
+                UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper<>();
+                int DeliveryNum = hotDemand.getDeliveryNum();
+                DeliveryNum += plan.getDeliveryNum();
                 updateWrapper.set("delivery_num", DeliveryNum);
                 updateWrapper.eq("tenant_id", plan.getTenantId());
-                updateWrapper.apply("(plan_id='"+ plan.getId() +"' or plan_id_model ='"+ plan.getId() +"')");
+                updateWrapper.apply("(plan_id='" + plan.getId() + "' or plan_id_model ='" + plan.getId() + "')");
                 hotDemandService.update(updateWrapper);
             }
         }
@@ -430,6 +433,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     /**
      * 保存计划
+     *
      * @param plan
      * @return
      */
@@ -711,6 +715,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     /**
      * 模型车间导入计划
+     *
      * @param file
      * @param request
      * @throws IOException
@@ -719,11 +724,13 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Transactional(rollbackFor = Exception.class)
     public void importPlanMX(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
-        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "projType","workNo", "sampleNum","projNum","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
+        String[] fieldNames3 = {"productName", "drawNo", "drawNoName", "texture", "priority", "projType", "workNo", "sampleNum", "projNum", "branchCode", "inchargeOrg", "startTime", "endTime", "projectNo"};
         this.importPlan(file, request, fieldNames3);
     }
+
     /**
      * 锻造车间导入计划
+     *
      * @param file
      * @param request
      * @throws IOException
@@ -732,13 +739,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Transactional(rollbackFor = Exception.class)
     public void importPlanDZ(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
-        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "workNo", "weight","projectName","orderNo",
-                "projNum","demandTime","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
+        String[] fieldNames3 = {"productName", "drawNo", "drawNoName", "texture", "priority", "workNo", "weight", "projectName", "orderNo",
+                "projNum", "demandTime", "branchCode", "inchargeOrg", "startTime", "endTime", "projectNo"};
         this.importPlan(file, request, fieldNames3);
     }
 
     /**
      * 铸钢车间导入计划
+     *
      * @param file
      * @param request
      * @throws IOException
@@ -747,12 +755,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @Transactional(rollbackFor = Exception.class)
     public void importPlanZG(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
-        String[] fieldNames3 = {"productName", "drawNo","drawNoName", "texture","priority", "workNo", "pieceWeight","steelWaterWeight","projectName","orderNo",
-                "projNum","demandTime","branchCode","inchargeOrg", "startTime","endTime", "projectNo"};
+        String[] fieldNames3 = {"productName", "drawNo", "drawNoName", "texture", "priority", "workNo", "pieceWeight", "steelWaterWeight", "projectName", "orderNo",
+                "projNum", "demandTime", "branchCode", "inchargeOrg", "startTime", "endTime", "projectNo"};
         this.importPlan(file, request, fieldNames3);
     }
+
     /**
      * 导入计划(热工个性化)
+     *
      * @param file
      * @param request
      * @param fieldNames3
@@ -769,7 +779,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             FileUtils.delete(excelFile);
             //sheet1过滤要导入的数据
             List<Plan> sheetList = list3.stream().filter(t -> {
-                return  !StringUtils.isEmpty(t.getBranchCode())   //部门必填
+                return !StringUtils.isEmpty(t.getBranchCode())   //部门必填
                         && !StringUtils.isEmpty(t.getInchargeOrg())  //加工车间必填
                         && !StringUtils.isEmpty(t.getEndTime())      //交货期必填
                         && !StringUtils.isEmpty(t.getProjectNo());   //项目号必填
@@ -803,7 +813,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     plan.setFinalAssemblyContractorUnit(null);
                 }
                 //数量的为空赋值0
-                plan.setProjCode(DateUtils.formatDate(new Date(),"yyyy-MM"));
+                plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));
                 plan.setCreateTime(new Date());
                 //单机
                 plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber()) ? 0 : plan.getSingleNumber());
@@ -833,6 +843,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     /**
      * 热工各个车间导入计划入库操作以及扩展字段的入库
+     *
      * @param plan
      * @return
      */
@@ -864,7 +875,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             if (result != null && result.getData() != null) {
                 for (Plan plan : planList) {
                     for (Router router : result.getData()) {
-                        if (plan.getDrawNo().equals(router.getRouterNo())) {
+                        if (DrawingNoUtil.drawingNo(plan.getDrawNo()).equals(DrawingNoUtil.drawingNo(router.getRouterNo()))) {
                             plan.setProcessStatus(1);
                         }
                     }

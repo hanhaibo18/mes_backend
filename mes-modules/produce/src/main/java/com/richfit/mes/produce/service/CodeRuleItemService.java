@@ -1,10 +1,9 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.model.produce.CodeRule;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.CodeRuleItem;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -16,5 +15,6 @@ import java.util.List;
  */
 public interface CodeRuleItemService extends IService<CodeRuleItem> {
 
-    
+
+    CommonResult<String> importCodeRuleByExcel(MultipartFile file);
 }

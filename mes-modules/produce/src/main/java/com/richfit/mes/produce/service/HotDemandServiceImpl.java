@@ -178,7 +178,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         //检查无模型数据
         List<String> ids = hotDemandService.checkModel(idList, branchCode);
-        if (CollectionUtils.isNotEmpty(ids)){
+        if (CollectionUtils.isNotEmpty(ids)) {
             return CommonResult.failed("存在无模型需求");
         }
         //通过模型检查后查出所有需求信息
@@ -187,44 +187,55 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         queryWrapper.apply("(produce_ratify_state=0 or produce_ratify_state is null)");
         //查出需求提报数据
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        if(CollectionUtils.isEmpty(hotDemands)){
-            return  CommonResult.success(ResultCode.SUCCESS,"不可重复批准生产");
+        if (CollectionUtils.isEmpty(hotDemands)) {
+            return CommonResult.success(ResultCode.SUCCESS, "不可重复批准生产");
         }
-        //批准状态为0时为撤销批准  执行删除创建的生产计划以及扩展字段
-        if(ratifyState.intValue()==0){
-            Map<String, HotDemand> DemandMap = hotDemands.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
-            List<String> planIdList = hotDemands.stream().map(x -> x.getPlanId()).collect(Collectors.toList());
-            //检查计划有没有跟单,跟单是否开工,开工不可回滚
-            List<TrackHead> trackHeads = trackHeadMapper.selectBatchIds(planIdList);
-            for (TrackHead trackHead : trackHeads) {
-                if(!"0".equals(trackHead.getStatus())){
-                    HotDemand hotDemand = DemandMap.get(trackHead.getWorkPlanId());
-                    throw new GlobalException("已生成跟单并开工,名称 : "+hotDemand.getDemandName(),ResultCode.FAILED);
-                }
+        //将需求数据转换为生产计划并入库
+        Map map = this.convertAndSave(currentUser, hotDemands, 0);
+        //设置需求中的计划id和批准状态
+        for (HotDemand hotDemand : hotDemands) {
+            UpdateWrapper updateWrapper = new UpdateWrapper();
+            updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
+            updateWrapper.set("issue_time", new Date());//设置下发时间
+            updateWrapper.set("plan_id", map.get(hotDemand.getId()));//设置计划id
+            updateWrapper.eq("id", hotDemand.getId());
+            boolean update = hotDemandService.update(updateWrapper);
+        }
+        return CommonResult.success(ResultCode.SUCCESS);
+    }
+
+    /**
+     *撤销批准
+     * @param idList
+     */
+    @Override
+    public CommonResult revocation(List<String> idList) {
+        //通过模型检查后查出所有需求信息
+        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", idList);
+        //查出需求提报数据
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+
+        Map<String, HotDemand> DemandMap = hotDemands.stream().collect(Collectors.toMap(x -> x.getPlanId(), x -> x));
+        List<String> planIdList = hotDemands.stream().map(x -> x.getPlanId()).collect(Collectors.toList());
+        //检查计划有没有跟单,跟单是否开工,开工不可回滚
+        List<TrackHead> trackHeads = trackHeadMapper.selectBatchIds(planIdList);
+        for (TrackHead trackHead : trackHeads) {
+            if(!"0".equals(trackHead.getStatus())){
+                HotDemand hotDemand = DemandMap.get(trackHead.getWorkPlanId());
+                throw new GlobalException("已生成跟单并开工,名称 : "+hotDemand.getDemandName()+"不可撤销",ResultCode.FAILED);
             }
-            //删除对应的生产计划
-            this.removPlane(hotDemands);
-            //修改批准状态
-            for (HotDemand hotDemand : hotDemands) {
-                UpdateWrapper updateWrapper = new UpdateWrapper();
-                updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
-                updateWrapper.set("issue_time", "");//设置下发时间
-                updateWrapper.set("plan_id","");//设置计划id
-                updateWrapper.in("id", idList);
-                boolean update = hotDemandService.update(updateWrapper);
-            }
-        }else {
-            //将需求数据转换为生产计划并入库
-            Map map = this.convertAndSave(currentUser, hotDemands, 0);
-            //设置需求中的计划id和批准状态
-            for (HotDemand hotDemand : hotDemands) {
-                UpdateWrapper updateWrapper = new UpdateWrapper();
-                updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
-                updateWrapper.set("issue_time", new Date());//设置下发时间
-                updateWrapper.set("plan_id",map.get(hotDemand.getId()));//设置计划id
-                updateWrapper.eq("id", hotDemand.getId());
-                boolean update = hotDemandService.update(updateWrapper);
-            }
+        }
+        //删除对应的生产计划
+        this.removPlane(hotDemands);
+        //修改批准状态
+        for (HotDemand hotDemand : hotDemands) {
+            UpdateWrapper updateWrapper = new UpdateWrapper();
+            updateWrapper.set("produce_ratify_state", 0);//设置提报状态为未提报
+            updateWrapper.set("issue_time",null);//设置下发时间
+            updateWrapper.set("plan_id","");//设置计划id
+            updateWrapper.eq("id", hotDemand.getId());
+            boolean update = hotDemandService.update(updateWrapper);
         }
         return CommonResult.success(ResultCode.SUCCESS);
     }
@@ -237,9 +248,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         List<String> planIdList = hotDemands.stream().map(x -> x.getPlanId()).collect(Collectors.toList());
         planService.removeByIds(planIdList);
         //删除扩展字段
-        HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("plan_id",planIdList);
-        planExtendService.removeByMap(paramMap);
+        QueryWrapper queryWrapper=new QueryWrapper();
+        queryWrapper.in("plan_id",planIdList);
+        planExtendService.remove(queryWrapper);
     }
 
 
@@ -305,6 +316,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
 //            plan.setApprovalBy(currentUser.getUsername());//审批人
 //            plan.setApprovalTime(new Date());//审批时间
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
+            plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
             //--------------------------
             plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
             plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间

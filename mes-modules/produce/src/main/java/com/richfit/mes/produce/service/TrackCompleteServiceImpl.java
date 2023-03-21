@@ -1,13 +1,12 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -336,6 +335,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
+    @Autowired
+    private TrackCompleteExtraService trackCompleteExtraService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -361,11 +362,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             double numDouble = 0.00;
             for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
                 //验证输入值是否合法
-                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
-                //如果返回值不等于空则代表验证不通过，将提示信息返回
-                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
-                    return CommonResult.failed(s);
-                }
+//                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
+//                //如果返回值不等于空则代表验证不通过，将提示信息返回
+//                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
+//                    return CommonResult.failed(s);
+//                }
 
                 trackComplete.setId(null);
                 trackComplete.setAssignId(completeDto.getAssignId());
@@ -381,7 +382,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             //跟新工序完成数量
-            trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
+            trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
             double intervalNumber = assign.getQty() + 0.0;
             if (numDouble > assign.getQty()) {
                 return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
@@ -411,7 +412,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             log.error(completeDto.getTrackCompleteList().toString());
             this.saveBatch(completeDto.getTrackCompleteList());
-
+            //锻造车间 填写的额外报工信息
+            if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
+                trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
+            }
         }
         return CommonResult.success(true);
     }
@@ -1181,13 +1185,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        PageHelper.startPage(1, 1000);
+//        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        PageInfo<TrackComplete> page = new PageInfo(completes);
-        for (int i = 1; i < page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-        }
+//        PageInfo<TrackComplete> page = new PageInfo(completes);
+//        for (int i = 1; i < page.getPages(); i++) {
+//            PageHelper.startPage(i, 1000);
+//            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
+//        }
         return completes;
     }
 

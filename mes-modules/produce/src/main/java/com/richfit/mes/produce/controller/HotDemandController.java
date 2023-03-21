@@ -147,6 +147,20 @@ public class HotDemandController extends BaseController {
          //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
+        page.getRecords().forEach(x->{
+            if(ObjectUtils.isNotEmpty(x) && StringUtils.isNotEmpty(x.getWorkblankType())){
+                switch (x.getWorkblankType()){
+                    case "0" : x.setWorkblankType("锻件");
+                    break;
+                    case "1" : x.setWorkblankType("铸件");
+                        break;
+                    case "2" : x.setWorkblankType("钢锭");
+                        break;
+                    default:x.setWorkblankType("");
+                }
+            }
+        });
+
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
 
@@ -279,7 +293,9 @@ public class HotDemandController extends BaseController {
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
+        if (CollectionUtils.isEmpty(drawNos)){
+            return CommonResult.success("所有均已校验完成");
+        }
         //根据需求数据中的图号查询模型库
         QueryWrapper<HotModelStore> modelWrapper = new QueryWrapper();
         modelWrapper.eq("tenant_id", currentUser.getTenantId());
@@ -304,7 +320,9 @@ public class HotDemandController extends BaseController {
             updateWrapper.set("is_exist_model", 1);//设置为有模型
             updateWrapper.in("id", ids);
             boolean update = hotDemandService.update(updateWrapper);
-            if (update) return CommonResult.success(ResultCode.SUCCESS);
+            if (update) {
+                return CommonResult.success(ResultCode.SUCCESS);
+            }
             return CommonResult.failed();
         } else {
             return CommonResult.success("操作成功");
@@ -429,7 +447,7 @@ public class HotDemandController extends BaseController {
     }
 
 
-    @ApiOperation(value = "生产批准与撤销批准", notes = "生产批准与撤销批准")
+    @ApiOperation(value = "生产批准", notes = "生产批准")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
             @ApiImplicitParam(name = "ratifyState", value = "生产批准状态 0 :未批准 ,1 已批准", required = true, paramType = "query"),
@@ -440,6 +458,16 @@ public class HotDemandController extends BaseController {
         return hotDemandService.ratify(idList, ratifyState, branchCode);
     }
 
+
+
+    @ApiOperation(value = "撤销批准", notes = "撤销批准")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")
+    })
+    @PostMapping("/revocation")
+    public CommonResult revocation(@RequestBody List<String> idList) {
+        return hotDemandService.revocation(idList);
+    }
 
 
 

@@ -13,12 +13,19 @@ import java.util.List;
  */
 public class DrawingNoUtil {
 
-    static String drawingNo(String drawingNo) {
+    public static String drawingNo(String drawingNo) {
         drawingNo = drawingNo.trim();
         drawingNo = drawingNo.replaceAll("-", "");
         drawingNo = drawingNo.replaceAll("[.]", "");
         drawingNo = drawingNo.replaceAll(" ", "");
-        return drawingNo;
+        drawingNo = drawingNo.replaceAll("[(]", "");
+        drawingNo = drawingNo.replaceAll("[)]", "");
+        drawingNo = drawingNo.replaceAll("（", "");
+        drawingNo = drawingNo.replaceAll("）", "");
+        return drawingNo;}
+
+    public static String replaceStr(String colName) {
+        return "replace(replace(replace(replace(replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', ''),'(', ''),')', ''),'（', ''),'）', '')";
     }
 
 
@@ -31,6 +38,7 @@ public class DrawingNoUtil {
      * @Author: zhiqiang.lu
      * @Date: 2023.1.9
      */
+
     public static void queryLike(QueryWrapper queryWrapper, String colName, String drawingNo) {
         queryWrapper.apply(queryLikeSql(colName, drawingNo));
     }
@@ -85,7 +93,7 @@ public class DrawingNoUtil {
      */
     public static String queryLikeSql(String colName, String drawingNo) {
         drawingNo = DrawingNoUtil.drawingNo(drawingNo);
-        return "replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', '') like '%" + drawingNo + "%'";
+        return replaceStr(colName) + " like '%" + drawingNo + "%'";
     }
 
     /**
@@ -98,7 +106,7 @@ public class DrawingNoUtil {
      */
     public static String queryEqSql(String colName, String drawingNo) {
         drawingNo = DrawingNoUtil.drawingNo(drawingNo);
-        return "replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', '') = '" + drawingNo + "'";
+        return replaceStr(colName) + " = '" + drawingNo + "'";
     }
 
     /**
@@ -119,6 +127,6 @@ public class DrawingNoUtil {
                 drawingNoStr.append("'" + DrawingNoUtil.drawingNo(drawingNo) + "'");
             }
         }
-        return "replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', '') in (" + drawingNoStr + ")";
+        return replaceStr(colName) + " in (" + drawingNoStr + ")";
     }
 }

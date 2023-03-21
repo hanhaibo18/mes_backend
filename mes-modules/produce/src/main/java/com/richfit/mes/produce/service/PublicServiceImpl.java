@@ -435,7 +435,7 @@ public class PublicServiceImpl implements PublicService {
             trackItemEntity.setIsCurrent(1);
             trackItemEntity.setModifyTime(new Date());
             update = trackItemService.updateById(trackItemEntity);
-            if (1 == trackItemEntity.getIsAutoSchedule()) {
+            if (trackItemEntity.getIsAutoSchedule() != null && 1 == trackItemEntity.getIsAutoSchedule()) {
                 Map<String, String> map = new HashMap<>(2);
                 map.put("trackItemId", trackItemEntity.getId());
                 map.put("trackHeadId", trackItemEntity.getTrackHeadId());
