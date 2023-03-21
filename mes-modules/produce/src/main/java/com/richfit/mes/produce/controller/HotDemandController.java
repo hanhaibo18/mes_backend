@@ -113,8 +113,11 @@ public class HotDemandController extends BaseController {
         if (hotDemandParam.getProduceState()!=null) {//是否排产
             queryWrapper.eq("produce_state", hotDemandParam.getProduceState());
         }
-        if (hotDemandParam.getProduceState()!=null) {//是否排产
-            queryWrapper.eq("produce_state", hotDemandParam.getProduceState());
+        if (hotDemandParam.getIngotCase()!=null) {//锭型
+            queryWrapper.eq("ingot_case", hotDemandParam.getIngotCase());
+        }
+        if (hotDemandParam.getTexture()!=null) {//材质
+            queryWrapper.eq("texture", hotDemandParam.getTexture());
         }
         //0 :未提报  1 :已提报'
         if (hotDemandParam.getSubmitState() != null) {
