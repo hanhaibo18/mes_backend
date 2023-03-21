@@ -85,7 +85,7 @@ public class TenantUser extends BaseEntity<TenantUser> {
     /**
      * 工时比例
      */
-    private Integer ratioHours;
+    private Double ratioHours;
 
 
     @TableField(exist = false)
