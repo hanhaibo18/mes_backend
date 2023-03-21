@@ -87,6 +87,8 @@ public class DisqualificationController extends BaseController {
             return CommonResult.failed("没有找到该不合格记录！");
         }else if (!disqualification.getCreateBy().equals(currentUser.getUsername())){
             return CommonResult.failed("您不能删除不是您创建的记录！");
+        }else if (null !=disqualification.getProcessSheetNo()){
+            return CommonResult.failed("已申请处理单号，不能删除！");
         }
         return CommonResult.success(disqualificationService.deleteById(disqualificationId));
     }
