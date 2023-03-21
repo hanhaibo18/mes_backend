@@ -220,6 +220,8 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
     @ApiModelProperty(value = " 是否有库存 0 :否  1 是',", dataType = "Integer")
     private Integer isExistRepertory;
 
+    @ApiModelProperty(value = "锭型",dataType = "String")
+    private String ingotCase;
     /**
      * 所属机构
      */
