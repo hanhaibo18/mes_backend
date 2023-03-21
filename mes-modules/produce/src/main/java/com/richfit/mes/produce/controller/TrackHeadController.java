@@ -707,7 +707,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "跟单拆分", notes = "跟单拆分")
     @PostMapping("/split")
-    public void trackHeadSplit(@ApiParam(value = "跟单拆分信息", required = true) @RequestBody Map<String, Object> map) throws
+    public void trackHeadSplit(@ApiParam(value = "跟单拆分信息", required = true) @RequestBody Map<String, Object> map, HttpServletRequest request) throws
             Exception {
         try {
             String id = map.get("id").toString();
@@ -720,6 +720,10 @@ public class TrackHeadController extends BaseController {
             } else {
                 trackHeadService.trackHeadBatchSplit(trackHeadPublicDto, trackNoNew, trackFlow, trackFlowNew);
             }
+            //保存操作记录
+            actionService.saveAction(ActionUtil.buildAction
+                    (trackHeadPublicDto.getBranchCode(), "4", "2", "跟单拆分，trackNo:+" + trackHeadPublicDto.getTrackNo(),
+                            OperationLogAspect.getIpAddress(request)));
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception(e.getMessage());

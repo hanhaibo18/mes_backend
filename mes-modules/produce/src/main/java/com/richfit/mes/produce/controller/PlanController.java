@@ -237,7 +237,6 @@ public class PlanController extends BaseController {
     public CommonResult<Object> updatePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         plan.setTenantId(user.getTenantId());
-        //TODO
         return planService.updatePlan(plan);
     }
 

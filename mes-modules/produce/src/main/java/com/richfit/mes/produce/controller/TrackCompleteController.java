@@ -13,8 +13,10 @@ import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -56,6 +59,8 @@ public class TrackCompleteController extends BaseController {
     private LineStoreService lineStoreService;
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Autowired
+    private ActionService actionService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
 
@@ -338,7 +343,7 @@ public class TrackCompleteController extends BaseController {
     })
     @PostMapping("/batchAdd")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<TrackComplete[]> batchAddComplete(@RequestBody TrackComplete[] completes, String qcpersonId) {
+    public CommonResult<TrackComplete[]> batchAddComplete(@RequestBody TrackComplete[] completes, String qcpersonId, HttpServletRequest request) {
         boolean bool = true;
         boolean isNext = true;
         int curOptSequence = -1;
@@ -948,8 +953,8 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
     @PostMapping("/saveComplete")
-    public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto) {
-        return trackCompleteService.saveComplete(completeDto);
+    public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto, HttpServletRequest request) {
+        return trackCompleteService.saveComplete(completeDto, request);
     }
 
     @ApiOperation(value = "保存报工(新)", notes = "保存报工(新)")

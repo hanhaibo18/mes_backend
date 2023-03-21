@@ -9,6 +9,7 @@ import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -187,6 +188,19 @@ public class TrackHeadPublicVo {
     @ApiModelProperty(value = "跟单附件id，多个用，隔开", dataType = "String")
     private String filesId;
 
+
+    @ApiModelProperty(value = "跟单工序")
+    @TableField(exist = false)
+    private List<TrackItem> trackItems;
+
+    @ApiModelProperty(value = "物料产品信息列表，用于根据物料信息生产跟单")
+    @TableField(exist = false)
+    private List<Map> storeList;
+
+
+    /**
+     * 模具
+     */
     /**
      * 模具类别(0=制新,1=返修)
      */
@@ -259,14 +273,11 @@ public class TrackHeadPublicVo {
     @ApiModelProperty(value = "完工日期")
     private Date completionDate;
 
-
-    @ApiModelProperty(value = "跟单工序")
-    @TableField(exist = false)
-    private List<TrackItem> trackItems;
-
-    @ApiModelProperty(value = "物料产品信息列表，用于根据物料信息生产跟单")
-    @TableField(exist = false)
-    private List<Map> storeList;
+    /**
+     * 模型版本
+     */
+    @ApiModelProperty(value = "模型版本")
+    private String modelVersion;
 
 
     /**
@@ -298,48 +309,25 @@ public class TrackHeadPublicVo {
     /**
      * 铸造开始
      **/
-
     /**
      * 钢水重量
      */
-    @ApiModelProperty(value = "钢水重量")
-    private Double moltenSteel;
-
-    /**
-     * 铸件编号
-     */
-    @ApiModelProperty(value = "铸件编号")
-    private String castingPartsNumber;
+    private BigDecimal moltenSteel;
 
     /**
      * 工艺保温时间
      */
-    @ApiModelProperty(value = "工艺保温时间")
-    private Date processHoldingTime;
+    private Double processHoldingTime;
 
     /**
-     * 浇铸温度
+     * 工艺浇铸温度
      */
-    @ApiModelProperty(value = "浇铸温度")
     private String pouringTemperature;
 
     /**
-     * 浇铸速度
+     * 工艺浇铸速度
      */
-    @ApiModelProperty(value = "浇铸速度")
     private String pouringRate;
-
-    /**
-     * 毛坯调制 1=有 0=无
-     */
-    @ApiModelProperty(value = "毛坯调制 1=有 0=无")
-    private boolean blankConditioning;
-
-    /**
-     * 毛坯探伤 1=有 0=无
-     */
-    @ApiModelProperty(value = "毛坯探伤 1=有 0=无")
-    private boolean blankInspection;
     /**
      * 铸造结束
      **/
