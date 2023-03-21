@@ -59,5 +59,5 @@ public class TenantUpdateUserDto extends BaseDto<TenantUser> {
     private String userRoleType;
 
     @ApiModelProperty(value = "工时比例")
-    private Integer ratioHours;
+    private Double ratioHours;
 }
