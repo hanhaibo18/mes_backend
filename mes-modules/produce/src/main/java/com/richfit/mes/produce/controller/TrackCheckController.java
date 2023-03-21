@@ -16,9 +16,11 @@ import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
@@ -35,8 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,6 +91,8 @@ public class TrackCheckController extends BaseController {
     private MaterialInspectionServiceClient materialInspectionServiceClient;
     @Autowired
     private TrackHeadFlowService trackHeadFlowService;
+    @Autowired
+    private ActionService actionService;
 
 
     /**
@@ -339,7 +346,7 @@ public class TrackCheckController extends BaseController {
     @ApiOperation(value = "批量调度审核(新)", notes = "批量调度审核")
     @PostMapping("/batchAddSchedule")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> batchAddSchedule(@RequestBody BatchAddScheduleDto batchAddScheduleDto) {
+    public CommonResult<Boolean> batchAddSchedule(@RequestBody BatchAddScheduleDto batchAddScheduleDto, HttpServletRequest request) {
         if (null == batchAddScheduleDto) {
             return CommonResult.failed("参数不能为空！");
         }
@@ -367,6 +374,13 @@ public class TrackCheckController extends BaseController {
                 trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
             }
             bool = trackItemService.updateById(trackItem);
+            if (bool) {
+                //保存操作记录
+                actionService.saveAction(ActionUtil.buildAction
+                        (batchAddScheduleDto.getBranchCode(), "4", "2",
+                                "调度审核，trackNo：" + trackItem.getTrackNo() + "审核结果：" + batchAddScheduleDto.getResult() + "下车间编码：" + batchAddScheduleDto.getNextBranchCode(),
+                                OperationLogAspect.getIpAddress(request)));
+            }
             Map<String, String> map = new HashMap<>(3);
             map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
             map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackItem.getId());
@@ -683,6 +697,8 @@ public class TrackCheckController extends BaseController {
     @PostMapping("/qualityTesting")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> qualityTesting(@RequestBody List<TrackCheck> trackCheckList) {
+        //获取request
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         for (TrackCheck trackCheck : trackCheckList) {
             if (StringUtils.isNullOrEmpty(trackCheck.getThId())) {
                 return CommonResult.failed("关联工序ID编码不能为空！");
@@ -766,6 +782,10 @@ public class TrackCheckController extends BaseController {
                     }
                 }
             }
+            //保存质检记录
+            actionService.saveAction(ActionUtil.buildAction
+                    (trackCheck.getBranchCode(), "4", "2", "质检审核，trackNo:" + trackCheck.getTrackNo() + "，质检结果:" + trackCheck.getResult(),
+                            OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(Boolean.TRUE);
     }

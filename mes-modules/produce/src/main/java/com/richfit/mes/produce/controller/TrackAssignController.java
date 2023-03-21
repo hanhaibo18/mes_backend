@@ -14,8 +14,10 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -63,6 +66,8 @@ public class TrackAssignController extends BaseController {
     private TrackCompleteService trackCompleteService;
     @Autowired
     private TrackAssignPersonMapper trackAssignPersonMapper;
+    @Autowired
+    private ActionService actionService;
     @Resource
     private TrackAssignPersonService trackAssignPersonService;
     @Resource
@@ -267,7 +272,7 @@ public class TrackAssignController extends BaseController {
     @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
     @PostMapping("/batchAdd")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) {
+    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns, HttpServletRequest request) {
         try {
             for (Assign assign : assigns) {
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {
@@ -324,18 +329,18 @@ public class TrackAssignController extends BaseController {
                     assign.setCreateTime(new Date());
                     assign.setAvailQty(assign.getQty());
                     assign.setFlowId(trackItem.getFlowId());
-                    if(StringUtils.isNullOrEmpty(assign.getTrackId())){
+                    if (StringUtils.isNullOrEmpty(assign.getTrackId())) {
                         assign.setTrackId(trackHead.getId());
                     }
-                    if(StringUtils.isNullOrEmpty(assign.getTenantId())){
+                    if (StringUtils.isNullOrEmpty(assign.getTenantId())) {
                         assign.setTenantId(trackHead.getTenantId());
                     }
                     //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
-                    if(StringUtils.isNullOrEmpty(assign.getUserId())){
+                    if (StringUtils.isNullOrEmpty(assign.getUserId())) {
                         StringBuilder userId = new StringBuilder();
                         StringBuilder userName = new StringBuilder();
                         for (AssignPerson assignPerson : assign.getAssignPersons()) {
-                            if(!StringUtils.isNullOrEmpty(String.valueOf(userId))){
+                            if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
                                 userId.append(",");
                                 userName.append(",");
                             }
@@ -395,13 +400,18 @@ public class TrackAssignController extends BaseController {
                         assign.getUserId().substring(0, assign.getUserId().length() - 1),
                         assign.getBranchCode(),
                         assign.getTenantId());
+
+                //保存派工操作记录
+                actionService.saveAction(ActionUtil.buildAction
+                        (assign.getBranchCode(), "4", "2",
+                                "跟单派工，跟单号：" + assign.getTrackNo(),
+                                OperationLogAspect.getIpAddress(request)));
             }
             return CommonResult.success(assigns, "操作成功！");
         } catch (Exception e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
-
 
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
