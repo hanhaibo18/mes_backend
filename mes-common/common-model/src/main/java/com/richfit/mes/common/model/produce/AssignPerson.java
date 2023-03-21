@@ -30,5 +30,10 @@ public class AssignPerson  {
      *
      */
     private Date modifyTime;
+    /**
+     * 工时比例
+     */
+    @TableField(exist = false)
+    private double ratioHours;
 
 }

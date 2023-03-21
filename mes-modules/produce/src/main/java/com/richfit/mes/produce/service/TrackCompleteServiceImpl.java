@@ -481,11 +481,21 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 assignPerson.setAssignId(assignId);
                 assignPerson.setUserId(datum.getUserAccount());
                 assignPerson.setUserName(datum.getEmplName());
+                assignPerson.setRatioHours(datum.getRatioHours());
                 assignPeople.add(assignPerson);
             }
             assign.setAssignPersons(assignPeople);
         } else {
-            assign.setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId())));
+            List<AssignPerson> assignPersons = trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId()));
+            if(assignPersons.size()>0){
+                List<String> userAccounts = assignPersons.stream().map(item -> item.getUserId()).collect(Collectors.toList());
+                Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(userAccounts);
+                for (AssignPerson assignPerson : assignPersons) {
+                    TenantUserVo tenantUserVo = userInfoMap.get(assignPerson.getUserId());
+                    assignPerson.setRatioHours(tenantUserVo.getRatioHours());
+                }
+            }
+            assign.setAssignPersons(assignPersons);
         }
 
 
@@ -1212,5 +1222,4 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         removeComplete.eq("ti_id", tiId);
         return this.remove(removeComplete);
     }
-
 }
