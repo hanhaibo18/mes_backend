@@ -253,6 +253,19 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualification.setDisqualificationType(type);
             disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
         }
+        //新申请单,并且是提交才生成申请单编号
+        if (disqualificationDto.getIsSubmit() == 1 && StrUtil.isBlank(disqualificationDto.getId())) {
+            //获取申请单编号
+            try {
+                String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), disqualificationDto.getBranchCode(), codeRuleService);
+                disqualification.setProcessSheetNo(disqualificationNo);
+                Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), disqualificationDto.getBranchCode(), codeRuleService);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+                throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
+            }
+        }
         this.saveOrUpdate(disqualification);
         //处理不合格从表数据
         DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
@@ -470,22 +483,13 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
             String uuid = UUID.randomUUID().toString().replaceAll("-", "");
             disqualificationItemVo.setTrackItemId(uuid);
-            //获取申请单编号
-            try {
-                String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
-                disqualificationItemVo.setProcessSheetNo(disqualificationNo);
-                Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.error(e.getMessage());
-                throw new GlobalException("获取申请单编号错误:disqualification_no", ResultCode.FAILED);
-            }
             disqualificationItemVo.setType("0");
             disqualificationItemVo.setSourceType(0);
             disqualificationItemVo.setRepairNoList(Collections.emptyList());
             disqualificationItemVo.setSalesReturnNoList(Collections.emptyList());
             disqualificationItemVo.setAcceptDeviationNoList(Collections.emptyList());
             disqualificationItemVo.setScrapNoList(Collections.emptyList());
+            disqualificationItemVo.setBranchCode(branchCode);
             return disqualificationItemVo;
         }
         //有源头
