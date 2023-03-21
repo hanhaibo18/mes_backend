@@ -148,7 +148,7 @@ public class HotDemandController extends BaseController {
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
         page.getRecords().forEach(x->{
-            if(!x.getWorkblankType().isEmpty()){
+            if(ObjectUtils.isNotEmpty(x) && StringUtils.isNotEmpty(x.getWorkblankType())){
                 switch (x.getWorkblankType()){
                     case "0" : x.setWorkblankType("锻件");
                     break;
