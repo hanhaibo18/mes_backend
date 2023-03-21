@@ -189,6 +189,12 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         if (CollectionUtils.isEmpty(hotDemands)) {
             return CommonResult.success(ResultCode.SUCCESS, "不可重复批准生产");
+        } else {
+            for (HotDemand hotDemand : hotDemands) {
+                if(hotDemand.getPlanNum()<=0){
+                    return CommonResult.success(ResultCode.SUCCESS, hotDemand.getDemandName()+": 请编辑计划数量");
+                }
+            }
         }
         //将需求数据转换为生产计划并入库
         Map map = this.convertAndSave(currentUser, hotDemands, 0);
