@@ -377,18 +377,18 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     }
                 }
                 planMapper.updateById(plan);
-                //更新交付数量同时更新需求提报交付数量
-                this.updateDeliveryNum(plan);
             }
         }
     }
 
     /**
-     * 更新需求提拔交付数量
+     * 更新需求提报表中交付数量
      *
-     * @param plan
+     * @param planId
      */
-    private void updateDeliveryNum(Plan plan) {
+    @Override
+    public void updateDeliveryNum(String planId) {
+        Plan plan = planMapper.selectById(planId);
         //热工分公司的数据需要更新需求提报表中的交付数量字段
         if (plan.getTenantId().equals("12345678901234567890123456789001")) {
             QueryWrapper<HotDemand> demandQueryWrapper = new QueryWrapper<>();
