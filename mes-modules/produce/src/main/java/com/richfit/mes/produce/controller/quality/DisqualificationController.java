@@ -85,7 +85,7 @@ public class DisqualificationController extends BaseController {
         Disqualification disqualification = disqualificationService.getById(disqualificationId);
         if (ObjectUtils.isEmpty(disqualification)){
             return CommonResult.failed("没有找到该不合格记录！");
-        }else if (!disqualification.getCreateBy().equals(currentUser.getUserId())){
+        }else if (!disqualification.getCreateBy().equals(currentUser.getUsername())){
             return CommonResult.failed("您不能删除不是您创建的记录！");
         }
         return CommonResult.success(disqualificationService.deleteById(disqualificationId));

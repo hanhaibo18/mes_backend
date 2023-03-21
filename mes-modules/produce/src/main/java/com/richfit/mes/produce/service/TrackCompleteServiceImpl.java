@@ -20,9 +20,11 @@ import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
@@ -41,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -82,6 +85,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private BaseServiceClient baseServiceClient;
     @Autowired
     public TrackCheckService trackCheckService;
+    @Autowired
+    private ActionService actionService;
 
 
     @Override
@@ -342,7 +347,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
+    public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList, HttpServletRequest request) {
         //获取用户所属公司
         String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         for (CompleteDto completeDto : completeDtoList) {
@@ -418,6 +423,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
                 trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
             }
+            //记录报工操作
+            actionService.saveAction(ActionUtil.buildAction(
+                    trackItem.getBranchCode(), "4", "2", "跟单报工，trackNo：" + completeDto.getTrackNo() ,
+                    OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(true);
     }
