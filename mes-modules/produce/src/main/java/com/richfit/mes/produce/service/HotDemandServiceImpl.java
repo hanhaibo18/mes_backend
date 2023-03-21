@@ -191,8 +191,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             return CommonResult.success(ResultCode.SUCCESS, "不可重复批准生产");
         } else {
             for (HotDemand hotDemand : hotDemands) {
-                if(hotDemand.getPlanNum()<=0){
-                    return CommonResult.success(ResultCode.SUCCESS, hotDemand.getDemandName()+": 请编辑计划数量");
+                if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
+                    return CommonResult.success(ResultCode.SUCCESS, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
                 }
             }
         }
