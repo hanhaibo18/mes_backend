@@ -39,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -272,7 +274,9 @@ public class TrackAssignController extends BaseController {
     @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
     @PostMapping("/batchAdd")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns, HttpServletRequest request) {
+    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) {
+        //获取request
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         try {
             for (Assign assign : assigns) {
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {

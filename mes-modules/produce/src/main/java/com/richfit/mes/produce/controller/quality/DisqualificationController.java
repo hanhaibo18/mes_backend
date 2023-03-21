@@ -82,6 +82,9 @@ public class DisqualificationController extends BaseController {
     @DeleteMapping("/delete/{disqualificationId}")
     public CommonResult<String> delete(@PathVariable String disqualificationId) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null){
+            return CommonResult.failed("未检测到当前登录用户信息！");
+        }
         Disqualification disqualification = disqualificationService.getById(disqualificationId);
         if (ObjectUtils.isEmpty(disqualification)){
             return CommonResult.failed("没有找到该不合格记录！");
