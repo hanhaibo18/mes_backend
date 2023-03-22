@@ -51,6 +51,12 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryInspector(queryInspectorDto));
     }
 
+    @ApiOperation(value = "该公司所有待处理申请单", notes = "根据查询条件查询待处理申请单")
+    @PostMapping("/queryInspectorByCompany")
+    public CommonResult<IPage<Disqualification>> queryInspectorByCompany(@RequestBody QueryInspectorDto queryInspectorDto) {
+        return CommonResult.success(disqualificationService.queryInspectorByCompany(queryInspectorDto));
+    }
+
     @ApiOperation(value = "创建/修改申请单", notes = "创建或修改不合格申请单接口")
     @PostMapping("/saveDisqualification")
     public CommonResult<Boolean> saveDisqualification(@RequestBody DisqualificationDto disqualification) {

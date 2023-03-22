@@ -87,6 +87,13 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+        //只查询本人创建的不合格品申请单
+        queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
+        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
+    }
+
+    private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
         //图号查询
         if (StrUtil.isNotBlank(queryInspectorDto.getDrawingNo())) {
             queryWrapper.like("drawing_no", queryInspectorDto.getDrawingNo());
@@ -124,9 +131,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } catch (Exception e) {
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
         }
-        //只查询本人创建的不合格品申请单
-        queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
-        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
     @Override
@@ -665,6 +669,15 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             systemServiceClient.delete(id);
         }
         return "success";
+    }
+
+    @Override
+    public IPage<Disqualification> queryInspectorByCompany(QueryInspectorDto queryInspectorDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+        //只查询本租户创建的不合格品申请单
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
 

@@ -168,6 +168,13 @@ public class ProduceInspectionRecordController extends BaseController {
         return CommonResult.success(produceInspectionRecordService.queryPowerOrderPage(inspectionPowerVo));
     }
 
+    @ApiOperation(value = "分页查询委托单", notes = "分页查询委托单")
+    @ApiImplicitParam(name = "inspectionPowerVo", value = "委托单", paramType = "body", dataType = "InspectionPowerVo")
+    @PostMapping("/inspectionPower/pageByCompany")
+    public CommonResult<IPage> queryPowerOrderPageByCompany(@RequestBody InspectionPowerVo inspectionPowerVo) {
+        return CommonResult.success(produceInspectionRecordService.queryPowerOrderPageByCompany(inspectionPowerVo));
+    }
+
 
     @ApiOperation(value = "批量保存委托单", notes = "批量保存委托单")
     @ApiImplicitParam(name = "inspectionPowers", value = "委托单", paramType = "body", dataType = "List")

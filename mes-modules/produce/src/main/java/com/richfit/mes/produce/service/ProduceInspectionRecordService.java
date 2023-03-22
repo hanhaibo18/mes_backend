@@ -1592,6 +1592,74 @@ public class ProduceInspectionRecordService {
         return result;
     }
 
+    public IPage queryPowerOrderPageByCompany(InspectionPowerVo inspectionPowerVo) {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderNo())) {
+            queryWrapper.eq("order_no", inspectionPowerVo.getOrderNo());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())) {
+            queryWrapper.eq("inspection_depart", inspectionPowerVo.getInspectionDepart());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getSampleName())) {
+            queryWrapper.eq("sample_name", inspectionPowerVo.getSampleName());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getDrawNo())) {
+            queryWrapper.eq("draw_no", inspectionPowerVo.getDrawNo());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())) {
+            queryWrapper.in("status", inspectionPowerVo.getStatus().split(","));
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
+            queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())) {
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        } else {
+            queryWrapper.orderByDesc("power_time");
+        }
+        if (!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())) {
+            //有源委托单
+            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
+            //无源委托单
+            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
+        }
+        Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
+        //委托人转换
+        for (InspectionPower record : page.getRecords()) {
+            if (!ObjectUtil.isEmpty(record.getConsignor())) {
+                String consignor = record.getConsignor();
+                TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
+                record.setConsignor(data.getEmplName());
+            }
+            String itemId = record.getItemId();
+            String headId = record.getHeadId();
+            if (!StringUtils.isEmpty(itemId)) {
+                TrackItem trackItem = trackItemService.getById(itemId);
+                TrackHead trackHead = trackHeadService.getById(headId);
+                record.setTrackNo(trackHead.getTrackNo());
+                record.setOptNo(trackItem.getOptNo());
+                record.setOptName(trackItem.getOptName());
+                record.setProductNo(trackItem.getProductNo());
+                record.setTrackType(trackHead.getTrackType());
+            }
+            QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
+            itemInspectInfoQueryWrapper.eq("power_id", record.getId()).eq("is_new", "1");
+            List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+            //完工的时候下载报告的
+            if (list.size() > 0) {
+                record.setRecordId(list.get(0).getInspectRecordId());
+            }
+        }
+        return page;
+    }
+
 
     /**
      * 分页查询探伤派工信息

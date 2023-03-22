@@ -31,11 +31,12 @@ public class ForgHourController {
      */
     @ApiOperation(value = "查询工时标准列表", notes = "查询工时标准列表")
     @GetMapping("/page")
-    public CommonResult queryPage(String order, String orderCol, String optName,String startTime,String endTime,int page,int limit) throws GlobalException {
+    public CommonResult queryPage(String order, String orderCol, String optName,String optId,String startTime,String endTime,int page,int limit) throws GlobalException {
 
         QueryWrapper<ForgHour> queryWrapper = new QueryWrapper<ForgHour>();
         queryWrapper.ge(StringUtils.isNullOrEmpty(startTime),"modify_time",startTime);
         queryWrapper.le(StringUtils.isNullOrEmpty(endTime),"modify_time",endTime);
+        queryWrapper.eq(StringUtils.isNullOrEmpty(optId),"opt_id", optId);
         queryWrapper.eq(StringUtils.isNullOrEmpty(optName),"opt_name", optName);
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             //排序
