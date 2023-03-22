@@ -143,4 +143,15 @@ public interface SystemServiceClient {
 
     @PostMapping(value = "/api/sys/user/queryUserByBranchCodes")
     public CommonResult<List<TenantUserVo>> queryUserByBranchCodes(@RequestBody List<String> branchCodeList);
+
+    /**
+     * 功能描述: 不合格获取质检工程师
+     *
+     * @param tenantId
+     * @Author: xinYu.hou
+     * @Date: 2023/3/22 10:49
+     * @return: CommonResult<List < TenantUserVo>>
+     **/
+    @GetMapping("/api/sys/user/queryUserByTenantIdAndRole")
+    public CommonResult<List<TenantUserVo>> queryUserByTenantIdAndRole(@RequestParam String tenantId);
 }

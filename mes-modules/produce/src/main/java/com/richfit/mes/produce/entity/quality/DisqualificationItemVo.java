@@ -43,6 +43,11 @@ public class DisqualificationItemVo {
     @ApiModelProperty(value = "数量")
     private int number;
 
+    /**
+     * 炉号
+     */
+    @ApiModelProperty(value = "炉号")
+    private String heatNumber;
 
     /**
      * 跟单工序Id
