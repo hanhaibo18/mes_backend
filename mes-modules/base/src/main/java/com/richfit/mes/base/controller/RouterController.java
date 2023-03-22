@@ -130,7 +130,7 @@ public class RouterController extends BaseController {
             routerQueryWrapper.eq("version", router.getVersion())
                     .eq("router_type", router.getRouterType())
                     .eq("branch_code", router.getBranchCode());
-            DrawingNoUtil.queryEq(routerQueryWrapper, "router_no", router.getDrawNo());
+            DrawingNoUtil.queryEq(routerQueryWrapper, "router_no", router.getRouterNo());
             List<Router> list = routerService.list(routerQueryWrapper);
             //存在的话跳过发布
             if (list.size() > 0) {

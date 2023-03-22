@@ -4,7 +4,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
 /**
- * product_track_head_steel_ingot
+ * produce_track_head_steel_ingot
  *
  * @author
  */

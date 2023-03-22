@@ -201,6 +201,9 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     @ApiModelProperty(value = "标准工时", dataType = "")
     protected BigDecimal heatHour;
+    @ApiModelProperty(value = "工时权重", dataType = "double")
+    private double ratioHours;
+
 
 
     /**

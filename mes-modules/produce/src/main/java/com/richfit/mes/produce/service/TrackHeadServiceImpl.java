@@ -828,9 +828,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadPublicDto.setId(newTrackHead.getId());
             //跟单创建模型
             if (trackHeadPublicDto.getClasses().equals("3")) {
-                TrackMold trackMold = new TrackMold();
-                BeanUtils.copyProperties(trackHeadPublicDto, trackMold);
-                trackHeadMoldService.save(trackMold);
+                TrackHeadMold trackHeadMold = new TrackHeadMold();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackHeadMold);
+                trackHeadMoldService.save(trackHeadMold);
             }
             //跟单创建铸造
             if (trackHeadPublicDto.getClasses().equals("6")) {
@@ -1044,9 +1044,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //跟单创建模型
             if (trackHeadPublicDto.getClasses().equals("3")) {
-                TrackMold trackMold = new TrackMold();
-                BeanUtils.copyProperties(trackHeadPublicDto, trackMold);
-                trackHeadMoldService.updateById(trackMold);
+                TrackHeadMold trackHeadMold = new TrackHeadMold();
+                BeanUtils.copyProperties(trackHeadPublicDto, trackHeadMold);
+                trackHeadMoldService.updateById(trackHeadMold);
             }
             //跟单创建铸造
             if (trackHeadPublicDto.getClasses().equals("6")) {
@@ -2005,7 +2005,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //计划数据更新
             planService.planData(trackHead.getWorkPlanId());
-
+            //更新需求提报表中交付数量
+            planService.updateDeliveryNum(trackHead.getWorkPlanId());
             //订单数据更新
             orderService.orderDataTrackHead(trackHead);
         } catch (Exception e) {

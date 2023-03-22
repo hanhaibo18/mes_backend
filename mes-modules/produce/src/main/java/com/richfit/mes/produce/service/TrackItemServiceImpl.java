@@ -12,8 +12,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.core.api.ResultCode;
-import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
 import com.richfit.mes.common.model.produce.*;
@@ -30,14 +28,11 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
-import com.richfit.mes.produce.utils.Code;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -674,16 +669,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         item.setMissiveBranch(trackItem.getBranchCode());
         item.setBranchCode(trackItem.getBranchCode());
         item.setTenantId(trackItem.getTenantId());
-        //获取申请单编号
-        try {
-            String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
-            item.setProcessSheetNo(disqualificationNo);
-            Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
-            throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
-        }
         return item;
     }
 

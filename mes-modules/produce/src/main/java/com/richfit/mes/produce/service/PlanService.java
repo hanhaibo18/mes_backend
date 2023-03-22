@@ -19,6 +19,8 @@ import java.util.List;
  */
 public interface PlanService extends IService<Plan> {
 
+    void updateDeliveryNum(String planId);
+
     boolean updatePlanStatus(String code, String tenantId);
 
     List<PlanTrackItemViewDto> queryPlanTrackItem(String planId);

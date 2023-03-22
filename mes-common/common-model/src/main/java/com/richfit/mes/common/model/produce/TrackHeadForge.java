@@ -16,11 +16,6 @@ public class TrackHeadForge extends BaseEntity<TrackHeadForge> {
      */
     private String blankingSpecification;
 
-//    /**
-//     * 代用材质
-//     */
-//    private String substituteMaterial;
-
     /**
      * 单号
      */

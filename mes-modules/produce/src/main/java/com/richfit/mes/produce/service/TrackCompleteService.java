@@ -11,6 +11,7 @@ import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2022/7/12 14:08
      * @return: Boolean
      **/
-    CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList);
+    CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList, HttpServletRequest request);
 
 
     /**
