@@ -103,6 +103,8 @@ public class HotDemandController extends BaseController {
         }
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkblankType())) {//毛坯类型
             queryWrapper.eq("workblank_type", hotDemandParam.getWorkblankType());
+        }else {
+            queryWrapper.notIn("workblank_type", "2");
         }
         if (hotDemandParam.getIsExistProcess()!=null) {//有无工艺
             queryWrapper.eq("is_exist_process", hotDemandParam.getIsExistProcess());
@@ -150,20 +152,6 @@ public class HotDemandController extends BaseController {
          //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
-        page.getRecords().forEach(x->{
-            if(ObjectUtils.isNotEmpty(x) && StringUtils.isNotEmpty(x.getWorkblankType())){
-                switch (x.getWorkblankType()){
-                    case "0" : x.setWorkblankType("锻件");
-                    break;
-                    case "1" : x.setWorkblankType("铸件");
-                        break;
-                    case "2" : x.setWorkblankType("钢锭");
-                        break;
-                    default:x.setWorkblankType("");
-                }
-            }
-        });
-
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
 

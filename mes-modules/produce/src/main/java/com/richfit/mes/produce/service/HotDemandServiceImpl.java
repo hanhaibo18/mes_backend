@@ -118,7 +118,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     break;
                 case "钢锭":  hotDemand.setWorkblankType("2");//冶炼
                     break;
-                default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围", ResultCode.FAILED);
+                default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
             }
             demandList.add(hotDemand);
         }
@@ -201,9 +201,10 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //设置需求中的计划id和批准状态
         for (HotDemand hotDemand : hotDemands) {
             UpdateWrapper updateWrapper = new UpdateWrapper();
-            updateWrapper.set("produce_ratify_state", ratifyState);//设置提报状态
+            updateWrapper.set("produce_ratify_state", ratifyState);//设置批准状态
             updateWrapper.set("issue_time", new Date());//设置下发时间
             updateWrapper.set("plan_id", map.get(hotDemand.getId()));//设置计划id
+            updateWrapper.set("modify_by",currentUser.getUsername());
             updateWrapper.eq("id", hotDemand.getId());
             boolean update = hotDemandService.update(updateWrapper);
         }

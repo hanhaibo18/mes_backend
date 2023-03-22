@@ -24,11 +24,11 @@ public class ForgHour extends BaseEntity<ForgHour> {
     /**
      *重量上限
      */
-    private String weightUp;
+    private double weightUp;
     /**
      *重量下限
      */
-    private String weightDown;
+    private double weightDown;
     /**
      * 材质
      */
@@ -38,5 +38,9 @@ public class ForgHour extends BaseEntity<ForgHour> {
      *工时
      */
     private double hour;
+
+    private String branchCode;
+
+    private String tenantId;
 
 }

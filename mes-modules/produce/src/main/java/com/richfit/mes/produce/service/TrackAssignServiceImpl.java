@@ -12,6 +12,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.forg.ForgHour;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -22,6 +23,7 @@ import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.forg.ForgHourService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
@@ -33,6 +35,7 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -214,7 +217,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.like("u.product_no", productNo);
         }
         if (StrUtil.isNotBlank(userId)) {
-            queryWrapper.and(wrapper -> wrapper.like("u.user_id", userId + ",").or().or(wrapper1 -> wrapper1.like("u.user_id", "/")));
+            queryWrapper.and(wrapper -> wrapper.like("u.user_id", userId).or().or(wrapper1 -> wrapper1.like("u.user_id", "/")));
         }
 
         if (!StringUtils.isNullOrEmpty(startTime)) {
@@ -631,6 +634,29 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         return true;
     }
+    @Autowired
+    private ForgHourService forgHourService;
 
+    /**
+     * 锻造根据工时标准计算额定工时
+     */
+    @Override
+    public void calculationSinglePieceHours(TrackHead trackHead, TrackItem trackItem){
+        //查询跟单
+        QueryWrapper<ForgHour> forgHourQueryWrapper = new QueryWrapper<>();
+        forgHourQueryWrapper.eq("opt_id",trackItem.getOperatiponId())
+                .eq("branch_code",trackItem.getBranchCode())
+                .eq("texture",trackHead.getTexture())
+                .orderByDesc("modify_time");
+        List<ForgHour> list = forgHourService.list(forgHourQueryWrapper);
+        //跟单重量
+        List<ForgHour> hours = list.stream().filter(item ->
+                (item.getWeightUp() > trackHead.getWeight() || item.getWeightUp() == trackHead.getWeight())
+                        && (item.getWeightDown() < trackHead.getWeight() || item.getWeightDown() == trackHead.getWeight())
+        ).collect(Collectors.toList());
 
+        if(hours.size()>0){
+            trackItem.setSinglePieceHours(hours.get(0).getHour());
+        }
+    }
 }

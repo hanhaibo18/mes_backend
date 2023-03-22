@@ -66,7 +66,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Value("${password.default:mes@123456}")
     private String defaultPassword;
 
-    public static final  String RECORD_AUDIT_PEOPLE = "_JLSH";
+    public static final String RECORD_AUDIT_PEOPLE = "_JLSH";
 
     @Override
     //@Cacheable(value = CacheConstant.SYS_USER_DETAILS, key = "#uniqueId")
@@ -367,6 +367,22 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
+    public List<TenantUserVo> queryUserByTenantIdAndRole(String tenantId) {
+        //BOMCO_ZJ_JMAQ_QC
+        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("role_code", "BOMCO_ZJ_JMAQ_QC");
+        queryWrapper.eq("tenant_id", tenantId);
+        List<Role> roleList = roleService.list(queryWrapper);
+        List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(roleIdList)) {
+            QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
+            queryUser.in("role_id", roleIdList);
+            return tenantUserMapper.queryByCondition(queryUser);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<TenantUserVo> queryQualityInspectionDepartment(String classes, String branchCode, String tenantId) {
         //组装角色标识 1机加  2装配 3热处理 4钢结构
         List<String> codeList = new ArrayList<>();
@@ -509,9 +525,9 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     public List<TenantUserVo> queryAuditsList(String branchCode) {
         List<TenantUserVo> tenantUserVos = new ArrayList<>();
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("role_code", branchCode+RECORD_AUDIT_PEOPLE);
+        queryWrapper.eq("role_code", branchCode + RECORD_AUDIT_PEOPLE);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
-                .eq("org_id",branchCode);
+                .eq("org_id", branchCode);
         List<Role> roleList = roleService.list(queryWrapper);
         List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(roleIdList)) {
