@@ -34,6 +34,6 @@ public class AssignPerson  {
      * 工时比例
      */
     @TableField(exist = false)
-    private double ratioHours;
+    private Double ratioHours;
 
 }

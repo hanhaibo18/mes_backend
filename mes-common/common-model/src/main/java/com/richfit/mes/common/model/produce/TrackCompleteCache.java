@@ -147,5 +147,5 @@ public class TrackCompleteCache extends BaseEntity<TrackCompleteCache> {
     /**
      * 权重
      */
-    private double ratioHours;
+    private Double ratioHours;
 }
