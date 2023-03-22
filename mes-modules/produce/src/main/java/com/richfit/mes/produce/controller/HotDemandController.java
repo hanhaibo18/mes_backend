@@ -450,6 +450,16 @@ public class HotDemandController extends BaseController {
     }
 
 
+    @ApiOperation(value = "冶炼车间生产批准", notes = "冶炼车间生产批准")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "ratifyState", value = "生产批准状态 0 :未批准 ,1 已批准", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/ratify_yl")
+    public CommonResult ratifyYL(@RequestBody List<String> idList, Integer ratifyState, String branchCode) {
+        return hotDemandService.ratifyYL(idList, ratifyState, branchCode);
+    }
 
     @ApiOperation(value = "撤销批准", notes = "撤销批准")
     @ApiImplicitParams({
