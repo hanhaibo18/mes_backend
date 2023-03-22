@@ -130,5 +130,5 @@ public class TenantUserVo extends BaseVo<TenantUser> {
     private String companyCode;
 
     @ApiModelProperty(value = "工时比例")
-    private double ratioHours;
+    private Double ratioHours;
 }
