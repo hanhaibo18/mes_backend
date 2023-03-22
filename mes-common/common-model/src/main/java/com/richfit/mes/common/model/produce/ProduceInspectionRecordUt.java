@@ -51,7 +51,9 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     private String testSpecification;
     @ApiModelProperty(value = "检测比例")
     private String detectionRatio;
-    @ApiModelProperty(value = "灵敏度")
+    @ApiModelProperty(value = "灵敏度（必填的）")
+    private String sensitivityMust;
+    @ApiModelProperty(value = "灵敏度（公式计算的）")
     private String sensitivity;
     @ApiModelProperty(value = "灵敏度d参数")
     private double dValue;

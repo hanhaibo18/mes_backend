@@ -1946,7 +1946,7 @@
                 <w:tc>
                     <w:tcPr>
                         <w:tcW w:w="3402" w:type="dxa"/>
-                        <w:gridSpan w:val="7"/>
+                        <w:gridSpan w:val="6"/>
                         <w:noWrap w:val="0"/>
                         <w:vAlign w:val="top"/>
                     </w:tcPr>
@@ -1993,7 +1993,7 @@
                 <w:tc>
                     <w:tcPr>
                         <w:tcW w:w="2598" w:type="dxa"/>
-                        <w:gridSpan w:val="3"/>
+                        <w:gridSpan w:val="5"/>
                         <w:noWrap w:val="0"/>
                         <w:vAlign w:val="top"/>
                     </w:tcPr>
@@ -2012,29 +2012,332 @@
                                 <w:sz w:val="18"/>
                                 <w:szCs w:val="18"/>
                             </w:rPr>
-                            <w:t>灵敏度Sensitivity</w:t>
+                            <w:t>灵敏度Sensitivity:</w:t>
+                            <w:r>
+                                <w:rPr>
+                                    <w:rFonts w:hint="eastAsia" w:ascii="宋体"/>
+                                    <w:color w:val="0000FF"/>
+                                    <w:sz w:val="18"/>
+                                    <w:szCs w:val="18"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <w:t>${sensitivityMust!""}</w:t>
+                            </w:r>
                         </w:r>
                     </w:p>
                     <w:p>
                         <w:pPr>
-                            <w:jc w:val="both"/>
                             <w:rPr>
-                                <w:rFonts w:hint="default" w:ascii="宋体" w:hAnsi="Times New Roman" w:eastAsia="宋体" w:cs="Times New Roman"/>
-                                <w:sz w:val="18"/>
-                                <w:szCs w:val="18"/>
+                                <w:rFonts w:hint="default" w:eastAsiaTheme="minorEastAsia"/>
                                 <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                <w:color w:val="0000FF"/>
+                                <w:sz w:val="9"/>
+                                <w:szCs w:val="9"/>
                             </w:rPr>
                         </w:pPr>
-                        <w:r>
-                            <w:rPr>
-                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:cs="Times New Roman"/>
-                                <w:color w:val="0000FF"/>
-                                <w:sz w:val="18"/>
-                                <w:szCs w:val="18"/>
-                                <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
-                            </w:rPr>
-                            <w:t>${sensitivity!""}</w:t>
-                        </w:r>
+                        <#if sensitivity?? >
+                        <m:oMath>
+                            <m:r>
+                                <m:rPr/>
+                                <w:rPr>
+                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                    <w:lang w:val="en-US"/>
+                                </w:rPr>
+                                <m:t>∆</m:t>
+                            </m:r>
+                            <m:r>
+                                <m:rPr/>
+                                <w:rPr>
+                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                </w:rPr>
+                                <m:t>=</m:t>
+                            </m:r>
+                            <m:r>
+                                <m:rPr/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <m:t>201g</m:t>
+                            </m:r>
+                            <m:f>
+                                <m:fPr>
+                                    <m:ctrlPr>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:i/>
+                                        </w:rPr>
+                                    </m:ctrlPr>
+                                </m:fPr>
+                                <m:num>
+                                    <m:r>
+                                        <m:rPr/>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                        </w:rPr>
+                                        <m:t>2</m:t>
+                                    </m:r>
+                                    <m:r>
+                                        <m:rPr/>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:lang w:val="en-US"/>
+                                        </w:rPr>
+                                        <m:t>λ</m:t>
+                                    </m:r>
+                                    <m:sSub>
+                                        <m:sSubPr>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                    <w:lang w:val="en-US"/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:sSubPr>
+                                        <m:e>
+                                            <m:r>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:lang w:val="en-US"/>
+                                                </w:rPr>
+                                                <m:t>χ</m:t>
+                                            </m:r>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                    <w:lang w:val="en-US"/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:e>
+                                        <m:sub>
+                                            <m:r>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:lang w:val="en-US"/>
+                                                </w:rPr>
+                                                <m:t>Β</m:t>
+                                            </m:r>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                    <w:lang w:val="en-US"/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:sub>
+                                    </m:sSub>
+                                    <m:ctrlPr>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:i/>
+                                        </w:rPr>
+                                    </m:ctrlPr>
+                                </m:num>
+                                <m:den>
+                                    <m:r>
+                                        <m:rPr/>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                        </w:rPr>
+                                        <m:t>π</m:t>
+                                    </m:r>
+                                    <m:sSup>
+                                        <m:sSupPr>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:sSupPr>
+                                        <m:e>
+                                            <m:r>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                                </w:rPr>
+                                                <m:t>D</m:t>
+                                            </m:r>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:e>
+                                        <m:sup>
+                                            <m:r>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                                </w:rPr>
+                                                <m:t>2</m:t>
+                                            </m:r>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:sup>
+                                    </m:sSup>
+                                    <m:ctrlPr>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:i/>
+                                        </w:rPr>
+                                    </m:ctrlPr>
+                                </m:den>
+                            </m:f>
+                            <m:r>
+                                <m:rPr/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <m:t>=</m:t>
+                            </m:r>
+                            <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+                            <w:bookmarkEnd w:id="0"/>
+                            <m:r>
+                                <m:rPr/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <m:t>201g</m:t>
+                            </m:r>
+                            <m:f>
+                                <m:fPr>
+                                    <m:ctrlPr>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:i/>
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                        </w:rPr>
+                                    </m:ctrlPr>
+                                </m:fPr>
+                                <m:num>
+                                    <m:r>
+                                        <m:rPr/>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:lang w:val="en-US"/>
+                                        </w:rPr>
+                                        <m:t>2x</m:t>
+                                    </m:r>
+                                    <m:r>
+                                        <m:rPr/>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                        </w:rPr>
+                                        <m:t>${lambda!""}x</m:t>
+                                    </m:r>
+                                    <m:r>
+                                        <m:rPr/>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:lang w:val="en-US"/>
+                                        </w:rPr>
+                                        <m:t>${xValue!""}</m:t>
+                                    </m:r>
+                                    <m:ctrlPr>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:i/>
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                        </w:rPr>
+                                    </m:ctrlPr>
+                                </m:num>
+                                <m:den>
+                                    <m:r>
+                                        <m:rPr/>
+                                        <w:rPr>
+                                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:lang w:val="en-US"/>
+                                        </w:rPr>
+                                        <m:t>πx</m:t>
+                                    </m:r>
+                                    <m:sSup>
+                                        <m:sSupPr>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:sSupPr>
+                                        <m:e>
+                                            <m:r>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                                </w:rPr>
+                                                <m:t>${dValue!""}</m:t>
+                                            </m:r>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:e>
+                                        <m:sup>
+                                            <m:r>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                                </w:rPr>
+                                                <m:t>2</m:t>
+                                            </m:r>
+                                            <m:ctrlPr>
+                                                <m:rPr/>
+                                                <w:rPr>
+                                                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                                    <w:i/>
+                                                </w:rPr>
+                                            </m:ctrlPr>
+                                        </m:sup>
+                                    </m:sSup>
+                                    <m:ctrlPr>
+                                        <w:rPr>
+                                            <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                            <w:i/>
+                                            <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                        </w:rPr>
+                                    </m:ctrlPr>
+                                </m:den>
+                            </m:f>
+                            <m:r>
+                                <m:rPr/>
+                                <w:rPr>
+                                    <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                                    <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                                </w:rPr>
+                                <m:t>=${sensitivity!""}db</m:t>
+                            </m:r>
+                        </m:oMath>
+                        <#else>
+                        <w:p></w:p>
+                        </#if>
                     </w:p>
                 </w:tc>
             </w:tr>
