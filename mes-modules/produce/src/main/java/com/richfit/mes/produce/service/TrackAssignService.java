@@ -137,4 +137,12 @@ public interface TrackAssignService extends IService<Assign> {
      * @return
      */
     boolean deleteAssign(String[] ids);
+
+
+    /**
+     * 锻造根据工时标准计算额定工时
+     * @param trackHead
+     * @param trackItem
+     */
+    void calculationSinglePieceHours(TrackHead trackHead,TrackItem trackItem);
 }

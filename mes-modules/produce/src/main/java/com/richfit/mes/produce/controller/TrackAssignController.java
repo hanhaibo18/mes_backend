@@ -298,6 +298,10 @@ public class TrackAssignController extends BaseController {
                         trackItem.setIsSchedule(1);
                     }
                     trackItem.setDeviceId(assign.getDeviceId());
+                    //锻造计算额定工时
+                    if("4".equals(trackHead.getClasses())){
+                        trackAssignService.calculationSinglePieceHours(trackHead,trackItem);
+                    }
                     trackItemService.updateById(trackItem);
                     if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
                         assign.setTrackNo(trackHead.getTrackNo());
