@@ -103,6 +103,8 @@ public class HotDemandController extends BaseController {
         }
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkblankType())) {//毛坯类型
             queryWrapper.eq("workblank_type", hotDemandParam.getWorkblankType());
+        }else {
+            queryWrapper.notIn("workblank_type", "2");
         }
         if (hotDemandParam.getIsExistProcess()!=null) {//有无工艺
             queryWrapper.eq("is_exist_process", hotDemandParam.getIsExistProcess());

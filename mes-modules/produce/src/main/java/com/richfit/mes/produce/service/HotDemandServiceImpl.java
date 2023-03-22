@@ -118,7 +118,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     break;
                 case "钢锭":  hotDemand.setWorkblankType("2");//冶炼
                     break;
-                default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围", ResultCode.FAILED);
+                default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
             }
             demandList.add(hotDemand);
         }
