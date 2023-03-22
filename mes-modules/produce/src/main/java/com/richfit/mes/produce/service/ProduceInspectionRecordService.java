@@ -1435,7 +1435,9 @@ public class ProduceInspectionRecordService {
             if (!ObjectUtil.isEmpty(record.getConsignor())) {
                 String consignor = record.getConsignor();
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
-                record.setConsignor(data.getEmplName());
+                if (null != data) {
+                    record.setConsignor(data.getEmplName());
+                }
             }
             String itemId = record.getItemId();
             String headId = record.getHeadId();
