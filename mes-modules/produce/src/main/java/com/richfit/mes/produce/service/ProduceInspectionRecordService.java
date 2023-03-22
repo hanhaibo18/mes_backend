@@ -278,7 +278,7 @@ public class ProduceInspectionRecordService {
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
             List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
             produceInspectionRecordDto.setPowerIds(powerIds);
-            if(!String.valueOf(jsonObject.get("isAudit")).equals("0")){
+            if (!String.valueOf(jsonObject.get("isAudit")).equals("0")) {
                 jsonObject.remove("id");
             }
         } else {
@@ -286,7 +286,7 @@ public class ProduceInspectionRecordService {
             if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
                 codeRuleService.updateCode("inspection_code_" + tempType, null, jsonObject.get("recordNo").toString(), null, SecurityUtils.getCurrentUser().getTenantId(), branchCode);
                 //保存报告号
-                produceInspectionRecordDto.getInspectionRecord().put("reportNo",Code.valueOnUpdate("inspection_reports_" + tempType, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService));
+                produceInspectionRecordDto.getInspectionRecord().put("reportNo", Code.valueOnUpdate("inspection_reports_" + tempType, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService));
             }
 
         }
@@ -383,7 +383,7 @@ public class ProduceInspectionRecordService {
                     .set("insp_temp_type", tempType)
                     .set("flaw_detection", String.valueOf(jsonObject.get("inspectionResults")))
                     .set("audit_status", 0)
-                    .set("audit_remark",null);
+                    .set("audit_remark", null);
             inspectionPowerService.update(updateWrapper);
         }
 
@@ -476,15 +476,15 @@ public class ProduceInspectionRecordService {
 
         for (Map<String, Object> map : listMap) {
             if (!ObjectUtil.isEmpty(trackHead)) {
-                map.put("trackNo",trackHead.getTrackNo());
-                map.put("workNo",trackHead.getWorkNo());
-                map.put("productName",trackHead.getProductName());
-                map.put("projectName",trackHead.getProjectName());
-                map.put("texture",trackHead.getTexture());
+                map.put("trackNo", trackHead.getTrackNo());
+                map.put("workNo", trackHead.getWorkNo());
+                map.put("productName", trackHead.getProductName());
+                map.put("projectName", trackHead.getProjectName());
+                map.put("texture", trackHead.getTexture());
             }
-            map.put("drawNo",power.getDrawNo());
-            map.put("sampleName",power.getSampleName());
-            map.put("num",power.getNum());
+            map.put("drawNo", power.getDrawNo());
+            map.put("sampleName", power.getSampleName());
+            map.put("num", power.getNum());
         }
 
         return listMap;
@@ -558,9 +558,9 @@ public class ProduceInspectionRecordService {
                 map.put("tenantId", item.getTenantId());
             }
 
-            map.put("drawNo",power.getDrawNo());
-            map.put("sampleName",power.getSampleName());
-            map.put("num",power.getNum());
+            map.put("drawNo", power.getDrawNo());
+            map.put("sampleName", power.getSampleName());
+            map.put("num", power.getNum());
             return map;
 
         }
@@ -1539,7 +1539,7 @@ public class ProduceInspectionRecordService {
     public CommonResult importPowerInfosExcel(MultipartFile file, String branchCode) {
         CommonResult result = CommonResult.success(true);
         //封装工时信息实体类
-        String[] fieldNames = {"drilNo", "drawNo", "sampleName", "inspectionDepart", "checkType", "tempType", "weldString", "castString", "forgString", "fluorescentString", "num", "single", "length", "reviseNum", "priorityString","workpieceAddress"};
+        String[] fieldNames = {"drilNo", "drawNo", "sampleName", "inspectionDepart", "checkType", "tempType", "weldString", "castString", "forgString", "fluorescentString", "num", "single", "length", "reviseNum", "priorityString", "workpieceAddress"};
 
         File excelFile = null;
         //给导入的excel一个临时的文件名
@@ -1633,7 +1633,9 @@ public class ProduceInspectionRecordService {
             if (!ObjectUtil.isEmpty(record.getConsignor())) {
                 String consignor = record.getConsignor();
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
-                record.setConsignor(data.getEmplName());
+                if (null != data) {
+                    record.setConsignor(data.getEmplName());
+                }
             }
             String itemId = record.getItemId();
             String headId = record.getHeadId();
