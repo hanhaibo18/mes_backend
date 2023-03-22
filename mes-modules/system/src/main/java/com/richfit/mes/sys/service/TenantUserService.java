@@ -106,7 +106,7 @@ public interface TenantUserService {
      *
      * @param branchCodes
      * @Author: renzewen
-     * @return:  List<TenantUserVo>
+     * @return: List<TenantUserVo>
      **/
     List<TenantUserVo> queryUserByBranchCodeList(List<String> branchCodes);
 
@@ -201,6 +201,16 @@ public interface TenantUserService {
     List<TenantUserVo> queryQualityInspectionUser(String classes);
 
     List<TenantUserVo> queryUserByBranchCodePage(String branchCode);
+
+    /**
+     * 功能描述: 质检获取质控工程师接口
+     *
+     * @param tenantId
+     * @Author: xinYu.hou
+     * @Date: 2023/3/22 10:45
+     * @return: List<TenantUserVo>
+     **/
+    List<TenantUserVo> queryUserByTenantIdAndRole(String tenantId);
 
     /*
     根据租户id查询质检人员
