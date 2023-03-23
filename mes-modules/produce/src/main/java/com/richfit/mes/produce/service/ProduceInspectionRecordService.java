@@ -42,6 +42,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -130,14 +131,6 @@ public class ProduceInspectionRecordService {
                 if (!StringUtils.isEmpty(record.getCheckBy())) {
                     record.setCheckBy(systemServiceClient.getUserById(record.getCheckBy()).getData().getEmplName());
                 }
-                //是否存在探伤记录赋值，便于前端按钮判断
-                List<ProduceItemInspectInfo> list = new ArrayList<>();
-                if (!StringUtils.isEmpty(record.getId())) {
-                    QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
-                    itemInspectInfoQueryWrapper.eq("power_id", record.getId());
-                    list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
-                }
-                record.setIsHaveRecord(list.size() > 0 ? 1 : 0);
             }
         }
         //为探伤任务赋跟单和工序的的一些属性
@@ -526,7 +519,7 @@ public class ProduceInspectionRecordService {
             } else if (InspectionRecordTypeEnum.RT.getType().equals(produceItemInspectInfo.getTempType())) {
                 object = produceInspectionRecordRtService.getById(produceItemInspectInfo.getInspectRecordId());
             } else if (InspectionRecordTypeEnum.UT.getType().equals(produceItemInspectInfo.getTempType())) {
-                object = produceInspectionRecordUtService.getById(produceItemInspectInfo.getInspectRecordId());
+                object = produceInspectionRecordUtService.queryListByIds(Arrays.asList(produceItemInspectInfo.getInspectRecordId())).get(0);
             } else {
                 throw new GlobalException(ResultCode.INVALID_ARGUMENTS.getMessage(), ResultCode.INVALID_ARGUMENTS);
             }
@@ -988,6 +981,11 @@ public class ProduceInspectionRecordService {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordUt.getCheckBy()).getData();
             produceInspectionRecordUt.setCheckBy(data.getUserAccount());
         }
+        //灵敏度保留小数位
+        produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
 
         //图片base64编码
