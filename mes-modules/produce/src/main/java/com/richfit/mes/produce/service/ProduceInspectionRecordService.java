@@ -1271,14 +1271,15 @@ public class ProduceInspectionRecordService {
             inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
         } else {
             InspectionPower byId = inspectionPowerService.getById(inspectionPower.getId());
-            if (byId.getStatus() == IS_STATUS) {
-                return CommonResult.failed("该委托单已经发起委托，不能修改");
+            if (!byId.getIsDoing().equals("0")) {
+                return CommonResult.failed("该委托任务已开工，不能修改");
             }
         }
         //委托时间
         inspectionPower.setPowerTime(DateUtil.format(DateUtil.date(), "YYYY-MM-dd HH:mm:ss"));
         //待开工
         inspectionPower.setIsDoing("0");
+        inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
         //保存
         inspectionPowerService.saveOrUpdate(inspectionPower);
 
