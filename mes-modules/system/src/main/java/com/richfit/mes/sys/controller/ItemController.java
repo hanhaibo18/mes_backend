@@ -11,11 +11,14 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.sys.ItemClass;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.annotation.Inner;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.entity.dto.ItemClassDto;
+import com.richfit.mes.sys.entity.dto.ItemParamDto;
 import com.richfit.mes.sys.service.ItemClassService;
 import com.richfit.mes.sys.service.ItemParamService;
 import io.swagger.annotations.Api;
@@ -73,49 +76,10 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "Excel模板导入字典", notes = "Excel模板导入字典")
     @ApiImplicitParam(name = "file", value = "Excel文件", required = true, dataType = "__file", paramType = "form")
+    @Transactional(rollbackFor = Exception.class)
     @PostMapping("item/import_excel")
-    public CommonResult importExcel(@RequestParam("file") MultipartFile file) {
-        //封装字典信息实体类
-        String[] fieldNames = {"code","name"};
-        File excelFile = null;
-        //给导入的excel一个临时的文件名
-        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
-        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
-        try {
-            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
-            file.transferTo(excelFile);
-            //将导入的excel数据生成证件实体类list
-            List<ItemClassDto> list = ExcelUtils.importExcel(excelFile, ItemClassDto.class, fieldNames, 1, 0, 0, tempName.toString());
-            FileUtils.delete(excelFile);
-
-            if (org.springframework.util.CollectionUtils.isEmpty(list)) {
-                return CommonResult.failed("未检测到编码规则！");
-            }
-
-            list = list.stream().filter(item -> item.getCode() != null && item.getName() != null).collect(Collectors.toList());
-            list.forEach(item -> {
-                item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-                item.setCreateTime(new Date());
-            });
-
-            List<ItemClass> itemClassesList = new ArrayList<>();
-            for (ItemClassDto itemClassDto : list) {
-                ItemClass itemClass = new ItemClass();
-                BeanUtils.copyProperties(itemClassDto, itemClass);
-                itemClassesList.add(itemClass);
-            }
-
-            boolean bool = itemClassService.saveBatch(itemClassesList);
-            if (bool) {
-                return CommonResult.success(null, ITEM_SUCCESS_MESSAGE);
-            } else {
-                return CommonResult.failed("导入失败");
-            }
-
-        } catch (Exception e) {
-            return CommonResult.failed("导入失败" + e.getMessage());
-        }
+    public CommonResult importItemParamExcel(@RequestParam("file") MultipartFile file) {
+        return itemParamService.importItemParamByExcel(file);
     }
 
     @ApiOperation(value = "修改字典分类", notes = "修改字典分类")
