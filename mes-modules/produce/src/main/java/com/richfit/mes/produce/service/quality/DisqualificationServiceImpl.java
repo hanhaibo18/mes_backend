@@ -286,6 +286,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //处理意见数据
         TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
         switch (disqualificationDto.getType()) {
+            case 0:
+                finalResult.setDisqualificationName(user.getEmplName());
+                finalResult.setDisqualificationTime(new Date());
+                break;
             case 1:
                 finalResult.setDisqualificationName(user.getEmplName());
                 finalResult.setDisqualificationTime(new Date());
@@ -513,6 +517,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             //查询签核记录
             QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("disqualification_id", disqualificationItemVo.getId());
+            queryWrapper.orderByAsc("create_time");
             disqualificationItemVo.setUserOpinionsList(userOpinionService.list(queryWrapper));
             //查询文件
             disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
