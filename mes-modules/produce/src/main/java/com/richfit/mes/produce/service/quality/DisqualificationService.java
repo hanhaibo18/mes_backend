@@ -167,4 +167,6 @@ public interface DisqualificationService extends IService<Disqualification> {
     Boolean sendBack(String id, Integer type);
 
     String  deleteById(String disqualificationId);
+
+    IPage<Disqualification> queryInspectorByCompany(QueryInspectorDto queryInspectorDto);
 }

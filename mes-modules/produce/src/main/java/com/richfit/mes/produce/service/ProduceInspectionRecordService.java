@@ -278,7 +278,7 @@ public class ProduceInspectionRecordService {
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
             List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
             produceInspectionRecordDto.setPowerIds(powerIds);
-            if(!String.valueOf(jsonObject.get("isAudit")).equals("0")){
+            if (!String.valueOf(jsonObject.get("isAudit")).equals("0")) {
                 jsonObject.remove("id");
             }
         } else {
@@ -286,7 +286,7 @@ public class ProduceInspectionRecordService {
             if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
                 codeRuleService.updateCode("inspection_code_" + tempType, null, jsonObject.get("recordNo").toString(), null, SecurityUtils.getCurrentUser().getTenantId(), branchCode);
                 //保存报告号
-                produceInspectionRecordDto.getInspectionRecord().put("reportNo",Code.valueOnUpdate("inspection_reports_" + tempType, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService));
+                produceInspectionRecordDto.getInspectionRecord().put("reportNo", Code.valueOnUpdate("inspection_reports_" + tempType, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService));
             }
 
         }
@@ -383,7 +383,7 @@ public class ProduceInspectionRecordService {
                     .set("insp_temp_type", tempType)
                     .set("flaw_detection", String.valueOf(jsonObject.get("inspectionResults")))
                     .set("audit_status", 0)
-                    .set("audit_remark",null);
+                    .set("audit_remark", null);
             inspectionPowerService.update(updateWrapper);
         }
 
@@ -476,15 +476,15 @@ public class ProduceInspectionRecordService {
 
         for (Map<String, Object> map : listMap) {
             if (!ObjectUtil.isEmpty(trackHead)) {
-                map.put("trackNo",trackHead.getTrackNo());
-                map.put("workNo",trackHead.getWorkNo());
-                map.put("productName",trackHead.getProductName());
-                map.put("projectName",trackHead.getProjectName());
-                map.put("texture",trackHead.getTexture());
+                map.put("trackNo", trackHead.getTrackNo());
+                map.put("workNo", trackHead.getWorkNo());
+                map.put("productName", trackHead.getProductName());
+                map.put("projectName", trackHead.getProjectName());
+                map.put("texture", trackHead.getTexture());
             }
-            map.put("drawNo",power.getDrawNo());
-            map.put("sampleName",power.getSampleName());
-            map.put("num",power.getNum());
+            map.put("drawNo", power.getDrawNo());
+            map.put("sampleName", power.getSampleName());
+            map.put("num", power.getNum());
         }
 
         return listMap;
@@ -558,9 +558,9 @@ public class ProduceInspectionRecordService {
                 map.put("tenantId", item.getTenantId());
             }
 
-            map.put("drawNo",power.getDrawNo());
-            map.put("sampleName",power.getSampleName());
-            map.put("num",power.getNum());
+            map.put("drawNo", power.getDrawNo());
+            map.put("sampleName", power.getSampleName());
+            map.put("num", power.getNum());
             return map;
 
         }
@@ -1435,7 +1435,9 @@ public class ProduceInspectionRecordService {
             if (!ObjectUtil.isEmpty(record.getConsignor())) {
                 String consignor = record.getConsignor();
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
-                record.setConsignor(data.getEmplName());
+                if (null != data) {
+                    record.setConsignor(data.getEmplName());
+                }
             }
             String itemId = record.getItemId();
             String headId = record.getHeadId();
@@ -1539,7 +1541,7 @@ public class ProduceInspectionRecordService {
     public CommonResult importPowerInfosExcel(MultipartFile file, String branchCode) {
         CommonResult result = CommonResult.success(true);
         //封装工时信息实体类
-        String[] fieldNames = {"drilNo", "drawNo", "sampleName", "inspectionDepart", "checkType", "tempType", "weldString", "castString", "forgString", "fluorescentString", "num", "single", "length", "reviseNum", "priorityString","workpieceAddress"};
+        String[] fieldNames = {"drilNo", "drawNo", "sampleName", "inspectionDepart", "checkType", "tempType", "weldString", "castString", "forgString", "fluorescentString", "num", "single", "length", "reviseNum", "priorityString", "workpieceAddress"};
 
         File excelFile = null;
         //给导入的excel一个临时的文件名
@@ -1590,6 +1592,73 @@ public class ProduceInspectionRecordService {
             return CommonResult.failed();
         }
         return result;
+    }
+
+    public IPage queryPowerOrderPageByCompany(InspectionPowerVo inspectionPowerVo) {
+        QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderNo())) {
+            queryWrapper.eq("order_no", inspectionPowerVo.getOrderNo());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getInspectionDepart())) {
+            queryWrapper.eq("inspection_depart", inspectionPowerVo.getInspectionDepart());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getSampleName())) {
+            queryWrapper.eq("sample_name", inspectionPowerVo.getSampleName());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStartTime())) {
+            queryWrapper.ge("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getEndTime())) {
+            queryWrapper.le("date_format(power_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getDrawNo())) {
+            queryWrapper.eq("draw_no", inspectionPowerVo.getDrawNo());
+        }
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())) {
+            queryWrapper.in("status", inspectionPowerVo.getStatus().split(","));
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())) {
+            OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
+        } else {
+            queryWrapper.orderByDesc("power_time");
+        }
+        if (!org.springframework.util.StringUtils.isEmpty(inspectionPowerVo.getIsExistHeadInfo())) {
+            //有源委托单
+            queryWrapper.isNotNull("0".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
+            //无源委托单
+            queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
+        }
+        Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
+        //委托人转换
+        for (InspectionPower record : page.getRecords()) {
+            if (!ObjectUtil.isEmpty(record.getConsignor())) {
+                String consignor = record.getConsignor();
+                TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
+                if (null != data) {
+                    record.setConsignor(data.getEmplName());
+                }
+            }
+            String itemId = record.getItemId();
+            String headId = record.getHeadId();
+            if (!StringUtils.isEmpty(itemId)) {
+                TrackItem trackItem = trackItemService.getById(itemId);
+                TrackHead trackHead = trackHeadService.getById(headId);
+                record.setTrackNo(trackHead.getTrackNo());
+                record.setOptNo(trackItem.getOptNo());
+                record.setOptName(trackItem.getOptName());
+                record.setProductNo(trackItem.getProductNo());
+                record.setTrackType(trackHead.getTrackType());
+            }
+            QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
+            itemInspectInfoQueryWrapper.eq("power_id", record.getId()).eq("is_new", "1");
+            List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
+            //完工的时候下载报告的
+            if (list.size() > 0) {
+                record.setRecordId(list.get(0).getInspectRecordId());
+            }
+        }
+        return page;
     }
 
 

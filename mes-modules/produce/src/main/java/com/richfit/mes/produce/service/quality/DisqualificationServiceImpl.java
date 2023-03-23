@@ -87,6 +87,13 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+        //只查询本人创建的不合格品申请单
+        queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
+        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
+    }
+
+    private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
         //图号查询
         if (StrUtil.isNotBlank(queryInspectorDto.getDrawingNo())) {
             queryWrapper.like("drawing_no", queryInspectorDto.getDrawingNo());
@@ -124,9 +131,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } catch (Exception e) {
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
         }
-        //只查询本人创建的不合格品申请单
-        queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
-        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
     @Override
@@ -252,6 +256,19 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             String type = StringUtils.join(disqualificationDto.getTypeList(), ",");
             disqualification.setDisqualificationType(type);
             disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
+        }
+        //新申请单,并且是提交才生成申请单编号
+        if (disqualificationDto.getIsSubmit() == 1 && StrUtil.isBlank(disqualificationDto.getId())) {
+            //获取申请单编号
+            try {
+                String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), disqualificationDto.getBranchCode(), codeRuleService);
+                disqualification.setProcessSheetNo(disqualificationNo);
+                Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), disqualificationDto.getBranchCode(), codeRuleService);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+                throw new GlobalException("获取申请单编号错误", ResultCode.FAILED);
+            }
         }
         this.saveOrUpdate(disqualification);
         //处理不合格从表数据
@@ -457,7 +474,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         Branch branch = baseServiceClient.queryTenantIdByBranchCode(value);
         if (branch != null && branch.getTenantId() != null) {
             //根据租户Id查询人员列表
-            return systemServiceClient.queryUserByTenantId(branch.getTenantId());
+            return systemServiceClient.queryUserByTenantIdAndRole(branch.getTenantId()).getData();
         } else {
             return null;
         }
@@ -470,22 +487,13 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
             String uuid = UUID.randomUUID().toString().replaceAll("-", "");
             disqualificationItemVo.setTrackItemId(uuid);
-            //获取申请单编号
-            try {
-                String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
-                disqualificationItemVo.setProcessSheetNo(disqualificationNo);
-                Code.update("disqualification_no", disqualificationNo, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.error(e.getMessage());
-                throw new GlobalException("获取申请单编号错误:disqualification_no", ResultCode.FAILED);
-            }
             disqualificationItemVo.setType("0");
             disqualificationItemVo.setSourceType(0);
             disqualificationItemVo.setRepairNoList(Collections.emptyList());
             disqualificationItemVo.setSalesReturnNoList(Collections.emptyList());
             disqualificationItemVo.setAcceptDeviationNoList(Collections.emptyList());
             disqualificationItemVo.setScrapNoList(Collections.emptyList());
+            disqualificationItemVo.setBranchCode(branchCode);
             return disqualificationItemVo;
         }
         //有源头
@@ -661,6 +669,15 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             systemServiceClient.delete(id);
         }
         return "success";
+    }
+
+    @Override
+    public IPage<Disqualification> queryInspectorByCompany(QueryInspectorDto queryInspectorDto) {
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+        //只查询本租户创建的不合格品申请单
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
 

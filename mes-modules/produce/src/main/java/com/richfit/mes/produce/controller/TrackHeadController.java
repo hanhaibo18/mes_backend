@@ -30,6 +30,8 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.ServletOutputStream;
@@ -735,6 +737,7 @@ public class TrackHeadController extends BaseController {
     public void trackHeadSplitBack(@ApiParam(value = "回收跟单信息", required = true) @RequestBody List<TrackHeadPublicDto> trackHeadPublicDtoList) throws
             Exception {
         try {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             //跟单号长度降序排序，避免批量还原时候出现中间跟单丢失问题，从最后一个处理
             Collections.sort(trackHeadPublicDtoList, new TrackHeadComparator());
             for (TrackHeadPublicDto trackHeadPublicDto : trackHeadPublicDtoList) {
@@ -745,8 +748,18 @@ public class TrackHeadController extends BaseController {
                 }
                 if (TrackHead.TRACK_TYPE_0.equals(trackHeadPublicDto.getTrackType())) {
                     trackHeadService.trackHeadSplitBack(trackHeadPublicDto);
+                    //记录日志
+                    actionService.saveAction(ActionUtil.buildAction
+                            (trackHeadPublicDto.getBranchCode(), "4", "2",
+                                    "回收跟单,trackNo:" + trackHeadPublicDto.getTrackNo(),
+                                    OperationLogAspect.getIpAddress(request)));
                 } else {
                     trackHeadService.trackHeadSplitBatchBack(trackHeadPublicDto);
+                    //记录日志
+                    actionService.saveAction(ActionUtil.buildAction
+                            (trackHeadPublicDto.getBranchCode(), "4", "2",
+                                    "回收跟单,trackNo:" + trackHeadPublicDto.getTrackNo(),
+                                    OperationLogAspect.getIpAddress(request)));
                 }
             }
         } catch (Exception e) {

@@ -103,6 +103,8 @@ public class HotDemandController extends BaseController {
         }
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkblankType())) {//毛坯类型
             queryWrapper.eq("workblank_type", hotDemandParam.getWorkblankType());
+        }else {
+            queryWrapper.notIn("workblank_type", "2");
         }
         if (hotDemandParam.getIsExistProcess()!=null) {//有无工艺
             queryWrapper.eq("is_exist_process", hotDemandParam.getIsExistProcess());
@@ -150,20 +152,6 @@ public class HotDemandController extends BaseController {
          //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
-        page.getRecords().forEach(x->{
-            if(ObjectUtils.isNotEmpty(x) && StringUtils.isNotEmpty(x.getWorkblankType())){
-                switch (x.getWorkblankType()){
-                    case "0" : x.setWorkblankType("锻件");
-                    break;
-                    case "1" : x.setWorkblankType("铸件");
-                        break;
-                    case "2" : x.setWorkblankType("钢锭");
-                        break;
-                    default:x.setWorkblankType("");
-                }
-            }
-        });
-
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
     }
 
@@ -462,6 +450,16 @@ public class HotDemandController extends BaseController {
     }
 
 
+    @ApiOperation(value = "冶炼车间生产批准", notes = "冶炼车间生产批准")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "ratifyState", value = "生产批准状态 0 :未批准 ,1 已批准", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/ratify_yl")
+    public CommonResult ratifyYL(@RequestBody List<String> idList, Integer ratifyState, String branchCode) {
+        return hotDemandService.ratifyYL(idList, ratifyState, branchCode);
+    }
 
     @ApiOperation(value = "撤销批准", notes = "撤销批准")
     @ApiImplicitParams({

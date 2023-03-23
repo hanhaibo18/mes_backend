@@ -260,6 +260,12 @@ public class TenantUserController extends BaseController {
         return CommonResult.success(tenantUserService.queryUserByBranchCodePage(branchCode));
     }
 
+    @ApiOperation(value = "质检租户获取质控工程师", notes = "质检租户获取质控工程师")
+    @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")
+    @GetMapping("/queryUserByTenantIdAndRole")
+    public CommonResult<List<TenantUserVo>> queryUserByTenantIdAndRole(String tenantId) {
+        return CommonResult.success(tenantUserService.queryUserByTenantIdAndRole(tenantId));
+    }
 
     @ApiOperation(value = "分页查询根据组织机构获取用户列表", notes = "分页查询根据组织机构获取用户列表")
     @ApiImplicitParam(name = "branchCode", value = "组织机构", required = true, dataType = "query")

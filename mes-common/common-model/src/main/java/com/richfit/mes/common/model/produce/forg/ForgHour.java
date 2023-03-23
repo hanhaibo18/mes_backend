@@ -14,20 +14,33 @@ import java.util.Date;
 public class ForgHour extends BaseEntity<ForgHour> {
 
     /**
-     *
+     *工序id
+     */
+    private String optId;
+    /**
+     *工序名称
      */
     private String optName;
     /**
-     *
+     *重量上限
      */
-    private String weightUp;
+    private double weightUp;
     /**
-     *
+     *重量下限
      */
-    private String weightDown;
+    private double weightDown;
     /**
-     *
+     * 材质
+     */
+    private String texture;
+
+    /**
+     *工时
      */
     private double hour;
+
+    private String branchCode;
+
+    private String tenantId;
 
 }

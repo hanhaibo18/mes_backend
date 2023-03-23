@@ -24,6 +24,11 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     @ApiModelProperty(value = "跟单Id")
     private String trackHeadId;
 
+    /**
+     * 炉号
+     */
+    @ApiModelProperty(value = "炉号")
+    private String heatNumber;
 
     /**
      * 跟单Id

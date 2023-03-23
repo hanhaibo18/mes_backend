@@ -144,6 +144,8 @@ public class TrackCompleteCache extends BaseEntity<TrackCompleteCache> {
      * 辅助工时
      */
     protected Double auxiliaryHours;
-
-
+    /**
+     * 权重
+     */
+    private Double ratioHours;
 }
