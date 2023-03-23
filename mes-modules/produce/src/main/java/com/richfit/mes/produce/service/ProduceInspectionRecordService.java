@@ -517,7 +517,7 @@ public class ProduceInspectionRecordService {
             } else if (InspectionRecordTypeEnum.PT.getType().equals(produceItemInspectInfo.getTempType())) {
                 object = produceInspectionRecordPtService.getById(produceItemInspectInfo.getInspectRecordId());
             } else if (InspectionRecordTypeEnum.RT.getType().equals(produceItemInspectInfo.getTempType())) {
-                object = produceInspectionRecordRtService.getById(produceItemInspectInfo.getInspectRecordId());
+                object = produceInspectionRecordRtService.queryListByIds(Arrays.asList(produceItemInspectInfo.getInspectRecordId())).get(0);
             } else if (InspectionRecordTypeEnum.UT.getType().equals(produceItemInspectInfo.getTempType())) {
                 object = produceInspectionRecordUtService.queryListByIds(Arrays.asList(produceItemInspectInfo.getInspectRecordId())).get(0);
             } else {
