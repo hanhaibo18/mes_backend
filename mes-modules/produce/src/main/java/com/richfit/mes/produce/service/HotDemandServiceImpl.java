@@ -192,7 +192,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         } else {
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
-                    return CommonResult.success(ResultCode.SUCCESS, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                    return CommonResult.success(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
                 }
             }
         }
@@ -231,7 +231,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         } else {
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
-                    return CommonResult.success(ResultCode.SUCCESS, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                    return CommonResult.success(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
                 }
             }
         }
