@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @author makejava
  * @since 2023-03-23 14:18:24
  */
-@Service("produceNormalizeDehydroRecordService")
+@Service
 public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehydroRecordMapper, NormalizeDehydroRecord> implements NormalizeDehydroRecordService {
 
 }

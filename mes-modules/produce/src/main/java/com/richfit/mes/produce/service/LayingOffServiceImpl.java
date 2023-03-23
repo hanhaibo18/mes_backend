@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @author makejava
  * @since 2023-03-23 14:25:09
  */
-@Service("produceLayingOffService")
+@Service
 public class LayingOffServiceImpl extends ServiceImpl<LayingOffMapper, LayingOff> implements LayingOffService {
 
 }
