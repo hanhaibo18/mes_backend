@@ -87,35 +87,36 @@ public class HourServiceImpl extends ServiceImpl<HourMapper, Hour> implements Ho
             List<Hour> list = ExcelUtils.importExcel(excelFile, Hour.class, fieldNames, 1, 0, 0, tempName.toString());
             //过滤可以导入的数据
             List<Hour> exportList = list.stream().filter(item -> "X".equals(item.getIsExport())).collect(Collectors.toList());
-            //工序和设备需要根据name 获取id和设备类型  转换map 便于取值
-            List<String> optNames = exportList.stream().map(Hour::getOptName).collect(Collectors.toList());
-            List<String> deviceNames = exportList.stream().map(Hour::getTypeName).collect(Collectors.toList());
-            Map<String, Operatipon> optMap = baseServiceClient.queryOptByOptNames(optNames, branchCode).stream().collect(Collectors.toMap(Operatipon::getOptName, Function.identity()));
-            QueryWrapper<RgDevice> rgDeviceQueryWrapper = new QueryWrapper<>();
-            rgDeviceQueryWrapper.in("type_name",deviceNames);
-            Map<String, RgDevice> deviceMap = rgDeviceService.list(rgDeviceQueryWrapper).stream().collect(Collectors.toMap(RgDevice::getTypeName, Function.identity()));
-            //工序id和设备类型赋值
-            for (Hour hour : exportList) {
-                if (!ObjectUtil.isEmpty(optMap.get(hour.getOptName()))) {
-                    hour.setOptId(optMap.get(hour.getOptName()).getId());
+            if(exportList.size()>0){
+                //工序和设备需要根据name 获取id和设备类型  转换map 便于取值
+                List<String> optNames = exportList.stream().map(Hour::getOptName).collect(Collectors.toList());
+                List<String> deviceNames = exportList.stream().map(Hour::getTypeName).collect(Collectors.toList());
+                Map<String, Operatipon> optMap = baseServiceClient.queryOptByOptNames(optNames, branchCode).stream().collect(Collectors.toMap(Operatipon::getOptName, Function.identity()));
+                QueryWrapper<RgDevice> rgDeviceQueryWrapper = new QueryWrapper<>();
+                rgDeviceQueryWrapper.in("type_name",deviceNames);
+                Map<String, RgDevice> deviceMap = rgDeviceService.list(rgDeviceQueryWrapper).stream().collect(Collectors.toMap(RgDevice::getTypeName, Function.identity()));
+                //工序id和设备类型赋值
+                for (Hour hour : exportList) {
+                    if (!ObjectUtil.isEmpty(optMap.get(hour.getOptName()))) {
+                        hour.setOptId(optMap.get(hour.getOptName()).getId());
+                    }
+                    if (!ObjectUtil.isEmpty(deviceMap.get(hour.getTypeName()))) {
+                        hour.setTypeCode(deviceMap.get(hour.getTypeName()).getTypeCode());
+                    }
                 }
-                if (!ObjectUtil.isEmpty(deviceMap.get(hour.getTypeName()))) {
-                    hour.setTypeCode(deviceMap.get(hour.getTypeName()).getTypeCode());
+                //绑定版本
+                for (Hour hour : exportList) {
+                    hour.setVerId(verId);
                 }
-            }
-            //绑定版本
-            for (Hour hour : exportList) {
-                hour.setVerId(verId);
+                /*//删除旧数据
+                QueryWrapper<Hour> hourQueryWrapper = new QueryWrapper<>();
+                hourQueryWrapper.eq("ver_id",verId);
+                this.remove(hourQueryWrapper);*/
+
+                //保存工时
+                this.saveBatch(exportList);
             }
             FileUtils.delete(excelFile);
-            /*//删除旧数据
-            QueryWrapper<Hour> hourQueryWrapper = new QueryWrapper<>();
-            hourQueryWrapper.eq("ver_id",verId);
-            this.remove(hourQueryWrapper);*/
-
-            //保存工时
-            this.saveBatch(exportList);
-
         } catch (Exception e) {
             return CommonResult.failed();
         }

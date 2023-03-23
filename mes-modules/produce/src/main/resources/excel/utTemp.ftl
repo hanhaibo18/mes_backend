@@ -1899,7 +1899,7 @@
                 <w:tc>
                     <w:tcPr>
                         <w:tcW w:w="3600" w:type="dxa"/>
-                        <w:gridSpan w:val="5"/>
+                        <w:gridSpan w:val="3"/>
                         <w:noWrap w:val="0"/>
                         <w:vAlign w:val="top"/>
                     </w:tcPr>
@@ -1946,7 +1946,7 @@
                 <w:tc>
                     <w:tcPr>
                         <w:tcW w:w="3402" w:type="dxa"/>
-                        <w:gridSpan w:val="6"/>
+                        <w:gridSpan w:val="5"/>
                         <w:noWrap w:val="0"/>
                         <w:vAlign w:val="top"/>
                     </w:tcPr>
@@ -1993,7 +1993,7 @@
                 <w:tc>
                     <w:tcPr>
                         <w:tcW w:w="2598" w:type="dxa"/>
-                        <w:gridSpan w:val="5"/>
+                        <w:gridSpan w:val="8"/>
                         <w:noWrap w:val="0"/>
                         <w:vAlign w:val="top"/>
                     </w:tcPr>
@@ -2031,8 +2031,8 @@
                                 <w:rFonts w:hint="default" w:eastAsiaTheme="minorEastAsia"/>
                                 <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                 <w:color w:val="0000FF"/>
-                                <w:sz w:val="9"/>
-                                <w:szCs w:val="9"/>
+                                <w:sz w:val="6"/>
+                                <w:szCs w:val="6"/>
                             </w:rPr>
                         </w:pPr>
                         <#if sensitivity?? >
@@ -2237,7 +2237,7 @@
                                             <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                             <w:lang w:val="en-US"/>
                                         </w:rPr>
-                                        <m:t>2x</m:t>
+                                        <m:t>2×</m:t>
                                     </m:r>
                                     <m:r>
                                         <m:rPr/>
@@ -2245,16 +2245,16 @@
                                             <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <m:t>${lambda!""}x</m:t>
+                                        <w:t>${lambda?""}×</w:t>
                                     </m:r>
-                                    <m:r>
-                                        <m:rPr/>
+                                    <w:r>
+                                        <w:rPr/>
                                         <w:rPr>
                                             <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                             <w:lang w:val="en-US"/>
                                         </w:rPr>
-                                        <m:t>${xValue!""}</m:t>
-                                    </m:r>
+                                        <w:t>${xValue!""}</w:t>
+                                    </w:r>
                                     <m:ctrlPr>
                                         <w:rPr>
                                             <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
@@ -2270,7 +2270,7 @@
                                             <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                             <w:lang w:val="en-US"/>
                                         </w:rPr>
-                                        <m:t>πx</m:t>
+                                        <m:t>π×</m:t>
                                     </m:r>
                                     <m:sSup>
                                         <m:sSupPr>
