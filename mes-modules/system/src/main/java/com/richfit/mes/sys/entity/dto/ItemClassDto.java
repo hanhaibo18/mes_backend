@@ -10,9 +10,14 @@ import lombok.Data;
  * @author llh
  */
 @Data
-public class ItemClassDto extends BaseEntity<ItemClass> {
+public class ItemClassDto extends BaseEntity<ItemClassDto> {
 
     private String tenantId;
+
+    /**
+     * 编码序号
+     */
+    private String ruleNo;
 
     /**
      * 编码

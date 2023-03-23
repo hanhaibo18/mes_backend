@@ -100,8 +100,8 @@ public class HeatTrackCompleteController extends BaseController {
         List<TrackComplete> completeList = heatTrackCompleteService.list(completeQueryWrapper);
         //预装炉id集合
         List<String> fuIds = new ArrayList<>(completeList.stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
-        //带回滚的预装炉id
-        List<String> rollBackFuIds = new ArrayList<>(completeList.stream().filter(item->item.getIsCurrent().equals(1)).collect(Collectors.toList()).stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
+        //带回滚的预装炉id(当前步骤 && 不是最后一步)
+            List<String> rollBackFuIds = new ArrayList<>(completeList.stream().filter(item->(item.getIsCurrent().equals(1) && (ObjectUtil.isEmpty(item.getIsFinalStep())|| item.getIsFinalStep().equals(0)))).collect(Collectors.toList()).stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
         if (fuIds.size() > 0) {
             QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
             if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
