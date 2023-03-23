@@ -742,8 +742,8 @@ public class TrackHeadController extends BaseController {
             Collections.sort(trackHeadPublicDtoList, new TrackHeadComparator());
             for (TrackHeadPublicDto trackHeadPublicDto : trackHeadPublicDtoList) {
                 QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("original_track_id", trackHeadPublicDto.getOriginalTrackId());
-                if (trackHeadService.count() > 0) {
+                queryWrapper.eq("original_track_id", trackHeadPublicDto.getId());
+                if (trackHeadService.count(queryWrapper) > 0) {
                     throw new GlobalException("此跟单已被拆分,请回收当前跟单被拆分的跟单", ResultCode.FAILED);
                 }
                 if (TrackHead.TRACK_TYPE_0.equals(trackHeadPublicDto.getTrackType())) {
