@@ -2,6 +2,7 @@ package com.richfit.mes.produce.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.richfit.mes.common.model.produce.NormalizeDehydroRecord;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 正火去氢工序控制记录(ProduceNormalizeDehydroRecord)表数据库访问层
@@ -9,6 +10,7 @@ import com.richfit.mes.common.model.produce.NormalizeDehydroRecord;
  * @author makejava
  * @since 2023-03-23 14:18:24
  */
+@Mapper
 public interface NormalizeDehydroRecordMapper extends BaseMapper<NormalizeDehydroRecord> {
 
 }
