@@ -25,6 +25,12 @@ public class ItemParam extends BaseEntity<ItemParam> {
     private String tenantId;
 
     /**
+     * 编码序号
+     */
+    @TableField(exist = false)
+    private String ruleNo;
+
+    /**
      * 分类ID
      */
     private String classId;

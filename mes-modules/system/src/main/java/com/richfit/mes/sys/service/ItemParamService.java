@@ -1,7 +1,9 @@
 package com.richfit.mes.sys.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.ItemParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,4 +35,11 @@ public interface ItemParamService extends IService<ItemParam> {
      * @throws Exception
      */
     List<ItemParam> queryItemByCodeAndTenantId(String code,String tenantId) throws Exception;
+
+    /**
+     * 根据file Excel导入字典
+     * @param file
+     * @return
+     */
+    CommonResult<String> importItemParamByExcel(MultipartFile file);
 }
