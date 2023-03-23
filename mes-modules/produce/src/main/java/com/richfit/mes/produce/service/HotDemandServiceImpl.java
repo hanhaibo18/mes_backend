@@ -210,7 +210,45 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         }
         return CommonResult.success(ResultCode.SUCCESS);
     }
-
+    /**
+     * 冶炼生产批准
+     * @param idList
+     * @param ratifyState
+     * @param branchCode
+     * @return
+     */
+    @Override
+    public CommonResult<?> ratifyYL(List<String> idList, Integer ratifyState, String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        //通过模型检查后查出所有需求信息
+        QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", idList);
+        queryWrapper.apply("(produce_ratify_state=0 or produce_ratify_state is null)");
+        //查出需求提报数据
+        List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(hotDemands)) {
+            return CommonResult.success(ResultCode.SUCCESS, "不可重复批准生产");
+        } else {
+            for (HotDemand hotDemand : hotDemands) {
+                if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
+                    return CommonResult.success(ResultCode.SUCCESS, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                }
+            }
+        }
+        //将需求数据转换为生产计划并入库
+        Map map = this.convertAndSave(currentUser, hotDemands, 0);
+        //设置需求中的计划id和批准状态
+        for (HotDemand hotDemand : hotDemands) {
+            UpdateWrapper updateWrapper = new UpdateWrapper();
+            updateWrapper.set("produce_ratify_state", ratifyState);//设置批准状态
+            updateWrapper.set("issue_time", new Date());//设置下发时间
+            updateWrapper.set("plan_id", map.get(hotDemand.getId()));//设置计划id
+            updateWrapper.set("modify_by",currentUser.getUsername());
+            updateWrapper.eq("id", hotDemand.getId());
+            boolean update = hotDemandService.update(updateWrapper);
+        }
+        return CommonResult.success(ResultCode.SUCCESS);
+    }
     /**
      *撤销批准
      * @param idList
