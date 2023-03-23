@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @author makejava
  * @since 2023-03-23 14:07:26
  */
-@Service("produceForgControlRecordService")
+@Service
 public class ForgControlRecordServiceImpl extends ServiceImpl<ForgControlRecordMapper, ForgControlRecord> implements ForgControlRecordService {
 
 }
