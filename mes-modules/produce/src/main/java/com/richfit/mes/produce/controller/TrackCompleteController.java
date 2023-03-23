@@ -13,10 +13,8 @@ import com.richfit.mes.common.model.base.DevicePerson;
 import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
@@ -61,6 +59,12 @@ public class TrackCompleteController extends BaseController {
     private BaseServiceClient baseServiceClient;
     @Autowired
     private ActionService actionService;
+    @Autowired
+    private ForgControlRecordService forgControlRecordService;
+    @Autowired
+    private LayingOffService layingOffService;
+    @Autowired
+    private NormalizeDehydroRecordService normalizeDehydroRecordService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
 
@@ -981,4 +985,26 @@ public class TrackCompleteController extends BaseController {
     public CommonResult<Boolean> saveOutsource(@RequestBody OutsourceCompleteDto outsource) {
         return trackCompleteService.saveOutsource(outsource);
     }
+
+    @ApiOperation(value = "下料信息记录", notes = "下料信息记录")
+    @ApiImplicitParam(name = "layingOff", value = "下料实体", required = true, dataType = "LayingOff", paramType = "query")
+    @PostMapping("/saveLayingOff")
+    public CommonResult<Boolean> saveLayingOff(@RequestBody LayingOff layingOff) {
+        return CommonResult.success(layingOffService.save(layingOff));
+    }
+
+    @ApiOperation(value = "锻造工序控制记录", notes = "锻造工序控制记录")
+    @ApiImplicitParam(name = "forgControlRecordlist", value = "锻造工序控制记录实体", required = true, dataType = "List", paramType = "query")
+    @PostMapping("/saveForgControlRecord")
+    public CommonResult<Boolean> saveForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist) {
+        return CommonResult.success(forgControlRecordService.saveBatch(forgControlRecordlist));
+    }
+
+    @ApiOperation(value = "正火去氢工序控制记录", notes = "正火去氢工序控制记录")
+    @ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")
+    @PostMapping("/saveNormalizeDehydroRecord")
+    public CommonResult<Boolean> saveNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
+        return CommonResult.success(normalizeDehydroRecordService.saveBatch(normalizeDehydroRecordList));
+    }
+
 }
