@@ -626,6 +626,7 @@ public class ProduceInspectionRecordService {
         queryWrapper
                 .and(warpper1 -> warpper1.eq("audit_by", SecurityUtils.getCurrentUser().getUserId()).or(warpper -> warpper.eq("audit_by", "/")))
                 .eq(!StringUtils.isEmpty(inspectionPowerVo.getRecordNo()), "record_no", inspectionPowerVo.getRecordNo())
+                .eq(!StringUtils.isEmpty(inspectionPowerVo.getTempType()), "temp_type", inspectionPowerVo.getTempType())
                 .ge(!StringUtils.isEmpty(inspectionPowerVo.getStartTime()), "date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime())
                 .le(!StringUtils.isEmpty(inspectionPowerVo.getEndTime()), "date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime())
                 .inSql("power_id", "select a.power_id from (select max(power_id) as power_id from produce_item_inspect_info where is_new = '1' GROUP BY inspect_record_id) a")
