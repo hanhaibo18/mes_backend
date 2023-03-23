@@ -144,7 +144,7 @@ public class RouterController extends BaseController {
                 routerOlds.setStatus("2");
                 QueryWrapper<Router> queryWrapperRouter = new QueryWrapper<>();
                 queryWrapperRouter.eq("status", "1");
-                DrawingNoUtil.queryEq(routerQueryWrapper, "router_no", router.getRouterNo());
+                DrawingNoUtil.queryEq(queryWrapperRouter, "router_no", router.getRouterNo());
                 queryWrapperRouter.eq("branch_code", router.getBranchCode());
                 //工艺唯一  工艺类型+图号（历史数据）
                 queryWrapperRouter.eq("router_type", router.getRouterType());
