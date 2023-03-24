@@ -135,6 +135,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //sheet计划列表
         String[] fieldNames = {"materialName","erpProductCode","texture","num","ingotCase","demandTime","projectName","workNo","drawNo","demandName","priority","versionNum","remark"};
         File excelFile = null;
+
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
         tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
