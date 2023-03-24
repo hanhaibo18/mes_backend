@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.base;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,7 +15,7 @@ import java.util.Date;
  * <p>
  * 20220429 gl 增加API注解，方便前端阅读接口文件
  */
-
+@TableName(value ="base_product")
 @Data
 public class Product extends BaseEntity<Product> {
 
@@ -110,6 +111,22 @@ public class Product extends BaseEntity<Product> {
 
     @ApiModelProperty(value = "规格")
     private String specification;
+
+    @ApiModelProperty(value = "是否为关键件")
+    private String isKeyPart;
+
+    @ApiModelProperty(value = "是否需要领料")
+    private String isNeedPicking;
+
+    @ApiModelProperty(value = "跟踪类型")
+    private String trackType;
+
+    @ApiModelProperty(value = "实物配送")
+    private String isEdgeStore;
+
+    @ApiModelProperty(value = "是否齐套检查")
+    private String isCheck;
+
 
     @TableField(exist = false)
     private Integer haveRouter;

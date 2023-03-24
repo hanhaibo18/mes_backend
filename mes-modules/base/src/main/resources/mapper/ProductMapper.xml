@@ -1,6 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.base.dao.ProductMapper">
+    <resultMap id="productResultMap" type="com.richfit.mes.common.model.base.Product">
+        <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="VARCHAR"/>
+        <result property="materialNo" column="material_no" jdbcType="VARCHAR"/>
+        <result property="materialDate" column="material_date" jdbcType="TIMESTAMP"/>
+        <result property="materialType" column="material_type" jdbcType="VARCHAR"/>
+        <result property="materialDesc" column="material_desc" jdbcType="VARCHAR"/>
+        <result property="drawingNo" column="drawing_no" jdbcType="VARCHAR"/>
+        <result property="productName" column="product_name" jdbcType="VARCHAR"/>
+        <result property="texture" column="texture" jdbcType="VARCHAR"/>
+        <result property="weight" column="weight" jdbcType="FLOAT"/>
+        <result property="unit" column="unit" jdbcType="VARCHAR"/>
+        <result property="convertScale" column="convert_scale" jdbcType="FLOAT"/>
+        <result property="convertUnit" column="convert_unit" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        <result property="modifyTime" column="modify_time" jdbcType="TIMESTAMP"/>
+        <result property="modifyBy" column="modify_by" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="branchCode" column="branch_code" jdbcType="VARCHAR"/>
+        <result property="objectType" column="object_type" jdbcType="VARCHAR"/>
+        <result property="autosyns" column="autosyns" jdbcType="VARCHAR"/>
+        <result property="specification" column="specification" jdbcType="VARCHAR"/>
+        <result property="isKeyPart" column="is_key_part" jdbcType="VARCHAR"/>
+        <result property="isNeedPicking" column="is_need_picking" jdbcType="VARCHAR"/>
+        <result property="trackType" column="track_type" jdbcType="VARCHAR"/>
+        <result property="isEdgeStore" column="is_edge_store" jdbcType="VARCHAR"/>
+        <result property="isCheck" column="is_check" jdbcType="VARCHAR"/>
+    </resultMap>
+
     <select id="selectProduct" resultType="com.richfit.mes.common.model.base.Product">
         SELECT p.*
 <!--        ,((select count(pb.id is not null) from base_production_bom pb-->

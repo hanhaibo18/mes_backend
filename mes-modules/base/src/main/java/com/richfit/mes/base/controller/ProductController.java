@@ -528,9 +528,9 @@ public class ProductController extends BaseController {
             String fileName = "物料信息_" + format.format(new Date()) + ".xlsx";
 
 
-            String[] columnHeaders = {"SAP物料编号", "图号", "产品名称", "物料日期", "类型", "制造类型", "物料描述", "材质", "单重", "单位"};
+            String[] columnHeaders = {"SAP物料编号", "图号", "产品名称", "物料日期", "类型", "制造类型", "物料描述", "材质", "单重", "单位", "是否关键件", "是否需要领料", "跟踪类型", "实物配送", "是否齐套检查"};
 
-            String[] fieldNames = {"materialNo", "drawingNo", "productName", "materialDate", "materialType", "objectType", "materialDesc", "texture", "weight", "unit"};
+            String[] fieldNames = {"materialNo", "drawingNo", "productName", "materialDate", "materialType", "objectType", "materialDesc", "texture", "weight", "unit", "isKeyPart", "isNeedPicking", "trackType", "isEdgeStore", "isCheck"};
 
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
