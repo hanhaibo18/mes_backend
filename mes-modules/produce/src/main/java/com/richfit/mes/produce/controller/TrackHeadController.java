@@ -728,7 +728,7 @@ public class TrackHeadController extends BaseController {
             }
             //保存操作记录
             actionService.saveAction(ActionUtil.buildAction
-                    (trackHeadPublicDto.getBranchCode(), "4", "2", "跟单拆分，trackNo:+" + trackHeadPublicDto.getTrackNo(),
+                    (trackHeadPublicDto.getBranchCode(), "4", "2", "跟单拆分，trackNo:" + trackHeadPublicDto.getTrackNo(),
                             OperationLogAspect.getIpAddress(request)));
         } catch (Exception e) {
             e.printStackTrace();
