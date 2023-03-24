@@ -585,7 +585,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setTrackHeadId(trackHead.getId());
                 item.setDrawingNo(trackHead.getDrawingNo());
                 item.setFlowId(flowId);
-                item.setProductNo(trackHead.getDrawingNo() + " " + productsNo);
+                item.setProductNo(productsNo);
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 //可分配数量
                 item.setAssignableQty(number);
@@ -669,6 +669,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         item.setMissiveBranch(trackItem.getBranchCode());
         item.setBranchCode(trackItem.getBranchCode());
         item.setTenantId(trackItem.getTenantId());
+        item.setTrackHeadType(trackHead.getTrackType());
         return item;
     }
 
