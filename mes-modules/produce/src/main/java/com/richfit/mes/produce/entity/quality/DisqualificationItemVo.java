@@ -360,6 +360,8 @@ public class DisqualificationItemVo {
     private String disqualificationName;
     @ApiModelProperty(value = "不合格时间")
     private Date disqualificationTime;
+    @ApiModelProperty(value = "跟单类型 0单件 1批次")
+    private String trackHeadType;
     /**
      * 质控工程师显示
      */
