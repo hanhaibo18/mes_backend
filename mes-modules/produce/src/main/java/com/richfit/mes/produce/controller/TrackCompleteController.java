@@ -14,6 +14,7 @@ import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
@@ -990,7 +991,36 @@ public class TrackCompleteController extends BaseController {
     @ApiImplicitParam(name = "layingOff", value = "下料实体", required = true, dataType = "LayingOff", paramType = "query")
     @PostMapping("/saveLayingOff")
     public CommonResult<Boolean> saveLayingOff(@RequestBody LayingOff layingOff) {
+        QueryWrapper<LayingOff> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("item_id", layingOff.getItemId());
+        List<LayingOff> list = layingOffService.list(queryWrapper);
+        if (!list.isEmpty()) {
+            return CommonResult.failed("该工序已存在下料信息！");
+        }
         return CommonResult.success(layingOffService.save(layingOff));
+    }
+
+    @ApiOperation(value = "下料信息查询", notes = "下料信息查询")
+    @ApiImplicitParam(name = "itemId", value = "工序Id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getLayingOff/{itemId}")
+    public CommonResult<List<LayingOff>> getLayingOff(@PathVariable String itemId) {
+        QueryWrapper<LayingOff> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("item_id", itemId);
+        return CommonResult.success(layingOffService.list(queryWrapper));
+    }
+
+    @ApiOperation(value = "下料信息修改", notes = "下料信息修改")
+    @ApiImplicitParam(name = "layingOff", value = "下料实体", required = true, dataType = "LayingOff", paramType = "query")
+    @PutMapping("/updateLayingOff")
+    public CommonResult<Boolean> updateLayingOff(@RequestBody LayingOff layingOff) {
+        return CommonResult.success(layingOffService.updateById(layingOff));
+    }
+
+    @ApiOperation(value = "下料信息删除", notes = "下料信息删除")
+    @ApiImplicitParam(name = "layingOff", value = "下料实体", required = true, dataType = "LayingOff", paramType = "query")
+    @DeleteMapping("/deleteLayingOff")
+    public CommonResult<Boolean> DeleteLayingOff(@RequestBody LayingOff layingOff) {
+        return CommonResult.success(layingOffService.removeById(layingOff));
     }
 
     @ApiOperation(value = "锻造工序控制记录", notes = "锻造工序控制记录")
@@ -1000,11 +1030,64 @@ public class TrackCompleteController extends BaseController {
         return CommonResult.success(forgControlRecordService.saveBatch(forgControlRecordlist));
     }
 
+    @ApiOperation(value = "锻造工序控制查询", notes = "锻造工序控制查询")
+    @ApiImplicitParam(name = "itemId", value = "工序ID", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/pageForgControlRecord")
+    public CommonResult<IPage<ForgControlRecord>> pageForgControlRecord(String itemId, String orderCol, String order, int page, int limit) {
+        QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("item_id", itemId);
+        OrderUtil.query(queryWrapper, orderCol, order);
+        return CommonResult.success(forgControlRecordService.page(new Page<>(page, limit), queryWrapper));
+    }
+
+    @ApiOperation(value = "锻造工序控制修改", notes = "锻造工序控制修改")
+    @ApiImplicitParams({@ApiImplicitParam(name = "forgControlRecordlist", value = "锻造工序控制记录实体", required = true, dataType = "List", paramType = "query"),
+            @ApiImplicitParam(name = "itemId", value = "工序ItemId", required = true, dataType = "String", paramType = "query")
+    })
+    @PutMapping("/updateForgControlRecord/{itemId}")
+    public CommonResult<Boolean> updateForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist, @PathVariable String itemId) {
+        return CommonResult.success(forgControlRecordService.updateBatch(forgControlRecordlist, itemId));
+    }
+
+    @ApiOperation(value = "锻造工序控制删除", notes = "锻造工序控制删除")
+    @ApiImplicitParam(name = "forgControlRecordlist", value = "锻造工序控制记录实体", required = true, dataType = "List", paramType = "query")
+    @DeleteMapping("/deleteForgControlRecord")
+    public CommonResult<Boolean> deleteForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist) {
+        return CommonResult.success(forgControlRecordService.removeByIds(forgControlRecordlist));
+    }
+
     @ApiOperation(value = "正火去氢工序控制记录", notes = "正火去氢工序控制记录")
     @ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")
     @PostMapping("/saveNormalizeDehydroRecord")
     public CommonResult<Boolean> saveNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
         return CommonResult.success(normalizeDehydroRecordService.saveBatch(normalizeDehydroRecordList));
+    }
+
+    @ApiOperation(value = "正火去氢工序控制查询", notes = "正火去氢工序控制查询")
+    @ApiImplicitParam(name = "itemId", value = "工序ID", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/pageNormalizeDehydroRecord")
+    public CommonResult<IPage<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(String itemId, String orderCol, String order, int page, int limit) {
+        QueryWrapper<NormalizeDehydroRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("item_id", itemId);
+        OrderUtil.query(queryWrapper, orderCol, order);
+        return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(page, limit), queryWrapper));
+    }
+
+    @ApiOperation(value = "正火去氢工序控制修改", notes = "正火去氢工序控制修改")
+    @ApiImplicitParams({@ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")
+            , @ApiImplicitParam(name = "itemId", value = "工序ItemId", required = true, dataType = "String", paramType = "query")})
+    @PutMapping("/updateNormalizeDehydroRecord/{itemId}")
+    public CommonResult<Boolean> updateNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList, @PathVariable String itemId) {
+        return CommonResult.success(normalizeDehydroRecordService.updateBatch(normalizeDehydroRecordList, itemId));
+    }
+
+    @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")
+    @ApiImplicitParams(
+            {@ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")}
+    )
+    @DeleteMapping("/deleteNormalizeDehydroRecord")
+    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
+        return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
     }
 
 }

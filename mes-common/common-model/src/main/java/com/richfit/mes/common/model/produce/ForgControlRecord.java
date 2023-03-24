@@ -24,6 +24,8 @@ public class ForgControlRecord extends BaseEntity<ForgControlRecord> {
     private String finalForgTemp;
     //记录人
     private String recorder;
+    //工序id
+    private String itemId;
 
 }
 
