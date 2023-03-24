@@ -2245,7 +2245,7 @@
                                             <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>${lambda?""}×</w:t>
+                                        <w:t>${lambda!""}×</w:t>
                                     </m:r>
                                     <w:r>
                                         <w:rPr/>

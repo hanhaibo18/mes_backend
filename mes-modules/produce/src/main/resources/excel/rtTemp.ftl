@@ -238,7 +238,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t>${recordNo!""}</w:t>
+                                        <w:t>${reportNo!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
