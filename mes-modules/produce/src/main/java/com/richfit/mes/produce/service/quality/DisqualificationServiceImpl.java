@@ -275,14 +275,22 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
         BeanUtils.copyProperties(disqualificationDto, finalResult);
         finalResult.setId(disqualification.getId());
-        //让步接收产品编号
-        finalResult.setAcceptDeviationNo(String.join(",", disqualificationDto.getAcceptDeviationNoList()));
-        //返修后产品编号
-        finalResult.setRepairNo(String.join(",", disqualificationDto.getRepairNoList()));
-        //报废后产品编号
-        finalResult.setScrapNo(String.join(",", disqualificationDto.getScrapNoList()));
-        //退货产品编号
-        finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
+        if (CollectionUtils.isNotEmpty(disqualificationDto.getAcceptDeviationNoList())) {
+            //让步接收产品编号
+            finalResult.setAcceptDeviationNo(String.join(",", disqualificationDto.getAcceptDeviationNoList()));
+        }
+        if (CollectionUtils.isNotEmpty(disqualificationDto.getRepairNoList())) {
+            //返修后产品编号
+            finalResult.setRepairNo(String.join(",", disqualificationDto.getRepairNoList()));
+        }
+        if (CollectionUtils.isNotEmpty(disqualificationDto.getScrapNoList())) {
+            //报废后产品编号
+            finalResult.setScrapNo(String.join(",", disqualificationDto.getScrapNoList()));
+        }
+        if (CollectionUtils.isNotEmpty(disqualificationDto.getSalesReturnNoList())) {
+            //退货产品编号
+            finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
+        }
         //处理意见数据
         TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
         switch (disqualificationDto.getType()) {
