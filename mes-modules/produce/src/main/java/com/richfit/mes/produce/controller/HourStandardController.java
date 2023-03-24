@@ -77,7 +77,7 @@ public class HourStandardController {
         hourStandardQueryWrapper.eq("ver", hourStandard.getVer());
         List<HourStandard> list = hourStandardService.list(hourStandardQueryWrapper);
         if (list.size() > 0) {
-            throw new GlobalException("版本信息以存在！", ResultCode.FAILED);
+            throw new GlobalException("版本信息已存在！", ResultCode.FAILED);
         }
         hourStandard.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(hourStandardService.saveOrUpdate(hourStandard));
@@ -128,7 +128,7 @@ public class HourStandardController {
         hourStandardQueryWrapper.eq("ver", ver);
         List<HourStandard> list = hourStandardService.list(hourStandardQueryWrapper);
         if (list.size() > 0) {
-            throw new GlobalException("版本信息以存在！", ResultCode.FAILED);
+            throw new GlobalException("版本信息已存在！", ResultCode.FAILED);
         } else {
             //版本复制
             HourStandard hourStandard = new HourStandard();

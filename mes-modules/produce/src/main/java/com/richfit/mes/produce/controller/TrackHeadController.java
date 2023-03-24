@@ -259,6 +259,8 @@ public class TrackHeadController extends BaseController {
     @GetMapping("/track_head")
     public CommonResult<IPage<TrackHeadPublicVo>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
                                                                   @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                                                  @ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                                                                  @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                                   @ApiParam(value = "id") @RequestParam(required = false) String id,
                                                                   @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
 
@@ -337,6 +339,8 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
+        queryWrapper.ge(!StringUtils.isNullOrEmpty(startDate),"modify_time", startDate);
+        queryWrapper.le(!StringUtils.isNullOrEmpty(endDate),"modify_time", endDate);
         //热工是否绑定工艺
         if (!StringUtils.isNullOrEmpty(isBindRouter)) {
             if (isBindRouter.equals("0")) {
