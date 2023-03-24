@@ -85,7 +85,7 @@ public class StepHourVerController {
         List<StepHourVer> list = stepHourVerService.list(queryWrapper);
         if (list.size() > 0) {
             if ((!StringUtils.isNullOrEmpty(stepHourVer.getId()) && !list.get(0).getId().equals(stepHourVer.getId())) || StringUtils.isNullOrEmpty(stepHourVer.getId())) {
-                throw new GlobalException("版本信息以存在！", ResultCode.FAILED);
+                throw new GlobalException("版本信息已存在！", ResultCode.FAILED);
             }
         }
         stepHourVer.setTenantId(SecurityUtils.getCurrentUser().getTenantId());

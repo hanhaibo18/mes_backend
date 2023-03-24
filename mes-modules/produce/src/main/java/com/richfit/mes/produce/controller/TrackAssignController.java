@@ -299,8 +299,8 @@ public class TrackAssignController extends BaseController {
                     }
                     trackItem.setDeviceId(assign.getDeviceId());
                     //锻造计算额定工时
-                    if("4".equals(trackHead.getClasses())){
-                        trackAssignService.calculationSinglePieceHours(trackHead,trackItem);
+                    if ("4".equals(trackHead.getClasses())) {
+                        trackAssignService.calculationSinglePieceHours(trackHead, trackItem);
                     }
                     trackItemService.updateById(trackItem);
                     if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
@@ -369,6 +369,7 @@ public class TrackAssignController extends BaseController {
                         person.setAssignId(assign.getId());
                         trackAssignPersonMapper.insert(person);
                     }
+                    //TODO: 位置是否需要变更,第一道工序判断需要变更  校验批量派工 多工序
                     //齐套性检查
                     //判断是否存在BOM 没有BOM不进行齐套检查
                     boolean bom = StrUtil.isNotBlank(trackHead.getProjectBomId());

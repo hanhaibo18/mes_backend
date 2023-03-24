@@ -87,15 +87,15 @@ public class PrechargeFurnaceController extends BaseController {
     public CommonResult<Page<PrechargeFurnace>> pageQuery(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) {
         QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper();
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
-            int tempWorkZ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
-            int tempWorkQ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
+            int tempWorkZ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) + Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork1())?"0":dispatchingDto.getTempWork1());
+            int tempWorkQ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) - Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork1())?"0":dispatchingDto.getTempWork1());
             //小于等于
             queryWrapper.le("temp_work", tempWorkZ);
             //大于等于
             queryWrapper.ge("temp_work", tempWorkQ);
         }
-        queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()), "date_format(create_time, '%Y-%m-%d')", dispatchingDto.getStartTime())
-                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()), "date_format(create_time, '%Y-%m-%d')", dispatchingDto.getEndTime());
+        queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()), "date_format(modify_time, '%Y-%m-%d')", dispatchingDto.getStartTime())
+                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()), "date_format(modify_time, '%Y-%m-%d')", dispatchingDto.getEndTime());
         if ("0,1".equals(dispatchingDto.getState())) {
             //查询本部门未开工的 和  自己开工的
             queryWrapper.and(wrapper3 -> wrapper3.and(wrapper4 -> wrapper4.eq("step_status", "0").apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',site_id)"))

@@ -917,7 +917,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.save(trackFlow);
 
             //跟单工序添加
-            trackItemService.addItemByTrackHead(trackHead, trackItems, productsNo, number, flowId);
+            trackItemService.addItemByTrackHead(trackHead, trackItems, trackFlow.getProductNo(), number, flowId);
             return trackFlow;
         } catch (Exception e) {
             e.printStackTrace();
@@ -955,7 +955,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 queryWrapperNotAuto.eq("is_auto_schedule", 0);
                 queryWrapperNotAuto.eq("original_opt_sequence", trackItemEntity.getOriginalOptSequence());
                 queryWrapperNotAuto.notIn("opt_type", 3);
-                trackItemService.list(queryWrapperNotAuto);
+                trackItemNotAutoList.addAll(trackItemService.list(queryWrapperNotAuto));
             }
             trackItemNotAutoList.forEach(item -> item.setIsCurrent(1));
             trackItemService.updateBatchById(trackItemNotAutoList);

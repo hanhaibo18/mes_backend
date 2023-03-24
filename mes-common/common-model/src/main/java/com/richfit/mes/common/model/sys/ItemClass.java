@@ -29,6 +29,12 @@ public class ItemClass extends BaseEntity<ItemClass> {
     private String tenantId;
 
     /**
+     * 编码序号
+     */
+    @TableField(exist = false)
+    private String ruleNo;
+
+    /**
      * 编码
      */
     private String code;

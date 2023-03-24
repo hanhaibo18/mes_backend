@@ -176,6 +176,16 @@ public class HotDemandController extends BaseController {
         return hotDemandService.importDemand(file, branchCode);
     }
 
+    @ApiOperation(value = "导入需求提报(冶炼车间)", notes = "根据Excel文档导入导入需求提报(冶炼车间)")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path"),
+            @ApiImplicitParam(name = "branchCode", value = "组织结构编码", required = true, dataType = "String", paramType = "query")
+    })
+    @PostMapping("/import_demand_YL")
+    public CommonResult importExcelDemandYL(HttpServletRequest request, @RequestParam("file") MultipartFile file, String branchCode) {
+        return hotDemandService.importDemandYL(file, branchCode);
+    }
+
     @ApiOperation(value = "删除需求提报", notes = "删除需求提报")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query")

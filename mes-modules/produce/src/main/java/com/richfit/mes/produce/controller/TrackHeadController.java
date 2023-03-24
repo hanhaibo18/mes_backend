@@ -259,6 +259,8 @@ public class TrackHeadController extends BaseController {
     @GetMapping("/track_head")
     public CommonResult<IPage<TrackHeadPublicVo>> selectTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
                                                                   @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                                                  @ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                                                                  @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
                                                                   @ApiParam(value = "id") @RequestParam(required = false) String id,
                                                                   @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
 
@@ -337,6 +339,8 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
+        queryWrapper.ge(!StringUtils.isNullOrEmpty(startDate),"modify_time", startDate);
+        queryWrapper.le(!StringUtils.isNullOrEmpty(endDate),"modify_time", endDate);
         //热工是否绑定工艺
         if (!StringUtils.isNullOrEmpty(isBindRouter)) {
             if (isBindRouter.equals("0")) {
@@ -724,7 +728,7 @@ public class TrackHeadController extends BaseController {
             }
             //保存操作记录
             actionService.saveAction(ActionUtil.buildAction
-                    (trackHeadPublicDto.getBranchCode(), "4", "2", "跟单拆分，trackNo:+" + trackHeadPublicDto.getTrackNo(),
+                    (trackHeadPublicDto.getBranchCode(), "4", "2", "跟单拆分，trackNo:" + trackHeadPublicDto.getTrackNo(),
                             OperationLogAspect.getIpAddress(request)));
         } catch (Exception e) {
             e.printStackTrace();
@@ -742,8 +746,8 @@ public class TrackHeadController extends BaseController {
             Collections.sort(trackHeadPublicDtoList, new TrackHeadComparator());
             for (TrackHeadPublicDto trackHeadPublicDto : trackHeadPublicDtoList) {
                 QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("original_track_id", trackHeadPublicDto.getOriginalTrackId());
-                if (trackHeadService.count() > 0) {
+                queryWrapper.eq("original_track_id", trackHeadPublicDto.getId());
+                if (trackHeadService.count(queryWrapper) > 0) {
                     throw new GlobalException("此跟单已被拆分,请回收当前跟单被拆分的跟单", ResultCode.FAILED);
                 }
                 if (TrackHead.TRACK_TYPE_0.equals(trackHeadPublicDto.getTrackType())) {

@@ -195,4 +195,11 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
         }
         return String.valueOf(productType);
     }
+
+    public int getIsHaveRecord() {
+        if(!StringUtils.isEmpty(this.inspectRecordNo)) {
+            isHaveRecord = 1;
+        }
+        return isHaveRecord;
+    }
 }

@@ -22,9 +22,9 @@ import com.richfit.mes.produce.entity.DemandExcel;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,9 +66,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Override
     public CommonResult importDemand(MultipartFile file, String branchCode) {
         CommonResult result = null;
-        //封装证件信息实体类
+
         java.lang.reflect.Field[] fields = DemandExcel.class.getDeclaredFields();
-        //封装证件信息实体类
+
         String[] fieldNames = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
             fieldNames[i] = fields[i].getName();
@@ -80,7 +80,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
 
         excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
 
-        //将导入的excel数据生成证件实体类list
+        //将导入的excel数据生成实体类list
         List<DemandExcel> list = null;
         try {
             file.transferTo(excelFile);
@@ -93,17 +93,12 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         for (DemandExcel hemandExcel : list) {
             //丰富基础数据
             HotDemand hotDemand = new HotDemand();
-            try {
-                //属性拷贝
-                BeanUtils.copyProperties(hotDemand,hemandExcel);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+            //属性拷贝
+            BeanUtils.copyProperties(hotDemand,hemandExcel);
             hotDemand.setTenantId(currentUser.getTenantId());
             hotDemand.setCreateBy(currentUser.getUsername());
             hotDemand.setSubmitOrderTime(new Date());
+            hotDemand.setSubmitBy(currentUser.getUsername());
             hotDemand.setSubmitById(currentUser.getUserId());
             hotDemand.setBranchCode(branchCode);
             hotDemand.setCreateTime(new Date());
@@ -123,6 +118,54 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             demandList.add(hotDemand);
         }
 
+        this.saveBatch(demandList);
+        return CommonResult.success("");
+    }
+
+    /**
+     * 导入需求提报数据(冶炼车间)
+     * @param file
+     * @param branchCode
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public CommonResult importDemandYL(MultipartFile file, String branchCode) {
+
+        //sheet计划列表
+        String[] fieldNames = {"materialName","erpProductCode","texture","num","ingotCase","demandTime","projectName","workNo","drawNo","demandName","priority","versionNum","remark"};
+        File excelFile = null;
+
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+        //将导入的excel数据生成实体类list
+        List<HotDemand> list = null;
+        try {
+            file.transferTo(excelFile);
+            list = ExcelUtils.importExcel(excelFile, HotDemand.class, fieldNames, 1, 0, 0, tempName.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        ArrayList<HotDemand> demandList = new ArrayList<>();
+        for (HotDemand hotDemand : list) {
+            //丰富基础数据
+            hotDemand.setTenantId(currentUser.getTenantId());
+            hotDemand.setCreateBy(currentUser.getUsername());
+            hotDemand.setSubmitOrderTime(new Date());
+            hotDemand.setSubmitBy(currentUser.getUsername());
+            hotDemand.setSubmitById(currentUser.getUserId());
+            hotDemand.setBranchCode(branchCode);
+            hotDemand.setCreateTime(new Date());
+            hotDemand.setSubmitState(0);
+            hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+            hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+            //0锻件,1铸件,2钢锭
+            hotDemand.setWorkblankType("2");//冶炼
+            demandList.add(hotDemand);
+        }
         this.saveBatch(demandList);
         return CommonResult.success("");
     }
@@ -192,7 +235,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         } else {
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
-                    return CommonResult.success(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                    return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
                 }
             }
         }
@@ -231,7 +274,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         } else {
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
-                    return CommonResult.success(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                    return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
                 }
             }
         }
