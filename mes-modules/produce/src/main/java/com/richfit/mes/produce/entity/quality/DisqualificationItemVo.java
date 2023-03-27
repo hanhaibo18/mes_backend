@@ -436,7 +436,7 @@ public class DisqualificationItemVo {
         //让步接收损失
         this.acceptDeviationLoss = finalResult.getAcceptDeviationLoss();
         //让步接收损失编号
-        if (finalResult.getAcceptDeviationNo().contains(",")) {
+        if (finalResult.getAcceptDeviationNo() != null && finalResult.getAcceptDeviationNo().contains(",")) {
             this.acceptDeviationNoList = Arrays.asList(finalResult.getAcceptDeviationNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getAcceptDeviationNo())) {
             this.acceptDeviationNoList = new ArrayList<>(Collections.singletonList(finalResult.getAcceptDeviationNo()));
@@ -446,7 +446,7 @@ public class DisqualificationItemVo {
         //返修损失
         this.repairLoss = finalResult.getRepairLoss();
         //返修后产品编号
-        if (finalResult.getRepairNo().contains(",")) {
+        if (finalResult.getRepairNo() != null && finalResult.getRepairNo().contains(",")) {
             this.repairNoList = Arrays.asList(finalResult.getRepairNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getRepairNo())) {
             this.repairNoList = new ArrayList<>(Collections.singletonList(finalResult.getRepairNo()));
@@ -464,7 +464,7 @@ public class DisqualificationItemVo {
         //报废损失
         this.scrapLoss = finalResult.getScrapLoss();
         //报废后产品编号
-        if (finalResult.getScrapNo().contains(",")) {
+        if (finalResult.getScrapNo() != null && finalResult.getScrapNo().contains(",")) {
             this.scrapNoList = Arrays.asList(finalResult.getScrapNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getScrapNo())) {
             this.scrapNoList = new ArrayList<>(Collections.singletonList(finalResult.getScrapNo()));
@@ -474,7 +474,7 @@ public class DisqualificationItemVo {
         //退货损失
         this.salesReturnLoss = finalResult.getSalesReturnLoss();
         //退货产品编号
-        if (finalResult.getSalesReturnNo().contains(",")) {
+        if (finalResult.getSalesReturnNo() != null && finalResult.getSalesReturnNo().contains(",")) {
             this.salesReturnNoList = Arrays.asList(finalResult.getSalesReturnNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getSalesReturnNo())) {
             this.salesReturnNoList = new ArrayList<>(Collections.singletonList(finalResult.getSalesReturnNo()));
