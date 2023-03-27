@@ -273,6 +273,7 @@ public class ProduceInspectionRecordService {
             produceInspectionRecordDto.setPowerIds(powerIds);
             if (!String.valueOf(jsonObject.get("isAudit")).equals("0")) {
                 jsonObject.remove("id");
+                produceInspectionRecordDto.setInspectionRecord(jsonObject);
             }
         } else {
             //如果是新增委托，保存流水号
@@ -1432,13 +1433,13 @@ public class ProduceInspectionRecordService {
         Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
         //委托人转换
         for (InspectionPower record : page.getRecords()) {
-            if (!ObjectUtil.isEmpty(record.getConsignor())) {
+            /*if (!ObjectUtil.isEmpty(record.getConsignor())) {
                 String consignor = record.getConsignor();
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
                 if (null != data) {
                     record.setConsignor(data.getEmplName());
                 }
-            }
+            }*/
             String itemId = record.getItemId();
             String headId = record.getHeadId();
             if (!StringUtils.isEmpty(itemId)) {
@@ -1632,13 +1633,13 @@ public class ProduceInspectionRecordService {
         Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
         //委托人转换
         for (InspectionPower record : page.getRecords()) {
-            if (!ObjectUtil.isEmpty(record.getConsignor())) {
+            /*if (!ObjectUtil.isEmpty(record.getConsignor())) {
                 String consignor = record.getConsignor();
                 TenantUserVo data = systemServiceClient.getUserById(consignor).getData();
                 if (null != data) {
                     record.setConsignor(data.getEmplName());
                 }
-            }
+            }*/
             String itemId = record.getItemId();
             String headId = record.getHeadId();
             if (!StringUtils.isEmpty(itemId)) {
