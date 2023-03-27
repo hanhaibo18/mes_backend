@@ -56,7 +56,7 @@ public class CodeRuleController extends BaseController {
     public static String CLASS_NAME_NULL_MESSAGE = "名称不能为空!";
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String CODE_IS_EXIST = "编码已存在！";
-    public static String DEFAULT_LENGTH = "10";
+    public static String DEFAULT_LENGTH = "200";
     public static String DEFAULT_WIDTH = "4";
     public static final String IS_COMPANY_RULE = "0";
     public static final String IS_SITE_RULE = "1";
