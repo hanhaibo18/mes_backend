@@ -474,7 +474,7 @@ public class PhyChemTestService{
             writer.renameSheet(physChemOrderInner.getOrderNo());
             writer.writeCellValue("A3", physChemOrderInner.getOrderNo());
             writer.writeCellValue("C4", !StringUtils.isNullOrEmpty(physChemOrderInner.getSampleTime())?physChemOrderInner.getSampleTime().substring(0,10):physChemOrderInner.getSampleTime());
-            writer.writeCellValue("G4", physChemOrderInner.getSampleReceive());
+            writer.writeCellValue("G4", physChemOrderInner.getSampleBy());
             writer.writeCellValue("J4", physChemOrderInner.getSampleDept());
             writer.writeCellValue("N4", physChemOrderInner.getManufacturer());
             writer.writeCellValue("C5", physChemOrderInner.getProductName());
@@ -518,6 +518,7 @@ public class PhyChemTestService{
             writer.writeCellValue("O14", physChemOrderInner.getForceOtherVal());
             writer.writeCellValue("P14", physChemOrderInner.getResidual());
             //最底下
+            writer.writeCellValue("C15", physChemOrderInner.getRemark());
             writer.writeCellValue("C16", physChemOrderInner.getReceiveTime());
             writer.writeCellValue("H16", physChemOrderInner.getReportNo());
             writer.writeCellValue("O16", physChemOrderInner.getSampleReceive());
