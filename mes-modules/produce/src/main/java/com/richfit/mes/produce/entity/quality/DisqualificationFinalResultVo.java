@@ -62,10 +62,10 @@ public class DisqualificationFinalResultVo {
     private List<String> acceptDeviationNo;
 
     /**
-     * 返修合格数量
+     * 返修数量
      */
-    @ApiModelProperty(value = "返修合格数量")
-    private Integer repairQualified;
+    @ApiModelProperty(value = "返修数量")
+    private Integer repairQuantity;
 
     /**
      * 返修合格产品编号

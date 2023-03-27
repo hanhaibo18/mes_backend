@@ -222,10 +222,10 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private List<String> acceptDeviationNoList;
 
     /**
-     * 返修合格数量
+     * 返修数量
      */
-    @ApiModelProperty(value = "返修合格数量")
-    private Integer repairQualified;
+    @ApiModelProperty(value = "返修数量")
+    private Integer repairQuantity;
 
     /**
      * 返修损失

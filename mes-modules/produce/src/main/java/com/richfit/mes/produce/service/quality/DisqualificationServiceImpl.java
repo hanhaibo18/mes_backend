@@ -278,18 +278,26 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (CollectionUtils.isNotEmpty(disqualificationDto.getAcceptDeviationNoList())) {
             //让步接收产品编号
             finalResult.setAcceptDeviationNo(String.join(",", disqualificationDto.getAcceptDeviationNoList()));
+        }else{
+            finalResult.setAcceptDeviationNo("");
         }
         if (CollectionUtils.isNotEmpty(disqualificationDto.getRepairNoList())) {
             //返修后产品编号
             finalResult.setRepairNo(String.join(",", disqualificationDto.getRepairNoList()));
+        }else{
+            finalResult.setRepairNo("");
         }
         if (CollectionUtils.isNotEmpty(disqualificationDto.getScrapNoList())) {
             //报废后产品编号
             finalResult.setScrapNo(String.join(",", disqualificationDto.getScrapNoList()));
+        }else{
+            finalResult.setScrapNo("");
         }
         if (CollectionUtils.isNotEmpty(disqualificationDto.getSalesReturnNoList())) {
             //退货产品编号
             finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
+        }else{
+            finalResult.setSalesReturnNo("");
         }
         //处理意见数据
         TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();

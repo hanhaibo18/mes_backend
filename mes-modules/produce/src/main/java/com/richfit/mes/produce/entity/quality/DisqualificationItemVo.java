@@ -242,10 +242,10 @@ public class DisqualificationItemVo {
     private List<String> acceptDeviationNoList;
 
     /**
-     * 返修合格数量
+     * 返修数量
      */
-    @ApiModelProperty(value = "返修合格数量")
-    private Integer repairQualified;
+    @ApiModelProperty(value = "返修数量")
+    private Integer repairQuantity;
 
     /**
      * 返修损失
@@ -441,8 +441,8 @@ public class DisqualificationItemVo {
         } else if (StringUtils.isNotBlank(finalResult.getAcceptDeviationNo())) {
             this.acceptDeviationNoList = new ArrayList<>(Collections.singletonList(finalResult.getAcceptDeviationNo()));
         }
-        //返修合格数量
-        this.repairQualified = finalResult.getRepairQualified();
+        //返修数量
+        this.repairQuantity = finalResult.getRepairQuantity();
         //返修损失
         this.repairLoss = finalResult.getRepairLoss();
         //返修后产品编号
