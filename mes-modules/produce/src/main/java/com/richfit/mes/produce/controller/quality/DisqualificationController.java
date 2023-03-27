@@ -76,6 +76,17 @@ public class DisqualificationController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "disqualificat ionId", value = "申请单Id", paramType = "query", dataType = "string")
     })
+    @GetMapping("/queryItemNew")
+    public CommonResult<DisqualificationItemVo> queryItem(String branchCode, String disqualificationId) {
+        return CommonResult.success(disqualificationService.inquiryRequestFormNew(disqualificationId, branchCode));
+    }
+
+    @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "disqualificat ionId", value = "申请单Id", paramType = "query", dataType = "string")
+    })
     @GetMapping("/queryItem")
     public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode, String disqualificationId) {
         return CommonResult.success(disqualificationService.inquiryRequestForm(tiId, branchCode, disqualificationId));
@@ -88,15 +99,15 @@ public class DisqualificationController extends BaseController {
     @DeleteMapping("/delete/{disqualificationId}")
     public CommonResult<String> delete(@PathVariable String disqualificationId) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        if (currentUser == null){
+        if (currentUser == null) {
             return CommonResult.failed("未检测到当前登录用户信息！");
         }
         Disqualification disqualification = disqualificationService.getById(disqualificationId);
-        if (ObjectUtils.isEmpty(disqualification)){
+        if (ObjectUtils.isEmpty(disqualification)) {
             return CommonResult.failed("没有找到该不合格记录！");
-        }else if (!disqualification.getCreateBy().equals(currentUser.getUsername())){
+        } else if (!disqualification.getCreateBy().equals(currentUser.getUsername())) {
             return CommonResult.failed("您不能删除不是您创建的记录！");
-        }else if (null !=disqualification.getProcessSheetNo()){
+        } else if (null != disqualification.getProcessSheetNo()) {
             return CommonResult.failed("已申请处理单号，不能删除！");
         }
         return CommonResult.success(disqualificationService.deleteById(disqualificationId));
