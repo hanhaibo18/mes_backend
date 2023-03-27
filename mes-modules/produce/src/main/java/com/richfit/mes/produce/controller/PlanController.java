@@ -104,6 +104,7 @@ public class PlanController extends BaseController {
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.ne("status",-1);
         queryWrapper.gt("missing_num", 0);
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
@@ -382,4 +383,16 @@ public class PlanController extends BaseController {
         }
         return CommonResult.success(null);
     }
+
+
+
+    @ApiOperation(value = "发布计划", notes = "发布几计划")
+    @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
+    @PostMapping("/publish")
+    public CommonResult<Object> publish(@RequestBody List<String> planIdList) throws GlobalException {
+        return CommonResult.success(planService.publish(planIdList));
+    }
+
+
+
 }
