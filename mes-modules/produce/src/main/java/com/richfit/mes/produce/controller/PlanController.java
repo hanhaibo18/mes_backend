@@ -382,4 +382,16 @@ public class PlanController extends BaseController {
         }
         return CommonResult.success(null);
     }
+
+
+
+    @ApiOperation(value = "发布计划", notes = "发布几计划")
+    @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
+    @PostMapping("/publish")
+    public CommonResult<Object> publish(@RequestBody List<String> planIdList) throws GlobalException {
+        return CommonResult.success(planService.publish(planIdList));
+    }
+
+
+
 }
