@@ -9,29 +9,19 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.core.utils.FileUtils;
-import com.richfit.mes.common.model.produce.CodeRule;
 import com.richfit.mes.common.model.sys.ItemClass;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.security.annotation.Inner;
-import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.sys.entity.dto.ItemClassDto;
-import com.richfit.mes.sys.entity.dto.ItemParamDto;
 import com.richfit.mes.sys.service.ItemClassService;
 import com.richfit.mes.sys.service.ItemParamService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,7 +66,6 @@ public class ItemController extends BaseController {
 
     @ApiOperation(value = "Excel模板导入字典", notes = "Excel模板导入字典")
     @ApiImplicitParam(name = "file", value = "Excel文件", required = true, dataType = "__file", paramType = "form")
-    @Transactional(rollbackFor = Exception.class)
     @PostMapping("item/import_excel")
     public CommonResult importItemParamExcel(@RequestParam("file") MultipartFile file) {
         return itemParamService.importItemParamByExcel(file);

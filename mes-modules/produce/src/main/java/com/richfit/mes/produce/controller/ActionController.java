@@ -49,7 +49,7 @@ public class ActionController {
         if (!StringUtils.isNullOrEmpty(actionItem)) {
             queryWrapper.eq("action_item", actionItem);
         }
-        queryWrapper.eq("branch_id", SecurityUtils.getCurrentUser().getOrgId());
+//        queryWrapper.eq("branch_id", SecurityUtils.getCurrentUser().getOrgId());
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         queryWrapper.orderByDesc("action_time");
