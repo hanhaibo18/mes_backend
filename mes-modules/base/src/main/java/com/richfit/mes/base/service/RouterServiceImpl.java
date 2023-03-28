@@ -15,6 +15,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +72,19 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
     @Override
     public List<Router> getList(QueryWrapper<Router> qw) {
         return routerMapper.selectRouter(qw);
+    }
+
+    @Override
+    public List<Router> getHistoryList(String routerNo, String branchCode, String id) {
+        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+        queryWrapper.eq("router_no", routerNo);
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        //历史版本
+        queryWrapper.eq("status", "2");
+        //过滤当前工艺自己，不出现在历史版本中
+        queryWrapper.ne("id", id);
+        return this.list(queryWrapper);
     }
 
     @Override
