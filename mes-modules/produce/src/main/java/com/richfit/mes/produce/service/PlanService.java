@@ -115,4 +115,6 @@ public interface PlanService extends IService<Plan> {
      * @Date: 2022/8/11 15:06
      */
     void planPackageStore(List<Plan> planList);
+
+    CommonResult publish(List<String> planIdList);
 }

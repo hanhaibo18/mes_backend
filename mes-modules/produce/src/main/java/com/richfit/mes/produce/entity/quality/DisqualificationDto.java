@@ -25,6 +25,12 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private String trackHeadId;
 
     /**
+     * 跟单类型
+     */
+    @ApiModelProperty(value = "跟单类型")
+    private Integer trackHeadType;
+
+    /**
      * 炉号
      */
     @ApiModelProperty(value = "炉号")
@@ -222,10 +228,10 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private List<String> acceptDeviationNoList;
 
     /**
-     * 返修合格数量
+     * 返修数量
      */
-    @ApiModelProperty(value = "返修合格数量")
-    private Integer repairQualified;
+    @ApiModelProperty(value = "返修数量")
+    private Integer repairQuantity;
 
     /**
      * 返修损失
@@ -252,10 +258,52 @@ public class DisqualificationDto extends BaseEntity<DisqualificationDto> {
     private String recapDescribe;
 
     /**
+     * 返修检验员
+     */
+    @ApiModelProperty(value = "返修检验员")
+    private String recapUser;
+
+    /**
      * 返修时间
      */
     @ApiModelProperty(value = "返修时间")
     private Date recapTime;
+
+    /**
+     * 返修合格数量
+     */
+    @ApiModelProperty(value = "返修合格数量")
+    private Integer repairQualified;
+
+    /**
+     * 返修合格损失
+     */
+    @ApiModelProperty(value = "返修合格损失")
+    private String repairQualifiedLoss;
+
+    /**
+     * 返修合格产品编号
+     */
+    @ApiModelProperty(value = "返修合格产品编号")
+    private List<String> repairQualifiedNoList;
+
+    /**
+     * 返修不合格数量
+     */
+    @ApiModelProperty(value = "返修不合格数量")
+    private Integer repairNotQualified;
+
+    /**
+     * 返修不合格损失
+     */
+    @ApiModelProperty(value = "返修不合格损失")
+    private String repairNotQualifiedLoss;
+
+    /**
+     * 返修不合格产品编号
+     */
+    @ApiModelProperty(value = "返修不合格产品编号")
+    private List<String> repairNotQualifiedNoList;
 
     /**
      * 报废数量

@@ -62,7 +62,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     }
 
     @Override
-    public IPage<ProjectBom> getProjectBomPage(String drawingNo, String projectName, String prodDesc, String state, String tenantId, String branchCode, String order, String orderCol, int page, int limit) {
+    public IPage<ProjectBom> getProjectBomPage(String drawingNo, String projectName, String prodDesc, String state, String tenantId, String branchCode, String order, String orderCol, String publishState, int page, int limit) {
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
@@ -75,6 +75,9 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         }
         if (!StringUtils.isNullOrEmpty(state)) {
             queryWrapper.eq("state", state);
+        }
+        if (!StringUtils.isNullOrEmpty(publishState)) {
+            queryWrapper.eq("publish_state", publishState);
         }
         queryWrapper.eq("grade", "H")
                 .eq("tenant_id", tenantId)

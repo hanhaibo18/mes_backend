@@ -104,6 +104,17 @@ public interface DisqualificationService extends IService<Disqualification> {
     /**
      * 功能描述: 查询申请单信息
      *
+     * @param branchCode
+     * @param disqualificationId
+     * @Author: xinYu.hou
+     * @Date: 2022/10/24 16:54
+     * @return: DisqualificationItemVo
+     **/
+    DisqualificationItemVo inquiryRequestFormNew(String disqualificationId, String branchCode);
+
+    /**
+     * 功能描述: 查询申请单信息
+     *
      * @param tiId
      * @param branchCode
      * @param disqualificationId
@@ -112,7 +123,6 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: DisqualificationItemVo
      **/
     DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId);
-
 
     /**
      * 功能描述:根据跟单Id查询分流表中产品编号
@@ -166,7 +176,7 @@ public interface DisqualificationService extends IService<Disqualification> {
      **/
     Boolean sendBack(String id, Integer type);
 
-    String  deleteById(String disqualificationId);
+    String deleteById(String disqualificationId);
 
     IPage<Disqualification> queryInspectorByCompany(QueryInspectorDto queryInspectorDto);
 }

@@ -106,7 +106,7 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "加工车间名称")
     private String inchargeOrgName;
 
-    @ApiModelProperty(value = "状态")
+    @ApiModelProperty(value = "状态  -1未发布 0未开始 1进行中 2关闭 3已完成")
     private Integer status;
 
     @ApiModelProperty(value = "预警状态")

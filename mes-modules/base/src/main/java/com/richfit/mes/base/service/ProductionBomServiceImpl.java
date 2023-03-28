@@ -432,8 +432,9 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             //表头物料编码(用于校验)
             String materialNo = String.valueOf(ExcelUtils.getCellValue(excelFile, String.class, 0, 1, 10, tempName.toString()));
             //导入校验
-            if (!StringUtils.isEmpty(checkExportList(list, drawingNo, materialNo))) {
-                return CommonResult.failed("产品bom导入校验错误如下：</br>" + checkExportList(list, drawingNo, materialNo));
+            String errorStr = checkExportList(list, drawingNo, materialNo);
+            if (!StringUtils.isEmpty(errorStr)) {
+                return CommonResult.failed("产品bom导入校验错误如下：</br>" + errorStr);
             }
 
 
@@ -560,13 +561,14 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         }
         //6、零部件校验
         List<String> drawNoAndMaterNoList = new ArrayList<>(list.stream().map(item -> item.getDrawingNo() + "&" + item.getMaterialNo()).collect(Collectors.toSet()));
+        List<String> drawNoList = new ArrayList<>(list.stream().map(item -> item.getDrawingNo()).collect(Collectors.toSet()));
 
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
-                .in("CONCAT_WS('&',drawing_no,material_no)", drawNoAndMaterNoList);
+                .in(drawNoList.size()>0,"drawing_no", drawNoList);
         //本地存在的物料
         List<Product> materials = productService.list(queryWrapper);
-        List<String> localInfo = new ArrayList<>(materials.stream().map(item -> item.getDrawingNo() + "&" + item.getMaterialNo()).collect(Collectors.toSet()));
+        List<String> localInfo = new ArrayList<>(materials.stream().map(item -> item.getDrawingNo().trim() + "&" + item.getMaterialNo().trim()).collect(Collectors.toSet()));
         //根据图号和物料号校验物料提示信息
         StringBuilder materialExitInfo = new StringBuilder();
 
@@ -580,7 +582,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             }
         }
         if (!StringUtils.isEmpty(String.valueOf(materialExitInfo))) {
-            message.append("图号：" + materialExitInfo + " 的零部件不存在；");
+            message.append("图号：" + materialExitInfo + " 的零部件不存在或者没有对应的物料号；");
         }
 
         return String.valueOf(message);

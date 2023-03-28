@@ -74,9 +74,9 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "limit", value = "数量", required = true, paramType = "query", dataType = "int")
     })
     @GetMapping("/project_bom")
-    public CommonResult<IPage<ProjectBom>> getProductionBomPage(String drawingNo, String projectName, String prodDesc, String state, String branchCode, String order, String orderCol, int page, int limit) {
+    public CommonResult<IPage<ProjectBom>> getProductionBomPage(String drawingNo, String projectName, String prodDesc, String state, String branchCode, String order, String orderCol, String publishState, int page, int limit) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        return CommonResult.success(projectBomService.getProjectBomPage(drawingNo, projectName, prodDesc, state, tenantId, branchCode, order, orderCol, page, limit));
+        return CommonResult.success(projectBomService.getProjectBomPage(drawingNo, projectName, prodDesc, state, tenantId, branchCode, order, orderCol, publishState, page, limit));
     }
 
     @PutMapping("/updateBom")
