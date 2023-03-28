@@ -546,12 +546,23 @@ public class ProductController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "通过物料号码查询物流信息，用于分布式调用", notes = "通过物料号码查询物流信息，用于分布式调用")
+    @ApiOperation(value = "通过物料号码查询物料信息，用于分布式调用", notes = "通过物料号码查询物料信息，用于分布式调用")
     @GetMapping("/list_by_material_no")
     public List<Product> listByMaterialNo(@ApiParam(value = "物料号码", required = true) @RequestParam String materialNo) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.eq("material_no", materialNo);
+        }
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.orderByDesc("create_time");
+        return productService.list(queryWrapper);
+    }
+    @ApiOperation(value = "通过物料号码查询物料信息，用于分布式调用", notes = "通过物料号码查物料流信息，用于分布式调用")
+    @PostMapping("/list_by_material_no_list")
+    public List<Product> listByMaterialNoList(@ApiParam(value = "物料编码", required = true) @RequestBody List<String> materialNoList) {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        if (!CollectionUtils.isEmpty(materialNoList)) {
+            queryWrapper.in("material_no", materialNoList);
         }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.orderByDesc("create_time");

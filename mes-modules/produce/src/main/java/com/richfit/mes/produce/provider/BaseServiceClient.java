@@ -169,6 +169,17 @@ public interface BaseServiceClient {
     public List<Product> listByMaterialNo(@RequestParam String materialNo);
 
     /**
+     * 功能描述: 通过物料号码查询物流信息
+     *
+     * @param materialNoList
+     * @Author: hujia
+     * @Date: 2023/03/28 11:09
+     * @return: String
+     **/
+    @PostMapping(value = "/api/base/product/list_by_material_no_list")
+    public List<Product> listByMaterialNoList(@RequestBody List<String> materialNoList);
+
+    /**
      * 功能描述: 根据物料号 图号查询校验
      *
      * @param materialNo
