@@ -76,6 +76,8 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         if (!StringUtils.isNullOrEmpty(state)) {
             queryWrapper.eq("state", state);
         }
+        //需要发布才能被查询到
+        queryWrapper.eq("publish_state", "1");
         queryWrapper.eq("grade", "H")
                 .eq("tenant_id", tenantId)
                 .eq("branch_code", branchCode);
