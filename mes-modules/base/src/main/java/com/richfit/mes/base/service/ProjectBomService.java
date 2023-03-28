@@ -164,4 +164,6 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @return: void
      **/
     void exportExcel(List<String> idList, HttpServletResponse rsp) throws IOException;
+
+    Boolean publishBom(List<String> ids, Integer publishState);
 }

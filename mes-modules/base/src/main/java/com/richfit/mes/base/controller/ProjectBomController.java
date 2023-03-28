@@ -87,6 +87,12 @@ public class ProjectBomController {
         return CommonResult.success(projectBomService.updateBom(projectBom));
     }
 
+    @PostMapping("/publishBom")
+    @ApiOperation(value = "批量发布Bom")
+    public CommonResult<Boolean> publishBom(@RequestBody List<String > ids,@RequestParam Integer publishState) {
+        return CommonResult.success(projectBomService.publishBom(ids,publishState));
+    }
+
     @ApiOperation(value = "查询项目列表", notes = "根据产品BOM图号查询项目BOM列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "String"),

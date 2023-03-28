@@ -343,5 +343,15 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         }
     }
 
+    @Override
+    public Boolean publishBom(List<String> ids, Integer publishState) {
+        List<ProjectBom> projectBoms = this.listByIds(ids);
+        for (ProjectBom projectBom : projectBoms) {
+            projectBom.setPublishState(publishState);
+        }
+        this.updateBatchById(projectBoms);
+        return true;
+    }
+
 
 }
