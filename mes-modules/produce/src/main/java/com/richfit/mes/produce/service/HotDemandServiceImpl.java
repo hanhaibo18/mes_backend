@@ -133,7 +133,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     public CommonResult importDemandYL(MultipartFile file, String branchCode) {
 
         //sheet计划列表
-        String[] fieldNames = {"materialName","erpProductCode","texture","num","ingotCase","demandTime","projectName","workNo","drawNo","demandName","priority","versionNum","remark"};
+        String[] fieldNames = {"materialName","erpProductCode","texture","num","ingotCase","planEndTime","inchargeOrg","demandTime","projectName","workNo","drawNo","demandName","priority","versionNum","remark"};
         File excelFile = null;
 
         //给导入的excel一个临时的文件名
