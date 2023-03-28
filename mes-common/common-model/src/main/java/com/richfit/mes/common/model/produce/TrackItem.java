@@ -449,4 +449,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "产品来源名称（热工）")
     @TableField(exist = false)
     private String productSourceName;
+
+    @ApiModelProperty(value = "不合格Id")
+    private String disqualificationId;
 }

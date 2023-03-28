@@ -154,4 +154,10 @@ public class ProjectBom extends BaseEntity<ProjectBom> {
      */
     @ApiModelProperty(value = "配料工序名", dataType = "String")
     private String optName;
+
+    /**
+     * 发布状态
+     */
+    @ApiModelProperty(value = "发布状态(0未发布,1发布)", dataType = "Integer")
+    private Integer publishState;
 }

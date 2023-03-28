@@ -382,7 +382,12 @@ public class ProduceInspectionRecordService {
         }
 
         //ut保存探头
-        if (!ObjectUtil.isEmpty(probeInfoList) && InspectionRecordTypeEnum.UT.getType().equals(tempType)) {
+        if (InspectionRecordTypeEnum.UT.getType().equals(tempType)) {
+            //删除之前的
+            QueryWrapper<ProbeInfo> probeDeleteWrapper = new QueryWrapper<>();
+            probeDeleteWrapper.eq("record_id",recordId);
+            probeInfoService.remove(probeDeleteWrapper);
+            //保存新的
             for (ProbeInfo probeInfo : probeInfoList) {
                 probeInfo.setRecordId(recordId);
                 probeInfo.setId(null);
@@ -392,7 +397,12 @@ public class ProduceInspectionRecordService {
 
 
         //rt保存缺陷记录
-        if (!ObjectUtil.isEmpty(produceDefectsInfos) && InspectionRecordTypeEnum.RT.getType().equals(tempType)) {
+        if (InspectionRecordTypeEnum.RT.getType().equals(tempType)) {
+            //删除之前的
+            QueryWrapper<ProduceDefectsInfo> produceDefectsWrapper = new QueryWrapper<>();
+            produceDefectsWrapper.eq("record_id",recordId);
+            produceDefectsInfoService.remove(produceDefectsWrapper);
+            //保存新的
             for (ProduceDefectsInfo produceDefectsInfo : produceDefectsInfos) {
                 produceDefectsInfo.setRecordId(recordId);
                 produceDefectsInfo.setId(null);

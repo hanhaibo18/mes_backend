@@ -96,12 +96,14 @@ public class HeatTrackCompleteController extends BaseController {
         }
         //当前用户报过的步骤信息
         QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
-        completeQueryWrapper.eq("complete_by", data.getUserAccount());
+        completeQueryWrapper.eq("complete_by", data.getUserAccount())
+                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()),"complete_time",dispatchingDto.getEndTime())
+                .ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()),"complete_time",dispatchingDto.getStartTime());
         List<TrackComplete> completeList = heatTrackCompleteService.list(completeQueryWrapper);
         //预装炉id集合
         List<String> fuIds = new ArrayList<>(completeList.stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
         //带回滚的预装炉id(当前步骤 && 不是最后一步)
-            List<String> rollBackFuIds = new ArrayList<>(completeList.stream().filter(item->(item.getIsCurrent().equals(1) && (ObjectUtil.isEmpty(item.getIsFinalStep())|| item.getIsFinalStep().equals(0)))).collect(Collectors.toList()).stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
+        List<String> rollBackFuIds = new ArrayList<>(completeList.stream().filter(item->(item.getIsCurrent().equals(1) && (ObjectUtil.isEmpty(item.getIsFinalStep())|| item.getIsFinalStep().equals(0)))).collect(Collectors.toList()).stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
         if (fuIds.size() > 0) {
             QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
             if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
@@ -260,7 +262,7 @@ public class HeatTrackCompleteController extends BaseController {
      */
     @ApiOperation(value = "热工报工获取炉号（设备名称不带DZ）", notes = "热工报工获取炉号")
     @GetMapping("/getFurnaceNo")
-    public CommonResult<String> getFurnaceNo(String deviceName,String branchCode,String code){
+    public CommonResult<String> getFurnaceNo(String deviceName,String branchCode,String code) throws Exception {
         return CommonResult.success(heatTrackCompleteService.getFurnaceNo(deviceName, branchCode, code));
     }
 

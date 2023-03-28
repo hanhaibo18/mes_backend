@@ -1,5 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -92,6 +94,7 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
      * 让步接收产品编号
      */
     @ApiModelProperty(value = "让步接收产品编号")
+    @TableField(fill = FieldFill.UPDATE)
     private String acceptDeviationNo;
 
     /**
@@ -110,6 +113,7 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
      * 返修后产品编号
      */
     @ApiModelProperty(value = "返修后产品编号")
+    @TableField(fill = FieldFill.UPDATE)
     private String repairNo;
 
     /**
@@ -137,6 +141,44 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
     private Date recapTime;
 
     /**
+     * 返修合格数量
+     */
+    @ApiModelProperty(value = "返修合格数量")
+    private Integer repairQualified;
+
+    /**
+     * 返修合格损失
+     */
+    @ApiModelProperty(value = "返修合格损失")
+    private String repairQualifiedLoss;
+
+    /**
+     * 返修合格产品编号
+     */
+    @ApiModelProperty(value = "返修合格产品编号")
+    @TableField(fill = FieldFill.UPDATE)
+    private String repairQualifiedNo;
+
+    /**
+     * 返修不合格数量
+     */
+    @ApiModelProperty(value = "返修不合格数量")
+    private Integer repairNotQualified;
+
+    /**
+     * 返修不合格损失
+     */
+    @ApiModelProperty(value = "返修不合格损失")
+    private String repairNotQualifiedLoss;
+
+    /**
+     * 返修不合格产品编号
+     */
+    @ApiModelProperty(value = "返修不合格产品编号")
+    @TableField(fill = FieldFill.UPDATE)
+    private String repairNotQualifiedNo;
+
+    /**
      * 报废数量
      */
     @ApiModelProperty(value = "报废数量")
@@ -152,6 +194,7 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
      * 报废后产品编号
      */
     @ApiModelProperty(value = "报废后产品编号")
+    @TableField(fill = FieldFill.UPDATE)
     private String scrapNo;
 
     /**
@@ -170,6 +213,7 @@ public class DisqualificationFinalResult extends BaseEntity<DisqualificationFina
      * 退货产品编号
      */
     @ApiModelProperty(value = "退货产品编号")
+    @TableField(fill = FieldFill.UPDATE)
     private String salesReturnNo;
 
     /**

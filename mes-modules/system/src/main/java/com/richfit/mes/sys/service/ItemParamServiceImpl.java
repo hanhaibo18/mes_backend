@@ -20,6 +20,7 @@ import io.netty.util.internal.StringUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -95,6 +96,7 @@ public class ItemParamServiceImpl extends ServiceImpl<ItemParamMapper, ItemParam
      * @param file
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult<String> importItemParamByExcel(MultipartFile file) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
@@ -133,7 +135,7 @@ public class ItemParamServiceImpl extends ServiceImpl<ItemParamMapper, ItemParam
                 }
                 itemClassDto.setTenantId(tenantId);
 
-                if (CheckCodeExist(itemClassDto)) {
+                if (checkCodeExist(itemClassDto)) {
                     exist = true;
                     existRuleNoList.add(itemClassDto.getRuleNo());
                 }
@@ -187,7 +189,7 @@ public class ItemParamServiceImpl extends ServiceImpl<ItemParamMapper, ItemParam
      * @param itemClassDto
      * @return
      */
-    private boolean CheckCodeExist(ItemClassDto itemClassDto) {
+    private boolean checkCodeExist(ItemClassDto itemClassDto) {
         String errorStr = "";
         QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("code", itemClassDto.getCode());

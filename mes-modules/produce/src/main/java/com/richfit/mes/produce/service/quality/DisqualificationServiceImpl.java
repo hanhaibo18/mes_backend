@@ -90,6 +90,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
         //只查询本人创建的不合格品申请单
         queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
+
         return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
@@ -233,6 +234,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
+        //增加产品编号和数量校验
+        List<String> productNoSize = Arrays.asList(disqualificationDto.getProductNo().split(","));
+        if (disqualificationDto.getNumber() != productNoSize.size()) {
+            throw new GlobalException("数量与产品编号不匹配", ResultCode.FAILED);
+        }
         //先判断流程
         int processJudge = processJudge(disqualificationDto);
         //处理人员信息
@@ -271,6 +277,13 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             }
         }
         this.saveOrUpdate(disqualification);
+        if (StrUtil.isNotBlank(disqualificationDto.getTrackItemId())) {
+            List<String> split = Arrays.asList(disqualificationDto.getTrackItemId().split(","));
+            UpdateWrapper<TrackItem> update = new UpdateWrapper<>();
+            update.in("id", split);
+            update.set("disqualification_id", disqualification.getId());
+            trackItemService.update(update);
+        }
         //处理不合格从表数据
         DisqualificationFinalResult finalResult = new DisqualificationFinalResult();
         BeanUtils.copyProperties(disqualificationDto, finalResult);
@@ -278,34 +291,31 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         if (CollectionUtils.isNotEmpty(disqualificationDto.getAcceptDeviationNoList())) {
             //让步接收产品编号
             finalResult.setAcceptDeviationNo(String.join(",", disqualificationDto.getAcceptDeviationNoList()));
-        }else{
-            finalResult.setAcceptDeviationNo("");
         }
         if (CollectionUtils.isNotEmpty(disqualificationDto.getRepairNoList())) {
             //返修后产品编号
             finalResult.setRepairNo(String.join(",", disqualificationDto.getRepairNoList()));
-        }else{
-            finalResult.setRepairNo("");
+        }
+        if (CollectionUtils.isNotEmpty(disqualificationDto.getRepairQualifiedNoList())) {
+            //返修合格产品编号
+            finalResult.setRepairQualifiedNo(String.join(",", disqualificationDto.getRepairQualifiedNoList()));
+        }
+        if (CollectionUtils.isNotEmpty(disqualificationDto.getRepairNotQualifiedNoList())) {
+            //返修不合格产品编号
+            finalResult.setRepairNotQualifiedNo(String.join(",", disqualificationDto.getRepairNotQualifiedNoList()));
         }
         if (CollectionUtils.isNotEmpty(disqualificationDto.getScrapNoList())) {
             //报废后产品编号
             finalResult.setScrapNo(String.join(",", disqualificationDto.getScrapNoList()));
-        }else{
-            finalResult.setScrapNo("");
         }
         if (CollectionUtils.isNotEmpty(disqualificationDto.getSalesReturnNoList())) {
             //退货产品编号
             finalResult.setSalesReturnNo(String.join(",", disqualificationDto.getSalesReturnNoList()));
-        }else{
-            finalResult.setSalesReturnNo("");
         }
         //处理意见数据
         TenantUserVo user = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
         switch (disqualificationDto.getType()) {
             case 0:
-                finalResult.setDisqualificationName(user.getEmplName());
-                finalResult.setDisqualificationTime(new Date());
-                break;
             case 1:
                 finalResult.setDisqualificationName(user.getEmplName());
                 finalResult.setDisqualificationTime(new Date());
@@ -500,6 +510,42 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         }
     }
 
+
+    @Override
+    public DisqualificationItemVo inquiryRequestFormNew(String disqualificationId, String branchCode) {
+        //无缘查询详情
+        if (StrUtil.isBlank(disqualificationId)) {
+            DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+            disqualificationItemVo.setTrackItemId(uuid);
+            disqualificationItemVo.setType("0");
+            disqualificationItemVo.setSourceType(0);
+            disqualificationItemVo.setRepairNoList(Collections.emptyList());
+            disqualificationItemVo.setSalesReturnNoList(Collections.emptyList());
+            disqualificationItemVo.setAcceptDeviationNoList(Collections.emptyList());
+            disqualificationItemVo.setScrapNoList(Collections.emptyList());
+            disqualificationItemVo.setBranchCode(branchCode);
+            return disqualificationItemVo;
+        }
+        //有源头
+        DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+        Disqualification disqualification = this.getById(disqualificationId);
+        BeanUtils.copyProperties(disqualificationItemVo, disqualification);
+        //对象不为空,ID不为空
+        DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
+        disqualificationItemVo.DisqualificationFinalResult(finalResult);
+        //处理质控工程师列表
+        disqualificationItemVo.setUserList(Arrays.asList(disqualificationItemVo.getQualityCheckBy().split(",")));
+        //查询签核记录
+        QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("disqualification_id", disqualificationItemVo.getId());
+        queryWrapper.orderByAsc("create_time");
+        disqualificationItemVo.setUserOpinionsList(userOpinionService.list(queryWrapper));
+        //查询文件
+        disqualificationItemVo.setAttachmentList(attachmentService.queryAttachmentsByDisqualificationId(disqualificationItemVo.getId()));
+        return disqualificationItemVo;
+    }
+
     @Override
     public DisqualificationItemVo inquiryRequestForm(String tiId, String branchCode, String disqualificationId) {
         //无缘查询详情
@@ -548,6 +594,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         disqualificationItemVo.setBranchCode(branchCode);
         return disqualificationItemVo;
     }
+
 
     @Override
     public List<Map<String, String>> queryProductNoList(String trackHeadId) {

@@ -274,7 +274,7 @@ public class DisqualificationItemVo {
     /**
      * 返修检验员
      */
-    @ApiModelProperty(value = "返修描述")
+    @ApiModelProperty(value = "返修检验员")
     private String recapUser;
 
     /**
@@ -282,6 +282,42 @@ public class DisqualificationItemVo {
      */
     @ApiModelProperty(value = "返修时间")
     private Date recapTime;
+
+    /**
+     * 返修合格数量
+     */
+    @ApiModelProperty(value = "返修合格数量")
+    private Integer repairQualified;
+
+    /**
+     * 返修合格损失
+     */
+    @ApiModelProperty(value = "返修合格损失")
+    private String repairQualifiedLoss;
+
+    /**
+     * 返修合格产品编号
+     */
+    @ApiModelProperty(value = "返修合格产品编号")
+    private List<String> repairQualifiedNoList;
+
+    /**
+     * 返修不合格数量
+     */
+    @ApiModelProperty(value = "返修不合格数量")
+    private Integer repairNotQualified;
+
+    /**
+     * 返修不合格损失
+     */
+    @ApiModelProperty(value = "返修不合格损失")
+    private String repairNotQualifiedLoss;
+
+    /**
+     * 返修不合格产品编号
+     */
+    @ApiModelProperty(value = "返修不合格产品编号")
+    private List<String> repairNotQualifiedNoList;
 
     /**
      * 报废数量
@@ -398,8 +434,6 @@ public class DisqualificationItemVo {
         this.setTrackNo(trackHead.getTrackNo());
         //产品名称
         this.setProductName(trackHead.getProductName());
-        //产品编号
-        this.setProductNo(trackHead.getProductNo());
         //零部件名称
         this.setPartName(trackHead.getMaterialName());
         //零部件材料
@@ -436,17 +470,19 @@ public class DisqualificationItemVo {
         //让步接收损失
         this.acceptDeviationLoss = finalResult.getAcceptDeviationLoss();
         //让步接收损失编号
-        if (finalResult.getAcceptDeviationNo() != null && finalResult.getAcceptDeviationNo().contains(",")) {
+        if (finalResult.getAcceptDeviationNo() != null) {
             this.acceptDeviationNoList = Arrays.asList(finalResult.getAcceptDeviationNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getAcceptDeviationNo())) {
             this.acceptDeviationNoList = new ArrayList<>(Collections.singletonList(finalResult.getAcceptDeviationNo()));
         }
+
+
         //返修数量
         this.repairQuantity = finalResult.getRepairQuantity();
         //返修损失
         this.repairLoss = finalResult.getRepairLoss();
         //返修后产品编号
-        if (finalResult.getRepairNo() != null && finalResult.getRepairNo().contains(",")) {
+        if (finalResult.getRepairNo() != null) {
             this.repairNoList = Arrays.asList(finalResult.getRepairNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getRepairNo())) {
             this.repairNoList = new ArrayList<>(Collections.singletonList(finalResult.getRepairNo()));
@@ -459,12 +495,38 @@ public class DisqualificationItemVo {
         this.recapUser = finalResult.getRecapUser();
         //返修时间
         this.recapTime = finalResult.getRecapTime();
+
+
+        //返修合格数量
+        this.repairQualified = finalResult.getRepairQualified();
+        //返修合格损失
+        this.repairQualifiedLoss = finalResult.getRepairQualifiedLoss();
+        //返修合格产品编号
+        if (finalResult.getRepairQualifiedNo() != null) {
+            this.repairQualifiedNoList = Arrays.asList(finalResult.getRepairQualifiedNo().split(","));
+        } else if (StringUtils.isNotBlank(finalResult.getRepairQualifiedNo())) {
+            this.repairQualifiedNoList = new ArrayList<>(Collections.singletonList(finalResult.getRepairQualifiedNo()));
+        }
+
+
+        //返修不合格数量
+        this.repairNotQualified = finalResult.getRepairNotQualified();
+        //返修不合格损失
+        this.repairNotQualifiedLoss = finalResult.getRepairNotQualifiedLoss();
+        //返修不合格产品编号
+        if (finalResult.getRepairNotQualifiedNo() != null) {
+            this.repairNotQualifiedNoList = Arrays.asList(finalResult.getRepairNotQualifiedNo().split(","));
+        } else if (StringUtils.isNotBlank(finalResult.getRepairNotQualifiedNo())) {
+            this.repairNotQualifiedNoList = new ArrayList<>(Collections.singletonList(finalResult.getRepairNotQualifiedNo()));
+        }
+
+
         //报废数量
         this.scrap = finalResult.getScrap();
         //报废损失
         this.scrapLoss = finalResult.getScrapLoss();
         //报废后产品编号
-        if (finalResult.getScrapNo() != null && finalResult.getScrapNo().contains(",")) {
+        if (finalResult.getScrapNo() != null) {
             this.scrapNoList = Arrays.asList(finalResult.getScrapNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getScrapNo())) {
             this.scrapNoList = new ArrayList<>(Collections.singletonList(finalResult.getScrapNo()));
@@ -474,7 +536,7 @@ public class DisqualificationItemVo {
         //退货损失
         this.salesReturnLoss = finalResult.getSalesReturnLoss();
         //退货产品编号
-        if (finalResult.getSalesReturnNo() != null && finalResult.getSalesReturnNo().contains(",")) {
+        if (finalResult.getSalesReturnNo() != null) {
             this.salesReturnNoList = Arrays.asList(finalResult.getSalesReturnNo().split(","));
         } else if (StringUtils.isNotBlank(finalResult.getSalesReturnNo())) {
             this.salesReturnNoList = new ArrayList<>(Collections.singletonList(finalResult.getSalesReturnNo()));
