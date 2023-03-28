@@ -18,6 +18,7 @@ import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.heat.HeatCompleteDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.Code;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -637,9 +638,9 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
      * @return
      */
     @Override
-    public String getFurnaceNo(String deviceName,String branchCode,String code){
+    public String getFurnaceNo(String deviceName,String branchCode,String code) throws Exception {
         //获取当前流水号
-        CodeRule codeValue = codeRuleService.gerCode(code, null, null, null, branchCode);
+        String curValue = Code.valueOnUpdate(code, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
         //设备编码
         String furnaceNo = "";
         //处理设备名称
@@ -649,7 +650,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             String number = deviceName.split("-")[1].replaceAll("[^(0-9)]", "");   //取出数字
             furnaceNo = zm+"-"+number+"-";
         }
-        furnaceNo = furnaceNo+codeValue.getCurValue();
+        furnaceNo = furnaceNo+curValue;
 
         return furnaceNo;
     }

@@ -5,18 +5,23 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProductMapper;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -73,5 +78,113 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             return "failed";
         }
         return "success";
+    }
+
+    /**
+     * 物料导入 Excel
+     * @param file
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public CommonResult<String> importMaterialExcel(MultipartFile file) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        String tenantId = currentUser.getTenantId();
+
+        String[] MaterialNames = {"materialNo", "drawingNo", "productName", "materialDate", "materialType", "objectType", "materialDesc", "texture", "weight", "unit", "isKeyPart", "isNeedPicking", "trackType", "isEdgeStore", "isCheck"};
+
+        File excelFile = null;
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+
+            List<Product> productList = ExcelUtils.importExcel(excelFile, Product.class, MaterialNames, 1, 0, 0, tempName.toString());
+
+            if (org.springframework.util.CollectionUtils.isEmpty(productList)) {
+                return CommonResult.failed("未检测到有物料导入！");
+            }
+
+            // 判断SAP 物料编码是否存在
+            boolean exist = false;
+            List<String> productAddByIdList = new ArrayList<>();
+            List<Product> productUpdateList = new ArrayList();
+            List<Product> productAddList = new ArrayList();
+            for (Product product : productList) {
+                if (StringUtils.isNullOrEmpty(product.getMaterialNo())) {
+                    return CommonResult.failed("物料编码不能为空！");
+                }
+                if (StringUtils.isNullOrEmpty(product.getProductName())) {
+                    return CommonResult.failed("产品名称不能为空！");
+                }
+                if (StringUtils.isNullOrEmpty(product.getDrawingNo())) {
+                    return CommonResult.failed("图号不能为空！");
+                }
+                if (StringUtils.isNullOrEmpty(product.getMaterialType())) {
+                    return CommonResult.failed("类型不能为空！");
+                }
+                if (StringUtils.isNullOrEmpty(product.getMaterialDesc())) {
+                    return CommonResult.failed("物料描述不能为空！");
+                }
+                if (StringUtils.isNullOrEmpty(product.getTrackType())) {
+                    return CommonResult.failed("跟踪类型不能为空！");
+                }
+
+                product.setTenantId(tenantId);
+                product.setMaterialNo(product.getMaterialNo().trim());
+                product.setDrawingNo(product.getDrawingNo().trim());
+
+                if (StringUtils.isNullOrEmpty(product.getIsKeyPart())) {
+                    product.setIsKeyPart("否");
+                }
+                if (StringUtils.isNullOrEmpty(product.getIsNeedPicking())) {
+                    product.setIsNeedPicking("否");
+                }
+                if (StringUtils.isNullOrEmpty(product.getIsEdgeStore())) {
+                    product.setIsEdgeStore("否");
+                }
+                if (StringUtils.isNullOrEmpty(product.getIsCheck())) {
+                    product.setIsCheck("否");
+                }
+                // 物料编码若存在则更新 否则就新增
+                if (checkExist(product) == true) {
+                    productUpdateList.add(product);
+                } else {
+                    exist = true;
+                    productAddList.add(product);
+                    productAddByIdList.add(product.getMaterialNo());
+                }
+            }
+
+
+            if (productAddList.size() > 0) {
+                productService.saveBatch(productAddList);
+            }
+            if (productUpdateList.size() > 0) {
+                productService.updateBatchById(productUpdateList);
+            }
+
+            if (exist) {
+                return CommonResult.success("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList,"导入成功");
+            }
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return CommonResult.success(null, "导入成功");
+
+    }
+
+    private boolean checkExist(Product product) {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", product.getTenantId());
+        queryWrapper.eq("material_no", product.getMaterialNo());
+        List<Product> list = productService.list(queryWrapper);
+        if (list.size() > 0) {
+            return true;
+        }
+        return false;
     }
 }

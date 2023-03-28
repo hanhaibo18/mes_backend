@@ -76,7 +76,7 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
      * @param code
      * @return
      */
-    String getFurnaceNo(String deviceName,String branchCode,String code);
+    String getFurnaceNo(String deviceName,String branchCode,String code) throws Exception;
 
     /**
      * 报工步骤回滚

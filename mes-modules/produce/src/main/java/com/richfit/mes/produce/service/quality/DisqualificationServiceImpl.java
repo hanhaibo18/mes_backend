@@ -234,6 +234,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
+        //增加产品编号和数量校验
+        List<String> productNoSize = Arrays.asList(disqualificationDto.getProductNo().split(","));
+        if (disqualificationDto.getNumber() != productNoSize.size()) {
+            throw new GlobalException("数量与产品编号不匹配", ResultCode.FAILED);
+        }
         //先判断流程
         int processJudge = processJudge(disqualificationDto);
         //处理人员信息

@@ -55,7 +55,7 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @Date: 2022/5/31 0:38
      * @return: IPage<ProjectBom>
      **/
-    IPage<ProjectBom> getProjectBomPage(String drawingNo, String projectName, String prodDesc, String state, String tenantId, String branchCode, String order, String orderCol, int page, int limit);
+    IPage<ProjectBom> getProjectBomPage(String drawingNo, String projectName, String prodDesc, String state, String tenantId, String branchCode, String order, String orderCol, String publishState, int page, int limit);
 
     /**
      * 功能描述:
@@ -164,4 +164,6 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @return: void
      **/
     void exportExcel(List<String> idList, HttpServletResponse rsp) throws IOException;
+
+    Boolean publishBom(List<String> ids, Integer publishState);
 }
