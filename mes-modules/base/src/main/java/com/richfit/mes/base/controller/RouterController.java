@@ -116,6 +116,19 @@ public class RouterController extends BaseController {
         }
     }
 
+
+    @ApiOperation(value = "查询历史工序列表", notes = "查询历史工序列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "routerNo", value = "图号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "机构编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "id", value = "id", required = true, paramType = "query", dataType = "string")
+    })
+    @GetMapping("/query_history")
+    public CommonResult<List<Router>> getHistoryList(String routerNo, String routerType, String branchCode, String id) {
+        return CommonResult.success(routerService.getHistoryList(routerNo, routerType, branchCode, id));
+    }
+
+
     @ApiOperation(value = "新增工艺", notes = "新增工艺")
     @ApiImplicitParam(name = "router", value = "工艺", required = true, dataType = "Router", paramType = "query")
     @PostMapping("/add")

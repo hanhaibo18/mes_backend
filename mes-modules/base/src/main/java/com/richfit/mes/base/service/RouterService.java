@@ -24,6 +24,19 @@ public interface RouterService extends IService<Router> {
     List<Router> getList(QueryWrapper<Router> qw);
 
     /**
+     * 功能描述: 查询历史工艺
+     *
+     * @param routerNo
+     * @param branchCode
+     * @param id
+     * @param type
+     * @Author: xinYu.hou
+     * @Date: 2023/3/28 14:53
+     * @return: List<Router>
+     **/
+    List<Router> getHistoryList(String routerNo, String type, String branchCode, String id);
+
+    /**
      * 功能描述: 查询当前工艺是否为历史工艺
      *
      * @param routerId
