@@ -292,7 +292,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     @OperationLog(isPlanId = true)
     public void planData(String planId) {
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planId)) {
-            Plan plan = planMapper.selectById(planId);
+            QueryWrapper planWrapper=new QueryWrapper();
+            planWrapper.notIn("status",-1);
+            planWrapper.eq("id",planId);
+            Plan plan = planMapper.selectOne(planWrapper);
             if (plan != null) {
                 QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
                 queryWrapper.eq("work_plan_id", planId);
