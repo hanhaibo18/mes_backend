@@ -365,6 +365,14 @@ public class ProduceInspectionRecordService {
                 produceItemInspectInfoService.update(updateWrapper);
             }
             produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
+        }else{
+            UpdateWrapper<ProduceItemInspectInfo> produceItemInspectInfoUpdateWrapper = new UpdateWrapper<>();
+            produceItemInspectInfoUpdateWrapper.set("is_new","1")
+                    .in("power_id",powerIds)
+                    .set("audit_by",String.valueOf(jsonObject.get("auditBy")))
+                    .set("inspection_results",String.valueOf(jsonObject.get("inspectionResults")))
+                    .set("is_audit","0");
+            produceItemInspectInfoService.update(produceItemInspectInfoUpdateWrapper);
         }
         //修改探伤任务的最新探伤记录信息
         if (powerIds.size() > 0) {
@@ -996,7 +1004,15 @@ public class ProduceInspectionRecordService {
         produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
         produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
         produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
+        if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity())){
+            produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
+        }
+        if(!StringUtils.isEmpty(produceInspectionRecordUt.getAcceptanceCriteria())){
+            String s = produceInspectionRecordUt.getAcceptanceCriteria().replace("<", "&lt;").replaceAll(">", "&gt;");
+
+            produceInspectionRecordUt.setAcceptanceCriteria(s);
+        }
+
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
 
         //图片base64编码
