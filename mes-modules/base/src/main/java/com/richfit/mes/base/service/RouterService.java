@@ -29,11 +29,12 @@ public interface RouterService extends IService<Router> {
      * @param routerNo
      * @param branchCode
      * @param id
+     * @param type
      * @Author: xinYu.hou
      * @Date: 2023/3/28 14:53
      * @return: List<Router>
      **/
-    List<Router> getHistoryList(String routerNo, String branchCode, String id);
+    List<Router> getHistoryList(String routerNo, String type, String branchCode, String id);
 
     /**
      * 功能描述: 查询当前工艺是否为历史工艺

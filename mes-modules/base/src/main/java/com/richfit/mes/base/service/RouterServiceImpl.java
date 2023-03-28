@@ -51,22 +51,7 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
      */
     @Override
     public IPage<Router> selectPageAndChild(Page page, QueryWrapper<Router> qw) {
-        IPage<Router> routers = this.page(page, qw);
-
-
-        for (Router u : routers.getRecords()) {
-            QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            queryWrapper.eq("router_no", u.getRouterNo());
-            queryWrapper.eq("branch_code", u.getBranchCode());
-            queryWrapper.eq("tenant_id", u.getTenantId());
-            //历史版本
-            queryWrapper.eq("status", "2");
-            //过滤当前工艺自己，不出现在历史版本中
-            queryWrapper.ne("id", u.getId());
-            u.setChildren(this.list(queryWrapper));
-        }
-
-        return routers;
+        return this.page(page, qw);
     }
 
     @Override
@@ -75,13 +60,14 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
     }
 
     @Override
-    public List<Router> getHistoryList(String routerNo, String branchCode, String id) {
+    public List<Router> getHistoryList(String routerNo, String type, String branchCode, String id) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         queryWrapper.eq("router_no", routerNo);
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //历史版本
         queryWrapper.eq("status", "2");
+        queryWrapper.eq("router_type", type);
         //过滤当前工艺自己，不出现在历史版本中
         queryWrapper.ne("id", id);
         return this.list(queryWrapper);

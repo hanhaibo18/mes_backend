@@ -124,8 +124,8 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "id", value = "id", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/query_history")
-    public CommonResult<List<Router>> getHistoryList(String routerNo, String branchCode, String id) {
-        return CommonResult.success(routerService.getHistoryList(routerNo, branchCode, id));
+    public CommonResult<List<Router>> getHistoryList(String routerNo, String routerType, String branchCode, String id) {
+        return CommonResult.success(routerService.getHistoryList(routerNo, routerType, branchCode, id));
     }
 
 
