@@ -1144,13 +1144,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                             item.setId(UUID.randomUUID().toString().replace("-", ""));
                             item.setAssignableQty(trackHeadPublicDto.getNumber());
                             item.setNumber(trackHeadPublicDto.getNumber());
-
                         }
                         if (StrUtil.isBlank(item.getFlowId())) {
                             QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
                             queryWrapperTrackFlow.eq("track_head_id", trackHeadPublicDto.getId());
                             List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
                             item.setFlowId(trackFlows.get(0).getId());
+                            item.setProductNo(trackFlows.get(0).getProductNo());
+                        } else {
+                            TrackFlow flow = trackHeadFlowService.getById(item.getFlowId());
+                            item.setProductNo(flow.getProductNo());
                         }
                         item.setTrackHeadId(trackHeadPublicDto.getId());
                         item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
