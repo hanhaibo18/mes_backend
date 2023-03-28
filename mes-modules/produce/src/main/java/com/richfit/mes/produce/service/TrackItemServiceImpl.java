@@ -472,6 +472,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String backSequence(String flowId) {
         //查询所有最终完成的工序
         QueryWrapper<TrackItem> finalWrapper = new QueryWrapper<>();
@@ -500,8 +501,19 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
         //回退前检查当前工序状态
         for (TrackItem currItem : currItems) {
-            if ("1".equals(currItem.getIsFinalComplete()) || item.getIsScheduleComplete() != 0 || item.getIsExistScheduleCheck() != 0
-                    || item.getIsDoing() != 0 || item.getIsSchedule() != 0) {
+            //开工状态
+            boolean isDoing = 0 != currItem.getIsDoing();
+            //是否报工
+            boolean isOperationComplete = 0 != currItem.getIsOperationComplete();
+            //是否质检
+            boolean isQualityComplete = 0 != currItem.getIsQualityComplete();
+            //是否调度
+            boolean isScheduleComplete = 0 != currItem.getIsScheduleComplete();
+            //是否最终完成
+            boolean isFinalComplete = !"0".equals(currItem.getIsFinalComplete());
+            //是否派工
+            boolean isSchedule = 0 != currItem.getIsSchedule();
+            if (isDoing || isOperationComplete || isQualityComplete || isScheduleComplete || isFinalComplete || isSchedule) {
                 return "回退前清清除当前工序状态！";
             }
         }
