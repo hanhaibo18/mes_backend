@@ -28,7 +28,7 @@ public class DisqualificationItemVo {
     /**
      * 跟单Id
      */
-    @ApiModelProperty(value = "发现车间")
+    @ApiModelProperty(value = "跟单id")
     private String trackHeadId;
 
     /**
@@ -52,13 +52,13 @@ public class DisqualificationItemVo {
     /**
      * 跟单工序Id
      */
-    @ApiModelProperty(value = "发现车间")
+    @ApiModelProperty(value = "跟单工序Id")
     private String trackItemId;
 
     /**
      * 申请单编号
      */
-    @ApiModelProperty(value = "发现车间")
+    @ApiModelProperty(value = "申请单编号")
     private String processSheetNo;
 
     /**

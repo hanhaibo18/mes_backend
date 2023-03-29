@@ -241,7 +241,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
         //增加产品编号和数量校验
         List<String> productNoSize = Arrays.asList(disqualificationDto.getProductNo().split(","));
-        if (disqualificationDto.getNumber() != productNoSize.size()) {
+        if (disqualificationDto.getTrackHeadType() == 0 && disqualificationDto.getNumber() != productNoSize.size()) {
             throw new GlobalException("数量与产品编号不匹配", ResultCode.FAILED);
         }
         //先判断流程
@@ -530,6 +530,23 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.setAcceptDeviationNoList(Collections.emptyList());
             disqualificationItemVo.setScrapNoList(Collections.emptyList());
             disqualificationItemVo.setBranchCode(branchCode);
+            //赋值上一次申请单参数
+            DisqualificationItemVo data = this.queryLastTimeDataByCreateBy(branchCode);
+            disqualificationItemVo.setQualityCheckBy(data.getQualityCheckBy());
+            disqualificationItemVo.setTrackHeadType(data.getTrackHeadType());
+            disqualificationItemVo.setTypeList(data.getTypeList());
+            disqualificationItemVo.setDisqualificationType(data.getDisqualificationType());
+            disqualificationItemVo.setDiscoverTenant(data.getDiscoverTenant());
+            disqualificationItemVo.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
+            //责任单位外 不为空
+            if (StrUtil.isNotBlank(data.getUnitResponsibilityOutside())) {
+                disqualificationItemVo.setUnitResponsibilityOutside(data.getUnitResponsibilityOutside());
+            }
+            //发现工序 不为空
+            if (StrUtil.isNotBlank(data.getDiscoverItem())) {
+                disqualificationItemVo.setDiscoverItem(data.getDiscoverItem());
+            }
+            disqualificationItemVo.setTotalWeight(data.getTotalWeight());
             return disqualificationItemVo;
         }
         //有源头
