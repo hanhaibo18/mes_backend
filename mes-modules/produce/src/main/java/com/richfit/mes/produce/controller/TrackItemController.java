@@ -156,6 +156,28 @@ public class TrackItemController extends BaseController {
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
+//    @ApiOperation(value = "查询跟单工序(新20230329)", notes = "根据跟单ID查询跟单工序(新20230329)")
+//    @GetMapping("/track_item_new")
+//    public CommonResult<List<TrackItem>> selectTrackHeadNew(String id, String trackId, String optVer, String productNo) {
+//        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+//        if (!StringUtils.isNullOrEmpty(id)) {
+//            queryWrapper.eq("id", id);
+//        }
+//        if (!StringUtils.isNullOrEmpty(trackId)) {
+//            queryWrapper.eq("track_head_id", trackId);
+//        }
+//        if (!StringUtils.isNullOrEmpty(productNo)) {
+//            queryWrapper.like("product_no", productNo);
+//        }
+//        if (!StringUtils.isNullOrEmpty(optVer)) {
+//            queryWrapper.like("opt_ver", optVer);
+//        }
+//        queryWrapper.orderByAsc("sequence_order_by");
+//        List<TrackItem> list = trackItemService.list(queryWrapper);
+//        list.stream().
+//        return CommonResult.success(list, SUCCESS_MESSAGE);
+//    }
+
     @ApiOperation(value = "查询跟单工序(当前外协工序)", notes = "根据跟单ID查询跟单工序(当前外协工序)")
     @PostMapping("/track_item/wxItems")
     public CommonResult<List<TrackItem>> selectTrackItemByIds(@RequestBody List<String> headIds) {

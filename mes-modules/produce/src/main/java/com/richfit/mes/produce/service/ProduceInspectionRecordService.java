@@ -913,14 +913,17 @@ public class ProduceInspectionRecordService {
         dataMap.put("drawingNo", ObjectUtil.isEmpty(trackHead) ? power.getDrawNo() : trackHead.getDrawingNo());
         //零件名称
         dataMap.put("materialName", ObjectUtil.isEmpty(trackHead) ? power.getSampleName() : trackHead.getMaterialName());
+        //数量
+        dataMap.put("num", ObjectUtil.isEmpty(trackHead) ? power.getNum() : StringUtils.isEmpty(trackHead.getNumber())?0:trackHead.getNumber());
         //材质
         if (!ObjectUtil.isEmpty(trackHead)) {
             dataMap.put("texture", trackHead.getTexture());
+            dataMap.put("productNo",trackHead.getProductNo());
         }
-
-        dataMap.put("year", String.valueOf(DateUtil.year(DateUtil.date())));
-        dataMap.put("month", DateUtil.thisMonth() + 1);
-        dataMap.put("day", DateUtil.dayOfMonth(DateUtil.date()));
+        String dateTime = String.valueOf(recordInfo.get("modify_time"));
+        dataMap.put("year", String.valueOf(DateUtil.year(DateUtil.parse(dateTime))));
+        dataMap.put("month",DateUtil.month(DateUtil.parse(dateTime))+1);
+        dataMap.put("day", DateUtil.dayOfMonth(DateUtil.parse(dateTime)));
     }
 
     //mt模板填充

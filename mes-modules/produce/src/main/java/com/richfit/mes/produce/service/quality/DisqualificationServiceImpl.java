@@ -15,6 +15,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.enmus.UnitEnum;
@@ -90,7 +91,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
         //只查询本人创建的不合格品申请单
         queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
-
+        OrderUtil.query(queryWrapper, queryInspectorDto.getOrderCol(), queryInspectorDto.getOrder());
         return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
@@ -147,6 +148,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             queryWrapper.eq("dis.type", 2);
         }
         queryWrapper.like("dis.quality_check_by", SecurityUtils.getCurrentUser().getUsername() + ",");
+        OrderUtil.query(queryWrapper, queryCheckDto.getOrderCol(), queryCheckDto.getOrder());
         return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
@@ -170,6 +172,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                     .and(one -> one.eq("dis.type", 3).eq("final.unit_treatment_one", tenantId))
                     .or(two -> two.eq("dis.type", 4).eq("final.unit_treatment_two", tenantId)));
         }
+        OrderUtil.query(queryWrapper, queryCheckDto.getOrderCol(), queryCheckDto.getOrder());
         return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
@@ -184,6 +187,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } else {
             queryWrapper.eq("type", 5);
         }
+        OrderUtil.query(queryWrapper, queryCheckDto.getOrderCol(), queryCheckDto.getOrder());
         return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
@@ -198,6 +202,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         } else {
             queryWrapper.eq("type", 6);
         }
+        OrderUtil.query(queryWrapper, queryCheckDto.getOrderCol(), queryCheckDto.getOrder());
         return disqualificationMapper.query(new Page<>(queryCheckDto.getPage(), queryCheckDto.getLimit()), queryWrapper);
     }
 
@@ -236,7 +241,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
         //增加产品编号和数量校验
         List<String> productNoSize = Arrays.asList(disqualificationDto.getProductNo().split(","));
-        if (disqualificationDto.getNumber() != productNoSize.size()) {
+        if (disqualificationDto.getTrackHeadType() == 0 && disqualificationDto.getNumber() != productNoSize.size()) {
             throw new GlobalException("数量与产品编号不匹配", ResultCode.FAILED);
         }
         //先判断流程
@@ -525,6 +530,23 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.setAcceptDeviationNoList(Collections.emptyList());
             disqualificationItemVo.setScrapNoList(Collections.emptyList());
             disqualificationItemVo.setBranchCode(branchCode);
+            //赋值上一次申请单参数
+            DisqualificationItemVo data = this.queryLastTimeDataByCreateBy(branchCode);
+            disqualificationItemVo.setQualityCheckBy(data.getQualityCheckBy());
+            disqualificationItemVo.setTrackHeadType(data.getTrackHeadType());
+            disqualificationItemVo.setTypeList(data.getTypeList());
+            disqualificationItemVo.setDisqualificationType(data.getDisqualificationType());
+            disqualificationItemVo.setDiscoverTenant(data.getDiscoverTenant());
+            disqualificationItemVo.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
+            //责任单位外 不为空
+            if (StrUtil.isNotBlank(data.getUnitResponsibilityOutside())) {
+                disqualificationItemVo.setUnitResponsibilityOutside(data.getUnitResponsibilityOutside());
+            }
+            //发现工序 不为空
+            if (StrUtil.isNotBlank(data.getDiscoverItem())) {
+                disqualificationItemVo.setDiscoverItem(data.getDiscoverItem());
+            }
+            disqualificationItemVo.setTotalWeight(data.getTotalWeight());
             return disqualificationItemVo;
         }
         //有源头
@@ -743,6 +765,21 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         //只查询本租户创建的不合格品申请单
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
+    }
+
+    @Override
+    public DisqualificationItemVo queryLastTimeDataByCreateBy(String branchCode) {
+        //有源头
+        DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.orderByDesc("create_time");
+        List<Disqualification> list = this.list(queryWrapper);
+        BeanUtils.copyProperties(list.get(0), disqualificationItemVo);
+        DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
+        disqualificationItemVo.DisqualificationFinalResult(finalResult);
+        return disqualificationItemVo;
     }
 
 

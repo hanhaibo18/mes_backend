@@ -2458,7 +2458,7 @@
                                     <w:szCs w:val="18" />
                                     <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                 </w:rPr>
-                                <w:t>${零件顺序!""}</w:t>
+                                <w:t>${productNo!""}(共${num!""}件)</w:t>
                             </w:r>
                         </w:p>
                     </w:tc>

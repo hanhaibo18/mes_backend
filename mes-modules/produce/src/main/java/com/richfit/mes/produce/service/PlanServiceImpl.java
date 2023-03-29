@@ -293,7 +293,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public void planData(String planId) {
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planId)) {
             QueryWrapper planWrapper=new QueryWrapper();
-            planWrapper.notIn("status",-1);
+            planWrapper.notIn("status",4);
             planWrapper.eq("id",planId);
             Plan plan = planMapper.selectOne(planWrapper);
             if (plan != null) {
@@ -704,7 +704,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setOptNumber(0);
                 plan.setOptFinishNumber(0);
                 plan.setDeliveryNum(0);
-                plan.setStatus(-1);//导入默认为未发布状态
+                plan.setStatus(4);//导入默认为未发布状态4
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
                 actionService.saveAction(ActionUtil.buildAction
@@ -959,7 +959,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public CommonResult publish(List<String> planIdList) {
         UpdateWrapper<Plan> updateWrapper=new UpdateWrapper<>();
         updateWrapper.set("status",0);//设置为未开始状态
-        updateWrapper.in("status",-1);
+        updateWrapper.in("status",4);
         updateWrapper.in("id",planIdList);
         this.update(updateWrapper);
         return new CommonResult(ResultCode.SUCCESS);
