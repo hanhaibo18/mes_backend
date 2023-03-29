@@ -180,5 +180,13 @@ public interface DisqualificationService extends IService<Disqualification> {
 
     IPage<Disqualification> queryInspectorByCompany(QueryInspectorDto queryInspectorDto);
 
-
+    /**
+     * 功能描述: 查询上一次填写不合格申请单数据
+     *
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2023/3/29 14:39
+     * @return: DisqualificationItemVo
+     **/
+    DisqualificationItemVo queryLastTimeDataByCreateBy(String branchCode);
 }

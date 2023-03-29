@@ -745,6 +745,21 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
+    @Override
+    public DisqualificationItemVo queryLastTimeDataByCreateBy(String branchCode) {
+        //有源头
+        DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.orderByDesc("create_time");
+        List<Disqualification> list = this.list(queryWrapper);
+        BeanUtils.copyProperties(list.get(0), disqualificationItemVo);
+        DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
+        disqualificationItemVo.DisqualificationFinalResult(finalResult);
+        return disqualificationItemVo;
+    }
+
 
     private void saveRecord(String id, String record, Integer type, String name) {
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
