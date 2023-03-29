@@ -674,17 +674,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean sendBack(String id, Integer type) {
         Disqualification disqualification = this.getById(id);
         switch (type) {
-            //传入是1 需要判断 是回滚状态2 还是回滚状态8
-            case 1:
-                if (disqualification.getType() == 2) {
-                    disqualification.setType(1);
-                } else if (disqualification.getType() == 8) {
-                    disqualification.setType(7);
-                }
-                break;
             case 2:
-                if (disqualification.getType() == 3) {
-                    disqualification.setType(2);
+                if (disqualification.getType() == 2) {
+                    //有源头
+                    if (disqualification.getSourceType() == 1) {
+                        disqualification.setType(1);
+                    } else {
+                        disqualification.setType(0);
+                    }
                 }
                 break;
             case 3:
@@ -693,14 +690,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 String tenantId = SecurityUtils.getCurrentUser().getTenantId();
                 //是处理单位1
                 if (finalResult.getUnitTreatmentOne().equals(tenantId)) {
-                    if (disqualification.getType() == 4) {
-                        disqualification.setType(3);
+                    if (disqualification.getType() == 3) {
+                        disqualification.setType(2);
                     }
                 }
                 //处理单位2
                 if (finalResult.getUnitTreatmentTwo().equals(tenantId)) {
-                    if (disqualification.getType() == 7) {
-                        disqualification.setType(4);
+                    if (disqualification.getType() == 4) {
+                        disqualification.setType(3);
                     }
                 }
                 break;
