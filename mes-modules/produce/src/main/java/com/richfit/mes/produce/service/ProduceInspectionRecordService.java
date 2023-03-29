@@ -1014,6 +1014,11 @@ public class ProduceInspectionRecordService {
 
             produceInspectionRecordUt.setAcceptanceCriteria(s);
         }
+        if(!StringUtils.isEmpty(produceInspectionRecordUt.getTestSpecification())){
+            String s = produceInspectionRecordUt.getTestSpecification().replace("<", "&lt;").replaceAll(">", "&gt;");
+
+            produceInspectionRecordUt.setTestSpecification(s);
+        }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
 
