@@ -173,4 +173,10 @@ public class DisqualificationController extends BaseController {
     public CommonResult<Boolean> sendBack(String id, Integer type) {
         return CommonResult.success(disqualificationService.sendBack(id, type));
     }
+
+    @ApiOperation(value = "查询上一次填写记录", notes = "查询上一次填写记录")
+    @GetMapping("/query_last_time")
+    public CommonResult<DisqualificationItemVo> queryLastTimeDataByCreateBy(String branchCode) {
+        return CommonResult.success(disqualificationService.queryLastTimeDataByCreateBy(branchCode));
+    }
 }
