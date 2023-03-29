@@ -1010,12 +1010,12 @@ public class ProduceInspectionRecordService {
             produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
         }
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getAcceptanceCriteria())){
-            String s = produceInspectionRecordUt.getAcceptanceCriteria().replace("<", "&lt;").replaceAll(">", "&gt;");
+            String s = produceInspectionRecordUt.getAcceptanceCriteria().replace("<", "《").replace(">", "》");
 
             produceInspectionRecordUt.setAcceptanceCriteria(s);
         }
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getTestSpecification())){
-            String s = produceInspectionRecordUt.getTestSpecification().replace("<", "&lt;").replaceAll(">", "&gt;");
+            String s = produceInspectionRecordUt.getTestSpecification().replace("<", "《").replace(">", "》");
 
             produceInspectionRecordUt.setTestSpecification(s);
         }
