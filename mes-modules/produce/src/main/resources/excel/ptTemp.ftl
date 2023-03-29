@@ -1934,7 +1934,7 @@
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                         </w:rPr>
-                                        <w:t>零件顺序号</w:t>
+                                        <w:t>产品编号</w:t>
                                     </w:r>
                                 </w:p>
                                 <w:p>
