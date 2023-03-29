@@ -19,7 +19,7 @@
                     xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
                 <Relationship Id="rId9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
                 <Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml"/>
-                <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image7.png"/>
+                <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image7.jpeg"/>
                 <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>
                 <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject" Target="embeddings/oleObject1.bin"/>
                 <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
@@ -2431,7 +2431,7 @@
                                 <w:szCs w:val="18"/>
                                 <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                             </w:rPr>
-                            <w:t>${零件顺序号!""}</w:t>
+                            <w:t>${productNo!""}(共${num!""}件)</w:t>
                         </w:r>
                     </w:p>
                 </w:tc>
@@ -4398,7 +4398,7 @@
     GSKAFgAkBAEpUOcbdoMNNnivcnMDrhtssMEGt8L1xz422GCDDf63+B8MXE/D0ouzTwAAAABJRU5E
     rkJgghjj</pkg:binaryData>
 </pkg:part>
-<pkg:part pkg:name="/word/media/image7.png" pkg:contentType="image/png">
+<pkg:part pkg:name="/word/media/image7.jpeg" pkg:contentType="image/jpeg">
 <pkg:binaryData>${img!""}</pkg:binaryData>
 </pkg:part>
 <pkg:part pkg:name="/word/settings.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml">
