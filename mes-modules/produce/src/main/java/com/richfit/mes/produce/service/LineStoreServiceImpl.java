@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -360,17 +361,20 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                         HashMap<String, Integer> orderNumAndInNum = getOrderNumAndInNum(entity.getMaterialNo(), orderNo);
                         int surplusNum = orderNumAndInNum.get("orderNum") - orderNumAndInNum.get("inNum");
                         //当剩余数量小于当次入库数量提示入库数量大于订单数量
-                        if (surplusNum < num)
+                        if (surplusNum < num){
                             throw new GlobalException("录入量不能大于订单剩余量,订单: " + orderNo + " 的剩余数量为: " + surplusNum + " 您录入是数量为: " + num, ResultCode.FAILED);
+                        }
                         entity.setProductionOrder(orderNo);
                     }
                 }
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
+                //毛坯编号中的数字补零操作
+                String numstr = String.format("%0" + endNo.toString().length() + "d", i);
                 //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
                 if (!StringUtils.isNullOrEmpty(strartSuffix)) {
-                    stringBuilder.append(i + "");
+                    stringBuilder.append(numstr + "");
                 } else {
-                    stringBuilder = new StringBuilder(i + "");
+                    stringBuilder = new StringBuilder(numstr + "");
                 }
                 String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
 //                String workblankNo = oldWorkblankNo + "" + i;
@@ -414,11 +418,13 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             for (int i = startNo; i <= endNo; i++) {
                 String oldWorkblankNo = lineStore.getWorkblankNo();
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
+                //毛坯编号中的数字补零操作
+                String numstr = String.format("%0" + endNo.toString().length() + "d", i);
                 //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
                 if (!StringUtils.isNullOrEmpty(strartSuffix)) {
-                    stringBuilder.append(i + "");
+                    stringBuilder.append(numstr + "");
                 } else {
-                    stringBuilder = new StringBuilder(i + "");
+                    stringBuilder = new StringBuilder(numstr + "");
                 }
                 String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
