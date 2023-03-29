@@ -383,7 +383,7 @@ public class ProduceInspectionRecordService {
                     .set("audit_by", String.valueOf(jsonObject.get("auditBy")))
                     .set("check_by", SecurityUtils.getCurrentUser().getUserId())
                     .set("inspect_record_no", String.valueOf(jsonObject.get("recordNo")))
-                    .set(StringUtils.isEmpty(String.valueOf(jsonObject.get("reportNo"))), "report_no", String.valueOf(jsonObject.get("reportNo")))
+                    .set(!StringUtils.isEmpty(String.valueOf(jsonObject.get("reportNo"))), "report_no", String.valueOf(jsonObject.get("reportNo")))
                     .set("insp_temp_type", tempType)
                     .set("flaw_detection", String.valueOf(jsonObject.get("inspectionResults")))
                     .set("audit_status", 0)
@@ -1295,7 +1295,8 @@ public class ProduceInspectionRecordService {
         inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         if (StringUtils.isEmpty(inspectionPower.getId())) {
             //保存探伤委托单号
-            Code.update("order_no", inspectionPower.getOrderNo(), SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(), codeRuleService);
+            inspectionPower.setOrderNo(Code.valueOnUpdate("order_no", SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(), codeRuleService));
+            //Code.update("order_no", inspectionPower.getOrderNo(), SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(), codeRuleService);
             //委托人赋值
             inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
         } else {
