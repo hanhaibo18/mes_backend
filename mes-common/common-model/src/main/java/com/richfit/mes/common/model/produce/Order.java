@@ -79,4 +79,18 @@ public class Order extends BaseEntity<Order> {
 
     @ApiModelProperty(value = "生产状态（0未开始，1以开始，2已完成）")
     private Integer production;
+    /**
+     * 图号
+     */
+    @ApiModelProperty(value = "图号")
+    @TableField(exist = false)
+    private String drawingNo;
+
+    /**
+     * 产品名称
+     */
+    @ApiModelProperty(value = "产品名称")
+    @TableField(exist = false)
+    private String productName;
+
 }

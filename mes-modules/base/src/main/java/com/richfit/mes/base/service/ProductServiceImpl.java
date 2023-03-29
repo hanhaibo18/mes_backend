@@ -158,15 +158,16 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 }
             }
 
-            if (exist) {
-                return CommonResult.failed("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList);
-            }
 
             if (productAddList.size() > 0) {
                 productService.saveBatch(productAddList);
             }
             if (productUpdateList.size() > 0) {
                 productService.updateBatchById(productUpdateList);
+            }
+
+            if (exist) {
+                return CommonResult.success("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList,"导入成功");
             }
 
         } catch (Exception e) {

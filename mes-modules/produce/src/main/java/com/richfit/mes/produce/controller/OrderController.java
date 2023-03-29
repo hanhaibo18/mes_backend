@@ -11,12 +11,14 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.entity.OrderDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.OrderService;
 import io.swagger.annotations.Api;
@@ -25,6 +27,8 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Author: GaoLiang
@@ -52,7 +58,8 @@ public class OrderController extends BaseController {
 
     @Autowired
     private ObjectMapper objectMapper;
-
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     /**
      * 分页查询plan
@@ -85,6 +92,21 @@ public class OrderController extends BaseController {
 
 
         IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
+        List<String> materialCodes = orderList.getRecords().stream().map(x -> x.getMaterialCode()).collect(Collectors.toList());
+        //根据物料号查询物料信息
+        List<Product> productList = baseServiceClient.listByMaterialNoList(materialCodes);
+        if (!CollectionUtils.isEmpty(productList)){
+            Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x));
+            //把物料名称和图号拼接后存入订单描述字段内
+            for (Order record : orderList.getRecords()) {
+                Product product = productMap.get(record.getMaterialCode());
+                //物料不为空
+                if(!ObjectUtils.isEmpty(product)){
+                    record.setProductName(product.getProductName());//产品名称
+                    record.setDrawingNo(product.getDrawingNo());//图号
+                }
+            }
+        }
 
         return CommonResult.success(orderList);
     }
