@@ -104,7 +104,7 @@ public class PlanController extends BaseController {
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.ne("status",-1);
+        queryWrapper.ne("status",4);
         queryWrapper.gt("missing_num", 0);
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
