@@ -278,7 +278,9 @@ public class ProduceInspectionRecordService {
         } else {
             //如果是新增委托，保存流水号
             if (!StringUtils.isEmpty(tempType) && !ObjectUtil.isEmpty(jsonObject.get("recordNo"))) {
-                codeRuleService.updateCode("inspection_code_" + tempType, null, jsonObject.get("recordNo").toString(), null, SecurityUtils.getCurrentUser().getTenantId(), branchCode);
+                //保存记录号
+                produceInspectionRecordDto.getInspectionRecord().put("recordNo", Code.valueOnUpdate("inspection_code_" + tempType, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService));
+                //codeRuleService.updateCode("inspection_code_" + tempType, null, jsonObject.get("recordNo").toString(), null, SecurityUtils.getCurrentUser().getTenantId(), branchCode);
                 //保存报告号
                 produceInspectionRecordDto.getInspectionRecord().put("reportNo", Code.valueOnUpdate("inspection_reports_" + tempType, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService));
             }
