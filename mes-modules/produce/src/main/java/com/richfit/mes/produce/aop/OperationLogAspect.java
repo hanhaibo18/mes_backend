@@ -112,8 +112,10 @@ public class OperationLogAspect {
                     actionService.saveAction(ActionUtil.buildAction
                             (curPlan.getBranchCode(), "1", "1", "计划号：" + curPlan.getProjNum() + "，图号：" + curPlan.getDrawNo(), getIpAddress(request)));
                 } else if (idOrder && trackHead != null) {
-                    actionService.saveAction(ActionUtil.buildAction
-                            (trackHead.getBranchCode(), "1", "0", "订单号：" + trackHead.getProductionOrder(), getIpAddress(request)));
+                    if (!trackHead.getProductionOrder().isEmpty()) {
+                        actionService.saveAction(ActionUtil.buildAction
+                                (trackHead.getBranchCode(), "1", "0", "订单号：" + trackHead.getProductionOrder(), getIpAddress(request)));
+                    }
                 }
             }
         }
