@@ -555,6 +555,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         BeanUtils.copyProperties(disqualificationItemVo, disqualification);
         //对象不为空,ID不为空
         DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
+        //改为Copy
+        BeanUtils.copyProperties(disqualificationItemVo, finalResult);
+        //编号列表保存
         disqualificationItemVo.DisqualificationFinalResult(finalResult);
         //处理质控工程师列表
         disqualificationItemVo.setUserList(Arrays.asList(disqualificationItemVo.getQualityCheckBy().split(",")));
