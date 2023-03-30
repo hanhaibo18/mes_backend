@@ -459,7 +459,6 @@ public class HotDemandController extends BaseController {
         return hotDemandService.ratify(idList, ratifyState, branchCode);
     }
 
-    //TODO
     @ApiOperation(value = "冶炼车间生产批准", notes = "冶炼车间生产批准")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
