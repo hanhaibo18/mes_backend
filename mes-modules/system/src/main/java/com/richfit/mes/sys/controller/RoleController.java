@@ -60,9 +60,23 @@ public class RoleController extends BaseController {
         if (SecurityUtils.getCurrentUser().isSysAdmin()) {
             return CommonResult.forbidden("超级管理员不能创建角色，请使用租户管理员操作");
         }
-
+        //编码名称重复
+        QueryWrapper<Role> codeWrapper = new QueryWrapper<>();
+        codeWrapper.eq("role_code", role.getRoleCode())
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<Role> codes = roleService.list(codeWrapper);
+        //编码重复
+        QueryWrapper<Role> nameWrapper = new QueryWrapper<>();
+        nameWrapper.eq("role_name", role.getRoleName())
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<Role> names = roleService.list(nameWrapper);
+        if (names.size() > 0) {
+            throw new GlobalException("角色名称重复，请检查", ResultCode.FAILED);
+        }
+        if (codes.size() > 0) {
+            throw new GlobalException("角色编码重复，请检查", ResultCode.FAILED);
+        }
         role.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-
         return CommonResult.success(roleService.add(role));
     }
 
@@ -82,20 +96,20 @@ public class RoleController extends BaseController {
         }
         //编码名称重复
         QueryWrapper<Role> codeWrapper = new QueryWrapper<>();
-        codeWrapper.eq("role_code",role.getRoleCode())
-                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
-                .ne("id",role.getId());
+        codeWrapper.eq("role_code", role.getRoleCode())
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
+                .ne("id", role.getId());
         List<Role> codes = roleService.list(codeWrapper);
         //编码重复
         QueryWrapper<Role> nameWrapper = new QueryWrapper<>();
-        nameWrapper.eq("role_name",role.getRoleName())
-                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
-                .ne("id",role.getId());
+        nameWrapper.eq("role_name", role.getRoleName())
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
+                .ne("id", role.getId());
         List<Role> names = roleService.list(nameWrapper);
-        if(names.size()>0){
+        if (names.size() > 0) {
             throw new GlobalException("角色名称重复，请检查", ResultCode.FAILED);
         }
-        if(codes.size()>0){
+        if (codes.size() > 0) {
             throw new GlobalException("角色编码重复，请检查", ResultCode.FAILED);
         }
         return CommonResult.success(roleService.update(role));

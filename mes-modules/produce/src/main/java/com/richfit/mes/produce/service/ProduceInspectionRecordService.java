@@ -934,11 +934,11 @@ public class ProduceInspectionRecordService {
         //人员信息转换
         if (!ObjectUtil.isEmpty(produceInspectionRecordMt.getAuditBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordMt.getAuditBy()).getData();
-            produceInspectionRecordMt.setAuditBy(data.getUserAccount());
+            produceInspectionRecordMt.setAuditBy(data.getEmplName());
         }
         if (!ObjectUtil.isEmpty(produceInspectionRecordMt.getCheckBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordMt.getCheckBy()).getData();
-            produceInspectionRecordMt.setCheckBy(data.getUserAccount());
+            produceInspectionRecordMt.setCheckBy(data.getEmplName());
         }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordMt), Map.class));
@@ -956,11 +956,11 @@ public class ProduceInspectionRecordService {
 
         if (!ObjectUtil.isEmpty(produceInspectionRecordRt.getAuditBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordRt.getAuditBy()).getData();
-            produceInspectionRecordRt.setAuditBy(data.getUserAccount());
+            produceInspectionRecordRt.setAuditBy(data.getEmplName());
         }
         if (!ObjectUtil.isEmpty(produceInspectionRecordRt.getCheckBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordRt.getCheckBy()).getData();
-            produceInspectionRecordRt.setCheckBy(data.getUserAccount());
+            produceInspectionRecordRt.setCheckBy(data.getEmplName());
         }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordRt), Map.class));
@@ -977,11 +977,11 @@ public class ProduceInspectionRecordService {
 
         if (!ObjectUtil.isEmpty(produceInspectionRecordPt.getAuditBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordPt.getAuditBy()).getData();
-            produceInspectionRecordPt.setAuditBy(data.getUserAccount());
+            produceInspectionRecordPt.setAuditBy(data.getEmplName());
         }
         if (!ObjectUtil.isEmpty(produceInspectionRecordPt.getCheckBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordPt.getCheckBy()).getData();
-            produceInspectionRecordPt.setCheckBy(data.getUserAccount());
+            produceInspectionRecordPt.setCheckBy(data.getEmplName());
         }
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordPt), Map.class));
 
@@ -999,17 +999,17 @@ public class ProduceInspectionRecordService {
 
         if (!ObjectUtil.isEmpty(produceInspectionRecordUt.getAuditBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordUt.getAuditBy()).getData();
-            produceInspectionRecordUt.setAuditBy(data.getUserAccount());
+            produceInspectionRecordUt.setAuditBy(data.getEmplName());
         }
         if (!ObjectUtil.isEmpty(produceInspectionRecordUt.getCheckBy())) {
             TenantUserVo data = systemServiceClient.getUserById(produceInspectionRecordUt.getCheckBy()).getData();
-            produceInspectionRecordUt.setCheckBy(data.getUserAccount());
+            produceInspectionRecordUt.setCheckBy(data.getEmplName());
         }
         //灵敏度保留小数位
         produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
         produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
         produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity())){
+        if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) && isNumber(produceInspectionRecordUt.getTestSpecification())){
             produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
         }
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getAcceptanceCriteria())){
@@ -1036,6 +1036,18 @@ public class ProduceInspectionRecordService {
         //探头列表
         dataMap.put("probeInfoList", probeInfoList);
 
+    }
+
+    public boolean isNumber(String str){
+        try
+        {
+            BigDecimal bigDecimal = new BigDecimal(str);
+            return true;
+        }
+        catch(Exception e)
+        {
+            return false ;
+        }
     }
 
     /**

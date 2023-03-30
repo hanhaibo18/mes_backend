@@ -319,11 +319,6 @@ public class CodeRuleServiceImpl extends ServiceImpl<CodeRuleMapper, CodeRule> i
             }
             value = value + subvalue;
         }
-        if (!StringUtils.isNullOrEmpty(item.getMaxLength())) {
-            if (value.length() > Integer.parseInt(item.getMaxLength())) {
-                throw new NullPointerException("编码长度超出范围，最大为" + item.getMaxLength());
-            }
-        }
         item.setCurValue(value);
         return item;
     }
