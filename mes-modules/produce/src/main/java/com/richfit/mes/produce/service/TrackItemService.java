@@ -13,7 +13,6 @@ import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -160,4 +159,15 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Date: 2023/2/17 10:59
      **/
     void exportHeatTrackLabel(HttpServletResponse response, String id) throws IOException;
+
+    /**
+     * 功能描述: 工序查询不合格信息接口
+     *
+     * @param tiId
+     * @param branchCode
+     * @Author: xinYu.hou
+     * @Date: 2023/3/29 17:53
+     * @return: DisqualificationItemVo
+     **/
+    DisqualificationItemVo queryDisqualificationByItem(String tiId, String branchCode);
 }
