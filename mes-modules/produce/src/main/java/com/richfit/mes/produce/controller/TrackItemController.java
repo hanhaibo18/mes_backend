@@ -13,6 +13,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.ItemMessageDto;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.TrackHeadService;
@@ -397,6 +398,12 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询工序信息", notes = "根据工序Id查询工序信息")
     public CommonResult<ItemMessageDto> queryItemMessageDto(String tiId) {
         return CommonResult.success(trackItemService.queryItemMessageDto(tiId));
+    }
+
+    @GetMapping("query_disqualification_item")
+    @ApiOperation(value = "质检创建不合格信息查询", notes = "质检创建你不合格查询")
+    public CommonResult<DisqualificationItemVo> queryDisqualificationByItem(String tiId, String branchCode) {
+        return CommonResult.success(trackItemService.queryDisqualificationByItem(tiId, branchCode));
     }
 
 }

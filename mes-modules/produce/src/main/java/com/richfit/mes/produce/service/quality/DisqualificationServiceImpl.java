@@ -269,7 +269,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualification.setMissiveBranch(disqualificationDto.getBranchCode());
         }
         //申请单为空创建申请单
-        if (StrUtil.isBlank(disqualification.getProcessSheetNo())) {
+        if (StrUtil.isBlank(disqualification.getProcessSheetNo()) && disqualificationDto.getIsSubmit() == 1) {
             //获取申请单编号
             try {
                 String disqualificationNo = Code.value("disqualification_no", SecurityUtils.getCurrentUser().getTenantId(), disqualificationDto.getBranchCode(), codeRuleService);

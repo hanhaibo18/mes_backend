@@ -28,6 +28,7 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.quality.DisqualificationService;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -96,10 +97,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     private TrackAssignMapper trackAssignMapper;
 
     @Resource
-    private CodeRuleService codeRuleService;
+    private DisqualificationMapper disqualificationMapper;
 
     @Resource
-    private DisqualificationMapper disqualificationMapper;
+    private DisqualificationService disqualificationService;
 
     @Override
     public List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query) {
@@ -773,5 +774,38 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
         }
 
+    }
+
+    @Override
+    public DisqualificationItemVo queryDisqualificationByItem(String tiId, String branchCode) {
+        TrackItem trackItem = this.getById(tiId);
+        if (null == trackItem) {
+            return null;
+        }
+        DisqualificationItemVo disqualification = new DisqualificationItemVo();
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        disqualification.trackHead(trackHead);
+        //产品编号处理
+        String produceNo = trackHead.getProductNoDesc().replaceAll(trackHead.getDrawingNo() + " ", "");
+        disqualification.setProductNo(produceNo);
+        //不合格品数量
+        disqualification.setDisqualificationNum(trackItem.getQualityUnqty());
+        //工序名称
+        disqualification.setItemName(trackItem.getOptName());
+        //工序类型
+        disqualification.setItemType(trackItem.getOptType());
+        //不合格产品送出车间
+        disqualification.setMissiveBranch(trackItem.getBranchCode());
+        disqualification.setBranchCode(trackItem.getBranchCode());
+        disqualification.setTenantId(trackItem.getTenantId());
+        disqualification.setTrackHeadType(trackHead.getTrackType());
+        if (StrUtil.isBlank(trackItem.getDisqualificationId())) {
+            DisqualificationItemVo data = disqualificationService.queryLastTimeDataByCreateBy(branchCode);
+            disqualification.setQualityCheckBy(data.getQualityCheckBy());
+            disqualification.setTypeList(data.getTypeList());
+            disqualification.setDisqualificationType(data.getDisqualificationType());
+            disqualification.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
+        }
+        return disqualification;
     }
 }
