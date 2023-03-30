@@ -575,6 +575,8 @@ public class ProduceInspectionRecordService {
             map.put("drawNo", power.getDrawNo());
             map.put("sampleName", power.getSampleName());
             map.put("num", power.getNum());
+            //委托单位
+            map.put("comeFromDepart",systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
             return map;
 
         }
@@ -882,6 +884,8 @@ public class ProduceInspectionRecordService {
 
 
         Map<String, Object> dataMap = new HashMap<>();
+        //委托单位
+        dataMap.put("comeFromDepart",systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
         //填充数据
         createDataMap(trackHead, recordInfo, dataMap, produceItemInspectInfo.getTempType(), power);
 
@@ -1009,7 +1013,7 @@ public class ProduceInspectionRecordService {
         produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
         produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
         produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) && isNumber(produceInspectionRecordUt.getTestSpecification())){
+        if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) && isNumber(produceInspectionRecordUt.getSensitivity())){
             produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
         }
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getAcceptanceCriteria())){
@@ -1024,6 +1028,10 @@ public class ProduceInspectionRecordService {
         }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
+        //灵敏度为空不显示公式
+        if(StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity())){
+            dataMap.remove("sensitivity");
+        }
 
         //图片base64编码
         if (!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())) {

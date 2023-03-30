@@ -642,7 +642,7 @@
                                             <w:shd w:val="clear" w:fill="FFFFFF" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t></w:t>
+                                        <w:t>${comeFromDepart!""}</w:t>
                                     </w:r>
                                     <w:r>
                                         <w:rPr>
