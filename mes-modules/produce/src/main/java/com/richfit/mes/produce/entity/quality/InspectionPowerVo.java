@@ -54,6 +54,8 @@ public class InspectionPowerVo{
     private String tempType;
     @ApiModelProperty(value = "探伤记录号", dataType = "String")
     private String recordNo;
+    @ApiModelProperty(value = "探伤报告号", dataType = "String")
+    private String reportNo;
     private String order;
     private String orderCol;
     private int page;
