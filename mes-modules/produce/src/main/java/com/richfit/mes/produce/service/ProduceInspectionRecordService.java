@@ -192,6 +192,10 @@ public class ProduceInspectionRecordService {
             queryWrapper.eq("tenant_id", inspectionPowerVo.getTenantId());
         }
 
+        if (!StringUtils.isEmpty(inspectionPowerVo.getReportNo())) {
+            queryWrapper.eq("report_no", inspectionPowerVo.getReportNo());
+        }
+
         //委托单号
         queryWrapper.eq(!StringUtils.isEmpty(inspectionPowerVo.getOrderNo()), "order_no", inspectionPowerVo.getOrderNo());
         //已审核
@@ -499,6 +503,7 @@ public class ProduceInspectionRecordService {
             map.put("drawNo", power.getDrawNo());
             map.put("sampleName", power.getSampleName());
             map.put("num", power.getNum());
+            map.put("inspectionDepart", systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
         }
 
         return listMap;
