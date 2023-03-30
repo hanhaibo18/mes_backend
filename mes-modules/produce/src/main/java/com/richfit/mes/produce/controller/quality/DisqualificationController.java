@@ -70,11 +70,11 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.updateIsIssue(id));
     }
 
-    @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")
+    @ApiOperation(value = "查询申请单信息(新)", notes = "根据工序Id查询申请单所用参数")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "disqualificat ionId", value = "申请单Id", paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "disqualificationId", value = "申请单Id", paramType = "query", dataType = "string")
     })
     @GetMapping("/queryItemNew")
     public CommonResult<DisqualificationItemVo> queryItem(String branchCode, String disqualificationId) {
@@ -85,7 +85,7 @@ public class DisqualificationController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "branchCode", value = "车间", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "disqualificat ionId", value = "申请单Id", paramType = "query", dataType = "string")
+            @ApiImplicitParam(name = "disqualificationId", value = "申请单Id", paramType = "query", dataType = "string")
     })
     @GetMapping("/queryItem")
     public CommonResult<DisqualificationItemVo> queryItem(String tiId, String branchCode, String disqualificationId) {
@@ -172,5 +172,11 @@ public class DisqualificationController extends BaseController {
     @GetMapping("/send_back")
     public CommonResult<Boolean> sendBack(String id, Integer type) {
         return CommonResult.success(disqualificationService.sendBack(id, type));
+    }
+
+    @ApiOperation(value = "查询上一次填写记录", notes = "查询上一次填写记录")
+    @GetMapping("/query_last_time")
+    public CommonResult<DisqualificationItemVo> queryLastTimeDataByCreateBy(String branchCode) {
+        return CommonResult.success(disqualificationService.queryLastTimeDataByCreateBy(branchCode));
     }
 }

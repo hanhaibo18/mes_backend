@@ -104,7 +104,7 @@ public class PlanController extends BaseController {
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.ne("status",-1);
+        queryWrapper.ne("status",4);
         queryWrapper.gt("missing_num", 0);
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
@@ -149,7 +149,7 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(planDto.getEndTime())) {
             queryWrapper.le("end_time", planDto.getEndTime() + " 23:59:59");
         }
-        if (planDto.getStatus() != -2) {
+        if (planDto.getStatus() != -1) {
             queryWrapper.eq("status", planDto.getStatus());
         }
         if (planDto.isFiterClose()) {
