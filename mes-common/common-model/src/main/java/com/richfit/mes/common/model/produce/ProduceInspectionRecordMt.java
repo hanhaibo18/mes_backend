@@ -136,7 +136,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
 
     public String getInstrumentModel() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.instrumentModelList)){
+        if(instrumentModelList instanceof List){
             for (String s : this.instrumentModelList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
@@ -145,13 +145,13 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
             }
             return String.valueOf(stringBuilder);
         }else{
-            return instrumentModel;
+            return StringUtils.isEmpty(instrumentModel)?"":instrumentModel;
         }
     }
 
     public String getMagneticPowderMethod() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.magneticPowderMethodList)){
+        if(magneticPowderMethodList instanceof List){
             for (String s : this.magneticPowderMethodList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
@@ -160,7 +160,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
             }
             magneticPowderMethod = String.valueOf(stringBuilder);
         }
-        return magneticPowderMethod;
+        return StringUtils.isEmpty(magneticPowderMethod)?"":magneticPowderMethod;
     }
 
     public List<String> getMagneticPowderMethodList() {
@@ -172,7 +172,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
 
     public String getMagneticDirection() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.magneticDirectionList)){
+        if(magneticDirectionList instanceof List){
             for (String s : this.magneticDirectionList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
@@ -181,7 +181,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
             }
             magneticDirection = String.valueOf(stringBuilder);
         }
-        return magneticDirection;
+        return StringUtils.isEmpty(magneticDirection)?"":magneticDirection;
     }
 
     public List<String> getMagneticDirectionList() {
@@ -193,7 +193,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
 
     public String getDiagramAttachmentId() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.diagramAttachmentIdList)){
+        if(diagramAttachmentIdList instanceof List){
             for (String s : this.diagramAttachmentIdList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");
@@ -202,7 +202,7 @@ public class ProduceInspectionRecordMt extends BaseEntity<ProduceInspectionRecor
             }
             diagramAttachmentId = String.valueOf(stringBuilder);
         }
-        return diagramAttachmentId;
+        return StringUtils.isEmpty(diagramAttachmentId)?"":diagramAttachmentId;
     }
 
     public List<String> getDiagramAttachmentIdList() {
