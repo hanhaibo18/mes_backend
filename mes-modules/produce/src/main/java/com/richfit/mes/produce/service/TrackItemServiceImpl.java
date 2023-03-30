@@ -194,7 +194,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     @Override
     public String resetStatus(String tiId, Integer resetType, HttpServletRequest request) {
         TrackItem item = this.getById(tiId);
-        String actionMessage = "工序ID：" + item.getId();
+        String actionMessage = "工序ID：" + item.getId ();
         if (item.getIsCurrent() != 1) {
             return "只能操作当前工序！";
         }

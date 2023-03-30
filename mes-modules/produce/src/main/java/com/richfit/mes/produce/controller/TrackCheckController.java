@@ -370,6 +370,9 @@ public class TrackCheckController extends BaseController {
             UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
             updateWrapper.eq("ti_id", trackItem.getId()).set("is_prepare", batchAddScheduleDto.getIsPrepare());
             trackCompleteService.update(updateWrapper);
+            QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+            completeQueryWrapper.eq("ti_id", trackItem.getId());
+            List<TrackComplete> list = trackCompleteService.list(completeQueryWrapper);
             if (null != batchAddScheduleDto.getNextBranchCode()) {
                 trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
             }
@@ -378,7 +381,7 @@ public class TrackCheckController extends BaseController {
                 //保存操作记录
                 actionService.saveAction(ActionUtil.buildAction
                         (batchAddScheduleDto.getBranchCode(), "4", "2",
-                                "调度审核，trackNo：" + trackItem.getTrackNo() + "审核结果：" + batchAddScheduleDto.getResult() + "下车间编码：" + batchAddScheduleDto.getNextBranchCode(),
+                                "调度审核，trackNo：" + (list.isEmpty() ? "null" : list.get(0).getTrackNo()) + "，下车间编码：" + batchAddScheduleDto.getNextBranchCode(),
                                 OperationLogAspect.getIpAddress(request)));
             }
             Map<String, String> map = new HashMap<>(3);
@@ -784,7 +787,7 @@ public class TrackCheckController extends BaseController {
             }
             //保存质检记录
             actionService.saveAction(ActionUtil.buildAction
-                    (trackCheck.getBranchCode(), "4", "2", "质检审核，trackNo:" + trackCheck.getTrackNo() + "，质检结果:" + trackCheck.getResult(),
+                    (trackCheck.getBranchCode(), "4", "2", "质检审核，trackNo:" + trackHead.getTrackNo() + "，质检结果:" + trackCheck.getResult(),
                             OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(Boolean.TRUE);
