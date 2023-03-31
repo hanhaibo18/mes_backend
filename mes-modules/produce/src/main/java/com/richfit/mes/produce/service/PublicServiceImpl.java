@@ -133,8 +133,6 @@ public class PublicServiceImpl implements PublicService {
         //判断整个工序是否完成，如果完成，则将完成数量和完成状态写入
         double doubleQty = assignById.getQty();
         //trackItem.getCompleteQty() == assignById.getQty()
-        //派工数量大于报工数量 && 报工数量大于 派工数量-0.01
-//        if (assignById.getQty() >= trackItem.getCompleteQty() && trackItem.getCompleteQty() > doubleQty - 0.01) {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
         queryWrapper.eq("ti_id", trackItem.getId());
         List<Assign> assigns = trackAssignService.list(queryWrapper);
@@ -162,7 +160,6 @@ public class PublicServiceImpl implements PublicService {
             }
             trackItemService.updateById(trackItem);
         }
-//        }
         if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId()) && isNext) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             if (null != trackHead.getWorkPlanId()) {

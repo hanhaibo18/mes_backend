@@ -1015,9 +1015,15 @@ public class ProduceInspectionRecordService {
             produceInspectionRecordUt.setCheckBy(data.getEmplName());
         }
         //灵敏度保留小数位
-        produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getDValue())){
+            produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getXValue())){
+            produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getLambda())){
+            produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        }
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) && isNumber(produceInspectionRecordUt.getSensitivity())){
             produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
         }
@@ -1034,7 +1040,7 @@ public class ProduceInspectionRecordService {
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
         //灵敏度为空不显示公式
-        if(StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity())){
+        if(StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) || !isNumber(produceInspectionRecordUt.getSensitivity())){
             dataMap.remove("sensitivity");
         }
 

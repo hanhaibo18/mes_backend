@@ -56,11 +56,11 @@ public class ProduceInspectionRecordUt extends BaseEntity<ProduceInspectionRecor
     @ApiModelProperty(value = "灵敏度（公式计算的）")
     private String sensitivity;
     @ApiModelProperty(value = "灵敏度d参数")
-    private double dValue;
+    private Double dValue;
     @ApiModelProperty(value = "灵敏度x参数")
-    private double xValue;
+    private Double xValue;
     @ApiModelProperty(value = "灵敏度γ参数")
-    private double lambda;
+    private Double lambda;
     @ApiModelProperty(value = "补偿")
     private String compensation;
     @ApiModelProperty(value = "扫描量程复核")
