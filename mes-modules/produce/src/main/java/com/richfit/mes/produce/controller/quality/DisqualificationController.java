@@ -76,8 +76,8 @@ public class DisqualificationController extends BaseController {
             @ApiImplicitParam(name = "disqualificationId", value = "申请单Id", paramType = "query", dataType = "string")
     })
     @GetMapping("/queryItemNew")
-    public CommonResult<DisqualificationItemVo> queryItem(String branchCode, String disqualificationId) {
-        return CommonResult.success(disqualificationService.inquiryRequestFormNew(disqualificationId, branchCode));
+    public CommonResult<DisqualificationItemVo> queryItem(String branchCode, String id) {
+        return CommonResult.success(disqualificationService.inquiryRequestFormNew(id, branchCode));
     }
 
     @ApiOperation(value = "查询申请单信息", notes = "根据工序Id查询申请单所用参数")
