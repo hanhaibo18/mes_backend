@@ -54,6 +54,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public CommonResult<Tenant> tenantById(String id) {
+        return null;
+    }
+
+    @Override
     public List<TenantUserVo> queryByBranchCode(String branchCode) {
         return null;
     }
