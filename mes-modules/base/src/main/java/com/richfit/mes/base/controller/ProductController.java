@@ -483,7 +483,7 @@ public class ProductController extends BaseController {
     @ApiOperation(value = "根据excel导入物料", notes = "按照SAP物料编号、图号和租户更新 是否关键件，是否需要领料 ....")
     @ApiImplicitParam(name = "file", value = "Excel文件", required = true, dataType = "__file", paramType = "form")
     @PostMapping("/import_material_excel")
-    public CommonResult<Boolean> importMaterialExcel(@RequestParam("file") MultipartFile file) {
+    public CommonResult importMaterialExcel(@RequestParam("file") MultipartFile file) {
         return productService.importMaterialExcel(file);
     }
 
