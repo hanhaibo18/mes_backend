@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProductMapper;
+import com.richfit.mes.base.enmus.MaterialTypeEnum;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.base.provider.WmsServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -229,8 +230,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     materialBasis.setSingleWeight(productMap.get(product.getId()).getWeight().toString());
                 }
                 materialBasis.setDeliveryFlag(productMap.get(product.getId()).getIsEdgeStore());
-                materialBasis.setProduceType(productMap.get(product.getId()).getMaterialType());
-                materialBasis.setMaterialType(productMap.get(product.getId()).getMaterialType());
+                materialBasis.setProduceType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
+                materialBasis.setMaterialType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
                 materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
                 materialBasis.setField1("");
                 materialBasis.setField2("");
@@ -241,9 +242,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 init ++;
             }
             // 同步到wms中
-            for (MaterialBasis material : materialBasisList) {
-                wmsServiceClient.materialBasis(material);
-            }
+            wmsServiceClient.materialBasis(materialBasisList);
+
             return CommonResult.success(true,"操作成功");
         }
         return CommonResult.failed("操作失败");

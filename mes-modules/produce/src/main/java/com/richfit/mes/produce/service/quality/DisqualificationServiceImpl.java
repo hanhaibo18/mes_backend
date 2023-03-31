@@ -241,7 +241,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     public Boolean saveOrUpdateDisqualification(DisqualificationDto disqualificationDto) {
         //增加产品编号和数量校验
         List<String> productNoSize = Arrays.asList(disqualificationDto.getProductNo().split(","));
-        if (disqualificationDto.getTrackHeadType() == 0 && disqualificationDto.getNumber() != productNoSize.size()) {
+        if ("0".equals(disqualificationDto.getTrackHeadType()) && disqualificationDto.getNumber() != productNoSize.size()) {
             throw new GlobalException("数量与产品编号不匹配", ResultCode.FAILED);
         }
         //先判断流程
@@ -534,7 +534,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             DisqualificationItemVo data = this.queryLastTimeDataByCreateBy(branchCode);
             disqualificationItemVo.setQualityCheckBy(data.getQualityCheckBy());
             disqualificationItemVo.setTrackHeadType(data.getTrackHeadType());
-            disqualificationItemVo.setTypeList(data.getTypeList());
+            disqualificationItemVo.setTypeList(Arrays.asList(data.getDisqualificationType().split(",")));
             disqualificationItemVo.setDisqualificationType(data.getDisqualificationType());
             disqualificationItemVo.setDiscoverTenant(data.getDiscoverTenant());
             disqualificationItemVo.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
@@ -553,6 +553,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
         Disqualification disqualification = this.getById(disqualificationId);
         BeanUtils.copyProperties(disqualification, disqualificationItemVo);
+        if (StrUtil.isNotBlank(disqualification.getDisqualificationType())) {
+            disqualificationItemVo.setTypeList(Arrays.asList(disqualification.getDisqualificationType().split(",")));
+        }
         //对象不为空,ID不为空
         DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
         //改为Copy
