@@ -41,5 +41,5 @@ public interface OrderService extends IService<Order> {
      */
     void orderDataTrackHead(TrackHead trackHead);
 
-    Order deleteOrder(String id, HttpServletRequest request);
+    Order deleteOrder(String id);
 }

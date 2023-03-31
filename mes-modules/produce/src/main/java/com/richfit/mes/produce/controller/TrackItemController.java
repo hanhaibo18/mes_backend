@@ -359,16 +359,16 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "更新至下工序", notes = "根据跟单ID更新至下工序")
     @GetMapping("/nextSequence")
     public CommonResult<String> nextSequence(String flowId, HttpServletRequest request) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        //获取该flowId的当前工序
+        queryWrapper.eq("flow_id", flowId);
+        queryWrapper.eq("is_current", 1);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
         String error = trackItemService.nextSequence(flowId);
         if ("success".equals(error)) {
-            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-            //获取该flowId的当前工序
-            queryWrapper.eq("flow_id", flowId);
-            queryWrapper.eq("is_current", 1);
-            List<TrackItem> list = trackItemService.list(queryWrapper);
-            List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
             actionService.saveAction(
-                    ActionUtil.buildAction(list.get(0).getBranchCode(), "3", "2",
+                    ActionUtil.buildAction(list.get(0).getBranchCode(), "4", "2",
                             "更新至下工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success("success");
         } else {
@@ -380,19 +380,20 @@ public class TrackItemController extends BaseController {
     @GetMapping("/backSequence")
     @OperationLog
     public CommonResult<String> backSequence(String flowId, HttpServletRequest request) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        //获取该flowId的当前工序
+        queryWrapper.eq("flow_id", flowId);
+        queryWrapper.eq("is_current", 1);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
+
         String result = trackItemService.backSequence(flowId);
-//        if ("success".equals(result)) {
-//            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-//            //获取该flowId的当前工序
-//            queryWrapper.eq("flow_id", flowId);
-//            queryWrapper.eq("is_current", 1);
-//            List<TrackItem> list = trackItemService.list(queryWrapper);
-//            List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
-//            actionService.saveAction(
-//                    ActionUtil.buildAction(list.get(0).getBranchCode(), "3", "2",
-//                            "回滚至上工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
-//            return CommonResult.success("success");
-//        }
+        if ("success".equals(result)) {
+            actionService.saveAction(
+                    ActionUtil.buildAction(list.get(0).getBranchCode(), "4", "2",
+                            "回滚至上工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
+            return CommonResult.success("success");
+        }
         return CommonResult.failed(result);
     }
 

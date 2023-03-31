@@ -439,12 +439,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     @Override
-    public boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto, HttpServletRequest request) {
+    public boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto) {
         //单件跟单处理
         try {
             List<TrackHeadPublicDto> trackHeadList = TrackHeadUtil.saveInfo(trackHeadPublicDto, codeRuleService);
             for (TrackHeadPublicDto th : trackHeadList) {
-                trackHeadAdd(th, th.getTrackItems(), th.getProductNo(), th.getNumber(), request);
+                trackHeadAdd(th, th.getTrackItems(), th.getProductNo(), th.getNumber());
             }
             //当匹配计划时更新计划状态
             planService.planData(trackHeadPublicDto.getWorkPlanId());
@@ -795,7 +795,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Date: 2022/6/21 10:25
      **/
     public boolean trackHeadAdd(TrackHeadPublicDto trackHeadPublicDto, List<TrackItem> trackItems, String productsNo,
-                                int number, HttpServletRequest request) {
+                                int number) {
         try {
             this.beforeSaveItemDeal(trackItems);
             //查询跟单号码是否存在
@@ -858,10 +858,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //用于在跟单存在第一道工序自动派工的情况
             autoSchedule(trackHeadPublicDto);
-
-            //添加日志
-            actionService.saveAction(ActionUtil.buildAction
-                    (trackHeadPublicDto.getBranchCode(), "0", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), OperationLogAspect.getIpAddress(request)));
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
@@ -1279,9 +1275,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 t.setProjectBomGroup(plan.getProjectBomGroup());
 
                 trackHeadMapper.updateById(t);
-                HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-                actionService.saveAction(ActionUtil.buildAction
-                        (t.getBranchCode(), "1", "2", "跟单号：" + t.getTrackNo(), OperationLogAspect.getIpAddress(request)));
 
                 //修改老跟单匹配计划
                 planService.planData(trackHeadOld.getWorkPlanId());
@@ -1528,11 +1521,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         TrackHead trackHead = this.getOne(queryWrapper);
         trackHead.setPriority(priority);
-        boolean result = this.updateById(trackHead);
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        actionService.saveAction(ActionUtil.buildAction
-                (trackHead.getBranchCode(), "1", "2", "修改跟单优先级，跟单号：" + trackHead.getTrackNo(), OperationLogAspect.getIpAddress(request)));
-        return result;
+        return this.updateById(trackHead);
     }
 
     @Override

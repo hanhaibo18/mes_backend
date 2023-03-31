@@ -28,6 +28,8 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +37,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.richfit.mes.produce.aop.LogConstant.*;
 
 /**
  * @Author: GaoLiang
@@ -104,7 +108,7 @@ public class PlanController extends BaseController {
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.ne("status",4);
+        queryWrapper.ne("status", 4);
         queryWrapper.gt("missing_num", 0);
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
@@ -201,7 +205,7 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "新增计划信息", notes = "新增计划信息")
     @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
-    @OperationLog(actionType = "0", actionItem = "1")
+    @OperationLog(actionType = "0", actionItem = "1", argType = PLAN)
     @PostMapping("/save")
     public CommonResult<Object> savePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -233,7 +237,7 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "修改计划信息", notes = "修改计划信息")
     @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
-    @OperationLog(actionType = "1", actionItem = "1")
+    @OperationLog(actionType = "1", actionItem = "1", argType = PLAN)
     @PutMapping("/update")
     public CommonResult<Object> updatePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -246,7 +250,7 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "计划关闭", notes = "计划关闭")
     @ApiImplicitParam(name = "plan", value = "计划", required = true, dataType = "Plan", paramType = "body")
-    @OperationLog(actionType = "1", actionItem = "1")
+    @OperationLog(actionType = "1", actionItem = "1", argType = PLAN)
     @PostMapping("/close")
     public CommonResult<Object> close(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -262,19 +266,19 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "删除计划信息", notes = "根据计划id删除计划记录")
     @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
     @DeleteMapping("/delete/{id}")
-    public CommonResult<Boolean> delPlanById(@PathVariable String id, HttpServletRequest request) throws GlobalException {
+    public CommonResult<Boolean> delPlanById(@PathVariable String id) throws GlobalException {
         //计划状态为‘0’ 未开始时，才能删除
         Plan plan = planService.getById(id);
         if (0 != plan.getStatus()) {
             return CommonResult.failed("计划已开始，不能删除!");
         }
-
-        actionService.saveAction(ActionUtil.buildAction
-                (plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号:" + plan.getDrawNo(), OperationLogAspect.getIpAddress(request)));
         //删除扩展字段
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("plan_id", id);
         planExtendService.removeByMap(paramMap);
+        //保存操作日志
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        actionService.saveAction(ActionUtil.buildAction(plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), OperationLogAspect.getIpAddress(request)));
         return CommonResult.success(planService.delPlan(plan));
     }
 
@@ -303,10 +307,9 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "拆分计划", notes = "拆分计划")
     @ApiImplicitParam(name = "planSplitDto", value = "原计划", required = true, dataType = "PlanSplitDto", paramType = "body")
+    @OperationLog(actionType = "4", actionItem = "1", argType = PLAN_SPLIT_DTO)
     @PostMapping("/splitPlan")
-    public CommonResult<Object> splitPlan(@RequestBody PlanSplitDto planSplitDto, HttpServletRequest request) throws GlobalException {
-        actionService.saveAction(ActionUtil.buildAction
-                (planSplitDto.getOldPlan().getBranchCode(), "4", "1", "拆分计划，原计划号：" + planSplitDto.getOldPlan().getProjNum(), OperationLogAspect.getIpAddress(request)));
+    public CommonResult<Object> splitPlan(@RequestBody PlanSplitDto planSplitDto) throws GlobalException {
         return planService.splitPlan(planSplitDto);
     }
 
@@ -325,11 +328,9 @@ public class PlanController extends BaseController {
      */
     @ApiOperation(value = "撤销计划", notes = "撤销计划")
     @ApiImplicitParam(name = "id", value = "计划id", required = true, dataType = "String", paramType = "path")
+    @OperationLog(actionType = "3", actionItem = "1", argType = PLAN_ID)
     @GetMapping("/backoutPlan/{id}")
-    public CommonResult<Object> backoutPlan(@PathVariable String id, HttpServletRequest request) throws GlobalException {
-        Plan plan = planService.getById(id);
-        actionService.saveAction(ActionUtil.buildAction
-                (plan.getBranchCode(), "3", "1", "撤销计划，原计划id:" + plan.getProjNum(), OperationLogAspect.getIpAddress(request)));
+    public CommonResult<Object> backoutPlan(@PathVariable String id) throws GlobalException {
         return planService.backoutPlan(id);
     }
 
@@ -348,6 +349,7 @@ public class PlanController extends BaseController {
         planService.importPlanMX(file, request);
         return CommonResult.success(null);
     }
+
     @ApiOperation(value = "导入计划--锻造车间", notes = "根据Excel文档导入计划--锻造车间")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel_DZ")
@@ -355,6 +357,7 @@ public class PlanController extends BaseController {
         planService.importPlanDZ(file, request);
         return CommonResult.success(null);
     }
+
     @ApiOperation(value = "导入计划--铸钢车间", notes = "根据Excel文档导入计划--铸钢车间")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel_ZG")
@@ -372,7 +375,6 @@ public class PlanController extends BaseController {
     }
 
 
-
     @ApiOperation(value = "计划数据维护", notes = "计划数据维护")
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
     @PostMapping("/data/maintenance")
@@ -384,14 +386,12 @@ public class PlanController extends BaseController {
     }
 
 
-
     @ApiOperation(value = "发布计划", notes = "发布几计划")
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
     @PostMapping("/publish")
     public CommonResult<Object> publish(@RequestBody List<String> planIdList) throws GlobalException {
         return CommonResult.success(planService.publish(planIdList));
     }
-
 
 
 }

@@ -242,7 +242,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         //0 原合格证推送状态改为已推送
         certificateService.certPushComplete(certificate);
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         //1 保存新合格证信息
 
 
@@ -262,9 +261,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 changeStatus(lineStore);
                 this.save(lineStore);
-                //记录入库日志
-                actionService.saveAction(ActionUtil.buildAction
-                        (lineStore.getBranchCode(), "0", "3", "物料号：" + lineStore.getMaterialNo(), OperationLogAspect.getIpAddress(request)));
             }
             //3 如果对应物料产品编号在系统存在，说明是本车间推送出去又回来的物料（该物料在本车间状态无需变动）
             //3 需要更新物料对应的跟单当前工序状态 为 完工， 并关联新合格证号
@@ -361,7 +357,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                         HashMap<String, Integer> orderNumAndInNum = getOrderNumAndInNum(entity.getMaterialNo(), orderNo);
                         int surplusNum = orderNumAndInNum.get("orderNum") - orderNumAndInNum.get("inNum");
                         //当剩余数量小于当次入库数量提示入库数量大于订单数量
-                        if (surplusNum < num){
+                        if (surplusNum < num) {
                             throw new GlobalException("录入量不能大于订单剩余量,订单: " + orderNo + " 的剩余数量为: " + surplusNum + " 您录入是数量为: " + num, ResultCode.FAILED);
                         }
                         entity.setProductionOrder(orderNo);

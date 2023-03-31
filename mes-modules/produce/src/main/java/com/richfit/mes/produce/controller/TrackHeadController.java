@@ -21,6 +21,7 @@ import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.*;
 import com.richfit.mes.produce.service.*;
@@ -45,6 +46,9 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD_ID;
+import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD_PUBLIC_DTO;
 
 /**
  * @author 王瑞
@@ -98,17 +102,16 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "取消计划", notes = "通过跟单id、取消计划")
+    @OperationLog(actionType = "1", actionItem = "2", argType = TRACK_HEAD_ID)
     @PostMapping("/plan_cancel/{id}")
     public void planCancel(
-            @ApiParam(value = "跟单号", required = true) @PathVariable String id, HttpServletRequest request) throws Exception {
+            @ApiParam(value = "跟单号", required = true) @PathVariable String id) throws Exception {
         TrackHead trackHead = trackHeadService.getById(id);
         String workPlanId = trackHead.getWorkPlanId();
         trackHead.setWorkPlanId("");
         trackHead.setWorkPlanNo("");
         trackHead.setProductionOrder("");
         trackHeadService.updateById(trackHead);
-        actionService.saveAction(ActionUtil.buildAction
-                (trackHead.getBranchCode(), "1", "2", "取消跟单计划，跟单号：" + trackHead.getTrackNo(), OperationLogAspect.getIpAddress(request)));
         planService.planData(workPlanId);
     }
 
@@ -153,9 +156,9 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
+    @OperationLog(actionType = "0", actionItem = "2", argType = TRACK_HEAD_PUBLIC_DTO)
     @PostMapping("/track_head")
-    public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHead,
-                                              HttpServletRequest request) {
+    public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHead) {
 
         try {
             if (StringUtils.isNullOrEmpty(trackHead.getTrackNo())) {
@@ -172,7 +175,7 @@ public class TrackHeadController extends BaseController {
                 trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 trackHead.setCreateTime(new Date());
 
-                bool = trackHeadService.saveTrackHead(trackHead, request);
+                bool = trackHeadService.saveTrackHead(trackHead);
                 if (bool) {
                     return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
                 } else {
@@ -186,9 +189,9 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "修改跟单", notes = "修改跟单")
+    @OperationLog(actionType = "1", actionItem = "2", argType = TRACK_HEAD_PUBLIC_DTO)
     @PutMapping("/track_head")
-    public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHeadPublicDto,
-                                                 HttpServletRequest request) {
+    public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHeadPublicDto) {
         if (StringUtils.isNullOrEmpty(trackHeadPublicDto.getTrackNo())) {
             return CommonResult.failed(TRACK_HEAD_NO_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(trackHeadPublicDto.getId())) {
@@ -196,9 +199,6 @@ public class TrackHeadController extends BaseController {
         } else {
             boolean bool = trackHeadService.updataTrackHead(trackHeadPublicDto, trackHeadPublicDto.getTrackItems());
             if (bool) {
-                //添加日志
-                actionService.saveAction(ActionUtil.buildAction
-                        (trackHeadPublicDto.getBranchCode(), "1", "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), OperationLogAspect.getIpAddress(request)));
                 return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
             } else {
                 return CommonResult.failed(TRACK_HEAD_FAILED_MESSAGE);
@@ -339,8 +339,8 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
-        queryWrapper.ge(!StringUtils.isNullOrEmpty(startDate),"modify_time", startDate);
-        queryWrapper.le(!StringUtils.isNullOrEmpty(endDate),"modify_time", endDate);
+        queryWrapper.ge(!StringUtils.isNullOrEmpty(startDate), "modify_time", startDate);
+        queryWrapper.le(!StringUtils.isNullOrEmpty(endDate), "modify_time", endDate);
         //热工是否绑定工艺
         if (!StringUtils.isNullOrEmpty(isBindRouter)) {
             if (isBindRouter.equals("0")) {
@@ -627,8 +627,19 @@ public class TrackHeadController extends BaseController {
      **/
     @ApiOperation(value = "更改优先级", notes = "更改优先级")
     @PostMapping("updateWorkDetailed")
-    public CommonResult<Boolean> updateWorkDetailed(String trackNo, String priority) {
-        return CommonResult.success(trackHeadService.updateWorkDetailed(trackNo, priority));
+    public CommonResult<Boolean> updateWorkDetailed(String trackNo, String priority, HttpServletRequest request) {
+        boolean result = trackHeadService.updateWorkDetailed(trackNo, priority);
+        if (result) {
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+            if (!StringUtils.isNullOrEmpty(trackNo)) {
+                queryWrapper.eq("track_no", trackNo);
+            }
+            TrackHead trackHead = trackHeadService.getOne(queryWrapper);
+            actionService.saveAction(ActionUtil.buildAction
+                    (trackHead.getBranchCode(), "1", "2", "修改跟单优先级，跟单号：" + trackHead.getTrackNo(), OperationLogAspect.getIpAddress(request)));
+            return CommonResult.success(true);
+        }
+        return CommonResult.failed("更改失败");
     }
 
     /**

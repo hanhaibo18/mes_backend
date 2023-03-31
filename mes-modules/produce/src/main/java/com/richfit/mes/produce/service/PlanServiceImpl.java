@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.richfit.mes.produce.aop.LogConstant.PLAN_ID;
+
 /**
  * @Author: zhiqiang.lu
  * @Date: 2020.9.2 9:54
@@ -289,12 +291,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @Date: 2022/7/8 11:37
      **/
     @Override
-    @OperationLog(isPlanId = true)
+    @OperationLog(actionType = "1", actionItem = "1", argType = PLAN_ID)
     public void planData(String planId) {
         if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(planId)) {
-            QueryWrapper planWrapper=new QueryWrapper();
-            planWrapper.notIn("status",4);
-            planWrapper.eq("id",planId);
+            QueryWrapper planWrapper = new QueryWrapper();
+            planWrapper.notIn("status", 4);
+            planWrapper.eq("id", planId);
             Plan plan = planMapper.selectOne(planWrapper);
             if (plan != null) {
                 QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
@@ -394,7 +396,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public void updateDeliveryNum(String planId) {
         Plan plan = planMapper.selectById(planId);
         //热工分公司的数据需要更新需求提报表中的交付数量字段
-        if(!ObjectUtil.isEmpty(plan)){
+        if (!ObjectUtil.isEmpty(plan)) {
             if (plan.getTenantId().equals("12345678901234567890123456789001")) {
                 QueryWrapper<HotDemand> demandQueryWrapper = new QueryWrapper<>();
                 demandQueryWrapper.eq("tenant_id", plan.getTenantId());
@@ -784,8 +786,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     }
 
 
-
-
     /**
      * 导入计划(热工个性化)
      *
@@ -954,15 +954,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     /**
      * 发布计划
+     *
      * @param planIdList
      * @return
      */
     @Override
     public CommonResult publish(List<String> planIdList) {
-        UpdateWrapper<Plan> updateWrapper=new UpdateWrapper<>();
-        updateWrapper.set("status",0);//设置为未开始状态
-        updateWrapper.in("status",4);
-        updateWrapper.in("id",planIdList);
+        UpdateWrapper<Plan> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.set("status", 0);//设置为未开始状态
+        updateWrapper.in("status", 4);
+        updateWrapper.in("id", planIdList);
         this.update(updateWrapper);
         return new CommonResult(ResultCode.SUCCESS);
     }

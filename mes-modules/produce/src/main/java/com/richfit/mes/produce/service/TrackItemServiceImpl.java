@@ -195,7 +195,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     @Override
     public String resetStatus(String tiId, Integer resetType, HttpServletRequest request) {
         TrackItem item = this.getById(tiId);
-        String actionMessage = "工序ID：" + item.getId ();
+        String actionMessage = "工序ID：" + item.getId();
         if (item.getIsCurrent() != 1) {
             return "只能操作当前工序！";
         }
@@ -324,7 +324,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 actionMessage = actionMessage + ",重置派工";
             }
         }
-        actionService.saveAction(ActionUtil.buildAction(item.getBranchCode(), "3", "2", actionMessage, OperationLogAspect.getIpAddress(request)));
+        actionService.saveAction(ActionUtil.buildAction(item.getBranchCode(), "4", "2", actionMessage, OperationLogAspect.getIpAddress(request)));
         return this.updateById(item) ? "success" : "修改跟单工序失败！";
     }
 

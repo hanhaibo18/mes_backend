@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD;
+
 /**
  * @Author: GaoLiang
  * @Date: 2020/8/11 9:09
@@ -161,7 +163,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    @OperationLog(isOrder = true)
+    @OperationLog(actionType = "1", actionItem = "0", argType = TRACK_HEAD)
     public void orderDataTrackHead(TrackHead trackHead) {
         String orderNo = trackHead.getProductionOrder();
         if (StrUtil.isNotBlank(orderNo)) {
@@ -212,7 +214,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public Order deleteOrder(String id, HttpServletRequest request) {
+    public Order deleteOrder(String id) {
         Order order = this.getById(id);
         //通过状态判断是否关联计划
         if (0 != order.getStatus()) {
@@ -237,9 +239,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             throw new GlobalException("订单已匹配跟单，请先删除跟单，否则不能删除!", ResultCode.FAILED);
         }
         this.removeById(order);
-        //操作日志记录
-        actionService.saveAction(ActionUtil.buildAction
-                (order.getBranchCode(), "2", "0", "订单号：" + order.getOrderSn(), OperationLogAspect.getIpAddress(request)));
         return order;
     }
 
