@@ -373,8 +373,9 @@ public class ProduceInspectionRecordService {
             produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
         }else{
             UpdateWrapper<ProduceItemInspectInfo> produceItemInspectInfoUpdateWrapper = new UpdateWrapper<>();
-            produceItemInspectInfoUpdateWrapper.set("is_new","1")
+            produceItemInspectInfoUpdateWrapper
                     .in("power_id",powerIds)
+                    .eq("inspect_record_id",recordId)
                     .set("audit_by",String.valueOf(jsonObject.get("auditBy")))
                     .set("inspection_results",String.valueOf(jsonObject.get("inspectionResults")))
                     .set("is_audit","0");
