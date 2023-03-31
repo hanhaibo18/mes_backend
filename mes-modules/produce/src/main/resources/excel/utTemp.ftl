@@ -559,7 +559,7 @@
                                             <w:szCs w:val="18"/>
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                         </w:rPr>
-                                        <w:t>{}</w:t>
+                                        <w:t>${comeFromDepart!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -2035,7 +2035,7 @@
                                 <w:szCs w:val="6"/>
                             </w:rPr>
                         </w:pPr>
-                        <#if sensitivity?? >
+                        <#if sensitivity??>
                         <m:oMath>
                             <m:r>
                                 <m:rPr/>

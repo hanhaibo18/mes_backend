@@ -690,4 +690,11 @@ public class ProductController extends BaseController {
         return CommonResult.success(result.getRecords());
     }
 
+    @ApiOperation(value = "根据勾选数据同步到wms", notes = "根据勾选数据同步到wms")
+    @PostMapping("/save_wms_sync")
+    public CommonResult<Boolean> saveWmsSync(@RequestBody List<String> ids) {
+        return productService.saveWmsSync(ids);
+    }
+
+
 }

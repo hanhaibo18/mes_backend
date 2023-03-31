@@ -13,6 +13,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.ItemMessageDto;
+import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.TrackHeadService;
@@ -25,7 +26,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -156,27 +159,28 @@ public class TrackItemController extends BaseController {
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
     }
 
-//    @ApiOperation(value = "查询跟单工序(新20230329)", notes = "根据跟单ID查询跟单工序(新20230329)")
-//    @GetMapping("/track_item_new")
-//    public CommonResult<List<TrackItem>> selectTrackHeadNew(String id, String trackId, String optVer, String productNo) {
-//        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-//        if (!StringUtils.isNullOrEmpty(id)) {
-//            queryWrapper.eq("id", id);
-//        }
-//        if (!StringUtils.isNullOrEmpty(trackId)) {
-//            queryWrapper.eq("track_head_id", trackId);
-//        }
-//        if (!StringUtils.isNullOrEmpty(productNo)) {
-//            queryWrapper.like("product_no", productNo);
-//        }
-//        if (!StringUtils.isNullOrEmpty(optVer)) {
-//            queryWrapper.like("opt_ver", optVer);
-//        }
-//        queryWrapper.orderByAsc("sequence_order_by");
-//        List<TrackItem> list = trackItemService.list(queryWrapper);
-//        list.stream().
-//        return CommonResult.success(list, SUCCESS_MESSAGE);
-//    }
+    @ApiOperation(value = "查询跟单工序(新20230329)", notes = "根据跟单ID查询跟单工序(新20230329)")
+    @GetMapping("/track_item_new")
+    public CommonResult<List<TrackItem>> selectTrackHeadNew(String id, String trackId, String optVer, String productNo) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        if (!StringUtils.isNullOrEmpty(id)) {
+            queryWrapper.eq("id", id);
+        }
+        if (!StringUtils.isNullOrEmpty(trackId)) {
+            queryWrapper.eq("track_head_id", trackId);
+        }
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.like("product_no", productNo);
+        }
+        if (!StringUtils.isNullOrEmpty(optVer)) {
+            queryWrapper.like("opt_ver", optVer);
+        }
+        queryWrapper.orderByAsc("sequence_order_by");
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        //去重操作(工序号+工序名 都一样认为重复)
+        ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
+        return CommonResult.success(collect, SUCCESS_MESSAGE);
+    }
 
     @ApiOperation(value = "查询跟单工序(当前外协工序)", notes = "根据跟单ID查询跟单工序(当前外协工序)")
     @PostMapping("/track_item/wxItems")
@@ -355,16 +359,16 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "更新至下工序", notes = "根据跟单ID更新至下工序")
     @GetMapping("/nextSequence")
     public CommonResult<String> nextSequence(String flowId, HttpServletRequest request) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        //获取该flowId的当前工序
+        queryWrapper.eq("flow_id", flowId);
+        queryWrapper.eq("is_current", 1);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
         String error = trackItemService.nextSequence(flowId);
         if ("success".equals(error)) {
-            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-            //获取该flowId的当前工序
-            queryWrapper.eq("flow_id", flowId);
-            queryWrapper.eq("is_current", 1);
-            List<TrackItem> list = trackItemService.list(queryWrapper);
-            List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
             actionService.saveAction(
-                    ActionUtil.buildAction(list.get(0).getBranchCode(), "3", "2",
+                    ActionUtil.buildAction(list.get(0).getBranchCode(), "4", "2",
                             "更新至下工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success("success");
         } else {
@@ -376,19 +380,20 @@ public class TrackItemController extends BaseController {
     @GetMapping("/backSequence")
     @OperationLog
     public CommonResult<String> backSequence(String flowId, HttpServletRequest request) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        //获取该flowId的当前工序
+        queryWrapper.eq("flow_id", flowId);
+        queryWrapper.eq("is_current", 1);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
+
         String result = trackItemService.backSequence(flowId);
-//        if ("success".equals(result)) {
-//            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-//            //获取该flowId的当前工序
-//            queryWrapper.eq("flow_id", flowId);
-//            queryWrapper.eq("is_current", 1);
-//            List<TrackItem> list = trackItemService.list(queryWrapper);
-//            List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
-//            actionService.saveAction(
-//                    ActionUtil.buildAction(list.get(0).getBranchCode(), "3", "2",
-//                            "回滚至上工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
-//            return CommonResult.success("success");
-//        }
+        if ("success".equals(result)) {
+            actionService.saveAction(
+                    ActionUtil.buildAction(list.get(0).getBranchCode(), "4", "2",
+                            "回滚至上工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
+            return CommonResult.success("success");
+        }
         return CommonResult.failed(result);
     }
 
@@ -397,6 +402,12 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询工序信息", notes = "根据工序Id查询工序信息")
     public CommonResult<ItemMessageDto> queryItemMessageDto(String tiId) {
         return CommonResult.success(trackItemService.queryItemMessageDto(tiId));
+    }
+
+    @GetMapping("query_disqualification_item")
+    @ApiOperation(value = "质检创建不合格信息查询", notes = "质检创建你不合格查询")
+    public CommonResult<DisqualificationItemVo> queryDisqualificationByItem(String tiId, String branchCode) {
+        return CommonResult.success(trackItemService.queryDisqualificationByItem(tiId, branchCode));
     }
 
 }

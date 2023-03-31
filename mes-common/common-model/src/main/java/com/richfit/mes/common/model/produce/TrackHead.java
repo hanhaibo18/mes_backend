@@ -424,4 +424,8 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "委托单信息")
     private PhysChemOrder physChemOrder;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序号")
+    private String optNo;
+
 }

@@ -2,6 +2,8 @@ package com.kld.mes.wms.service;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.kld.mes.wms.provider.SystemServiceClient;
 import com.kld.mes.wms.utils.AESUtil;
 import com.richfit.mes.common.model.produce.ApplicationResult;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -23,39 +26,35 @@ public class ProductToWmsThreeService {
     @Autowired
     SystemServiceClient systemServiceClient;
 
-    private final String mesUploadAPiKey = "wms-url-jk";
+    /**
+     * 密钥
+     */
     private final String mesUrlKey = "wms-url-key";
-    private final String mesScddUploadKey = "wms-url-scdd-upload";
-    private final String mesUrlTokenKey = "wms-url-token";
-    private final String mesUrlQueryMaterialCountApiKey = "wms-url-query-material-count";
+    private final String wmsUrlUploadMat = "wms-url-upload-mat";
 
-    private String mesUploadApi = "";
     private String mesToWmsApiKey = "";
     private String mesScddUploadApi = "";
-    private String mesUrlToken = "";
-    private String mesUrlQueryMaterialCountApi = "";
+    private String mesUploadMatApi = "";
 
     private void init() {
-        mesUploadApi = systemServiceClient.findItemParamByCode(mesUploadAPiKey).getData().getLabel();
+
         mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey).getData().getLabel();
-        mesScddUploadApi = systemServiceClient.findItemParamByCode(mesScddUploadKey).getData().getLabel();
-        mesUrlToken = systemServiceClient.findItemParamByCode(mesUrlTokenKey).getData().getLabel();
-        mesUrlQueryMaterialCountApi = systemServiceClient.findItemParamByCode(mesUrlQueryMaterialCountApiKey).getData().getLabel();
+        mesUploadMatApi = systemServiceClient.findItemParamByCode(wmsUrlUploadMat).getData().getLabel();
     }
 
 
     // MES物料基础数据同步接口
-    public ApplicationResult materialBasisInterface(MaterialBasis materialBasis) {
+    public ApplicationResult materialBasisInterface(List<MaterialBasis> materialBasisList) {
         init();
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(materialBasis);
+        //转换json数组
+        JSONArray jsonArray = JSONArray.parseArray(JSON.toJSONString(materialBasisList));
         //加密后的16进制字符串
-        String materialBasisEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
+        String materialBasisEncrpy = AESUtil.encrypt(jsonArray.toString(), mesToWmsApiKey);
         //传参
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", materialBasisEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesUploadMatApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }

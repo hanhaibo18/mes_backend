@@ -1,17 +1,16 @@
 package com.richfit.mes.produce.aop;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.produce.LineStore;
-import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.Plan;
-import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.ActionUtil;
-import com.richfit.mes.produce.service.ActionService;
-import com.richfit.mes.produce.service.OrderService;
-import com.richfit.mes.produce.service.PlanService;
+import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.entity.PlanSplitDto;
+import com.richfit.mes.produce.entity.TrackHeadPublicDto;
+import com.richfit.mes.produce.service.*;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -26,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 
+import static com.richfit.mes.produce.aop.LogConstant.*;
+
 /**
  * 系统日志：切面处理类
  */
@@ -39,6 +40,10 @@ public class OperationLogAspect {
     private PlanService planService;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private TrackHeadService trackHeadService;
+    @Autowired
+    private LineStoreService lineStoreService;
 
 
     //定义切点 @Pointcut
@@ -62,9 +67,15 @@ public class OperationLogAspect {
         Plan plan = null;
         //跟单
         TrackHead trackHead = null;
+        //跟单dto
+        TrackHeadPublicDto trackHeadPublicDto = null;
         //库存
         LineStore lineStore = null;
-        //计划id
+        //计划拆分实体
+        PlanSplitDto planSplitDto = null;
+        //合格证
+        Certificate certificate = null;
+        //id
         String id = null;
         //获取参数列表
         Object[] objects = joinPoint.getArgs();
@@ -78,6 +89,12 @@ public class OperationLogAspect {
                     trackHead = (TrackHead) object;
                 } else if (object.getClass() == LineStore.class) {
                     lineStore = (LineStore) object;
+                } else if (object.getClass() == PlanSplitDto.class) {
+                    planSplitDto = (PlanSplitDto) object;
+                } else if (object.getClass() == TrackHeadPublicDto.class) {
+                    trackHeadPublicDto = (TrackHeadPublicDto) object;
+                } else if (object.getClass() == Certificate.class) {
+                    certificate = (Certificate) object;
                 } else if (object.getClass() == String.class) {
                     id = (String) object;
                 }
@@ -90,30 +107,74 @@ public class OperationLogAspect {
             if ("saveAction".equals(value)) {
                 String actionType = myLog.actionType();
                 String actionItem = myLog.actionItem();
-                boolean isPlanId = myLog.isPlanId();
-                boolean idOrder = myLog.isOrder();
-                if (order != null) {
-                    actionService.saveAction(ActionUtil.buildAction
-                            (order.getBranchCode(), actionType, actionItem, "订单号：" + order.getOrderSn(), getIpAddress(request)));
-                } else if (plan != null) {
-                    actionService.saveAction(ActionUtil.buildAction
-                            (plan.getBranchCode(), actionType, actionItem, "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
-                } else if (trackHead != null && !idOrder) {
-                    actionService.saveAction(ActionUtil.buildAction
-                            (trackHead.getBranchCode(), actionType, actionItem, "跟单号：" + trackHead.getTrackNo(), getIpAddress(request)));
-                } else if (lineStore != null) {
-                    actionService.saveAction(ActionUtil.buildAction
-                            (lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
-                } else if (isPlanId && !StringUtils.isNullOrEmpty(id)) {
-                    Plan curPlan = planService.getById(id);
-                    if (curPlan == null) {
-                        throw new GlobalException("planId error", ResultCode.FAILED);
-                    }
-                    actionService.saveAction(ActionUtil.buildAction
-                            (curPlan.getBranchCode(), "1", "1", "计划号：" + curPlan.getProjNum() + "，图号：" + curPlan.getDrawNo(), getIpAddress(request)));
-                } else if (idOrder && trackHead != null) {
-                    actionService.saveAction(ActionUtil.buildAction
-                            (trackHead.getBranchCode(), "1", "0", "订单号：" + trackHead.getProductionOrder(), getIpAddress(request)));
+                String argType = myLog.argType();
+                switch (actionItem) {
+                    case "0":
+                        //传入参数是Order实体，直接从实体中获取数据保存操作记录
+                        if (ORDER.equals(argType) && order != null) {
+                            actionService.saveAction(ActionUtil.buildAction(order.getBranchCode(), actionType, "0", "订单号：" + order.getOrderSn(), getIpAddress(request)));
+                        }
+                        //传入参数是TrackHead实体时，说明通过更改trackHead时更新了order
+                        else if (TRACK_HEAD.equals(argType) && trackHead != null) {
+                            //从跟单中获取订单号
+                            if (!trackHead.getProductionOrder().isEmpty()) {
+                                actionService.saveAction(ActionUtil.buildAction(trackHead.getBranchCode(), actionType, "0", "订单号：" + trackHead.getProductionOrder(), getIpAddress(request)));
+                            }
+                        }//传入参数是OrderId
+                        else if (ORDER_ID.equals(argType) && !StringUtils.isNullOrEmpty(id)) {
+                            Order orderById = orderService.getById(id);
+                            if (orderById != null) {
+                                actionService.saveAction(ActionUtil.buildAction(order.getBranchCode(), actionType, "0", "订单号：" + order.getOrderSn(), getIpAddress(request)));
+                            }
+                        }
+                        break;
+                    case "1":
+                        //传入参数是Plan实体，直接从实体中获取数据保存操作记录
+                        if (PLAN.equals(argType) && plan != null) {
+                            actionService.saveAction(ActionUtil.buildAction(plan.getBranchCode(), actionType, "1", "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
+                        } //传入参数是PlanId，根据Id查到Plan实体然后保存操作记录
+                        else if (PLAN_ID.equals(argType) && !StringUtils.isNullOrEmpty(id)) {
+                            Plan planById = planService.getById(id);
+                            if (planById != null) {
+                                actionService.saveAction(ActionUtil.buildAction(plan.getBranchCode(), actionType, "1", "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
+                            }
+                        }//传入参数是PLAN_SPLIT_DTO
+                        else if (PLAN_SPLIT_DTO.equals(argType) && planSplitDto != null) {
+                            actionService.saveAction(ActionUtil.buildAction
+                                    (planSplitDto.getOldPlan().getBranchCode(), actionType, "1", "拆分计划，原计划号：" + planSplitDto.getOldPlan().getProjNum(), getIpAddress(request)));
+                        }
+                        break;
+                    case "2":
+                        //传入参数是trackHeadId，根据Id查询TrackHead实体
+                        if (TRACK_HEAD_ID.equals(argType) && StringUtils.isNullOrEmpty(id)) {
+                            TrackHead trackHeadById = trackHeadService.getById(id);
+                            actionService.saveAction(ActionUtil.buildAction
+                                    (trackHead.getBranchCode(), actionType, "2", "取消跟单计划，跟单号：" + trackHeadById.getTrackNo(), getIpAddress(request)));
+                        }//传入参数为TRACK_HEAD_PUBLIC_DTO
+                        else if (TRACK_HEAD_PUBLIC_DTO.equals(argType) && trackHeadPublicDto != null) {
+                            actionService.saveAction(ActionUtil.buildAction
+                                    (trackHeadPublicDto.getBranchCode(), actionType, "2", "跟单号：" + trackHeadPublicDto.getTrackNo(), getIpAddress(request)));
+                        }
+                        break;
+                    case "3":
+                        //传入参数是LineStore实体，直接从实体中获取数据保存操作记录
+                        if (LINE_STORE.equals(argType) && lineStore != null) {
+                            actionService.saveAction(ActionUtil.buildAction(lineStore.getBranchCode(), actionType, actionItem, "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
+                        } //传入参数是合格证实体
+                        else if (CERTIFICATE.equals(argType) && certificate != null) {
+                            for (TrackCertificate tc : certificate.getTrackCertificates()) {
+                                QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
+                                queryWrapper.eq("workblank_no", tc.getProductNo());
+                                queryWrapper.eq("branch_code", certificate.getNextOptWork());
+                                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+                                LineStore lineStoreCurr = lineStoreService.getOne(queryWrapper);
+                                if (null == lineStoreCurr) {
+                                    actionService.saveAction(ActionUtil.buildAction
+                                            (lineStore.getBranchCode(), actionType, "3", "物料号：" + lineStore.getMaterialNo(), getIpAddress(request)));
+                                }
+                            }
+                        }
+                        break;
                 }
             }
         }

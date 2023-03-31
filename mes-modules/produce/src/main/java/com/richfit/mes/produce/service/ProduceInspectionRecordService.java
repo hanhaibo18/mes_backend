@@ -192,6 +192,10 @@ public class ProduceInspectionRecordService {
             queryWrapper.eq("tenant_id", inspectionPowerVo.getTenantId());
         }
 
+        if (!StringUtils.isEmpty(inspectionPowerVo.getReportNo())) {
+            queryWrapper.eq("report_no", inspectionPowerVo.getReportNo());
+        }
+
         //委托单号
         queryWrapper.eq(!StringUtils.isEmpty(inspectionPowerVo.getOrderNo()), "order_no", inspectionPowerVo.getOrderNo());
         //已审核
@@ -369,8 +373,9 @@ public class ProduceInspectionRecordService {
             produceItemInspectInfoService.saveBatch(produceItemInspectInfos);
         }else{
             UpdateWrapper<ProduceItemInspectInfo> produceItemInspectInfoUpdateWrapper = new UpdateWrapper<>();
-            produceItemInspectInfoUpdateWrapper.set("is_new","1")
+            produceItemInspectInfoUpdateWrapper
                     .in("power_id",powerIds)
+                    .eq("inspect_record_id",recordId)
                     .set("audit_by",String.valueOf(jsonObject.get("auditBy")))
                     .set("inspection_results",String.valueOf(jsonObject.get("inspectionResults")))
                     .set("is_audit","0");
@@ -499,6 +504,7 @@ public class ProduceInspectionRecordService {
             map.put("drawNo", power.getDrawNo());
             map.put("sampleName", power.getSampleName());
             map.put("num", power.getNum());
+            map.put("inspectionDepart", systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
         }
 
         return listMap;
@@ -575,6 +581,8 @@ public class ProduceInspectionRecordService {
             map.put("drawNo", power.getDrawNo());
             map.put("sampleName", power.getSampleName());
             map.put("num", power.getNum());
+            //委托单位
+            map.put("comeFromDepart",systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
             return map;
 
         }
@@ -608,11 +616,44 @@ public class ProduceInspectionRecordService {
         List<ProduceItemInspectInfo> historyList = produceItemInspectInfoService.list(historyListQueryWrapper);
         Map<String, List<ProduceItemInspectInfo>> historyMap = historyList.stream().collect(Collectors.groupingBy(item -> item.getPowerId()));
 
+        //探伤任务最新记录改为最新的信息
+        UpdateWrapper<InspectionPower> updateWrapper1 = new UpdateWrapper<>();
+        updateWrapper1.in("id", powerIds)
+                .set("audit_by", null)
+                .set("check_by", null)
+                .set("audit_remark", null)
+                .set("report_no",null)
+                .set("inspect_record_no",null)
+                .set("flaw_detection",null)
+                .set("flaw_detection_remark",null)
+                .set("flaw_detection",null);
+        inspectionPowerService.update(updateWrapper1);
+
         historyMap.forEach((key, value) -> {
             if (value.size() > 0) {
                 UpdateWrapper<ProduceItemInspectInfo> produceItemInspectInfoUpdateWrapper = new UpdateWrapper<>();
                 produceItemInspectInfoUpdateWrapper.eq("power_id", key).eq("inspect_record_id", value.get(0).getInspectRecordId()).set("is_new", "1");
                 produceItemInspectInfoService.update(produceItemInspectInfoUpdateWrapper);
+                String reportNo = null;
+                String remark = null;
+                //查询报告号
+                if (InspectionRecordTypeEnum.MT.getType().equals(value.get(0).getTempType())) {
+                    ProduceInspectionRecordMt mt = produceInspectionRecordMtService.getById(value.get(0).getInspectRecordId());
+                    reportNo = mt.getReportNo();
+                    remark = mt.getRemark();
+                } else if (InspectionRecordTypeEnum.PT.getType().equals(value.get(0).getTempType())) {
+                    ProduceInspectionRecordPt pt = produceInspectionRecordPtService.getById(value.get(0).getInspectRecordId());
+                    reportNo = pt.getReportNo();
+                    remark = pt.getRemark();
+                } else if (InspectionRecordTypeEnum.RT.getType().equals(value.get(0).getTempType())) {
+                    ProduceInspectionRecordRt rt = produceInspectionRecordRtService.getById(value.get(0).getInspectRecordId());
+                    reportNo =rt.getReportNo();
+                    remark = rt.getRemark();
+                } else if (InspectionRecordTypeEnum.UT.getType().equals(value.get(0).getTempType())) {
+                    ProduceInspectionRecordUt ut = produceInspectionRecordUtService.getById(value.get(0).getInspectRecordId());
+                    reportNo = ut.getReportNo();
+                    remark = ut.getRemark();
+                }
                 //探伤任务最新记录改为最新的信息
                 UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("id", key)
@@ -620,7 +661,11 @@ public class ProduceInspectionRecordService {
                         .set("check_by", SecurityUtils.getCurrentUser().getUserId())
                         .set("insp_temp_type", String.valueOf(value.get(0).getTempType()))
                         .set("audit_status", String.valueOf(value.get(0).getIsAudit()))
-                        .set("audit_remark", value.get(0).getAuditRemark());
+                        .set("audit_remark", value.get(0).getAuditRemark())
+                        .set("inspect_record_no",value.get(0).getRecordNo())
+                        .set("report_no",reportNo)
+                        .set("flaw_detection_remark",remark)
+                        .set("flaw_detection",value.get(0).getInspectionResults());
                 inspectionPowerService.update(updateWrapper);
             }
         });
@@ -882,6 +927,8 @@ public class ProduceInspectionRecordService {
 
 
         Map<String, Object> dataMap = new HashMap<>();
+        //委托单位
+        dataMap.put("comeFromDepart",systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
         //填充数据
         createDataMap(trackHead, recordInfo, dataMap, produceItemInspectInfo.getTempType(), power);
 
@@ -1006,10 +1053,16 @@ public class ProduceInspectionRecordService {
             produceInspectionRecordUt.setCheckBy(data.getEmplName());
         }
         //灵敏度保留小数位
-        produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
-        if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) && isNumber(produceInspectionRecordUt.getTestSpecification())){
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getDValue())){
+            produceInspectionRecordUt.setDValue(new BigDecimal(produceInspectionRecordUt.getDValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getXValue())){
+            produceInspectionRecordUt.setXValue(new BigDecimal(produceInspectionRecordUt.getXValue()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        }
+        if(!ObjectUtil.isEmpty(produceInspectionRecordUt.getLambda())){
+            produceInspectionRecordUt.setLambda(new BigDecimal(produceInspectionRecordUt.getLambda()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+        }
+        if(!StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) && isNumber(produceInspectionRecordUt.getSensitivity())){
             produceInspectionRecordUt.setSensitivity(String.valueOf(new BigDecimal(produceInspectionRecordUt.getSensitivity()).setScale(1,BigDecimal.ROUND_HALF_UP)));
         }
         if(!StringUtils.isEmpty(produceInspectionRecordUt.getAcceptanceCriteria())){
@@ -1024,6 +1077,10 @@ public class ProduceInspectionRecordService {
         }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordUt), Map.class));
+        //灵敏度为空不显示公式
+        if(StringUtils.isEmpty(produceInspectionRecordUt.getSensitivity()) || !isNumber(produceInspectionRecordUt.getSensitivity())){
+            dataMap.remove("sensitivity");
+        }
 
         //图片base64编码
         if (!StringUtils.isEmpty(produceInspectionRecordUt.getDiagramAttachmentId())) {

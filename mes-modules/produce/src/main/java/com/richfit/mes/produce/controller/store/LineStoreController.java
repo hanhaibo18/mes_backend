@@ -45,6 +45,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.richfit.mes.produce.aop.LogConstant.CERTIFICATE;
+import static com.richfit.mes.produce.aop.LogConstant.LINE_STORE;
+
 /**
  * @author 王瑞
  * @Description 库存Controller
@@ -92,7 +95,7 @@ public class LineStoreController extends BaseController {
 
 
     @ApiOperation(value = "入库", notes = "毛坯或半成品/成品入库")
-    @OperationLog(actionType = "0", actionItem = "3")
+    @OperationLog(actionType = "0", actionItem = "3", argType = LINE_STORE)
     @PostMapping("/line_store")
     public CommonResult<LineStore> addLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore,
                                                 @ApiParam(value = "启始序列号") @RequestParam(required = false) String startNo,
@@ -158,6 +161,7 @@ public class LineStoreController extends BaseController {
     }
 
     @ApiOperation(value = "来料接收入库", notes = "根据合格证，实现半成品/成品入库")
+    @OperationLog(actionType = "0", actionItem = "3", argType = CERTIFICATE)
     @PostMapping("/add_by_cert")
     public CommonResult<Boolean> addLineStoreByCert(@ApiParam(value = "合格证信息") @RequestBody Certificate cert) throws Exception {
 
@@ -168,7 +172,7 @@ public class LineStoreController extends BaseController {
     }
 
     @ApiOperation(value = "修改入库信息", notes = "修改入库信息")
-    @OperationLog(actionType = "1", actionItem = "3")
+    @OperationLog(actionType = "1", actionItem = "3", argType = LINE_STORE)
     @PutMapping("/line_store")
     public CommonResult<LineStore> updateLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore) {
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {

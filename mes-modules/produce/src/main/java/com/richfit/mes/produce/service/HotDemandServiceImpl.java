@@ -272,6 +272,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         if (CollectionUtils.isEmpty(hotDemands)) {
             return CommonResult.success(ResultCode.SUCCESS, "不可重复批准生产");
         } else {
+            //计划数量必须大于零的校验(防止生成的计划数量为0导致通过计划添加跟单不显示的问题)
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
                     return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
@@ -353,7 +354,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
-       // queryWrapper.eq("branch_code", branchCode);
+        // queryWrapper.eq("branch_code", branchCode);
         queryWrapper.apply("(produce_state=0 or produce_state is null)");
         queryWrapper.in("id", idList);
         //无模型"且“未排产”产品
@@ -386,37 +387,37 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         Map<String,String> planIdMap=new HashMap<>();
         for (HotDemand hotDemand : hotDemands) {
             Plan plan = new Plan();
-            plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
-            plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));//计划编号
-            plan.setWorkNo(hotDemand.getWorkNo());//工作号
-            plan.setDrawNo(hotDemand.getDrawNo());//图号
-            plan.setProjNum(hotDemand.getPlanNum());//计划数量
-            plan.setStartTime(new Date());//开始时间
-            plan.setPriority("0");//优先级 0低 1中 2高
-            plan.setCreateBy(currentUser.getUsername());//创建人
-            plan.setCreateTime(new Date());//创建时间
-            plan.setTenantId(hotDemand.getTenantId());//租户id
-            //车间码处理
-            this.disposeBranchCode(branchType, hotDemand, plan);
+                plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
+                plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));//计划编号
+                plan.setWorkNo(hotDemand.getWorkNo());//工作号
+                plan.setDrawNo(hotDemand.getDrawNo());//图号
+                plan.setProjNum(hotDemand.getPlanNum());//计划数量
+                plan.setStartTime(new Date());//开始时间
+                plan.setPriority("0");//优先级 0低 1中 2高
+                plan.setCreateBy(currentUser.getUsername());//创建人
+                plan.setCreateTime(new Date());//创建时间
+                plan.setTenantId(hotDemand.getTenantId());//租户id
+                //车间码处理
+                this.disposeBranchCode(branchType, hotDemand, plan);
 
-            plan.setTexture(hotDemand.getTexture());//材质
-            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
-//            plan.setApprovalBy(currentUser.getUsername());//审批人
-//            plan.setApprovalTime(new Date());//审批时间
-            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
-            plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
-            //--------------------------
-            plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
-            plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
-            plan.setBlank(hotDemand.getWorkblankType());//毛坯
-            plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
-            plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
-            plan.setModifyBy(currentUser.getUsername());
-            plan.setModifyTime(new Date());
-            plan.setDrawNoName("");//图号名称
-            planService.save(plan);
-            //扩展字段保存
-            this.saveExtend(hotDemand, plan);
+                plan.setTexture(hotDemand.getTexture());//材质
+                plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
+    //            plan.setApprovalBy(currentUser.getUsername());//审批人
+    //            plan.setApprovalTime(new Date());//审批时间
+                plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
+                plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
+                //--------------------------
+                plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
+                plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
+                plan.setBlank(hotDemand.getWorkblankType());//毛坯
+                plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
+                plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
+                plan.setModifyBy(currentUser.getUsername());
+                plan.setModifyTime(new Date());
+                plan.setDrawNoName("");//图号名称
+                planService.save(plan);
+                //扩展字段保存
+                this.saveExtend(hotDemand, plan);
             planIdMap.put(hotDemand.getId(),plan.getId());
         }
         return planIdMap;
@@ -430,19 +431,19 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     private void saveExtend(HotDemand hotDemand, Plan plan) {
         //扩展字段保存
         PlanExtend planExtend = new PlanExtend();
-        planExtend.setProjectName(hotDemand.getProjectName());//项目名称
-        planExtend.setProductName(hotDemand.getDemandName());//产品名称
-        planExtend.setSampleNum(0);//实样数量
-        planExtend.setDemandId(hotDemand.getId());//需求表id
-        planExtend.setPlanId(plan.getId());//生产计划id
-        planExtend.setWeight(hotDemand.getWeight());//重量
-        planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重
-        planExtend.setSteelWaterWeight(hotDemand.getSteelWaterWeight());//钢水重
-        planExtend.setDemandTime(hotDemand.getDemandTime());//需求日期
-        planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人
-        planExtend.setSubmitOrderOrg(hotDemand.getSubmitOrderOrg());//提单单位
-        planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
-        planExtend.setIngotCase(hotDemand.getIngotCase());//锭 型
+            planExtend.setProjectName(hotDemand.getProjectName());//项目名称
+            planExtend.setProductName(hotDemand.getDemandName());//产品名称
+            planExtend.setSampleNum(0);//实样数量
+            planExtend.setDemandId(hotDemand.getId());//需求表id
+            planExtend.setPlanId(plan.getId());//生产计划id
+            planExtend.setWeight(hotDemand.getWeight());//重量
+            planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重
+            planExtend.setSteelWaterWeight(hotDemand.getSteelWaterWeight());//钢水重
+            planExtend.setDemandTime(hotDemand.getDemandTime());//需求日期
+            planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人
+            planExtend.setSubmitOrderOrg(hotDemand.getSubmitOrderOrg());//提单单位
+            planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
+            planExtend.setIngotCase(hotDemand.getIngotCase());//锭 型
         planExtendService.save(planExtend);
     }
 

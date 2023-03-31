@@ -453,22 +453,22 @@ public class DisqualificationItemVo {
     }
 
     public void DisqualificationFinalResult(DisqualificationFinalResult finalResult) {
-        //发现车间
-        this.discoverBranch = finalResult.getDiscoverBranch();
-        //发现工序
-        this.discoverItem = finalResult.getDiscoverItem();
-        //总重量
-        this.totalWeight = finalResult.getTotalWeight();
-        //废品损失
-        this.abandonmentLoss = finalResult.getAbandonmentLoss();
-        //废品工时
-        this.discardTime = finalResult.getDiscardTime();
-        //回用工时
-        this.reuseTime = finalResult.getReuseTime();
-        //让步接收数量
-        this.acceptDeviation = finalResult.getAcceptDeviation();
-        //让步接收损失
-        this.acceptDeviationLoss = finalResult.getAcceptDeviationLoss();
+//        //发现车间
+//        this.discoverBranch = finalResult.getDiscoverBranch();
+//        //发现工序
+//        this.discoverItem = finalResult.getDiscoverItem();
+//        //总重量
+//        this.totalWeight = finalResult.getTotalWeight();
+//        //废品损失
+//        this.abandonmentLoss = finalResult.getAbandonmentLoss();
+//        //废品工时
+//        this.discardTime = finalResult.getDiscardTime();
+//        //回用工时
+//        this.reuseTime = finalResult.getReuseTime();
+//        //让步接收数量
+//        this.acceptDeviation = finalResult.getAcceptDeviation();
+//        //让步接收损失
+//        this.acceptDeviationLoss = finalResult.getAcceptDeviationLoss();
         //让步接收损失编号
         if (finalResult.getAcceptDeviationNo() != null) {
             this.acceptDeviationNoList = Arrays.asList(finalResult.getAcceptDeviationNo().split(","));
@@ -477,10 +477,10 @@ public class DisqualificationItemVo {
         }
 
 
-        //返修数量
-        this.repairQuantity = finalResult.getRepairQuantity();
-        //返修损失
-        this.repairLoss = finalResult.getRepairLoss();
+//        //返修数量
+//        this.repairQuantity = finalResult.getRepairQuantity();
+//        //返修损失
+//        this.repairLoss = finalResult.getRepairLoss();
         //返修后产品编号
         if (finalResult.getRepairNo() != null) {
             this.repairNoList = Arrays.asList(finalResult.getRepairNo().split(","));
@@ -488,19 +488,19 @@ public class DisqualificationItemVo {
             this.repairNoList = new ArrayList<>(Collections.singletonList(finalResult.getRepairNo()));
         }
         //返修后结果
-        this.recapDemerits = finalResult.getRecapDemerits();
-        //返修描述
-        this.recapDescribe = finalResult.getRecapDescribe();
-        //返修检验员
-        this.recapUser = finalResult.getRecapUser();
-        //返修时间
-        this.recapTime = finalResult.getRecapTime();
-
-
-        //返修合格数量
-        this.repairQualified = finalResult.getRepairQualified();
-        //返修合格损失
-        this.repairQualifiedLoss = finalResult.getRepairQualifiedLoss();
+//        this.recapDemerits = finalResult.getRecapDemerits();
+//        //返修描述
+//        this.recapDescribe = finalResult.getRecapDescribe();
+//        //返修检验员
+//        this.recapUser = finalResult.getRecapUser();
+//        //返修时间
+//        this.recapTime = finalResult.getRecapTime();
+//
+//
+//        //返修合格数量
+//        this.repairQualified = finalResult.getRepairQualified();
+//        //返修合格损失
+//        this.repairQualifiedLoss = finalResult.getRepairQualifiedLoss();
         //返修合格产品编号
         if (finalResult.getRepairQualifiedNo() != null) {
             this.repairQualifiedNoList = Arrays.asList(finalResult.getRepairQualifiedNo().split(","));
@@ -509,10 +509,10 @@ public class DisqualificationItemVo {
         }
 
 
-        //返修不合格数量
-        this.repairNotQualified = finalResult.getRepairNotQualified();
-        //返修不合格损失
-        this.repairNotQualifiedLoss = finalResult.getRepairNotQualifiedLoss();
+//        //返修不合格数量
+//        this.repairNotQualified = finalResult.getRepairNotQualified();
+//        //返修不合格损失
+//        this.repairNotQualifiedLoss = finalResult.getRepairNotQualifiedLoss();
         //返修不合格产品编号
         if (finalResult.getRepairNotQualifiedNo() != null) {
             this.repairNotQualifiedNoList = Arrays.asList(finalResult.getRepairNotQualifiedNo().split(","));
@@ -522,9 +522,9 @@ public class DisqualificationItemVo {
 
 
         //报废数量
-        this.scrap = finalResult.getScrap();
-        //报废损失
-        this.scrapLoss = finalResult.getScrapLoss();
+//        this.scrap = finalResult.getScrap();
+//        //报废损失
+//        this.scrapLoss = finalResult.getScrapLoss();
         //报废后产品编号
         if (finalResult.getScrapNo() != null) {
             this.scrapNoList = Arrays.asList(finalResult.getScrapNo().split(","));
@@ -532,9 +532,9 @@ public class DisqualificationItemVo {
             this.scrapNoList = new ArrayList<>(Collections.singletonList(finalResult.getScrapNo()));
         }
         //退货数量
-        this.salesReturn = finalResult.getSalesReturn();
-        //退货损失
-        this.salesReturnLoss = finalResult.getSalesReturnLoss();
+//        this.salesReturn = finalResult.getSalesReturn();
+//        //退货损失
+//        this.salesReturnLoss = finalResult.getSalesReturnLoss();
         //退货产品编号
         if (finalResult.getSalesReturnNo() != null) {
             this.salesReturnNoList = Arrays.asList(finalResult.getSalesReturnNo().split(","));
@@ -542,56 +542,56 @@ public class DisqualificationItemVo {
             this.salesReturnNoList = new ArrayList<>(Collections.singletonList(finalResult.getSalesReturnNo()));
         }
         //责任单位内
-        this.unitResponsibilityWithin = finalResult.getUnitResponsibilityWithin();
-        //责任单位外
-        this.unitResponsibilityOutside = finalResult.getUnitResponsibilityOutside();
-        //发现车间
-        this.discoverTenant = finalResult.getDiscoverTenant();
-
-        //质控意见
-        this.qualityControlOpinion = finalResult.getQualityControlOpinion();
-        //质控姓名
-        this.qualityName = finalResult.getQualityName();
-        //质控时间
-        this.qualityTime = finalResult.getQualityTime();
-
-        //处理单位1
-        this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
-        //处理单位1意见
-        this.unitTreatmentOneOpinion = finalResult.getUnitTreatmentOneOpinion();
-        //处理单位1姓名
-        this.treatmentOneName = finalResult.getTreatmentOneName();
-        //处理单位1时间
-        this.treatmentOneTime = finalResult.getTreatmentOneTime();
-
-        //处理单位2
-        this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
-        //处理单位2意见
-        this.unitTreatmentTwoOpinion = finalResult.getUnitTreatmentTwoOpinion();
-        //处理单位2姓名
-        this.treatmentTwoName = finalResult.getTreatmentTwoName();
-        //处理单位2时间
-        this.treatmentTwoTime = finalResult.getTreatmentTwoTime();
-
-        //责任裁决意见
-        this.responsibilityOpinion = finalResult.getResponsibilityOpinion();
-        //责任裁决姓名
-        this.responsibilityName = finalResult.getResponsibilityName();
-        //责任裁决时间
-        this.responsibilityTime = finalResult.getResponsibilityTime();
-
-        //技术裁决意见
-        this.technologyOpinion = finalResult.getTechnologyOpinion();
-        //技术裁决姓名
-        this.technologyName = finalResult.getTechnologyName();
-        //技术裁决时间
-        this.technologyTime = finalResult.getTechnologyTime();
-
-        //不合格情况(意见)
-        this.disqualificationCondition = finalResult.getDisqualificationCondition();
-        //不合格姓名
-        this.disqualificationName = finalResult.getDisqualificationName();
-        //不合格时间
-        this.disqualificationTime = finalResult.getDisqualificationTime();
+//        this.unitResponsibilityWithin = finalResult.getUnitResponsibilityWithin();
+//        //责任单位外
+//        this.unitResponsibilityOutside = finalResult.getUnitResponsibilityOutside();
+//        //发现车间
+//        this.discoverTenant = finalResult.getDiscoverTenant();
+//
+//        //质控意见
+//        this.qualityControlOpinion = finalResult.getQualityControlOpinion();
+//        //质控姓名
+//        this.qualityName = finalResult.getQualityName();
+//        //质控时间
+//        this.qualityTime = finalResult.getQualityTime();
+//
+//        //处理单位1
+//        this.unitTreatmentOne = finalResult.getUnitTreatmentOne();
+//        //处理单位1意见
+//        this.unitTreatmentOneOpinion = finalResult.getUnitTreatmentOneOpinion();
+//        //处理单位1姓名
+//        this.treatmentOneName = finalResult.getTreatmentOneName();
+//        //处理单位1时间
+//        this.treatmentOneTime = finalResult.getTreatmentOneTime();
+//
+//        //处理单位2
+//        this.unitTreatmentTwo = finalResult.getUnitTreatmentTwo();
+//        //处理单位2意见
+//        this.unitTreatmentTwoOpinion = finalResult.getUnitTreatmentTwoOpinion();
+//        //处理单位2姓名
+//        this.treatmentTwoName = finalResult.getTreatmentTwoName();
+//        //处理单位2时间
+//        this.treatmentTwoTime = finalResult.getTreatmentTwoTime();
+//
+//        //责任裁决意见
+//        this.responsibilityOpinion = finalResult.getResponsibilityOpinion();
+//        //责任裁决姓名
+//        this.responsibilityName = finalResult.getResponsibilityName();
+//        //责任裁决时间
+//        this.responsibilityTime = finalResult.getResponsibilityTime();
+//
+//        //技术裁决意见
+//        this.technologyOpinion = finalResult.getTechnologyOpinion();
+//        //技术裁决姓名
+//        this.technologyName = finalResult.getTechnologyName();
+//        //技术裁决时间
+//        this.technologyTime = finalResult.getTechnologyTime();
+//
+//        //不合格情况(意见)
+//        this.disqualificationCondition = finalResult.getDisqualificationCondition();
+//        //不合格姓名
+//        this.disqualificationName = finalResult.getDisqualificationName();
+//        //不合格时间
+//        this.disqualificationTime = finalResult.getDisqualificationTime();
     }
 }

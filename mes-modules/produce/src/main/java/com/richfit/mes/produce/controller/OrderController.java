@@ -14,9 +14,11 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.OrderDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
@@ -31,6 +33,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,6 +43,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.richfit.mes.produce.aop.LogConstant.ORDER;
+import static com.richfit.mes.produce.aop.LogConstant.ORDER_ID;
 
 /**
  * @Author: GaoLiang
@@ -95,13 +102,13 @@ public class OrderController extends BaseController {
         List<String> materialCodes = orderList.getRecords().stream().map(x -> x.getMaterialCode()).collect(Collectors.toList());
         //根据物料号查询物料信息
         List<Product> productList = baseServiceClient.listByMaterialNoList(materialCodes);
-        if (!CollectionUtils.isEmpty(productList)){
+        if (!CollectionUtils.isEmpty(productList)) {
             Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x));
             //把物料名称和图号拼接后存入订单描述字段内
             for (Order record : orderList.getRecords()) {
                 Product product = productMap.get(record.getMaterialCode());
                 //物料不为空
-                if(!ObjectUtils.isEmpty(product)){
+                if (!ObjectUtils.isEmpty(product)) {
                     record.setProductName(product.getProductName());//产品名称
                     record.setDrawingNo(product.getDrawingNo());//图号
                 }
@@ -174,7 +181,7 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "新增计划信息", notes = "新增计划信息")
     @ApiImplicitParam(name = "order", value = "订单", required = true, dataType = "Order", paramType = "body")
     @PostMapping("/save")
-    @OperationLog(actionType = "0", actionItem = "0")
+    @OperationLog(actionType = "0", actionItem = "0", argType = ORDER)
     public CommonResult<Boolean> savePlan(@RequestBody Order order) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         order.setStartTime(order.getOrderDate());
@@ -201,7 +208,7 @@ public class OrderController extends BaseController {
     @ApiOperation(value = "修改计划信息", notes = "修改计划信息")
     @ApiImplicitParam(name = "order", value = "订单", required = true, dataType = "Order", paramType = "body")
     @PutMapping("/update")
-    @OperationLog(actionType = "1", actionItem = "0")
+    @OperationLog(actionType = "1", actionItem = "0", argType = ORDER)
     public CommonResult<Boolean> updateOrder(@RequestBody Order order) throws GlobalException {
         order.setStartTime(order.getOrderDate());
         order.setEndTime(order.getDeliveryDate());
@@ -213,9 +220,14 @@ public class OrderController extends BaseController {
      */
     @ApiOperation(value = "删除计划信息", notes = "根据计划id删除计划记录")
     @ApiImplicitParam(name = "id", value = "订单id", required = true, dataType = "String", paramType = "path")
+    @OperationLog(actionType = "2", actionItem = "0", argType = ORDER_ID)
     @DeleteMapping("/delete/{id}")
-    public void delById(@PathVariable String id, HttpServletRequest request) throws GlobalException {
-        orderService.deleteOrder(id, request);
+    public void delById(@PathVariable String id) throws GlobalException {
+        Order order = orderService.getById(id);
+        //记录操作日志
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        actionService.saveAction(ActionUtil.buildAction(order.getBranchCode(), "2", "0", "订单号：" + order.getOrderSn(), OperationLogAspect.getIpAddress(request)));
+        orderService.deleteOrder(id);
     }
 
     @ApiOperation(value = "导出订单信息", notes = "通过Excel文档导出订单信息")

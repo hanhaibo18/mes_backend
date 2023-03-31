@@ -104,7 +104,7 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto, HttpServletRequest request);
+    boolean saveTrackHead(TrackHeadPublicDto trackHeadPublicDto);
 
     /**
      * 描述: 跟单更新
