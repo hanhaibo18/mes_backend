@@ -8,6 +8,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * @author 王瑞
  * @Description 物料服务
@@ -24,4 +26,11 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     CommonResult<String> importMaterialExcel(MultipartFile file);
+
+    /**
+     * 同步选中物料数据物料到wms
+     * @param ids
+     * @return
+     */
+    CommonResult<Boolean> saveWmsSync(List<String> ids);
 }

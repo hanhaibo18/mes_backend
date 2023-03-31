@@ -3,16 +3,21 @@ package com.richfit.mes.base.service;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProductMapper;
+import com.richfit.mes.base.provider.SystemServiceClient;
+import com.richfit.mes.base.provider.WmsServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.wms.MaterialBasis;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +40,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     private ProductMapper productMapper;
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private WmsServiceClient wmsServiceClient;
+
+    @Autowired
+    private SystemServiceClient systemServiceClient;
 
     @Override
     public IPage<Product> selectProduct(Page<Product> page, QueryWrapper<Product> query) {
@@ -90,9 +99,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     public CommonResult<String> importMaterialExcel(MultipartFile file) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         String tenantId = currentUser.getTenantId();
-
         String[] MaterialNames = {"materialNo", "drawingNo", "productName", "materialDate", "materialType", "objectType", "materialDesc", "texture", "weight", "unit", "isKeyPart", "isNeedPicking", "trackType", "isEdgeStore", "isCheck"};
-
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -100,13 +107,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         try {
             excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
             file.transferTo(excelFile);
-
             List<Product> productList = ExcelUtils.importExcel(excelFile, Product.class, MaterialNames, 1, 0, 0, tempName.toString());
-
             if (org.springframework.util.CollectionUtils.isEmpty(productList)) {
                 return CommonResult.failed("未检测到有物料导入！");
             }
-
             // 判断SAP 物料编码是否存在
             boolean exist = false;
             List<String> productAddByIdList = new ArrayList<>();
@@ -131,11 +135,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 if (StringUtils.isNullOrEmpty(product.getTrackType())) {
                     return CommonResult.failed("跟踪类型不能为空！");
                 }
-
                 product.setTenantId(tenantId);
                 product.setMaterialNo(product.getMaterialNo().trim());
                 product.setDrawingNo(product.getDrawingNo().trim());
-
                 if (StringUtils.isNullOrEmpty(product.getIsKeyPart())) {
                     product.setIsKeyPart("否");
                 }
@@ -158,14 +160,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 }
             }
 
-
-            if (productAddList.size() > 0) {
+            if (CollectionUtils.isNotEmpty(productAddList)) {
                 productService.saveBatch(productAddList);
             }
-            if (productUpdateList.size() > 0) {
+            if (CollectionUtils.isNotEmpty(productUpdateList)) {
                 productService.updateBatchById(productUpdateList);
             }
-
             if (exist) {
                 return CommonResult.success("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList,"导入成功");
             }
@@ -182,9 +182,70 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         queryWrapper.eq("tenant_id", product.getTenantId());
         queryWrapper.eq("material_no", product.getMaterialNo());
         List<Product> list = productService.list(queryWrapper);
-        if (list.size() > 0) {
+        if (CollectionUtils.isNotEmpty(list)) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 勾选物料同步到wms
+     * @param ids
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> saveWmsSync(List<String> ids) {
+        List<Product> productList = productMapper.selectBatchIds(ids);
+        if (CollectionUtils.isEmpty(productList)) {
+            return CommonResult.failed("未勾选中物料数据");
+        }
+
+        List<String> erpCodeList = new ArrayList<>();
+        // 关联租户 获取erpCode
+        for (Product product : productList) {
+            CommonResult<Tenant> tenant = systemServiceClient.tenantById(product.getTenantId());
+            erpCodeList.add(tenant.getData().getTenantErpCode());
+        }
+        Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product));
+
+        if (CollectionUtils.isNotEmpty(erpCodeList)) {
+            int init = 0;
+            Float number = 0.0F;
+            List<MaterialBasis> materialBasisList = new ArrayList<>();
+            MaterialBasis materialBasis = new MaterialBasis();
+            for (Product product : productList) {
+                materialBasis.setWorkCode(erpCodeList.get(init));
+                materialBasis.setMaterialNum(productMap.get(product.getId()).getMaterialNo());
+                materialBasis.setMaterialDesc(productMap.get(product.getId()).getMaterialDesc());
+                materialBasis.setUnit(productMap.get(product.getId()).getUnit());
+                materialBasis.setCrucialFlag(productMap.get(product.getId()).getIsKeyPart());
+                materialBasis.setTrackingMode(productMap.get(product.getId()).getTrackType());
+                materialBasis.setPartsMaterial(productMap.get(product.getId()).getTexture());
+                materialBasis.setSpec(productMap.get(product.getId()).getSpecification());
+                if (productMap.get(product.getId()).getWeight() == null) {
+                    materialBasis.setSingleWeight(number.toString());
+                } else {
+                    materialBasis.setSingleWeight(productMap.get(product.getId()).getWeight().toString());
+                }
+                materialBasis.setDeliveryFlag(productMap.get(product.getId()).getIsEdgeStore());
+                materialBasis.setProduceType(productMap.get(product.getId()).getMaterialType());
+                materialBasis.setMaterialType(productMap.get(product.getId()).getMaterialType());
+                materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
+                materialBasis.setField1("");
+                materialBasis.setField2("");
+                materialBasis.setField3("");
+                materialBasis.setField4("");
+                materialBasis.setField5("");
+                materialBasisList.add(materialBasis);
+                init ++;
+            }
+            // 同步到wms中
+            for (MaterialBasis material : materialBasisList) {
+                wmsServiceClient.materialBasis(material);
+            }
+            return CommonResult.success(true,"操作成功");
+        }
+        return CommonResult.failed("操作失败");
     }
 }

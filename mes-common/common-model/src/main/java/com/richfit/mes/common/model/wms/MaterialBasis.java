@@ -14,7 +14,7 @@ public class MaterialBasis implements Serializable {
     /**
      * 工厂 泵业/热工等
      */
-    private Integer workCode;
+    private String workCode;
 
     /**
      * 物料编码
@@ -34,12 +34,12 @@ public class MaterialBasis implements Serializable {
     /**
      * 关键件 是/否
      */
-    private Integer crucialFlag;
+    private String crucialFlag;
 
     /**
      * 跟踪方式 单件/批次
      */
-    private Integer trackingMode;
+    private String trackingMode;
 
     /**
      * 材质 为零件材料
@@ -54,22 +54,22 @@ public class MaterialBasis implements Serializable {
     /**
      * 单重
      */
-    private Double singleWeight;
+    private String singleWeight;
 
     /**
      * 实物配送 是/否
      */
-    private Integer deliveryFlag;
+    private String deliveryFlag;
 
     /**
      * 制造类型 外购、外协、自制
      */
-    private Integer produceType;
+    private String produceType;
 
     /**
      * 物料类型 毛坯、成品、半成品
      */
-    private Integer materialType;
+    private String materialType;
 
     /**
      * 车间

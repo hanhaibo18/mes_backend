@@ -23,24 +23,20 @@ public class ProductToWmsThreeService {
     @Autowired
     SystemServiceClient systemServiceClient;
 
-    private final String mesUploadAPiKey = "wms-url-jk";
+    /**
+     * 密钥
+     */
     private final String mesUrlKey = "wms-url-key";
-    private final String mesScddUploadKey = "wms-url-scdd-upload";
-    private final String mesUrlTokenKey = "wms-url-token";
-    private final String mesUrlQueryMaterialCountApiKey = "wms-url-query-material-count";
+    private final String wmsUrlUploadMat = "wms-url-upload-mat";
 
-    private String mesUploadApi = "";
     private String mesToWmsApiKey = "";
     private String mesScddUploadApi = "";
-    private String mesUrlToken = "";
-    private String mesUrlQueryMaterialCountApi = "";
+    private String mesUploadMatApi = "";
 
     private void init() {
-        mesUploadApi = systemServiceClient.findItemParamByCode(mesUploadAPiKey).getData().getLabel();
+
         mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey).getData().getLabel();
-        mesScddUploadApi = systemServiceClient.findItemParamByCode(mesScddUploadKey).getData().getLabel();
-        mesUrlToken = systemServiceClient.findItemParamByCode(mesUrlTokenKey).getData().getLabel();
-        mesUrlQueryMaterialCountApi = systemServiceClient.findItemParamByCode(mesUrlQueryMaterialCountApiKey).getData().getLabel();
+        mesUploadMatApi = systemServiceClient.findItemParamByCode(wmsUrlUploadMat).getData().getLabel();
     }
 
 
@@ -55,7 +51,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", materialBasisEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesUploadMatApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }

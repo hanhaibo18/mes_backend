@@ -44,6 +44,8 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/tenant/{id}")
     public CommonResult<Tenant> getTenant(@PathVariable String id);
 
+    @GetMapping(value = "/api/sys/tenant/getTenantById")
+    public CommonResult<Tenant> tenantById(@RequestParam String id);
     /**
      * 功能描述: 根据组织机构获取质检人员
      *
