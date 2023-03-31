@@ -124,7 +124,7 @@ public class OperationLogAspect {
                         else if (ORDER_ID.equals(argType) && !StringUtils.isNullOrEmpty(id)) {
                             Order orderById = orderService.getById(id);
                             if (orderById != null) {
-                                actionService.saveAction(ActionUtil.buildAction(order.getBranchCode(), actionType, "0", "订单号：" + order.getOrderSn(), getIpAddress(request)));
+                                actionService.saveAction(ActionUtil.buildAction(orderById.getBranchCode(), actionType, "0", "订单号：" + orderById.getOrderSn(), getIpAddress(request)));
                             }
                         }
                         break;
@@ -136,7 +136,7 @@ public class OperationLogAspect {
                         else if (PLAN_ID.equals(argType) && !StringUtils.isNullOrEmpty(id)) {
                             Plan planById = planService.getById(id);
                             if (planById != null) {
-                                actionService.saveAction(ActionUtil.buildAction(plan.getBranchCode(), actionType, "1", "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), getIpAddress(request)));
+                                actionService.saveAction(ActionUtil.buildAction(planById.getBranchCode(), actionType, "1", "计划号：" + planById.getProjNum() + "，图号：" + planById.getDrawNo(), getIpAddress(request)));
                             }
                         }//传入参数是PLAN_SPLIT_DTO
                         else if (PLAN_SPLIT_DTO.equals(argType) && planSplitDto != null) {
@@ -148,8 +148,10 @@ public class OperationLogAspect {
                         //传入参数是trackHeadId，根据Id查询TrackHead实体
                         if (TRACK_HEAD_ID.equals(argType) && StringUtils.isNullOrEmpty(id)) {
                             TrackHead trackHeadById = trackHeadService.getById(id);
-                            actionService.saveAction(ActionUtil.buildAction
-                                    (trackHead.getBranchCode(), actionType, "2", "取消跟单计划，跟单号：" + trackHeadById.getTrackNo(), getIpAddress(request)));
+                            if (trackHeadById != null) {
+                                actionService.saveAction(ActionUtil.buildAction
+                                        (trackHeadById.getBranchCode(), actionType, "2", "取消跟单计划，跟单号：" + trackHeadById.getTrackNo(), getIpAddress(request)));
+                            }
                         }//传入参数为TRACK_HEAD_PUBLIC_DTO
                         else if (TRACK_HEAD_PUBLIC_DTO.equals(argType) && trackHeadPublicDto != null) {
                             actionService.saveAction(ActionUtil.buildAction

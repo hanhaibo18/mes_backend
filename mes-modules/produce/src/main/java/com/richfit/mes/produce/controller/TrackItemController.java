@@ -364,12 +364,19 @@ public class TrackItemController extends BaseController {
         queryWrapper.eq("flow_id", flowId);
         queryWrapper.eq("is_current", 1);
         List<TrackItem> list = trackItemService.list(queryWrapper);
-        List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> trackNoList = new ArrayList<>();
+        List<String> optNoList = new ArrayList<>();
+        List<String> optNameList = new ArrayList<>();
+        for (TrackItem trackItem : list) {
+            trackNoList.add(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+            optNoList.add(trackItem.getOptNo());
+            optNameList.add(trackItem.getOptName());
+        }
         String error = trackItemService.nextSequence(flowId);
         if ("success".equals(error)) {
             actionService.saveAction(
                     ActionUtil.buildAction(list.get(0).getBranchCode(), "4", "2",
-                            "更新至下工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
+                            "更新至下工序，跟单号：" + trackNoList + "，更新前工序号：" + optNoList + "，更新前工序名：" + optNameList, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success("success");
         } else {
             return CommonResult.failed(error);
@@ -385,13 +392,20 @@ public class TrackItemController extends BaseController {
         queryWrapper.eq("flow_id", flowId);
         queryWrapper.eq("is_current", 1);
         List<TrackItem> list = trackItemService.list(queryWrapper);
-        List<String> ItemIdList = list.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> trackNoList = new ArrayList<>();
+        List<String> optNoList = new ArrayList<>();
+        List<String> optNameList = new ArrayList<>();
+        for (TrackItem trackItem : list) {
+            trackNoList.add(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+            optNoList.add(trackItem.getOptNo());
+            optNameList.add(trackItem.getOptName());
+        }
 
         String result = trackItemService.backSequence(flowId);
         if ("success".equals(result)) {
             actionService.saveAction(
                     ActionUtil.buildAction(list.get(0).getBranchCode(), "4", "2",
-                            "回滚至上工序，当前工序ID：" + ItemIdList, OperationLogAspect.getIpAddress(request)));
+                            "回滚至上工序，跟单号：" + trackNoList + "，回滚前工序号：" + optNoList + "，回滚前工序名：" + optNameList, OperationLogAspect.getIpAddress(request)));
             return CommonResult.success("success");
         }
         return CommonResult.failed(result);
