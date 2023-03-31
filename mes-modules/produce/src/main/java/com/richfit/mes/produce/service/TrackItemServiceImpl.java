@@ -779,8 +779,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     @Override
     public DisqualificationItemVo queryDisqualificationByItem(String tiId, String branchCode) {
         TrackItem trackItem = this.getById(tiId);
-        if (null == trackItem) {
-            return null;
+        if (StrUtil.isNotBlank(trackItem.getDisqualificationId())) {
+            return disqualificationService.inquiryRequestFormNew(trackItem.getDisqualificationId(), branchCode);
         }
         DisqualificationItemVo disqualification = new DisqualificationItemVo();
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -799,13 +799,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         disqualification.setBranchCode(trackItem.getBranchCode());
         disqualification.setTenantId(trackItem.getTenantId());
         disqualification.setTrackHeadType(trackHead.getTrackType());
-        if (StrUtil.isBlank(trackItem.getDisqualificationId())) {
-            DisqualificationItemVo data = disqualificationService.queryLastTimeDataByCreateBy(branchCode);
-            disqualification.setQualityCheckBy(data.getQualityCheckBy());
-            disqualification.setTypeList(data.getTypeList());
-            disqualification.setDisqualificationType(data.getDisqualificationType());
-            disqualification.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
-        }
+        //查询上次提交记录
+        DisqualificationItemVo data = disqualificationService.queryLastTimeDataByCreateBy(branchCode);
+        disqualification.setQualityCheckBy(data.getQualityCheckBy());
+        disqualification.setTypeList(Arrays.asList(data.getDisqualificationType().split(",")));
+        disqualification.setDisqualificationType(data.getDisqualificationType());
+        disqualification.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
         return disqualification;
     }
 }
