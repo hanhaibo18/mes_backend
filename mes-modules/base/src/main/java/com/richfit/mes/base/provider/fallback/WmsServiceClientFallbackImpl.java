@@ -6,6 +6,8 @@ import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.wms.MaterialBasis;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 
 /**
  * @author: llh
@@ -16,7 +18,7 @@ public class WmsServiceClientFallbackImpl implements WmsServiceClient {
 
 
     @Override
-    public CommonResult<ApplicationResult> materialBasis(MaterialBasis materialBasis) {
+    public CommonResult<ApplicationResult> materialBasis(List<MaterialBasis> materialBasisList) {
         return null;
     }
 }

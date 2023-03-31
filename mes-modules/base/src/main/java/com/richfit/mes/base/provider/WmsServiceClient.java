@@ -9,6 +9,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 /**
  * @author: llh
  * @date: 2023/3/30 11:30
@@ -18,9 +20,9 @@ public interface WmsServiceClient {
 
     /**
      * 同步物料数据物料到wms
-     * @param materialBasis
+     * @param materialBasisList
      * @return
      */
     @PostMapping("/api/integration/wms/three/material_basis")
-    public CommonResult<ApplicationResult> materialBasis(@RequestBody MaterialBasis materialBasis);
+    public CommonResult<ApplicationResult> materialBasis(@RequestBody List<MaterialBasis> materialBasisList);
 }

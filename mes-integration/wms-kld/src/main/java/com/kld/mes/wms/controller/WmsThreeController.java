@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @Author: zhiqiang.lu
@@ -26,8 +27,8 @@ public class WmsThreeController {
 
     @ApiOperation(value = "MES物料基础数据同步接口", notes = "将MES系统物料基础数据实时同步到WMS系统")
     @PostMapping("/material_basis")
-    public CommonResult<ApplicationResult> materialBasis(@RequestBody MaterialBasis materialBasis) {
-        return new CommonResult(productToWmsThreeService.materialBasisInterface(materialBasis));
+    public CommonResult<ApplicationResult> materialBasis(@RequestBody List<MaterialBasis> materialBasisList) {
+        return new CommonResult(productToWmsThreeService.materialBasisInterface(materialBasisList));
     }
 
     @ApiOperation(value = "WMS报检单上传MES", notes = "将WMS系统生成状态待报检的报检单上传MES，上传成功，WMS系统报检单状态更新已报检，上传不成功仍为待报检")
