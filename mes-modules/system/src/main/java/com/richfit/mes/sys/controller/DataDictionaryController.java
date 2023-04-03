@@ -8,10 +8,8 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.sys.DataDictionary;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
-import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.sys.service.DataDictionaryParamService;
 import com.richfit.mes.sys.service.DataDictionaryService;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/sys/data_dictionary")
-public class SysDataDictionaryController extends BaseController {
+public class DataDictionaryController extends BaseController {
     /**
      * 服务对象
      */
