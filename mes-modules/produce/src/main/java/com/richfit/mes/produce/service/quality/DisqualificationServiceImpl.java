@@ -532,21 +532,23 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             disqualificationItemVo.setBranchCode(branchCode);
             //赋值上一次申请单参数
             DisqualificationItemVo data = this.queryLastTimeDataByCreateBy(branchCode);
-            disqualificationItemVo.setQualityCheckBy(data.getQualityCheckBy());
-            disqualificationItemVo.setTrackHeadType(data.getTrackHeadType());
-            disqualificationItemVo.setTypeList(Arrays.asList(data.getDisqualificationType().split(",")));
-            disqualificationItemVo.setDisqualificationType(data.getDisqualificationType());
-            disqualificationItemVo.setDiscoverTenant(data.getDiscoverTenant());
-            disqualificationItemVo.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
-            //责任单位外 不为空
-            if (StrUtil.isNotBlank(data.getUnitResponsibilityOutside())) {
-                disqualificationItemVo.setUnitResponsibilityOutside(data.getUnitResponsibilityOutside());
+            if (data != null) {
+                disqualificationItemVo.setQualityCheckBy(data.getQualityCheckBy());
+                disqualificationItemVo.setTrackHeadType(data.getTrackHeadType());
+                disqualificationItemVo.setTypeList(Arrays.asList(data.getDisqualificationType().split(",")));
+                disqualificationItemVo.setDisqualificationType(data.getDisqualificationType());
+                disqualificationItemVo.setDiscoverTenant(data.getDiscoverTenant());
+                disqualificationItemVo.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
+                //责任单位外 不为空
+                if (StrUtil.isNotBlank(data.getUnitResponsibilityOutside())) {
+                    disqualificationItemVo.setUnitResponsibilityOutside(data.getUnitResponsibilityOutside());
+                }
+                //发现工序 不为空
+                if (StrUtil.isNotBlank(data.getDiscoverItem())) {
+                    disqualificationItemVo.setDiscoverItem(data.getDiscoverItem());
+                }
+                disqualificationItemVo.setTotalWeight(data.getTotalWeight());
             }
-            //发现工序 不为空
-            if (StrUtil.isNotBlank(data.getDiscoverItem())) {
-                disqualificationItemVo.setDiscoverItem(data.getDiscoverItem());
-            }
-            disqualificationItemVo.setTotalWeight(data.getTotalWeight());
             return disqualificationItemVo;
         }
         //有源头
@@ -782,6 +784,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         queryWrapper.eq("branch_code", branchCode);
         queryWrapper.orderByDesc("create_time");
         List<Disqualification> list = this.list(queryWrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
         BeanUtils.copyProperties(list.get(0), disqualificationItemVo);
         DisqualificationFinalResult finalResult = finalResultService.getById(disqualificationItemVo.getId());
         disqualificationItemVo.DisqualificationFinalResult(finalResult);

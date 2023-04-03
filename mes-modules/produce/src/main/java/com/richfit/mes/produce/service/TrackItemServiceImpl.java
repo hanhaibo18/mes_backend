@@ -804,10 +804,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         disqualification.setTrackHeadType(trackHead.getTrackType());
         //查询上次提交记录
         DisqualificationItemVo data = disqualificationService.queryLastTimeDataByCreateBy(branchCode);
-        disqualification.setQualityCheckBy(data.getQualityCheckBy());
-        disqualification.setTypeList(Arrays.asList(data.getDisqualificationType().split(",")));
-        disqualification.setDisqualificationType(data.getDisqualificationType());
-        disqualification.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
+        if (data != null) {
+            disqualification.setQualityCheckBy(data.getQualityCheckBy());
+            disqualification.setTypeList(Arrays.asList(data.getDisqualificationType().split(",")));
+            disqualification.setDisqualificationType(data.getDisqualificationType());
+            disqualification.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
+        }
         return disqualification;
     }
 }

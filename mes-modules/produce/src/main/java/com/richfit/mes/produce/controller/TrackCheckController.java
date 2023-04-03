@@ -754,7 +754,6 @@ public class TrackCheckController extends BaseController {
                 trackCheck.setModifyTime(new Date());
                 trackCheckService.save(trackCheck);
             }
-            //TODO:增加质检结果规则 控制是否下一步工序
             //控制是否下一步
             if (1 == rules.getData().getIsNext() && 1 == item.getIsCurrent()) {
                 Map<String, String> map = new HashMap<>(3);
