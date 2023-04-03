@@ -1,7 +1,7 @@
 package com.kld.mes.wms.utils.http;
 
 /**
- * @author zhangchunhui
+ * @author wangchenyu
  * @date 2018-08-27
  * @implNote 标准的HTTP状态码
  */
