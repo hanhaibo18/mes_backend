@@ -10,8 +10,10 @@ import com.richfit.mes.common.model.sys.DataDictionary;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.sys.service.DataDictionaryParamService;
 import com.richfit.mes.sys.service.DataDictionaryService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,8 @@ import java.util.List;
  * @author makejava
  * @since 2023-04-03 15:18:29
  */
+@Slf4j
+@Api(value = "数据字典", tags = {"数据字典"})
 @RestController
 @RequestMapping("/api/sys/data_dictionary")
 public class DataDictionaryController extends BaseController {
