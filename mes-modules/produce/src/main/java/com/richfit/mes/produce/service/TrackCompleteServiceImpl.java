@@ -425,7 +425,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             //记录报工操作
             actionService.saveAction(ActionUtil.buildAction(
-                    trackItem.getBranchCode(), "4", "2", "跟单报工，trackNo：" + completeDto.getTrackNo() ,
+                    trackItem.getBranchCode(), "4", "2", "跟单报工，跟单号：" + completeDto.getTrackNo() ,
                     OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(true);

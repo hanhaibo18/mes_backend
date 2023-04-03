@@ -413,7 +413,7 @@ public class TrackAssignController extends BaseController {
                 //保存派工操作记录
                 actionService.saveAction(ActionUtil.buildAction
                         (assign.getBranchCode(), "4", "2",
-                                "跟单派工，trackNo：" + assign.getTrackNo(),
+                                "跟单派工，跟单号：" + assign.getTrackNo(),
                                 OperationLogAspect.getIpAddress(request)));
             }
             return CommonResult.success(assigns, "操作成功！");

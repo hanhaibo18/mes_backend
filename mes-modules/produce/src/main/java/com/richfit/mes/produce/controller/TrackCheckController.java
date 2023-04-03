@@ -381,7 +381,7 @@ public class TrackCheckController extends BaseController {
                 //保存操作记录
                 actionService.saveAction(ActionUtil.buildAction
                         (batchAddScheduleDto.getBranchCode(), "4", "2",
-                                "调度审核，trackNo：" + (list.isEmpty() ? "null" : list.get(0).getTrackNo()) + "，下车间编码：" + batchAddScheduleDto.getNextBranchCode(),
+                                "调度审核，跟单号：" + (list.isEmpty() ? "null" : list.get(0).getTrackNo()) + "，下车间编码：" + batchAddScheduleDto.getNextBranchCode(),
                                 OperationLogAspect.getIpAddress(request)));
             }
             Map<String, String> map = new HashMap<>(3);
@@ -754,7 +754,6 @@ public class TrackCheckController extends BaseController {
                 trackCheck.setModifyTime(new Date());
                 trackCheckService.save(trackCheck);
             }
-            //TODO:增加质检结果规则 控制是否下一步工序
             //控制是否下一步
             if (1 == rules.getData().getIsNext() && 1 == item.getIsCurrent()) {
                 Map<String, String> map = new HashMap<>(3);
@@ -788,7 +787,7 @@ public class TrackCheckController extends BaseController {
             }
             //保存质检记录
             actionService.saveAction(ActionUtil.buildAction
-                    (trackCheck.getBranchCode(), "4", "2", "质检审核，trackNo:" + trackHead.getTrackNo() + "，质检结果:" + trackCheck.getResult(),
+                    (trackCheck.getBranchCode(), "4", "2", "质检审核，跟单号:" + trackHead.getTrackNo() + "，质检结果:" + trackCheck.getResult(),
                             OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(Boolean.TRUE);
