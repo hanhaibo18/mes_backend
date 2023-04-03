@@ -376,6 +376,21 @@ public class CodeRuleController extends BaseController {
         return CommonResult.success(codeRuleValueService.removeById(id));
     }
 
+    @ApiOperation(value = "获取编码默认值,并更新", notes = "获取编码默认值,并更新")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "tenantId", value = "输入项值，如图号", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "branchCode", value = "编码名称", required = true, paramType = "query", dataType = "string"),
+    })
+    @GetMapping("/get_code_update")
+    public CommonResult<String> getCodeUpdate(String code, String tenantId, String branchCode) {
+        try {
+            return CommonResult.success(Code.valueOnUpdate(code, tenantId, branchCode, codeRuleService));
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
     @ApiOperation(value = "获取编码默认值", notes = "获取编码默认值")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
@@ -385,7 +400,7 @@ public class CodeRuleController extends BaseController {
     @GetMapping("/get_code")
     public CommonResult<String> getCode(String code, String tenantId, String branchCode) {
         try {
-            return CommonResult.success(Code.valueOnUpdate(code, tenantId, branchCode, codeRuleService));
+            return CommonResult.success(Code.value(code, tenantId, branchCode, codeRuleService));
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
