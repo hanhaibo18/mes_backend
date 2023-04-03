@@ -139,6 +139,19 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 product.setTenantId(tenantId);
                 product.setMaterialNo(product.getMaterialNo().trim());
                 product.setDrawingNo(product.getDrawingNo().trim());
+                product.setProductName(product.getProductName());
+                product.setMaterialDate(product.getMaterialDate());
+                product.setMaterialType(product.getMaterialType());
+                product.setObjectType(product.getObjectType());
+                product.setMaterialDesc(product.getMaterialDesc());
+                product.setTexture(product.getTexture());
+                product.setWeight(product.getWeight());
+                product.setUnit(product.getUnit());
+                product.setIsKeyPart(product.getIsKeyPart());
+                product.setIsNeedPicking(product.getIsNeedPicking());
+                product.setTrackType(product.getTrackType());
+                product.setIsEdgeStore(product.getIsEdgeStore());
+                product.setIsCheck(product.getIsCheck());
                 if (StringUtils.isNullOrEmpty(product.getIsKeyPart())) {
                     product.setIsKeyPart("否");
                 }
@@ -151,6 +164,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 if (StringUtils.isNullOrEmpty(product.getIsCheck())) {
                     product.setIsCheck("否");
                 }
+
                 // 物料编码若存在则更新 否则就新增
                 if (checkExist(product) == true) {
                     productUpdateList.add(product);
@@ -166,6 +180,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             }
             if (CollectionUtils.isNotEmpty(productUpdateList)) {
                 productService.updateBatchById(productUpdateList);
+
             }
             if (exist) {
                 return CommonResult.success("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList,"导入成功");
@@ -184,6 +199,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         queryWrapper.eq("material_no", product.getMaterialNo());
         List<Product> list = productService.list(queryWrapper);
         if (CollectionUtils.isNotEmpty(list)) {
+            String id = list.stream().map(e -> e.getId()).collect(Collectors.toList()).get(0);
+            product.setId(id);
             return true;
         }
         return false;
@@ -212,7 +229,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
         if (CollectionUtils.isNotEmpty(erpCodeList)) {
             int init = 0;
-            Float number = 0.0F;
             List<MaterialBasis> materialBasisList = new ArrayList<>();
             MaterialBasis materialBasis = new MaterialBasis();
             for (Product product : productList) {
@@ -225,12 +241,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 materialBasis.setPartsMaterial(productMap.get(product.getId()).getTexture());
                 materialBasis.setSpec(productMap.get(product.getId()).getSpecification());
                 if (productMap.get(product.getId()).getWeight() == null) {
-                    materialBasis.setSingleWeight(number.toString());
+                    materialBasis.setSingleWeight(null);
                 } else {
                     materialBasis.setSingleWeight(productMap.get(product.getId()).getWeight().toString());
                 }
                 materialBasis.setDeliveryFlag(productMap.get(product.getId()).getIsEdgeStore());
-                materialBasis.setProduceType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
+                materialBasis.setProduceType("");
                 materialBasis.setMaterialType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
                 materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
                 materialBasis.setField1("");
