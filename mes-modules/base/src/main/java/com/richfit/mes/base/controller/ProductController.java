@@ -484,7 +484,7 @@ public class ProductController extends BaseController {
     @ApiImplicitParam(name = "file", value = "Excel文件", required = true, dataType = "__file", paramType = "form")
     @PostMapping("/import_material_excel")
     public CommonResult importMaterialExcel(@RequestParam("file") MultipartFile file) {
-        return CommonResult.success(productService.importMaterialExcel(file));
+        return productService.importMaterialExcel(file);
     }
 
     @ApiOperation(value = "导出物料信息", notes = "通过Excel文档导出物料信息")

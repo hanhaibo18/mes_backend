@@ -97,7 +97,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public CommonResult<String> importMaterialExcel(MultipartFile file) {
+    public CommonResult importMaterialExcel(MultipartFile file) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         String tenantId = currentUser.getTenantId();
         String[] MaterialNames = {"materialNo", "drawingNo", "productName", "materialDate", "materialType", "objectType", "materialDesc", "texture", "weight", "unit", "isKeyPart", "isNeedPicking", "trackType", "isEdgeStore", "isCheck"};

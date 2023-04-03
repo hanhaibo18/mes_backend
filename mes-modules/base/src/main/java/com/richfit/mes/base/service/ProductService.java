@@ -25,7 +25,7 @@ public interface ProductService extends IService<Product> {
      * @param file
      * @return
      */
-    CommonResult<String> importMaterialExcel(MultipartFile file);
+    CommonResult importMaterialExcel(MultipartFile file);
 
     /**
      * 同步选中物料数据物料到wms
