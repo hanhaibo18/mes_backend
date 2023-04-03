@@ -66,7 +66,7 @@ public class DataDictionaryController extends BaseController {
     }
 
     @ApiOperation(value = "修改车间")
-    @PostMapping("/update")
+    @PutMapping("/update")
     public CommonResult<Boolean> update(@ApiParam(value = "数据字典") @RequestBody DataDictionary dataDictionary) {
         if (dataDictionary.getBranchCode() == null || dataDictionary.getBranchName() == null) {
             return CommonResult.failed("请校验填写信息正确！");
@@ -75,7 +75,7 @@ public class DataDictionaryController extends BaseController {
     }
 
     @ApiOperation(value = "删除车间")
-    @PostMapping("/delete")
+    @DeleteMapping("/delete")
     public CommonResult<Boolean> delete(@ApiParam(value = "字典id") String id) {
         return CommonResult.success(dataDictionaryService.removeById(id));
     }
@@ -108,7 +108,7 @@ public class DataDictionaryController extends BaseController {
     }
 
     @ApiOperation(value = "修改车间物料")
-    @PostMapping("/param/update")
+    @PutMapping("/param/update")
     public CommonResult<Boolean> update(@ApiParam(value = "物料参数") @RequestBody DataDictionaryParam dataDictionaryParam) {
         if (dataDictionaryParam.getBranchCode() == null || dataDictionaryParam.getDictionaryId() == null
                 || dataDictionaryParam.getMaterialName() == null || dataDictionaryParam.getMaterialNo() == null
@@ -119,7 +119,7 @@ public class DataDictionaryController extends BaseController {
     }
 
     @ApiOperation(value = "删除车间物料")
-    @PostMapping("/param/delete")
+    @DeleteMapping("/param/delete")
     public CommonResult<Boolean> deleteParam(@ApiParam(value = "物料参数id") String id) {
         return CommonResult.success(dataDictionaryParamService.removeById(id));
     }
