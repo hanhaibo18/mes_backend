@@ -65,7 +65,7 @@ public class DisqualificationItemVo {
      * 不合格类型 1=开具处理单 2=质控评审 3=处理单位1评审 4=处理单位2评审 5=责任裁决 6=技术裁决
      */
     @ApiModelProperty(value = "不合格类型")
-    private String type = "1";
+    private Integer type;
 
     /**
      * 不合格类型
