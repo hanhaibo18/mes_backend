@@ -788,7 +788,7 @@ public class TrackCheckController extends BaseController {
             }
             //保存质检记录
             actionService.saveAction(ActionUtil.buildAction
-                    (trackCheck.getBranchCode(), "4", "2", "质检审核，trackNo:" + trackHead.getTrackNo() + "，质检结果:" + trackCheck.getResult(),
+                    (trackCheck.getBranchCode(), "4", "2", "质检审核，跟单号:" + trackHead.getTrackNo() + "，质检结果:" + trackCheck.getResult(),
                             OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(Boolean.TRUE);
