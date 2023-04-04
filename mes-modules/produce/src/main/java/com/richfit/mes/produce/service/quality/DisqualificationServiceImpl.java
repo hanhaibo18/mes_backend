@@ -352,6 +352,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             default:
                 break;
         }
+        finalResult.setTenantId(disqualification.getTenantId());
         finalResultService.saveOrUpdate(finalResult);
         //发布才进行签核记录
         if (1 == disqualificationDto.getIsSubmit()) {

@@ -730,7 +730,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
-    public void exportHeatTrackLabel(HttpServletResponse response, String id) throws IOException {
+    public void exportHeatTrackLabel(HttpServletResponse response, String id) {
         //根据预装炉id获取跟单工序表
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         queryWrapper.eq("precharge_furnace_id", id);
