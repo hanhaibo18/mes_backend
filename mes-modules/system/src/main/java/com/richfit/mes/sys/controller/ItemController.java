@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,13 @@ public class ItemController extends BaseController {
     @ApiOperation(value = "新增字典分类", notes = "新增字典分类")
     @PostMapping("/item/class")
     public CommonResult<Boolean> saveItemClass(@RequestBody ItemClass entity) throws GlobalException {
+        QueryWrapper<ItemClass> queryWrapper = new QueryWrapper<ItemClass>();
+        queryWrapper.eq("code", entity.getCode());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        List<ItemClass> itemClassList = itemClassService.list(queryWrapper);
+        if (CollectionUtils.isNotEmpty(itemClassList)) {
+            return CommonResult.failed("字典编码重复！");
+        }
         entity.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         entity.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         entity.setCreateTime(new Date());
