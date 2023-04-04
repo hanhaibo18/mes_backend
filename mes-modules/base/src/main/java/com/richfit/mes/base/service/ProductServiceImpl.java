@@ -18,6 +18,7 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.MaterialBasis;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -264,4 +265,45 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         return CommonResult.failed("操作失败");
     }
+
+    @Override
+    public List<InventoryQuery> selectInventory(InventoryQuery inventoryQuery) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        String tenantId = currentUser.getTenantId();
+        if (StringUtils.isNullOrEmpty(inventoryQuery.getWorkCode())) {
+            CommonResult.failed("工厂不能为空");
+        }
+
+        if (StringUtils.isNullOrEmpty(inventoryQuery.getMaterialNum())) {
+            CommonResult.failed("物料编码不能为空");
+        }
+        String[] materialNums = inventoryQuery.getMaterialNum().split(",");
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", tenantId);
+        queryWrapper.in("material_no", materialNums);
+        List<Product> productList = productService.list(queryWrapper);
+        List<InventoryQuery> inventoryQueryList = new ArrayList();
+        if (CollectionUtils.isNotEmpty(productList)) {
+            for (Product product : productList) {
+                inventoryQuery.setMaterialNum(product.getMaterialNo());
+                CommonResult<Tenant> tenant = systemServiceClient.tenantById(product.getTenantId());
+                String tenantErpCode = tenant.getData().getTenantErpCode();
+                if (inventoryQuery.getWorkCode().equals(tenantErpCode)) {
+                    try {
+                        CommonResult<InventoryQuery> inventoryQueryCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery);
+                        InventoryQuery data = inventoryQueryCommonResult.getData();
+                        inventoryQueryList.add(data);
+                    } catch (Exception e) {
+                        e.getMessage();
+                    }
+                } else {
+                    CommonResult.failed("操作失败");
+                }
+            }
+
+        }
+        return inventoryQueryList;
+    }
+
+
 }

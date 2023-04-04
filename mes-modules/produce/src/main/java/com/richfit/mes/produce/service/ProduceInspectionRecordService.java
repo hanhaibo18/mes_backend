@@ -701,6 +701,7 @@ public class ProduceInspectionRecordService {
                 .ge(!StringUtils.isEmpty(inspectionPowerVo.getStartTime()), "date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getStartTime())
                 .le(!StringUtils.isEmpty(inspectionPowerVo.getEndTime()), "date_format(modify_time, '%Y-%m-%d')", inspectionPowerVo.getEndTime())
                 .inSql("power_id", "select a.power_id from (select max(power_id) as power_id from produce_item_inspect_info where is_new = '1' GROUP BY inspect_record_id) a")
+                .inSql(!StringUtils.isEmpty(inspectionPowerVo.getSampleName()),"power_id","select id from produce_inspection_power where id in (select a.power_id from (select max(power_id) as power_id from produce_item_inspect_info where is_new = '1' GROUP BY inspect_record_id) a) and sample_name like '%"+inspectionPowerVo.getSampleName()+"'")
                 .orderByDesc("modify_time");
         if (!StringUtils.isEmpty(inspectionPowerVo.getIsAudit())) {
             if ("0".equals(inspectionPowerVo.getIsAudit())) {
@@ -756,6 +757,7 @@ public class ProduceInspectionRecordService {
                     map.put("productNo", powers.get(0).getProductNo());
                     map.put("drawNo", powers.get(0).getDrawNo());
                     map.put("checkType", powers.get(0).getCheckType());
+                    map.put("sampleName", powers.get(0).getSampleName());
                     //是否存在探伤记录赋值，便于前端按钮判断
                     List<ProduceItemInspectInfo> list = new ArrayList<>();
                     if (!StringUtils.isEmpty(powers.get(0))) {

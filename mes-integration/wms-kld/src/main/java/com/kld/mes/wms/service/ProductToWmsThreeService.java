@@ -4,6 +4,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.kld.mes.wms.provider.SystemServiceClient;
 import com.kld.mes.wms.utils.AESUtil;
 import com.richfit.mes.common.model.produce.ApplicationResult;
@@ -31,15 +32,18 @@ public class ProductToWmsThreeService {
      */
     private final String mesUrlKey = "wms-url-key";
     private final String wmsUrlUploadMat = "wms-url-upload-mat";
+    private final String wmsUrlGetInventory = "wms-url-get-inventory";
 
     private String mesToWmsApiKey = "";
     private String mesScddUploadApi = "";
     private String mesUploadMatApi = "";
+    private String mesGetInventoryApi = "";
 
     private void init() {
 
         mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey).getData().getLabel();
         mesUploadMatApi = systemServiceClient.findItemParamByCode(wmsUrlUploadMat).getData().getLabel();
+        mesGetInventoryApi = systemServiceClient.findItemParamByCode(wmsUrlGetInventory).getData().getLabel();
     }
 
 
@@ -253,7 +257,7 @@ public class ProductToWmsThreeService {
     }
 
     // MES实时查询WMS库存
-    public ApplicationResult inventoryQueryInterface(InventoryQuery inventoryQuery) {
+    public JSONObject inventoryQueryInterface(InventoryQuery inventoryQuery) {
         init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(inventoryQuery);
@@ -263,9 +267,9 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", inventoryQueryEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
+        String s = HttpRequest.post(mesGetInventoryApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        JSONObject jsonObject = JSON.parseObject(s);
+        return jsonObject;
     }
 
 }
