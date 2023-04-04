@@ -179,8 +179,10 @@ public class ProduceInspectionRecordController extends BaseController {
     @ApiOperation(value = "批量保存委托单", notes = "批量保存委托单")
     @ApiImplicitParam(name = "inspectionPowers", value = "委托单", paramType = "body", dataType = "List")
     @PostMapping("inspectionPower/saveInspectionPowers")
-    public CommonResult<Boolean> saveInspectionPowers(@RequestBody List<InspectionPower> inspectionPowers) throws Exception {
-        return produceInspectionRecordService.saveInspectionPowers(inspectionPowers);
+    public CommonResult<Boolean> saveInspectionPowers(@RequestBody JSONObject jsonObject) throws Exception {
+        List<String> itemIds = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("itemIds")), String.class);
+        List<InspectionPower> inspectionPowers = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("inspectionPowers")), InspectionPower.class);
+        return produceInspectionRecordService.saveInspectionPowers(itemIds,inspectionPowers);
     }
 
     @ApiOperation(value = "保存单个委托单", notes = "保存单个委托单")

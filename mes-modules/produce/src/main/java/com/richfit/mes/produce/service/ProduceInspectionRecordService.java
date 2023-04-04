@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -273,6 +274,12 @@ public class ProduceInspectionRecordService {
             queryWrapper.in("inspect_record_id", jsonObject.getString("id"))
                     .eq("is_new", "1");
             List<ProduceItemInspectInfo> list = produceItemInspectInfoService.list(queryWrapper);
+            //编辑前的校验
+            InspectionPower power = inspectionPowerService.getById(list.get(0).getPowerId());
+            if(power.getIsDoing().equals("2")){
+                throw new GlobalException("该数据已审核通过完工，无法修改，请注意刷新页面！！",ResultCode.FAILED);
+            }
+
             List<String> powerIds = list.stream().map(ProduceItemInspectInfo::getPowerId).collect(Collectors.toList());
             produceInspectionRecordDto.setPowerIds(powerIds);
             if (!String.valueOf(jsonObject.get("isAudit")).equals("0")) {
@@ -492,6 +499,8 @@ public class ProduceInspectionRecordService {
         InspectionPower power = inspectionPowerService.getById(powerId);
         //赋跟单属性
         TrackHead trackHead = trackHeadMapper.selecProjectNametById(power.getHeadId());
+        //工序属性
+        TrackItem trackItem = trackItemService.getById(power.getItemId());
 
         for (Map<String, Object> map : listMap) {
             if (!ObjectUtil.isEmpty(trackHead)) {
@@ -500,6 +509,9 @@ public class ProduceInspectionRecordService {
                 map.put("productName", trackHead.getProductName());
                 map.put("projectName", trackHead.getProjectName());
                 map.put("texture", trackHead.getTexture());
+            }
+            if(!ObjectUtil.isEmpty(trackItem)){
+
             }
             map.put("drawNo", power.getDrawNo());
             map.put("sampleName", power.getSampleName());
@@ -1298,52 +1310,58 @@ public class ProduceInspectionRecordService {
     /**
      * 批量新增委托单
      */
-    public CommonResult saveInspectionPowers(List<InspectionPower> inspectionPowers) throws Exception {
+    public CommonResult saveInspectionPowers(List<String> itemIds,List<InspectionPower> inspectionPowers) throws Exception {
+        List<InspectionPower> savePowers = new ArrayList<>();
+        //批量派工
+        for (String itemId : itemIds) {
+            TrackItem trackItem = trackItemService.getById(itemId);
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
 
-        //1、修改保存委托信息
-        for (InspectionPower inspectionPower : inspectionPowers) {
+            //修改保存委托信息
+            for (InspectionPower inspectionPower : inspectionPowers) {
+                InspectionPower savePower = new InspectionPower();
+                BeanUtil.copyProperties(inspectionPower,savePower);
+                savePower.setHeadId(trackHead.getId());
+                savePower.setItemId(trackItem.getId());
+                savePower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                if (StringUtils.isEmpty(savePower.getId())) {
+                    //获取委托单号
+                    String orderNo = codeRuleService.gerCode("order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), savePower.getBranchCode()).getCurValue();
+                    savePower.setOrderNo(orderNo);
+                    //保存探伤委托单号
+                    Code.update("order_no", savePower.getOrderNo(), SecurityUtils.getCurrentUser().getTenantId(), savePower.getBranchCode(), codeRuleService);
+                    //委托人赋值
+                    savePower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+                }
+                //委托时间
+                savePower.setPowerTime(DateUtil.format(DateUtil.date(), "YYYY-MM-dd HH:mm:ss"));
+                //待开工
+                savePower.setIsDoing("0");
+                savePowers.add(savePower);
+            }
 
-            inspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-            if (StringUtils.isEmpty(inspectionPower.getId())) {
-                //获取委托单号
-                String orderNo = codeRuleService.gerCode("order_no", null, null, SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode()).getCurValue();
-                inspectionPower.setOrderNo(orderNo);
-                //保存探伤委托单号
-                Code.update("order_no", inspectionPower.getOrderNo(), SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(), codeRuleService);
-                //委托人赋值
-                inspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
-            }
-            //委托时间
-            inspectionPower.setPowerTime(DateUtil.format(DateUtil.date(), "YYYY-MM-dd HH:mm:ss"));
-            //待开工
-            inspectionPower.setIsDoing("0");
-            //保存
-            inspectionPowerService.saveOrUpdate(inspectionPower);
-        }
-        //2、派工处理(有源)  只有从跟单派工发起的委托可以触发派工
-        if (inspectionPowers.size() > 0 && !StringUtils.isEmpty(inspectionPowers.get(0).getHeadId())) {
-            TrackItem trackItem = trackItemService.getById(inspectionPowers.get(0).getItemId());
-            TrackHead trackHead = trackHeadService.getById(inspectionPowers.get(0).getHeadId());
-            String branchCode = inspectionPowers.get(0).getBranchCode();
-            //已经派工状态
-            trackItem.setIsSchedule(IS_SCHEDULE);
-            trackItemService.updateById(trackItem);
-            //将跟单状态改为在制
-            if (!StringUtils.isEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
-                trackHead.setStatus("1");
-                trackHeadService.updateById(trackHead);
-                UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
-                update.set("status", "1");
-                update.eq("id", trackItem.getFlowId());
-                trackHeadFlowService.update(update);
-            }
-            InspectionPower inspectionPower = inspectionPowers.get(0);
-            //如果是跟单派工发起的委托，修改跟单工序为已派工
-            if (!StringUtils.isEmpty(inspectionPower.getItemId())) {
+            //2、派工处理(有源)  只有从跟单派工发起的委托可以触发派工
+            if (inspectionPowers.size() > 0) {
+
+                String branchCode = inspectionPowers.get(0).getBranchCode();
+                //已经派工状态
+                trackItem.setIsSchedule(IS_SCHEDULE);
+                trackItemService.updateById(trackItem);
+                //将跟单状态改为在制
+                if (!StringUtils.isEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
+                    trackHead.setStatus("1");
+                    trackHeadService.updateById(trackHead);
+                    UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                    update.set("status", "1");
+                    update.eq("id", trackItem.getFlowId());
+                    trackHeadFlowService.update(update);
+                }
+                InspectionPower inspectionPower = inspectionPowers.get(0);
+                //修改跟单工序为已派工
                 //派工表
                 Assign assign = new Assign();
-                assign.setTiId(inspectionPower.getItemId()); //工序id
-                assign.setTrackId(inspectionPower.getHeadId());
+                assign.setTiId(trackItem.getId()); //工序id
+                assign.setTrackId(trackHead.getId());
                 assign.setSiteId("");  //南北站branchCode
                 assign.setSiteName(inspectionPower.getInspectionDepart()); //南站北站
                 assign.setQty(inspectionPower.getNum()); //派工数量 如果后续需要控制探伤数量的话需要处理
@@ -1361,6 +1379,9 @@ public class ProduceInspectionRecordService {
                 trackAssignService.save(assign);
             }
         }
+
+        //保存
+        inspectionPowerService.saveOrUpdateBatch(savePowers);
 
         return CommonResult.success(true);
     }
@@ -1694,7 +1715,9 @@ public class ProduceInspectionRecordService {
             }
             FileUtils.delete(excelFile);
             //保存委托单
-            this.saveInspectionPowers(list);
+            for (InspectionPower inspectionPower : list) {
+                this.saveInspectionPower(inspectionPower);
+            }
 
         } catch (Exception e) {
             return CommonResult.failed();
