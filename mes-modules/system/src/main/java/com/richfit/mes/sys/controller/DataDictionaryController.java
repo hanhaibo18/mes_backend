@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -108,6 +109,11 @@ public class DataDictionaryController extends BaseController {
     @ApiOperation(value = "新增车间物料")
     @PostMapping("/param/add")
     public CommonResult<Boolean> add(@ApiParam(value = "物料参数") @RequestBody DataDictionaryParam dataDictionaryParam) {
+        QueryWrapper<DataDictionaryParam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("material_no", dataDictionaryParam.getMaterialNo());
+        if (!dataDictionaryParamService.list(queryWrapper).isEmpty()) {
+            return CommonResult.failed("物料编码已存在！");
+        }
         return CommonResult.success(dataDictionaryParamService.save(dataDictionaryParam));
     }
 
@@ -126,6 +132,12 @@ public class DataDictionaryController extends BaseController {
     @DeleteMapping("/param/delete")
     public CommonResult<Boolean> deleteParam(@ApiParam(value = "物料参数id") String id) {
         return CommonResult.success(dataDictionaryParamService.removeById(id));
+    }
+
+    @ApiOperation(value = "excel导入物料")
+    @PostMapping("/import_excel")
+    public CommonResult<String> importExcel(@RequestParam("file") MultipartFile file, @RequestParam("dictionaryId") String id) {
+        return CommonResult.success(dataDictionaryParamService.improtExcel(file, id));
     }
 
 }
