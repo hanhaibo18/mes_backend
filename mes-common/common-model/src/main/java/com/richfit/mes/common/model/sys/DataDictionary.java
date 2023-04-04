@@ -18,14 +18,5 @@ public class DataDictionary extends BaseEntity<DataDictionary> {
     private String branchName;
     //车间编码
     private String branchCode;
-    
-    private String createBy;
-    
-    private Date createTime;
-    
-    private String modifyBy;
-    
-    private Date modifyTime;
-
     }
 

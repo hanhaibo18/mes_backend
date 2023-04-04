@@ -60,7 +60,9 @@ public class PdmMesDrawController {
     public CommonResult<IPage<PdmMesDraw>> getPageList(int page, int limit, PdmMesDraw pdmMesDraw) {
         QueryWrapper<PdmMesDraw> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("isop", '1');
-        queryWrapper.and(wrapper -> wrapper.eq("op_id", pdmMesDraw.getOpId()).or().eq("op_id", pdmMesDraw.getItemId() + "@" + pdmMesDraw.getItemId() + "@" + pdmMesDraw.getDataGroup()));
+        queryWrapper.and(wrapper -> wrapper.eq("op_id", pdmMesDraw.getOpId())
+                .or().eq("op_id", pdmMesDraw.getItemId() + "@" + pdmMesDraw.getItemId() + "@" + pdmMesDraw.getDataGroup())
+                .or().eq("op_id",pdmMesDraw.getRouterId()));
         queryWrapper.orderByDesc("syc_time")
                 .eq("dataGroup", pdmMesDraw.getDataGroup());
         return CommonResult.success(pdmMesDrawService.page(new Page<>(page, limit), queryWrapper));
@@ -85,8 +87,12 @@ public class PdmMesDrawController {
         pdmMesDraw.setIsUpload(1);
         //查询工艺信息
         Router byId = routerService.getById(pdmMesDraw.getRouterId());
-        pdmMesDraw.setItemId(byId.getDrawNo());//图号
-        pdmMesDraw.setItemRev(byId.getDrawVer());//图号版本
+        pdmMesDraw.setItemId(byId.getRouterNo());//图号
+        pdmMesDraw.setItemRev(byId.getVersion());//图号版本
+        //当字段为空用工序id关联图纸
+        if(pdmMesDraw.getOpId()==null||pdmMesDraw.getOpId().isEmpty()){
+            pdmMesDraw.setOpId(pdmMesDraw.getRouterId());
+        }
         pdmMesDraw.setDataGroup(byId.getBranchCode());
         boolean save = pdmMesDrawService.save(pdmMesDraw);
         if (save) {

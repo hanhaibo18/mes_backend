@@ -158,7 +158,7 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Author: Han Haibo
      * @Date: 2023/2/17 10:59
      **/
-    void exportHeatTrackLabel(HttpServletResponse response, String id) throws IOException;
+    void exportHeatTrackLabel(HttpServletResponse response, String id);
 
     /**
      * 功能描述: 工序查询不合格信息接口

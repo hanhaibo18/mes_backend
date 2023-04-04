@@ -1,9 +1,7 @@
 package com.richfit.mes.produce.entity.quality;
 
-import com.richfit.mes.common.model.produce.DisqualificationAttachment;
-import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
-import com.richfit.mes.common.model.produce.DisqualificationUserOpinion;
-import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.produce.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +19,7 @@ import java.util.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisqualificationItemVo {
+public class DisqualificationItemVo extends BaseEntity<Disqualification> {
 
     @ApiModelProperty(value = "不合格品主键Id")
     private String id;
