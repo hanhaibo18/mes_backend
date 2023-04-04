@@ -209,7 +209,7 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "（已报工）根据预装炉id导出热处理标签excel")
     @GetMapping("/exportHeatTrackLabel")
-    public void exportHeatTrackLabel(HttpServletResponse response, @ApiParam(value = "预装炉id", required = true) @RequestParam String id ) throws IOException {
+    public void exportHeatTrackLabel(HttpServletResponse response, @ApiParam(value = "预装炉id", required = true) @RequestParam String id ){
         trackItemService.exportHeatTrackLabel(response, id);
     }
 

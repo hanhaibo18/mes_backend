@@ -87,8 +87,8 @@ public class PdmMesDrawController {
         pdmMesDraw.setIsUpload(1);
         //查询工艺信息
         Router byId = routerService.getById(pdmMesDraw.getRouterId());
-        pdmMesDraw.setItemId(byId.getDrawNo());//图号
-        pdmMesDraw.setItemRev(byId.getDrawVer());//图号版本
+        pdmMesDraw.setItemId(byId.getRouterNo());//图号
+        pdmMesDraw.setItemRev(byId.getVersion());//图号版本
         //当字段为空用工序id关联图纸
         if(pdmMesDraw.getOpId()==null||pdmMesDraw.getOpId().isEmpty()){
             pdmMesDraw.setOpId(pdmMesDraw.getRouterId());
