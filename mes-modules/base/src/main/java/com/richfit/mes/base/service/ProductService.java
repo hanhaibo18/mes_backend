@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.wms.InventoryQuery;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -33,4 +34,12 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     CommonResult<Boolean> saveWmsSync(List<String> ids);
+
+
+    /**
+     * MES实时查询WMS库存
+     * @param inventoryQuery
+     * @return
+     */
+    List<InventoryQuery> selectInventory(InventoryQuery inventoryQuery);
 }
