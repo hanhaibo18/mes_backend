@@ -32,9 +32,6 @@ public class PdmMesDraw {
      */
     @ApiModelProperty(value = "图号版本", dataType = "String")
     private String itemRev;
-/*    //文档类别
-   private String fileCategory;
-*/
     /**
      * 文件类型
      */
@@ -107,4 +104,17 @@ public class PdmMesDraw {
      * */
     @ApiModelProperty(value = "是否为手动上传 0否 , 1是", dataType = "Integer")
     private Integer isUpload;
+
+    /**
+     * 文件id
+     * */
+    @ApiModelProperty(value = "文件id", dataType = "String")
+    private String fileId;
+
+    /**
+     * 工序id
+     * */
+    @ApiModelProperty(value = "工序id", dataType = "String")
+    @TableField(exist = false)
+    private String routerId;
 }

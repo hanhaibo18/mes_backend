@@ -121,16 +121,16 @@ public class LineStoreController extends BaseController {
             startNoOld = Integer.valueOf(startNo);
             endNoOld = Integer.valueOf(endNo);
 
-            String[] split = startNo.split("");
-            List<String> strings = Arrays.asList(split);
+//            String[] split = startNo.split("");
+//            List<String> strings = Arrays.asList(split);
             //判断第一位是不是0，如果不是直接跳出
-            for (String string : strings) {
-                if ("0".equals(string)) {
-                    strartSuffix.append(string);
-                } else {
-                    break;
-                }
-            }
+//            for (String string : strings) {
+//                if ("0".equals(string)) {
+//                    strartSuffix.append(string);
+//                } else {
+//                    break;
+//                }
+//            }
         }
 
 
@@ -817,6 +817,13 @@ public class LineStoreController extends BaseController {
 
         }
         return isMatch;
+    }
+
+    public static void main(String[] args) {
+      Integer  startNoOld = Integer.valueOf("06");
+      Integer  endNoOld = Integer.valueOf("11");
+
+        System.out.println(startNoOld);
     }
 
 }

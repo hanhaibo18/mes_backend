@@ -523,7 +523,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
             String uuid = UUID.randomUUID().toString().replaceAll("-", "");
             disqualificationItemVo.setTrackItemId(uuid);
-            disqualificationItemVo.setType("0");
+            disqualificationItemVo.setType(0);
             disqualificationItemVo.setSourceType(0);
             disqualificationItemVo.setRepairNoList(Collections.emptyList());
             disqualificationItemVo.setSalesReturnNoList(Collections.emptyList());
@@ -583,7 +583,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             DisqualificationItemVo disqualificationItemVo = new DisqualificationItemVo();
             String uuid = UUID.randomUUID().toString().replaceAll("-", "");
             disqualificationItemVo.setTrackItemId(uuid);
-            disqualificationItemVo.setType("0");
+            disqualificationItemVo.setType(0);
             disqualificationItemVo.setSourceType(0);
             disqualificationItemVo.setRepairNoList(Collections.emptyList());
             disqualificationItemVo.setSalesReturnNoList(Collections.emptyList());

@@ -5,10 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.base.service.PdmMesDrawService;
+import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.PdmMesDraw;
-import com.richfit.mes.common.model.produce.HotDemand;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author zhiqiang.lu
@@ -35,6 +35,8 @@ public class PdmMesDrawController {
 
     @Autowired
     private PdmMesDrawService pdmMesDrawService;
+    @Autowired
+    private RouterService routerService;
 
     @PostMapping(value = "/query/list")
     @ApiOperation(value = "工艺图纸", notes = "工艺图纸查询")
@@ -81,6 +83,11 @@ public class PdmMesDrawController {
         pdmMesDraw.setSycTime(new Date());
         pdmMesDraw.setOp("1");
         pdmMesDraw.setIsUpload(1);
+        //查询工艺信息
+        Router byId = routerService.getById(pdmMesDraw.getRouterId());
+        pdmMesDraw.setItemId(byId.getDrawNo());//图号
+        pdmMesDraw.setItemRev(byId.getDrawVer());//图号版本
+        pdmMesDraw.setDataGroup(byId.getBranchCode());
         boolean save = pdmMesDrawService.save(pdmMesDraw);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);

@@ -967,7 +967,8 @@ public class ProduceInspectionRecordService {
             dataMap.put("texture", trackHead.getTexture());
             dataMap.put("productNo",trackHead.getProductNo());
         }
-        String dateTime = String.valueOf(recordInfo.get("modify_time"));
+        //报告日期取开工日期
+        String dateTime = String.valueOf(power.getStartDoingTime());
         dataMap.put("year", String.valueOf(DateUtil.year(DateUtil.parse(dateTime))));
         dataMap.put("month",DateUtil.month(DateUtil.parse(dateTime))+1);
         dataMap.put("day", DateUtil.dayOfMonth(DateUtil.parse(dateTime)));
