@@ -23,9 +23,9 @@ import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
+import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -689,15 +689,15 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/select_inventory")
-    public CommonResult<List<InventoryQuery>> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
+    public CommonResult<List<InventoryReturn>> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
         return productService.selectInventory(inventoryQuery);
     }
 
-    @ApiOperation(value = "通过MES查询车间物料详情")
-    @GetMapping("/select_material")
-    public CommonResult<Page<InventoryQuery>> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
-        return CommonResult.success(productService.selectMaterial(branchCode, limit, page, materialNo, materialName, invType, texture));
-    }
+//    @ApiOperation(value = "通过MES查询车间物料详情")
+//    @GetMapping("/select_material")
+//    public CommonResult<Page<InventoryQuery>> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
+//        return CommonResult.success(productService.selectMaterial(branchCode, limit, page, materialNo, materialName, invType, texture));
+//    }
 
 
 }

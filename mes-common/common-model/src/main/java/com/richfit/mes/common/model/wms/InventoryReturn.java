@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.wms;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 /**
@@ -39,5 +40,13 @@ public class InventoryReturn {
     private String id;
 
     private String invCode;
+
+    //图号
+    @TableField(exist = false)
+    private String drawingNo;
+
+    //单重
+    @TableField(exist = false)
+    private String weight;
 
 }
