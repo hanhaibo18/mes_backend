@@ -117,7 +117,7 @@ public class DataDictionaryController extends BaseController {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         dataDictionaryParam.setTenantId(tenantId);
         QueryWrapper<DataDictionaryParam> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("material_no", dataDictionaryParam.getMaterialNo()).eq("tenant_id", tenantId);
+        queryWrapper.eq("material_no", dataDictionaryParam.getMaterialNo()).eq("branch_code", dataDictionaryParam.getBranchCode());
         if (!dataDictionaryParamService.list(queryWrapper).isEmpty()) {
             return CommonResult.failed("物料编码已存在！");
         }
@@ -152,7 +152,7 @@ public class DataDictionaryController extends BaseController {
     public CommonResult<List<DataDictionaryParam>> getDataDictionaryParamByBranchCode(@RequestParam("branchCode") String branchCode) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         QueryWrapper<DataDictionaryParam> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branchCode", branchCode).eq("tenant_id", tenantId);
+        queryWrapper.eq("branch_code", branchCode).eq("tenant_id", tenantId);
         return CommonResult.success(dataDictionaryParamService.list(queryWrapper));
     }
 
