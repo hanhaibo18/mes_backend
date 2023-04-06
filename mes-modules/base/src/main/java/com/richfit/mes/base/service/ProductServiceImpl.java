@@ -17,6 +17,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.MaterialBasis;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -287,6 +289,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.in("material_no", materialNums);
         List<Product> productList = productService.list(queryWrapper);
+        Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
         CommonResult<Tenant> tenant = systemServiceClient.tenantById(tenantId);
         String tenantErpCode = tenant.getData().getTenantErpCode();
         if (CollectionUtils.isNotEmpty(productList) && !StringUtils.isNullOrEmpty(tenantErpCode)) {
@@ -307,6 +310,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             return inventoryQueryCommonResult;
         }
         return CommonResult.failed("未查询到相关信息");
+    }
+
+    @Override
+    public IPage<List<DataDictionaryParam>> selectMaterial(String branchCode, int limit, int page) {
+
+        return null;
     }
 
 

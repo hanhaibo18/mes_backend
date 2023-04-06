@@ -23,6 +23,7 @@ import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -73,9 +74,7 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "根据excel导入物料")
     @PostMapping("/importMaterialByExcle")
-    public CommonResult<String> importMaterialByExcle(@ApiParam(value = "excel文件") @RequestParam("file") MultipartFile file,
-                                                      @ApiParam(value = "tenantId") @RequestParam String tenantId,
-                                                      @ApiParam(value = "branchCode") @RequestParam String branchCode) {
+    public CommonResult<String> importMaterialByExcle(@ApiParam(value = "excel文件") @RequestParam("file") MultipartFile file, @ApiParam(value = "tenantId") @RequestParam String tenantId, @ApiParam(value = "branchCode") @RequestParam String branchCode) {
 
         return CommonResult.success(productService.importMaterialByExcle(file, tenantId, branchCode));
     }
@@ -210,15 +209,7 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "分页查询物料", notes = "根据图号、物料编码等参数分页查询物料")
     @GetMapping("/product")
-    public CommonResult<IPage<Product>> selectProduct(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page,
-                                                      @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit,
-                                                      @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
-                                                      @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
-                                                      @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
-                                                      @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
-                                                      @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
-                                                      @ApiParam(value = "产品名称") @RequestParam(required = false) String productName,
-                                                      @ApiParam(value = "反向查询物料类型") @RequestParam(required = false, defaultValue = "false") Boolean material_type_reverse) {
+    public CommonResult<IPage<Product>> selectProduct(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page, @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit, @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo, @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo, @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType, @ApiParam(value = "排序方式") @RequestParam(required = false) String order, @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol, @ApiParam(value = "产品名称") @RequestParam(required = false) String productName, @ApiParam(value = "反向查询物料类型") @RequestParam(required = false, defaultValue = "false") Boolean material_type_reverse) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "p.drawing_no", drawingNo);
@@ -558,6 +549,7 @@ public class ProductController extends BaseController {
         queryWrapper.orderByDesc("create_time");
         return productService.list(queryWrapper);
     }
+
     @ApiOperation(value = "通过物料号码查询物料信息，用于分布式调用", notes = "通过物料号码查物料流信息，用于分布式调用")
     @PostMapping("/list_by_material_no_list")
     public List<Product> listByMaterialNoList(@ApiParam(value = "物料编码", required = true) @RequestBody List<String> materialNoList) {
@@ -679,9 +671,7 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "根据产品名称模糊查询物料信息", notes = "根据产品名称模糊查询物料信息")
     @GetMapping("/list_by_product_name")
-    public CommonResult<List<Product>> listByProductName(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page,
-                                                         @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit,
-                                                         @ApiParam(value = "产品名称", required = false) @RequestParam String productName) {
+    public CommonResult<List<Product>> listByProductName(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page, @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit, @ApiParam(value = "产品名称", required = false) @RequestParam String productName) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(productName)) {
             queryWrapper.like("product_name", productName);
@@ -701,6 +691,12 @@ public class ProductController extends BaseController {
     @PostMapping("/select_inventory")
     public CommonResult<InventoryQuery> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
         return productService.selectInventory(inventoryQuery);
+    }
+
+    @ApiOperation(value = "通过MES查询车间物料详情")
+    @GetMapping("/select_material")
+    public CommonResult<IPage<List<DataDictionaryParam>>> selectMaterial(String branchCode, int limit, int page) {
+        return CommonResult.success(productService.selectMaterial(branchCode, limit, page));
     }
 
 
