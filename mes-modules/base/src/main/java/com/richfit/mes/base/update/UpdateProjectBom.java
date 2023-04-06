@@ -39,7 +39,7 @@ public class UpdateProjectBom {
         String driver = "com.mysql.cj.jdbc.Driver";//mysql驱动
         String urlProduce = "jdbc:mysql://10.134.100.41:3306/mes_produce";//连接地址
         String userProduce = "mes_produce";//用户
-        String passwordProduce = "Mes_produce@mes";//密码
+        String passwordProduce = "Mes_produce@mes2022";//密码
         DriverManagerDataSource dataSourceProduce = new DriverManagerDataSource();
         dataSourceProduce.setUrl(urlProduce);
         dataSourceProduce.setDriverClassName(driver);
@@ -51,7 +51,7 @@ public class UpdateProjectBom {
     @GetMapping("/projectBom")
     public void updateProjectBom() {
         System.out.println("更新开始");
-        String sql = "select draw_no,work_no,draw_no_name from produce_plan where tenant_id = '12345678901234567890123456789002' AND branch_code = 'BOMCO_BF_BY' GROUP BY draw_no,work_no ORDER BY draw_no;";//student 数据库表明
+        String sql = "select draw_no,work_no,ANY_VALUE(draw_no_name) as draw_no_name from produce_plan where tenant_id = '12345678901234567890123456789002' AND branch_code = 'BOMCO_BF_BY' GROUP BY draw_no,work_no ORDER BY draw_no;";//student 数据库表明
         List<Map<String, Object>> maps = jdbcTemplateProduce.queryForList(sql);
         Set<Object> draw_nos = maps.stream().map(x -> x.get("draw_no")).collect(Collectors.toSet());
         QueryWrapper<ProductionBom> productionBomQueryWrapper = new QueryWrapper<>();
@@ -68,7 +68,11 @@ public class UpdateProjectBom {
         }
         for (Map<String, Object> map : maps) {
             if (map.get("bom_id") != null) {
-                productionBomService.issueBom(map.get("bom_id").toString(), map.get("work_no").toString(), map.get("draw_no_name").toString(), "12345678901234567890123456789002", "BOMCO_BF_BY");
+                String bom_id = map.get("bom_id").toString();
+                String work_no = map.get("work_no").toString();
+                String draw_no = map.get("draw_no").toString();
+                String draw_no_name = map.get("draw_no_name") == null ? draw_no + ":" + work_no : map.get("draw_no_name").toString();
+                productionBomService.issueBom(bom_id, work_no, draw_no_name, "12345678901234567890123456789002", "BOMCO_BF_BY");
             }
         }
         System.out.println("更新结束");
