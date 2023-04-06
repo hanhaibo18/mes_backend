@@ -156,16 +156,16 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 product.setIsEdgeStore(product.getIsEdgeStore());
                 product.setIsCheck(product.getIsCheck());
                 if (StringUtils.isNullOrEmpty(product.getIsKeyPart())) {
-                    product.setIsKeyPart("否");
+                    product.setIsKeyPart("0");
                 }
                 if (StringUtils.isNullOrEmpty(product.getIsNeedPicking())) {
-                    product.setIsNeedPicking("否");
+                    product.setIsNeedPicking("0");
                 }
                 if (StringUtils.isNullOrEmpty(product.getIsEdgeStore())) {
-                    product.setIsEdgeStore("否");
+                    product.setIsEdgeStore("0");
                 }
                 if (StringUtils.isNullOrEmpty(product.getIsCheck())) {
-                    product.setIsCheck("否");
+                    product.setIsCheck("0");
                 }
 
                 // 物料编码若存在则更新 否则就新增
