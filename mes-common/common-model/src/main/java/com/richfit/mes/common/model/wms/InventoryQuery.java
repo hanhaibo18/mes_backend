@@ -53,7 +53,7 @@ public class InventoryQuery implements Serializable {
     /**
      * 库存类型  正式/在途/无参考
      */
-    private Integer invType;
+    private String invType;
 
     /**
      * 工作号
