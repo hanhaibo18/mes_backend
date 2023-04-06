@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -84,6 +85,9 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         headers.setContentType(type);
         HttpEntity<String> formEntity = new HttpEntity<>(soapRequestData, headers);
         RestTemplateBuilder builder = new RestTemplateBuilder();
+        //设置链接超时时间
+        builder.setConnectTimeout(Duration.ofMinutes(1));
+        builder.setReadTimeout(Duration.ofMinutes(1));
         RestTemplate restTemplate = builder.basicAuthentication("zbzz_esb", "ZBZZOSBinterface1").build();
         //返回结果
         String resultStr = restTemplate.postForObject(url, formEntity, String.class);

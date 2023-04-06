@@ -3,6 +3,7 @@ package com.richfit.mes.base.provider.fallback;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Attachment;
+import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
@@ -70,6 +71,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
 
     @Override
     public List<TenantUserVo> queryUserByTenantId(String tenantId) {
+        return null;
+    }
+
+    @Override
+    public CommonResult<List<DataDictionaryParam>> getDataDictionaryParamByBranchCode(String branchCode) {
         return null;
     }
 }

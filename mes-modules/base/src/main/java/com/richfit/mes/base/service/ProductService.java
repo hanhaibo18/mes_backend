@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.sys.DataDictionaryParam;
+import com.richfit.mes.common.model.wms.InventoryQuery;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -22,6 +24,7 @@ public interface ProductService extends IService<Product> {
 
     /**
      * 物料管理  导入Excel文件
+     *
      * @param file
      * @return
      */
@@ -29,8 +32,21 @@ public interface ProductService extends IService<Product> {
 
     /**
      * 同步选中物料数据物料到wms
+     *
      * @param ids
      * @return
      */
     CommonResult<Boolean> saveWmsSync(List<String> ids);
+
+
+    /**
+     * MES实时查询WMS库存
+     *
+     * @param inventoryQuery
+     * @return
+     */
+    CommonResult<InventoryQuery> selectInventory(InventoryQuery inventoryQuery);
+
+    IPage<List<DataDictionaryParam>> selectMaterial(String branchCode, int limit, int page);
+
 }

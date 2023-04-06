@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.sys.DataDictionary;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.DataDictionaryParamService;
 import com.richfit.mes.sys.service.DataDictionaryService;
 import io.swagger.annotations.Api;
@@ -44,7 +45,9 @@ public class DataDictionaryController extends BaseController {
     @ApiOperation(value = "分页查询车间列表")
     @GetMapping("/page")
     public CommonResult<IPage<DataDictionary>> page(@ApiParam(value = "车间名称") String branchName, @ApiParam(value = "车间编码") String branchCode, int page, int limit) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         QueryWrapper<DataDictionary> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", tenantId);
         if (null != branchName) {
             queryWrapper.eq("branch_name", branchName);
         }
@@ -61,12 +64,14 @@ public class DataDictionaryController extends BaseController {
         if (dataDictionary.getBranchCode() == null || dataDictionary.getBranchName() == null) {
             return CommonResult.failed("请校验填写信息正确！");
         }
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         QueryWrapper<DataDictionary> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_code", dataDictionary.getBranchCode());
+        queryWrapper.eq("branch_code", dataDictionary.getBranchCode()).eq("tenant_id", tenantId);
         List<DataDictionary> dataDictionaries = dataDictionaryService.list(queryWrapper);
         if (!CollectionUtils.isEmpty(dataDictionaries)) {
             return CommonResult.failed("该车间已存在！");
         }
+        dataDictionary.setTenantId(tenantId);
         return CommonResult.success(dataDictionaryService.save(dataDictionary));
     }
 
@@ -109,8 +114,10 @@ public class DataDictionaryController extends BaseController {
     @ApiOperation(value = "新增车间物料")
     @PostMapping("/param/add")
     public CommonResult<Boolean> add(@ApiParam(value = "物料参数") @RequestBody DataDictionaryParam dataDictionaryParam) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        dataDictionaryParam.setTenantId(tenantId);
         QueryWrapper<DataDictionaryParam> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("material_no", dataDictionaryParam.getMaterialNo());
+        queryWrapper.eq("material_no", dataDictionaryParam.getMaterialNo()).eq("tenant_id", tenantId);
         if (!dataDictionaryParamService.list(queryWrapper).isEmpty()) {
             return CommonResult.failed("物料编码已存在！");
         }
@@ -138,6 +145,15 @@ public class DataDictionaryController extends BaseController {
     @PostMapping("/import_excel")
     public CommonResult<String> importExcel(@RequestParam("file") MultipartFile file, @RequestParam("dictionaryId") String id) {
         return CommonResult.success(dataDictionaryParamService.improtExcel(file, id));
+    }
+
+    @ApiOperation(value = "根据branchCode查询物料编码")
+    @GetMapping("/data_dictionary_param")
+    public CommonResult<List<DataDictionaryParam>> getDataDictionaryParamByBranchCode(@RequestParam("branchCode") String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        QueryWrapper<DataDictionaryParam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branchCode", branchCode).eq("tenant_id", tenantId);
+        return CommonResult.success(dataDictionaryParamService.list(queryWrapper));
     }
 
 }

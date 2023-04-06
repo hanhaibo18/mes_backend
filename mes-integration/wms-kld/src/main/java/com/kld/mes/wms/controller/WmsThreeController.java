@@ -7,6 +7,7 @@ import com.richfit.mes.common.model.wms.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -105,10 +106,9 @@ public class WmsThreeController {
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/inventory_query")
-    public CommonResult<ApplicationResult> inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
-        return new CommonResult(productToWmsThreeService.inventoryQueryInterface(inventoryQuery));
+    public CommonResult<List<InventoryQuery>> inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
+        return CommonResult.success(productToWmsThreeService.inventoryQueryInterface(inventoryQuery));
     }
-
 
 
 }

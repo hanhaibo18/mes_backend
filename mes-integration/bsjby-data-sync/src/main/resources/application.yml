@@ -27,7 +27,8 @@ fdfs:
     width: 150
     height: 150
   tracker-list: #TrackerList参数,支持多个
-    - ${FDFS_HOST:11.11.62.2}:${FDFS_PORT:22122}
+    #    - ${FDFS_HOST:11.11.62.2}:${FDFS_PORT:22122}
+    - ${FDFS_HOST:10.134.100.44}:${FDFS_PORT:22122}
   web-server-url: ${FDFS_WEB_URL:http://11.11.62.2:8080/}
   http:
     secret_key: FastDFS12345678900
