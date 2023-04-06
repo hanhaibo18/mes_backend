@@ -313,7 +313,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             }
             for (InventoryQuery datum : inventoryQueryCommonResult.getData()) {
                 datum.setDrawingNo(productMap.get(datum.getMaterialNum()).getDrawingNo());
-                datum.setWeight(productMap.get(datum.getMaterialNum()).getWeight().toString());
+                if (productMap.get(datum.getMaterialNum()).getWeight() == null) {
+                    datum.setWeight(null);
+                } else {
+                    datum.setWeight(productMap.get(datum.getMaterialNum()).getWeight().toString());
+                }
             }
             return inventoryQueryCommonResult;
         }

@@ -21,8 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * @author 王瑞
@@ -154,7 +158,12 @@ public class CertificateController {
 //        queryWrapper.apply("pc.id = track.certificate_id");
         queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.eq("pc.branch_code", branchCode);
-        return CommonResult.success(certificateService.selectCertificate(new Page<Certificate>(page, limit), queryWrapper), SUCCESS_MESSAGE);
+        IPage<Certificate> certificateIPage = certificateService.selectCertificate(new Page<Certificate>(page, limit), queryWrapper);
+        List<Certificate> collect = certificateIPage.getRecords().stream().collect(collectingAndThen(
+                toCollection(() -> new TreeSet<>(Comparator.comparing(Certificate::getId))), ArrayList::new)
+        );
+        certificateIPage.setRecords(collect);
+        return CommonResult.success(certificateIPage, SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询需要本单位接收的合格证", notes = "根据图号、合格证号查询分页合格证信息")

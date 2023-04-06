@@ -1,5 +1,6 @@
 package com.kld.mes.wms.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.kld.mes.wms.service.ProductToWmsThreeService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
@@ -106,7 +107,7 @@ public class WmsThreeController {
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/inventory_query")
-    public CommonResult<List<InventoryQuery>> inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
+    public CommonResult<List<InventoryReturn>> inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
         return CommonResult.success(productToWmsThreeService.inventoryQueryInterface(inventoryQuery));
     }
 
