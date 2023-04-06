@@ -3,6 +3,7 @@ package com.richfit.mes.base.provider;
 import com.richfit.mes.base.provider.fallback.SystemServiceClientFallbackImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Attachment;
+import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
@@ -46,6 +47,7 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/tenant/getTenantById")
     public CommonResult<Tenant> tenantById(@RequestParam String id);
+
     /**
      * 功能描述: 根据组织机构获取质检人员
      *
@@ -63,5 +65,8 @@ public interface SystemServiceClient {
 
     @GetMapping("/api/sys/user/queryUserByTenantId")
     public List<TenantUserVo> queryUserByTenantId(@RequestParam("tenantId") String tenantId);
+
+    @GetMapping("/api/sys/data_dictionary/data_dictionary_param")
+    public CommonResult<List<DataDictionaryParam>> getDataDictionaryParamByBranchCode(@RequestParam("branchCode") String branchCode);
 
 }

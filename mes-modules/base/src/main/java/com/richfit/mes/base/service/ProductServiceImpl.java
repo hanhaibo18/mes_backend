@@ -17,6 +17,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.MaterialBasis;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -266,43 +268,54 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return CommonResult.failed("操作失败");
     }
 
+
+    /**
+     * 查询库存
+     * @param inventoryQuery
+     * @return
+     */
     @Override
-    public List<InventoryQuery> selectInventory(InventoryQuery inventoryQuery) {
+    public CommonResult<InventoryQuery> selectInventory(InventoryQuery inventoryQuery) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         String tenantId = currentUser.getTenantId();
         if (StringUtils.isNullOrEmpty(inventoryQuery.getWorkCode())) {
-            CommonResult.failed("工厂不能为空");
+            return CommonResult.failed("工厂不能为空");
         }
-
         if (StringUtils.isNullOrEmpty(inventoryQuery.getMaterialNum())) {
-            CommonResult.failed("物料编码不能为空");
+            return CommonResult.failed("物料编码不能为空");
         }
         String[] materialNums = inventoryQuery.getMaterialNum().split(",");
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.in("material_no", materialNums);
         List<Product> productList = productService.list(queryWrapper);
-        List<InventoryQuery> inventoryQueryList = new ArrayList();
-        if (CollectionUtils.isNotEmpty(productList)) {
+        Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
+        CommonResult<Tenant> tenant = systemServiceClient.tenantById(tenantId);
+        String tenantErpCode = tenant.getData().getTenantErpCode();
+        if (CollectionUtils.isNotEmpty(productList) && !StringUtils.isNullOrEmpty(tenantErpCode)) {
+            int init = 1;
+            StringBuilder stringBuilder = new StringBuilder();
             for (Product product : productList) {
-                inventoryQuery.setMaterialNum(product.getMaterialNo());
-                CommonResult<Tenant> tenant = systemServiceClient.tenantById(product.getTenantId());
-                String tenantErpCode = tenant.getData().getTenantErpCode();
-                if (inventoryQuery.getWorkCode().equals(tenantErpCode)) {
-                    try {
-                        CommonResult<InventoryQuery> inventoryQueryCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery);
-                        InventoryQuery data = inventoryQueryCommonResult.getData();
-                        inventoryQueryList.add(data);
-                    } catch (Exception e) {
-                        e.getMessage();
-                    }
+                if (init == 1) {
+                    stringBuilder.append(product.getMaterialNo());
                 } else {
-                    CommonResult.failed("操作失败");
+                    stringBuilder.append(",").append(product.getMaterialNo());
                 }
+                if (productList.size() == init) {
+                    inventoryQuery.setMaterialNum(stringBuilder.toString());
+                }
+                init ++;
             }
-
+            CommonResult<InventoryQuery> inventoryQueryCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery);
+            return inventoryQueryCommonResult;
         }
-        return inventoryQueryList;
+        return CommonResult.failed("未查询到相关信息");
+    }
+
+    @Override
+    public IPage<List<DataDictionaryParam>> selectMaterial(String branchCode, int limit, int page) {
+
+        return null;
     }
 
 

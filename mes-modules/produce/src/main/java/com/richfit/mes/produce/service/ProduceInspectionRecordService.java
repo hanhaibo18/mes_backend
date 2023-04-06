@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProduceInspectionRecordService {
     private final static String IS_DOING = "1"; //探伤任务开工
+    private final static String NO_DOING = "0"; //探伤任务开工
     private final static int IS_STATUS = 1;
     private final static int BACKOUT_STATUS = 2;
     private final static int IS_SCHEDULE = 1;
@@ -1792,6 +1793,68 @@ public class ProduceInspectionRecordService {
             }
         }
         return page;
+    }
+
+    /**
+     * 回滚探伤任务开工状态
+     * param  id  探伤任务id
+     */
+    public boolean rollBackDoing(List<String> ids){
+        try{
+            if (ids.size() > 0) {
+                QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
+                queryWrapper.in("id", ids);
+                //要开工的任务
+                List<InspectionPower> inspectionPowers = inspectionPowerService.list(queryWrapper);
+                //有源的
+                List<InspectionPower> haveList = inspectionPowers.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
+                //有源的需要跟新派工信息
+                List<String> powerIds = haveList.stream().map(InspectionPower::getId).collect(Collectors.toList());
+
+                if (powerIds.size() > 0) {
+                    //更新跟单工序信息
+                    for (InspectionPower inspectionPower : haveList) {
+                        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+                        trackItemUpdateWrapper.eq("id",inspectionPower.getItemId())
+                                .set("is_doing",0)
+                                .set("start_doing_time",null)
+                                .set("start_doing_user",null);
+                        trackItemService.update(trackItemUpdateWrapper);
+                        //更新派工信息
+                        UpdateWrapper<Assign> assignUpdateWrapper = new UpdateWrapper<>();
+                        assignUpdateWrapper.in("ti_id", inspectionPower.getItemId())
+                                //设置未开工状态
+                                .set("state", 0);
+                        trackAssignService.update(assignUpdateWrapper);
+                    }
+                }
+                //更新探伤委托单开工状态
+                UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+                updateWrapper
+                        .in("id",ids)
+                        .set("is_doing",NO_DOING)
+                        .set("start_doing_time",null)
+                        .set("start_doing_user",null)
+                        .set("flaw_detection",null)
+                        .set("report_no",null)
+                        .set("insp_temp_type",null)
+                        .set("flaw_detection_remark",null)
+                        .set("inspect_record_no",null)
+                        .set("check_by",null)
+                        .set("audit_by",null)
+                        .set("audit_remark",null)
+                        .set("audit_status",null);
+                inspectionPowerService.update(updateWrapper);
+
+                //删除委托任务对应的记录
+                QueryWrapper<TrackItemInspection> trackItemInspectionQueryWrapper = new QueryWrapper<>();
+                trackItemInspectionQueryWrapper.in("power_id",ids);
+                trackItemInspectionService.remove(trackItemInspectionQueryWrapper);
+            }
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 
 

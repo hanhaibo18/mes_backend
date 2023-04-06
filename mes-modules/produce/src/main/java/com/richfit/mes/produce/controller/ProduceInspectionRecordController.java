@@ -243,6 +243,14 @@ public class ProduceInspectionRecordController extends BaseController {
         return produceInspectionRecordService.importPowerInfosExcel(file, branchCode);
     }
 
+    @ApiOperation(value = "撤回开工", notes = "撤回开工")
+    @PostMapping("/inspectionPower/rollBackDoing")
+    public CommonResult rollBackDoing(@RequestBody List<String> ids) {
+        return CommonResult.success(produceInspectionRecordService.rollBackDoing(ids));
+    }
+
+
+
 
     /*@ApiOperation(value = "探伤委托单指派", notes = "探伤委托单指派")
     @ApiImplicitParams({
