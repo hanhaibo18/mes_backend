@@ -25,7 +25,7 @@ public class WmsServiceClientFallbackImpl implements WmsServiceClient {
     }
 
     @Override
-    public CommonResult<InventoryQuery> inventoryQuery(InventoryQuery inventoryQuery) {
+    public CommonResult<List<InventoryQuery>> inventoryQuery(InventoryQuery inventoryQuery) {
         return null;
     }
 }

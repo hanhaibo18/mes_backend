@@ -22,6 +22,7 @@ public interface WmsServiceClient {
 
     /**
      * 同步物料数据物料到wms
+     *
      * @param materialBasisList
      * @return
      */
@@ -30,9 +31,10 @@ public interface WmsServiceClient {
 
     /**
      * MES实时查询WMS库存
+     *
      * @param inventoryQuery
      * @return
      */
     @PostMapping("/api/integration/wms/three/inventory_query")
-    public CommonResult<InventoryQuery> inventoryQuery(@RequestBody InventoryQuery inventoryQuery);
+    public CommonResult<List<InventoryQuery>> inventoryQuery(@RequestBody InventoryQuery inventoryQuery);
 }

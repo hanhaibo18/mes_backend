@@ -45,8 +45,8 @@ public interface ProductService extends IService<Product> {
      * @param inventoryQuery
      * @return
      */
-    CommonResult<InventoryQuery> selectInventory(InventoryQuery inventoryQuery);
+    CommonResult<List<InventoryQuery>> selectInventory(InventoryQuery inventoryQuery);
 
-    IPage<List<DataDictionaryParam>> selectMaterial(String branchCode, int limit, int page);
+    Page<InventoryQuery> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture);
 
 }

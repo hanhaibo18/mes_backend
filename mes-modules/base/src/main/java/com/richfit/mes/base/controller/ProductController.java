@@ -689,14 +689,14 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/select_inventory")
-    public CommonResult<InventoryQuery> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
+    public CommonResult<List<InventoryQuery>> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
         return productService.selectInventory(inventoryQuery);
     }
 
     @ApiOperation(value = "通过MES查询车间物料详情")
     @GetMapping("/select_material")
-    public CommonResult<IPage<List<DataDictionaryParam>>> selectMaterial(String branchCode, int limit, int page) {
-        return CommonResult.success(productService.selectMaterial(branchCode, limit, page));
+    public CommonResult<Page<InventoryQuery>> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
+        return CommonResult.success(productService.selectMaterial(branchCode, limit, page, materialNo, materialName, invType, texture));
     }
 
 
