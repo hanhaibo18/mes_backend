@@ -30,9 +30,9 @@ public class BaseProjectBom {
 
     static {
         String driver = "com.mysql.cj.jdbc.Driver";//mysql驱动
-        String urlBase = "jdbc:mysql://11.54.93.106:3306/mes_base";//连接地址
+        String urlBase = "jdbc:mysql://10.134.100.41:3306/mes_base";//连接地址
         String userBase = "mes_base";//用户
-        String passwordBase = "Mes_base@mes";//密码
+        String passwordBase = "Mes_base@mes2022";//密码
         DriverManagerDataSource dataSourceBase = new DriverManagerDataSource();
         dataSourceBase.setUrl(urlBase);
         dataSourceBase.setDriverClassName(driver);

@@ -37,7 +37,7 @@ public class UpdateProjectBom {
 
     static {
         String driver = "com.mysql.cj.jdbc.Driver";//mysql驱动
-        String urlProduce = "jdbc:mysql://11.54.93.106:3306/mes_produce";//连接地址
+        String urlProduce = "jdbc:mysql://10.134.100.41:3306/mes_produce";//连接地址
         String userProduce = "mes_produce";//用户
         String passwordProduce = "Mes_produce@mes";//密码
         DriverManagerDataSource dataSourceProduce = new DriverManagerDataSource();
