@@ -48,7 +48,7 @@ public class BaseProjectBom {
         String sql = "select id,drawing_no,work_plan_no,project_name from base_project_bom WHERE tenant_id = '12345678901234567890123456789002' AND branch_code = 'BOMCO_BF_BY' AND grade = 'H'";
         List<Map<String, Object>> maps = jdbcTemplateBase.queryForList(sql);
         QueryWrapper<Plan> planQueryWrapper = new QueryWrapper<>();
-        planQueryWrapper.eq("tenant_id", "12345678901234567890123456789002").eq("branch_code", "BOMCO_BF_BY").groupBy("draw_no", "work_no");
+        planQueryWrapper.eq("tenant_id", "12345678901234567890123456789002").eq("branch_code", "BOMCO_BF_BY");
         List<Plan> plans = planService.list(planQueryWrapper);
         for (Plan plan : plans) {
             for (Map<String, Object> map : maps) {
@@ -70,7 +70,7 @@ public class BaseProjectBom {
         String sql = "select id,drawing_no,work_plan_no,project_name from base_project_bom WHERE tenant_id = '12345678901234567890123456789002' AND branch_code = 'BOMCO_BF_BY' AND grade = 'H'";
         List<Map<String, Object>> maps = jdbcTemplateBase.queryForList(sql);
         QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
-        trackHeadQueryWrapper.eq("tenant_id", "12345678901234567890123456789002").eq("branch_code", "BOMCO_BF_BY").groupBy("drawing_no", "work_no");
+        trackHeadQueryWrapper.eq("tenant_id", "12345678901234567890123456789002").eq("branch_code", "BOMCO_BF_BY");
         List<TrackHead> trackHeads = trackHeadService.list(trackHeadQueryWrapper);
         for (TrackHead trackHead : trackHeads) {
             for (Map<String, Object> map : maps) {
