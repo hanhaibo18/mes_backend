@@ -41,5 +41,5 @@ public interface ProductService extends IService<Product> {
      * @param inventoryQuery
      * @return
      */
-    List<InventoryQuery> selectInventory(InventoryQuery inventoryQuery);
+    CommonResult<InventoryQuery> selectInventory(InventoryQuery inventoryQuery);
 }

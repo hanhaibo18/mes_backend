@@ -699,8 +699,8 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/select_inventory")
-    public CommonResult<List<InventoryQuery>> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
-        return CommonResult.success(productService.selectInventory(inventoryQuery));
+    public CommonResult<InventoryQuery> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
+        return productService.selectInventory(inventoryQuery);
     }
 
 
