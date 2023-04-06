@@ -106,10 +106,9 @@ public class WmsThreeController {
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/inventory_query")
-    public CommonResult<T> inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
-        return new CommonResult(productToWmsThreeService.inventoryQueryInterface(inventoryQuery));
+    public CommonResult<List<InventoryQuery>> inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
+        return CommonResult.success(productToWmsThreeService.inventoryQueryInterface(inventoryQuery));
     }
-
 
 
 }

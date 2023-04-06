@@ -257,7 +257,7 @@ public class ProductToWmsThreeService {
     }
 
     // MES实时查询WMS库存
-    public JSONObject inventoryQueryInterface(InventoryQuery inventoryQuery) {
+    public List<InventoryQuery> inventoryQueryInterface(InventoryQuery inventoryQuery) {
         init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(inventoryQuery);
@@ -268,8 +268,7 @@ public class ProductToWmsThreeService {
         params.put("i_data", inventoryQueryEncrpy);
         //调用上传接口
         String s = HttpRequest.post(mesGetInventoryApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        JSONObject jsonObject = JSON.parseObject(s);
-        return jsonObject;
+        return JSONArray.parseArray(s, InventoryQuery.class);
     }
 
 }
