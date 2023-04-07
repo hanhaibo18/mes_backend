@@ -1,5 +1,7 @@
 package com.kld.mes.erp.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.kld.mes.erp.entity.router.Zc80Ppif026Response;
 import com.kld.mes.erp.service.RouterService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Router;
@@ -31,17 +33,13 @@ public class RouterController {
 
     @ApiOperation(value = "工艺推送接口", notes = "根据工艺向ERP推送")
     @PostMapping("/push")
-    public CommonResult<Boolean> routerPush(@ApiParam(value = "工艺列表") @RequestBody List<Router> routers) {
-
-        boolean b = routerService.push(routers);
-
-        if (b) {
-            return CommonResult.success(b);
+    public CommonResult<Zc80Ppif026Response> routerPush(@ApiParam(value = "工艺列表") @RequestBody List<Router> routers) throws Exception {
+        Zc80Ppif026Response zc80Ppif026Response = routerService.push(routers);
+        System.out.println(JSON.toJSONString(zc80Ppif026Response));
+        if ("S".equals(zc80Ppif026Response.getEType())) {
+            return CommonResult.success(zc80Ppif026Response, zc80Ppif026Response.getEMes());
         } else {
-            return CommonResult.failed("推送成功");
+            return CommonResult.failed(zc80Ppif026Response.getEMes());
         }
-
     }
-
-
 }

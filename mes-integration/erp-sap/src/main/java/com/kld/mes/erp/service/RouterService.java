@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import com.kld.mes.erp.entity.router.Zc80Ppif026Response;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -17,6 +18,6 @@ import java.util.List;
  */
 public interface RouterService {
 
-    public boolean push(List<Router> routers);
+    public Zc80Ppif026Response push(List<Router> routers) throws Exception;
 
 }
