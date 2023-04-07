@@ -14,6 +14,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.util.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,26 +97,12 @@ public class RouterServiceImpl implements RouterService {
                     zc80Ppif026S1.setDatuv(sdf.format(new Date()));
                     zc80Ppif026S1.setLtxa1(sequence.getOptName());
                     zc80Ppif026S1.setKtext(router.getRouterName());
-
-                    String vornr = "";
-
-                    if (sequence.getOptOrder() != 0) {
-                        vornr = "000" + sequence.getOptOrder();
-                        vornr = vornr.substring(vornr.length() - 4, 4);
-                    } else {
-                        if (index < 9) {
-                            vornr = "00" + (index + 1) + "0";
-                        } else if (Integer.parseInt(sequence.getTechnologySequence()) >= 9) {
-                            vornr = "0" + (index + 1) + "0";
-                        }
-                    }
-
-                    zc80Ppif026S1.setVornr(vornr);
+                    zc80Ppif026S1.setVornr(Util.fillZero(sequence.getOpNo(), 4));
                     zc80Ppif026S1.setSteus("ZP01");
                     zc80Ppif026S1.setBmsch(BigDecimal.valueOf(1));
                     String unit = product.getUnit() != null ? product.getUnit() : "";
                     zc80Ppif026S1.setMeins(unit);
-                    zc80Ppif026S1.setVgw01(BigDecimal.valueOf((sequence.getPrepareEndHours() + sequence.getSinglePieceHours()) * 60));
+                    zc80Ppif026S1.setVgw01(BigDecimal.valueOf((sequence.getPrepareEndHours() + sequence.getSinglePieceHours()) * 60).setScale(0, BigDecimal.ROUND_UP));
                     zc80Ppif026S1.setVge01("MIN");
                     zc80Ppif026S1.setVgw03(BigDecimal.valueOf(0));
                     zc80Ppif026S1.setVge03("MIN");

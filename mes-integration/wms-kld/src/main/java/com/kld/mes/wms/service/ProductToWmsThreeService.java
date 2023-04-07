@@ -5,12 +5,13 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.kld.mes.wms.provider.SystemServiceClient;
 import com.kld.mes.wms.utils.AESUtil;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.wms.*;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,36 +21,35 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@Component
+@Data
+@ConfigurationProperties(prefix = "wms")
 public class ProductToWmsThreeService {
 
     protected final RestTemplate restTemplate = new RestTemplate();
 
-    @Autowired
-    SystemServiceClient systemServiceClient;
+    /**
+     * ApiKey
+     */
+    private String mesToWmsApiKey;
 
     /**
-     * 密钥
+     * 配料申请单上传接口url
      */
-    private final String mesUrlKey = "wms-url-key";
-    private final String wmsUrlUploadMat = "wms-url-upload-mat";
-    private final String wmsUrlGetInventory = "wms-url-get-inventory";
+    private String mesScddUploadApi;
 
-    private String mesToWmsApiKey = "";
-    private String mesScddUploadApi = "";
-    private String mesUploadMatApi = "";
-    private String mesGetInventoryApi = "";
+    /**
+     * 物料基础数据同步接口url
+     */
+    private String mesUploadMatApi;
 
-    private void init() {
-
-        mesToWmsApiKey = systemServiceClient.findItemParamByCode(mesUrlKey).getData().getLabel();
-        mesUploadMatApi = systemServiceClient.findItemParamByCode(wmsUrlUploadMat).getData().getLabel();
-        mesGetInventoryApi = systemServiceClient.findItemParamByCode(wmsUrlGetInventory).getData().getLabel();
-    }
-
+    /**
+     * 实时查询库存 url
+     */
+    private String mesGetInventoryApi;
 
     // MES物料基础数据同步接口
     public ApplicationResult materialBasisInterface(List<MaterialBasis> materialBasisList) {
-        init();
         //转换json数组
         JSONArray jsonArray = JSONArray.parseArray(JSON.toJSONString(materialBasisList));
         //加密后的16进制字符串
@@ -65,7 +65,6 @@ public class ProductToWmsThreeService {
 
     // WMS报检单上传MES
     public ApplicationResult reverseInspectionDocUploadInterface(ReverseInspectionDocUpload reverseInspectionDocUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(reverseInspectionDocUpload);
         //加密后的16进制字符串
@@ -81,7 +80,6 @@ public class ProductToWmsThreeService {
 
     // MES报检单驳回WMS
     public ApplicationResult rejectInspectionDocInterface(RejectInspectionDoc rejectInspectionDoc) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(rejectInspectionDoc);
         //加密后的16进制字符串
@@ -97,7 +95,6 @@ public class ProductToWmsThreeService {
 
     // MES报检单质检结果上传WMS
     public ApplicationResult inspectionDocUploadInterface(InspectionDocUpload inspectionDocUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(inspectionDocUpload);
         //加密后的16进制字符串
@@ -113,7 +110,6 @@ public class ProductToWmsThreeService {
 
     // MES申请单上传WMS（已上线）
     public ApplicationResult applyListUploadInterface(ApplyListUpload applyListUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(applyListUpload);
         //加密后的16进制字符串
@@ -129,7 +125,6 @@ public class ProductToWmsThreeService {
 
     // WMS入库信息上传MES
     public ApplicationResult reverseInputDatabaseUploadInterface(ReverseInputDatabaseUpload reverseInputDatabaseUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(reverseInputDatabaseUpload);
         //加密后的16进制字符串
@@ -145,7 +140,6 @@ public class ProductToWmsThreeService {
 
     // WMS入库信息冲销上传MES
     public ApplicationResult reverseInputDatabaseCoverUploadInterface(ReverseInputDatabaseCoverUpload reverseInputDatabaseCoverUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(reverseInputDatabaseCoverUpload);
         //加密后的16进制字符串
@@ -162,7 +156,6 @@ public class ProductToWmsThreeService {
 
     // MES领料单上传WMS
     public ApplicationResult materialRequisitionUploadInterface(MaterialRequisitionUpload materialRequisitionUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(materialRequisitionUpload);
         //加密后的16进制字符串
@@ -178,7 +171,6 @@ public class ProductToWmsThreeService {
 
     // WMS领料单关闭上传MES
     public ApplicationResult reverseMaterialRequisitionCloseUploadInterface(ReverseMaterialRequisitionCloseUpload reverseMaterialRequisitionCloseUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(reverseMaterialRequisitionCloseUpload);
         //加密后的16进制字符串
@@ -194,7 +186,6 @@ public class ProductToWmsThreeService {
 
     // MES领料单撤回上传WMS
     public ApplicationResult materialRequisitionRecallInterface(MaterialRequisitionRecall materialRequisitionRecall) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(materialRequisitionRecall);
         //加密后的16进制字符串
@@ -210,7 +201,6 @@ public class ProductToWmsThreeService {
 
     // WMS出库信息上传MES
     public ApplicationResult reverseOutputDatabaseUploadInterface(ReverseOutputDatabaseUpload reverseOutputDatabaseUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(reverseOutputDatabaseUpload);
         //加密后的16进制字符串
@@ -226,7 +216,6 @@ public class ProductToWmsThreeService {
 
     // WMS出库信息冲销上传MES
     public ApplicationResult reverseOutputDatabaseCoverUploadInterface(ReverseOutputDatabaseCoverUpload reverseOutputDatabaseCoverUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(reverseOutputDatabaseCoverUpload);
         //加密后的16进制字符串
@@ -242,7 +231,6 @@ public class ProductToWmsThreeService {
 
     // MES计划清单锁定/解锁物资库存上传WMS
     public ApplicationResult systemUploadInterface(SystemUpload systemUpload) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(systemUpload);
         //加密后的16进制字符串
@@ -258,7 +246,6 @@ public class ProductToWmsThreeService {
 
     // MES实时查询WMS库存
     public List<InventoryReturn> inventoryQueryInterface(InventoryQuery inventoryQuery) {
-        init();
         //转换json串
         String jsonStr = JSONUtil.toJsonStr(inventoryQuery);
         //加密后的16进制字符串
