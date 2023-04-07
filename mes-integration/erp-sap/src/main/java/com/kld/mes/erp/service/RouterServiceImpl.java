@@ -79,8 +79,8 @@ public class RouterServiceImpl implements RouterService {
             List<Product> products = JSON.parseArray(JSON.toJSONString(data.get("products")), Product.class);
             String erp = data.get("erp").toString();
             Product product = new Product();
-            if (CollectionUtils.isNotEmpty(products)) {
-                product = products.get(0);
+            if (CollectionUtils.isEmpty(products)) {
+                throw new Exception(router.getRouterNo() + ":当前图号没有找到成品的物料信息，请核对后在同步");
             }
             if (sequences != null && sequences.size() > 0) {
                 Zc80Ppif026T1 t1 = new Zc80Ppif026T1();
