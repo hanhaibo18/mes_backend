@@ -48,6 +48,6 @@ public interface ProductService extends IService<Product> {
      */
     CommonResult<List<InventoryReturn>> selectInventory(InventoryQuery inventoryQuery);
 
-//    Page<InventoryQuery> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture);
+    Page<InventoryReturn> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture);
 
 }
