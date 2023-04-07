@@ -20,6 +20,7 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.wms.InventoryQuery;
+import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.model.wms.MaterialBasis;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -278,7 +279,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
      * @return
      */
     @Override
-    public CommonResult<List<InventoryQuery>> selectInventory(InventoryQuery inventoryQuery) {
+    public CommonResult<List<InventoryReturn>> selectInventory(InventoryQuery inventoryQuery) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         String tenantId = currentUser.getTenantId();
         if (StringUtils.isNullOrEmpty(inventoryQuery.getMaterialNum())) {
@@ -307,25 +308,20 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             if (StringUtils.isNullOrEmpty(inventoryQuery.getWorkCode())) {
                 inventoryQuery.setWorkCode(tenantErpCode);
             }
-            CommonResult<List<InventoryQuery>> inventoryQueryCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery);
-            if (CollectionUtils.isEmpty(inventoryQueryCommonResult.getData())) {
+            CommonResult<List<InventoryReturn>> listCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery);
+            if (CollectionUtils.isEmpty(listCommonResult.getData())) {
                 return CommonResult.failed("未查询到相关信息");
             }
-            for (InventoryQuery datum : inventoryQueryCommonResult.getData()) {
+            for (InventoryReturn datum : listCommonResult.getData()) {
                 datum.setDrawingNo(productMap.get(datum.getMaterialNum()).getDrawingNo());
-                if (productMap.get(datum.getMaterialNum()).getWeight() == null) {
-                    datum.setWeight(null);
-                } else {
-                    datum.setWeight(productMap.get(datum.getMaterialNum()).getWeight().toString());
-                }
             }
-            return inventoryQueryCommonResult;
+            return listCommonResult;
         }
         return CommonResult.failed("未查询到相关信息");
     }
 
     @Override
-    public Page<InventoryQuery> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
+    public Page<InventoryReturn> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
         List<DataDictionaryParam> dataDictionaryParams = systemServiceClient.getDataDictionaryParamByBranchCode(branchCode).getData();
         if (materialNo != null) {
             dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getMaterialNo(), materialNo)).collect(Collectors.toList());
@@ -336,7 +332,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (texture != null) {
             dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getTexture(), texture)).collect(Collectors.toList());
         }
-        Page<InventoryQuery> resultPage = new Page<>();
+        Page<InventoryReturn> resultPage = new Page<>();
         if (CollectionUtils.isEmpty(dataDictionaryParams)) {
             return resultPage;
         }
@@ -347,7 +343,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         materialNos = materialNos.substring(0, materialNos.lastIndexOf(","));
         InventoryQuery inventoryQuery = new InventoryQuery();
         inventoryQuery.setMaterialNum(materialNos);
-        List<InventoryQuery> inventoryQueryList = this.selectInventory(inventoryQuery).getData();
+        List<InventoryReturn> inventoryQueryList = this.selectInventory(inventoryQuery).getData();
         if (inventoryQueryList == null) {
             return resultPage;
         }
