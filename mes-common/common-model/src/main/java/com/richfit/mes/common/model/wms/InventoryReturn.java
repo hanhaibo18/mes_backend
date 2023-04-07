@@ -87,4 +87,12 @@ public class InventoryReturn {
     @TableField(exist = false)
     private String weight;
 
+    //物料名称
+    @TableField(exist = false)
+    private String materialName;
+
+    //材质
+    @TableField(exist = false)
+    private String texture;
+
 }
