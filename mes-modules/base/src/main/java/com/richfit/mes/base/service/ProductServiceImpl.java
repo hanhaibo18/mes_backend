@@ -323,6 +323,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     public Page<InventoryReturn> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
         List<DataDictionaryParam> dataDictionaryParams = systemServiceClient.getDataDictionaryParamByBranchCode(branchCode).getData();
+        //按条件过滤
         if (materialNo != null) {
             dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getMaterialNo(), materialNo)).collect(Collectors.toList());
         }
@@ -336,6 +337,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (CollectionUtils.isEmpty(dataDictionaryParams)) {
             return resultPage;
         }
+        Map<String, DataDictionaryParam> dictionaryParamMap = dataDictionaryParams.stream().collect(Collectors.toMap(DataDictionaryParam::getMaterialNo, Function.identity()));
         String materialNos = "";
         for (DataDictionaryParam dataDictionaryParam : dataDictionaryParams) {
             materialNos = materialNos + dataDictionaryParam.getMaterialNo() + ",";
@@ -349,6 +351,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         if (invType != null) {
             inventoryQueryList = inventoryQueryList.stream().filter(x -> Objects.equals(x.getInvType(), invType)).collect(Collectors.toList());
+        }
+        for (InventoryReturn inventoryReturn : inventoryQueryList) {
+            inventoryReturn.setMaterialName(dictionaryParamMap.get(inventoryReturn.getMaterialNum()).getMaterialName());
+            inventoryReturn.setMaterialName(dictionaryParamMap.get(inventoryReturn.getMaterialNum()).getTexture());
         }
         resultPage.setTotal(inventoryQueryList.size());
         resultPage.setSize(limit);

@@ -757,13 +757,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 return;
             }
             XSSFWorkbook wk = (XSSFWorkbook) writer.getWorkbook();
-            writer.writeCellValue("C6", trackHeadId);
-            writer.writeCellValue("H6", LocalDate.now().toString());
-            writer.writeCellValue("C7", trackHead.getProductName());
-            writer.writeCellValue("H7", trackHead.getTexture());
-            writer.writeCellValue("C9", trackHead.getNumber());
-            writer.writeCellValue("H9", trackHead.getDrawingNo());
-            writer.writeCellValue("C11", tenant.getData().getTenantName());
+            writer.writeCellValue("C5", trackHeadId);
+            writer.writeCellValue("G5", LocalDate.now().toString());
+            writer.writeCellValue("C6", trackHead.getProductName());
+            writer.writeCellValue("G6", trackHead.getTexture());
+            writer.writeCellValue("C8", trackHead.getNumber());
+            writer.writeCellValue("G8", trackHead.getDrawingNo());
+            writer.writeCellValue("C10", tenant.getData().getTenantName());
             // TODO: 2023/2/22
 
             ServletOutputStream outputStream = null;
