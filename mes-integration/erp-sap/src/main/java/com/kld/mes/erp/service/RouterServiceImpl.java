@@ -97,12 +97,12 @@ public class RouterServiceImpl implements RouterService {
                     zc80Ppif026S1.setDatuv(sdf.format(new Date()));
                     zc80Ppif026S1.setLtxa1(sequence.getOptName());
                     zc80Ppif026S1.setKtext(router.getRouterName());
-                    zc80Ppif026S1.setVornr(Util.fillZero(sequence.getOptCode(), 4));
+                    zc80Ppif026S1.setVornr(Util.fillZero(sequence.getOpNo(), 4));
                     zc80Ppif026S1.setSteus("ZP01");
                     zc80Ppif026S1.setBmsch(BigDecimal.valueOf(1));
                     String unit = product.getUnit() != null ? product.getUnit() : "";
                     zc80Ppif026S1.setMeins(unit);
-                    zc80Ppif026S1.setVgw01(BigDecimal.valueOf((sequence.getPrepareEndHours() + sequence.getSinglePieceHours()) * 60));
+                    zc80Ppif026S1.setVgw01(BigDecimal.valueOf((sequence.getPrepareEndHours() + sequence.getSinglePieceHours()) * 60).setScale(0, BigDecimal.ROUND_UP));
                     zc80Ppif026S1.setVge01("MIN");
                     zc80Ppif026S1.setVgw03(BigDecimal.valueOf(0));
                     zc80Ppif026S1.setVge03("MIN");
