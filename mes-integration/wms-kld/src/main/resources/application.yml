@@ -32,3 +32,8 @@ tenant:
 
 timer:
   time-interval: 300000
+wms:
+  mesToWmsApiKey: YQsZ7gPT
+  mesUploadMatApi: http://10.134.100.56:15000/warehouse/mes/uploadMat
+  mesGetInventoryApi: http://10.134.100.56:15000/warehouse/mes/getInventory
+  mesScddUploadApi: http://11.11.136.202:9081/bsj/mes2barcode/scddUpload
