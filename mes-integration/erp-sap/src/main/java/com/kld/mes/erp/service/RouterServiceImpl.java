@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import com.alibaba.fastjson.JSON;
 import com.kld.mes.erp.entity.router.Zc80Ppif026;
 import com.kld.mes.erp.entity.router.Zc80Ppif026Response;
 import com.kld.mes.erp.entity.router.Zc80Ppif026S1;
@@ -63,7 +64,7 @@ public class RouterServiceImpl implements RouterService {
         Zc80Ppif026 zc80Ppif026 = new Zc80Ppif026();
 
         for (Router router : routers) {
-            List<Sequence> sequences = baseServiceClient.getByRouterNo(router.getRouterNo(), router.getBranchCode(), router.getTenantId(), null, SecurityConstants.FROM_INNER).getData();
+            List<Sequence> sequences = baseServiceClient.getByRouterId(router.getId(), router.getBranchCode()).getData();
 
             if (sequences != null && sequences.size() > 0) {
                 Zc80Ppif026T1 t1 = new Zc80Ppif026T1();
