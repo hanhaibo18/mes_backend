@@ -17,9 +17,9 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
-import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.wms.InventoryQuery;
+import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.model.wms.MaterialBasis;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -95,6 +95,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     /**
      * 物料导入 Excel
+     *
      * @param file
      * @return
      */
@@ -186,7 +187,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
             }
             if (exist) {
-                return CommonResult.success("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList,"导入成功");
+                return CommonResult.success("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList, "导入成功");
             }
 
         } catch (Exception e) {
@@ -211,6 +212,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     /**
      * 勾选物料同步到wms
+     *
      * @param ids
      * @return
      */
@@ -258,12 +260,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 materialBasis.setField4("");
                 materialBasis.setField5("");
                 materialBasisList.add(materialBasis);
-                init ++;
+                init++;
             }
             // 同步到wms中
             wmsServiceClient.materialBasis(materialBasisList);
 
-            return CommonResult.success(true,"操作成功");
+            return CommonResult.success(true, "操作成功");
         }
         return CommonResult.failed("操作失败");
     }
@@ -271,16 +273,14 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     /**
      * 查询库存
+     *
      * @param inventoryQuery
      * @return
      */
     @Override
-    public CommonResult<InventoryQuery> selectInventory(InventoryQuery inventoryQuery) {
+    public CommonResult<List<InventoryReturn>> selectInventory(InventoryQuery inventoryQuery) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         String tenantId = currentUser.getTenantId();
-        if (StringUtils.isNullOrEmpty(inventoryQuery.getWorkCode())) {
-            return CommonResult.failed("工厂不能为空");
-        }
         if (StringUtils.isNullOrEmpty(inventoryQuery.getMaterialNum())) {
             return CommonResult.failed("物料编码不能为空");
         }
@@ -290,8 +290,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         queryWrapper.in("material_no", materialNums);
         List<Product> productList = productService.list(queryWrapper);
         Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(Product::getMaterialNo, Function.identity()));
-        CommonResult<Tenant> tenant = systemServiceClient.tenantById(tenantId);
-        String tenantErpCode = tenant.getData().getTenantErpCode();
+        //获取当前登录用户erpCode
+        String tenantErpCode = systemServiceClient.tenantById(tenantId).getData().getTenantErpCode();
         if (CollectionUtils.isNotEmpty(productList) && !StringUtils.isNullOrEmpty(tenantErpCode)) {
             int init = 1;
             StringBuilder stringBuilder = new StringBuilder();
@@ -301,22 +301,66 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 } else {
                     stringBuilder.append(",").append(product.getMaterialNo());
                 }
-                if (productList.size() == init) {
-                    inventoryQuery.setMaterialNum(stringBuilder.toString());
-                }
-                init ++;
+                init++;
             }
-            CommonResult<InventoryQuery> inventoryQueryCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery);
-            return inventoryQueryCommonResult;
+            inventoryQuery.setMaterialNum(stringBuilder.toString());
+            if (StringUtils.isNullOrEmpty(inventoryQuery.getWorkCode())) {
+                inventoryQuery.setWorkCode(tenantErpCode);
+            }
+            CommonResult<List<InventoryReturn>> listCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery);
+            if (CollectionUtils.isEmpty(listCommonResult.getData())) {
+                return CommonResult.failed("未查询到相关信息");
+            }
+            for (InventoryReturn datum : listCommonResult.getData()) {
+                datum.setDrawingNo(productMap.get(datum.getMaterialNum()).getDrawingNo());
+                if (productMap.get(datum.getMaterialNum()).getWeight() == null) {
+                    datum.setWeight(null);
+                } else {
+                    datum.setWeight(productMap.get(datum.getMaterialNum()).getWeight().toString());
+                }
+            }
+            return listCommonResult;
         }
         return CommonResult.failed("未查询到相关信息");
     }
 
-    @Override
-    public IPage<List<DataDictionaryParam>> selectMaterial(String branchCode, int limit, int page) {
-
-        return null;
-    }
+//    @Override
+//    public Page<InventoryQuery> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
+//        List<DataDictionaryParam> dataDictionaryParams = systemServiceClient.getDataDictionaryParamByBranchCode(branchCode).getData();
+//        if (materialNo != null) {
+//            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getMaterialNo(), materialNo)).collect(Collectors.toList());
+//        }
+//        if (materialName != null) {
+//            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getMaterialName(), materialName)).collect(Collectors.toList());
+//        }
+//        if (texture != null) {
+//            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getTexture(), texture)).collect(Collectors.toList());
+//        }
+//        Page<InventoryQuery> resultPage = new Page<>();
+//        if (CollectionUtils.isEmpty(dataDictionaryParams)) {
+//            return resultPage;
+//        }
+//        String materialNos = "";
+//        for (DataDictionaryParam dataDictionaryParam : dataDictionaryParams) {
+//            materialNos = materialNos + dataDictionaryParam.getMaterialNo() + ",";
+//        }
+//        materialNos = materialNos.substring(0, materialNos.lastIndexOf(","));
+//        InventoryQuery inventoryQuery = new InventoryQuery();
+//        inventoryQuery.setMaterialNum(materialNos);
+//        List<InventoryQuery> inventoryQueryList = this.selectInventory(inventoryQuery).getData();
+//        if (inventoryQueryList == null) {
+//            return resultPage;
+//        }
+//        if (invType != null) {
+//            inventoryQueryList = inventoryQueryList.stream().filter(x -> Objects.equals(x.getInvType(), invType)).collect(Collectors.toList());
+//        }
+//        resultPage.setTotal(inventoryQueryList.size());
+//        resultPage.setSize(limit);
+//        resultPage.setCurrent(page);
+//        inventoryQueryList = inventoryQueryList.stream().skip((page - 1) * limit).limit(limit).collect(Collectors.toList());
+//        resultPage.setRecords(inventoryQueryList);
+//        return resultPage;
+//    }
 
 
 }

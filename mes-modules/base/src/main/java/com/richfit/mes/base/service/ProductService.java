@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.wms.InventoryQuery;
+import com.richfit.mes.common.model.wms.InventoryReturn;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -45,8 +46,8 @@ public interface ProductService extends IService<Product> {
      * @param inventoryQuery
      * @return
      */
-    CommonResult<InventoryQuery> selectInventory(InventoryQuery inventoryQuery);
+    CommonResult<List<InventoryReturn>> selectInventory(InventoryQuery inventoryQuery);
 
-    IPage<List<DataDictionaryParam>> selectMaterial(String branchCode, int limit, int page);
+//    Page<InventoryQuery> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture);
 
 }
