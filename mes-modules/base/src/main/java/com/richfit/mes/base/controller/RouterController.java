@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -9,6 +10,7 @@ import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.enmus.RouterStatusEnum;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
+import com.richfit.mes.base.service.RouterOptAssignService;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.base.service.SequenceService;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -16,7 +18,9 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Router;
+import com.richfit.mes.common.model.base.RouterOptAssign;
 import com.richfit.mes.common.model.base.Sequence;
+import com.richfit.mes.common.model.produce.AssignPerson;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
@@ -594,6 +598,84 @@ public class RouterController extends BaseController {
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
+    }
+
+
+    @Autowired
+    private RouterOptAssignService routerOptAssignService;
+
+
+    @ApiOperation(value = "根据图号和工序name查询工艺工序派工", notes = "根据图号和工序name查询工艺工序派工")
+    @GetMapping("/router/opt/assign/get")
+    public CommonResult<RouterOptAssign> assignGet(String routerNo,String optName, String branchCode) {
+        QueryWrapper<RouterOptAssign> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("opt_name", optName);
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("router_no", routerNo);
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
+        RouterOptAssign one = routerOptAssignService.getOne(queryWrapper);
+        ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
+
+        if (!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())) {
+            List<String> list = Arrays.asList(one.getUserId().split(","));
+            for (String userId : list) {
+                AssignPerson assignPerson = new AssignPerson();
+                assignPerson.setUserId(userId);
+                assignPeoples.add(assignPerson);
+            }
+            one.setAssignPersons(assignPeoples);
+        }
+        return CommonResult.success(one, "操作成功！");
+    }
+
+    @ApiOperation(value = "新增工艺工序派工", notes = "新增工艺工序派工")
+    @ApiImplicitParam(name = "assign", value = "工艺工序派工", required = true, dataType = "RouterOptAssign", paramType = "body")
+    @PostMapping("/router/opt/save")
+    public CommonResult<Boolean> assignSave(@RequestBody RouterOptAssign assign) {
+        //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
+        //热处理派工派到班组  所以没有人员 （assign.getAssignPersons()为空）
+        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
+            StringBuilder userId = new StringBuilder();
+            StringBuilder userName = new StringBuilder();
+            for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
+                    userId.append(",");
+                    userName.append(",");
+                }
+                userId.append(assignPerson.getUserId());
+                userName.append(assignPerson.getUserName());
+            }
+            assign.setUserId(String.valueOf(userId));
+            assign.setSiteName(String.valueOf(userName));
+        }
+        assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        return CommonResult.success(routerOptAssignService.save(assign), "操作成功！");
+    }
+
+    @ApiOperation(value = "修改工艺工序派工", notes = "修改工艺工序派工")
+    @ApiImplicitParam(name = "assign", value = "工艺工序派工", required = true, dataType = "RouterOptAssign", paramType = "body")
+    @PutMapping("router/opt/update")
+    public CommonResult<Boolean> assignUpdate(@RequestBody RouterOptAssign assign) {
+        //1、处理派工人员信息  机加userid和username前端拼接好了，所以可以直接用
+        //2、热工前端没拼接，所以后端得处理 从assignPerson里边取值
+        //3、热处理车间分配到车间  不涉及人员
+        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
+            StringBuilder userId = new StringBuilder();
+            StringBuilder userName = new StringBuilder();
+            for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
+                    userId.append(",");
+                    userName.append(",");
+                }
+                userId.append(assignPerson.getUserId());
+                userName.append(assignPerson.getUserName());
+            }
+            assign.setUserId(String.valueOf(userId));
+            assign.setSiteName(String.valueOf(userName));
+        }
+        return CommonResult.success(routerOptAssignService.updateById(assign), "操作成功！");
     }
 
 }
