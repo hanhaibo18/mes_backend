@@ -19,6 +19,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public CommonResult<List<Sequence>> getByRouterId(String routerId, String branchCode) {
+        return CommonResult.success(null);
+    }
+
+    @Override
     public CommonResult<List<Branch>> selectBranchChildByCode(String branchCode) {
         return CommonResult.success(null);
     }
