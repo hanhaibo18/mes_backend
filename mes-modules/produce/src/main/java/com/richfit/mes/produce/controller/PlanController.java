@@ -162,6 +162,9 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(planDto.getProjType())) {
             queryWrapper.like("proj_type", planDto.getProjType());//计划类型 1新制  2 返修'
         }
+        if (!StringUtils.isNullOrEmpty(planDto.getSource())) {
+            queryWrapper.like("source", planDto.getSource());//来源  1 分公司计划  2车间计划
+        }
         if (!StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }

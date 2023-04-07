@@ -397,6 +397,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setCreateBy(currentUser.getUsername());//创建人
                 plan.setCreateTime(new Date());//创建时间
                 plan.setTenantId(hotDemand.getTenantId());//租户id
+                plan.setSource(1);//来源  1 分公司计划  2车间计划
                 //车间码处理
                 this.disposeBranchCode(branchType, hotDemand, plan);
 
