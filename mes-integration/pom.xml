@@ -20,6 +20,7 @@
         <module>wechat</module>
         <module>wms-bs</module>
         <module>dnc-bs</module>
+        <module>pdm-bs</module>
     </modules>
     <dependencies>
 

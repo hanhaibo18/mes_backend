@@ -26,6 +26,11 @@ public interface BaseServiceClient {
                                                       @RequestHeader(value = SecurityConstants.FROM) String header
     );
 
+    @GetMapping(value = "/api/base/sequence/getByRouterId")
+    public CommonResult<List<Sequence>> getByRouterId(@RequestParam("routerId") String routerId,
+                                                      @RequestParam("branchCode") String branchCode
+    );
+
     @GetMapping(value = "/api/base/branch/select_branch_children_by_code")
     public CommonResult<List<Branch>> selectBranchChildByCode(@RequestParam("branchCode") String branchCode);
 
