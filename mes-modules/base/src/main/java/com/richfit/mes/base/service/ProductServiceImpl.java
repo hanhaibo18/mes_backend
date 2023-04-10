@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.ProductMapper;
 import com.richfit.mes.base.enmus.MaterialTypeEnum;
+import com.richfit.mes.base.enmus.MessageEnum;
+import com.richfit.mes.base.enmus.TrackTypeEnum;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.base.provider.WmsServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -146,30 +148,33 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 product.setDrawingNo(product.getDrawingNo().trim());
                 product.setProductName(product.getProductName());
                 product.setMaterialDate(product.getMaterialDate());
-                product.setMaterialType(product.getMaterialType());
+                product.setMaterialType(MaterialTypeEnum.getCode(product.getMaterialType()));
                 product.setObjectType(product.getObjectType());
                 product.setMaterialDesc(product.getMaterialDesc());
                 product.setTexture(product.getTexture());
                 product.setWeight(product.getWeight());
                 product.setUnit(product.getUnit());
-                product.setIsKeyPart(product.getIsKeyPart());
-                product.setIsNeedPicking(product.getIsNeedPicking());
-                product.setTrackType(product.getTrackType());
-                product.setIsEdgeStore(product.getIsEdgeStore());
-                product.setIsCheck(product.getIsCheck());
+                product.setTrackType(TrackTypeEnum.getCode(product.getTrackType()));
                 if (StringUtils.isNullOrEmpty(product.getIsKeyPart())) {
                     product.setIsKeyPart("0");
+                } else {
+                    product.setIsKeyPart(Integer.toString(MessageEnum.getCode(product.getIsKeyPart())));
                 }
                 if (StringUtils.isNullOrEmpty(product.getIsNeedPicking())) {
                     product.setIsNeedPicking("0");
+                } else {
+                    product.setIsNeedPicking(Integer.toString(MessageEnum.getCode(product.getIsNeedPicking())));
                 }
                 if (StringUtils.isNullOrEmpty(product.getIsEdgeStore())) {
                     product.setIsEdgeStore("0");
+                } else {
+                    product.setIsEdgeStore(Integer.toString(MessageEnum.getCode(product.getIsEdgeStore())));
                 }
                 if (StringUtils.isNullOrEmpty(product.getIsCheck())) {
                     product.setIsCheck("0");
+                } else {
+                    product.setIsCheck(Integer.toString(MessageEnum.getCode(product.getIsCheck())));
                 }
-
                 // 物料编码若存在则更新 否则就新增
                 if (checkExist(product) == true) {
                     productUpdateList.add(product);
@@ -179,18 +184,15 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productAddByIdList.add(product.getMaterialNo());
                 }
             }
-
             if (CollectionUtils.isNotEmpty(productAddList)) {
                 productService.saveBatch(productAddList);
             }
             if (CollectionUtils.isNotEmpty(productUpdateList)) {
                 productService.updateBatchById(productUpdateList);
-
             }
             if (exist) {
                 return CommonResult.success("该SAP物料编码不存在已新增，SAP物料编码为：" + productAddByIdList, "导入成功");
             }
-
         } catch (Exception e) {
             log.error(e.getMessage());
         }

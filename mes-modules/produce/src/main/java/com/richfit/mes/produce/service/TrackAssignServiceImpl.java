@@ -442,6 +442,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if (StrUtil.isNotBlank(dispatchingDto.getState())) {
             queryWrapper.in("u.state", dispatchingDto.getState());
         }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkNo())) {
+            queryWrapper.inSql("u.id", "select id from produce_assign where track_id in (select id from produce_track_head where tenant_id = '"+SecurityUtils.getCurrentUser().getTenantId()+"' and work_no = '"+dispatchingDto.getWorkNo()+"')");
+        }
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("u.classes", dispatchingDto.getClasses());
