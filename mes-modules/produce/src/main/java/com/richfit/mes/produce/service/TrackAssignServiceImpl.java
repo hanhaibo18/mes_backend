@@ -242,7 +242,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
-        queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
+        //queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
 
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
