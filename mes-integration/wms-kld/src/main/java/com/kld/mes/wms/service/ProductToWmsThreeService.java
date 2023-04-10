@@ -34,19 +34,10 @@ public class ProductToWmsThreeService {
     private String mesToWmsApiKey;
 
     /**
-     * 配料申请单上传接口url
+     * url
      */
-    private String mesScddUploadApi;
+    private String mesToWmsUrl;
 
-    /**
-     * 物料基础数据同步接口url
-     */
-    private String mesUploadMatApi;
-
-    /**
-     * 实时查询库存 url
-     */
-    private String mesGetInventoryApi;
 
     // MES物料基础数据同步接口
     public ApplicationResult materialBasisInterface(List<MaterialBasis> materialBasisList) {
@@ -58,7 +49,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", materialBasisEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesUploadMatApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl + "/uploadMat").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -73,7 +64,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", reverseInspectionDocUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -88,7 +79,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", rejectInspectionDocEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -103,7 +94,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", inspectionDocUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -118,7 +109,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", applyListUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -133,7 +124,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", reverseInputDatabaseUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -148,7 +139,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", reverseInputDatabaseCoverUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
 
@@ -164,7 +155,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", materialRequisitionUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -179,7 +170,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", reverseMaterialRequisitionCloseUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -194,7 +185,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", materialRequisitionRecallEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -209,7 +200,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", reverseOutputDatabaseUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -224,7 +215,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", reverseOutputDatabaseCoverUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -239,7 +230,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", systemUploadEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -254,7 +245,7 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = new HashMap<>(3);
         params.put("i_data", inventoryQueryEncrpy);
         //调用上传接口
-        String s = HttpRequest.post(mesGetInventoryApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl + "/getInventory").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         JSONObject jsonObject = JSON.parseObject(s);
         String data = jsonObject.get("data").toString();
         return JSONObject.parseArray(data, InventoryReturn.class);
