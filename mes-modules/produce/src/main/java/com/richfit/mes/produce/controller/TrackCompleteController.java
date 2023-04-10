@@ -125,15 +125,10 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.apply("assign_id in (select id from produce_assign where site_id='" + siteId + "')");
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
+                queryWrapper.ge("a.complete_time",startTime);
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                Calendar calendar = new GregorianCalendar();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                calendar.setTime(sdf.parse(endTime));
-                calendar.add(Calendar.DAY_OF_MONTH, 1);
-                queryWrapper.apply("UNIX_TIMESTAMP(a.modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + "')");
-
+                queryWrapper.le("a.complete_time",endTime);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
