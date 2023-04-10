@@ -19,11 +19,17 @@ public class LayingOff extends BaseEntity<LayingOff> {
     //规格
     private String specification;
     //数量
-    private Integer num;
+    private String num;
     //炉号
     private String batchNo;
     //操作者
     private String operator;
+    //操作时间
+    private String operateTime;
+    //材质
+    private String texture;
+    //重量
+    private String weight;
 
 }
 

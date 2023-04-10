@@ -17,6 +17,8 @@ public class ForDispatchingDto extends QueryPageDto {
     private String trackNo;
     @ApiModelProperty(value = "图号", dataType = "String")
     private String routerNo;
+    @ApiModelProperty(value = "工作号", dataType = "String")
+    private String workNo;
     @ApiModelProperty(value = "开始时间", dataType = "String")
     private String startTime;
     @ApiModelProperty(value = "结束时间", dataType = "String")

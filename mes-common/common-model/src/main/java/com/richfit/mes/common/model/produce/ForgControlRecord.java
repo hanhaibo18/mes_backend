@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 锻造工序控制记录表(ProduceForgControlRecord)表实体类
  *
@@ -24,8 +26,14 @@ public class ForgControlRecord extends BaseEntity<ForgControlRecord> {
     private String finalForgTemp;
     //记录人
     private String recorder;
+    //记录日期
+    private Date recordeTime;
     //工序id
     private String itemId;
+    //数据类型 1-火次，2-试棒锻造，3-备注
+    private String type;
+    //试棒锻造
+    private String barForge;
 
 }
 
