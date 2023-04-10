@@ -5,11 +5,10 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -25,6 +24,9 @@ public interface BaseServiceClient {
                                                       @RequestParam("optId") String optId,
                                                       @RequestHeader(value = SecurityConstants.FROM) String header
     );
+
+    @PostMapping(value = "/api/base/sequence/push")
+    public CommonResult<Map> push(@RequestBody Router router);
 
     @GetMapping(value = "/api/base/branch/select_branch_children_by_code")
     public CommonResult<List<Branch>> selectBranchChildByCode(@RequestParam("branchCode") String branchCode);

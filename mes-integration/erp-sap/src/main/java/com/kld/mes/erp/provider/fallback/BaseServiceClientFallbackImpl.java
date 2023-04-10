@@ -4,8 +4,10 @@ import com.kld.mes.erp.provider.BaseServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -15,6 +17,11 @@ import java.util.List;
 public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     @Override
     public CommonResult<List<Sequence>> getByRouterNo(String routerNo, String branchCode, String tenantId, String optId, String header) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<Map> push(Router router) {
         return CommonResult.success(null);
     }
 

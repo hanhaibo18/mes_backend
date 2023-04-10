@@ -97,6 +97,9 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "计划类型 1新制  2 返修")
     private Integer projType;
 
+    @ApiModelProperty(value = "来源  1 分公司计划  2车间计划")
+    private Integer source;
+
     @ApiModelProperty(value = "所属机构")
     private String branchCode;
 

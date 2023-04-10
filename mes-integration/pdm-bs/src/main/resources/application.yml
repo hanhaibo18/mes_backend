@@ -1,8 +1,8 @@
 server:
-  port: ${SERVER_PORT:8016}
+  port: ${SERVER_PORT:8019}
 spring:
   application:
-    name: wms-service
+    name: pdmbs-service
   cloud:
     nacos:
       username: nacos
@@ -32,6 +32,3 @@ tenant:
 
 timer:
   time-interval: 300000
-wms:
-  mesToWmsApiKey: YQsZ7gPT
-  mesToWmsUrl: http://10.134.100.56:15000/warehouse/mes

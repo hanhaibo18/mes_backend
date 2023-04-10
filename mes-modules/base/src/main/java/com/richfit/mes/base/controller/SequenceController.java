@@ -69,6 +69,9 @@ public class SequenceController extends BaseController {
     @Autowired
     private OperationTypeSpecService operationTypeSpecService;
 
+    @Autowired
+    private ProductService productService;
+
 
     /**
      * 功能描述: 工序查询
@@ -433,6 +436,27 @@ public class SequenceController extends BaseController {
         }
 
         return CommonResult.success(result, "操作成功！");
+    }
+
+    @ApiOperation(value = "erp工艺推送", notes = "erp工艺推送")
+    @PostMapping("/push")
+    public CommonResult<Map> push(@RequestBody Router router) {
+        Map map = new HashMap();
+        QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
+        queryWrapper.eq("router_id", router.getId());
+        queryWrapper.eq("branch_code", router.getBranchCode());
+        queryWrapper.orderByAsc("opt_order");
+        List<Sequence> sequences = sequenceService.list(queryWrapper);
+
+        QueryWrapper<Product> queryWrapperProduct = new QueryWrapper<Product>();
+        queryWrapperProduct.eq("tenant_id", router.getTenantId());
+        queryWrapperProduct.eq("drawing_no", router.getRouterNo());
+        queryWrapperProduct.eq("material_type", "3");
+        List<Product> products = productService.list(queryWrapperProduct);
+        map.put("sequences", setOptCodeAndName(sequences));
+        map.put("products", products);
+        map.put("erp", SecurityUtils.getCurrentUser().getTenantErpCode());
+        return CommonResult.success(map, "操作成功！");
     }
 
 

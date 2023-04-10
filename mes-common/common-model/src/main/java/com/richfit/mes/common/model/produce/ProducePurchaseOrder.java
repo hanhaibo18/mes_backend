@@ -52,5 +52,10 @@ public class ProducePurchaseOrder extends BaseEntity<ProducePurchaseOrder> {
 
     private String branchCode;
 
+    /**
+     * 收货数量
+     */
+    private String PackagesNumber;
+
     private static final long serialVersionUID = 1L;
 }

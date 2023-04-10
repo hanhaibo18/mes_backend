@@ -258,6 +258,8 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                                             if (menge != null && !"".equals(menge)) {
                                                 purchase.setNumber((int) Float.parseFloat(menge));
                                             }
+                                            //收货数量映射
+                                            purchase.setPackagesNumber(itemNext.elementTextTrim("ZMENGE"));
                                             purchase.setUnit(itemNext.elementTextTrim("MEINS"));
                                             //TODO 查询数量单位 暂时没有这张表 后续完善
 //                                            DataTable dt = bll.GetDescByUnit(purchase.Unit).Tables[0];
