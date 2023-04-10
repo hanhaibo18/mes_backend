@@ -12,9 +12,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLogAspect;
@@ -28,6 +30,7 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionDto;
 import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +92,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Autowired
     private ActionService actionService;
+
+    @Autowired
+    private SystemServiceClient systemServiceClient;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -731,6 +737,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Override
     public void exportHeatTrackLabel(HttpServletResponse response, String id) {
+        //获取当前租户信息
+        Tenant tenant = systemServiceClient.getTenantById(SecurityUtils.getCurrentUser().getTenantId()).getData();
         //根据预装炉id获取跟单工序表
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         queryWrapper.eq("precharge_furnace_id", id);
@@ -746,20 +754,23 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     if (sheetNum > 0) {
                         writer.setSheet(wk.cloneSheet(0));
                     }
+
+                    //获取跟单信息
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                    //获取预装炉信息
                     PrechargeFurnace prechargeFurnace = prechargeFurnaceMapper.selectById(id);
+                    //获取车间信息
+                    Branch branch = baseServiceClient.selectBranchByCodeAndTenantId(trackItem.getBranchCode(), tenant.getId()).getData();
                     writer.writeCellValue("B2", trackHead == null ? "" : trackHead.getWorkNo());
-                    // TODO: 2023/2/17  名称
-                    writer.writeCellValue("E2", "");
+                    writer.writeCellValue("E2", trackItem.getOptName());
 
                     writer.writeCellValue("B3", trackHead == null ? "" : trackHead.getDrawingNo());
                     writer.writeCellValue("E3", trackItem.getNumber());
                     writer.writeCellValue("B4", trackItem.getBranchCode());
-                    // TODO: 2023/2/17  送交单位
-
-                    writer.writeCellValue("B5", trackHead.getBatchNo());
+                    writer.writeCellValue("E4", tenant.getTenantName() + branch.getBranchName());
+                    writer.writeCellValue("B5", trackHead == null ? "" : trackHead.getBatchNo());
                     writer.writeCellValue("E5", prechargeFurnace == null ? "" : prechargeFurnace.getFurnaceNo());
-                    // TODO: 2023/2/17 备注
+                    writer.writeCellValue("B6", trackItem.getRemark());
 
                     writer.renameSheet(sheetNum, "sheet" + (++sheetNum));
                 }
