@@ -720,13 +720,13 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 DisqualificationFinalResult finalResult = finalResultService.getById(disqualification.getId());
                 String tenantId = SecurityUtils.getCurrentUser().getTenantId();
                 //是处理单位1
-                if (finalResult.getUnitTreatmentOne().equals(tenantId)) {
+                if (tenantId.equals(finalResult.getUnitTreatmentOne())) {
                     if (disqualification.getType() == 3) {
                         disqualification.setType(2);
                     }
                 }
                 //处理单位2
-                if (finalResult.getUnitTreatmentTwo().equals(tenantId)) {
+                if (tenantId.equals(finalResult.getUnitTreatmentTwo())) {
                     if (disqualification.getType() == 4) {
                         disqualification.setType(3);
                     }
