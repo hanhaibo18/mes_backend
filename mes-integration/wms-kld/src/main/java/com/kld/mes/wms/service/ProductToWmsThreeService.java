@@ -42,102 +42,66 @@ public class ProductToWmsThreeService {
     // MES物料基础数据同步接口
     public ApplicationResult materialBasisInterface(List<MaterialBasis> materialBasisList) {
         //转换json数组
-        JSONArray jsonArray = JSONArray.parseArray(JSON.toJSONString(materialBasisList));
+        String jsonStr = JSONArray.parseArray(JSON.toJSONString(materialBasisList)).toString();
         //加密后的16进制字符串
-        String materialBasisEncrpy = AESUtil.encrypt(jsonArray.toString(), mesToWmsApiKey);
+        String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
         //传参
         Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", materialBasisEncrpy);
+        params.put("i_data", encryptString);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadMat").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // WMS报检单上传MES
+    // WMS报检单上传MES(待接口)
     public ApplicationResult reverseInspectionDocUploadInterface(ReverseInspectionDocUpload reverseInspectionDocUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(reverseInspectionDocUpload);
-        //加密后的16进制字符串
-        String reverseInspectionDocUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", reverseInspectionDocUploadEncrpy);
+        Map<String, Object> params = convertInput(reverseInspectionDocUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // MES报检单驳回WMS
+    // MES报检单驳回WMS(待接口)
     public ApplicationResult rejectInspectionDocInterface(RejectInspectionDoc rejectInspectionDoc) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(rejectInspectionDoc);
-        //加密后的16进制字符串
-        String rejectInspectionDocEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", rejectInspectionDocEncrpy);
+        Map<String, Object> params = convertInput(rejectInspectionDoc);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // MES报检单质检结果上传WMS
+    // MES报检单质检结果上传WMS(待接口)
     public ApplicationResult inspectionDocUploadInterface(InspectionDocUpload inspectionDocUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(inspectionDocUpload);
-        //加密后的16进制字符串
-        String inspectionDocUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", inspectionDocUploadEncrpy);
+        Map<String, Object> params = convertInput(inspectionDocUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // MES申请单上传WMS（已上线）
+    // MES申请单上传WMS（已上线）(待接口)
     public ApplicationResult applyListUploadInterface(ApplyListUpload applyListUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(applyListUpload);
-        //加密后的16进制字符串
-        String applyListUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", applyListUploadEncrpy);
+        Map<String, Object> params = convertInput(applyListUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // WMS入库信息上传MES
+    // WMS入库信息上传MES(待接口)
     public ApplicationResult reverseInputDatabaseUploadInterface(ReverseInputDatabaseUpload reverseInputDatabaseUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(reverseInputDatabaseUpload);
-        //加密后的16进制字符串
-        String reverseInputDatabaseUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", reverseInputDatabaseUploadEncrpy);
+        Map<String, Object> params = convertInput(reverseInputDatabaseUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // WMS入库信息冲销上传MES
+    // WMS入库信息冲销上传MES(待接口)
     public ApplicationResult reverseInputDatabaseCoverUploadInterface(ReverseInputDatabaseCoverUpload reverseInputDatabaseCoverUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(reverseInputDatabaseCoverUpload);
-        //加密后的16进制字符串
-        String reverseInputDatabaseCoverUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", reverseInputDatabaseCoverUploadEncrpy);
+        Map<String, Object> params = convertInput(reverseInputDatabaseCoverUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
@@ -145,90 +109,54 @@ public class ProductToWmsThreeService {
 
     }
 
-    // MES领料单上传WMS
+    // MES领料单上传WMS(待接口)
     public ApplicationResult materialRequisitionUploadInterface(MaterialRequisitionUpload materialRequisitionUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(materialRequisitionUpload);
-        //加密后的16进制字符串
-        String materialRequisitionUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", materialRequisitionUploadEncrpy);
+        Map<String, Object> params = convertInput(materialRequisitionUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // WMS领料单关闭上传MES
+    // WMS领料单关闭上传MES(待接口)
     public ApplicationResult reverseMaterialRequisitionCloseUploadInterface(ReverseMaterialRequisitionCloseUpload reverseMaterialRequisitionCloseUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(reverseMaterialRequisitionCloseUpload);
-        //加密后的16进制字符串
-        String reverseMaterialRequisitionCloseUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", reverseMaterialRequisitionCloseUploadEncrpy);
+        Map<String, Object> params = convertInput(reverseMaterialRequisitionCloseUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // MES领料单撤回上传WMS
+    // MES领料单撤回上传WMS(待接口)
     public ApplicationResult materialRequisitionRecallInterface(MaterialRequisitionRecall materialRequisitionRecall) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(materialRequisitionRecall);
-        //加密后的16进制字符串
-        String materialRequisitionRecallEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", materialRequisitionRecallEncrpy);
+        Map<String, Object> params = convertInput(materialRequisitionRecall);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // WMS出库信息上传MES
+    // WMS出库信息上传MES(待接口)
     public ApplicationResult reverseOutputDatabaseUploadInterface(ReverseOutputDatabaseUpload reverseOutputDatabaseUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(reverseOutputDatabaseUpload);
-        //加密后的16进制字符串
-        String reverseOutputDatabaseUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", reverseOutputDatabaseUploadEncrpy);
+        Map<String, Object> params = convertInput(reverseOutputDatabaseUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // WMS出库信息冲销上传MES
+    // WMS出库信息冲销上传MES(待接口)
     public ApplicationResult reverseOutputDatabaseCoverUploadInterface(ReverseOutputDatabaseCoverUpload reverseOutputDatabaseCoverUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(reverseOutputDatabaseCoverUpload);
-        //加密后的16进制字符串
-        String reverseOutputDatabaseCoverUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", reverseOutputDatabaseCoverUploadEncrpy);
+        Map<String, Object> params = convertInput(reverseOutputDatabaseCoverUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // MES计划清单锁定/解锁物资库存上传WMS
+    // MES计划清单锁定/解锁物资库存上传WMS(待接口)
     public ApplicationResult systemUploadInterface(SystemUpload systemUpload) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(systemUpload);
-        //加密后的16进制字符串
-        String systemUploadEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", systemUploadEncrpy);
+        Map<String, Object> params = convertInput(systemUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
@@ -237,18 +165,28 @@ public class ProductToWmsThreeService {
 
     // MES实时查询WMS库存
     public List<InventoryReturn> inventoryQueryInterface(InventoryQuery inventoryQuery) {
-        //转换json串
-        String jsonStr = JSONUtil.toJsonStr(inventoryQuery);
-        //加密后的16进制字符串
-        String inventoryQueryEncrpy = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", inventoryQueryEncrpy);
+        Map<String, Object> params = convertInput(inventoryQuery);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/getInventory").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         JSONObject jsonObject = JSON.parseObject(s);
         String data = jsonObject.get("data").toString();
         return JSONObject.parseArray(data, InventoryReturn.class);
+    }
+
+    /**
+     * 加密json串
+     * @param o
+     * @return
+     */
+    private Map<String, Object> convertInput(Object o) {
+        //转换json串
+        String jsonStr = JSONUtil.toJsonStr(o);
+        //加密后的16进制字符串
+        String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
+        //传参
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("i_data", encryptString);
+        return params;
     }
 
 }
