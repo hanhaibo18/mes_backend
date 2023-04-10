@@ -58,4 +58,13 @@ public enum MaterialTypeEnum {
         throw new IllegalArgumentException("No element matches " + stateId);
     }
 
+    public static String getCode(String name) {
+        for (MaterialTypeEnum recipientsEnum : MaterialTypeEnum.values()) {
+            if (recipientsEnum.name.equals(name)) {
+                return recipientsEnum.getCode();
+            }
+        }
+        throw new IllegalArgumentException("No element matches " + name);
+    }
+
 }
