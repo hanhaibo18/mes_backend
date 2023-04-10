@@ -709,6 +709,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setOptFinishNumber(0);
                 plan.setDeliveryNum(0);
                 plan.setStatus(4);//导入默认为未发布状态4
+                plan.setSource(2);//导入默认为车间计划
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
                 actionService.saveAction(ActionUtil.buildAction
@@ -856,6 +857,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
                 plan.setSubmitOrderOrg(plan.getBranchCode());//提单单位
                 plan.setSubmitOrderTime(new Date());//提单时间
+                plan.setSource(2);//导入默认为车间计划
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction
