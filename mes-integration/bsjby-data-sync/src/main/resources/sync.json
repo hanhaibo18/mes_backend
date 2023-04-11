@@ -1,6 +1,6 @@
 {
   "tenantId": "12345678901234567890123456789002",
-  "fileCatalog": "d:/",
+  "fileCatalog": "D:/BOMCOMES/BOMCO_JM_2.1/UploadQualityFiles",
   "tableConfigs": [
     {
       "tableName": "mes_produce.produce_store_attach_rel",

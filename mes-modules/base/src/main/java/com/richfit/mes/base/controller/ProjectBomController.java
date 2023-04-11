@@ -66,6 +66,7 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "projectName", value = "项目名称", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "prodDesc", value = "零部件名称", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "workPlanNo", value = "工作号", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "state", value = "状态", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "order", value = "排序方式", paramType = "query", dataType = "string"),
@@ -74,9 +75,9 @@ public class ProjectBomController {
             @ApiImplicitParam(name = "limit", value = "数量", required = true, paramType = "query", dataType = "int")
     })
     @GetMapping("/project_bom")
-    public CommonResult<IPage<ProjectBom>> getProductionBomPage(String drawingNo, String projectName, String prodDesc, String state, String branchCode, String order, String orderCol, String publishState, int page, int limit) {
+    public CommonResult<IPage<ProjectBom>> getProductionBomPage(String drawingNo, String projectName, String prodDesc, String workPlanNo, String state, String branchCode, String order, String orderCol, String publishState, int page, int limit) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        return CommonResult.success(projectBomService.getProjectBomPage(drawingNo, projectName, prodDesc, state, tenantId, branchCode, order, orderCol, publishState, page, limit));
+        return CommonResult.success(projectBomService.getProjectBomPage(drawingNo, projectName, prodDesc, workPlanNo, state, tenantId, branchCode, order, orderCol, publishState, page, limit));
     }
 
     @PutMapping("/updateBom")
