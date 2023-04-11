@@ -667,7 +667,7 @@ public class TrackAssignController extends BaseController {
     public CommonResult<IPage<TrackHead>> getPageTrackHeadByType(int page, int limit, String
             routerNo, String
                                                                          trackNo, String
-                                                                         prodNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
+                                                                         productNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
 
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
 
@@ -689,8 +689,8 @@ public class TrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("a.branch_code", branchCode);
         }
-        if (!StringUtils.isNullOrEmpty(prodNo)) {
-            queryWrapper.like("a.product_no", prodNo);
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.like("a.product_no", productNo);
         }
         queryWrapper.exists("select * from produce_track_item b where a.id = b.track_head_id and b.opt_type='" + optType + "' and b.is_current=1 and b.is_operation_complete = 0");
 
