@@ -32,3 +32,6 @@ tenant:
 
 timer:
   time-interval: 300000
+wms:
+  mesToWmsApiKey: YQsZ7gPT
+  mesToWmsUrl: http://10.134.100.56:15000/warehouse/mes

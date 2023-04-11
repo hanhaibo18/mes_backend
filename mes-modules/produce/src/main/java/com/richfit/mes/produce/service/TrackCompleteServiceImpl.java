@@ -87,6 +87,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     public TrackCheckService trackCheckService;
     @Autowired
     private ActionService actionService;
+    @Autowired
+    private LayingOffService layingOffService;
+    @Autowired
+    private ForgControlRecordService forgControlRecordService;
 
 
     @Override
@@ -423,9 +427,17 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
                 trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
             }
+            //记录下料信息
+            if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
+                layingOffService.save(completeDto.getLayingOff());
+            }
+            //记录锻造信息
+            if (!CollectionUtils.isEmpty(completeDto.getForgControlRecordList())) {
+                forgControlRecordService.saveBatch(completeDto.getForgControlRecordList());
+            }
             //记录报工操作
             actionService.saveAction(ActionUtil.buildAction(
-                    trackItem.getBranchCode(), "4", "2", "跟单报工，跟单号：" + completeDto.getTrackNo() ,
+                    trackItem.getBranchCode(), "4", "2", "跟单报工，跟单号：" + completeDto.getTrackNo(),
                     OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(true);
@@ -487,7 +499,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             assign.setAssignPersons(assignPeople);
         } else {
             List<AssignPerson> assignPersons = trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId()));
-            if(assignPersons.size()>0){
+            if (assignPersons.size() > 0) {
                 List<String> userAccounts = assignPersons.stream().map(item -> item.getUserId()).collect(Collectors.toList());
                 Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(userAccounts);
                 for (AssignPerson assignPerson : assignPersons) {

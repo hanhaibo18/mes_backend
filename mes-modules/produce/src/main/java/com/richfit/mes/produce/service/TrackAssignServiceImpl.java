@@ -242,7 +242,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
-        queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
+        //queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
 
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
@@ -441,6 +441,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         if (StrUtil.isNotBlank(dispatchingDto.getState())) {
             queryWrapper.in("u.state", dispatchingDto.getState());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkNo())) {
+            queryWrapper.inSql("u.id", "select id from produce_assign where track_id in (select id from produce_track_head where tenant_id = '"+SecurityUtils.getCurrentUser().getTenantId()+"' and work_no = '"+dispatchingDto.getWorkNo()+"')");
         }
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);

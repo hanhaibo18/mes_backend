@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -12,6 +11,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -47,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -90,6 +91,8 @@ public class TrackAssignController extends BaseController {
     private ProduceRoleOperationService roleOperationService;
     @Resource
     private BaseServiceClient baseServiceClient;
+    @Resource
+    private TrackAssemblyService trackAssemblyService;
     @Resource
     private ApplicationNumberService numberService;
     @Value("${switch}")
@@ -369,8 +372,6 @@ public class TrackAssignController extends BaseController {
                         person.setAssignId(assign.getId());
                         trackAssignPersonMapper.insert(person);
                     }
-                    //TODO: 位置是否需要变更,第一道工序判断需要变更  校验批量派工 多工序
-                    //齐套性检查
                     //判断是否存在BOM 没有BOM不进行齐套检查
                     boolean bom = StrUtil.isNotBlank(trackHead.getProjectBomId());
                     //判断是否是装配
@@ -389,17 +390,14 @@ public class TrackAssignController extends BaseController {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
-                        //以齐套不发送申请单
-                        if (CollectionUtils.isNotEmpty(ingredient.getLineList())) {
-                            requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
-                            ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
-                            //请勿重复上传！
-                            boolean upload = !application.getRetMsg().contains("请勿重复上传");
-                            if ("N".equals(application.getRetCode()) && upload) {
-                                numberService.deleteApplicationNumberByItemId(trackItem.getId());
-                                log.error("仓储数据:" + ingredient);
-                                throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
-                            }
+                        requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
+                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                        //请勿重复上传！
+                        boolean upload = !application.getRetMsg().contains("请勿重复上传");
+                        if ("N".equals(application.getRetCode()) && upload) {
+                            numberService.deleteApplicationNumberByItemId(trackItem.getId());
+                            log.error("仓储数据:" + ingredient);
+                            throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
                         }
                     }
                 }
@@ -424,7 +422,9 @@ public class TrackAssignController extends BaseController {
 
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
-        CommonResult<List<KittingVo>> kittingExamine = this.kittingExamine(trackHead.getId());
+        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
+        assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
+        List<TrackAssembly> assemblyList = trackAssemblyService.list(assemblyQueryWrapper);
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", trackItem.getId());
         //查询派工工位信息
@@ -464,23 +464,21 @@ public class TrackAssignController extends BaseController {
         ingredient.setPgsj(format.format(new Date()));
         //追加物料
         List<LineList> lineLists = new ArrayList<>();
-        for (KittingVo kitting : kittingExamine.getData()) {
-            //过滤以齐套的
-            if (1 == kitting.getIsKitting()) {
-                continue;
-            }
+        List<String> numberList = assemblyList.stream().map(TrackAssembly::getMaterialNo).collect(Collectors.toList());
+        List<Product> list = baseServiceClient.listByMaterialNoList(numberList);
+        Map<String, String> materialNoMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Product::getProductName, (value1, value2) -> value2));
+        for (TrackAssembly trackAssembly : assemblyList) {
             LineList lineList = new LineList();
             //物料编码
-            lineList.setMaterialNum(kitting.getMaterialNo());
+            lineList.setMaterialNum(trackAssembly.getMaterialNo());
             //物料名称
-            lineList.setMaterialDesc(kitting.getMaterialName());
+            lineList.setMaterialDesc(materialNoMap.get(trackAssembly.getMaterialNo()));
             //单位
             lineList.setUnit("单位");
             //数量
-            double number = Double.parseDouble(kitting.getSurplusNumber().toString().replaceAll("-", ""));
-            lineList.setQuantity(number);
+            lineList.setQuantity(trackAssembly.getNumber());
             //实物配送标识
-            lineList.setSwFlag(kitting.getIsEdgeStore());
+            lineList.setSwFlag(trackAssembly.getIsEdgeStore());
             lineLists.add(lineList);
         }
         ingredient.setLineList(lineLists);
@@ -570,6 +568,7 @@ public class TrackAssignController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "trackNo", value = "跟单号", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "routerNo", value = "图号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "workNo", value = "工作号", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "startTime", value = "开始时间", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "endTime", value = "结束时间", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
@@ -578,7 +577,7 @@ public class TrackAssignController extends BaseController {
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            routerNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
+            routerNo, String workNo,String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
 
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
@@ -617,6 +616,11 @@ public class TrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", productNo);
         }
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.inSql("a.id", "select id from produce_track_item where track_head_id in (select id from produce_track_head where tenant_id = '"+SecurityUtils.getCurrentUser().getTenantId()+"' and work_no = '"+workNo+"')");
+        }
+
+
         queryWrapper.ne("is_schedule", 1);
 
         //过滤排序（list中的字段不在此处排序，后边步骤再排序）
@@ -663,7 +667,7 @@ public class TrackAssignController extends BaseController {
     public CommonResult<IPage<TrackHead>> getPageTrackHeadByType(int page, int limit, String
             routerNo, String
                                                                          trackNo, String
-                                                                         prodNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
+                                                                         productNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
 
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
 
@@ -685,8 +689,8 @@ public class TrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("a.branch_code", branchCode);
         }
-        if (!StringUtils.isNullOrEmpty(prodNo)) {
-            queryWrapper.like("a.product_no", prodNo);
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.like("a.product_no", productNo);
         }
         queryWrapper.exists("select * from produce_track_item b where a.id = b.track_head_id and b.opt_type='" + optType + "' and b.is_current=1 and b.is_operation_complete = 0");
 
@@ -696,7 +700,7 @@ public class TrackAssignController extends BaseController {
             queryWrapper.apply("replace(replace(replace(a.track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.eq("a.drawing_no", routerNo);
+            queryWrapper.like("a.drawing_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {

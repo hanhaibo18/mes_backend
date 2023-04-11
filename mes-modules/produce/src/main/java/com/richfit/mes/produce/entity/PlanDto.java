@@ -78,4 +78,9 @@ public class PlanDto extends BasePageDto<PlanDto> {
      * 计划类型 1新制  2 返修'
      */
     private String projType;
+
+    /**
+     * 来源  1 分公司计划  2车间计划
+     */
+    private String source;
 }
