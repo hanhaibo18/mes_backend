@@ -93,13 +93,13 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
             if (completeDto.getLayingOff() != null) {
                 LayingOffCache layingOffCache = new LayingOffCache();
                 BeanUtils.copyProperties(completeDto.getLayingOff(), layingOffCache);
-                layingOffCacheService.save(layingOffCache);
+                layingOffCacheService.saveOrUpdate(layingOffCache);
             }
             //保存锻造信息
             if (completeDto.getForgControlRecordList() != null) {
                 String jsonString = JSONObject.toJSONString(completeDto.getForgControlRecordList());
                 List<ForgControlRecordCache> forgControlRecordList = JSONArray.parseArray(jsonString, ForgControlRecordCache.class);
-                forgControlRecordCacheService.saveBatch(forgControlRecordList);
+                forgControlRecordCacheService.saveOrUpdateBatch(forgControlRecordList);
             }
         }
         return CommonResult.success(true);
