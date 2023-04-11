@@ -355,78 +355,78 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //获取用户所属公司
         String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         for (CompleteDto completeDto : completeDtoList) {
-//            if (StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
-//                return CommonResult.failed("质检人员不能为空");
-//            }
-//            if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
-//                return CommonResult.failed("报工人员不能为空");
-//            }
-//            if (StringUtils.isNullOrEmpty(completeDto.getTiId())) {
-//                return CommonResult.failed("工序Id不能为空");
-//            }
-//            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
-//            //检验人
-//            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
-//            //根据工序Id删除缓存表数据
-//            QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.eq("ti_id", completeDto.getTiId());
-//            double numDouble = 0.00;
-//            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
-//                //验证输入值是否合法
-////                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
-////                //如果返回值不等于空则代表验证不通过，将提示信息返回
-////                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
-////                    return CommonResult.failed(s);
-////                }
-//
-//                trackComplete.setId(null);
-//                trackComplete.setAssignId(completeDto.getAssignId());
-//                trackComplete.setTiId(completeDto.getTiId());
-//                trackComplete.setTrackId(completeDto.getTrackId());
-//                trackComplete.setTrackNo(completeDto.getTrackNo());
-//                trackComplete.setProdNo(completeDto.getProdNo());
-//                trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-//                trackComplete.setCompleteTime(new Date());
-//                trackComplete.setDetectionResult("-");
-//                trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-//                numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
-//            }
-//            Assign assign = trackAssignService.getById(completeDto.getAssignId());
-//            //跟新工序完成数量
-//            trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
-//            double intervalNumber = assign.getQty() + 0.0;
-//            if (numDouble > assign.getQty()) {
-//                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
-//            }
-//            if (numDouble < intervalNumber - 0.01) {
-//                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.01));
-//            }
-//            if (assign.getQty() >= numDouble && intervalNumber - 0.01 <= numDouble) {
-//                //最后一次报工进行下工序激活
-//                if (queryIsComplete(assign)) {
-//                    //更改状态 标识当前工序完成
-//                    trackItem.setIsDoing(2);
-//                    trackItem.setIsOperationComplete(1);
-//                    trackItemService.updateById(trackItem);
-//                    trackCompleteCacheService.remove(queryWrapper);
-//                    //调用工序激活方法
-//                    Map<String, String> map = new HashMap<>(3);
-//                    map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-//                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
-//                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
-//                    map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
-//                    publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+            if (StringUtils.isNullOrEmpty(completeDto.getQcPersonId())) {
+                return CommonResult.failed("质检人员不能为空");
+            }
+            if (null == completeDto.getTrackCompleteList() && completeDto.getTrackCompleteList().isEmpty()) {
+                return CommonResult.failed("报工人员不能为空");
+            }
+            if (StringUtils.isNullOrEmpty(completeDto.getTiId())) {
+                return CommonResult.failed("工序Id不能为空");
+            }
+            TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            //检验人
+            trackItem.setQualityCheckBy(completeDto.getQcPersonId());
+            //根据工序Id删除缓存表数据
+            QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("ti_id", completeDto.getTiId());
+            double numDouble = 0.00;
+            for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
+                //验证输入值是否合法
+//                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
+//                //如果返回值不等于空则代表验证不通过，将提示信息返回
+//                if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
+//                    return CommonResult.failed(s);
 //                }
-//                //派工状态设置为完成
-//                assign.setState(2);
-//                trackAssignService.updateById(assign);
-//            }
-//            log.error(completeDto.getTrackCompleteList().toString());
-//            this.saveBatch(completeDto.getTrackCompleteList());
-//            //锻造车间 填写的额外报工信息
-//            if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
-//                trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
-//            }
+
+                trackComplete.setId(null);
+                trackComplete.setAssignId(completeDto.getAssignId());
+                trackComplete.setTiId(completeDto.getTiId());
+                trackComplete.setTrackId(completeDto.getTrackId());
+                trackComplete.setTrackNo(completeDto.getTrackNo());
+                trackComplete.setProdNo(completeDto.getProdNo());
+                trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                trackComplete.setCompleteTime(new Date());
+                trackComplete.setDetectionResult("-");
+                trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
+            }
+            Assign assign = trackAssignService.getById(completeDto.getAssignId());
+            //跟新工序完成数量
+            trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
+            double intervalNumber = assign.getQty() + 0.0;
+            if (numDouble > assign.getQty()) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
+            }
+            if (numDouble < intervalNumber - 0.01) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.01));
+            }
+            if (assign.getQty() >= numDouble && intervalNumber - 0.01 <= numDouble) {
+                //最后一次报工进行下工序激活
+                if (queryIsComplete(assign)) {
+                    //更改状态 标识当前工序完成
+                    trackItem.setIsDoing(2);
+                    trackItem.setIsOperationComplete(1);
+                    trackItemService.updateById(trackItem);
+                    trackCompleteCacheService.remove(queryWrapper);
+                    //调用工序激活方法
+                    Map<String, String> map = new HashMap<>(3);
+                    map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                    map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                    publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                }
+                //派工状态设置为完成
+                assign.setState(2);
+                trackAssignService.updateById(assign);
+            }
+            log.error(completeDto.getTrackCompleteList().toString());
+            this.saveBatch(completeDto.getTrackCompleteList());
+            //锻造车间 填写的额外报工信息
+            if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
+                trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
+            }
             //记录下料信息
             if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
                 layingOffService.save(completeDto.getLayingOff());
@@ -435,10 +435,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (!CollectionUtils.isEmpty(completeDto.getForgControlRecordList())) {
                 forgControlRecordService.saveBatch(completeDto.getForgControlRecordList());
             }
-//            //记录报工操作
-//            actionService.saveAction(ActionUtil.buildAction(
-//                    trackItem.getBranchCode(), "4", "2", "跟单报工，跟单号：" + completeDto.getTrackNo(),
-//                    OperationLogAspect.getIpAddress(request)));
+            //记录报工操作
+            actionService.saveAction(ActionUtil.buildAction(
+                    trackItem.getBranchCode(), "4", "2", "跟单报工，跟单号：" + completeDto.getTrackNo(),
+                    OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(true);
     }
