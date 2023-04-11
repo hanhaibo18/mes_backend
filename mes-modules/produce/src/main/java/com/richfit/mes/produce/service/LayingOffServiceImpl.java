@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.LayingOff;
 import com.richfit.mes.produce.dao.LayingOffMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,6 +14,12 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LayingOffServiceImpl extends ServiceImpl<LayingOffMapper, LayingOff> implements LayingOffService {
+    @Autowired
+    private LayingOffMapper layingOffMapper;
 
+    @Override
+    public LayingOff queryLayingOffCacheByItemId(String tiId) {
+        return layingOffMapper.queryLayingOffCacheByItemId(tiId);
+    }
 }
 
