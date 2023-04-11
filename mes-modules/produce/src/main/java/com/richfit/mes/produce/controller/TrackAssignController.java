@@ -700,7 +700,7 @@ public class TrackAssignController extends BaseController {
             queryWrapper.apply("replace(replace(replace(a.track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.eq("a.drawing_no", routerNo);
+            queryWrapper.like("a.drawing_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
