@@ -27,7 +27,7 @@ public class ForgControlRecordServiceImpl extends ServiceImpl<ForgControlRecordM
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateBatch(List<ForgControlRecord> forgControlRecordlist, String itemId) {
-        //先查出该工单所有的正火去氢记录
+        //先查出该工单所有的锻造记录
         QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("item_id", itemId);
         List<ForgControlRecord> forgControlRecords = forgControlRecordMapper.selectList(queryWrapper);

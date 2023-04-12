@@ -745,7 +745,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         //获取当前租户信息
         Tenant tenant = systemServiceClient.getTenantById(SecurityUtils.getCurrentUser().getTenantId()).getData();
         //热处理车间导出
-        if (TRACKHEAD_CLASSES_RCL.equals(classes)) {
+        if ("5".equals(classes)) {
             //热处理车间传入id为预装炉id 根据预装炉id获取跟单工序表
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             queryWrapper.eq("precharge_furnace_id", id);
@@ -779,7 +779,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
         }
         //锻造车间导出
-        if (TRACKHEAD_CLASSES_GJG.equals(classes)) {
+        if ("4".equals(classes)) {
             //装配车间传入id为 item_id
             TrackItem trackItem = trackItemMapper.selectById(id);
             if (ObjectUtil.isEmpty(trackItem)) {

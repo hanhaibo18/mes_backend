@@ -433,11 +433,21 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             //记录下料信息
             if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
-                layingOffService.save(completeDto.getLayingOff());
+                //先删除该已保存过的
+                QueryWrapper<LayingOff> queryWrapperLayingOff = new QueryWrapper<>();
+                queryWrapperLayingOff.eq("item_id", completeDto.getTiId());
+                layingOffService.remove(queryWrapperLayingOff);
+
+                layingOffService.saveOrUpdate(completeDto.getLayingOff());
             }
             //记录锻造信息
             if (!CollectionUtils.isEmpty(completeDto.getForgControlRecordList())) {
-                forgControlRecordService.saveBatch(completeDto.getForgControlRecordList());
+                //现根据item_id删除原有记录
+                QueryWrapper<ForgControlRecord> queryWrapperForgControlRecord = new QueryWrapper<>();
+                queryWrapperForgControlRecord.eq("item_id", completeDto.getTiId());
+                forgControlRecordService.remove(queryWrapperForgControlRecord);
+
+                forgControlRecordService.saveOrUpdateBatch(completeDto.getForgControlRecordList());
             }
             //记录报工操作
             actionService.saveAction(ActionUtil.buildAction(
