@@ -52,5 +52,10 @@ public class ForgControlRecordServiceImpl extends ServiceImpl<ForgControlRecordM
         }
         return false;
     }
+
+    @Override
+    public List<ForgControlRecord> queryForgControlRecordCacheByItemId(String tiId) {
+        return forgControlRecordMapper.queryForgControlRecordCacheByItemId(tiId);
+    }
 }
 

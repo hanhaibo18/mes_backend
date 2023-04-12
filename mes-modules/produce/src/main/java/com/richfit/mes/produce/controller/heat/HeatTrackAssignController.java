@@ -42,7 +42,11 @@ public class HeatTrackAssignController extends BaseController {
     public CommonResult<IPage<Assign>> queryNotProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryWhetherProduce(dispatchingDto, false));
     }
-
+    @ApiOperation(value = "未装炉生产查询--热工")
+    @PostMapping("/query_not_produce_hot")
+    public CommonResult<IPage<Assign>> queryNotProduceHot(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
+        return CommonResult.success(heatTrackAssignService.queryWhetherProduce(dispatchingDto, false));
+    }
     @ApiOperation(value = "装炉生产查询")
     @PostMapping("/query_produce")
     public CommonResult<IPage<Assign>> queryProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
