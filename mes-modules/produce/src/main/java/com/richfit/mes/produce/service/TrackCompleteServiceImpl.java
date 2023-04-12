@@ -236,11 +236,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                     }
                                     track.setQualityResult(rules.getStateName());
                                 } else {
-                                    realityReportHours = new BigDecimal(0);
+//                                    realityReportHours = new BigDecimal(0);
+                                    realityPrepareEndHours = new BigDecimal(0);
+                                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                     track.setQualityResult("没有质检内容");
                                 }
                             } else {
-                                realityReportHours = new BigDecimal(0);
+//                                realityReportHours = new BigDecimal(0);
+                                realityPrepareEndHours = new BigDecimal(0);
+                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
@@ -936,11 +940,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                     }
                                     track.setQualityResult(rules.getStateName());
                                 } else {
-                                    realityReportHours = new BigDecimal(0);
+//                                    realityReportHours = new BigDecimal(0);
+                                    realityPrepareEndHours = new BigDecimal(0);
+                                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                     track.setQualityResult("没有质检内容");
                                 }
                             } else {
-                                realityReportHours = new BigDecimal(0);
+//                                realityReportHours = new BigDecimal(0);
+                                realityPrepareEndHours = new BigDecimal(0);
+                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
@@ -1121,13 +1129,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
                         sumReportHours = sumReportHours.add(reportHours);
-                        //没有调度审核或者 调度已审核并且给予准结工时进入
-                        if (trackItem.getIsScheduleComplete() == null || trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() != null && trackItem.getIsPrepare() == 1)) {
-                            //累计实际准结工时
-                            sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
-                        } else {
-                            realityPrepareEndHours = new BigDecimal(0);
-                        }
+
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
                             List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
@@ -1142,11 +1144,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                     }
                                     track.setQualityResult(rules.getStateName());
                                 } else {
-                                    realityReportHours = new BigDecimal(0);
+//                                    realityReportHours = new BigDecimal(0);
+                                    realityPrepareEndHours = new BigDecimal(0);
+                                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                     track.setQualityResult("没有质检内容");
                                 }
                             } else {
-                                realityReportHours = new BigDecimal(0);
+//                                realityReportHours = new BigDecimal(0);
+                                realityPrepareEndHours = new BigDecimal(0);
+                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
@@ -1154,6 +1160,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             //累计实际额定工时
                             sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                             track.setQualityResult("合格（非质检）");
+                        }
+
+                        //没有调度审核或者 调度已审核并且给予准结工时进入
+                        if (trackItem.getIsScheduleComplete() == null || trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() != null && trackItem.getIsPrepare() == 1)) {
+                            //累计实际准结工时
+                            sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
+                        } else {
+                            realityPrepareEndHours = new BigDecimal(0);
                         }
                         //总工时
                         BigDecimal totalHours = number.multiply(realityReportHours).add(realityPrepareEndHours);
