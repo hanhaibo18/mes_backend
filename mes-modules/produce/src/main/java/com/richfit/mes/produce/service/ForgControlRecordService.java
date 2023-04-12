@@ -15,5 +15,7 @@ import java.util.List;
 public interface ForgControlRecordService extends IService<ForgControlRecord> {
 
     Boolean updateBatch(List<ForgControlRecord> forgControlRecordlist, String itemId);
+
+    List<ForgControlRecord> queryForgControlRecordCacheByItemId(String tiId);
 }
 

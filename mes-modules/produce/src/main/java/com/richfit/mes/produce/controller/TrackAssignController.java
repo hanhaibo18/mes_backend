@@ -11,7 +11,6 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -47,7 +46,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -464,15 +462,15 @@ public class TrackAssignController extends BaseController {
         ingredient.setPgsj(format.format(new Date()));
         //追加物料
         List<LineList> lineLists = new ArrayList<>();
-        List<String> numberList = assemblyList.stream().map(TrackAssembly::getMaterialNo).collect(Collectors.toList());
-        List<Product> list = baseServiceClient.listByMaterialNoList(numberList);
-        Map<String, String> materialNoMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Product::getProductName, (value1, value2) -> value2));
+//        List<String> numberList = assemblyList.stream().map(TrackAssembly::getMaterialNo).collect(Collectors.toList());
+//        List<Product> list = baseServiceClient.listByMaterialNoList(numberList);
+//        Map<String, String> materialNoMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Product::getProductName, (value1, value2) -> value2));
         for (TrackAssembly trackAssembly : assemblyList) {
             LineList lineList = new LineList();
             //物料编码
             lineList.setMaterialNum(trackAssembly.getMaterialNo());
             //物料名称
-            lineList.setMaterialDesc(materialNoMap.get(trackAssembly.getMaterialNo()));
+            lineList.setMaterialDesc(trackAssembly.getName());
             //单位
             lineList.setUnit("单位");
             //数量
@@ -483,6 +481,28 @@ public class TrackAssignController extends BaseController {
         }
         ingredient.setLineList(lineLists);
         return ingredient;
+    }
+
+    private boolean demo() {
+        List<String> itemIdList = Arrays.asList("1556486", "1556487", "1556489", "1556496", "1556500");
+        for (String itemId : itemIdList) {
+            TrackItem trackItem = trackItemService.getById(itemId);
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            if (StrUtil.isBlank(trackHead.getProductionOrder())) {
+                throw new GlobalException("无生产订单编号", ResultCode.FAILED);
+            }
+            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, "BOMCO_BF_BY");
+            requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
+            ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+            //请勿重复上传！
+            boolean upload = !application.getRetMsg().contains("请勿重复上传");
+            if ("N".equals(application.getRetCode()) && upload) {
+                numberService.deleteApplicationNumberByItemId(trackItem.getId());
+                log.error("仓储数据:" + ingredient);
+                throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
+            }
+        }
+        return true;
     }
 
     @ApiOperation(value = "修改派工", notes = "修改派工")
@@ -577,8 +597,7 @@ public class TrackAssignController extends BaseController {
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            routerNo, String workNo,String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
-
+            routerNo, String workNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -617,7 +636,7 @@ public class TrackAssignController extends BaseController {
             queryWrapper.like("product_no", productNo);
         }
         if (!StringUtils.isNullOrEmpty(workNo)) {
-            queryWrapper.inSql("a.id", "select id from produce_track_item where track_head_id in (select id from produce_track_head where tenant_id = '"+SecurityUtils.getCurrentUser().getTenantId()+"' and work_no = '"+workNo+"')");
+            queryWrapper.inSql("a.id", "select id from produce_track_item where track_head_id in (select id from produce_track_head where tenant_id = '" + SecurityUtils.getCurrentUser().getTenantId() + "' and work_no = '" + workNo + "')");
         }
 
 
@@ -667,7 +686,7 @@ public class TrackAssignController extends BaseController {
     public CommonResult<IPage<TrackHead>> getPageTrackHeadByType(int page, int limit, String
             routerNo, String
                                                                          trackNo, String
-                                                                         prodNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
+                                                                         productNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol) throws ParseException {
 
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
 
@@ -689,8 +708,8 @@ public class TrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("a.branch_code", branchCode);
         }
-        if (!StringUtils.isNullOrEmpty(prodNo)) {
-            queryWrapper.like("a.product_no", prodNo);
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.like("a.product_no", productNo);
         }
         queryWrapper.exists("select * from produce_track_item b where a.id = b.track_head_id and b.opt_type='" + optType + "' and b.is_current=1 and b.is_operation_complete = 0");
 
@@ -700,7 +719,7 @@ public class TrackAssignController extends BaseController {
             queryWrapper.apply("replace(replace(replace(a.track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
         }
         if (!StringUtils.isNullOrEmpty(routerNo)) {
-            queryWrapper.eq("a.drawing_no", routerNo);
+            queryWrapper.like("a.drawing_no", routerNo);
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {

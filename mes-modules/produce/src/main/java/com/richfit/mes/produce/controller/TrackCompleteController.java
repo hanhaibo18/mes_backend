@@ -125,10 +125,10 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.apply("assign_id in (select id from produce_assign where site_id='" + siteId + "')");
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
-                queryWrapper.ge("a.complete_time",startTime);
+                queryWrapper.ge("a.complete_time", startTime);
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                queryWrapper.le("a.complete_time",endTime);
+                queryWrapper.le("a.complete_time", endTime);
             }
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
@@ -984,7 +984,7 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "下料信息记录", notes = "下料信息记录")
     @ApiImplicitParam(name = "layingOff", value = "下料实体", required = true, dataType = "LayingOff", paramType = "query")
-    @PostMapping("/saveLayingOff")
+    @PostMapping("/save_laying_off")
     public CommonResult<Boolean> saveLayingOff(@RequestBody LayingOff layingOff) {
         QueryWrapper<LayingOff> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("item_id", layingOff.getItemId());
@@ -997,38 +997,38 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "下料信息查询", notes = "下料信息查询")
     @ApiImplicitParam(name = "itemId", value = "工序Id", required = true, dataType = "String", paramType = "query")
-    @GetMapping("/getLayingOff/{itemId}")
-    public CommonResult<List<LayingOff>> getLayingOff(@PathVariable String itemId) {
+    @GetMapping("/get_laying_off/{itemId}")
+    public CommonResult<IPage<LayingOff>> getLayingOff(@PathVariable String itemId, @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "1") int page) {
         QueryWrapper<LayingOff> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("item_id", itemId);
-        return CommonResult.success(layingOffService.list(queryWrapper));
+        return CommonResult.success(layingOffService.page(new Page<LayingOff>(page, limit), queryWrapper));
     }
 
     @ApiOperation(value = "下料信息修改", notes = "下料信息修改")
     @ApiImplicitParam(name = "layingOff", value = "下料实体", required = true, dataType = "LayingOff", paramType = "query")
-    @PutMapping("/updateLayingOff")
+    @PutMapping("/update_laying_off")
     public CommonResult<Boolean> updateLayingOff(@RequestBody LayingOff layingOff) {
         return CommonResult.success(layingOffService.updateById(layingOff));
     }
 
     @ApiOperation(value = "下料信息删除", notes = "下料信息删除")
     @ApiImplicitParam(name = "layingOff", value = "下料实体", required = true, dataType = "LayingOff", paramType = "query")
-    @DeleteMapping("/deleteLayingOff")
+    @DeleteMapping("/delete_laying_off")
     public CommonResult<Boolean> DeleteLayingOff(@RequestBody LayingOff layingOff) {
         return CommonResult.success(layingOffService.removeById(layingOff));
     }
 
     @ApiOperation(value = "锻造工序控制记录", notes = "锻造工序控制记录")
     @ApiImplicitParam(name = "forgControlRecordlist", value = "锻造工序控制记录实体", required = true, dataType = "List", paramType = "query")
-    @PostMapping("/saveForgControlRecord")
+    @PostMapping("/save_forg_control_record")
     public CommonResult<Boolean> saveForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist) {
         return CommonResult.success(forgControlRecordService.saveBatch(forgControlRecordlist));
     }
 
     @ApiOperation(value = "锻造工序控制查询", notes = "锻造工序控制查询")
     @ApiImplicitParam(name = "itemId", value = "工序ID", required = true, dataType = "String", paramType = "query")
-    @GetMapping("/pageForgControlRecord")
-    public CommonResult<IPage<ForgControlRecord>> pageForgControlRecord(String itemId, String orderCol, String order, int page, int limit) {
+    @GetMapping("/page_forg_control_record")
+    public CommonResult<IPage<ForgControlRecord>> pageForgControlRecord(String itemId, String orderCol, String order, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
         QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("item_id", itemId);
         OrderUtil.query(queryWrapper, orderCol, order);
@@ -1039,14 +1039,14 @@ public class TrackCompleteController extends BaseController {
     @ApiImplicitParams({@ApiImplicitParam(name = "forgControlRecordlist", value = "锻造工序控制记录实体", required = true, dataType = "List", paramType = "query"),
             @ApiImplicitParam(name = "itemId", value = "工序ItemId", required = true, dataType = "String", paramType = "query")
     })
-    @PutMapping("/updateForgControlRecord/{itemId}")
+    @PutMapping("/update_forg_control_record/{itemId}")
     public CommonResult<Boolean> updateForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist, @PathVariable String itemId) {
         return CommonResult.success(forgControlRecordService.updateBatch(forgControlRecordlist, itemId));
     }
 
     @ApiOperation(value = "锻造工序控制删除", notes = "锻造工序控制删除")
     @ApiImplicitParam(name = "forgControlRecordlist", value = "锻造工序控制记录实体", required = true, dataType = "List", paramType = "query")
-    @DeleteMapping("/deleteForgControlRecord")
+    @DeleteMapping("/delete_forg_control_record")
     public CommonResult<Boolean> deleteForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist) {
         return CommonResult.success(forgControlRecordService.removeByIds(forgControlRecordlist));
     }

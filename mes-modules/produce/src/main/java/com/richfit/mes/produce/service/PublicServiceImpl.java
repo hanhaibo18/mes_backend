@@ -152,6 +152,7 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setIsOperationComplete(isComplete);
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setCompleteQty(sum);
+            trackItem.setIsDoing(2);
             //控制下工序激活 还需验证并行工序是否完成
             if (trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0)) {
                 trackItem.setIsFinalComplete(String.valueOf(isComplete));
