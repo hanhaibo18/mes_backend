@@ -9,4 +9,6 @@ import com.richfit.mes.common.model.base.OperationAssign;
  */
 public interface OperationAssignService extends IService<OperationAssign> {
 
+    public OperationAssign getOperatinoByParam(String optName, String branchCode);
+
 }

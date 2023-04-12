@@ -10,6 +10,7 @@ import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.enmus.RouterStatusEnum;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
+import com.richfit.mes.base.service.OperationAssignService;
 import com.richfit.mes.base.service.RouterOptAssignService;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.base.service.SequenceService;
@@ -603,11 +604,13 @@ public class RouterController extends BaseController {
 
     @Autowired
     private RouterOptAssignService routerOptAssignService;
+    @Autowired
+    private OperationAssignService operationAssignService;
 
 
     @ApiOperation(value = "根据图号和工序name查询工艺工序派工", notes = "根据图号和工序name查询工艺工序派工")
     @GetMapping("/router/opt/assign/get")
-    public CommonResult<RouterOptAssign> assignGet(String routerNo,String optName, String branchCode) {
+    public CommonResult<Object> assignGet(String routerNo,String optName, String branchCode) {
         QueryWrapper<RouterOptAssign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("opt_name", optName);
         queryWrapper.eq("branch_code", branchCode);
@@ -616,18 +619,22 @@ public class RouterController extends BaseController {
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         }
         RouterOptAssign one = routerOptAssignService.getOne(queryWrapper);
-        ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
-
-        if (!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())) {
-            List<String> list = Arrays.asList(one.getUserId().split(","));
-            for (String userId : list) {
-                AssignPerson assignPerson = new AssignPerson();
-                assignPerson.setUserId(userId);
-                assignPeoples.add(assignPerson);
+        //没有自动派工信息返回工序定义中的自动派工信息
+        if(ObjectUtil.isEmpty(one)){
+            return CommonResult.success(operationAssignService.getOperatinoByParam(optName,branchCode), "操作成功！");
+        }else{
+            ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
+            if (!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())) {
+                List<String> list = Arrays.asList(one.getUserId().split(","));
+                for (String userId : list) {
+                    AssignPerson assignPerson = new AssignPerson();
+                    assignPerson.setUserId(userId);
+                    assignPeoples.add(assignPerson);
+                }
+                one.setAssignPersons(assignPeoples);
             }
-            one.setAssignPersons(assignPeoples);
+            return CommonResult.success(one, "操作成功！");
         }
-        return CommonResult.success(one, "操作成功！");
     }
 
     @ApiOperation(value = "新增工艺工序派工", notes = "新增工艺工序派工")

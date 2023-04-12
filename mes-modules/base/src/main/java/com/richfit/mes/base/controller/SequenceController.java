@@ -855,25 +855,7 @@ public class SequenceController extends BaseController {
     @ApiOperation(value = "查询工序派工", notes = "根据工序name查询工序派工")
     @GetMapping("/assign/get")
     public CommonResult<OperationAssign> assignGet(String optName, String branchCode) {
-        QueryWrapper<OperationAssign> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("opt_name", optName);
-        queryWrapper.eq("branch_code", branchCode);
-        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        }
-        OperationAssign one = operationAssignService.getOne(queryWrapper);
-        ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
-
-        if (!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())) {
-            List<String> list = Arrays.asList(one.getUserId().split(","));
-            for (String userId : list) {
-                AssignPerson assignPerson = new AssignPerson();
-                assignPerson.setUserId(userId);
-                assignPeoples.add(assignPerson);
-            }
-            one.setAssignPersons(assignPeoples);
-        }
-        return CommonResult.success(one, "操作成功！");
+        return CommonResult.success(operationAssignService.getOperatinoByParam(optName,branchCode), "操作成功！");
     }
 
     @GetMapping("/querySequenceById")
