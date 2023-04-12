@@ -2122,7 +2122,7 @@
                                             <w:sz w:val="18" />
                                             <w:szCs w:val="18" />
                                         </w:rPr>
-                                        <w:t>${s!""}}</w:t>
+                                        <w:t>${s!""}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
