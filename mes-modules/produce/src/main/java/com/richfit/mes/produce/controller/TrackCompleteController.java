@@ -947,8 +947,8 @@ public class TrackCompleteController extends BaseController {
 
     })
     @GetMapping("/queryDetails")
-    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state) {
-        return trackCompleteService.queryDetails(assignId, tiId, state);
+    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state,String classes) {
+        return trackCompleteService.queryDetails(assignId, tiId, state,classes);
     }
 
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
