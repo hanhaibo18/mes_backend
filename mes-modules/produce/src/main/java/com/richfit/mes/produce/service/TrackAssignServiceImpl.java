@@ -91,10 +91,10 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 trackItem.setTotalQuantity(trackItem.getNumber());
                 trackItem.setWorkPlanNo(trackHead.getWorkPlanNo());
                 trackItem.setDispatchingNumber(trackItem.getAssignableQty());
-                String version = baseServiceClient.queryCraft(trackItem.getOptName(), trackItem.getBranchCode());
-                if (!StringUtils.isNullOrEmpty(version)) {
-                    trackItem.setVersions(version);
-                }
+//                String version = baseServiceClient.queryCraft(trackItem.getOptName(), trackItem.getBranchCode());
+//                if (!StringUtils.isNullOrEmpty(version)) {
+//                    trackItem.setVersions(version);
+//                }
             }
             //排序
             orderByCol(orderCol, order, excludeOrderCols, pageAssignsByStatus);
