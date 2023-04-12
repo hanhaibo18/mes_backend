@@ -478,7 +478,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
 
     @Override
-    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state) {
+    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state,String classes) {
         if (StringUtils.isNullOrEmpty(tiId)) {
             return CommonResult.failed("工序Id不能为空");
         }
@@ -487,33 +487,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
         Assign assign = trackAssignMapper.queryAssign(assignId);
-        //‘/’全部派工人员查询
-        if (assign.getUserId().contains("/")) {
-            List<String> branchCodes = Arrays.asList(assign.getSiteId().split(","));
-            List<TenantUserVo> data = systemServiceClient.queryUserByBranchCodes(branchCodes).getData();
-            List<AssignPerson> assignPeople = new ArrayList<>();
-            for (TenantUserVo datum : data) {
-                AssignPerson assignPerson = new AssignPerson();
-                assignPerson.setAssignId(assignId);
-                assignPerson.setUserId(datum.getUserAccount());
-                assignPerson.setUserName(datum.getEmplName());
-                assignPerson.setRatioHours(datum.getRatioHours());
-                assignPeople.add(assignPerson);
-            }
-            assign.setAssignPersons(assignPeople);
-        } else {
-            List<AssignPerson> assignPersons = trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId()));
-            if (assignPersons.size() > 0) {
-                List<String> userAccounts = assignPersons.stream().map(item -> item.getUserId()).collect(Collectors.toList());
-                Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(userAccounts);
-                for (AssignPerson assignPerson : assignPersons) {
-                    TenantUserVo tenantUserVo = userInfoMap.get(assignPerson.getUserId());
-                    assignPerson.setRatioHours(tenantUserVo.getRatioHours());
-                }
-            }
-            assign.setAssignPersons(assignPersons);
+        //给assignPersion赋值
+        if("1".equals(classes) || "2".equals(classes)){
+            jjZpSetAssignPersion(assignId, assign);
+        }else{
+            rgSetAssignPersion(assignId, assign);
         }
-
 
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", tiId);
@@ -543,6 +522,50 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setLayingOff(layingOff);
         queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
         return CommonResult.success(queryWorkingTimeVo);
+    }
+
+
+    //机加装配查询开工人
+    private void jjZpSetAssignPersion(String assignId, Assign assign) {
+        TrackItem item = trackItemService.getById(assign.getTiId());
+        TenantUserVo startDoingUser = systemServiceClient.queryByUserAccount(item.getStartDoingUser()).getData();
+        List<AssignPerson> assignPeople = new ArrayList<>();
+        AssignPerson assignPerson = new AssignPerson();
+        assignPerson.setAssignId(assignId);
+        assignPerson.setUserId(startDoingUser.getUserAccount());
+        assignPerson.setUserName(startDoingUser.getEmplName());
+        assignPerson.setRatioHours(startDoingUser.getRatioHours());
+        assignPeople.add(assignPerson);
+    }
+
+    //热工查询初始报工人员列表
+    private void rgSetAssignPersion(String assignId, Assign assign) {
+        //‘/’全部派工人员查询
+        if (assign.getUserId().contains("/")) {
+            List<String> branchCodes = Arrays.asList(assign.getSiteId().split(","));
+            List<TenantUserVo> data = systemServiceClient.queryUserByBranchCodes(branchCodes).getData();
+            List<AssignPerson> assignPeople = new ArrayList<>();
+            for (TenantUserVo datum : data) {
+                AssignPerson assignPerson = new AssignPerson();
+                assignPerson.setAssignId(assignId);
+                assignPerson.setUserId(datum.getUserAccount());
+                assignPerson.setUserName(datum.getEmplName());
+                assignPerson.setRatioHours(datum.getRatioHours());
+                assignPeople.add(assignPerson);
+            }
+            assign.setAssignPersons(assignPeople);
+        } else {
+            List<AssignPerson> assignPersons = trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId()));
+            if (assignPersons.size() > 0) {
+                List<String> userAccounts = assignPersons.stream().map(item -> item.getUserId()).collect(Collectors.toList());
+                Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(userAccounts);
+                for (AssignPerson assignPerson : assignPersons) {
+                    TenantUserVo tenantUserVo = userInfoMap.get(assignPerson.getUserId());
+                    assignPerson.setRatioHours(tenantUserVo.getRatioHours());
+                }
+            }
+            assign.setAssignPersons(assignPersons);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
