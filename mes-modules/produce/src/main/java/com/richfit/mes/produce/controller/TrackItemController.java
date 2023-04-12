@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
@@ -223,37 +224,37 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询跟单分流合并工序", notes = "根据跟单ID查询跟单分流合并的工序")
     @GetMapping("/track_flow_item_merge")
     public CommonResult<List<TrackItem>> trackFlowItemMerge(String trackId) {
-        List<TrackItem> trackItemScheduleList = new ArrayList<>();
+//        List<TrackItem> trackItemScheduleList = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         if (!StringUtils.isNullOrEmpty(trackId)) {
             queryWrapper.eq("track_head_id", trackId);
         }
         queryWrapper.orderByAsc("sequence_order_by");
-        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
+//        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
         List<TrackItem> trackItemList = new ArrayList<>(trackItemService.queryItemByTrackHeadId(trackId));
-        for (TrackItem ti : trackItemList) {
-            //是否需要理化检测状态值赋值
-            String isEntrust = "0";
-            List<OperationTypeSpec> operationTypeSpecs = baseServiceClient.queryOperationTypeSpecByType(ti.getOptType(), ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
-            if (CollectionUtils.isNotEmpty(operationTypeSpecs)) {
-                for (OperationTypeSpec operationTypeSpec : operationTypeSpecs) {
-                    if ("qualityFileType-10".equals(operationTypeSpec.getPropertyValue())) {
-                        isEntrust = "1";
-                    }
-                }
-            } else {
-                List<RouterCheck> routerChecks = baseServiceClient.queryRouterList(ti.getOptId(), "质量资料", ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
-                List<RouterCheck> filters = routerChecks.stream().filter(item -> ("qualityFileType-10").equals(item.getPropertyDefaultvalue())).collect(Collectors.toList());
-                if (filters.size() > 0) {
-                    isEntrust = "1";
-                }
-            }
-            //材料委托单只有第一次查询的时候赋值，如果被修改过直接查item中的值
-            if (StringUtils.isNullOrEmpty(ti.getIsEntrust())) {
-                ti.setIsEntrust(isEntrust);
-                trackItemService.updateById(ti);
-            }
-        }
+//        for (TrackItem ti : trackItemList) {
+//            //是否需要理化检测状态值赋值
+//            String isEntrust = "0";
+//            List<OperationTypeSpec> operationTypeSpecs = baseServiceClient.queryOperationTypeSpecByType(ti.getOptType(), ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
+//            if (CollectionUtils.isNotEmpty(operationTypeSpecs)) {
+//                for (OperationTypeSpec operationTypeSpec : operationTypeSpecs) {
+//                    if ("qualityFileType-10".equals(operationTypeSpec.getPropertyValue())) {
+//                        isEntrust = "1";
+//                    }
+//                }
+//            } else {
+//                List<RouterCheck> routerChecks = baseServiceClient.queryRouterList(ti.getOptId(), "质量资料", ti.getBranchCode(), SecurityUtils.getCurrentUser().getTenantId());
+//                List<RouterCheck> filters = routerChecks.stream().filter(item -> ("qualityFileType-10").equals(item.getPropertyDefaultvalue())).collect(Collectors.toList());
+//                if (filters.size() > 0) {
+//                    isEntrust = "1";
+//                }
+//            }
+//            //材料委托单只有第一次查询的时候赋值，如果被修改过直接查item中的值
+//            if (StringUtils.isNullOrEmpty(ti.getIsEntrust())) {
+//                ti.setIsEntrust(isEntrust);
+//                trackItemService.updateById(ti);
+//            }
+//        }
         return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
     }
 
