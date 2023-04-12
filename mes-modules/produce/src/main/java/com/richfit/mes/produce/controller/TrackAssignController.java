@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -344,8 +345,8 @@ public class TrackAssignController extends BaseController {
                     if (StringUtils.isNullOrEmpty(assign.getTenantId())) {
                         assign.setTenantId(trackHead.getTenantId());
                     }
-                    //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
-                    if (StringUtils.isNullOrEmpty(assign.getUserId())) {
+                    //处理派工人员信息  (前端没有处理userId 和userName  assignPerson为派工人列表)
+                    if (StringUtils.isNullOrEmpty(assign.getUserId()) && !CollectionUtil.isEmpty(assign.getAssignPersons())) {
                         StringBuilder userId = new StringBuilder();
                         StringBuilder userName = new StringBuilder();
                         for (AssignPerson assignPerson : assign.getAssignPersons()) {
