@@ -31,6 +31,9 @@ public class RouterOptAssign extends BaseEntity<RouterOptAssign> {
      */
     @ApiModelProperty(value = "机构编码", dataType = "String")
     private String branchCode;
+
+    @ApiModelProperty(value = "图号", dataType = "String")
+    private String routerNo;
     /**
      * 派工用户ID
      */
