@@ -97,13 +97,13 @@ public class HeatTrackCompleteController extends BaseController {
         //当前用户报过的步骤信息
         QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
         completeQueryWrapper.eq("complete_by", data.getUserAccount())
-                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()),"complete_time",dispatchingDto.getEndTime())
-                .ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()),"complete_time",dispatchingDto.getStartTime());
+                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()), "complete_time", dispatchingDto.getEndTime())
+                .ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()), "complete_time", dispatchingDto.getStartTime());
         List<TrackComplete> completeList = heatTrackCompleteService.list(completeQueryWrapper);
         //预装炉id集合
         List<String> fuIds = new ArrayList<>(completeList.stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
         //带回滚的预装炉id(当前步骤 && 不是最后一步)
-        List<String> rollBackFuIds = new ArrayList<>(completeList.stream().filter(item->(item.getIsCurrent().equals(1) && (ObjectUtil.isEmpty(item.getIsFinalStep())|| item.getIsFinalStep().equals(0)))).collect(Collectors.toList()).stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
+        List<String> rollBackFuIds = new ArrayList<>(completeList.stream().filter(item -> (item.getIsCurrent().equals(1) && (ObjectUtil.isEmpty(item.getIsFinalStep()) || item.getIsFinalStep().equals(0)))).collect(Collectors.toList()).stream().map(TrackComplete::getPrechargeFurnaceId).collect(Collectors.toSet()));
         if (fuIds.size() > 0) {
             QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
             if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
@@ -122,7 +122,7 @@ public class HeatTrackCompleteController extends BaseController {
             }
             Page<PrechargeFurnace> prechargeFurnacePage = prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(), dispatchingDto.getLimit()), prechargeFurnaceQueryWrapper);
             for (PrechargeFurnace record : prechargeFurnacePage.getRecords()) {
-                if(rollBackFuIds.contains(String.valueOf(record.getId()))){
+                if (rollBackFuIds.contains(String.valueOf(record.getId()))) {
                     record.setIsRollBack(1);
                 }
             }
@@ -162,7 +162,7 @@ public class HeatTrackCompleteController extends BaseController {
             //改步骤下的报工信息 按照跟单工序分组
             Map<String, List<TrackComplete>> itemStepCompleteInfos = completes1.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
             //查询步骤的报工人员（此步骤下的跟单工序 报工信息一直  所以取第一个的就行）
-            if(itemStepCompleteInfos.size()>0){
+            if (itemStepCompleteInfos.size() > 0) {
                 for (Map.Entry<String, List<TrackComplete>> itemStepCompleteInfo : itemStepCompleteInfos.entrySet()) {
                     for (TrackComplete trackComplete : itemStepCompleteInfo.getValue()) {
                         CompleteUserInfoDto completeUserInfoDto = new CompleteUserInfoDto();
@@ -209,8 +209,8 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "（已报工）根据预装炉id导出热处理标签excel")
     @GetMapping("/exportHeatTrackLabel")
-    public void exportHeatTrackLabel(HttpServletResponse response, @ApiParam(value = "预装炉id", required = true) @RequestParam String id ){
-        trackItemService.exportHeatTrackLabel(response, id);
+    public void exportHeatTrackLabel(HttpServletResponse response, @ApiParam(value = "预装炉id", required = true) @RequestParam String id, String classes) {
+        trackItemService.exportHeatTrackLabel(response, id, classes);
     }
 
     @ApiOperation(value = "（已报工）人员批量删除")
@@ -262,7 +262,7 @@ public class HeatTrackCompleteController extends BaseController {
      */
     @ApiOperation(value = "热工报工获取炉号（设备名称不带DZ）", notes = "热工报工获取炉号")
     @GetMapping("/getFurnaceNo")
-    public CommonResult<String> getFurnaceNo(String deviceName,String branchCode,String code) throws Exception {
+    public CommonResult<String> getFurnaceNo(String deviceName, String branchCode, String code) throws Exception {
         return CommonResult.success(heatTrackCompleteService.getFurnaceNo(deviceName, branchCode, code));
     }
 
@@ -271,7 +271,7 @@ public class HeatTrackCompleteController extends BaseController {
      */
     @ApiOperation(value = "热工报工步骤回滚", notes = "热工报工步骤回滚")
     @GetMapping("/rollBack")
-    public CommonResult<Boolean> rollBack(Long prechargeFurnaceId){
+    public CommonResult<Boolean> rollBack(Long prechargeFurnaceId) {
         return CommonResult.success(heatTrackCompleteService.rollBack(prechargeFurnaceId));
     }
 

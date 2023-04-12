@@ -389,7 +389,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackComplete.setCompleteTime(new Date());
                 trackComplete.setDetectionResult("-");
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                numDouble += trackComplete.getCompletedQty();
+                numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
             }
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             //跟新工序完成数量
@@ -515,10 +515,20 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWrapper.eq("ti_id", tiId);
 
         List<TrackComplete> completeList = new ArrayList<>();
+        List<ForgControlRecord> forgControlRecordList = new ArrayList<>();
+        LayingOff layingOff = new LayingOff();
         if (0 == state) {
             completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
+            forgControlRecordList = forgControlRecordService.queryForgControlRecordCacheByItemId(tiId);
+            layingOff = layingOffService.queryLayingOffCacheByItemId(tiId);
         } else {
             completeList = this.list(queryWrapper);
+            QueryWrapper<ForgControlRecord> forgControlRecordQueryWrapper = new QueryWrapper<>();
+            forgControlRecordQueryWrapper.eq("item_id", tiId);
+            forgControlRecordList = forgControlRecordService.list(forgControlRecordQueryWrapper);
+            QueryWrapper<LayingOff> layingOffQueryWrapper = new QueryWrapper<>();
+            layingOffQueryWrapper.eq("item_id", tiId);
+            layingOff = layingOffService.getOne(layingOffQueryWrapper);
         }
 
         TrackItem trackItem = trackItemService.getById(tiId);
@@ -526,6 +536,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setAssign(assign);
         queryWorkingTimeVo.setQcPersonId(trackItem.getQualityCheckBy());
         queryWorkingTimeVo.setQualityCheckBranch(trackItem.getQualityCheckBranch());
+        queryWorkingTimeVo.setLayingOff(layingOff);
+        queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
         return CommonResult.success(queryWorkingTimeVo);
     }
 

@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -12,6 +13,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
@@ -45,6 +48,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static com.richfit.mes.common.model.produce.TrackHead.*;
 
 /**
  * @author 王瑞
@@ -736,58 +741,93 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
-    public void exportHeatTrackLabel(HttpServletResponse response, String id) {
+    public void exportHeatTrackLabel(HttpServletResponse response, String id, String classes) {
         //获取当前租户信息
         Tenant tenant = systemServiceClient.getTenantById(SecurityUtils.getCurrentUser().getTenantId()).getData();
-        //根据预装炉id获取跟单工序表
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        queryWrapper.eq("precharge_furnace_id", id);
-        List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapper);
-        if (!trackItemList.isEmpty()) {
-            //通过模板读入文件流
+        //热处理车间导出
+        if (TRACKHEAD_CLASSES_RCL.equals(classes)) {
+            //热处理车间传入id为预装炉id 根据预装炉id获取跟单工序表
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+            queryWrapper.eq("precharge_furnace_id", id);
+            List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapper);
+            if (!trackItemList.isEmpty()) {
+                //通过模板读入文件流
+                ClassPathResource classPathResource = new ClassPathResource("excel/" + "heatTreatLabel.xlsx");
+                int sheetNum = 0;
+                try {
+                    ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
+                    XSSFWorkbook wk = (XSSFWorkbook) writer.getWorkbook();
+                    for (TrackItem trackItem : trackItemList) {
+                        if (sheetNum > 0) {
+                            writer.setSheet(wk.cloneSheet(0));
+                        }
+
+                        //获取跟单信息
+                        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                        //获取预装炉信息
+                        PrechargeFurnace prechargeFurnace = prechargeFurnaceMapper.selectById(id);
+                        //获取车间信息
+                        Branch branch = baseServiceClient.selectBranchByCodeAndTenantId(trackItem.getBranchCode(), tenant.getId()).getData();
+                        buildSheetInfo(tenant, trackItem, trackHead, prechargeFurnace, branch, writer);
+                        writer.renameSheet(sheetNum, "sheet" + (++sheetNum));
+                    }
+                    buildResponseHead(response, writer);
+
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }
+        }
+        //锻造车间导出
+        if (TRACKHEAD_CLASSES_GJG.equals(classes)) {
+            //装配车间传入id为 item_id
+            TrackItem trackItem = trackItemMapper.selectById(id);
+            if (ObjectUtil.isEmpty(trackItem)) {
+                throw new GlobalException("item_id不存在！", ResultCode.FAILED);
+            }
+            //根据item中的track_head id 查询跟单信息
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            PrechargeFurnace prechargeFurnace = null;
+            if (trackItem.getPrechargeFurnaceId() != null) {
+                prechargeFurnace = prechargeFurnaceMapper.selectById(trackItem.getPrechargeFurnaceId());
+            }
+            //获取车间信息
+            Branch branch = baseServiceClient.selectBranchByCodeAndTenantId(trackItem.getBranchCode(), tenant.getId()).getData();
             ClassPathResource classPathResource = new ClassPathResource("excel/" + "heatTreatLabel.xlsx");
-            int sheetNum = 0;
             try {
                 ExcelWriter writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
-                XSSFWorkbook wk = (XSSFWorkbook) writer.getWorkbook();
-                for (TrackItem trackItem : trackItemList) {
-                    if (sheetNum > 0) {
-                        writer.setSheet(wk.cloneSheet(0));
-                    }
-
-                    //获取跟单信息
-                    TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                    //获取预装炉信息
-                    PrechargeFurnace prechargeFurnace = prechargeFurnaceMapper.selectById(id);
-                    //获取车间信息
-                    Branch branch = baseServiceClient.selectBranchByCodeAndTenantId(trackItem.getBranchCode(), tenant.getId()).getData();
-                    writer.writeCellValue("B2", trackHead == null ? "" : trackHead.getWorkNo());
-                    writer.writeCellValue("E2", trackItem.getOptName());
-
-                    writer.writeCellValue("B3", trackHead == null ? "" : trackHead.getDrawingNo());
-                    writer.writeCellValue("E3", trackItem.getNumber());
-                    writer.writeCellValue("B4", trackItem.getBranchCode());
-                    writer.writeCellValue("E4", tenant.getTenantName() + branch.getBranchName());
-                    writer.writeCellValue("B5", trackHead == null ? "" : trackHead.getBatchNo());
-                    writer.writeCellValue("E5", prechargeFurnace == null ? "" : prechargeFurnace.getFurnaceNo());
-                    writer.writeCellValue("B6", trackItem.getRemark());
-
-                    writer.renameSheet(sheetNum, "sheet" + (++sheetNum));
-                }
-                ServletOutputStream outputStream = response.getOutputStream();
-                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-                String time = "heatTreatLabel" + LocalDateTime.now();
-                response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
-                        "ISO-8859-1") + ".xlsx");
-                writer.flush(outputStream, true);
-                IoUtil.close(outputStream);
+                buildSheetInfo(tenant, trackItem, trackHead, prechargeFurnace, branch, writer);
+                buildResponseHead(response, writer);
 
             } catch (Exception e) {
                 log.error(e.getMessage());
-                e.printStackTrace();
             }
+
+
         }
 
+    }
+
+    private void buildResponseHead(HttpServletResponse response, ExcelWriter writer) throws IOException {
+        ServletOutputStream outputStream = response.getOutputStream();
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        String time = "heatTreatLabel" + LocalDateTime.now();
+        response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
+                "ISO-8859-1") + ".xlsx");
+        writer.flush(outputStream, true);
+        IoUtil.close(outputStream);
+    }
+
+    private void buildSheetInfo(Tenant tenant, TrackItem trackItem, TrackHead trackHead, PrechargeFurnace prechargeFurnace, Branch branch, ExcelWriter writer) {
+        writer.writeCellValue("B2", trackHead == null ? "" : trackHead.getWorkNo());
+        writer.writeCellValue("E2", trackItem == null ? "" : trackItem.getOptName());
+        writer.writeCellValue("B3", trackHead == null ? "" : trackHead.getDrawingNo());
+        writer.writeCellValue("E3", trackItem == null ? "" : trackItem.getNumber());
+        writer.writeCellValue("B4", trackItem == null ? "" : trackItem.getBranchCode());
+        writer.writeCellValue("E4", tenant.getTenantName() + branch.getBranchName());
+        writer.writeCellValue("B5", trackHead == null ? "" : trackHead.getBatchNo());
+        writer.writeCellValue("E5", prechargeFurnace == null ? "" : prechargeFurnace.getFurnaceNo());
+        writer.writeCellValue("B6", trackItem == null ? "" : trackItem.getRemark());
     }
 
     @Override

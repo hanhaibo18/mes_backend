@@ -405,16 +405,19 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             String machiningRole = branchCode + "_JMAQ_RGZJ";
             codeList.add(machiningRole);
         }
-        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
-        //判断如果codeList 为空会报错
-        queryWrapper.in(codeList.size() > 0, "role_code", codeList);
-        queryWrapper.eq("tenant_id", tenantId);
-        List<Role> roleList = roleService.list(queryWrapper);
-        List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(roleIdList)) {
-            QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
-            queryUser.in("role_id", roleIdList);
-            return tenantUserMapper.queryByCondition(queryUser);
+        if(codeList.size()>0){
+            QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+            //判断如果codeList 为空会报错
+            queryWrapper.in("role_code", codeList);
+            queryWrapper.eq("tenant_id", tenantId);
+            List<Role> roleList = roleService.list(queryWrapper);
+            List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(roleIdList)) {
+                QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
+                queryUser.in("role_id", roleIdList)
+                        .eq("status",1);
+                return tenantUserMapper.queryByCondition(queryUser);
+            }
         }
         return new ArrayList<>();
     }
@@ -422,11 +425,11 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     @Override
     public List<TenantUserVo> queryAllQualityUser(String classes) {
         Tenant tenant = tenantService.getById(SecurityUtils.getCurrentUser().getTenantId());
-        //获取当前登录人公司所有质检人员
+        //获取当前登录人车间的所有质检人员
         List<TenantUserVo> userList = this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId());
 //        List<TenantUserVo> userList = new ArrayList<>();
         //获取质检公司
-        List<ItemParam> item = null;
+       /* List<ItemParam> item = null;
         try {
             item = itemParamService.queryItemByCode("qualityManagement");
         } catch (Exception e) {
@@ -450,7 +453,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             if (!CollectionUtils.isEmpty(userVoList)) {
                 userList.addAll(userVoList);
             }
-        }
+        }*/
         return userList;
     }
 

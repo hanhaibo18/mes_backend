@@ -1,14 +1,15 @@
 package com.richfit.mes.produce.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.TrackComplete;
-import com.richfit.mes.common.model.produce.TrackCompleteCache;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteCacheMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,10 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
     private TrackItemService trackItemService;
     @Autowired
     private TrackCompleteService trackCompleteService;
+    @Autowired
+    private LayingOffCacheService layingOffCacheService;
+    @Autowired
+    private ForgControlRecordCacheService forgControlRecordCacheService;
 
 
     @Override
@@ -84,6 +89,18 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
             }
             trackItemService.updateById(trackItem);
             this.saveBatch(trackCompleteCacheList);
+            //保存下料信息
+            if (completeDto.getLayingOff() != null) {
+                LayingOffCache layingOffCache = new LayingOffCache();
+                BeanUtils.copyProperties(completeDto.getLayingOff(), layingOffCache);
+                layingOffCacheService.saveOrUpdate(layingOffCache);
+            }
+            //保存锻造信息
+            if (completeDto.getForgControlRecordList() != null) {
+                String jsonString = JSONObject.toJSONString(completeDto.getForgControlRecordList());
+                List<ForgControlRecordCache> forgControlRecordList = JSONArray.parseArray(jsonString, ForgControlRecordCache.class);
+                forgControlRecordCacheService.saveOrUpdateBatch(forgControlRecordList);
+            }
         }
         return CommonResult.success(true);
     }

@@ -2441,7 +2441,7 @@
                                             <w:szCs w:val="18" />
                                             <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                         </w:rPr>
-                                        <w:t><#if inspectionResults=="0">不合格<#else>合格</#if></w:t>
+                                        <w:t><#if inspectionResults=="0">不合格<#else>合格</#if> <#if inspectionResultsRemark??>（${inspectionResultsRemark!""}）</#if></w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>

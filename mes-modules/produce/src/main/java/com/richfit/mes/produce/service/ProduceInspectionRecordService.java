@@ -982,6 +982,7 @@ public class ProduceInspectionRecordService {
             dataMap.put("texture", trackHead.getTexture());
             dataMap.put("productNo",trackHead.getProductNo());
         }
+        dataMap.put("inspectionResultsRemark", StringUtils.isEmpty(String.valueOf(dataMap.get("inspectionResultsRemark")))?null:dataMap.get("inspectionResultsRemark"));
         //报告日期取开工日期
         String dateTime = String.valueOf(power.getStartDoingTime());
         dataMap.put("year", String.valueOf(DateUtil.year(DateUtil.parse(dateTime))));
@@ -1005,6 +1006,8 @@ public class ProduceInspectionRecordService {
         }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordMt), Map.class));
+        dataMap.put("inspectionResultsRemark", StringUtils.isEmpty(String.valueOf(dataMap.get("inspectionResultsRemark")))?null:dataMap.get("inspectionResultsRemark"));
+
         //图片base64编码
         if (!StringUtils.isEmpty(produceInspectionRecordMt.getDiagramAttachmentId())) {
             dataMap.put("img", systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());
@@ -1027,6 +1030,7 @@ public class ProduceInspectionRecordService {
         }
 
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordRt), Map.class));
+        dataMap.put("inspectionResultsRemark", StringUtils.isEmpty(String.valueOf(dataMap.get("inspectionResultsRemark")))?null:dataMap.get("inspectionResultsRemark"));
         //图片base64编码
         if (!StringUtils.isEmpty(produceInspectionRecordRt.getDiagramAttachmentId())) {
             dataMap.put("img", systemServiceClient.getBase64Code(produceInspectionRecordRt.getDiagramAttachmentId()).getData());
@@ -1047,7 +1051,7 @@ public class ProduceInspectionRecordService {
             produceInspectionRecordPt.setCheckBy(data.getEmplName());
         }
         dataMap.putAll(JSON.parseObject(JSON.toJSONString(produceInspectionRecordPt), Map.class));
-
+        dataMap.put("inspectionResultsRemark", StringUtils.isEmpty(String.valueOf(dataMap.get("inspectionResultsRemark")))?null:dataMap.get("inspectionResultsRemark"));
         if (!StringUtils.isEmpty(produceInspectionRecordPt.getDiagramAttachmentId())) {
             //图片base64编码
             dataMap.put("img", systemServiceClient.getBase64Code(produceInspectionRecordPt.getDiagramAttachmentId()).getData());
