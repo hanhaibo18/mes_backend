@@ -1,10 +1,14 @@
 package com.richfit.mes.produce.controller.quality;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Disqualification;
+import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -20,8 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: DisqualificationController.java
@@ -177,5 +186,55 @@ public class DisqualificationController extends BaseController {
     @GetMapping("/query_last_time")
     public CommonResult<DisqualificationItemVo> queryLastTimeDataByCreateBy(String branchCode) {
         return CommonResult.success(disqualificationService.queryLastTimeDataByCreateBy(branchCode));
+    }
+    @ApiOperation(value = "不合格导出", notes = "不合格导出")
+    @GetMapping("/export")
+    public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<String> ids) {
+        try {
+            QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+            if (CollectionUtils.isNotEmpty(ids)) {
+                queryWrapper.in("id", ids);
+            }
+            List<Disqualification> disqualificationList = disqualificationService.list(queryWrapper);
+            List<String> idList = disqualificationList.stream().map(e -> e.getId()).collect(Collectors.toList());
+            QueryWrapper<DisqualificationItemVo> objectQueryWrapper = new QueryWrapper<>();
+            objectQueryWrapper.in("id", idList);
+            List<DisqualificationFinalResult> list = finalResultService.list();
+            Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            for (Disqualification disqualification: disqualificationList) {
+                disqualification.setUnitResponsibilityOutside(resultMap.get(disqualification.getId()).getUnitResponsibilityOutside());
+                disqualification.setUnitResponsibilityWithin(resultMap.get(disqualification.getId()).getUnitResponsibilityWithin());
+                disqualification.setTotalWeight(resultMap.get(disqualification.getId()).getTotalWeight());
+                disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
+                disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
+                disqualification.setDiscoverItem(resultMap.get(disqualification.getId()).getDiscoverItem());
+                disqualification.setDiscardTime(resultMap.get(disqualification.getId()).getDiscardTime());
+                disqualification.setReuseTime(resultMap.get(disqualification.getId()).getReuseTime());
+                disqualification.setAcceptDeviation(resultMap.get(disqualification.getId()).getAcceptDeviation());
+                disqualification.setRepairQualified(resultMap.get(disqualification.getId()).getRepairQualified());
+                disqualification.setScrap(resultMap.get(disqualification.getId()).getScrap());
+                disqualification.setSalesReturn(resultMap.get(disqualification.getId()).getSalesReturn());
+                disqualification.setSalesReturnLoss(resultMap.get(disqualification.getId()).getSalesReturnLoss());
+                disqualification.setCloseTime(null);
+                disqualification.setTreatmentOneName(resultMap.get(disqualification.getId()).getTreatmentOneName());
+                disqualification.setTreatmentTwoName(resultMap.get(disqualification.getId()).getTreatmentTwoName());
+                disqualification.setResponsibilityName(resultMap.get(disqualification.getId()).getResponsibilityName());
+                disqualification.setTechnologyName(resultMap.get(disqualification.getId()).getTechnologyName());
+            }
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName = "不合格_" + format.format(new Date()) + ".xlsx";
+
+            String[] columnHeaders = {"申请者", "申请日期", "检验站", "处理单号", "发现单位", "责任单位(本)", "责任单位(外)", "工作号", "产品名称", "零部件名称", "零部件图号", "零部件编号", "零件材料", "数量", "总重", "问题描述", "质控工程师", "处理单位1", "处理单位2", "发现工序", "废品工时", "回用工时", "让步接收", "返修合格", "报废", "退货", "废品损失", "关单日期", "评审人1", "评审人2", "责任裁决人", "技术裁决人"};
+
+            String[] fieldNames = {"createBy", "createTime", "branchCode", "processSheetNo", "missiveBranch", "unitResponsibilityWithin", "unitResponsibilityOutside", "workNo", "productName", "partName", "partDrawingNo", "productNo", "partMaterials", "number", "totalWeight", "disqualificationCondition", "qualityCheckBy", "unitTreatmentOne", "unitTreatmentTwo", "discoverItem", "discardTime", "reuseTime", "acceptDeviation", "repairQualified", "scrap", "salesReturn", "salesReturnLoss", "closeTime", "treatmentOneName", "treatmentTwoName", "responsibilityName", "technologyName"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, disqualificationList, columnHeaders, fieldNames, rsp);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

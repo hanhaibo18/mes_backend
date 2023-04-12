@@ -171,15 +171,84 @@ public class Disqualification extends BaseEntity<Disqualification> {
      */
     private String tenantId;
 
+    @ApiModelProperty(value = "关单日期")
+    private Date closeTime;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "文件列表", dataType = "List<DisqualificationAttachment>")
     private List<DisqualificationAttachment> attachmentList = new ArrayList<>();
 
-    /**
-     * 检验人员
-     */
+
     @TableField(exist = false)
     @ApiModelProperty(value = "检验人员", dataType = "List<DisqualificationUserOpinion>")
     private List<TenantUserVo> userList;
 
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "责任单位内")
+    private String unitResponsibilityWithin;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "责任单位外")
+    private String unitResponsibilityOutside;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "总重量")
+    private Double totalWeight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理单位1")
+    private String unitTreatmentOne;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理单位2")
+    private String unitTreatmentTwo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "发现工序")
+    private String discoverItem;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "废品工时")
+    private Double discardTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "回用工时")
+    private Double reuseTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "让步接收数量")
+    private Integer acceptDeviation;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "返修合格数量")
+    private Integer repairQualified;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "报废数量")
+    private Integer scrap;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "退货数量")
+    private Integer salesReturn;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "报废损失")
+    private String salesReturnLoss;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理单位1姓名")
+    private String treatmentOneName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理单位2姓名")
+    private String treatmentTwoName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "责任裁决姓名")
+    private String responsibilityName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "技术裁决姓名")
+    private String technologyName;
 }
