@@ -188,7 +188,7 @@ public class DisqualificationController extends BaseController {
         return CommonResult.success(disqualificationService.queryLastTimeDataByCreateBy(branchCode));
     }
     @ApiOperation(value = "不合格导出", notes = "不合格导出")
-    @GetMapping("/export")
+    @PostMapping("/export")
     public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<String> ids) {
         try {
             QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
@@ -215,7 +215,6 @@ public class DisqualificationController extends BaseController {
                 disqualification.setScrap(resultMap.get(disqualification.getId()).getScrap());
                 disqualification.setSalesReturn(resultMap.get(disqualification.getId()).getSalesReturn());
                 disqualification.setSalesReturnLoss(resultMap.get(disqualification.getId()).getSalesReturnLoss());
-                disqualification.setCloseTime(null);
                 disqualification.setTreatmentOneName(resultMap.get(disqualification.getId()).getTreatmentOneName());
                 disqualification.setTreatmentTwoName(resultMap.get(disqualification.getId()).getTreatmentTwoName());
                 disqualification.setResponsibilityName(resultMap.get(disqualification.getId()).getResponsibilityName());
