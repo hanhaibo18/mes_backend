@@ -1,7 +1,9 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ForgControlRecord;
 import com.richfit.mes.produce.dao.ForgControlRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,7 @@ public class ForgControlRecordServiceImpl extends ServiceImpl<ForgControlRecordM
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateBatch(List<ForgControlRecord> forgControlRecordlist, String itemId) {
-        //先查出该工单所有的正火去氢记录
+        //先查出该工单所有的锻造记录
         QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("item_id", itemId);
         List<ForgControlRecord> forgControlRecords = forgControlRecordMapper.selectList(queryWrapper);
@@ -56,6 +58,23 @@ public class ForgControlRecordServiceImpl extends ServiceImpl<ForgControlRecordM
     @Override
     public List<ForgControlRecord> queryForgControlRecordCacheByItemId(String tiId) {
         return forgControlRecordMapper.queryForgControlRecordCacheByItemId(tiId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult updateOrDeleteBatch(List<ForgControlRecord> forgControlRecordlist, String itemId) {
+        //先根据itemId删除所有forgControlRecordlist
+        QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("item_id", itemId);
+        this.remove(queryWrapper);
+        if (CollectionUtils.isEmpty(forgControlRecordlist)) {
+            return CommonResult.success("删除成功！");
+        }
+        boolean result = this.saveBatch(forgControlRecordlist);
+        if (!result) {
+            return CommonResult.failed("新增失败！");
+        }
+        return CommonResult.success("新增成功！");
     }
 }
 

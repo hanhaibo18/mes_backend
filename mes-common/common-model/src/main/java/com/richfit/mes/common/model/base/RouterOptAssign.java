@@ -93,9 +93,12 @@ public class RouterOptAssign extends BaseEntity<RouterOptAssign> {
         return siteList;
     }
 
-    public String getSiteId() {
+    public String getSiteId(String branchCode) {
         StringBuilder stringBuilder = new StringBuilder();
         if(!ObjectUtil.isEmpty(this.siteList)){
+            if(branchCode.contains("_JJCJ")){
+                return this.siteId;
+            }
             for (String siteId : this.siteList) {
                 if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
                     stringBuilder.append(",");

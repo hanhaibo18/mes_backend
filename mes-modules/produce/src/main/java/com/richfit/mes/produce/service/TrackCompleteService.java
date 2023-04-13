@@ -60,7 +60,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2022/7/13 13:51
      * @return: CommonResult<QueryWorkingTimeVo>
      **/
-    CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state);
+    CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state,String classes);
 
     /**
      * 功能描述: 修改

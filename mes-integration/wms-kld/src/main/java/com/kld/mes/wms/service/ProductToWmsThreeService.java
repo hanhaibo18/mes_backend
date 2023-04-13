@@ -41,13 +41,7 @@ public class ProductToWmsThreeService {
 
     // MES物料基础数据同步接口
     public ApplicationResult materialBasisInterface(List<MaterialBasis> materialBasisList) {
-        //转换json数组
-        String jsonStr = JSONArray.parseArray(JSON.toJSONString(materialBasisList)).toString();
-        //加密后的16进制字符串
-        String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
-        //传参
-        Map<String, Object> params = new HashMap<>(3);
-        params.put("i_data", encryptString);
+        Map<String, Object> params = convertArrayInput(materialBasisList);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadMat").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
@@ -81,11 +75,11 @@ public class ProductToWmsThreeService {
         return applicationResult;
     }
 
-    // MES申请单上传WMS（已上线）(待接口)
-    public ApplicationResult applyListUploadInterface(ApplyListUpload applyListUpload) {
-        Map<String, Object> params = convertInput(applyListUpload);
+    // MES申请单上传WMS（已上线）
+    public ApplicationResult applyListUploadInterface(List<ApplyListUpload> applyListUpload) {
+        Map<String, Object> params = convertArrayInput(applyListUpload);
         //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl + "/uploadApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -171,6 +165,22 @@ public class ProductToWmsThreeService {
         JSONObject jsonObject = JSON.parseObject(s);
         String data = jsonObject.get("data").toString();
         return JSONObject.parseArray(data, InventoryReturn.class);
+    }
+
+    /**
+     * 加密json数组
+     * @param o
+     * @return
+     */
+    private Map<String, Object> convertArrayInput(Object o) {
+        //转换json串
+        String jsonStr = JSONArray.parseArray(JSON.toJSONString(o)).toString();
+        //加密后的16进制字符串
+        String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
+        //传参
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("i_data", encryptString);
+        return params;
     }
 
     /**

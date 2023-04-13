@@ -53,7 +53,7 @@ public class WmsThreeController {
 
     @ApiOperation(value = "MES申请单上传WMS（已上线）", notes = "将MES系统满足条件申请单上传WMS。提供上传WMS按钮，用户点击按钮可手动将申请单上传WMS系统")
     @PostMapping("/apply_list_upload")
-    public CommonResult<ApplicationResult> applyListUpload(@RequestBody ApplyListUpload applyListUpload) {
+    public CommonResult<ApplicationResult> applyListUpload(@RequestBody List<ApplyListUpload> applyListUpload) {
         return new CommonResult(productToWmsThreeService.applyListUploadInterface(applyListUpload));
     }
 
