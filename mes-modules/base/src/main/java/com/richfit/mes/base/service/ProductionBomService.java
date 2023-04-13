@@ -117,4 +117,6 @@ public interface ProductionBomService extends IService<ProductionBom> {
      * @return: void
      **/
     void exportExcelERP(String id, HttpServletResponse rsp);
+
+    CommonResult<ProductionBom> saveProductionBom(ProductionBom productionBom);
 }
