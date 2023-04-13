@@ -142,6 +142,8 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     private String optName;
     @TableField(exist = false)
+    private String optVer;
+    @TableField(exist = false)
     private Integer optType;
     @TableField(exist = false)
     private String optId;
@@ -184,6 +186,9 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "重量", dataType = "Float")
     private Float weight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "总数量", dataType = "Float")
+    private Integer number;
     @TableField(exist = false)
     @ApiModelProperty(value = "工作号", dataType = "String")
     private String workNo;
@@ -260,6 +265,13 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "预装炉id", dataType = "String")
     private String prechargeFurnaceId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "正火装炉id", dataType = "String")
+    private String normalizingFurnaceId;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "去氢装炉id", dataType = "String")
+    private String dehydroFurnaceId;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺信息")

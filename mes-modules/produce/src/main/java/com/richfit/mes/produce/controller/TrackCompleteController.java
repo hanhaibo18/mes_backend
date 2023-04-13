@@ -1041,13 +1041,7 @@ public class TrackCompleteController extends BaseController {
     })
     @PutMapping("/update_forg_control_record")
     public CommonResult<Boolean> updateForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist, String itemId) {
-        QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id", itemId);
-        forgControlRecordService.remove(queryWrapper);
-        if (CollectionUtils.isEmpty(forgControlRecordlist)) {
-            return CommonResult.success(true, "删除成功");
-        }
-        return CommonResult.success(forgControlRecordService.saveBatch(forgControlRecordlist));
+        return forgControlRecordService.updateOrDeleteBatch(forgControlRecordlist, itemId);
     }
 
     @ApiOperation(value = "锻造工序控制删除", notes = "锻造工序控制删除")

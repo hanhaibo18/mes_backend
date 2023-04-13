@@ -189,36 +189,36 @@ public class DisqualificationController extends BaseController {
     }
     @ApiOperation(value = "不合格导出", notes = "不合格导出")
     @PostMapping("/export")
-    public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<String> ids) {
+    public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<Disqualification> disqualificationList) {
         try {
-            QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
-            if (CollectionUtils.isNotEmpty(ids)) {
-                queryWrapper.in("id", ids);
+            if (!CollectionUtils.isNotEmpty(disqualificationList)) {
+                return;
             }
-            List<Disqualification> disqualificationList = disqualificationService.list(queryWrapper);
             List<String> idList = disqualificationList.stream().map(e -> e.getId()).collect(Collectors.toList());
-            QueryWrapper<DisqualificationItemVo> objectQueryWrapper = new QueryWrapper<>();
+            QueryWrapper<DisqualificationFinalResult> objectQueryWrapper = new QueryWrapper<>();
             objectQueryWrapper.in("id", idList);
-            List<DisqualificationFinalResult> list = finalResultService.list();
+            List<DisqualificationFinalResult> list = finalResultService.list(objectQueryWrapper);
             Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
-            for (Disqualification disqualification: disqualificationList) {
-                disqualification.setUnitResponsibilityOutside(resultMap.get(disqualification.getId()).getUnitResponsibilityOutside());
-                disqualification.setUnitResponsibilityWithin(resultMap.get(disqualification.getId()).getUnitResponsibilityWithin());
-                disqualification.setTotalWeight(resultMap.get(disqualification.getId()).getTotalWeight());
-                disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
-                disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
-                disqualification.setDiscoverItem(resultMap.get(disqualification.getId()).getDiscoverItem());
-                disqualification.setDiscardTime(resultMap.get(disqualification.getId()).getDiscardTime());
-                disqualification.setReuseTime(resultMap.get(disqualification.getId()).getReuseTime());
-                disqualification.setAcceptDeviation(resultMap.get(disqualification.getId()).getAcceptDeviation());
-                disqualification.setRepairQualified(resultMap.get(disqualification.getId()).getRepairQualified());
-                disqualification.setScrap(resultMap.get(disqualification.getId()).getScrap());
-                disqualification.setSalesReturn(resultMap.get(disqualification.getId()).getSalesReturn());
-                disqualification.setSalesReturnLoss(resultMap.get(disqualification.getId()).getSalesReturnLoss());
-                disqualification.setTreatmentOneName(resultMap.get(disqualification.getId()).getTreatmentOneName());
-                disqualification.setTreatmentTwoName(resultMap.get(disqualification.getId()).getTreatmentTwoName());
-                disqualification.setResponsibilityName(resultMap.get(disqualification.getId()).getResponsibilityName());
-                disqualification.setTechnologyName(resultMap.get(disqualification.getId()).getTechnologyName());
+            if (CollectionUtils.isNotEmpty(list)) {
+                for (Disqualification disqualification: disqualificationList) {
+                    disqualification.setUnitResponsibilityOutside(resultMap.get(disqualification.getId()).getUnitResponsibilityOutside());
+                    disqualification.setUnitResponsibilityWithin(resultMap.get(disqualification.getId()).getUnitResponsibilityWithin());
+                    disqualification.setTotalWeight(resultMap.get(disqualification.getId()).getTotalWeight());
+                    disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
+                    disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
+                    disqualification.setDiscoverItem(resultMap.get(disqualification.getId()).getDiscoverItem());
+                    disqualification.setDiscardTime(resultMap.get(disqualification.getId()).getDiscardTime());
+                    disqualification.setReuseTime(resultMap.get(disqualification.getId()).getReuseTime());
+                    disqualification.setAcceptDeviation(resultMap.get(disqualification.getId()).getAcceptDeviation());
+                    disqualification.setRepairQualified(resultMap.get(disqualification.getId()).getRepairQualified());
+                    disqualification.setScrap(resultMap.get(disqualification.getId()).getScrap());
+                    disqualification.setSalesReturn(resultMap.get(disqualification.getId()).getSalesReturn());
+                    disqualification.setSalesReturnLoss(resultMap.get(disqualification.getId()).getSalesReturnLoss());
+                    disqualification.setTreatmentOneName(resultMap.get(disqualification.getId()).getTreatmentOneName());
+                    disqualification.setTreatmentTwoName(resultMap.get(disqualification.getId()).getTreatmentTwoName());
+                    disqualification.setResponsibilityName(resultMap.get(disqualification.getId()).getResponsibilityName());
+                    disqualification.setTechnologyName(resultMap.get(disqualification.getId()).getTechnologyName());
+                }
             }
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
