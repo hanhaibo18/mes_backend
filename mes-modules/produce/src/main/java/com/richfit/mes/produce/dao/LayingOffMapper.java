@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface LayingOffMapper extends BaseMapper<LayingOff> {
 
-    @Select("select * from produce_laying_off_cache where item_id = '${itemId}}' limit 1 ")
+    @Select("select * from produce_laying_off_cache where item_id = '${itemId}' limit 1 ")
     LayingOff queryLayingOffCacheByItemId(@Param("itemId") String tiId);
 }
 

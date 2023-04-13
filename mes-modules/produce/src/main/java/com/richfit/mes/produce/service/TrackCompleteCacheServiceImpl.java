@@ -91,15 +91,25 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
             this.saveBatch(trackCompleteCacheList);
             //保存下料信息
             if (completeDto.getLayingOff() != null) {
+                //先删除该已保存过的
+                QueryWrapper<LayingOffCache> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("item_id", completeDto.getTiId());
+                layingOffCacheService.remove(queryWrapper);
+
                 LayingOffCache layingOffCache = new LayingOffCache();
                 BeanUtils.copyProperties(completeDto.getLayingOff(), layingOffCache);
-                layingOffCacheService.saveOrUpdate(layingOffCache);
+                layingOffCacheService.save(layingOffCache);
             }
             //保存锻造信息
             if (completeDto.getForgControlRecordList() != null) {
+                //现根据item_id删除原有记录
+                QueryWrapper<ForgControlRecordCache> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("item_id", completeDto.getTiId());
+                forgControlRecordCacheService.remove(queryWrapper);
+
                 String jsonString = JSONObject.toJSONString(completeDto.getForgControlRecordList());
                 List<ForgControlRecordCache> forgControlRecordList = JSONArray.parseArray(jsonString, ForgControlRecordCache.class);
-                forgControlRecordCacheService.saveOrUpdateBatch(forgControlRecordList);
+                forgControlRecordCacheService.saveBatch(forgControlRecordList);
             }
         }
         return CommonResult.success(true);

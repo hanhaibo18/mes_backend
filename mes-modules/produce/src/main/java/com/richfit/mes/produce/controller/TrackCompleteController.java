@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -947,8 +948,8 @@ public class TrackCompleteController extends BaseController {
 
     })
     @GetMapping("/queryDetails")
-    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state) {
-        return trackCompleteService.queryDetails(assignId, tiId, state);
+    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state, String classes) {
+        return trackCompleteService.queryDetails(assignId, tiId, state, classes);
     }
 
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
@@ -1039,9 +1040,15 @@ public class TrackCompleteController extends BaseController {
     @ApiImplicitParams({@ApiImplicitParam(name = "forgControlRecordlist", value = "锻造工序控制记录实体", required = true, dataType = "List", paramType = "query"),
             @ApiImplicitParam(name = "itemId", value = "工序ItemId", required = true, dataType = "String", paramType = "query")
     })
-    @PutMapping("/update_forg_control_record/{itemId}")
-    public CommonResult<Boolean> updateForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist, @PathVariable String itemId) {
-        return CommonResult.success(forgControlRecordService.updateBatch(forgControlRecordlist, itemId));
+    @PutMapping("/update_forg_control_record")
+    public CommonResult<Boolean> updateForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist, String itemId) {
+        QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("item_id", itemId);
+        forgControlRecordService.remove(queryWrapper);
+        if (CollectionUtils.isEmpty(forgControlRecordlist)) {
+            return CommonResult.success(true, "删除成功");
+        }
+        return CommonResult.success(forgControlRecordService.saveBatch(forgControlRecordlist));
     }
 
     @ApiOperation(value = "锻造工序控制删除", notes = "锻造工序控制删除")

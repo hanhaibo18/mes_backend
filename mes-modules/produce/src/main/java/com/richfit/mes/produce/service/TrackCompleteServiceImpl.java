@@ -236,11 +236,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                     }
                                     track.setQualityResult(rules.getStateName());
                                 } else {
-                                    realityReportHours = new BigDecimal(0);
+//                                    realityReportHours = new BigDecimal(0);
+                                    realityPrepareEndHours = new BigDecimal(0);
+                                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                     track.setQualityResult("没有质检内容");
                                 }
                             } else {
-                                realityReportHours = new BigDecimal(0);
+//                                realityReportHours = new BigDecimal(0);
+                                realityPrepareEndHours = new BigDecimal(0);
+                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
@@ -429,11 +433,21 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             //记录下料信息
             if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
-                layingOffService.save(completeDto.getLayingOff());
+                //先删除该已保存过的
+                QueryWrapper<LayingOff> queryWrapperLayingOff = new QueryWrapper<>();
+                queryWrapperLayingOff.eq("item_id", completeDto.getTiId());
+                layingOffService.remove(queryWrapperLayingOff);
+
+                layingOffService.saveOrUpdate(completeDto.getLayingOff());
             }
             //记录锻造信息
             if (!CollectionUtils.isEmpty(completeDto.getForgControlRecordList())) {
-                forgControlRecordService.saveBatch(completeDto.getForgControlRecordList());
+                //现根据item_id删除原有记录
+                QueryWrapper<ForgControlRecord> queryWrapperForgControlRecord = new QueryWrapper<>();
+                queryWrapperForgControlRecord.eq("item_id", completeDto.getTiId());
+                forgControlRecordService.remove(queryWrapperForgControlRecord);
+
+                forgControlRecordService.saveOrUpdateBatch(completeDto.getForgControlRecordList());
             }
             //记录报工操作
             actionService.saveAction(ActionUtil.buildAction(
@@ -474,7 +488,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
 
     @Override
-    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state) {
+    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state,String classes) {
         if (StringUtils.isNullOrEmpty(tiId)) {
             return CommonResult.failed("工序Id不能为空");
         }
@@ -483,33 +497,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
         Assign assign = trackAssignMapper.queryAssign(assignId);
-        //‘/’全部派工人员查询
-        if (assign.getUserId().contains("/")) {
-            List<String> branchCodes = Arrays.asList(assign.getSiteId().split(","));
-            List<TenantUserVo> data = systemServiceClient.queryUserByBranchCodes(branchCodes).getData();
-            List<AssignPerson> assignPeople = new ArrayList<>();
-            for (TenantUserVo datum : data) {
-                AssignPerson assignPerson = new AssignPerson();
-                assignPerson.setAssignId(assignId);
-                assignPerson.setUserId(datum.getUserAccount());
-                assignPerson.setUserName(datum.getEmplName());
-                assignPerson.setRatioHours(datum.getRatioHours());
-                assignPeople.add(assignPerson);
-            }
-            assign.setAssignPersons(assignPeople);
-        } else {
-            List<AssignPerson> assignPersons = trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId()));
-            if (assignPersons.size() > 0) {
-                List<String> userAccounts = assignPersons.stream().map(item -> item.getUserId()).collect(Collectors.toList());
-                Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(userAccounts);
-                for (AssignPerson assignPerson : assignPersons) {
-                    TenantUserVo tenantUserVo = userInfoMap.get(assignPerson.getUserId());
-                    assignPerson.setRatioHours(tenantUserVo.getRatioHours());
-                }
-            }
-            assign.setAssignPersons(assignPersons);
+        //给assignPersion赋值
+        if("1".equals(classes) || "2".equals(classes)){
+            jjZpSetAssignPersion(assignId, assign);
+        }else{
+            rgSetAssignPersion(assignId, assign);
         }
-
 
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", tiId);
@@ -539,6 +532,50 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setLayingOff(layingOff);
         queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
         return CommonResult.success(queryWorkingTimeVo);
+    }
+
+
+    //机加装配查询开工人
+    private void jjZpSetAssignPersion(String assignId, Assign assign) {
+        TrackItem item = trackItemService.getById(assign.getTiId());
+        TenantUserVo startDoingUser = systemServiceClient.queryByUserAccount(item.getStartDoingUser()).getData();
+        List<AssignPerson> assignPeople = new ArrayList<>();
+        AssignPerson assignPerson = new AssignPerson();
+        assignPerson.setAssignId(assignId);
+        assignPerson.setUserId(startDoingUser.getUserAccount());
+        assignPerson.setUserName(startDoingUser.getEmplName());
+        assignPerson.setRatioHours(startDoingUser.getRatioHours());
+        assignPeople.add(assignPerson);
+    }
+
+    //热工查询初始报工人员列表
+    private void rgSetAssignPersion(String assignId, Assign assign) {
+        //‘/’全部派工人员查询
+        if (assign.getUserId().contains("/")) {
+            List<String> branchCodes = Arrays.asList(assign.getSiteId().split(","));
+            List<TenantUserVo> data = systemServiceClient.queryUserByBranchCodes(branchCodes).getData();
+            List<AssignPerson> assignPeople = new ArrayList<>();
+            for (TenantUserVo datum : data) {
+                AssignPerson assignPerson = new AssignPerson();
+                assignPerson.setAssignId(assignId);
+                assignPerson.setUserId(datum.getUserAccount());
+                assignPerson.setUserName(datum.getEmplName());
+                assignPerson.setRatioHours(datum.getRatioHours());
+                assignPeople.add(assignPerson);
+            }
+            assign.setAssignPersons(assignPeople);
+        } else {
+            List<AssignPerson> assignPersons = trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId()));
+            if (assignPersons.size() > 0) {
+                List<String> userAccounts = assignPersons.stream().map(item -> item.getUserId()).collect(Collectors.toList());
+                Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(userAccounts);
+                for (AssignPerson assignPerson : assignPersons) {
+                    TenantUserVo tenantUserVo = userInfoMap.get(assignPerson.getUserId());
+                    assignPerson.setRatioHours(tenantUserVo.getRatioHours());
+                }
+            }
+            assign.setAssignPersons(assignPersons);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -936,11 +973,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                     }
                                     track.setQualityResult(rules.getStateName());
                                 } else {
-                                    realityReportHours = new BigDecimal(0);
+//                                    realityReportHours = new BigDecimal(0);
+                                    realityPrepareEndHours = new BigDecimal(0);
+                                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                     track.setQualityResult("没有质检内容");
                                 }
                             } else {
-                                realityReportHours = new BigDecimal(0);
+//                                realityReportHours = new BigDecimal(0);
+                                realityPrepareEndHours = new BigDecimal(0);
+                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
@@ -1121,13 +1162,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
                         sumReportHours = sumReportHours.add(reportHours);
-                        //没有调度审核或者 调度已审核并且给予准结工时进入
-                        if (trackItem.getIsScheduleComplete() == null || trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() != null && trackItem.getIsPrepare() == 1)) {
-                            //累计实际准结工时
-                            sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
-                        } else {
-                            realityPrepareEndHours = new BigDecimal(0);
-                        }
+
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
                             List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
@@ -1142,11 +1177,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                     }
                                     track.setQualityResult(rules.getStateName());
                                 } else {
-                                    realityReportHours = new BigDecimal(0);
+//                                    realityReportHours = new BigDecimal(0);
+                                    realityPrepareEndHours = new BigDecimal(0);
+                                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                     track.setQualityResult("没有质检内容");
                                 }
                             } else {
-                                realityReportHours = new BigDecimal(0);
+//                                realityReportHours = new BigDecimal(0);
+                                realityPrepareEndHours = new BigDecimal(0);
+                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
                         } else if (trackItem.getIsExistQualityCheck() == 0) {
@@ -1154,6 +1193,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             //累计实际额定工时
                             sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                             track.setQualityResult("合格（非质检）");
+                        }
+
+                        //没有调度审核或者 调度已审核并且给予准结工时进入
+                        if (trackItem.getIsScheduleComplete() == null || trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() != null && trackItem.getIsPrepare() == 1)) {
+                            //累计实际准结工时
+                            sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
+                        } else {
+                            realityPrepareEndHours = new BigDecimal(0);
                         }
                         //总工时
                         BigDecimal totalHours = number.multiply(realityReportHours).add(realityPrepareEndHours);
