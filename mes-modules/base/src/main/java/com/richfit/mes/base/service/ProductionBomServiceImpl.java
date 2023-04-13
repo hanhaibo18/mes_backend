@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -370,6 +371,49 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         }
     }
 
+    @Override
+    public CommonResult<ProductionBom> saveProductionBom(ProductionBom productionBom) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        if (productionBom.getBranchCode() == null) {
+            CommonResult.failed("empty BranchCode!");
+        }
+        if (productionBom.getDrawingNo() == null) {
+            CommonResult.failed("图号不能为空！");
+        }
+        QueryWrapper<ProductionBom> productionBomQueryWrapper = new QueryWrapper<>();
+        productionBomQueryWrapper.eq("tenant_id", tenantId)
+                .eq("branch_code", productionBom.getBranchCode())
+                .eq("drawing_no", productionBom.getDrawingNo());
+        if (!CollectionUtils.isEmpty(this.list(productionBomQueryWrapper))) {
+            return CommonResult.failed("该图号已存在！");
+        }
+        QueryWrapper<Product> productQuery = new QueryWrapper<>();
+        DrawingNoUtil.queryEq(productQuery, "drawing_no", productionBom.getDrawingNo());
+        productQuery.eq("material_no", productionBom.getMaterialNo());
+        List<Product> result2 = productService.list(productQuery);
+        if (result2 == null || result2.size() == 0) {
+            return CommonResult.failed("输入的物料编号不存在！");
+        }
+        productionBom.setTenantId(tenantId);
+        this.save(productionBom);
+
+        return CommonResult.success(productionBom, "新增成功");
+    }
+
+    @Override
+    public boolean deletePartBom(String id, String drawingNo, String tenantId, String branchCode) {
+        QueryWrapper<ProjectBom> query = new QueryWrapper<>();
+        DrawingNoUtil.queryEq(query, "drawing_no", drawingNo);
+        query.eq("branch_code", branchCode);
+        query.eq("grade", "L");
+        query.eq("tenant_id", tenantId);
+        int count = projectBomService.count(query);
+        if (count > 0) {
+            throw new GlobalException("该BOM已被发布,删除失败!", ResultCode.FAILED);
+        }
+        return this.removeById(id);
+    }
+
     private ProjectBom projectBomEntity(ProductionBom productionBom) {
         ProjectBom projectBom = new ProjectBom();
         projectBom.setDrawingNo(productionBom.getDrawingNo())
@@ -565,7 +609,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
 
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
-                .in(drawNoList.size()>0,"drawing_no", drawNoList);
+                .in(drawNoList.size() > 0, "drawing_no", drawNoList);
         //本地存在的物料
         List<Product> materials = productService.list(queryWrapper);
         List<String> localInfo = new ArrayList<>(materials.stream().map(item -> item.getDrawingNo().trim() + "&" + item.getMaterialNo().trim()).collect(Collectors.toSet()));
