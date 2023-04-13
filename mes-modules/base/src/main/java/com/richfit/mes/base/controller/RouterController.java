@@ -334,6 +334,32 @@ public class RouterController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "根据ID查询工艺", notes = "根据ID查询工艺")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "routerId", value = "工艺id", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query")
+    })
+    @GetMapping("/getByRouterId")
+    public CommonResult<Router> getByRouterId(String routerId, String branchCode) {
+        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+
+        if (!StringUtils.isNullOrEmpty(routerId)) {
+            DrawingNoUtil.queryEq(queryWrapper, "id", routerId);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("branch_code", branchCode);
+        }
+        queryWrapper.in("is_active", "0,1".split(","));
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("status", "1");
+        List<Router> routers = routerService.list(queryWrapper);
+        if (routers.size() > 0) {
+            return CommonResult.success(routers.get(0), "操作成功！");
+        } else {
+            return CommonResult.success(null, "操作成功！");
+        }
+    }
+
     @ApiOperation(value = "批量图号查询工艺", notes = "批量图号获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "routerNos", value = "批量图号（,隔开）", required = true, dataType = "String", paramType = "query"),
