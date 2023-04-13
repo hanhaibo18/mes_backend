@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -32,6 +33,10 @@ import javax.xml.bind.Unmarshaller;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,8 +93,8 @@ public class ProcessServiceImpl implements ProcessService {
         log.info("MonitorTask size:{}", pdmTasks.getTotalElements());
         try {
             executeMonitorTask(pdmTasks);
-        }catch (Exception e){
-            log.error("ExecuteMonitorTask Exception:{}",e.getMessage());
+        } catch (Exception e) {
+            log.error("ExecuteMonitorTask Exception:{}", e.getMessage());
         }
 
         for (int i = 1; i < pdmTasks.getTotalPages(); i++) {
@@ -99,7 +104,7 @@ public class ProcessServiceImpl implements ProcessService {
                 pdmTasks = pdmTaskRepository.findByStatus("0", pageable);
                 executeMonitorTask(pdmTasks);
             } catch (Exception e) {
-                log.error("ExecuteMonitorTask Exception:{}",e.getMessage());
+                log.error("ExecuteMonitorTask Exception:{}", e.getMessage());
             }
         }
     }
@@ -171,8 +176,8 @@ public class ProcessServiceImpl implements ProcessService {
         log.info("ReqList size:{}", drawingApplys.getTotalElements());
         try {
             getPdmDataFromReqList(drawingApplys);
-        }catch (Exception e){
-            log.error("GetPdmDataFromReqList Exception:{}",e.getMessage());
+        } catch (Exception e) {
+            log.error("GetPdmDataFromReqList Exception:{}", e.getMessage());
         }
 
         for (int i = 1; i < drawingApplys.getTotalPages(); i++) {
@@ -182,7 +187,7 @@ public class ProcessServiceImpl implements ProcessService {
                 drawingApplys = drawingApplyRepository.findByStatus("1", pageable);
                 getPdmDataFromReqList(drawingApplys);
             } catch (Exception e) {
-                log.error("Page {}, getPdmDataFromReqList exception:",i,e.getMessage());
+                log.error("Page {}, getPdmDataFromReqList exception:", i, e.getMessage());
             }
         }
     }
@@ -291,7 +296,7 @@ public class ProcessServiceImpl implements ProcessService {
 
         String xml = convertObjToXML(GetProcessInfo.class, getProcessInfo);
 
-        String getProcessInfoReturn ;
+        String getProcessInfoReturn;
         ProcessInfoResponseXml processInfoResponse;
         //请求pdm或返回值转换对象异常
         try {
@@ -649,4 +654,90 @@ public class ProcessServiceImpl implements ProcessService {
         pdmLogRepository.save(pdmLog);
     }
 
+    private void executeSql(String userName, String password, String url, String code, String time) throws Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://" + url + "/bsj?serverTimezone=UTC&&user=" + userName + "&&password=" + password);
+        Statement stmt = conn.createStatement();
+        List<Object> materialReceiveList = saveMaterialReceive(code, time, stmt);
+//        if (materialReceiveList.size() > 0) {
+//            List<MaterialReceiveDetail> materialReceiveDetailList = saveMaterialReceiveDetail(materialReceiveList, stmt);
+//            materialReceiveDto.setReceived(materialReceiveList);
+//            materialReceiveDto.setDetailList(materialReceiveDetailList);
+//            result = produceServiceClient.materialReceiveSaveBatchList(materialReceiveDto, SecurityConstants.FROM_INNER);
+//        } else {
+//            result.setMessage("没有查询到可接收信息");
+//        }
+//        result.setData(materialReceiveDto);
+        stmt.close();
+        conn.close();
+        return;
+    }
+
+    public List<Object> saveMaterialReceive(String code, String time, Statement stmt) throws Exception {
+        List<Object> materialReceiveList = new ArrayList<>();
+        int total = 0;
+        int pageSize = 1000;
+        String sql = null;
+        String totalSql = null;
+        //todo 需要替换
+        sql = "with al as ( \n" +
+                "select a.OBJ_ID as masterid, a.state as masterstate, c.OBJ_ID as revid, rank() over(partition by a.OBJ_ID order by a.OBJ_ID, c.OBJ_ID desc) ord from T_drawing a\n" +
+                "join TI_drawingMascmp1002 b on a.OBJ_ID = b.roleA_id \n" +
+                "join TI_drawingRev1002 c on b.roleB_id = c.OBJ_ID \n" +
+                "), bl as( \n" +
+                "select masterid, la_revid = case \n" +
+                "when masterstate = '000000000002000000003289' then max(revid) \t\n" +
+                "when masterstate<>'000000000002000000003289' and count(*) >= 2 then(select max(revid) from al newal where newal.masterid = al.masterid and ord = 2 group by newal.masterid)\n" +
+                "else 0 \n" +
+                "end \n" +
+                "from al \n" +
+                "group by masterid, masterstate )\n" +
+                "select d.name,d.filetype,itr.ITERATION_NO,f.name,f.FILE_NAME from T_drawing d\n" +
+                "join TI_drawingMascmp1002 dma on d.OBJ_ID = dma.roleA_id and d.CLASS_ID = dma.ROLEA_CLASS_ID\n" +
+                "join TI_drawingRev1002 rev on rev.OBJ_ID = dma.roleB_id and rev.CLASS_ID = dma.ROLEB_CLASS_ID\n" +
+                "join bl on d.obj_id=bl.masterid and rev.obj_id=bl.la_revid\n" +
+                "join TI_drawingRevcmp3220 dr on rev.OBJ_ID = dr.roleA_id and rev.CLASS_ID = dr.ROLEA_CLASS_ID\n" +
+                "join TI_drawingItr1002 itr on itr.OBJ_ID = dr.roleB_id and itr.CLASS_ID = dr.ROLEB_CLASS_ID\n" +
+                "join T_drawingItrfile dif on itr.OBJ_ID = dif.roleA_id and itr.CLASS_ID = dif.ROLEA_CLASS_ID\n" +
+                "join T_File f on f.OBJ_ID = dif.roleB_id and f.CLASS_ID = dif.ROLEB_CLASS_ID\n" +
+                "where d.name = '02.exb'";
+
+//        if (StringUtils.isEmpty(time)) {
+//            //查所有
+//            totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "'";
+//        } else {
+//            //查上次最后一条时间之后所有
+//            totalSql = "select count(APLY_NUM) as total from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "'";
+//        }
+        ResultSet totalRs = stmt.executeQuery(totalSql);
+//        while (totalRs.next()) {
+//            total = totalRs.getInt("total");
+//        }
+//        for (int page = 0; total > page * pageSize; page++) {
+//            if (StringUtils.isEmpty(time)) {
+//                //查所有
+//                sql = "select * from v_mes_out_headers where work_code ='" + code + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
+//            } else {
+//                //查上次最后一条时间之后所有
+//                sql = "select * from v_mes_out_headers where work_code ='" + code + "' and CREATE_TIME >" + "'" + time + "' order by CREATE_TIME desc limit " + page * pageSize + ",1000";
+//            }
+        ResultSet rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            //todo 获取数据库字段
+            String outNum = rs.getString("OUT_NUM");
+            String aplyNum = rs.getString("APLY_NUM");
+            String createTime = rs.getString("CREATE_TIME");
+            //todo 存入集合
+//                MaterialReceive materialReceive = new MaterialReceive();
+//                materialReceive.setDeliveryNo(outNum);
+//                materialReceive.setAplyNum(aplyNum);
+//                materialReceive.setOutboundDate(createTime);
+//                materialReceive.setState("0");
+//                materialReceive.setErpCode(code);
+//                materialReceiveList.add(materialReceive);
+        }
+        rs.close();
+        return materialReceiveList;
+    }
 }
+
