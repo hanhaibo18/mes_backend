@@ -50,6 +50,12 @@ public interface BaseServiceClient {
                                               @RequestParam("branchCode") String branchCode
     );
 
+
+    @GetMapping(value = "/api/base/router/getByRouterId")
+    public CommonResult<Router> getByRouterId(@RequestParam("routerId") String routerId,
+                                              @RequestParam("branchCode") String branchCode
+    );
+
     @GetMapping(value = "/api/base/router/getByRouterNos")
     public CommonResult<List<Router>> getByRouterNos(@RequestParam("routerNos") String routerNos,
                                                      @RequestParam("branchCode") String branchCode

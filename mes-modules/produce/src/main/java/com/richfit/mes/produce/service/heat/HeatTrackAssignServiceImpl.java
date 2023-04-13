@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service.heat;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -11,6 +12,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.OperationAssign;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
@@ -20,6 +22,7 @@ import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +59,8 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
     private TrackHeadFlowService trackHeadFlowService;
     @Autowired
     private TrackAssignService trackAssignService;
+    @Resource
+    public WmsServiceClient wmsServiceClient;
 
     @Override
     public IPage<Assign> queryWhetherProduce(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException {
@@ -133,9 +138,9 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
      * @return
      * @throws ParseException
      */
-//    @Override
-    public IPage<Assign> queryWhetherProduceHot(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException {
-        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+    @Override
+    public IPage<AssignHot> queryWhetherProduceHot(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException {
+        QueryWrapper<AssignHot> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
             int tempWorkZ = Integer.parseInt(dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
             int tempWorkQ = Integer.parseInt(dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
@@ -157,6 +162,14 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
             queryWrapper.apply("UNIX_TIMESTAMP(u.assign_time) >= UNIX_TIMESTAMP('" + dispatchingDto.getStartTime() + " ')");
         }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getOptName())) {
+            //工序名称
+            queryWrapper.eq("u.opt_name", dispatchingDto.getOptName());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getProductName())) {
+            //产品名称
+            queryWrapper.eq("u.product_name", dispatchingDto.getProductName());
+        }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
             Calendar calendar = new GregorianCalendar();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -174,29 +187,43 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq(StrUtil.isNotBlank(dispatchingDto.getClasses()), "u.classes", dispatchingDto.getClasses());
         if (IsProduce) {
-            queryWrapper.isNotNull("u.precharge_furnace_id");
+            queryWrapper.isNotNull("u.normalizing_furnace_id");
         } else {
-            queryWrapper.isNull("u.precharge_furnace_id");
+            queryWrapper.isNull("u.normalizing_furnace_id");
         }
+
+	//`t2`.`dehydro_furnace_id` AS `dehydro_furnace_id`,
         queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',u.site_id)");
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
-        IPage<Assign> queryPage = trackAssignMapper.queryPageAssignTrackStore(new Page(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
+
+        //排序工具
+        OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
+        IPage<AssignHot> queryPage = trackAssignMapper.queryPageAssignTrackStoreHot(new Page(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
         if (null != queryPage.getRecords()) {
-            for (Assign assign : queryPage.getRecords()) {
-                TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
-                TrackItem trackItem = trackItemService.getById(assign.getTiId());
-                if (!StringUtils.isNullOrEmpty(trackHead.getRouterId())) {
-                    assign.setRouterId(trackHead.getRouterId());
+            for (AssignHot assign : queryPage.getRecords()) {
+//                TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
+//                TrackItem trackItem = trackItemService.getById(assign.getTiId());
+//                if (!StringUtils.isNullOrEmpty(trackHead.getRouterId())) {
+//                    assign.setRouterId(trackHead.getRouterId());
+//                }
+//                assign.setOptId(trackItem.getOptId());
+//                assign.setWeight(trackHead.getWeight());
+//                assign.setWorkNo(trackHead.getWorkNo());
+//                assign.setProductName(trackHead.getProductName());
+//                assign.setTotalQuantity(trackItem.getNumber());
+//                assign.setDispatchingNumber(trackItem.getAssignableQty());
+//                assign.setWorkPlanNo(trackHead.getWorkPlanNo());
+                //库存数量
+                Integer count = wmsServiceClient.queryMaterialCount(assign.getErpProductCode()).getData();
+                assign.setStoreNumber(count);
+                Router router = baseServiceClient.getByRouterId(assign.getRouterId(), dispatchingDto.getBranchCode()).getData();
+
+                if (!ObjectUtil.isEmpty(router)){
+                    //下料规格
+                    assign.setBlankSpecifi(router.getBlankSpecifi());
                 }
-                assign.setOptId(trackItem.getOptId());
-                assign.setWeight(trackHead.getWeight());
-                assign.setWorkNo(trackHead.getWorkNo());
-                assign.setProductName(trackHead.getProductName());
-                assign.setTotalQuantity(trackItem.getNumber());
-                assign.setDispatchingNumber(trackItem.getAssignableQty());
-                assign.setWorkPlanNo(trackHead.getWorkPlanNo());
             }
         }
         return queryPage;
