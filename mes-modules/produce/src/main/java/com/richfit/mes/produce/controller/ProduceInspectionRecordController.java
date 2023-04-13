@@ -221,7 +221,7 @@ public class ProduceInspectionRecordController extends BaseController {
         if (!StringUtils.isEmpty(itemId)) {
             QueryWrapper<InspectionPower> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("item_id", itemId);
-            List<InspectionPower> list = inspectionPowerService.list();
+            List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
             List<InspectionPower> isDoingList = list.stream().filter(item -> "1".equals(item.getIsDoing())).collect(Collectors.toList());
             if (isDoingList.size() > 0) {
                 return CommonResult.failed("关联跟单工序已经开工，不能删除委托单");
