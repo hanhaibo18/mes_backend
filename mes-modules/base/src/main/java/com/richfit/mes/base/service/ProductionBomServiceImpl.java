@@ -400,6 +400,20 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         return CommonResult.success(productionBom, "新增成功");
     }
 
+    @Override
+    public boolean deletePartBom(String id, String drawingNo, String tenantId, String branchCode) {
+        QueryWrapper<ProjectBom> query = new QueryWrapper<>();
+        DrawingNoUtil.queryEq(query, "drawing_no", drawingNo);
+        query.eq("branch_code", branchCode);
+        query.eq("grade", "L");
+        query.eq("tenant_id", tenantId);
+        int count = projectBomService.count(query);
+        if (count > 0) {
+            throw new GlobalException("该BOM已被发布,删除失败!", ResultCode.FAILED);
+        }
+        return this.removeById(id);
+    }
+
     private ProjectBom projectBomEntity(ProductionBom productionBom) {
         ProjectBom projectBom = new ProjectBom();
         projectBom.setDrawingNo(productionBom.getDrawingNo())

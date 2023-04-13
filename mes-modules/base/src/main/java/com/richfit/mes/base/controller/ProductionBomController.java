@@ -122,6 +122,17 @@ public class ProductionBomController extends BaseController {
         }
     }
 
+    @DeleteMapping("/deletePartBom")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "drawingNo", value = "图号", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
+    })
+    @ApiOperation(value = "删除单条零件BOM")
+    public CommonResult<Boolean> deletePartBom(String id, String drawingNo, String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        return CommonResult.success(productionBomService.deletePartBom(id, drawingNo, tenantId, branchCode));
+    }
+
 
     @ApiOperation(value = "发布", notes = "发布")
     @Deprecated

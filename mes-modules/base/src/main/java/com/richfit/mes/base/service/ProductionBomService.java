@@ -119,4 +119,6 @@ public interface ProductionBomService extends IService<ProductionBom> {
     void exportExcelERP(String id, HttpServletResponse rsp);
 
     CommonResult<ProductionBom> saveProductionBom(ProductionBom productionBom);
+
+    boolean deletePartBom(String id, String drawingNo, String tenantId, String branchCode);
 }
