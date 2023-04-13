@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -18,6 +19,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.OperationAssign;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.RouterOptAssign;
 import com.richfit.mes.common.model.base.Sequence;
@@ -610,7 +612,7 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "根据图号和工序name查询工艺工序派工", notes = "根据图号和工序name查询工艺工序派工")
     @GetMapping("/router/opt/assign/get")
-    public CommonResult<Object> assignGet(String routerNo,String optName, String branchCode) {
+    public CommonResult<RouterOptAssign> assignGet(String routerNo,String optName, String branchCode) {
         QueryWrapper<RouterOptAssign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("opt_name", optName);
         queryWrapper.eq("branch_code", branchCode);
@@ -621,7 +623,13 @@ public class RouterController extends BaseController {
         RouterOptAssign one = routerOptAssignService.getOne(queryWrapper);
         //没有自动派工信息返回工序定义中的自动派工信息
         if(ObjectUtil.isEmpty(one)){
-            return CommonResult.success(operationAssignService.getOperatinoByParam(optName,branchCode), "操作成功！");
+            OperationAssign operatinoAssign = operationAssignService.getOperatinoByParam(optName, branchCode);
+            //将工序定义的自动派工数据插入到工艺工序的自动派工配置里
+            RouterOptAssign routerOptAssign = new RouterOptAssign();
+            BeanUtil.copyProperties(operatinoAssign,routerOptAssign,new String[]{"id","createTime","modifyTime","modifyBy"});
+            routerOptAssign.setRouterNo(routerNo);
+            routerOptAssignService.save(routerOptAssign);
+            return CommonResult.success(routerOptAssign, "操作成功！");
         }else{
             ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
             if (!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())) {
@@ -641,7 +649,6 @@ public class RouterController extends BaseController {
     @ApiImplicitParam(name = "assign", value = "工艺工序派工", required = true, dataType = "RouterOptAssign", paramType = "body")
     @PostMapping("/router/opt/save")
     public CommonResult<Boolean> assignSave(@RequestBody RouterOptAssign assign) {
-        //处理派工人员信息  机加userid和username前端拼接好了，所有可以直接用  热工前端没拼接，所以后端得处理 从assignPerson里边取值
         //热处理派工派到班组  所以没有人员 （assign.getAssignPersons()为空）
         if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
             StringBuilder userId = new StringBuilder();
@@ -655,8 +662,9 @@ public class RouterController extends BaseController {
                 userName.append(assignPerson.getUserName());
             }
             assign.setUserId(String.valueOf(userId));
-            assign.setSiteName(String.valueOf(userName));
+            assign.setUserName(String.valueOf(userName));
         }
+        assign.setSiteId(assign.getSiteId(assign.getBranchCode()));
         assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(routerOptAssignService.save(assign), "操作成功！");
     }
@@ -665,23 +673,19 @@ public class RouterController extends BaseController {
     @ApiImplicitParam(name = "assign", value = "工艺工序派工", required = true, dataType = "RouterOptAssign", paramType = "body")
     @PutMapping("router/opt/update")
     public CommonResult<Boolean> assignUpdate(@RequestBody RouterOptAssign assign) {
-        //1、处理派工人员信息  机加userid和username前端拼接好了，所以可以直接用
-        //2、热工前端没拼接，所以后端得处理 从assignPerson里边取值
-        //3、热处理车间分配到车间  不涉及人员
-        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
-            StringBuilder userId = new StringBuilder();
-            StringBuilder userName = new StringBuilder();
-            for (AssignPerson assignPerson : assign.getAssignPersons()) {
-                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
-                    userId.append(",");
-                    userName.append(",");
-                }
-                userId.append(assignPerson.getUserId());
-                userName.append(assignPerson.getUserName());
+        StringBuilder userId = new StringBuilder();
+        StringBuilder userName = new StringBuilder();
+        for (AssignPerson assignPerson : assign.getAssignPersons()) {
+            if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
+                userId.append(",");
+                userName.append(",");
             }
-            assign.setUserId(String.valueOf(userId));
-            assign.setSiteName(String.valueOf(userName));
+            userId.append(assignPerson.getUserId());
+            userName.append(assignPerson.getUserName());
         }
+        assign.setUserId(String.valueOf(userId));
+        assign.setUserName(String.valueOf(userName));
+        assign.setSiteId(assign.getSiteId(assign.getBranchCode()));
         return CommonResult.success(routerOptAssignService.updateById(assign), "操作成功！");
     }
 
