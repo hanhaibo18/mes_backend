@@ -62,6 +62,7 @@ public class ProductionBomController extends BaseController {
     private ProductService productService;
 
     @ApiOperation(value = "新增产品Bom", notes = "新增产品Bom")
+    @Deprecated
     @ApiImplicitParam(name = "productionBom", value = "产品Bom", required = true, dataType = "Branch", paramType = "path")
     @PostMapping("/production_bom")
     public CommonResult<ProductionBom> addProduct(@RequestBody ProductionBom productionBom) {
@@ -99,6 +100,37 @@ public class ProductionBomController extends BaseController {
                 return CommonResult.failed(BOM_FAILED_MESSAGE);
             }
         }
+    }
+
+    @ApiOperation(value = "新增产品Bom", notes = "新增产品Bom")
+    @ApiImplicitParam(name = "productionBom", value = "产品Bom", required = true, dataType = "ProductionBom", paramType = "path")
+    @PostMapping("/save_production_bom")
+    public CommonResult<ProductionBom> saveProductBom(@RequestBody ProductionBom productionBom) {
+        return productionBomService.saveProductionBom(productionBom);
+    }
+
+    @ApiOperation(value = "修改产品Bom", notes = "修改产品Bom")
+    @ApiImplicitParam(name = "productionBom", value = "产品Bom", required = true, dataType = "ProductionBom", paramType = "path")
+    @PutMapping("/update_production_bom")
+    public CommonResult<ProductionBom> updateProductBom(@RequestBody ProductionBom productionBom) {
+        productionBom.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        boolean bool = productionBomService.updateById(productionBom);
+        if (bool) {
+            return CommonResult.success(productionBom, BOM_SUCCESS_MESSAGE);
+        } else {
+            return CommonResult.failed(BOM_FAILED_MESSAGE);
+        }
+    }
+
+    @DeleteMapping("/deletePartBom")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "drawingNo", value = "图号", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "branchCode", value = "公司", required = true, paramType = "query", dataType = "string")
+    })
+    @ApiOperation(value = "删除单条零件BOM")
+    public CommonResult<Boolean> deletePartBom(String id, String drawingNo, String branchCode) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        return CommonResult.success(productionBomService.deletePartBom(id, drawingNo, tenantId, branchCode));
     }
 
 

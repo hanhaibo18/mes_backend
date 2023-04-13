@@ -681,7 +681,6 @@ public class TrackCompleteController extends BaseController {
         if (!StringUtils.isNullOrEmpty(tiId)) {
             queryWrapper.eq("ti_id", tiId);
         }
-        queryWrapper.gt("completed_qty", 0);
         queryWrapper.orderByAsc("modify_time");
         List<TrackComplete> result = trackCompleteMapper.queryList(queryWrapper);
         return CommonResult.success(result, "操作成功！");
@@ -1042,13 +1041,7 @@ public class TrackCompleteController extends BaseController {
     })
     @PutMapping("/update_forg_control_record")
     public CommonResult<Boolean> updateForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist, String itemId) {
-        QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id", itemId);
-        forgControlRecordService.remove(queryWrapper);
-        if (CollectionUtils.isEmpty(forgControlRecordlist)) {
-            return CommonResult.success(true, "删除成功");
-        }
-        return CommonResult.success(forgControlRecordService.saveBatch(forgControlRecordlist));
+        return forgControlRecordService.updateOrDeleteBatch(forgControlRecordlist, itemId);
     }
 
     @ApiOperation(value = "锻造工序控制删除", notes = "锻造工序控制删除")

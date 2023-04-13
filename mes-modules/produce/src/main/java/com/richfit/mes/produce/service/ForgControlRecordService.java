@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ForgControlRecord;
 
 import java.util.List;
@@ -17,5 +18,7 @@ public interface ForgControlRecordService extends IService<ForgControlRecord> {
     Boolean updateBatch(List<ForgControlRecord> forgControlRecordlist, String itemId);
 
     List<ForgControlRecord> queryForgControlRecordCacheByItemId(String tiId);
+
+    CommonResult updateOrDeleteBatch(List<ForgControlRecord> forgControlRecordlist, String itemId);
 }
 

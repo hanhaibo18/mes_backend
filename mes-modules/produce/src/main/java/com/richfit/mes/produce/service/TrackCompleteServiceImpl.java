@@ -431,30 +431,37 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
                 trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
             }
-            //记录下料信息
-            if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
-                //先删除该已保存过的
-                QueryWrapper<LayingOff> queryWrapperLayingOff = new QueryWrapper<>();
-                queryWrapperLayingOff.eq("item_id", completeDto.getTiId());
-                layingOffService.remove(queryWrapperLayingOff);
 
-                layingOffService.saveOrUpdate(completeDto.getLayingOff());
-            }
-            //记录锻造信息
-            if (!CollectionUtils.isEmpty(completeDto.getForgControlRecordList())) {
-                //现根据item_id删除原有记录
-                QueryWrapper<ForgControlRecord> queryWrapperForgControlRecord = new QueryWrapper<>();
-                queryWrapperForgControlRecord.eq("item_id", completeDto.getTiId());
-                forgControlRecordService.remove(queryWrapperForgControlRecord);
+            //保存下料信息和锻造信息
+            saveLayingOffAndForgControlRecord(completeDto);
 
-                forgControlRecordService.saveOrUpdateBatch(completeDto.getForgControlRecordList());
-            }
             //记录报工操作
             actionService.saveAction(ActionUtil.buildAction(
                     trackItem.getBranchCode(), "4", "2", "跟单报工，跟单号：" + completeDto.getTrackNo(),
                     OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(true);
+    }
+
+    private void saveLayingOffAndForgControlRecord(CompleteDto completeDto) {
+        //记录下料信息
+        if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
+            //先删除该已保存过的
+            QueryWrapper<LayingOff> queryWrapperLayingOff = new QueryWrapper<>();
+            queryWrapperLayingOff.eq("item_id", completeDto.getTiId());
+            layingOffService.remove(queryWrapperLayingOff);
+
+            layingOffService.saveOrUpdate(completeDto.getLayingOff());
+        }
+        //记录锻造信息
+        if (!CollectionUtils.isEmpty(completeDto.getForgControlRecordList())) {
+            //现根据item_id删除原有记录
+            QueryWrapper<ForgControlRecord> queryWrapperForgControlRecord = new QueryWrapper<>();
+            queryWrapperForgControlRecord.eq("item_id", completeDto.getTiId());
+            forgControlRecordService.remove(queryWrapperForgControlRecord);
+
+            forgControlRecordService.saveOrUpdateBatch(completeDto.getForgControlRecordList());
+        }
     }
 
     /**
@@ -488,7 +495,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
 
     @Override
-    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state,String classes) {
+    public CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state, String classes) {
         if (StringUtils.isNullOrEmpty(tiId)) {
             return CommonResult.failed("工序Id不能为空");
         }
@@ -498,9 +505,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
         Assign assign = trackAssignMapper.queryAssign(assignId);
         //给assignPersion赋值
-        if("1".equals(classes) || "2".equals(classes)){
+        if ("1".equals(classes) || "2".equals(classes)) {
             jjZpSetAssignPersion(assignId, assign);
-        }else{
+        } else {
             rgSetAssignPersion(assignId, assign);
         }
 
