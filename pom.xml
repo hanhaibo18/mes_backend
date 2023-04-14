@@ -22,7 +22,6 @@
         <module>mes-auth</module>
         <module>mes-monitor</module>
         <module>mes-integration</module>
-        <module>pdm-bs</module>
     </modules>
 
     <properties>

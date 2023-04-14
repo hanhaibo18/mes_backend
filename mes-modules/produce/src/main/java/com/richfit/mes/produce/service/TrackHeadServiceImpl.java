@@ -1824,17 +1824,18 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
         if (trackFlowList.size() > 1) {
             String productsNoStr = "";
-            String productsNoTemp = "0";
+//            String productsNoTemp = "0";
             for (TrackFlow trackFlow : trackFlowList) {
                 String pn = trackFlow.getProductNo().replaceFirst(trackHeadPublicDto.getDrawingNo() + " ", "");
-                String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
-                if (pn.equals(pnOld)) {
-                    productsNoStr = productsNoStr.replaceAll("[-]" + productsNoTemp, "");
-                    productsNoStr += "-" + pn;
-                } else {
-                    productsNoStr += "," + pn;
-                }
-                productsNoTemp = pn;
+//                String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
+//                if (pn.equals(pnOld)) {
+//                    productsNoStr = productsNoStr.replaceAll("[-]" + productsNoTemp, "");
+//                    productsNoStr += "-" + pn;
+//                } else {
+//                    productsNoStr += "," + pn;
+//                }
+                productsNoStr += "," + pn;
+//                productsNoTemp = pn;
             }
             return productsNoStr.replaceFirst("[,]", "");
         }

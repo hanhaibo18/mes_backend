@@ -46,6 +46,8 @@ public class ProduceInspectionRecordController extends BaseController {
 
     private final static int IS_STATUS = 1;
 
+    private final static int START_DOING_STATUS = 2;
+
     @Autowired
     private ProduceInspectionRecordService produceInspectionRecordService;
     @Autowired
@@ -214,7 +216,7 @@ public class ProduceInspectionRecordController extends BaseController {
     public CommonResult<Boolean> powerOrder(@PathVariable String id) throws Exception {
         InspectionPower inspectionPower = inspectionPowerService.getById(id);
         if (inspectionPower.getStatus() == IS_STATUS) {
-            return CommonResult.failed("该委托单已经委托，不能删除");
+            return CommonResult.failed("该委托单已经开工，不能删除");
         }
         //同工序有开工的委托 不能删除
         String itemId = inspectionPower.getItemId();
@@ -224,7 +226,7 @@ public class ProduceInspectionRecordController extends BaseController {
             List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
             List<InspectionPower> isDoingList = list.stream().filter(item -> "1".equals(item.getIsDoing())).collect(Collectors.toList());
             if (isDoingList.size() > 0) {
-                return CommonResult.failed("关联跟单工序已经开工，不能删除委托单");
+                return CommonResult.failed("同工序有开工的委托，不能删除委托单");
             }
         }
 
