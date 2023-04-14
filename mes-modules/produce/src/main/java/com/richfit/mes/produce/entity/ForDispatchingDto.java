@@ -40,6 +40,10 @@ public class ForDispatchingDto extends QueryPageDto {
 
     @ApiModelProperty(value = "排序字段", dataType = "String")
     private String orderCol;
-    @ApiModelProperty(value = "排序", dataType = "String")
+    @ApiModelProperty(value = "排序方式   asc 升序 ,  desc  降序", dataType = "String")
     private String order;
+    @ApiModelProperty(value = "工序名称", dataType = "String")
+    private String optName;
+    @ApiModelProperty(value = "产品名称", dataType = "String")
+    private String productName;
 }

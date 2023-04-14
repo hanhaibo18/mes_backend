@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.AssignHot;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.QueryProcessVo;
@@ -43,6 +44,8 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     @Select("select u.* from v_produce_assign_furnace u ${ew.customSqlSegment}")
     IPage<Assign> queryPageAssignTrackStore(Page page, @Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 
+    @Select("select u.* from v_produce_assign_furnace_hot u ${ew.customSqlSegment}")
+    IPage<AssignHot> queryPageAssignTrackStoreHot(Page page, @Param(Constants.WRAPPER) Wrapper<AssignHot> wrapper);
     @Select("select u.* from v_produce_assign_furnace u ${ew.customSqlSegment}")
     List<Assign> queryListAssignTrackStore(@Param(Constants.WRAPPER) Wrapper<Assign> wrapper);
 

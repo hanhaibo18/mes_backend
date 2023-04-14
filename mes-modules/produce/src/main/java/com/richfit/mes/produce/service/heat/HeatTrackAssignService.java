@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service.heat;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.AssignHot;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 
 import java.text.ParseException;
@@ -23,6 +24,8 @@ public interface HeatTrackAssignService extends IService<Assign> {
      **/
     IPage<Assign> queryWhetherProduce(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException;
 
+
+    IPage<AssignHot> queryWhetherProduceHot(ForDispatchingDto dispatchingDto, boolean IsProduce) throws ParseException;
 
     /**
      * 功能描述:跟单派工

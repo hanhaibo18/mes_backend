@@ -54,7 +54,9 @@ public class ProduceRequestNoteController extends BaseController {
             queryWrapper.like("request_note_number", requestNoteNumber);
         }
         if (!StringUtils.isNullOrEmpty(trackNo)) {
-            queryWrapper.like("track_head_no", trackNo);
+            trackNo = trackNo.replaceAll(" ", "");
+            queryWrapper.inSql("track_head_id", "select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
+
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
