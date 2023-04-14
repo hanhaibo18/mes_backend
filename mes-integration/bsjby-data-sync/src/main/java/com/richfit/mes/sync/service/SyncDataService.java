@@ -65,6 +65,7 @@ public class SyncDataService {
                     //4 更新新路径字段
                     Map updateMap = getDataMap(s, data, attachment, data.getRawFilePath());
                     dataMapper.batchUpdateAttachmentId(updateMap);
+                    log.info("file trans success [{}]", file.getAbsolutePath());
                 } else {
                     log.error("file not exists [{}]", file.getAbsolutePath());
                 }
