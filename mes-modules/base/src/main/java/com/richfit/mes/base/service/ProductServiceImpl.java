@@ -21,6 +21,7 @@ import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.model.wms.MaterialBasis;
@@ -327,13 +328,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         List<DataDictionaryParam> dataDictionaryParams = systemServiceClient.getDataDictionaryParamByBranchCode(branchCode).getData();
         //按条件过滤
         if (materialNo != null) {
-            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getMaterialNo(), materialNo)).collect(Collectors.toList());
+            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> x.getMaterialNo().contains(DrawingNoUtil.drawingNo(materialNo))).collect(Collectors.toList());
         }
         if (materialName != null) {
-            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getMaterialName(), materialName)).collect(Collectors.toList());
+            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> x.getMaterialName().contains(DrawingNoUtil.drawingNo(materialName))).collect(Collectors.toList());
         }
         if (texture != null) {
-            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> Objects.equals(x.getTexture(), texture)).collect(Collectors.toList());
+            dataDictionaryParams = dataDictionaryParams.stream().filter(x -> x.getTexture().contains(DrawingNoUtil.drawingNo(texture))).collect(Collectors.toList());
         }
         Page<InventoryReturn> resultPage = new Page<>();
         if (CollectionUtils.isEmpty(dataDictionaryParams)) {
@@ -352,7 +353,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             return resultPage;
         }
         if (invType != null) {
-            inventoryQueryList = inventoryQueryList.stream().filter(x -> Objects.equals(x.getInvType(), invType)).collect(Collectors.toList());
+            inventoryQueryList = inventoryQueryList.stream().filter(x -> x.getInvType().contains(DrawingNoUtil.drawingNo(invType.toString()))).collect(Collectors.toList());
         }
         for (InventoryReturn inventoryReturn : inventoryQueryList) {
             inventoryReturn.setMaterialName(dictionaryParamMap.get(inventoryReturn.getMaterialNum()).getMaterialName());
