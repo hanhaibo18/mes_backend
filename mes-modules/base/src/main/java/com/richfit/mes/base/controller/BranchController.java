@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.entity.TreeVo;
@@ -13,6 +14,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -266,12 +268,15 @@ public class BranchController extends BaseController {
      */
     @ApiOperation(value = "查询登录用的车间列表", notes = "查询登录用的车间列表")
     @GetMapping("/login_branch_list")
-    public CommonResult<List<Branch>> loginBranchList() {
+    public CommonResult<List<Branch>> loginBranchList(@ApiParam(value = "tenantId") @RequestParam(required = false) String tenantId) {
         List<Branch> branchList = new ArrayList<>();
         TenantUserDetails tenantUserDetails = SecurityUtils.getCurrentUser();
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("branch_type", "0");
-        queryWrapper.eq("tenant_id", tenantUserDetails.getTenantId());
+        if (StrUtil.isBlank(tenantId)) {
+            tenantId = tenantUserDetails.getTenantId();
+        }
+        queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.ne("main_branch_code", "");
         List<Branch> result = branchService.list(queryWrapper);
         //当前机构的代码等于顶级机构的代码时返回所有的工厂列表
