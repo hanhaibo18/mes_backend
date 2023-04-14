@@ -8,6 +8,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.sys.DataDictionary;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.sys.service.DataDictionaryParamService;
 import com.richfit.mes.sys.service.DataDictionaryService;
@@ -96,16 +97,16 @@ public class DataDictionaryController extends BaseController {
         QueryWrapper<DataDictionaryParam> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("dictionary_id", id);
         if (null != materialNo) {
-            queryWrapper.eq("material_no", materialNo);
+            DrawingNoUtil.queryLike(queryWrapper, "material_no", materialNo);
         }
         if (null != materialName) {
-            queryWrapper.eq("material_name", materialName);
+            DrawingNoUtil.queryLike(queryWrapper, "material_name", materialName);
         }
         if (null != texture) {
-            queryWrapper.eq("texture", texture);
+            DrawingNoUtil.queryLike(queryWrapper, "texture", texture);
         }
         if (null != specification) {
-            queryWrapper.eq("specifications", specification);
+            DrawingNoUtil.queryLike(queryWrapper, "specifications", specification);
         }
         queryWrapper.orderByAsc("order_num");
         return CommonResult.success(dataDictionaryParamService.page(new Page<DataDictionaryParam>(page, limit), queryWrapper));

@@ -392,7 +392,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         productQuery.eq("material_no", productionBom.getMaterialNo());
         List<Product> result2 = productService.list(productQuery);
         if (result2 == null || result2.size() == 0) {
-            return CommonResult.failed("输入的物料编号不存在！");
+            return CommonResult.failed("物料号与图号不匹配！");
         }
         productionBom.setTenantId(tenantId);
         this.save(productionBom);
