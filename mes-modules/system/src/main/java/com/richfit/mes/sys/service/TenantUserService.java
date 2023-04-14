@@ -180,15 +180,23 @@ public interface TenantUserService {
      **/
     List<TenantUserVo> queryQualityInspectionDepartment(String classes, String branchCode, String tenantId);
 
+
+    /**
+     * 功能描述: 根据车间编码查询车间下的质检人员
+     * @param branchCode
+     * @return
+     */
+    public List<TenantUserVo> queryQualityInspectionDepartmentByBranchCode(String branchCode);
+
     /**
      * 功能描述:查询所有本公司和质检租户质检人员
      *
-     * @param classes
+     * @param branchCode
      * @Author: xinYu.hou
      * @Date: 2022/10/21 10:00
      * @return: List<TenantUserVo>
      **/
-    List<TenantUserVo> queryAllQualityUser(String classes);
+    List<TenantUserVo> queryAllQualityUser(String branchCode);
 
     /**
      * 功能描述:查询质量检测部门质检人员

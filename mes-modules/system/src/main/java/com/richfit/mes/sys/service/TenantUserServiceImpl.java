@@ -383,6 +383,13 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         return new ArrayList<>();
     }
 
+    /**
+     * 这个方法前端没用 角色配置以改变（慎用）
+     * @param classes
+     * @param branchCode
+     * @param tenantId
+     * @return
+     */
     @Override
     public List<TenantUserVo> queryQualityInspectionDepartment(String classes, String branchCode, String tenantId) {
         //组装角色标识 1机加  2装配 3热处理 4钢结构
@@ -423,10 +430,30 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
-    public List<TenantUserVo> queryAllQualityUser(String classes) {
-        Tenant tenant = tenantService.getById(SecurityUtils.getCurrentUser().getTenantId());
+    public List<TenantUserVo> queryQualityInspectionDepartmentByBranchCode(String branchCode) {
+        //组装角色标识 根据组织机构区分
+        String role = branchCode + "_JMAQ_ZJ";
+        if(!StringUtils.isEmpty(role)){
+            QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+            //判断如果codeList 为空会报错
+            queryWrapper.eq("role_code", role);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            List<Role> roleList = roleService.list(queryWrapper);
+            List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(roleIdList)) {
+                QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
+                queryUser.in("role_id", roleIdList)
+                        .eq("status",1);
+                return tenantUserMapper.queryByCondition(queryUser);
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<TenantUserVo> queryAllQualityUser(String branchCode) {
         //获取当前登录人车间的所有质检人员
-        List<TenantUserVo> userList = this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId());
+        List<TenantUserVo> userList = this.queryQualityInspectionDepartmentByBranchCode(branchCode);
 //        List<TenantUserVo> userList = new ArrayList<>();
         //获取质检公司
        /* List<ItemParam> item = null;
