@@ -186,6 +186,17 @@ public class Disqualification extends BaseEntity<Disqualification> {
     @ApiModelProperty(value = "检验人员", dataType = "List<DisqualificationUserOpinion>")
     private List<TenantUserVo> userList;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "租户公司")
+    private String discoverTenant;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "不合格姓名")
+    private String disqualificationName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "发现车间")
+    private String discoverBranch;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "责任单位内")
@@ -198,6 +209,10 @@ public class Disqualification extends BaseEntity<Disqualification> {
     @TableField(exist = false)
     @ApiModelProperty(value = "总重量")
     private Double totalWeight;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "质控姓名")
+    private String qualityName;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "处理单位1")

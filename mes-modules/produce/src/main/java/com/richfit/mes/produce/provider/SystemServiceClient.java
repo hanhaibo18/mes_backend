@@ -51,6 +51,12 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/item/item/param/list")
     public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name, @RequestHeader(value = SecurityConstants.FROM) String header);
 
+    /**
+     * 功能描述： 根据code和name 查询字典参数
+     * @param code
+     * @param name
+     * @return
+     */
     @GetMapping(value = "/api/sys/item/item/param/list")
     public CommonResult<List<ItemParam>> selectItemClass(@RequestParam("code") String code, @RequestParam("name") String name);
 
