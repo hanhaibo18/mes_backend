@@ -87,3 +87,8 @@ secure:
       - /api/produce/material_receive/material_receive/save_batch_list
       - /api/produce/material_receive/material_receive/save_log
 
+swagger:
+  basic:
+    enable: true
+    username: test
+    password: test

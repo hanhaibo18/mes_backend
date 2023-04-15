@@ -60,3 +60,9 @@ secure:
     urls:
       - /api/base/sequence/getByRouterNo
       - /api/base/product/product/listByNo
+
+swagger:
+  basic:
+    enable: true
+    username: test
+    password: test
