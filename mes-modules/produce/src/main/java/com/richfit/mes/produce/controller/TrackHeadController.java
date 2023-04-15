@@ -393,19 +393,83 @@ public class TrackHeadController extends BaseController {
                     trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter).getData().getRecords();
 
 
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+            for (TrackHeadPublicVo record : records) {
+                //跟踪类型（0单件  1批次）
+                if (record.getTrackType() != null) {
+                    switch (record.getTrackType()) {
+                        case "0":
+                            record.setTrackType("单件");
+                            break;
+                        case "1":
+                            record.setTrackType("批次");
+                            break;
+                        default:
+                            record.setTrackType("");
+                            break;
+                    }
+                }
+                //试棒跟单  0否  1是
+                if (record.getIsTestBar() != null) {
+                    switch (record.getIsTestBar()) {
+                        case "0":
+                            record.setIsTestBar("否");
+                            break;
+                        case "1":
+                            record.setIsTestBar("是");
+                            break;
+                        default:
+                            record.setIsTestBar("");
+                            break;
+                    }
+                }
+                //完工资料 y 已生成  不是y 未生成
+                if(record.getIsCompletionData() != null){
+                    if (record.getIsCompletionData().equals("y")) {
+                        record.setIsCompletionData("已生成");
+                    }else {
+                        record.setIsCompletionData("未生成");
+                    }
+                }else {
+                    record.setIsCompletionData("未生成");
+                }
 
-            String fileName = "跟单信息_" + format.format(new Date()) + ".xlsx";
+                //跟单类型  为空是原始跟单
+                if(record.getOriginalTrackId() != null){
+                    record.setOriginalTrackId("拆分跟单");
+                }else {
+                    record.setOriginalTrackId("原始跟单");
+                }
+               //跟单状态 0已生成待派工 1在制 2完工 3作废 4删除
+                if (record.getStatus() != null) {
+                    switch (record.getStatus()) {
+                        case "0":
+                            record.setStatus("未开工");
+                            break;
+                        case "1":
+                            record.setStatus("已开工");
+                            break;
+                        case "2":
+                            record.setStatus("完成");
+                            break;
+                        case "3":
+                            record.setStatus("作废");
+                            break;
+                        case "4":
+                            record.setStatus("已删除");
+                            break;
+                        default:
+                            record.setTrackType("");
+                            break;
+                    }
+                }
+                //匹配计划 有值  :是  ,为空是 否
+                if(record.getWorkPlanId() != null){
+                    record.setWorkPlanId("是");
+                }else {
+                    record.setWorkPlanId("否");
+                }
 
-            //跟踪类型（0单件  1批次）
-            //原始跟单
-            //试棒跟单  0否  1是
-            //跟单状态 0已生成待派工 1在制 2完工 3作废 4删除
-            //完工资料 y 已生成  不是y 未生成
-            //跟单类型
-
-
-
+            }
 
             String[] columnHeaders = {"跟单状态", "匹配计划", "完工资料", "跟单号", "工作号", "产品名称", "零部件名称", "图号", "产品编号", "数量", "签发时间","签发人",
                     "物料编号", "跟踪类型", "原跟单编号", "跟单类型","订单编号", "完成数量", "试棒跟单",  "创建人", "创建日期","修改人", "修改时间"};
@@ -413,6 +477,10 @@ public class TrackHeadController extends BaseController {
             String[] fieldNames = {"status", "workPlanId", "isCompletionData", "trackNo", "workNo", "productName", "materialName", "drawingNo", "productNo", "number", "issueTime","issueBy",
                     "materialNo", "trackType", "originalTrackNo", "originalTrackId", "productionOrder", "numberComplete", "isTestBar",  "createBy", "createTime", "modifyBy", "modifyTime"};
 
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName = "跟单信息_" + format.format(new Date()) + ".xlsx";
             //export
             ExcelUtils.exportExcel(fileName, records, columnHeaders, fieldNames, rsp);
         } catch (Exception e) {
