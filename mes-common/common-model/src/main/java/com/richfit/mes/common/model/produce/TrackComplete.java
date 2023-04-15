@@ -221,6 +221,9 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     private String trackNo2;
     @TableField(exist = false)
     private String productNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零部件名称", dataType = "String")
+    private String materialName;
 
 
     @TableField(exist = false)

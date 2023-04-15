@@ -181,6 +181,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHead == null ? "" : trackHead.getProductName());
                         track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
+                        track.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -981,6 +982,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHead == null ? "" : trackHead.getProductName());
                         track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
+                        track.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -1191,6 +1193,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHead == null ? "" : trackHead.getProductName());
                         track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
+                        track.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
