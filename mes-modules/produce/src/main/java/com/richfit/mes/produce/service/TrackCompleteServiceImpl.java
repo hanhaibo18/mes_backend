@@ -210,11 +210,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
                         //实际报告工时
                         BigDecimal realityReportHours = new BigDecimal(track.getReportHours());
-                        if (0 == track.getCompletePersonQty()) {
-                            track.setCompletePersonQty(1);
-                        }
                         //实际准结工时
-                        BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+                        BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours());
                         //累计准结工时
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
@@ -782,15 +779,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //产品对应工序
         for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
             List<TrackItem> collect = list.stream().filter(trackItem ->
-                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && trackItem.getOptName().trim().equals(outsourceDto.getOptName().trim()) && trackItem.getIsCurrent() == 1
+                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && trackItem.getOptName().equals(outsourceDto.getOptName()) && trackItem.getIsCurrent() == 1
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
-        if (CollectionUtils.isEmpty(result)) {
-            throw new GlobalException("获取对应工序校验失败", ResultCode.FAILED);
-        }
         //检查是否跳工序报工
-        this.checkOP(list, result);
+       this.checkOP(list, result);
         boolean bool = true;
         for (TrackItem trackItem : result) {
             TrackComplete trackComplete = new TrackComplete();
@@ -844,7 +838,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     /**
      * 检查是否跳工序报工
-     *
      * @param list
      * @param result
      */
@@ -866,28 +859,28 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             map2.put(x, groupByProductNo);
         });
 
-        map2.forEach((x, y) -> {
-            y.forEach((a, b) -> {
+        map2.forEach((x,y)->{
+            y.forEach((a,b)->{
                 //收集工序号并排序
-                List<Integer> optNo = b.stream().map(c -> Integer.parseInt(c.getOptNo())).sorted().collect(Collectors.toList());
+                List<Integer> optNo = b.stream().map(c -> c.getOptSequence()).sorted().collect(Collectors.toList());
                 //前面工序判断是否已报工
                 //检查最小工序是否大于1
-                if (optNo.get(0) > 1) {
+                if(optNo.get(0)>1){
                     //大于1则不是第一道工序
                     //拿到比当前工序小的工序并且没有完成报工的工序
-                    List<TrackItem> smallItem = map1.get(x).get(a).stream().filter(d -> Integer.parseInt(d.getOptNo()) < optNo.get(0) & d.getIsOperationComplete() == 0).collect(Collectors.toList());
+                    List<TrackItem> smallItem = map1.get(x).get(a).stream().filter(d -> d.getOptSequence() < optNo.get(0)& d.getIsOperationComplete()==0).collect(Collectors.toList());
                     if (!CollectionUtils.isEmpty(smallItem)) {
                         //不为空则证明前面有工序没完成报工
-                        throw new GlobalException("不能跳工序报工", ResultCode.FAILED);
+                        throw new GlobalException("不能跳工序报工",ResultCode.FAILED);
                     }
                 }
                 //区间连续检查
                 //检查工序号连续性
-                for (int i = 0; i < optNo.size(); i++) {
+                for(int i=0 ;i<optNo.size();i++ ){
                     //防止下表越界异常
-                    if (i + 1 <= optNo.size() - 1) {
-                        if (optNo.get(i + 1) - optNo.get(i) != 1) {
-                            throw new GlobalException("报工工序号不连续,不能跳工序报工", ResultCode.FAILED);
+                    if(i+1<=optNo.size()-1){
+                        if (optNo.get(i+1)-optNo.get(i)!=1){
+                            throw new GlobalException("报工工序号不连续,不能跳工序报工",ResultCode.FAILED);
                         }
                     }
                 }
@@ -1331,10 +1324,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.eq("production_order", orderNo);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("final_complete_time", TimeUtil.startTime(startTime));
+            queryWrapper.ge("complete_time", TimeUtil.startTime(startTime));
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("final_complete_time", TimeUtil.endTime(endTime));
+            queryWrapper.le("complete_time", TimeUtil.endTime(endTime));
         }
         queryWrapper.eq("is_final_complete", "1");
         //获取当前登录用户角色列表
