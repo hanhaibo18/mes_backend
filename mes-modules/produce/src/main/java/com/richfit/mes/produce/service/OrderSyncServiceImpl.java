@@ -20,7 +20,9 @@ import com.richfit.mes.produce.provider.SystemServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,8 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@PropertySource("classpath:application.yml")
+@Component
 public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderSyncService {
 
     @Resource
@@ -111,8 +115,8 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             //拿到今天的同步数据
             OrdersSynchronizationDto ordersSynchronization = new OrdersSynchronizationDto();
             //由于零点半同步所以同步当天的数据需要取前一天的时间
-            String date = DateUtil.format(DateUtil.yesterday(), "yyyy-MM-dd");
-            ordersSynchronization.setDate(date);
+//            String date = DateUtil.format(DateUtil.yesterday(), "yyyy-MM-dd");
+            ordersSynchronization.setDate(DateUtil.today());
             //获取工厂列表
             Boolean saveData = false;
             try {
@@ -144,7 +148,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                             continue;
                         }
                         //进行校验
-                        if (Boolean.TRUE.equals(filterOrder(order, date, null, ordersSynchronization.getCode()))) {
+                        if (Boolean.TRUE.equals(filterOrder(order, DateUtil.today(), null, ordersSynchronization.getCode()))) {
                             saveData = orderSyncService.save(order);
                         }
                     }

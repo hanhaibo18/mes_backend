@@ -775,12 +775,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         List<TrackItem> list = trackItemService.list(queryWrapper);
         List<TrackItem> result = new ArrayList<>();
         //获取正确的工序
+        //产品对应工序
         for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
             List<TrackItem> collect = list.stream().filter(trackItem ->
                     trackItem.getOptNo().equals(outsourceDto.getOptNo()) && trackItem.getOptName().equals(outsourceDto.getOptName()) && trackItem.getIsCurrent() == 1
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
+        //检查是否跳工序报工
+       this.checkOP(list, result);
         boolean bool = true;
         for (TrackItem trackItem : result) {
             TrackComplete trackComplete = new TrackComplete();
@@ -830,6 +833,58 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             return CommonResult.failed("操作失败，请重试！");
         }
+    }
+
+    /**
+     * 检查是否跳工序报工
+     * @param list
+     * @param result
+     */
+    private void checkOP(List<TrackItem> list, List<TrackItem> result) {
+        //产品完整工序根据跟单分组
+        Map<String, List<TrackItem>> groupByTrackHeadId = list.stream().collect(Collectors.groupingBy(TrackItem::getTrackHeadId));
+        Map<String, Map<String, List<TrackItem>>> map1 = new HashMap<>();
+        groupByTrackHeadId.forEach((x, y) -> {
+            //根据产品编号分组
+            Map<String, List<TrackItem>> groupByProductNo = y.stream().collect(Collectors.groupingBy(TrackItem::getProductNo));
+            map1.put(x, groupByProductNo);
+        });
+        //选择的报工工序根据跟单分组
+        Map<String, List<TrackItem>> resultGroupByTrackHeadId = result.stream().collect(Collectors.groupingBy(TrackItem::getTrackHeadId));
+        Map<String, Map<String, List<TrackItem>>> map2 = new HashMap<>();
+        resultGroupByTrackHeadId.forEach((x, y) -> {
+            //根据产品编号分组
+            Map<String, List<TrackItem>> groupByProductNo = y.stream().collect(Collectors.groupingBy(TrackItem::getProductNo));
+            map2.put(x, groupByProductNo);
+        });
+
+        map2.forEach((x,y)->{
+            y.forEach((a,b)->{
+                //收集工序号并排序
+                List<Integer> optNo = b.stream().map(c -> Integer.parseInt(c.getOptNo())).sorted().collect(Collectors.toList());
+                //前面工序判断是否已报工
+                //检查最小工序是否大于1
+                if(optNo.get(0)>1){
+                    //大于1则不是第一道工序
+                    //拿到比当前工序小的工序并且没有完成报工的工序
+                    List<TrackItem> smallItem = map1.get(x).get(a).stream().filter(d -> Integer.parseInt(d.getOptNo()) < optNo.get(0)& d.getIsOperationComplete()==0).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(smallItem)) {
+                        //不为空则证明前面有工序没完成报工
+                        throw new GlobalException("不能跳工序报工",ResultCode.FAILED);
+                    }
+                }
+                //区间连续检查
+                //检查工序号连续性
+                for(int i=0 ;i<optNo.size();i++ ){
+                    //防止下表越界异常
+                    if(i+1<=optNo.size()-1){
+                        if (optNo.get(i+1)-optNo.get(i)!=1){
+                            throw new GlobalException("报工工序号不连续,不能跳工序报工",ResultCode.FAILED);
+                        }
+                    }
+                }
+            });
+        });
     }
 
     @Override
