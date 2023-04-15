@@ -181,6 +181,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHead == null ? "" : trackHead.getProductName());
                         track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
+                        track.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -985,6 +986,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHead == null ? "" : trackHead.getProductName());
                         track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
+                        track.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -1195,6 +1197,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         track.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
                         track.setProductName(trackHead == null ? "" : trackHead.getProductName());
                         track.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
+                        track.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
                         //空校验
                         if (trackItem.getPrepareEndHours() == null) {
                             trackItem.setPrepareEndHours(0.00);
@@ -1325,10 +1328,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.eq("production_order", orderNo);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("final_complete_time", TimeUtil.startTime(startTime));
+            queryWrapper.ge("complete_time", TimeUtil.startTime(startTime));
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("final_complete_time", TimeUtil.endTime(endTime));
+            queryWrapper.le("complete_time", TimeUtil.endTime(endTime));
         }
         queryWrapper.eq("is_final_complete", "1");
         //获取当前登录用户角色列表
