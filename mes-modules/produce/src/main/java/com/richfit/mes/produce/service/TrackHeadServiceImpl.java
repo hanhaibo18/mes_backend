@@ -24,10 +24,8 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.Tenant;
-import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.controller.CodeRuleController;
 import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.*;
@@ -38,19 +36,15 @@ import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardServic
 import com.richfit.mes.produce.utils.FilesUtil;
 import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
 import com.richfit.mes.produce.utils.TrackHeadUtil;
-import com.richfit.mes.produce.utils.Utils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
@@ -547,6 +541,24 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
         }
         return true;
+    }
+
+    public void updateItem() {
+        List<String> trackIdList = trackHeadMapper.queryTrackId();
+        for (String trackId : trackIdList) {
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("track_head_id", trackId);
+            List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+            trackItemList.forEach(trackItem -> {
+                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
+            });
+            System.out.println("----------------------------------");
+            beforeSaveItemDeal(trackItemList);
+            trackItemList.forEach(trackItem -> {
+                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
+            });
+            trackItemService.updateBatchById(trackItemList);
+        }
     }
 
     private void beforeSaveItemDeal(List<TrackItem> trackItems) {

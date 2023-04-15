@@ -1328,10 +1328,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.eq("production_order", orderNo);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("complete_time", TimeUtil.startTime(startTime));
+            queryWrapper.ge("final_complete_time", TimeUtil.startTime(startTime));
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("complete_time", TimeUtil.endTime(endTime));
+            queryWrapper.le("final_complete_time", TimeUtil.endTime(endTime));
         }
         queryWrapper.eq("is_final_complete", "1");
         //获取当前登录用户角色列表
