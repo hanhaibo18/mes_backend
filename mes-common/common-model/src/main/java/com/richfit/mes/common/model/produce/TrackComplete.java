@@ -1,7 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import io.swagger.annotations.ApiModelProperty;
@@ -204,7 +203,6 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     private Double ratioHours;
 
 
-
     /**
      * 探伤结果
      */
@@ -303,4 +301,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @ApiModelProperty(value = "optId", dataType = "String")
     @TableField(exist = false)
     private String parentId;
+
+    @ApiModelProperty(value = "报工人数", dataType = "int")
+    private int completePersonQty;
 }
