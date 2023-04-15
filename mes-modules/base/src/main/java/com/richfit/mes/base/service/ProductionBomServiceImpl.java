@@ -236,6 +236,8 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
                 queryWrapper.eq("branch_code", productionBom.getBranchCode());
                 queryWrapper.orderByAsc("order_no");
                 List<ProductionBom> productionBomList = this.list(queryWrapper);
+
+                productionBomList = productionBomList.stream().filter(item -> StringUtils.isEmpty(item.getMainDrawingNo()) || item.getMainDrawingNo().equals(productionBom.getDrawingNo())).collect(Collectors.toList());
                 int number = 0;
                 int currentRow = writer.getCurrentRow();
                 for (ProductionBom bom : productionBomList) {

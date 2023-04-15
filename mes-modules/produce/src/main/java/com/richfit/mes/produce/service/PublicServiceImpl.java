@@ -258,15 +258,15 @@ public class PublicServiceImpl implements PublicService {
         if (CollectionUtils.isEmpty(currentTrackItemList)) {
             throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
         }
-//        //判断所有并行工序是否全部最终完成
-//        if (!verifyParallel(currentTrackItemList.get(0).getOptSequence(), currentTrackItemList.get(0).getTrackHeadId())) {
-//            return false;
-//        }
-//        for (TrackItem trackItem : currentTrackItemList) {
-//            if (2 != trackItem.getIsDoing()) {
-//                return false;
-//            }
-//        }
+        //判断所有并行工序是否全部最终完成
+        if (!verifyParallel(currentTrackItemList.get(0).getOptSequence(), currentTrackItemList.get(0).getTrackHeadId())) {
+           return false;
+        }
+        for (TrackItem trackItem : currentTrackItemList) {
+          if (2 != trackItem.getIsDoing()) {
+                return false;
+            }
+        }
         //过滤已完工数据,获取未完工/未开工数据
         List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsDoing() != 2).collect(Collectors.toList());
         //判断是最后一道工序 和 没有未完工/未开工数据 调用跟单状态修改
