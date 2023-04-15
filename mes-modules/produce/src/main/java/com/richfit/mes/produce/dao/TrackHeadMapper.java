@@ -204,4 +204,14 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      **/
     @Select("SELECT * FROM v_produce_track_head ${ew.customSqlSegment}")
     IPage<TrackHeadPublicVo> queryPage(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
+
+    /**
+     * 功能描述: 修改顺序错误问题
+     *
+     * @Author: xinYu.hou
+     * @Date: 2023/4/13 17:27
+     * @return: List<String>
+     **/
+    @Select("SELECT track_head_id from produce_track_item WHERE original_opt_sequence + 10 <> next_opt_sequence AND next_opt_sequence <> 0 AND tenant_id like '%002%' GROUP BY track_head_id")
+    List<String> queryTrackId();
 }
