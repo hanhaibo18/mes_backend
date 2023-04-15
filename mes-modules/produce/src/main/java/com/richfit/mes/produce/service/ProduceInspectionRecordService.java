@@ -1633,11 +1633,15 @@ public class ProduceInspectionRecordService {
         if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())) {
             queryWrapper.in("status", inspectionPowerVo.getStatus().split(","));
         }
-        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
-            queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
+
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
+            queryWrapper.eq("tenant_id", inspectionPowerVo.getTenantId());
+            if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
+                queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
+            }
+        }else{
+            queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())) {
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         } else {
