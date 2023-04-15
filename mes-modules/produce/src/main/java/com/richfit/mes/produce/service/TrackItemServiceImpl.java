@@ -543,7 +543,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
         updateWrapper.set("is_current", 1);
         updateWrapper.eq("flow_id", flowId);
-        updateWrapper.eq("next_opt_sequence", item.getOptSequence());
+        updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
         this.update(updateWrapper);
         //生产线状态改为在制
         UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();
