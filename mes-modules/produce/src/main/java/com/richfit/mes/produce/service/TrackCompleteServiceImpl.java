@@ -862,13 +862,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         map2.forEach((x,y)->{
             y.forEach((a,b)->{
                 //收集工序号并排序
-                List<Integer> optNo = b.stream().map(c -> Integer.parseInt(c.getOptNo())).sorted().collect(Collectors.toList());
+                List<Integer> optNo = b.stream().map(c -> c.getOptSequence()).sorted().collect(Collectors.toList());
                 //前面工序判断是否已报工
                 //检查最小工序是否大于1
                 if(optNo.get(0)>1){
                     //大于1则不是第一道工序
                     //拿到比当前工序小的工序并且没有完成报工的工序
-                    List<TrackItem> smallItem = map1.get(x).get(a).stream().filter(d -> Integer.parseInt(d.getOptNo()) < optNo.get(0)& d.getIsOperationComplete()==0).collect(Collectors.toList());
+                    List<TrackItem> smallItem = map1.get(x).get(a).stream().filter(d -> d.getOptSequence() < optNo.get(0)& d.getIsOperationComplete()==0).collect(Collectors.toList());
                     if (!CollectionUtils.isEmpty(smallItem)) {
                         //不为空则证明前面有工序没完成报工
                         throw new GlobalException("不能跳工序报工",ResultCode.FAILED);
