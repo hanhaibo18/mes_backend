@@ -15,6 +15,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
@@ -358,6 +359,71 @@ public class TrackHeadController extends BaseController {
         OrderUtil.query(queryWrapper, orderCol, order);
         return CommonResult.success(trackHeadService.queryPage(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
     }
+
+    @ApiOperation(value = "导出跟单信息", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单并导出")
+    @GetMapping("/export_track_head")
+    public void exportTrackHead(@ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                            @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                            @ApiParam(value = "开始时间") @RequestParam(required = false) String startDate,
+                            @ApiParam(value = "结束时间") @RequestParam(required = false) String endDate,
+                            @ApiParam(value = "id") @RequestParam(required = false) String id,
+                            @ApiParam(value = "跟单编码") @RequestParam(required = false) String trackNo,
+                            @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                            @ApiParam(value = "订单编号") @RequestParam(required = false) String productionOrder,
+                            @ApiParam(value = "工作计划id") @RequestParam(required = false) String workPlanId,
+                            @ApiParam(value = "工作计划号") @RequestParam(required = false) String workPlanNo,
+                            @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
+                            @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
+                            @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                            @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
+                            @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
+                            @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                            @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                            @ApiParam(value = "是否试棒跟单 0否、1是") @RequestParam(required = false) String isTestBar,
+                            @ApiParam(value = "工艺id") @RequestParam(required = false) String routerId,
+                            @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
+                            @ApiParam(value = "租户id") @RequestParam(required = false) String tenantId,
+                            @ApiParam(value = "页码") @RequestParam(required = false) int page,
+                            @ApiParam(value = "条数") @RequestParam(required = false) int limit,
+                            @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
+                            @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter,
+                               HttpServletResponse rsp) {
+        try {
+            List<TrackHeadPublicVo> records = this.selectTrackHead(startTime, endTime, startDate, endDate, id, trackNo, drawingNo, productionOrder, workPlanId, workPlanNo, productNo, materialNo, status,
+                    trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter).getData().getRecords();
+
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
+
+            String fileName = "跟单信息_" + format.format(new Date()) + ".xlsx";
+
+            //跟踪类型（0单件  1批次）
+            //原始跟单
+            //试棒跟单  0否  1是
+            //跟单状态 0已生成待派工 1在制 2完工 3作废 4删除
+            //完工资料 y 已生成  不是y 未生成
+            //跟单类型
+
+
+
+
+            String[] columnHeaders = {"跟单状态", "匹配计划", "完工资料", "跟单号", "工作号", "产品名称", "零部件名称", "图号", "产品编号", "数量", "签发时间","签发人",
+                    "物料编号", "跟踪类型", "原跟单编号", "跟单类型","订单编号", "完成数量", "试棒跟单",  "创建人", "创建日期","修改人", "修改时间"};
+
+            String[] fieldNames = {"status", "workPlanId", "isCompletionData", "trackNo", "workNo", "productName", "materialName", "drawingNo", "productNo", "number", "issueTime","issueBy",
+                    "materialNo", "trackType", "originalTrackNo", "originalTrackId", "productionOrder", "numberComplete", "isTestBar",  "createBy", "createTime", "modifyBy", "modifyTime"};
+
+            //export
+            ExcelUtils.exportExcel(fileName, records, columnHeaders, fieldNames, rsp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+
+
+
+
 
     @ApiOperation(value = "分页查询跟单分流表", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单分流信息")
     @GetMapping("/track_flow_page")
