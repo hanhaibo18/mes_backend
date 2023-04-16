@@ -375,10 +375,10 @@ public class TenantUserController extends BaseController {
     }
 
     @ApiOperation(value = "查询质检人员", notes = "为空查询全部质检人员,1查询机加质检人员,2查询调度质检人员(带本公司)")
-    @ApiImplicitParam(name = "classes", value = "车间分类", paramType = "query", dataType = "String")
+    @ApiImplicitParam(name = "branchCode", value = "车间编码", paramType = "query", dataType = "String")
     @GetMapping("/queryAllQualityUser")
-    public CommonResult<List<TenantUserVo>> queryAllQualityUser(String classes) {
-        return CommonResult.success(tenantUserService.queryAllQualityUser(classes));
+    public CommonResult<List<TenantUserVo>> queryAllQualityUser(String branchCode) {
+        return CommonResult.success(tenantUserService.queryAllQualityUser(branchCode));
     }
 
     @ApiOperation(value = "查询质检人员", notes = "为空查询全部质检人员")

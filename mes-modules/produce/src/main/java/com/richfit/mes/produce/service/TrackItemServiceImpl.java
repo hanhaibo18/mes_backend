@@ -49,8 +49,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.richfit.mes.common.model.produce.TrackHead.*;
-
 /**
  * @author 王瑞
  * @Description 跟单工序服务
@@ -415,76 +413,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         return "success";
     }
 
-    private String productNext(String thId) {
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("is_current", 1);
-        queryWrapper.eq("track_head_id", thId);
-        List<TrackItem> items = this.list(queryWrapper);
-        boolean isComplete = true;
-        for (TrackItem item : items) {
-            if (item != null && "0".equals(item.getIsFinalComplete())) {
-                isComplete = false;
-                break;
-            }
-        }
-
-        if (!isComplete) {
-            return "选择的跟单中有未全部完成的产品，不能更新至下一步!";
-        } else {
-            TrackItem item = items.get(0);
-
-            // 若是并行工序且不合格,将该产品的并行工序中的未完成工序当前标识设为0
-            if (item.getOptParallelType() == 1
-                    && (item.getIsExistQualityCheck() != null && item.getIsExistQualityCheck() != 0)
-                    && item.getQualityResult() == 0) {
-                trackItemMapper.updateTrackItemIsCurrent(item.getId());
-            }
-
-            QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
-            itemQueryWrapper.eq("track_head_id", thId);
-            itemQueryWrapper.eq("router_id", item.getRouterId());
-            itemQueryWrapper.eq("is_final_complete", 0);
-            itemQueryWrapper.eq("is_current", 1);
-            List<TrackItem> list = this.list(itemQueryWrapper);
-            if (list == null || list.size() == 0) {
-                UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
-                // 更新本工序,并行工序暂不更新is_current
-                if (item.getOptParallelType() == 0) {
-                    updateWrapper.set("is_current", 0);
-                }
-                updateWrapper.set("is_track_sequence_complete", 1);
-                updateWrapper.eq("track_head_id", item.getTrackHeadId());
-                updateWrapper.eq("router_id", item.getRouterId());
-                updateWrapper.eq("is_final_complete", 1);
-                this.update(updateWrapper);
-
-
-                // 非并行工序,或者并行工序且所有并行工序都完成
-                if (item.getOptParallelType() == 1) {
-                    QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
-                    wrapper.eq("track_head_id", item.getTrackHeadId());
-                    wrapper.eq("is_trackSequence_complete", 0);
-                    wrapper.eq("opt_sequence", item.getOptSequence());
-                    wrapper.eq("is_current", 1);
-                    List<TrackItem> optItems = this.list(wrapper);
-                    if (optItems == null || optItems.size() == 0) {
-                        UpdateWrapper<TrackItem> updateWrapper2 = new UpdateWrapper<>();
-                        updateWrapper2.set("is_current", 0);
-                        updateWrapper2.eq("th_id", item.getTrackHeadId());
-                        updateWrapper2.eq("opt_sequence", item.getOptSequence());
-                        this.update(updateWrapper2);
-                    }
-                }
-                QueryWrapper<TrackItem> wrapper2 = new QueryWrapper<>();
-                wrapper2.eq("track_head_id", item.getTrackHeadId());
-                wrapper2.eq("opt_sequence", item.getOptSequence());
-                wrapper2.eq("is_final_complete", 1);
-                List<TrackItem> tempItem = this.list(wrapper2);
-
-            }
-        }
-        return "数据更新成功！";
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -543,7 +471,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
         updateWrapper.set("is_current", 1);
         updateWrapper.eq("flow_id", flowId);
-        updateWrapper.eq("next_opt_sequence", item.getOptSequence());
+        updateWrapper.eq("next_opt_sequence", item.getOriginalOptSequence());
         this.update(updateWrapper);
         //生产线状态改为在制
         UpdateWrapper<TrackFlow> updateWrapperTrackFlow = new UpdateWrapper<>();

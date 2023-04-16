@@ -19,9 +19,12 @@
                ti.id         ti_id,
                ti.sequence_order_by,
                ti.opt_no,
-               ti.opt_name
+               ti.opt_name,
+               ti.original_opt_sequence,
+               ti.next_opt_sequence,
+               ti.is_current
         FROM mes_produce.produce_track_head th
-                 LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id AND ti.is_current = 1
+                 LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id
             ${ew.customSqlSegment}
     </select>
 

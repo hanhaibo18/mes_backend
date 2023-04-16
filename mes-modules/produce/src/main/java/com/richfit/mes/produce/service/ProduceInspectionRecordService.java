@@ -511,13 +511,21 @@ public class ProduceInspectionRecordService {
                 map.put("projectName", trackHead.getProjectName());
                 map.put("texture", trackHead.getTexture());
             }
-            if(!ObjectUtil.isEmpty(trackItem)){
 
-            }
             map.put("drawNo", power.getDrawNo());
             map.put("sampleName", power.getSampleName());
-            map.put("num", power.getNum());
-            map.put("inspectionDepart", systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
+            //数量赋值
+            QueryWrapper<ProduceItemInspectInfo> trackItemInspectionQueryWrapper = new QueryWrapper<>();
+            trackItemInspectionQueryWrapper.eq("inspect_record_id",map.get("id"));
+            List<String> pids = produceItemInspectInfoService.list(trackItemInspectionQueryWrapper).stream().map(item -> item.getPowerId()).collect(Collectors.toList());
+            QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
+            List<InspectionPower> inspectionPowers = inspectionPowerService.listByIds(pids);
+            int num = 0;
+            for (InspectionPower inspectionPower : inspectionPowers) {
+                num+=inspectionPower.getNum();
+            }
+            map.put("num", num);
+            map.put("comeFromDepart", systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
         }
 
         return listMap;
@@ -569,8 +577,6 @@ public class ProduceInspectionRecordService {
             TrackHead trackHead = trackHeadMapper.selecProjectNametById(power.getHeadId());
             if (!ObjectUtil.isEmpty(trackHead)) {
                 map.put("workNo", trackHead.getTrackNo());
-                //产品名称
-                map.put("productName", trackHead.getProductName());
                 //项目名称
                 map.put("projectName", trackHead.getProjectName());
                 //材质
@@ -585,15 +591,21 @@ public class ProduceInspectionRecordService {
                 map.put("optName", item.getOptName());
                 //工序号
                 map.put("optNo", item.getOptNo());
-                //产品编号
-                map.put("productNo", item.getProductNo());
                 //租户id便于审核时查询对应公司的质检人员
                 map.put("tenantId", item.getTenantId());
             }
-
+            //数量赋值
+            QueryWrapper<ProduceItemInspectInfo> trackItemInspectionQueryWrapper = new QueryWrapper<>();
+            trackItemInspectionQueryWrapper.eq("inspect_record_id",map.get("id"));
+            List<String> pids = produceItemInspectInfoService.list(trackItemInspectionQueryWrapper).stream().map(item2 -> item2.getPowerId()).collect(Collectors.toList());
+            List<InspectionPower> inspectionPowers = inspectionPowerService.listByIds(pids);
+            int num = 0;
+            for (InspectionPower inspectionPower : inspectionPowers) {
+                num+=inspectionPower.getNum();
+            }
+            map.put("num", num);
             map.put("drawNo", power.getDrawNo());
             map.put("sampleName", power.getSampleName());
-            map.put("num", power.getNum());
             //委托单位
             map.put("comeFromDepart",systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
             return map;
@@ -619,19 +631,20 @@ public class ProduceInspectionRecordService {
         if (checkList.size() > 0) {
             throw new GlobalException("有已经被审核的记录，不能执行撤回操作", ResultCode.FAILED);
         }
-
-        //删除最新的探伤记录
-        produceItemInspectInfoService.remove(queryWrapper);
-        //将上一条记录改为当前记录
-        QueryWrapper<ProduceItemInspectInfo> historyListQueryWrapper = new QueryWrapper<>();
-        historyListQueryWrapper.in("power_id", powerIds)
-                .orderByDesc("create_time");
-        List<ProduceItemInspectInfo> historyList = produceItemInspectInfoService.list(historyListQueryWrapper);
-        Map<String, List<ProduceItemInspectInfo>> historyMap = historyList.stream().collect(Collectors.groupingBy(item -> item.getPowerId()));
-
+        if(list.size() == 0){
+            return true;
+        }
+        //删除的记录id
+        Set<String> recordIds = list.stream().map(item -> item.getInspectRecordId()).collect(Collectors.toSet());
+        QueryWrapper<ProduceItemInspectInfo> queryWrapperRecord = new QueryWrapper<>();
+        queryWrapperRecord.in("inspect_record_id", recordIds);
+        //回撤的任务id
+        Set<String> pIds = produceItemInspectInfoService.list(queryWrapperRecord).stream().map(item -> item.getPowerId()).collect(Collectors.toSet());
+        //删除中间表信息
+        produceItemInspectInfoService.remove(queryWrapperRecord);
         //探伤任务最新记录改为最新的信息
         UpdateWrapper<InspectionPower> updateWrapper1 = new UpdateWrapper<>();
-        updateWrapper1.in("id", powerIds)
+        updateWrapper1.in("id", pIds)
                 .set("audit_by", null)
                 .set("check_by", null)
                 .set("audit_remark", null)
@@ -641,48 +654,122 @@ public class ProduceInspectionRecordService {
                 .set("flaw_detection_remark",null)
                 .set("flaw_detection",null);
         inspectionPowerService.update(updateWrapper1);
-
-        historyMap.forEach((key, value) -> {
-            if (value.size() > 0) {
-                UpdateWrapper<ProduceItemInspectInfo> produceItemInspectInfoUpdateWrapper = new UpdateWrapper<>();
-                produceItemInspectInfoUpdateWrapper.eq("power_id", key).eq("inspect_record_id", value.get(0).getInspectRecordId()).set("is_new", "1");
-                produceItemInspectInfoService.update(produceItemInspectInfoUpdateWrapper);
-                String reportNo = null;
-                String remark = null;
-                //查询报告号
-                if (InspectionRecordTypeEnum.MT.getType().equals(value.get(0).getTempType())) {
-                    ProduceInspectionRecordMt mt = produceInspectionRecordMtService.getById(value.get(0).getInspectRecordId());
-                    reportNo = mt.getReportNo();
-                    remark = mt.getRemark();
-                } else if (InspectionRecordTypeEnum.PT.getType().equals(value.get(0).getTempType())) {
-                    ProduceInspectionRecordPt pt = produceInspectionRecordPtService.getById(value.get(0).getInspectRecordId());
-                    reportNo = pt.getReportNo();
-                    remark = pt.getRemark();
-                } else if (InspectionRecordTypeEnum.RT.getType().equals(value.get(0).getTempType())) {
-                    ProduceInspectionRecordRt rt = produceInspectionRecordRtService.getById(value.get(0).getInspectRecordId());
-                    reportNo =rt.getReportNo();
-                    remark = rt.getRemark();
-                } else if (InspectionRecordTypeEnum.UT.getType().equals(value.get(0).getTempType())) {
-                    ProduceInspectionRecordUt ut = produceInspectionRecordUtService.getById(value.get(0).getInspectRecordId());
-                    reportNo = ut.getReportNo();
-                    remark = ut.getRemark();
+        //将上一条记录改为当前记录
+        if(pIds.size()>0){
+            QueryWrapper<ProduceItemInspectInfo> historyListQueryWrapper = new QueryWrapper<>();
+            historyListQueryWrapper.in("power_id", pIds)
+                    .orderByDesc("create_time");
+            List<ProduceItemInspectInfo> historyList = produceItemInspectInfoService.list(historyListQueryWrapper);
+            Map<String, List<ProduceItemInspectInfo>> historyMap = historyList.stream().collect(Collectors.groupingBy(item -> item.getPowerId()));
+            historyMap.forEach((key, value) -> {
+                if (value.size() > 0) {
+                    UpdateWrapper<ProduceItemInspectInfo> produceItemInspectInfoUpdateWrapper = new UpdateWrapper<>();
+                    produceItemInspectInfoUpdateWrapper.eq("power_id", key).eq("inspect_record_id", value.get(0).getInspectRecordId()).set("is_new", "1");
+                    produceItemInspectInfoService.update(produceItemInspectInfoUpdateWrapper);
+                    String reportNo = null;
+                    String remark = null;
+                    //查询报告号
+                    if (InspectionRecordTypeEnum.MT.getType().equals(value.get(0).getTempType())) {
+                        ProduceInspectionRecordMt mt = produceInspectionRecordMtService.getById(value.get(0).getInspectRecordId());
+                        reportNo = mt.getReportNo();
+                        remark = mt.getRemark();
+                    } else if (InspectionRecordTypeEnum.PT.getType().equals(value.get(0).getTempType())) {
+                        ProduceInspectionRecordPt pt = produceInspectionRecordPtService.getById(value.get(0).getInspectRecordId());
+                        reportNo = pt.getReportNo();
+                        remark = pt.getRemark();
+                    } else if (InspectionRecordTypeEnum.RT.getType().equals(value.get(0).getTempType())) {
+                        ProduceInspectionRecordRt rt = produceInspectionRecordRtService.getById(value.get(0).getInspectRecordId());
+                        reportNo =rt.getReportNo();
+                        remark = rt.getRemark();
+                    } else if (InspectionRecordTypeEnum.UT.getType().equals(value.get(0).getTempType())) {
+                        ProduceInspectionRecordUt ut = produceInspectionRecordUtService.getById(value.get(0).getInspectRecordId());
+                        reportNo = ut.getReportNo();
+                        remark = ut.getRemark();
+                    }
+                    //探伤任务最新记录改为最新的信息
+                    UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.eq("id", key)
+                            .set("audit_by", value.get(0).getAuditBy())
+                            .set("check_by", SecurityUtils.getCurrentUser().getUserId())
+                            .set("insp_temp_type", String.valueOf(value.get(0).getTempType()))
+                            .set("audit_status", String.valueOf(value.get(0).getIsAudit()))
+                            .set("audit_remark", value.get(0).getAuditRemark())
+                            .set("inspect_record_no",value.get(0).getRecordNo())
+                            .set("report_no",reportNo)
+                            .set("flaw_detection_remark",remark)
+                            .set("flaw_detection",value.get(0).getInspectionResults());
+                    inspectionPowerService.update(updateWrapper);
                 }
-                //探伤任务最新记录改为最新的信息
-                UpdateWrapper<InspectionPower> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.eq("id", key)
-                        .set("audit_by", value.get(0).getAuditBy())
-                        .set("check_by", SecurityUtils.getCurrentUser().getUserId())
-                        .set("insp_temp_type", String.valueOf(value.get(0).getTempType()))
-                        .set("audit_status", String.valueOf(value.get(0).getIsAudit()))
-                        .set("audit_remark", value.get(0).getAuditRemark())
-                        .set("inspect_record_no",value.get(0).getRecordNo())
-                        .set("report_no",reportNo)
-                        .set("flaw_detection_remark",remark)
-                        .set("flaw_detection",value.get(0).getInspectionResults());
-                inspectionPowerService.update(updateWrapper);
-            }
-        });
+            });
+        }
+
         return true;
+    }
+
+    private void withdrawRecordWithdrawChange(List<ProduceItemInspectInfo> list) {
+        InspectionPower inspectionPower = inspectionPowerService.getById(list.get(0).getPowerId());
+        if(!ObjectUtil.isEmpty(inspectionPower)){
+            for (ProduceItemInspectInfo produceItemInspectInfo : list) {
+                InspectionPower power = inspectionPowerService.getById(produceItemInspectInfo.getPowerId());
+                //查询产品编号
+                TrackItem trackItem = trackItemService.getById(power.getItemId());
+                //撤回的产品号
+                String productNo = trackItem.getProductNo();
+                //撤回的产品名称
+                String productName = trackItem.getProductName();
+                //撤回的数量
+                int num = power.getNum();
+                if (InspectionRecordTypeEnum.MT.getType().equals(produceItemInspectInfo.getTempType())) {
+                    ProduceInspectionRecordMt mt = produceInspectionRecordMtService.getById(produceItemInspectInfo.getInspectRecordId());
+                    if(!StringUtils.isEmpty(mt.getProductNo())){
+                        List<String> list1 = Arrays.asList(mt.getProductNo().split(","));
+                        list1.remove(productNo);
+                        mt.setProductNo(String.join(",",list1));
+                    }
+                    if(!StringUtils.isEmpty(mt.getProductName())){
+                        List<String> list1 = Arrays.asList(mt.getProductName().split(","));
+                        list1.remove(productName);
+                        mt.setProductName(String.join(",",list1));
+                    }
+                } else if (InspectionRecordTypeEnum.PT.getType().equals(produceItemInspectInfo.getTempType())) {
+                    ProduceInspectionRecordPt pt = produceInspectionRecordPtService.getById(produceItemInspectInfo.getInspectRecordId());
+                    if(!StringUtils.isEmpty(pt.getProductNo())){
+                        List<String> list1 = Arrays.asList(pt.getProductNo().split(","));
+                        list1.remove(productNo);
+                        pt.setProductNo(String.join(",",list1));
+                    }
+                    if(!StringUtils.isEmpty(pt.getProductName())){
+                        List<String> list1 = Arrays.asList(pt.getProductName().split(","));
+                        list1.remove(productName);
+                        pt.setProductName(String.join(",",list1));
+                    }
+                } else if (InspectionRecordTypeEnum.RT.getType().equals(produceItemInspectInfo.getTempType())) {
+                    ProduceInspectionRecordRt rt = produceInspectionRecordRtService.getById(produceItemInspectInfo.getInspectRecordId());
+                    if(!StringUtils.isEmpty(rt.getProductNo())){
+                        List<String> list1 = Arrays.asList(rt.getProductNo().split(","));
+                        list1.remove(productNo);
+                        rt.setProductNo(String.join(",",list1));
+                    }
+                    if(!StringUtils.isEmpty(rt.getProductName())){
+                        List<String> list1 = Arrays.asList(rt.getProductName().split(","));
+                        list1.remove(productName);
+                        rt.setProductName(String.join(",",list1));
+                    }
+                } else if (InspectionRecordTypeEnum.UT.getType().equals(produceItemInspectInfo.getTempType())) {
+                    ProduceInspectionRecordUt ut = produceInspectionRecordUtService.getById(produceItemInspectInfo.getInspectRecordId());
+                    if(!StringUtils.isEmpty(ut.getProductNo())){
+                        List<String> list1 = Arrays.asList(ut.getProductNo().split(","));
+                        list1.remove(productNo);
+                        ut.setProductNo(String.join(",",list1));
+                    }
+                    if(!StringUtils.isEmpty(ut.getProductName())){
+                        List<String> list1 = Arrays.asList(ut.getProductName().split(","));
+                        list1.remove(productName);
+                        ut.setProductName(String.join(",",list1));
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -893,36 +980,32 @@ public class ProduceInspectionRecordService {
      * 报告导出doc
      */
     public void exoprtReport(HttpServletResponse response, String id) throws IOException, TemplateException {
-        //探伤记录、探伤工序、探伤模板信息
-        ProduceItemInspectInfo produceItemInspectInfo = new ProduceItemInspectInfo();
-        //根据探伤记录id定位
+        //根据探伤记录id定位探伤任务
         QueryWrapper<ProduceItemInspectInfo> itemInspectInfoQueryWrapper = new QueryWrapper<>();
-        itemInspectInfoQueryWrapper.eq("inspect_record_id", id);
+        itemInspectInfoQueryWrapper.eq("inspect_record_id", id)
+                .eq("is_new","1");
         List<ProduceItemInspectInfo> produceItemInspectInfos = produceItemInspectInfoService.list(itemInspectInfoQueryWrapper);
-        if (produceItemInspectInfos.size() > 0) {
-            produceItemInspectInfo = produceItemInspectInfos.get(0);
-        } else {
+        //填此探伤记录的委托任务id集合
+        Set<String> powerIds = produceItemInspectInfos.stream().map(item -> item.getPowerId()).collect(Collectors.toSet());
+        if (powerIds.size() ==  0) {
             throw new GlobalException(ResultCode.ITEM_NOT_FOUND.getMessage(), ResultCode.ITEM_NOT_FOUND);
         }
+        //查询探伤任务
+        List<InspectionPower> powers = inspectionPowerService.listByIds(powerIds);
 
-        //跟单信息
-        TrackHead trackHead = null;
         //探伤记录
         Map<String, Object> recordInfo = new HashMap<>();
-        //查询探伤工序
-        InspectionPower power = inspectionPowerService.getById(produceItemInspectInfo.getPowerId());
-        TrackItem trackItem = trackItemService.getById(power.getItemId());
 
-        if (!ObjectUtil.isEmpty(produceItemInspectInfo)) {
+        if (produceItemInspectInfos.size()>0) {
             List<Map<String, Object>> list = new ArrayList<>();
-            if (InspectionRecordTypeEnum.MT.getType().equals(produceItemInspectInfo.getTempType())) {
-                list = produceInspectionRecordMtService.listMaps(new QueryWrapper<ProduceInspectionRecordMt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
-            } else if (InspectionRecordTypeEnum.PT.getType().equals(produceItemInspectInfo.getTempType())) {
-                list = produceInspectionRecordPtService.listMaps(new QueryWrapper<ProduceInspectionRecordPt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
-            } else if (InspectionRecordTypeEnum.RT.getType().equals(produceItemInspectInfo.getTempType())) {
-                list = produceInspectionRecordRtService.listMaps(new QueryWrapper<ProduceInspectionRecordRt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
-            } else if (InspectionRecordTypeEnum.UT.getType().equals(produceItemInspectInfo.getTempType())) {
-                list = produceInspectionRecordUtService.listMaps(new QueryWrapper<ProduceInspectionRecordUt>().eq("id", produceItemInspectInfo.getInspectRecordId()));
+            if (InspectionRecordTypeEnum.MT.getType().equals(produceItemInspectInfos.get(0).getTempType())) {
+                list = produceInspectionRecordMtService.listMaps(new QueryWrapper<ProduceInspectionRecordMt>().eq("id", id));
+            } else if (InspectionRecordTypeEnum.PT.getType().equals(produceItemInspectInfos.get(0).getTempType())) {
+                list = produceInspectionRecordPtService.listMaps(new QueryWrapper<ProduceInspectionRecordPt>().eq("id", id));
+            } else if (InspectionRecordTypeEnum.RT.getType().equals(produceItemInspectInfos.get(0).getTempType())) {
+                list = produceInspectionRecordRtService.listMaps(new QueryWrapper<ProduceInspectionRecordRt>().eq("id", id));
+            } else if (InspectionRecordTypeEnum.UT.getType().equals(produceItemInspectInfos.get(0).getTempType())) {
+                list = produceInspectionRecordUtService.listMaps(new QueryWrapper<ProduceInspectionRecordUt>().eq("id", id));
             }
             if (!CollectionUtil.isEmpty(list)) {
                 recordInfo = list.get(0);
@@ -943,12 +1026,20 @@ public class ProduceInspectionRecordService {
 
         Map<String, Object> dataMap = new HashMap<>();
         //委托单位
-        dataMap.put("comeFromDepart",systemServiceClient.getTenantById(power.getTenantId()).getData().getTenantName());
+        dataMap.put("comeFromDepart",systemServiceClient.getTenantById(powers.get(0).getTenantId()).getData().getTenantName());
+        //数量赋值
+        List<String> pids = produceItemInspectInfos.stream().map(item -> item.getPowerId()).collect(Collectors.toList());
+        List<InspectionPower> inspectionPowers = inspectionPowerService.listByIds(pids);
+        int num = 0;
+        for (InspectionPower inspectionPower : inspectionPowers) {
+            num+=inspectionPower.getNum();
+        }
+        dataMap.put("num", num);
         //填充数据
-        createDataMap(trackHead, recordInfo, dataMap, produceItemInspectInfo.getTempType(), power);
+        createDataMap(recordInfo, dataMap, produceItemInspectInfos.get(0).getTempType(), powers.get(0));
 
         //根据模板类型获取模板和导出文件名
-        Map<String, String> tempNameAndDocNameMap = checkTempNameAndDocName(produceItemInspectInfo.getTempType());
+        Map<String, String> tempNameAndDocNameMap = checkTempNameAndDocName(produceItemInspectInfos.get(0).getTempType());
         //导出
         wordUtil.exoprtReport(response, dataMap, tempNameAndDocNameMap.get("tempName"), tempNameAndDocNameMap.get("docName"));
     }
@@ -956,12 +1047,11 @@ public class ProduceInspectionRecordService {
     /**
      * 构造导出填充数据dataMap
      *
-     * @param trackHead
      * @param recordInfo
      * @param dataMap
      * @param tempType
      */
-    private void createDataMap(TrackHead trackHead, Map<String, Object> recordInfo, Map<String, Object> dataMap, String tempType, InspectionPower power) throws IOException {
+    private void createDataMap(Map<String, Object> recordInfo, Map<String, Object> dataMap, String tempType, InspectionPower power) throws IOException {
         if (InspectionRecordTypeEnum.MT.getType().equals(tempType)) {
             createMtDataMap(recordInfo, dataMap);
         } else if (InspectionRecordTypeEnum.PT.getType().equals(tempType)) {
@@ -972,16 +1062,10 @@ public class ProduceInspectionRecordService {
             createUtDataMap(recordInfo, dataMap);
         }
         //图号
-        dataMap.put("drawingNo", ObjectUtil.isEmpty(trackHead) ? power.getDrawNo() : trackHead.getDrawingNo());
+        dataMap.put("drawingNo", power.getDrawNo() );
         //零件名称
-        dataMap.put("materialName", ObjectUtil.isEmpty(trackHead) ? power.getSampleName() : trackHead.getMaterialName());
-        //数量
-        dataMap.put("num", ObjectUtil.isEmpty(trackHead) ? power.getNum() : StringUtils.isEmpty(trackHead.getNumber())?0:trackHead.getNumber());
-        //材质
-        if (!ObjectUtil.isEmpty(trackHead)) {
-            dataMap.put("texture", trackHead.getTexture());
-            dataMap.put("productNo",trackHead.getProductNo());
-        }
+        dataMap.put("materialName",  power.getSampleName());
+
         dataMap.put("inspectionResultsRemark", StringUtils.isEmpty(String.valueOf(dataMap.get("inspectionResultsRemark")))?null:dataMap.get("inspectionResultsRemark"));
         //报告日期取开工日期
         String dateTime = String.valueOf(power.getStartDoingTime());
@@ -1549,11 +1633,15 @@ public class ProduceInspectionRecordService {
         if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())) {
             queryWrapper.in("status", inspectionPowerVo.getStatus().split(","));
         }
-        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
-            queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
+
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
+            queryWrapper.eq("tenant_id", inspectionPowerVo.getTenantId());
+            if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
+                queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
+            }
+        }else{
+            queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())) {
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         } else {

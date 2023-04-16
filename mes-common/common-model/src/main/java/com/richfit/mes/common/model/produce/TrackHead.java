@@ -354,6 +354,18 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @TableField(exist = false)
     @ApiModelProperty(value = "材质", dataType = "String")
     private String finalProductNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "原工序顺序")
+    private String originalOptSequence;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "下工序")
+    private String nextOptSequence;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是当前的")
+    private int isCurrent;
     /**
      * 跟单合格证结束
      */

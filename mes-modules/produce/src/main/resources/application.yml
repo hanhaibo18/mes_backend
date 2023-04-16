@@ -62,7 +62,7 @@ fdfs:
     secret_key: FastDFS12345678900
 time:
   execute: true
-  order: "0 30 0 * * ? "
+  order: "0 0/30 * * * ? "
   ourchase_order: "0 30 23 * * ? "
   push_work_hour: "0 48 15 * * ? "
 task-date:
@@ -87,3 +87,8 @@ secure:
       - /api/produce/material_receive/material_receive/save_batch_list
       - /api/produce/material_receive/material_receive/save_log
 
+swagger:
+  basic:
+    enable: true
+    username: test
+    password: test

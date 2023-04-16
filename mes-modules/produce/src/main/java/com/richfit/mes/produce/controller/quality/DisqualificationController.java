@@ -11,10 +11,14 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
+import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.quality.*;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.quality.DisqualificationAttachmentService;
 import com.richfit.mes.produce.service.quality.DisqualificationFinalResultService;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
@@ -31,8 +35,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +59,14 @@ public class DisqualificationController extends BaseController {
 
     @Resource
     private DisqualificationFinalResultService finalResultService;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
+
+    public static final String UNITNAME = "不合格外协单位";
+    public static final String UNITCODE = "qualityUnqualityUnitW";
+    public static final String PROCESSNAME = "不合格常用工序";
+    public static final String PROCESSCODE = "qualityUnqualityOpt";
 
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
@@ -192,6 +202,8 @@ public class DisqualificationController extends BaseController {
     public CommonResult<DisqualificationItemVo> queryLastTimeDataByCreateBy(String branchCode) {
         return CommonResult.success(disqualificationService.queryLastTimeDataByCreateBy(branchCode));
     }
+
+
     @ApiOperation(value = "不合格导出", notes = "不合格导出")
     @PostMapping("/export")
     public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<Disqualification> disqualificationList) {
@@ -203,8 +215,29 @@ public class DisqualificationController extends BaseController {
             QueryWrapper<DisqualificationFinalResult> objectQueryWrapper = new QueryWrapper<>();
             objectQueryWrapper.in("id", idList);
             List<DisqualificationFinalResult> list = finalResultService.list(objectQueryWrapper);
-            Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
+            // 责任单位内
+            List<String> unitList = list.stream().map(DisqualificationFinalResult::getUnitResponsibilityWithin).collect(Collectors.toList());
+            // 处理单位1
+            List<String> unitOneList = list.stream().map(DisqualificationFinalResult::getUnitTreatmentOne).collect(Collectors.toList());
+            // 处理单位2
+            List<String> unitTwoList = list.stream().map(DisqualificationFinalResult::getUnitTreatmentTwo).collect(Collectors.toList());
+            // 责任单位(外)
+            List<String> unitValueList = list.stream().map(DisqualificationFinalResult::getUnitResponsibilityOutside).collect(Collectors.toList());
+            // 发现工序
+            List<String> processValueList = list.stream().map(DisqualificationFinalResult::getDiscoverItem).collect(Collectors.toList());;
+
+            List<String> BranchList = list.stream().map(DisqualificationFinalResult::getDiscoverBranch).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(list)) {
+                Map<String, Tenant> tenantMap = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
+                List<String> unitResponsibilityWithinList = convertInput(unitList, tenantMap);
+                List<String> unitTreatmentOneList = convertInput(unitOneList, tenantMap);
+                List<String> unitTreatmentTwoList = convertInput(unitTwoList, tenantMap);
+                List<String> discoverBranchList = convertInput(BranchList, tenantMap);
+                Map<String, ItemParam> unitMap = systemServiceClient.selectItemClass(UNITCODE, UNITNAME).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
+                List<String> unitResponsibilityOutsideList = convertItemInput(unitValueList, unitMap);
+                Map<String, ItemParam> processMap = systemServiceClient.selectItemClass(PROCESSCODE, PROCESSNAME).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
+                List<String> discoverItemList = convertItemInput(processValueList, processMap);
                 // 读文件
                 ClassPathResource classPathResource = new ClassPathResource("excel/" + "disqualificationTemplate.xlsx");
                 ExcelWriter writer = null;
@@ -213,12 +246,14 @@ public class DisqualificationController extends BaseController {
                 writer.resetRow();
                 writer.passRows(5);
                 for (Disqualification disqualification: disqualificationList) {
-                    disqualification.setUnitResponsibilityOutside(resultMap.get(disqualification.getId()).getUnitResponsibilityOutside());
+                    disqualification.setDisqualificationName(resultMap.get(disqualification.getId()).getDisqualificationName());
+                    disqualification.setDiscoverTenant(resultMap.get(disqualification.getId()).getDiscoverTenant());
+                    disqualification.setDiscoverBranch(resultMap.get(disqualification.getId()).getDiscoverBranch());
                     disqualification.setUnitResponsibilityWithin(resultMap.get(disqualification.getId()).getUnitResponsibilityWithin());
                     disqualification.setTotalWeight(resultMap.get(disqualification.getId()).getTotalWeight());
+                    disqualification.setQualityName(resultMap.get(disqualification.getId()).getQualityName());
                     disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
                     disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
-                    disqualification.setDiscoverItem(resultMap.get(disqualification.getId()).getDiscoverItem());
                     disqualification.setDiscardTime(resultMap.get(disqualification.getId()).getDiscardTime());
                     disqualification.setReuseTime(resultMap.get(disqualification.getId()).getReuseTime());
                     disqualification.setAcceptDeviation(resultMap.get(disqualification.getId()).getAcceptDeviation());
@@ -232,27 +267,30 @@ public class DisqualificationController extends BaseController {
                     disqualification.setTechnologyName(resultMap.get(disqualification.getId()).getTechnologyName());
                 }
                 int currentRow = writer.getCurrentRow();
+                int number = 0;
+                // 依次写入Excel
                 for (Disqualification disqualification: disqualificationList) {
-                    writer.writeCellValue(1, currentRow, disqualification.getCreateBy());
-                    writer.writeCellValue(2, currentRow, disqualification.getCreateTime());
-                    writer.writeCellValue(3, currentRow, disqualification.getBranchCode());
-                    writer.writeCellValue(4, currentRow, disqualification.getProcessSheetNo());
-                    writer.writeCellValue(5, currentRow, disqualification.getMissiveBranch());
-                    writer.writeCellValue(6, currentRow, disqualification.getUnitResponsibilityWithin());
-                    writer.writeCellValue(7, currentRow, disqualification.getUnitResponsibilityOutside());
-                    writer.writeCellValue(8, currentRow, disqualification.getWorkNo());
-                    writer.writeCellValue(9, currentRow, disqualification.getProductName());
-                    writer.writeCellValue(10, currentRow, disqualification.getPartName());
-                    writer.writeCellValue(11, currentRow, disqualification.getPartDrawingNo());
-                    writer.writeCellValue(12, currentRow, disqualification.getProductNo());
-                    writer.writeCellValue(13, currentRow, disqualification.getPartMaterials());
-                    writer.writeCellValue(14, currentRow, disqualification.getNumber());
-                    writer.writeCellValue(15, currentRow, disqualification.getTotalWeight());
-                    writer.writeCellValue(16, currentRow, disqualification.getDisqualificationCondition());
-                    writer.writeCellValue(17, currentRow, disqualification.getQualityCheckBy());
-                    writer.writeCellValue(18, currentRow, disqualification.getUnitTreatmentOne());
-                    writer.writeCellValue(19, currentRow, disqualification.getUnitTreatmentTwo());
-                    writer.writeCellValue(20, currentRow, disqualification.getDiscoverItem());
+                    writer.writeCellValue(0, currentRow, disqualification.getDisqualificationName());
+                    writer.writeCellValue(1, currentRow, disqualification.getCreateTime());
+                    writer.writeCellValue(2, currentRow, disqualification.getBranchCode());
+                    writer.writeCellValue(3, currentRow, disqualification.getProcessSheetNo());
+                    writer.writeCellValue(4, currentRow, discoverBranchList.get(number));
+                    writer.writeCellValue(5, currentRow, unitResponsibilityWithinList.get(number));
+                    writer.writeCellValue(6, currentRow, unitResponsibilityOutsideList.get(number));
+                    writer.writeCellValue(7, currentRow, disqualification.getWorkNo());
+                    writer.writeCellValue(8, currentRow, disqualification.getProductName());
+                    writer.writeCellValue(9, currentRow, disqualification.getPartName());
+                    writer.writeCellValue(10, currentRow, disqualification.getPartDrawingNo());
+                    writer.writeCellValue(11, currentRow, disqualification.getProductNo());
+                    writer.writeCellValue(12, currentRow, disqualification.getPartMaterials());
+                    writer.writeCellValue(13, currentRow, disqualification.getNumber());
+                    writer.writeCellValue(14, currentRow, disqualification.getTotalWeight());
+                    writer.writeCellValue(15, currentRow, disqualification.getDisqualificationCondition());
+                    writer.writeCellValue(16, currentRow, disqualification.getQualityName());
+                    writer.writeCellValue(17, currentRow, unitTreatmentOneList.get(number));
+                    writer.writeCellValue(18, currentRow, unitTreatmentTwoList.get(number));
+                    writer.writeCellValue(19, currentRow, discoverItemList.get(number));
+                    writer.writeCellValue(20, currentRow, disqualification.getDiscardTime());
                     writer.writeCellValue(21, currentRow, disqualification.getReuseTime());
                     writer.writeCellValue(22, currentRow, disqualification.getAcceptDeviation());
                     writer.writeCellValue(23, currentRow, disqualification.getRepairQualified());
@@ -264,8 +302,8 @@ public class DisqualificationController extends BaseController {
                     writer.writeCellValue(29, currentRow, disqualification.getTreatmentTwoName());
                     writer.writeCellValue(30, currentRow, disqualification.getResponsibilityName());
                     writer.writeCellValue(31, currentRow, disqualification.getTechnologyName());
-                    currentRow++;
-
+                    currentRow ++;
+                    number ++;
                 }
                 rsp.setContentType("application/octet-stream");
                 rsp.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("不合格品处理单查询结果.xlsx", "UTF-8"));
@@ -279,4 +317,39 @@ public class DisqualificationController extends BaseController {
         }
 
     }
+
+    /**
+     * 转换
+     * @param list
+     * @param tenantMap
+     * @return
+     */
+    private static List<String> convertInput(List<String> list, Map<String, Tenant> tenantMap) {
+        int init = 0;
+        for (String tenantId: list) {
+            if (tenantMap.containsKey(tenantId)) {
+                list.set(init, tenantMap.get(tenantId).getTenantName());
+            }
+            init ++;
+        }
+        return list;
+    }
+
+    /**
+     * 转换
+     * @param list
+     * @param itemMap
+     * @return
+     */
+    private static List<String> convertItemInput(List<String> list, Map<String, ItemParam> itemMap) {
+        int init = 0;
+        for (String tenantId: list) {
+            if (itemMap.containsKey(tenantId)) {
+                list.set(init, itemMap.get(tenantId).getLabel());
+            }
+            init ++;
+        }
+        return list;
+    }
+
 }

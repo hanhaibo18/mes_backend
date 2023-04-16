@@ -100,3 +100,9 @@ secure:
 logging:
   level:
     root: INFO
+
+swagger:
+  basic:
+    enable: true
+    username: test
+    password: test
