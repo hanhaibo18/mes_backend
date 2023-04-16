@@ -208,6 +208,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         BigDecimal reportHours = new BigDecimal(track.getReportHours());
                         //准结工时
                         BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
+                        
                         //实际报告工时
                         BigDecimal realityReportHours = new BigDecimal(track.getReportHours());
                         if (0 == track.getCompletePersonQty()) {
