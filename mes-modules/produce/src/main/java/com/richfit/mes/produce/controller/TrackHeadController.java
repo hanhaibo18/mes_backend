@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -30,6 +31,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -47,6 +49,7 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD_ID;
 import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD_PUBLIC_DTO;
@@ -678,7 +681,7 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("th.product_no", productNo);
         }
-        queryWrapper.eq("ti.is_current", "1");
+        //queryWrapper.eq("ti.is_current", "1");
         //增加逻辑判断，只查询合格证号为空的记录
         if (noCertNo) {
             queryWrapper.and(wapper -> wapper.eq("th.certificate_No", "").or().isNull("th.certificate_No"));
@@ -705,7 +708,14 @@ public class TrackHeadController extends BaseController {
         }*/
         queryWrapper.eq("th.tenant_id", tenantId);
         queryWrapper.eq("th.branch_code", branchCode);
-        return CommonResult.success(trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
+        IPage<TrackHead> trackHeadIPage = trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper);
+        //当前工序
+        Map<String, TrackHead> current = trackHeadIPage.getRecords().stream().filter(x -> x.getIsCurrent() == 1).collect(Collectors.toMap(b -> b.getOriginalOptSequence(), c -> c));
+        List<TrackHead> records = trackHeadIPage.getRecords();
+        //工序为当前工序 或 者下一工序为当前工序的工序(上一工序)
+        List<TrackHead> collect = records.stream().filter(x -> x.getIsCurrent() == 1 || !ObjectUtil.isEmpty(current.get(x.getNextOptSequence()))).collect(Collectors.toList());
+        trackHeadIPage.setRecords(collect);
+        return CommonResult.success(trackHeadIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
     @PostMapping("/plan")
