@@ -84,8 +84,8 @@ public class TrackAssemblyController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "车间Code", required = true, dataType = "String", paramType = "query"),
     })
     @GetMapping("/queryTrackAssemblyPage")
-    public CommonResult<IPage<TrackAssembly>> queryTrackAssemblyPage(Long page, Long limit, String trackHeadId, String branchCode, String order, String orderCol) {
-        return CommonResult.success(trackAssemblyService.queryTrackAssemblyPage(new Page<>(page, limit), trackHeadId, branchCode, order, orderCol));
+    public CommonResult<IPage<TrackAssembly>> queryTrackAssemblyPage(Long page, Long limit, String trackHeadId, Boolean isKey, String branchCode, String order, String orderCol) {
+        return CommonResult.success(trackAssemblyService.queryTrackAssemblyPage(new Page<>(page, limit), trackHeadId, isKey, branchCode, order, orderCol));
     }
 
     @ApiOperation(value = "分页查询绑定信息(新,跟单综合查询)", notes = "分页查询绑定信息(新,跟单综合查询)")

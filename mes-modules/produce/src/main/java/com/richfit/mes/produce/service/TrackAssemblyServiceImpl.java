@@ -65,9 +65,12 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private BaseServiceClient baseServiceClient;
 
     @Override
-    public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol) {
+    public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, Boolean isKey, String branchCode, String order, String orderCol) {
         QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackHeadId);
+        if (Boolean.TRUE.equals(isKey)) {
+            queryWrapper.eq("is_key_part", 1);
+        }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
                 if ("desc".equals(order)) {
