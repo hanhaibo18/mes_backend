@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.OrderDto;
 
@@ -42,4 +43,6 @@ public interface OrderService extends IService<Order> {
     void orderDataTrackHead(TrackHead trackHead);
 
     Order deleteOrder(String id);
+
+    boolean saveByPlan(List<Plan> plans);
 }

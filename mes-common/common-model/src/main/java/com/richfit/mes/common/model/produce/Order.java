@@ -93,4 +93,8 @@ public class Order extends BaseEntity<Order> {
     @TableField(exist = false)
     private String productName;
 
+    @ApiModelProperty(value = "计划id")
+    @TableField(exist = false)
+    private String planId;
+
 }
