@@ -49,7 +49,7 @@ public class SyncDataService {
 
         //1 根据配置查询数据
         Map parMap = getParMap(configs, s);
-        int page = 1;
+        int page = 0;
         boolean flag = true;
         while (flag) {
             parMap.put("page", page);
@@ -75,7 +75,7 @@ public class SyncDataService {
             if (list == null || list.size() < s.getBatchCount() || list.size() == 0) {
                 flag = false;
             }
-            page++;
+            //page++;
         }
     }
 
