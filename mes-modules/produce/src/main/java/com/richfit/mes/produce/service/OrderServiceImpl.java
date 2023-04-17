@@ -255,17 +255,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public boolean saveByPlan(List<Plan> plans) {
         //先筛选出orderId为空的计划
         plans = plans.stream().filter(x -> x.getOrderId() == null).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(plans)) {
+            throw new GlobalException("所选计划全部有对应订单！", ResultCode.FAILED);
+        }
         List<Order> orderList = new ArrayList<>();
         for (Plan plan : plans) {
             Order order = new Order();
             //通过图号获取物料编码
             List<Product> products = baseServiceClient.selectOrderProduct(null, plan.getDrawNo());
             if (CollectionUtils.isEmpty(products)) {
-                throw new GlobalException("该图号没有对应的物料成品！", ResultCode.FAILED);
+                throw new GlobalException("该图号没有对应的物料成品！图号：" + plan.getDrawNo(), ResultCode.FAILED);
             }
             products = products.stream().filter(x -> x.getBranchCode() == plan.getBranchCode()).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(products)) {
-                throw new GlobalException("该图号没有对应的物料成品！", ResultCode.FAILED);
+                throw new GlobalException("该图号没有对应的物料成品！图号：" + plan.getDrawNo(), ResultCode.FAILED);
             }
             order.setOrderSn(UUID.randomUUID().toString());
             order.setInChargeOrg(plan.getInchargeOrg());
