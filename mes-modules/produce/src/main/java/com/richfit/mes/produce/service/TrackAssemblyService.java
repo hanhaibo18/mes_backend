@@ -30,7 +30,7 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @Date: 2022/7/18 9:52
      * @return: IPage<TrackAssembly>
      **/
-    IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, String branchCode, String order, String orderCol);
+    IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, Boolean isKey, String branchCode, String order, String orderCol);
 
     /**
      * 功能描述: 跟单综合查询 查询绑定信息

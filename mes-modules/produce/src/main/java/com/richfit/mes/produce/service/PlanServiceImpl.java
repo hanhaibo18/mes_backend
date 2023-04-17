@@ -301,6 +301,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             if (plan != null) {
                 QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
                 queryWrapper.eq("work_plan_id", planId);
+                queryWrapper.eq("branch_code", plan.getBranchCode());
                 List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
                 //库存数量
                 int storeNum = 0;

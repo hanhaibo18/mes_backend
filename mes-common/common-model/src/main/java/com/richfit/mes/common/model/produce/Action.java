@@ -2,7 +2,8 @@ package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-import java.util.*;
+
+import java.util.Date;
 
 @Data
 public class Action extends BaseEntity<Action> {
@@ -28,6 +29,17 @@ public class Action extends BaseEntity<Action> {
     private String user;
 
     /**
+     * 类名
+     **/
+    private String className;
+
+    /**
+     * 方法名
+     **/
+    private String methodName;
+
+
+    /**
      * 操作类型 0新增 1修改 2删除 3撤回 4开工 5报工 6审核 7派工
      */
     private String actionType;
@@ -40,5 +52,10 @@ public class Action extends BaseEntity<Action> {
      * ip地址
      */
     private String ipAddress;
+
+    /**
+     * 类型
+     **/
+    private String type;
 
 }

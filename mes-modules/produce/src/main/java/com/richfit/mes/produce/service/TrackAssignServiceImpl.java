@@ -239,7 +239,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("u.classes", classes);
-        queryWrapper.eq("u.branch_code", branchCode);
+//        queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
         //queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
@@ -443,7 +443,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.in("u.state", dispatchingDto.getState());
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkNo())) {
-            queryWrapper.inSql("u.id", "select id from produce_assign where track_id in (select id from produce_track_head where tenant_id = '"+SecurityUtils.getCurrentUser().getTenantId()+"' and work_no = '"+dispatchingDto.getWorkNo()+"')");
+            queryWrapper.inSql("u.id", "select id from produce_assign where track_id in (select id from produce_track_head where tenant_id = '" + SecurityUtils.getCurrentUser().getTenantId() + "' and work_no = '" + dispatchingDto.getWorkNo() + "')");
         }
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -637,6 +637,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         return true;
     }
+
     @Autowired
     private ForgHourService forgHourService;
 
@@ -644,12 +645,12 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
      * 锻造根据工时标准计算额定工时
      */
     @Override
-    public void calculationSinglePieceHours(TrackHead trackHead, TrackItem trackItem){
+    public void calculationSinglePieceHours(TrackHead trackHead, TrackItem trackItem) {
         //查询跟单
         QueryWrapper<ForgHour> forgHourQueryWrapper = new QueryWrapper<>();
-        forgHourQueryWrapper.eq("opt_id",trackItem.getOperatiponId())
-                .eq("branch_code",trackItem.getBranchCode())
-                .eq("texture",trackHead.getTexture())
+        forgHourQueryWrapper.eq("opt_id", trackItem.getOperatiponId())
+                .eq("branch_code", trackItem.getBranchCode())
+                .eq("texture", trackHead.getTexture())
                 .orderByDesc("modify_time");
         List<ForgHour> list = forgHourService.list(forgHourQueryWrapper);
         //跟单重量
@@ -658,7 +659,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                         && (item.getWeightDown() < trackHead.getWeight() || item.getWeightDown() == trackHead.getWeight())
         ).collect(Collectors.toList());
 
-        if(hours.size()>0){
+        if (hours.size() > 0) {
             trackItem.setSinglePieceHours(hours.get(0).getHour());
         }
     }

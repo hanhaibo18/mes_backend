@@ -225,11 +225,11 @@ public class TrackItemController extends BaseController {
     @GetMapping("/track_flow_item_merge")
     public CommonResult<List<TrackItem>> trackFlowItemMerge(String trackId) {
 //        List<TrackItem> trackItemScheduleList = new ArrayList<>();
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        if (!StringUtils.isNullOrEmpty(trackId)) {
-            queryWrapper.eq("track_head_id", trackId);
-        }
-        queryWrapper.orderByAsc("sequence_order_by");
+//        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+//        if (!StringUtils.isNullOrEmpty(trackId)) {
+//            queryWrapper.eq("track_head_id", trackId);
+//        }
+//        queryWrapper.orderByAsc("sequence_order_by");
 //        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
         List<TrackItem> trackItemList = new ArrayList<>(trackItemService.queryItemByTrackHeadId(trackId));
 //        for (TrackItem ti : trackItemList) {

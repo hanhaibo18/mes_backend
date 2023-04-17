@@ -114,9 +114,9 @@ public class TrackCheckController extends BaseController {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             //车间
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
-            }
+//            if (!StringUtils.isNullOrEmpty(branchCode)) {
+//                queryWrapper.eq("branch_code", branchCode);
+//            }
             //图号
             if (!StringUtils.isNullOrEmpty(drawingNo)) {
                 DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
