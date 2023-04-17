@@ -593,6 +593,7 @@ public class ProduceInspectionRecordService {
                 map.put("optNo", item.getOptNo());
                 //租户id便于审核时查询对应公司的质检人员
                 map.put("tenantId", item.getTenantId());
+                map.put("branchCode", item.getBranchCode());
             }
             //数量赋值
             QueryWrapper<ProduceItemInspectInfo> trackItemInspectionQueryWrapper = new QueryWrapper<>();
@@ -1367,15 +1368,17 @@ public class ProduceInspectionRecordService {
                 String key = entry.getKey();
                 List<InspectionPower> values = entry.getValue();
                 //校验该工序的任务否全部审核通过
-                List<InspectionPower> collect = values.stream().filter(item -> item.getAuditStatus() == 1).collect(Collectors.toList());
-                if (values.size() == collect.size()) {
+                List<InspectionPower> collect = values.stream().filter(item -> item.getAuditStatus() != 1).collect(Collectors.toList());
+                //全部审核通过走工序跳转
+                if (collect.size()==0) {
                     //是否激活下工序标识
                     boolean flag = true;
-                    for (InspectionPower value : values) {
-                        //核验结果
-                        String inspectionResults = value.getFlawDetection();
+                    Map<String, List<InspectionPower>> mapByTempType = values.stream().collect(Collectors.groupingBy(item -> item.getInspTempType()));
+                    //同类型的只要一个合格就是合格
+                    for (List<InspectionPower> value : mapByTempType.values()) {
+                        List<InspectionPower> bhgList = value.stream().filter(item -> item.getFlawDetection().equals("1")).collect(Collectors.toList());
                         //不合格
-                        if ("0".equals(inspectionResults)) {
+                        if (bhgList.size()==0) {
                             flag = false;
                         }
                     }
@@ -1507,6 +1510,51 @@ public class ProduceInspectionRecordService {
     }
 
     /**
+     * 发起复检接口
+     * @param id 复检的委托单id
+     */
+    public CommonResult recheck(String id,String branchCode) throws Exception {
+        InspectionPower inspectionPower = inspectionPowerService.getById(id);
+        InspectionPower newInspectionPower = new InspectionPower();
+        newInspectionPower.setItemId(inspectionPower.getItemId());
+        newInspectionPower.setHeadId(inspectionPower.getHeadId());
+        newInspectionPower.setPriority(inspectionPower.getPriority());
+        newInspectionPower.setWeld(inspectionPower.getWeld());
+        newInspectionPower.setSampleName(inspectionPower.getSampleName());
+        newInspectionPower.setDrawNo(inspectionPower.getDrawNo());
+        newInspectionPower.setDrilNo(inspectionPower.getDrilNo());
+        newInspectionPower.setInspectionDepart(inspectionPower.getInspectionDepart());
+        newInspectionPower.setTrackType(inspectionPower.getTrackType());
+        newInspectionPower.setTempType(inspectionPower.getTempType());
+        newInspectionPower.setCast(inspectionPower.getCast());
+
+        newInspectionPower.setCast(inspectionPower.getCast());
+        newInspectionPower.setForg(inspectionPower.getForg());
+        newInspectionPower.setFluorescent(inspectionPower.getFluorescent());
+        newInspectionPower.setNum(inspectionPower.getNum());
+        newInspectionPower.setSingle(inspectionPower.getSingle());
+        newInspectionPower.setLength(inspectionPower.getLength());
+        newInspectionPower.setReviseNum(inspectionPower.getReviseNum());
+        newInspectionPower.setWorkpieceAddress(inspectionPower.getWorkpieceAddress());
+
+        newInspectionPower.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        newInspectionPower.setBranchCode(branchCode);
+        //保存探伤委托单号
+        newInspectionPower.setOrderNo(Code.valueOnUpdate("order_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService));
+        //Code.update("order_no", inspectionPower.getOrderNo(), SecurityUtils.getCurrentUser().getTenantId(), inspectionPower.getBranchCode(), codeRuleService);
+        //委托人赋值
+        newInspectionPower.setConsignor(SecurityUtils.getCurrentUser().getUserId());
+        //委托时间
+        newInspectionPower.setPowerTime(DateUtil.format(DateUtil.date(), "YYYY-MM-dd HH:mm:ss"));
+        //待开工
+        newInspectionPower.setIsDoing("0");
+        //保存
+        inspectionPowerService.save(inspectionPower);
+
+        return CommonResult.success(true);
+    }
+
+    /**
      * 探伤开工
      *
      * @param ids 探伤委托单ids
@@ -1526,16 +1574,19 @@ public class ProduceInspectionRecordService {
                 //更新跟单工序信息
                 for (InspectionPower inspectionPower : haveList) {
                     TrackItem trackItem = trackItemService.getById(inspectionPower.getItemId());
-                    trackItem.setIsDoing(1);
-                    trackItem.setStartDoingTime(new Date());
-                    trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
-                    trackItemService.updateById(trackItem);
-                    //更新派工信息
-                    UpdateWrapper<Assign> assignUpdateWrapper = new UpdateWrapper<>();
-                    assignUpdateWrapper.in("ti_id", inspectionPower.getItemId())
-                            //设置开工状态
-                            .set("state", 1);
-                    trackAssignService.update(assignUpdateWrapper);
+                    //涉及复检的数据  所以完工的就不更新了  还是完工
+                    if(!"2".equals(trackItem.getIsDoing())){
+                        trackItem.setIsDoing(1);
+                        trackItem.setStartDoingTime(new Date());
+                        trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
+                        trackItemService.updateById(trackItem);
+                        //更新派工信息
+                        UpdateWrapper<Assign> assignUpdateWrapper = new UpdateWrapper<>();
+                        assignUpdateWrapper.in("ti_id", inspectionPower.getItemId())
+                                //设置开工状态
+                                .set("state", 1);
+                        trackAssignService.update(assignUpdateWrapper);
+                    }
                 }
             }
             //更新探伤委托单开工状态
@@ -1654,6 +1705,17 @@ public class ProduceInspectionRecordService {
             queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
         }
         Page<InspectionPower> page = inspectionPowerService.page(new Page<InspectionPower>(inspectionPowerVo.getPage(), inspectionPowerVo.getLimit()), queryWrapper);
+        //有源跟单 判断复检
+        List<InspectionPower> originPower = page.getRecords().stream().filter(item -> !StringUtils.isEmpty(item.getHeadId())).collect(Collectors.toList());
+        Set<String> itemIds = originPower.stream().map(item -> item.getItemId()).collect(Collectors.toSet());
+        Map<String, List<InspectionPower>> mapByItemIdAndTempType = new HashMap<>();
+        if(itemIds.size()>0){
+            QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
+            inspectionPowerQueryWrapper.in("item_id",itemIds);
+            mapByItemIdAndTempType = inspectionPowerService.list(inspectionPowerQueryWrapper)
+                    .stream().collect(Collectors.groupingBy(item -> item.getItemId() + "_" + item.getInspTempType()));
+        }
+
         //委托人转换
         for (InspectionPower record : page.getRecords()) {
             /*if (!ObjectUtil.isEmpty(record.getConsignor())) {
@@ -1681,6 +1743,16 @@ public class ProduceInspectionRecordService {
             if (list.size() > 0) {
                 record.setRecordId(list.get(0).getInspectRecordId());
             }
+            //是否复检
+            List<InspectionPower> inspectionPowers = mapByItemIdAndTempType.get(record.getItemId() + "_" + record.getInspTempType());
+            if(!CollectionUtil.isEmpty(inspectionPowers)){
+                List<InspectionPower> collect = inspectionPowers.stream().filter(item -> item.getIsDoing().equals("2")).collect(Collectors.toList());
+                if(collect.size()>0 && record.getFlawDetection().equals("0")){
+                    record.setIsRecheck(1);
+                }
+            }
+
+
         }
         return page;
     }

@@ -8,11 +8,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.InspectionPower;
 import com.richfit.mes.produce.entity.ProduceInspectionRecordDto;
 import com.richfit.mes.produce.entity.quality.InspectionPowerVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ProduceInspectionRecordService;
+import com.richfit.mes.produce.service.TrackAssignService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import freemarker.template.TemplateException;
 import io.swagger.annotations.Api;
@@ -27,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -210,12 +213,15 @@ public class ProduceInspectionRecordController extends BaseController {
         return CommonResult.success(produceInspectionRecordService.backOutOrder(ids,backRemark));
     }
 
+    @Autowired
+    private TrackAssignService trackAssignService;
+
     @ApiOperation(value = "删除委托单", notes = "删除委托单")
     @ApiImplicitParam(name = "id", value = "委托单id", paramType = "path", dataType = "String")
     @DeleteMapping("inspectionPower/delete/{id}")
     public CommonResult<Boolean> powerOrder(@PathVariable String id) throws Exception {
         InspectionPower inspectionPower = inspectionPowerService.getById(id);
-        if (inspectionPower.getStatus() == IS_STATUS) {
+        if (inspectionPower.getIsDoing().equals("1")) {
             return CommonResult.failed("该委托单已经开工，不能删除");
         }
         //同工序有开工的委托 不能删除
@@ -228,8 +234,14 @@ public class ProduceInspectionRecordController extends BaseController {
             if (isDoingList.size() > 0) {
                 return CommonResult.failed("同工序有开工的委托，不能删除委托单");
             }
+            //派工回滚
+            if(list.size() == 1){
+                QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+                assignQueryWrapper.eq("ti_id",itemId);
+                List<Assign> assigns = trackAssignService.list(assignQueryWrapper);
+                return CommonResult.success(trackAssignService.deleteAssign(new String[]{assigns.get(0).getId()}));
+            }
         }
-
         return CommonResult.success(inspectionPowerService.removeById(id));
     }
 
@@ -249,6 +261,12 @@ public class ProduceInspectionRecordController extends BaseController {
     @PostMapping("/inspectionPower/rollBackDoing")
     public CommonResult rollBackDoing(@RequestBody List<String> ids) {
         return CommonResult.success(produceInspectionRecordService.rollBackDoing(ids));
+    }
+
+    @ApiOperation(value = "复检发起委托", notes = "复检发起委托")
+    @GetMapping("/inspectionPower/recheck")
+    public CommonResult recheck(String id,String branchCode) throws Exception {
+        return CommonResult.success(produceInspectionRecordService.recheck(id,branchCode));
     }
 
 
