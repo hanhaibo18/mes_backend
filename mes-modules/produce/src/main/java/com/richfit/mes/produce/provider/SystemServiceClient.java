@@ -160,4 +160,13 @@ public interface SystemServiceClient {
      **/
     @GetMapping("/api/sys/user/queryUserByTenantIdAndRole")
     public CommonResult<List<TenantUserVo>> queryUserByTenantIdAndRole(@RequestParam String tenantId);
+
+    /**
+     * 根据Code查询字典列表项
+     * @param code
+     * @param tenantId
+     * @return
+     */
+    @GetMapping("/api/sys/item/param/find_by_class_code")
+    public CommonResult<List<ItemParam>> findItemParamByCode(@RequestParam("code") String code,@RequestParam("tenantId") String tenantId);
 }
