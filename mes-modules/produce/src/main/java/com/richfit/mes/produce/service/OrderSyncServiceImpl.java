@@ -10,6 +10,7 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.OrderSyncLog;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.OrderMapper;
@@ -212,7 +213,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             return false;
         }
         //图号为空,或图号不相等进入
-        if (null == log.getDrawingNo() || !list.get(0).getDrawingNo().equals(log.getDrawingNo())) {
+        if (null == log.getDrawingNo() || !DrawingNoUtil.drawingNo(list.get(0).getDrawingNo()).equals(DrawingNoUtil.drawingNo(log.getDrawingNo()))) {
             if (null != log.getDrawingNo()) {
                 log.setOpinion("同步图号为:" + log.getDrawingNo() + ",本地物料图号为:" + list.get(0).getDrawingNo() + ",图号不同请处理");
             } else {
