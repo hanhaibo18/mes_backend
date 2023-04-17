@@ -63,10 +63,10 @@ public class DisqualificationController extends BaseController {
     @Resource
     private SystemServiceClient systemServiceClient;
 
-    public static final String UNITNAME = "不合格外协单位";
-    public static final String UNITCODE = "qualityUnqualityUnitW";
-    public static final String PROCESSNAME = "不合格常用工序";
-    public static final String PROCESSCODE = "qualityUnqualityOpt";
+    public static final String UNIT_NAME = "不合格外协单位";
+    public static final String UNIT_CODE = "qualityUnqualityUnitW";
+    public static final String PROCESS_NAME = "不合格常用工序";
+    public static final String PROCESS_CODE = "qualityUnqualityOpt";
 
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
@@ -214,6 +214,7 @@ public class DisqualificationController extends BaseController {
             List<String> idList = disqualificationList.stream().map(e -> e.getId()).collect(Collectors.toList());
             QueryWrapper<DisqualificationFinalResult> objectQueryWrapper = new QueryWrapper<>();
             objectQueryWrapper.in("id", idList);
+            objectQueryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<DisqualificationFinalResult> list = finalResultService.list(objectQueryWrapper);
             Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
             // 责任单位内
@@ -234,15 +235,15 @@ public class DisqualificationController extends BaseController {
                 List<String> unitTreatmentOneList = convertInput(unitOneList, tenantMap);
                 List<String> unitTreatmentTwoList = convertInput(unitTwoList, tenantMap);
                 List<String> discoverBranchList = convertInput(BranchList, tenantMap);
-                Map<String, ItemParam> unitMap = systemServiceClient.selectItemClass(UNITCODE, UNITNAME).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
+                Map<String, ItemParam> unitMap = systemServiceClient.selectItemClass(UNIT_CODE, UNIT_NAME).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
                 List<String> unitResponsibilityOutsideList = convertItemInput(unitValueList, unitMap);
-                Map<String, ItemParam> processMap = systemServiceClient.selectItemClass(PROCESSCODE, PROCESSNAME).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
+                Map<String, ItemParam> processMap = systemServiceClient.selectItemClass(PROCESS_CODE, PROCESS_NAME).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
                 List<String> discoverItemList = convertItemInput(processValueList, processMap);
                 // 读文件
                 ClassPathResource classPathResource = new ClassPathResource("excel/" + "disqualificationTemplate.xlsx");
                 ExcelWriter writer = null;
                 writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
-                writer.writeCellValue("A1", "共搜索到"+ disqualificationList.size() +"条符合条件的信息");
+                writer.writeCellValue("A1", new StringBuilder().append("共搜索到").append(disqualificationList.size()).append("条符合条件的信息"));
                 writer.resetRow();
                 writer.passRows(5);
                 for (Disqualification disqualification: disqualificationList) {
