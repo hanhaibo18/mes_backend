@@ -265,7 +265,7 @@ public class ProduceInspectionRecordController extends BaseController {
 
     @ApiOperation(value = "复检发起委托", notes = "复检发起委托")
     @GetMapping("/inspectionPower/recheck")
-    public CommonResult recheck(String id,String branchCode) throws Exception {
+        public CommonResult recheck(String id,String branchCode) throws Exception {
         return CommonResult.success(produceInspectionRecordService.recheck(id,branchCode));
     }
 

@@ -1549,7 +1549,7 @@ public class ProduceInspectionRecordService {
         //待开工
         newInspectionPower.setIsDoing("0");
         //保存
-        inspectionPowerService.save(inspectionPower);
+        inspectionPowerService.save(newInspectionPower);
 
         return CommonResult.success(true);
     }
