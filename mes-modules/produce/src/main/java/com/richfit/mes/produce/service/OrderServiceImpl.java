@@ -266,7 +266,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             if (CollectionUtils.isEmpty(products)) {
                 throw new GlobalException("该图号没有对应的物料成品！图号：" + plan.getDrawNo(), ResultCode.FAILED);
             }
-            products = products.stream().filter(x -> x.getBranchCode() == plan.getBranchCode()).collect(Collectors.toList());
+            products = products.stream().filter(x -> x.getBranchCode().equals(plan.getBranchCode())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(products)) {
                 throw new GlobalException("该图号没有对应的物料成品！图号：" + plan.getDrawNo(), ResultCode.FAILED);
             }
