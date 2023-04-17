@@ -168,6 +168,13 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }
+        if (!StringUtils.isNullOrEmpty(planDto.getStartPlanMonth())) {
+            queryWrapper.ge("plan_month", planDto.getStartPlanMonth());
+        }
+        if (!StringUtils.isNullOrEmpty(planDto.getEndPlanMonth())) {
+            queryWrapper.le("plan_month", planDto.getEndPlanMonth());
+        }
+
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, planDto.getOrderCol(), planDto.getOrder());
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);

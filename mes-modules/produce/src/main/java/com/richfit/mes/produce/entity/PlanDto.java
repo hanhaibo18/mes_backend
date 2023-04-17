@@ -83,4 +83,8 @@ public class PlanDto extends BasePageDto<PlanDto> {
      * 来源  1 分公司计划  2车间计划
      */
     private String source;
+
+    private String startPlanMonth;
+
+    private String endPlanMonth;
 }
