@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -101,25 +100,25 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
                 trackItemService.update(updateWrapper);
 //                trackHeadService.changeProductNo();
                 //料单入库生成入库单
-                LineStore lineStore = new LineStore();
-                lineStore.setTenantId(trackAssembly.getTenantId());
-                lineStore.setTrackType("0");
-                lineStore.setMaterialType("1");
-                lineStore.setInTime(new Date());
-                lineStore.setMaterialNo(trackAssembly.getMaterialNo());
-                lineStore.setInputType("2");
-                lineStore.setProductName(trackAssembly.getName());
-                lineStore.setMaterialName(trackAssembly.getName());
-                lineStore.setBranchCode(trackAssembly.getBranchCode());
-                lineStore.setProdNo(produceNo);
-                lineStore.setDrawingNo(trackAssembly.getDrawingNo());
-                lineStore.setStatus("1");
-                lineStoreService.save(lineStore);
-                trackAssembly.setLineStoreId(lineStore.getId());
+//                LineStore lineStore = new LineStore();
+//                lineStore.setTenantId(trackAssembly.getTenantId());
+//                lineStore.setTrackType("0");
+//                lineStore.setMaterialType("1");
+//                lineStore.setInTime(new Date());
+//                lineStore.setMaterialNo(trackAssembly.getMaterialNo());
+//                lineStore.setInputType("2");
+//                lineStore.setProductName(trackAssembly.getName());
+//                lineStore.setMaterialName(trackAssembly.getName());
+//                lineStore.setBranchCode(trackAssembly.getBranchCode());
+//                lineStore.setProdNo(produceNo);
+//                lineStore.setDrawingNo(trackAssembly.getDrawingNo());
+//                lineStore.setStatus("1");
+//                lineStoreService.save(lineStore);
+//                trackAssembly.setLineStoreId(lineStore.getId());
             }
             //绑定
-            String expend = lineStoreService.zpExpend(trackAssembly.getTrackHeadId(), trackFlow.getId(), trackAssembly.getMaterialNo(), assemblyBinding.getQuantity(), trackHead.getBranchCode(), trackHead.getTenantId());
-            assemblyBinding.setLineStoreId(expend);
+//            String expend = lineStoreService.zpExpend(trackAssembly.getTrackHeadId(), trackFlow.getId(), trackAssembly.getMaterialNo(), assemblyBinding.getQuantity(), trackHead.getBranchCode(), trackHead.getTenantId());
+//            assemblyBinding.setLineStoreId(expend);
         } else {
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() - assemblyBinding.getQuantity());
             trackHead.setProductNo("");
