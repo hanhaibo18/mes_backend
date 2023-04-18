@@ -226,7 +226,7 @@ public class DisqualificationController extends BaseController {
             // 处理单位2
             List<String> unitTwoList = list.stream().map(DisqualificationFinalResult::getUnitTreatmentTwo).collect(Collectors.toList());
             // 发现车间
-            List<String> BranchList = list.stream().map(DisqualificationFinalResult::getDiscoverBranch).collect(Collectors.toList());
+            List<String> branchList = list.stream().map(DisqualificationFinalResult::getDiscoverBranch).collect(Collectors.toList());
             // 责任单位(外)
             List<String> unitValueList = list.stream().map(DisqualificationFinalResult::getUnitResponsibilityOutside).collect(Collectors.toList());
             // 发现工序
@@ -235,7 +235,7 @@ public class DisqualificationController extends BaseController {
             List<String> unitResponsibilityWithinList = convertInput(unitList, tenantMap);
             List<String> unitTreatmentOneList = convertInput(unitOneList, tenantMap);
             List<String> unitTreatmentTwoList = convertInput(unitTwoList, tenantMap);
-            List<String> discoverBranchList = convertInput(BranchList, tenantMap);
+            List<String> discoverBranchList = convertInput(branchList, tenantMap);
 
             Map<String, ItemParam> unitMap = systemServiceClient.findItemParamByCode(UNIT_CODE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
             List<String> unitResponsibilityOutsideList = convertItemInput(unitValueList, unitMap);
