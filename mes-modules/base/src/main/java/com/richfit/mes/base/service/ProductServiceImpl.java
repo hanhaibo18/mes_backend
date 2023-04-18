@@ -25,6 +25,7 @@ import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.model.wms.MaterialBasis;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -227,15 +228,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (CollectionUtils.isEmpty(productList)) {
             return CommonResult.failed("未勾选中物料数据");
         }
-
-        List<String> erpCodeList = new ArrayList<>();
-        // 关联租户 获取erpCode
-        for (Product product : productList) {
-            CommonResult<Tenant> tenant = systemServiceClient.tenantById(product.getTenantId());
-            erpCodeList.add(tenant.getData().getTenantErpCode());
-        }
-        Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product));
-
+        List<String> tenantIdList = productList.stream().map(Product::getTenantId).collect(Collectors.toList());
+        // 查询所有的租户信息
+        Map<String, Tenant> tenantMap = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
+        List<String> erpCodeList = convertInput(tenantIdList, tenantMap);
+        Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product, (value1, value2) -> value2));
         if (CollectionUtils.isNotEmpty(erpCodeList)) {
             int init = 0;
             List<MaterialBasis> materialBasisList = new ArrayList<>();
@@ -255,14 +252,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     materialBasis.setSingleWeight(productMap.get(product.getId()).getWeight().toString());
                 }
                 materialBasis.setDeliveryFlag(productMap.get(product.getId()).getIsEdgeStore());
-                materialBasis.setProduceType("");
                 materialBasis.setMaterialType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
                 materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
-                materialBasis.setField1("");
-                materialBasis.setField2("");
-                materialBasis.setField3("");
-                materialBasis.setField4("");
-                materialBasis.setField5("");
                 materialBasisList.add(materialBasis);
                 init++;
             }
@@ -272,6 +263,23 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             return CommonResult.success(true, "操作成功");
         }
         return CommonResult.failed("操作失败");
+    }
+
+    /**
+     * 转换
+     * @param list
+     * @param tenantMap
+     * @return
+     */
+    private static List<String> convertInput(List<String> list, Map<String, Tenant> tenantMap) {
+        int init = 0;
+        for (String tenantId: list) {
+            if (tenantMap.containsKey(tenantId)) {
+                list.set(init, tenantMap.get(tenantId).getTenantErpCode());
+            }
+            init ++;
+        }
+        return list;
     }
 
 
