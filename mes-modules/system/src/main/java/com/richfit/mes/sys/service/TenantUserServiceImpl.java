@@ -511,11 +511,24 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
-    public List<TenantUserVo> queryAllQualityUserByTenantId(String classes, String tenantId) {
+    public List<TenantUserVo> queryAllQualityUserByTenantId(String branchCode, String tenantId) {
         if (!StringUtils.isEmpty(tenantId)) {
-            Tenant tenant = tenantService.getById(tenantId);
-            //获取当前登录人公司所有质检人员
-            List<TenantUserVo> userList = this.queryQualityInspectionDepartment(classes, tenant.getTenantCode(), tenant.getId());
+            //组装角色标识 根据组织机构区分
+            String role = branchCode + "_JMAQ_ZJ";
+            if(!StringUtils.isEmpty(role)){
+                QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+                //判断如果codeList 为空会报错
+                queryWrapper.eq("role_code", role);
+                queryWrapper.eq("tenant_id", tenantId);
+                List<Role> roleList = roleService.list(queryWrapper);
+                List<String> roleIdList = roleList.stream().map(BaseEntity::getId).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(roleIdList)) {
+                    QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
+                    queryUser.in("role_id", roleIdList)
+                            .eq("status",1);
+                    return tenantUserMapper.queryByCondition(queryUser);
+                }
+            }
             /*//获取质检公司
             List<ItemParam> item = null;
             try {
@@ -535,8 +548,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             //获取质检租户下所有质检人员
             for (Tenant tenantEntity : tenantList) {
                 userList.addAll(this.queryQualityInspectionDepartment(classes, tenantEntity.getTenantCode(), tenantEntity.getId()));
-            }*/
-            return userList;
+            }*/;
         }
         return null;
     }

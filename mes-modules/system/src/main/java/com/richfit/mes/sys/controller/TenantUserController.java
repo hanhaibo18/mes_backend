@@ -384,8 +384,8 @@ public class TenantUserController extends BaseController {
     @ApiOperation(value = "查询质检人员", notes = "为空查询全部质检人员")
     @ApiImplicitParam(name = "tenantId", value = "租户id", paramType = "query", dataType = "String")
     @GetMapping("/queryAllQualityUserByTenantId")
-    public CommonResult<List<TenantUserVo>> queryAllQualityUserByTenantId(String classes, String tenantId) {
-        return CommonResult.success(tenantUserService.queryAllQualityUserByTenantId(classes, tenantId));
+    public CommonResult<List<TenantUserVo>> queryAllQualityUserByTenantId(String branchCode, String tenantId) {
+        return CommonResult.success(tenantUserService.queryAllQualityUserByTenantId(branchCode, tenantId));
     }
 
     @ApiOperation(value = "查询全部人员账户姓名", notes = "查询全部人员账户姓名")

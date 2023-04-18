@@ -3,7 +3,8 @@
 <mapper namespace="com.richfit.mes.sync.dao.DataMapper">
     <select id="selectRawData" resultType="com.richfit.mes.sync.entity.RawData" statementType="STATEMENT">
         select distinct ${par.rawAttachmentColum} rawFilePath
-        from ${par.tableName} where tenant_id=&apos;${par.tenantId}&apos; and ${par.tempUpdateDateColum} is null
+        from ${par.tableName} where tenant_id=&apos;${par.tenantId}&apos; and ${par.tempUpdateDateColum} is null and
+        ${par.rawAttachmentColum} is not null
         LIMIT ${par.page},${par.count}
     </select>
 

@@ -1,15 +1,19 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.produce.aop.OperationLog;
@@ -21,12 +25,13 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD;
 
@@ -50,6 +55,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Autowired
     private TrackFlowMapper trackFlowMapper;
+
+    @Autowired
+    private PlanService planService;
 
     @Autowired
     private TrackHeadService trackHeadService;
@@ -240,6 +248,52 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         this.removeById(order);
         return order;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveByPlan(List<Plan> plans) {
+        //先筛选出orderId为空的计划
+        plans = plans.stream().filter(x -> x.getOrderId() == null).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(plans)) {
+            throw new GlobalException("所选计划全部有对应订单！", ResultCode.FAILED);
+        }
+        List<Order> orderList = new ArrayList<>();
+        for (Plan plan : plans) {
+            Order order = new Order();
+            //通过图号获取物料编码
+            List<Product> products = baseServiceClient.selectOrderProduct(null, plan.getDrawNo());
+            if (CollectionUtils.isEmpty(products)) {
+                throw new GlobalException("该图号没有对应的物料成品！图号：" + plan.getDrawNo(), ResultCode.FAILED);
+            }
+            products = products.stream().filter(x -> x.getBranchCode().equals(plan.getBranchCode())).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(products)) {
+                throw new GlobalException("该图号没有对应的物料成品！图号：" + plan.getDrawNo(), ResultCode.FAILED);
+            }
+            order.setOrderSn(UUID.randomUUID().toString());
+            order.setInChargeOrg(plan.getInchargeOrg());
+            order.setMaterialCode(products.get(0).getMaterialNo());
+            order.setMaterialDesc(products.get(0).getMaterialDesc());
+            order.setStartTime(plan.getStartTime());
+            order.setEndTime(plan.getEndTime());
+            order.setOrderDate(plan.getStartTime());
+            order.setDeliveryDate(plan.getOrderDeliveryDate());
+            order.setOrderNum(plan.getProjNum());
+            order.setPriority(plan.getPriority());
+            order.setBranchCode(plan.getBranchCode());
+            order.setTenantId(plan.getTenantId());
+            order.setPlanId(plan.getId());
+            orderList.add(order);
+        }
+        //逆向生成订单
+        this.saveBatch(orderList);
+        Map<String, Order> orderMap = orderList.stream().collect(Collectors.toMap(Order::getPlanId, Function.identity()));
+        //关联计划
+        for (Plan plan : plans) {
+            plan.setOrderId(orderMap.get(plan.getId()).getId());
+            plan.setOrderNo(orderMap.get(plan.getId()).getOrderSn());
+        }
+        return planService.updateBatchById(plans);
     }
 
 

@@ -170,6 +170,11 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     @TableField(exist = false)
     @ApiModelProperty(value = "优先级String", dataType = "String")
     private String priorityString;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否复检", dataType = "int")
+    private int isRecheck;
+
     public String getProductType() {
         StringBuilder productType = new StringBuilder();
         if(this.weld ==1){

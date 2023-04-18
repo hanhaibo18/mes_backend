@@ -174,6 +174,7 @@ public class Disqualification extends BaseEntity<Disqualification> {
     @ApiModelProperty(value = "关单日期")
     private Date closeTime;
 
+    @TableField(exist = false)
     @ApiModelProperty(value = "不合格情况")
     private String disqualificationCondition;
 
