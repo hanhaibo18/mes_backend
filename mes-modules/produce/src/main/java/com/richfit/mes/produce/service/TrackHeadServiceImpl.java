@@ -170,7 +170,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         for (TrackItem trackItem : trackItemList) {
             List<Attachment> attachments = trackCheckDetailService.getAttachmentListByTiId(trackItem.getId());
             for (Attachment sar : attachments) {
-                downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + trackItem.getSequenceOrderBy());
+                String optNo = trackItem.getOptNo();
+                if (StrUtil.isBlank(optNo)) {
+                    optNo = trackItem.getSequenceOrderBy() + "";
+                }
+                downloads(sar.getId(), path + "/" + trackItem.getOptName() + " " + optNo);
             }
         }
     }
@@ -391,7 +395,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         try {
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
+            System.out.println(id);
+            System.out.println(JSON.toJSONString(data));
             if (data.getStatus() == 200) {
+                System.out.println(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
