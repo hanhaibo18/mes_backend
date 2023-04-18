@@ -397,6 +397,126 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         return bool;
     }
 
+    // 材料入库
+    @Override
+    public boolean addStoreNew(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
+                               String isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) {
+
+        lineStore.setUseNum(0);
+        lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
+        lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+        lineStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        lineStore.setBranchCode(branchCode);
+        lineStore.setCreateTime(new Date());
+        lineStore.setInTime(new Date());
+
+        boolean bool;
+
+        if (startNo != null && startNo > 0) {
+            List<LineStore> list = new ArrayList<>();
+            String oldWorkblankNo = lineStore.getWorkblankNo();
+
+            //计算入库料单数量
+            int num = 0;
+            if (startNo.intValue() == 0) {
+                num = endNo;
+            } else {
+                num = endNo - startNo + 1;
+            }
+            String ordersSn ="";
+            if (isAutoMatchProd.equals(2)) {
+                ordersSn= createOrder(lineStore);
+            }
+
+
+            for (int i = startNo; i <= endNo; i++) {
+                LineStore entity = new LineStore();
+                //改为浅拷贝
+                BeanUtils.copyProperties(lineStore, entity);
+                if (isAutoMatchProd.equals(1)) {
+                    //匹配生产订单
+                    String orderNo = matchProd(entity.getMaterialNo(), entity.getNumber());
+                    if (StrUtil.isNotBlank(orderNo)) {
+                        HashMap<String, Integer> orderNumAndInNum = getOrderNumAndInNum(entity.getMaterialNo(), orderNo);
+                        int surplusNum = orderNumAndInNum.get("orderNum") - orderNumAndInNum.get("inNum");
+                        //当剩余数量小于当次入库数量提示入库数量大于订单数量
+                        if (surplusNum < num) {
+                            throw new GlobalException("录入量不能大于订单剩余量,订单: " + orderNo + " 的剩余数量为: " + surplusNum + " 您录入是数量为: " + num, ResultCode.FAILED);
+                        }
+                        entity.setProductionOrder(orderNo);
+                    }
+                }else if (isAutoMatchProd.equals(2)){
+                    entity.setProductionOrder(ordersSn);
+                }
+                StringBuilder stringBuilder = new StringBuilder(strartSuffix);
+                //毛坯编号中的数字补零操作
+                String numstr = String.format("%0" + endNo.toString().length() + "d", i);
+                //判断开始前缀有没有0，如果有0，则拼接到开始编号前，如果没有直接用startsuffix
+                if (!StringUtils.isNullOrEmpty(strartSuffix)) {
+                    stringBuilder.append(numstr);
+                } else {
+                    stringBuilder = new StringBuilder(numstr);
+                }
+                String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
+//                String workblankNo = oldWorkblankNo + "" + i;
+                if (!StringUtils.isNullOrEmpty(suffixNo)) {
+                    workblankNo += suffixNo;
+                }
+                entity.setWorkblankNo(workblankNo);
+                entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());
+                list.add(entity);
+            }
+
+            bool = this.saveBatch(list);
+
+            //保存料单-附件关系
+            for (LineStore s : list) {
+                storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
+            }
+
+        } else {
+            if (isAutoMatchProd.equals("1")) {
+                lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
+            }
+            bool = this.save(lineStore);
+            //保存料单-附件关系
+            storeAttachRelService.batchSaveStoreFile(lineStore.getId(), branchCode, lineStore.getFileIds());
+        }
+
+
+        return bool;
+    }
+
+
+    /**
+     * 根据入库料单生成订单
+     * @param lineStore
+     */
+    private String createOrder(LineStore lineStore) {
+        //生成订单
+        Order order=new Order();
+        String orderSn = UUID.randomUUID().toString().replaceAll("-", "");
+        order.setOrderSn(orderSn);//订单号
+        order.setOrderDate(new Date());//下单日期
+        order.setMaterialCode(lineStore.getMaterialNo());//物料编码
+        order.setOrderNum(lineStore.getNumber());//订单数量
+        order.setDeliveryDate(new Date());//交货日期
+        order.setPriority("低");///优先级
+        order.setBranchCode(lineStore.getBranchCode());
+        order.setStatus(0);
+        order.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+        order.setCreateTime(new Date());
+        order.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        order.setMaterialDesc(lineStore.getMaterialName());
+        order.setProduction(0);
+//            order.setStartTime();
+//            order.setEndTime();
+//            order.setOrderType();
+//            order.setInChargeOrg();
+        orderService.save(order);
+        return orderSn;
+    }
+
     //校验编号是否存在
     @Override
     public boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo, String strartSuffix) {

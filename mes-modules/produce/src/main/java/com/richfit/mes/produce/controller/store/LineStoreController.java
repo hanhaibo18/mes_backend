@@ -160,6 +160,74 @@ public class LineStoreController extends BaseController {
 
     }
 
+
+    @ApiOperation(value = "入库(新)", notes = "毛坯或半成品/成品入库")
+    @OperationLog(actionType = "0", actionItem = "3", argType = LINE_STORE)
+    @PostMapping("/line_store_new")
+    public CommonResult<LineStore> addLineStoreNew(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore,
+                                                @ApiParam(value = "启始序列号") @RequestParam(required = false) String startNo,
+                                                @ApiParam(value = "终止序列号") @RequestParam(required = false) String endNo,
+                                                @ApiParam(value = "前缀字段") @RequestParam(required = false) String suffixNo,
+                                                @ApiParam(value = "0手动, 1自动匹配生产订单 2 逆向生成订单") @RequestParam String isAutoMatchProd,
+                                                @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
+                                                @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
+
+        //用来存放开始编号前缀为0
+        StringBuilder strartSuffix = new StringBuilder();
+        Integer startNoOld = 0;
+        Integer endNoOld = 0;
+
+        //只有单件的时候才会使用启始序列号，只要是单件  则启始序列号必有
+        if (lineStore != null && org.apache.commons.lang3.StringUtils.isNotEmpty(lineStore.getTrackType()) && "0".equals(lineStore.getTrackType())) {
+            //前端不需要校验endNo有没有填写 如果没有填写endNo 则吧startNo给到endNo
+            if (endNo == null || org.apache.commons.lang3.StringUtils.isEmpty(endNo)) {
+                endNo = startNo;
+            }
+            //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
+            // 则会将0给省略掉，所以换成用String，将0截取出来然后在拼接到开始编号前面
+            startNoOld = Integer.valueOf(startNo);
+            endNoOld = Integer.valueOf(endNo);
+
+//            String[] split = startNo.split("");
+//            List<String> strings = Arrays.asList(split);
+            //判断第一位是不是0，如果不是直接跳出
+//            for (String string : strings) {
+//                if ("0".equals(string)) {
+//                    strartSuffix.append(string);
+//                } else {
+//                    break;
+//                }
+//            }
+        }
+
+
+        if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
+            return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
+        } else if (StringUtils.isNullOrEmpty(lineStore.getMaterialNo())) {
+            return CommonResult.failed(MATERIAL_CODE_NULL_MSG);
+        } else if (StringUtils.isNullOrEmpty(lineStore.getDrawingNo())) {
+            return CommonResult.failed(DRAWING_NO_NULL_MSG);
+            //校验物料号是否存在
+        } else if (!isMaterialNoExist(lineStore.getMaterialNo())) {
+            return CommonResult.failed(MATERIAL_NO_NOT_EXIST);
+            //校验编号是否已存在，如存在，返回报错信息
+        } else if (lineStoreService.checkCodeExist(lineStore, startNoOld, endNoOld, suffixNo, strartSuffix.toString())) {
+            String message = lineStore.getMaterialType().equals(0) ? "毛坯" : "零（部）件";
+            return CommonResult.failed(message + CODE_EXITS);
+        } else if (!isMaterialTypeMatch(lineStore.getMaterialNo(), lineStore.getMaterialType())) {
+            return CommonResult.failed(MATERIAL_TYPE_NOT_MATCH);
+        } else {
+            boolean bool = lineStoreService.addStoreNew(lineStore, startNoOld, endNoOld, suffixNo, isAutoMatchProd, isAutoMatchPur, branchCode, strartSuffix.toString());
+            if (bool) {
+                return CommonResult.success(lineStore, SUCCESS_MESSAGE);
+            } else {
+                return CommonResult.failed(FAILED_MESSAGE);
+            }
+        }
+
+    }
+
+
     @ApiOperation(value = "来料接收入库", notes = "根据合格证，实现半成品/成品入库")
     @OperationLog(actionType = "0", actionItem = "3", argType = CERTIFICATE)
     @PostMapping("/add_by_cert")
