@@ -373,6 +373,7 @@ public class LineStoreController extends BaseController {
                 queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
             }
         } else {
+            queryWrapper.orderByDesc("id");
             queryWrapper.orderByDesc("modify_time");
         }
         return CommonResult.success(fillBranchName(lineStoreService.page(new Page<LineStore>(page, limit), queryWrapper)), SUCCESS_MESSAGE);
@@ -820,8 +821,8 @@ public class LineStoreController extends BaseController {
     }
 
     public static void main(String[] args) {
-      Integer  startNoOld = Integer.valueOf("06");
-      Integer  endNoOld = Integer.valueOf("11");
+        Integer startNoOld = Integer.valueOf("06");
+        Integer endNoOld = Integer.valueOf("11");
 
         System.out.println(startNoOld);
     }

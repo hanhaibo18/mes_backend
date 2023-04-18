@@ -78,4 +78,9 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     public CommonResult<List<DataDictionaryParam>> getDataDictionaryParamByBranchCode(String branchCode) {
         return null;
     }
+
+    @Override
+    public CommonResult<List<Tenant>> queryTenantList(String header) {
+        return null;
+    }
 }

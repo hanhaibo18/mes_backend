@@ -124,7 +124,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             trackHead.setProductNo("");
             trackHead.setProductNoDesc("");
             trackFlow.setProductNo("");
-            lineStoreService.unbundling(assemblyBinding.getLineStoreId());
+//            lineStoreService.unbundling(assemblyBinding.getLineStoreId());
             trackAssembly.setLineStoreId("");
             lineStoreService.removeById(trackAssembly.getLineStoreId());
         }
