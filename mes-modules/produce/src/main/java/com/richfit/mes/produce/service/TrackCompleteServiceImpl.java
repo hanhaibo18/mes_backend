@@ -208,7 +208,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         BigDecimal reportHours = new BigDecimal(track.getReportHours());
                         //准结工时
                         BigDecimal prepareEndHours = new BigDecimal(track.getPrepareEndHours());
-                        
+
                         //实际报告工时
                         BigDecimal realityReportHours = new BigDecimal(track.getReportHours());
                         if (0 == track.getCompletePersonQty()) {
@@ -823,15 +823,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackItem.setQualityCheckBy(trackComplete.getQualityCheckBy());
             trackItem.setQualityCheckBranch(trackComplete.getQualityCheckBranch());
             bool = trackCompleteService.save(trackComplete);
-            trackItemService.updateById(trackItem);
-
             //判断是否需要质检和调度审核 再激活下工序
             boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
             if (next) {
+                trackItem.setIsFinalComplete("1");
+                trackItem.setFinalCompleteTime(new Date());
                 Map<String, String> map = new HashMap<String, String>(1);
                 map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
                 publicService.activationProcess(map);
             }
+            trackItemService.updateById(trackItem);
         }
         if (bool) {
             return CommonResult.success(bool, "操作成功！");
