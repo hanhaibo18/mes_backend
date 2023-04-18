@@ -8,6 +8,7 @@ import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.constant.SecurityConstants;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,5 +69,15 @@ public interface SystemServiceClient {
 
     @GetMapping("/api/sys/data_dictionary/data_dictionary_param")
     public CommonResult<List<DataDictionaryParam>> getDataDictionaryParamByBranchCode(@RequestParam("branchCode") String branchCode);
+
+    /**
+     * 功能描述:查询所有的租户列表信息
+     *
+     * @Date: 2022/12/26 16:18
+     * @return: CommonResult
+     **/
+    @ApiOperation(value = "查询所有的租户列表信息", notes = "查询所有启用的租户列表信息")
+    @GetMapping("/api/sys/tenant/query/tenant/list/inner")
+    public CommonResult<List<Tenant>> queryTenantList(@RequestHeader(value = SecurityConstants.FROM) String header);
 
 }

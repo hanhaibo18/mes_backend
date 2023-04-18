@@ -16,11 +16,15 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import io.netty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -38,6 +42,8 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
 
     @Resource
     private ProduceServiceClient produceService;
+    @Autowired
+    private ProjectBomMapper projectBomMapper;
 
     @Override
     public boolean deleteBom(String id, String workPlanNo, String tenantId, String branchCode, String drawingNo) {
@@ -356,5 +362,31 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         return true;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, List> bindingBom(List<TrackHead> trackHeads) {
+        Map<String, List> result = new HashMap<>();
+        List<TrackHead> trackHeadList = new ArrayList<>();
+        List<String> noBomIds = new ArrayList<>();
+        for (TrackHead trackHead : trackHeads) {
+            ProjectBom bom = projectBomMapper.selectBomByDrawNoAndWorkNo(trackHead.getDrawingNo(), trackHead.getWorkNo(), trackHead.getTenantId(), trackHead.getBranchCode());
+            if (bom != null) {
+                trackHead.setProjectBomId(bom.getId());
+                trackHead.setProjectBomWork(bom.getWorkPlanNo());
+                trackHead.setProjectBomName(bom.getProjectName());
+                trackHeadList.add(trackHead);
+            } else {
+                noBomIds.add(trackHead.getId());
+            }
+        }
+        result.put("noBomIds", noBomIds);
+        result.put("trackHeadList", trackHeadList);
+        return result;
+    }
+
+    @Override
+    public boolean saveBomList(List<ProjectBom> bomList) {
+        return this.saveBatch(bomList);
+    }
 
 }

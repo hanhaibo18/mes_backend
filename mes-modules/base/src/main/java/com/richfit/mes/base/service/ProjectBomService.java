@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.model.produce.TrackHead;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -166,4 +167,8 @@ public interface ProjectBomService extends IService<ProjectBom> {
     void exportExcel(List<String> idList, HttpServletResponse rsp) throws IOException;
 
     Boolean publishBom(List<String> ids, Integer publishState);
+
+    Map<String,List> bindingBom(List<TrackHead> trackHeads);
+
+    boolean saveBomList(List<ProjectBom> bomList);
 }

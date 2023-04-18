@@ -2,12 +2,14 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -194,6 +196,16 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     @Override
     public List<Operatipon> queryOptByIds(List<String> optIds) {
         return null;
+    }
+
+    @Override
+    public Map<String, List> bindingBom(List<TrackHead> trackHeads) {
+        return null;
+    }
+
+    @Override
+    public void addBom(List<ProjectBom> bomList) {
+
     }
 
 

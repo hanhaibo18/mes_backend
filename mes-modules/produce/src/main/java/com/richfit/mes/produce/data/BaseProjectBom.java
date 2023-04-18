@@ -1,8 +1,12 @@
 package com.richfit.mes.produce.data;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.Plan;
+import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.PlanService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
@@ -10,10 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +33,10 @@ public class BaseProjectBom {
     private PlanService planService;
     @Autowired
     private TrackHeadService trackHeadService;
+    @Autowired
+    private TrackHeadMapper trackHeadMapper;
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     static {
         String driver = "com.mysql.cj.jdbc.Driver";//mysql驱动
@@ -84,6 +94,88 @@ public class BaseProjectBom {
         }
         trackHeadService.updateBatchById(trackHeads);
         System.out.println("更新完成");
+    }
+
+    @GetMapping("/project_bom")
+    @Transactional(rollbackFor = Exception.class)
+    public void updateProjectBom() {
+        System.out.println("更新开始");
+        //获取未绑定project_bom_id的track_head_id
+        List<String> trackHeadIdList = trackHeadMapper.selectIdWithoutProjectBom();
+        int i = 1;
+        //拆分一次查询100个
+        List<List> splitList = splitList(trackHeadIdList, 100);
+        for (List trackHeadIds : splitList) {
+            System.out.println(i++);
+            //根据ids获取图号工作号信息
+            String trackHeadIdsStr = String.join(",", trackHeadIds);
+            List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIdsStr);
+            Map<String, List> listMap = baseServiceClient.bindingBom(trackHeads);
+            //获取已存在bom但是未绑定的trackHeadList
+            // TODO: 2023/4/18
+            List<TrackHead> bindingBomTrackHeads = listMap.get("trackHeadList");
+            trackHeadService.updateBatchById(bindingBomTrackHeads);
+
+            //获取不存在bom的trackHeadIds
+            // TODO: 2023/4/18
+            List<String> noBomIds = listMap.get("noBomIds");
+
+            //不存在bom的新生成bom
+            List<ProjectBom> bomList = new ArrayList<>();
+            String StrIds = String.join(",", noBomIds);
+            List<TrackAssembly> assemblyList = trackHeadMapper.selectAssemblyByTrackHeadIds(StrIds);
+            for (TrackAssembly trackAssembly : assemblyList) {
+                ProjectBom bom = new ProjectBom();
+                bom.setPublishState(1);
+                bom.setWorkPlanNo(trackAssembly.getWorkNo() == null ? "no workNo" : trackAssembly.getWorkNo());
+                bom.setTenantId(trackAssembly.getTenantId());
+                bom.setDrawingNo(trackAssembly.getDrawingNo());
+                bom.setMaterialNo(trackAssembly.getMaterialNo());
+                bom.setGrade(trackAssembly.getGrade());
+                bom.setIsNumFrom(trackAssembly.getIsNumFrom());
+                bom.setIsKeyPart(trackAssembly.getIsKeyPart());
+                bom.setIsNeedPicking(trackAssembly.getIsNeedPicking());
+                bom.setIsEdgeStore(trackAssembly.getIsEdgeStore());
+                bom.setIsCheck(trackAssembly.getIsCheck());
+                bom.setNumber(trackAssembly.getNumber());
+                bom.setTrackType(trackAssembly.getTrackType());
+                bom.setWeight(Float.parseFloat(trackAssembly.getWeight().toString()));
+                bom.setUnit(trackAssembly.getUnit());
+                bom.setSourceType(trackAssembly.getSourceType());
+                bom.setState("1");
+                bom.setPublishState(1);
+                bom.setProjectName(trackAssembly.getProductName() == null ? trackAssembly.getDrawingNo() + "_" + trackAssembly.getWorkNo() : trackAssembly.getProductName());
+                bom.setIsResolution("0");
+
+                bomList.add(bom);
+            }
+            baseServiceClient.addBom(bomList);
+            //给新增的bom绑定trackHead
+            String noBomIdsStr = String.join(",", noBomIds);
+            trackHeads = trackHeadMapper.selectByIds(noBomIdsStr);
+            listMap = baseServiceClient.bindingBom(trackHeads);
+            bindingBomTrackHeads = listMap.get("trackHeadList");
+            trackHeadService.updateBatchById(bindingBomTrackHeads);
+        }
+
+
+        System.out.println("更新完成");
+    }
+
+    public static List<List> splitList(List list, int len) {
+        if (list == null || list.size() == 0 || len < 1) {
+            return null;
+        }
+        List<List> result = new ArrayList<List>();
+
+        int size = list.size();
+        int count = (size + len - 1) / len;
+
+        for (int i = 0; i < count; i++) {
+            List subList = list.subList(i * len, ((i + 1) * len > size ? size : len * (i + 1)));
+            result.add(subList);
+        }
+        return result;
     }
 
 }
