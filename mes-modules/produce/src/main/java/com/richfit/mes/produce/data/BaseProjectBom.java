@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.data;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.base.Strings;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackAssembly;
@@ -101,55 +102,79 @@ public class BaseProjectBom {
     public void updateProjectBom() {
         System.out.println("更新开始");
         //获取未绑定project_bom_id的track_head_id
-        List<String> trackHeadIds = trackHeadMapper.selectIdWithoutProjectBom();
-        //根据ids获取图号工作号信息
-        List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIds);
-        Map<String, List> listMap = baseServiceClient.bindingBom(trackHeads);
-        //获取已存在bom但是未绑定的trackHeadList
-        // TODO: 2023/4/18
-        List<TrackHead> bindingBomTrackHeads = listMap.get("trackHeadList");
-        trackHeadService.updateBatchById(bindingBomTrackHeads);
+        List<String> trackHeadIdList = trackHeadMapper.selectIdWithoutProjectBom();
+        //拆分一次查询100个
+        List<List> splitList = splitList(trackHeadIdList, 100);
+        for (List trackHeadIds : splitList) {
+            //根据ids获取图号工作号信息
+            String trackHeadIdsStr = String.join(",", trackHeadIds);
+            List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIdsStr);
+            Map<String, List> listMap = baseServiceClient.bindingBom(trackHeads);
+            //获取已存在bom但是未绑定的trackHeadList
+            // TODO: 2023/4/18
+            List<TrackHead> bindingBomTrackHeads = listMap.get("trackHeadList");
+            trackHeadService.updateBatchById(bindingBomTrackHeads);
 
-        //获取不存在bom的trackHeadIds
-        // TODO: 2023/4/18
-        List<String> noBomIds = listMap.get("noBomIds");
+            //获取不存在bom的trackHeadIds
+            // TODO: 2023/4/18
+            List<String> noBomIds = listMap.get("noBomIds");
 
-        //不存在bom的新生成bom
-        List<ProjectBom> bomList = new ArrayList<>();
-        List<TrackAssembly> assemblyList = trackHeadMapper.selectAssemblyByTrackHeadIds(noBomIds);
-        for (TrackAssembly trackAssembly : assemblyList) {
-            ProjectBom bom = new ProjectBom();
-            bom.setPublishState(1);
-            bom.setWorkPlanNo(trackAssembly.getWorkNo());
-            bom.setTenantId(trackAssembly.getTenantId());
-            bom.setDrawingNo(trackAssembly.getDrawingNo());
-            bom.setMaterialNo(trackAssembly.getMaterialNo());
-            bom.setGrade(trackAssembly.getGrade());
-            bom.setIsNumFrom(trackAssembly.getIsNumFrom());
-            bom.setIsKeyPart(trackAssembly.getIsKeyPart());
-            bom.setIsNeedPicking(trackAssembly.getIsNeedPicking());
-            bom.setIsEdgeStore(trackAssembly.getIsEdgeStore());
-            bom.setIsCheck(trackAssembly.getIsCheck());
-            bom.setNumber(trackAssembly.getNumber());
-            bom.setTrackType(trackAssembly.getTrackType());
-            bom.setWeight(Float.parseFloat(trackAssembly.getWeight().toString()));
-            bom.setUnit(trackAssembly.getUnit());
-            bom.setSourceType(trackAssembly.getSourceType());
-            bom.setState("1");
-            bom.setPublishState(1);
-            bom.setProjectName(trackAssembly.getProductName());
-            bom.setIsResolution("0");
+            //不存在bom的新生成bom
+            List<ProjectBom> bomList = new ArrayList<>();
+            String StrIds = String.join(",", noBomIds);
+            List<TrackAssembly> assemblyList = trackHeadMapper.selectAssemblyByTrackHeadIds(StrIds);
+            for (TrackAssembly trackAssembly : assemblyList) {
+                ProjectBom bom = new ProjectBom();
+                bom.setPublishState(1);
+                bom.setWorkPlanNo(trackAssembly.getWorkNo());
+                bom.setTenantId(trackAssembly.getTenantId());
+                bom.setDrawingNo(trackAssembly.getDrawingNo());
+                bom.setMaterialNo(trackAssembly.getMaterialNo());
+                bom.setGrade(trackAssembly.getGrade());
+                bom.setIsNumFrom(trackAssembly.getIsNumFrom());
+                bom.setIsKeyPart(trackAssembly.getIsKeyPart());
+                bom.setIsNeedPicking(trackAssembly.getIsNeedPicking());
+                bom.setIsEdgeStore(trackAssembly.getIsEdgeStore());
+                bom.setIsCheck(trackAssembly.getIsCheck());
+                bom.setNumber(trackAssembly.getNumber());
+                bom.setTrackType(trackAssembly.getTrackType());
+                bom.setWeight(Float.parseFloat(trackAssembly.getWeight().toString()));
+                bom.setUnit(trackAssembly.getUnit());
+                bom.setSourceType(trackAssembly.getSourceType());
+                bom.setState("1");
+                bom.setPublishState(1);
+                bom.setProjectName(trackAssembly.getProductName());
+                bom.setIsResolution("0");
 
-            bomList.add(bom);
+                bomList.add(bom);
+            }
+            baseServiceClient.addBom(bomList);
+            //给新增的bom绑定trackHead
+            String noBomIdsStr = String.join(",", noBomIds);
+            trackHeads = trackHeadMapper.selectByIds(noBomIdsStr);
+            listMap = baseServiceClient.bindingBom(trackHeads);
+            bindingBomTrackHeads = listMap.get("trackHeadList");
+            trackHeadService.updateBatchById(bindingBomTrackHeads);
         }
-        baseServiceClient.addBom(bomList);
-        //给新增的bom绑定trackHead
-        trackHeads = trackHeadMapper.selectByIds(noBomIds);
-        listMap = baseServiceClient.bindingBom(trackHeads);
-        bindingBomTrackHeads = listMap.get("trackHeadList");
-        trackHeadService.updateBatchById(bindingBomTrackHeads);
+
 
         System.out.println("更新完成");
+    }
+
+    public static List<List> splitList(List list, int len) {
+        if (list == null || list.size() == 0 || len < 1) {
+            return null;
+        }
+        List<List> result = new ArrayList<List>();
+
+        int size = list.size();
+        int count = (size + len - 1) / len;
+
+        for (int i = 0; i < count; i++) {
+            List subList = list.subList(i * len, ((i + 1) * len > size ? size : len * (i + 1)));
+            result.add(subList);
+        }
+        return result;
     }
 
 }
