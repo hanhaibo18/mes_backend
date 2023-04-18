@@ -222,6 +222,6 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
     @Select("SELECT * from produce_track_head where id in ${ids}")
     List<TrackHead> selectByIds(@Param("ids") List<String> ids);
 
-    @Select("SELECT pta.*,pth.work_no woro_no FROM produce_track_head pth JOIN produce_track_assembly pta ON pth.Id = pta.track_head_id and pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 and pth.id in ${ids}")
+    @Select("SELECT pta.*,pth.work_no woro_no,pth.product_name product_name  FROM produce_track_head pth JOIN produce_track_assembly pta ON pth.Id = pta.track_head_id and pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 and pth.id in ${ids}")
     List<TrackAssembly> selectAssemblyByTrackHeadIds(@Param("ids") List<String> ids);
 }
