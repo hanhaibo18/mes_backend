@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -58,6 +59,8 @@ public class SyncDataService {
 
             //2 逐条解析原始存储附件路径字段，获取文件
             for (RawData data : list) {
+                data.setRawFilePath(URLDecoder.decode(data.getRawFilePath()));
+                log.info("file path success [{}]", data.getRawFilePath());
                 File file = new File(configs.getFileCatalog() + data.getRawFilePath());
                 if (file.exists()) {
                     //3 调用附件存储服务，存储文件
