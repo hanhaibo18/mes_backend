@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface ProjectBomMapper extends BaseMapper<ProjectBom> {
 
-    @Select("select * from base_project_bom where tenant_id = ${tenantId} and branch_code = ${branchCode} and drawing_no = ${drawingNo} and work_plan_no = ${workNo} limit 1")
+    @Select("select * from base_project_bom where tenant_id = ${tenantId} and branch_code = ${branchCode} and drawing_no = ${drawingNo} and work_plan_no = ${workNo} and grade = 'H' limit 1")
     ProjectBom selectBomByDrawNoAndWorkNo(@Param("drawingNo") String drawingNo, @Param("workNo") String workNo, @Param("tenantId") String tenantId, @Param("branchCode") String branchCode);
 }
 

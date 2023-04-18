@@ -137,7 +137,8 @@ public class BaseProjectBom {
             bom.setSourceType(trackAssembly.getSourceType());
             bom.setState("1");
             bom.setPublishState(1);
-            bom.setProjectName("图号：" + trackAssembly.getDrawingNo() + ",工作号：" + trackAssembly.getWorkNo() + " 逆向生成");
+            bom.setProjectName(trackAssembly.getProductName());
+            bom.setIsResolution("0");
 
             bomList.add(bom);
         }
