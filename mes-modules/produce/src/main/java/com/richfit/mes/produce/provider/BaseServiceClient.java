@@ -2,6 +2,7 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -9,6 +10,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: GaoLiang
@@ -215,4 +217,10 @@ public interface BaseServiceClient {
     @ApiOperation(value = "根据id查询工序字典列表", notes = "根据id查询工序字典列表")
     @GetMapping("/api/base/opt/queryOptByIds")
     List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds);
+
+    @PostMapping("/api/base/project_bom/bindingBom")
+    public Map<String,List> bindingBom(@RequestBody List<TrackHead> trackHeads);
+
+    @PostMapping("/api/base/project_bom/addBom")
+    public void addBom(@RequestBody List<ProjectBom> bomList);
 }

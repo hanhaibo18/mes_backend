@@ -206,4 +206,8 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
 
     @ApiModelProperty(value = "生产线id")
     private String flowId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工作号", dataType = "String")
+    private String workNo;
 }

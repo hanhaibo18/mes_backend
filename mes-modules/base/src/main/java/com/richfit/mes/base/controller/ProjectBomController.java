@@ -6,6 +6,7 @@ import com.richfit.mes.base.entity.DeleteProjectBomDto;
 import com.richfit.mes.base.service.ProjectBomService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -192,4 +193,17 @@ public class ProjectBomController {
     public void exportExcel(@RequestBody List<String> idList, HttpServletResponse rsp) throws IOException {
         projectBomService.exportExcel(idList, rsp);
     }
+
+    @ApiOperation(value = "根据传入的trackHead图号工作号绑定已有bom(其他服务调用)")
+    @PostMapping("/bindingBom")
+    public Map<String,List> bindingBom(@RequestBody List<TrackHead> trackHeads){
+        return projectBomService.bindingBom(trackHeads);
+    }
+
+    @ApiOperation(value = "新增bom(其他服务调用)")
+    @PostMapping("/addBom")
+    public void addBom(@RequestBody List<ProjectBom> bomList){
+        projectBomService.saveBatch(bomList);
+    }
+
 }

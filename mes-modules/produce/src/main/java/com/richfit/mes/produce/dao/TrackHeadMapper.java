@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.entity.*;
 import org.apache.ibatis.annotations.Mapper;
@@ -214,4 +215,13 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
      **/
     @Select("SELECT track_head_id from produce_track_item WHERE original_opt_sequence + 10 <> next_opt_sequence AND next_opt_sequence <> 0 AND tenant_id like '%002%' GROUP BY track_head_id")
     List<String> queryTrackId();
+
+    @Select("SELECT DISTINCT(pth.id) FROM produce_track_assembly pta JOIN produce_track_head pth ON pta.track_head_id = pth.id AND pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 WHERE pth.project_bom_id IS NULL")
+    List<String> selectIdWithoutProjectBom();
+
+    @Select("SELECT * from produce_track_head where id in ${ids}")
+    List<TrackHead> selectByIds(@Param("ids") List<String> ids);
+
+    @Select("SELECT pta.*,pth.work_no woro_no FROM produce_track_head pth JOIN produce_track_assembly pta ON pth.Id = pta.track_head_id and pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 and pth.id in ${ids}")
+    List<TrackAssembly> selectAssemblyByTrackHeadIds(@Param("ids") List<String> ids);
 }
