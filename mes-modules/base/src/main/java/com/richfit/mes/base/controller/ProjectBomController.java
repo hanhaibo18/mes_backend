@@ -203,7 +203,7 @@ public class ProjectBomController {
     @ApiOperation(value = "新增bom(其他服务调用)")
     @PostMapping("/addBom")
     public void addBom(@RequestBody List<ProjectBom> bomList){
-        projectBomService.saveBatch(bomList);
+        projectBomService.saveBomList(bomList);
     }
 
 }

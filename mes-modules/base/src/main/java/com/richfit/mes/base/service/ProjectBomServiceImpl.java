@@ -384,4 +384,9 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         return result;
     }
 
+    @Override
+    public boolean saveBomList(List<ProjectBom> bomList) {
+        return this.saveBatch(bomList);
+    }
+
 }

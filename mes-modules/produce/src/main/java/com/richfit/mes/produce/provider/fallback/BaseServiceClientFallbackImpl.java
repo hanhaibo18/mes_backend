@@ -199,7 +199,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public Map<String,List> bindingBom(List<TrackHead> trackHeads) {
+    public Map<String, List> bindingBom(List<TrackHead> trackHeads) {
         return null;
     }
 
