@@ -154,4 +154,9 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
         return CommonResult.success(null);
     }
 
+    @Override
+    public CommonResult<List<ItemParam>> findItemParamByCode(String code, String tenantId) {
+        return null;
+    }
+
 }

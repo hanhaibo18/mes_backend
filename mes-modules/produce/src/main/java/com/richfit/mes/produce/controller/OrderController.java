@@ -14,6 +14,7 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -289,6 +290,13 @@ public class OrderController extends BaseController {
         orderWrapper.eq("tenant_id", tenantId);
         List<Order> orderList = orderService.list(orderWrapper);
         return CommonResult.success(orderList);
+    }
+
+    @ApiOperation(value = "根据计划逆向生成订单并且关联",notes = "根据计划逆向生成订单")
+    @ApiImplicitParam(name = "PlanList", value = "计划列表", paramType = "Plan")
+    @PostMapping("/save_by_plan")
+    public CommonResult<Boolean> saveOrderByPlan(@RequestBody List<Plan> plans){
+        return CommonResult.success(orderService.saveByPlan(plans));
     }
 
 }
