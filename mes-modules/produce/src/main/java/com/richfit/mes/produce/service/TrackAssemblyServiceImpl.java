@@ -4,6 +4,7 @@ package com.richfit.mes.produce.service;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,12 +18,15 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
+import com.richfit.mes.produce.enmus.InspectionRecordTypeEnum;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
 import com.richfit.mes.produce.entity.TrackHeadPublicDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.service.quality.InspectionPowerService;
 import io.netty.util.internal.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +67,8 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     @Resource
     private BaseServiceClient baseServiceClient;
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
 
     @Override
     public IPage<TrackAssembly> queryTrackAssemblyPage(Page<TrackAssembly> page, String trackHeadId, Boolean isKey, String branchCode, String order, String orderCol) {
@@ -482,5 +488,140 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         //保存物料信息
         requestNoteDetailService.saveBatch(requestNoteDetails);
 
+    }
+
+
+    @Autowired
+    private InspectionPowerService inspectionPowerService;
+    @Autowired
+    private ProduceInspectionRecordMtService produceInspectionRecordMtService;
+    @Autowired
+    private ProduceInspectionRecordPtService produceInspectionRecordPtService;
+    @Autowired
+    private ProduceInspectionRecordRtService produceInspectionRecordRtService;
+    @Autowired
+    private ProduceInspectionRecordUtService produceInspectionRecordUtService;
+    @Autowired
+    private ProduceItemInspectInfoService produceItemInspectInfoService;
+
+    /**
+     * 根据装配清单信息修改产品编号
+     * @param id   装配清单id
+     * @param productNo   不带图号的产品编码
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean changeProductNo(String id, String productNo,String branchCode,String drawNo) {
+        try {
+            //新的产品编号
+            String produceNoDesc =  drawNo + " " + productNo;
+            //校验产品编码是否重复
+            QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("product_no", produceNoDesc);
+            queryWrapper.eq("branch_code", productNo);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
+            if (trackFlowList.size() > 0) {
+                throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
+            }
+            //要修改的装配清单数据
+            QueryWrapper<TrackAssembly> trackAssemblyQueryWrapper = new QueryWrapper<>();
+            trackAssemblyQueryWrapper.eq("track_head_id",id);
+            List<TrackAssembly> trackAssemblys = this.list(trackAssemblyQueryWrapper);
+
+            if(trackAssemblys.size()>0){
+                //修改装配清单信息
+                for (TrackAssembly trackAssembly : trackAssemblys) {
+                    trackAssembly.setProductNo(productNo);
+                }
+                this.updateBatchById(trackAssemblys);
+                String trackHeadId = trackAssemblys.get(0).getTrackHeadId();
+                //修改跟单、flow、item、探伤记录信息
+                if(!StringUtils.isNullOrEmpty(trackHeadId)){
+                    //要修改的跟单数据
+                    TrackHead trackHead = trackHeadService.getById(trackHeadId);
+
+                    UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+                    trackHeadUpdateWrapper.set("product_no",productNo)
+                            .set("produce_no_desc",produceNoDesc)
+                            .eq("id",trackHeadId);
+                    trackHeadService.update(trackHeadUpdateWrapper);
+                    //要修改的跟单分流数据
+                    QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
+                    queryWrapperTrackFlow.eq("track_head_id", trackHeadId);
+                    TrackFlow trackFlow;
+                    try {
+                        trackFlow = trackHeadFlowService.getOne(queryWrapperTrackFlow);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        throw new GlobalException("跟单产品编写修改只支持跟单只有单个产品编码，不支持多生产编码修改。", ResultCode.FAILED);
+                    }
+                    //旧的产品编号
+                    String produceNoDescOld =  trackFlow.getProductNo();
+                    trackFlow.setProductNo(produceNoDesc);
+                    trackHeadFlowService.updateById(trackFlow);
+                    //要修改的跟单工序item数据
+                    UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.eq("track_head_id", trackHead.getId());
+                    updateWrapper.set("product_no", produceNoDesc);
+                    trackItemService.update(updateWrapper);
+                    //修改探伤记录信息
+                    updateProducrNoInspectRecordInfo(produceNoDesc, trackHeadId, produceNoDescOld);
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new GlobalException("修改产品编码出现异常：" + e.getMessage(), ResultCode.FAILED);
+        }
+        return true;
+    }
+
+    /**
+     * 修改探伤记录信息
+     * @param produceNoDesc
+     * @param trackHeadId
+     * @param produceNoDescOld
+     */
+    private void updateProducrNoInspectRecordInfo(String produceNoDesc, String trackHeadId, String produceNoDescOld) {
+        QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
+        inspectionPowerQueryWrapper.eq("head_id",trackHeadId);
+        List<InspectionPower> powers = inspectionPowerService.list(inspectionPowerQueryWrapper);
+        List<String> powerIds = powers.stream().map(InspectionPower::getId).collect(Collectors.toList());
+        QueryWrapper<ProduceItemInspectInfo> inspectInfoQueryWrapper = new QueryWrapper<>();
+        inspectInfoQueryWrapper.in("power_id",powerIds);
+        List<ProduceItemInspectInfo> inspects = produceItemInspectInfoService.list(inspectInfoQueryWrapper);
+
+        for (ProduceItemInspectInfo inspect : inspects) {
+            if (InspectionRecordTypeEnum.MT.getType().equals(inspect.getTempType())) {
+                ProduceInspectionRecordMt mt = produceInspectionRecordMtService.getById(inspect.getInspectRecordId());
+                if(!StringUtils.isNullOrEmpty(mt.getProductNo())){
+                    String replace = mt.getProductNo().replace(produceNoDescOld, produceNoDesc);
+                    mt.setProductNo(replace);
+                    produceInspectionRecordMtService.updateById(mt);
+                }
+            } else if (InspectionRecordTypeEnum.PT.getType().equals(inspect.getTempType())) {
+                ProduceInspectionRecordPt pt = produceInspectionRecordPtService.getById(inspect.getInspectRecordId());
+                if(!StringUtils.isNullOrEmpty(pt.getProductNo())){
+                    String replace = pt.getProductNo().replace(produceNoDescOld, produceNoDesc);
+                    pt.setProductNo(replace);
+                    produceInspectionRecordPtService.updateById(pt);
+                }
+            } else if (InspectionRecordTypeEnum.RT.getType().equals(inspect.getTempType())) {
+                ProduceInspectionRecordRt rt = produceInspectionRecordRtService.getById(inspect.getInspectRecordId());
+                if(!StringUtils.isNullOrEmpty(rt.getProductNo())){
+                    String replace = rt.getProductNo().replace(produceNoDescOld, produceNoDesc);
+                    rt.setProductNo(replace);
+                    produceInspectionRecordRtService.updateById(rt);
+                }
+            } else if (InspectionRecordTypeEnum.UT.getType().equals(inspect.getTempType())) {
+                ProduceInspectionRecordUt ut = produceInspectionRecordUtService.getById(inspect.getInspectRecordId());
+                if(!StringUtils.isNullOrEmpty(ut.getProductNo())){
+                    String replace = ut.getProductNo().replace(produceNoDescOld, produceNoDesc);
+                    ut.setProductNo(replace);
+                    produceInspectionRecordUtService.updateById(ut);
+                }
+            }
+        }
     }
 }

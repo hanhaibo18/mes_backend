@@ -154,4 +154,11 @@ public class TrackAssemblyController extends BaseController {
     public CommonResult<List<TrackAssemblyBinding>> queryBindingList(String assemblyIdList) {
         return CommonResult.success(assemblyBingService.queryBindingList(assemblyIdList));
     }
+
+    @ApiOperation(value = "修改产品编码", notes = "修改产品编码")
+    @GetMapping("/changeProductNo")
+    public CommonResult<Boolean> changeProductNo(String id, String productNo,String branchCode,String drawNo) {
+        return CommonResult.success(trackAssemblyService.changeProductNo(id,productNo,branchCode,drawNo));
+    }
+
 }
