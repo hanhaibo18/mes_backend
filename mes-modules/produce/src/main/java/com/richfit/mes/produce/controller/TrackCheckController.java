@@ -173,8 +173,8 @@ public class TrackCheckController extends BaseController {
             if ("1".equals(isExistScheduleCheck)) {
                 queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
-            //增加工序过滤
-            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+            //增加工序过滤(泵业新版，去掉)
+//            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             queryWrapper.eq("is_doing", 2);
             queryWrapper.eq("is_operation_complete", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
