@@ -1246,13 +1246,24 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     planService.planData(trackHead.getWorkPlanId());
                     //处理订单细节状态等、计划通用计算方法
                     orderService.orderDataTrackHead(trackHead);
-                    //取消跟单关联
+                    //取消料单与跟单关联
                     UpdateWrapper<LineStore> lineStoreUpdateWrapper = new UpdateWrapper<>();
                     lineStoreUpdateWrapper.eq("track_no", trackHead.getTrackNo());
                     lineStoreUpdateWrapper.eq("branch_code", trackHead.getBranchCode());
                     lineStoreUpdateWrapper.eq("tenant_id", trackHead.getTenantId());
-                    lineStoreUpdateWrapper.set("track_no", "");
-                    lineStoreService.update(lineStoreUpdateWrapper);
+                    List<LineStore> lineStoreList = lineStoreService.list(lineStoreUpdateWrapper);
+                    int number = trackHead.getNumber();
+                    for (LineStore lineStore : lineStoreList) {
+                        lineStore.setTrackNo("");
+                        lineStore.setStatus("0");
+                        if (lineStore.getUseNum() < number) {
+                            lineStore.setUseNum(0);
+                            number = number - lineStore.getUseNum();
+                        } else {
+                            lineStore.setUseNum(lineStore.getUseNum() - number);
+                            number = 0;
+                        }
+                    }
                 }
                 return true;
             }
