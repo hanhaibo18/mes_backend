@@ -781,6 +781,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         disqualification.setBranchCode(trackItem.getBranchCode());
         disqualification.setTenantId(trackItem.getTenantId());
         disqualification.setTrackHeadType(trackHead.getTrackType());
+        disqualification.setType(1);
         //查询上次提交记录
         DisqualificationItemVo data = disqualificationService.queryLastTimeDataByCreateBy(branchCode);
         if (data != null) {
