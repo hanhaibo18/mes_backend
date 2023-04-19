@@ -118,5 +118,5 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @param id
      * @param productNo
      */
-    Boolean changeProductNo(String id, String productNo,String branchCode,String drawNo);
+    Boolean changeProductNo(String id, String productNo,String branchCode);
 }

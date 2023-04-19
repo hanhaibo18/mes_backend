@@ -157,8 +157,8 @@ public class TrackAssemblyController extends BaseController {
 
     @ApiOperation(value = "修改产品编码", notes = "修改产品编码")
     @GetMapping("/changeProductNo")
-    public CommonResult<Boolean> changeProductNo(String id, String productNo,String branchCode,String drawNo) {
-        return CommonResult.success(trackAssemblyService.changeProductNo(id,productNo,branchCode,drawNo));
+    public CommonResult<Boolean> changeProductNo(String id, String productNo,String branchCode) {
+        return CommonResult.success(trackAssemblyService.changeProductNo(id,productNo,branchCode));
     }
 
 }
