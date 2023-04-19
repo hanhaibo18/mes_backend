@@ -504,6 +504,10 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     private ProduceInspectionRecordUtService produceInspectionRecordUtService;
     @Autowired
     private ProduceItemInspectInfoService produceItemInspectInfoService;
+    @Autowired
+    private TrackCompleteService trackCompleteService;
+    @Autowired
+    private TrackCompleteCacheService trackCompleteCacheService;
 
     /**
      * 根据装配清单信息修改产品编号
@@ -523,6 +527,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             queryWrapper.eq("product_no", produceNoDesc);
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.ne("id", trackItem.getFlowId());
             List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
             if (trackFlowList.size() > 0) {
                 throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
@@ -554,6 +559,17 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             updateWrapper.eq("flow_id", trackItem.getFlowId());
             updateWrapper.set("product_no", produceNoDesc);
             trackItemService.update(updateWrapper);
+            //修改报工信息里边的产品编号
+            UpdateWrapper<TrackComplete> completeUpdate = new UpdateWrapper<>();
+            completeUpdate.eq("ti_id", trackItem.getId());
+            completeUpdate.set("prod_no", produceNoDesc);
+            trackCompleteService.update(completeUpdate);
+            //修改报工信息缓存里的产品编号
+            UpdateWrapper<TrackCompleteCache> completeCacheUpdate = new UpdateWrapper<>();
+            completeCacheUpdate.eq("ti_id", trackItem.getId());
+            completeCacheUpdate.set("prod_no", produceNoDesc);
+            trackCompleteCacheService.update(completeCacheUpdate);
+
             //修改探伤记录信息
             updateProducrNoInspectRecordInfo(produceNoDesc, trackItem.getTrackHeadId(), produceNoDescOld);
             return true;
