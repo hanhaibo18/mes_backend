@@ -236,8 +236,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if ("2".equals(state)) {
             queryWrapper.in("u.state", 2);
         }
-        //增加工序过滤
-        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+        //增加工序过滤（新要求，屏蔽）
+//        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("u.classes", classes);
 //        queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
