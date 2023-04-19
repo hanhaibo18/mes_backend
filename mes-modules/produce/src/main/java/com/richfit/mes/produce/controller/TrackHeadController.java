@@ -1034,4 +1034,10 @@ public class TrackHeadController extends BaseController {
     public void exportHeatReport(@ApiParam(value = "跟单工序表 trackHeadId") @RequestParam String trackHeadId, HttpServletResponse rsp) {
         trackHeadService.exportHeatReport(trackHeadId, rsp);
     }
+
+    @ApiOperation(value = "批量修改供其他服务调用")
+    @PostMapping("/updateBatch")
+    public boolean updateBatch(@RequestBody List<TrackHead> trackHeadList){
+        return trackHeadService.updateBatchById(trackHeadList);
+    }
 }

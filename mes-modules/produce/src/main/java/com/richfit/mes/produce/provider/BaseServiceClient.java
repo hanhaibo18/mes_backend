@@ -222,7 +222,7 @@ public interface BaseServiceClient {
     List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds);
 
     @PostMapping("/api/base/project_bom/bindingBom")
-    public Map<String,List> bindingBom(@RequestBody List<TrackHead> trackHeads);
+    public Map<String,Object> bindingBom(@RequestBody List<TrackHead> trackHeads);
 
     @PostMapping("/api/base/project_bom/addBom")
     public void addBom(@RequestBody List<ProjectBom> bomList);

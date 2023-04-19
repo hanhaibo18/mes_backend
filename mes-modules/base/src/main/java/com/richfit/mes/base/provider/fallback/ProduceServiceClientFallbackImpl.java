@@ -44,4 +44,9 @@ public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
     public TrackItem qyeryTrackItemById(String id) {
         return null;
     }
+
+    @Override
+    public boolean updateBatch(List<TrackHead> trackHeadList) {
+        return false;
+    }
 }

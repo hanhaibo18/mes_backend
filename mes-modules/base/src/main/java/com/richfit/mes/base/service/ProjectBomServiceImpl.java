@@ -15,6 +15,7 @@ import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
@@ -29,8 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.richfit.mes.base.service.ProductionBomServiceImpl.projectBomEntity;
 
 /**
  * @author 侯欣雨
@@ -44,6 +48,10 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     private ProduceServiceClient produceService;
     @Autowired
     private ProjectBomMapper projectBomMapper;
+    @Autowired
+    private ProductionBomService productionBomService;
+    @Autowired
+    private ProduceServiceClient produceServiceClient;
 
     @Override
     public boolean deleteBom(String id, String workPlanNo, String tenantId, String branchCode, String drawingNo) {
@@ -363,11 +371,11 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Map<String, List> bindingBom(List<TrackHead> trackHeads) {
-        Map<String, List> result = new HashMap<>();
+    public Map<String, Object> bindingBom(List<TrackHead> trackHeads) {
+        Map<String, Object> result = new HashMap<>();
         List<TrackHead> trackHeadList = new ArrayList<>();
         List<String> noBomIds = new ArrayList<>();
+        Map<String,String> projectBomMap = new HashMap<>();
         for (TrackHead trackHead : trackHeads) {
             ProjectBom bom = projectBomMapper.selectBomByDrawNoAndWorkNo(trackHead.getDrawingNo(), trackHead.getWorkNo(), trackHead.getTenantId(), trackHead.getBranchCode());
             if (bom != null) {
@@ -376,11 +384,24 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 trackHead.setProjectBomName(bom.getProjectName());
                 trackHeadList.add(trackHead);
             } else {
+                //根据图号找到产品bom并用grade = "H"创建项目bom
+                QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("drawing_no", trackHead.getDrawingNo()).eq("tenant_id", trackHead.getTenantId()).eq("grade", "H");
+                ProductionBom productionBom = productionBomService.getOne(queryWrapper);
+                if (productionBom != null) {
+                    ProjectBom projectBom = projectBomEntity(productionBom);
+                    projectBom.setTenantId(trackHead.getTenantId()).setBranchCode(trackHead.getBranchCode()).setProjectName(trackHead.getProductName() == null ? trackHead.getDrawingNo() + "_" + trackHead.getWorkNo() : trackHead.getProductName()).setWorkPlanNo(trackHead.getWorkNo()).setIsResolution("0");
+                    this.save(projectBom);
+                    projectBomMap.put(trackHead.getId(),projectBom.getDrawingNo());
+
+                }
                 noBomIds.add(trackHead.getId());
             }
         }
+        //绑定已有bom的跟单
+        produceServiceClient.updateBatch(trackHeadList);
         result.put("noBomIds", noBomIds);
-        result.put("trackHeadList", trackHeadList);
+        result.put("projectBomMap",projectBomMap);
         return result;
     }
 

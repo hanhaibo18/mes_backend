@@ -19,9 +19,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Api(value = "更新服务", tags = {"更新服务"})
@@ -106,31 +110,35 @@ public class BaseProjectBom {
         //拆分一次查询100个
         List<List> splitList = splitList(trackHeadIdList, 100);
         for (List trackHeadIds : splitList) {
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------i=" + i++);
+            projectBomUpdate(trackHeadIds, i);
+            i++;
+        }
+
+        System.out.println("更新完成");
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void projectBomUpdate(List trackHeadIds, int i) {
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------i=" + i);
+        if (trackHeadIds != null) {
             //根据ids获取图号工作号信息
             List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIds);
-            Map<String, List> listMap = baseServiceClient.bindingBom(trackHeads);
-            //获取已存在bom但是未绑定的trackHeadList
-            // TODO: 2023/4/18
-            List<TrackHead> bindingBomTrackHeads = listMap.get("trackHeadList");
-            trackHeadService.updateBatchById(bindingBomTrackHeads);
-
+            Map<String, Object> objectMap = baseServiceClient.bindingBom(trackHeads);
             //获取不存在bom的trackHeadIds
-            // TODO: 2023/4/18
-            List<String> noBomIds = listMap.get("noBomIds");
-
+            List<String> noBomIds = (List<String>) objectMap.get("noBomIds");
             //不存在bom的新生成bom
             List<ProjectBom> bomList = new ArrayList<>();
             if (noBomIds != null) {
                 List<TrackAssembly> assemblyList = trackHeadMapper.selectAssemblyByTrackHeadIds(noBomIds);
+                Map<String, String> mainProjectBomMap = (Map<String, String>) objectMap.get("projectBomMap");
                 for (TrackAssembly trackAssembly : assemblyList) {
                     ProjectBom bom = new ProjectBom();
                     bom.setPublishState(1);
-                    bom.setWorkPlanNo(trackAssembly.getWorkNo() == null ? "no workNo" : trackAssembly.getWorkNo());
+                    bom.setWorkPlanNo(trackAssembly.getWorkNo());
                     bom.setTenantId(trackAssembly.getTenantId());
                     bom.setDrawingNo(trackAssembly.getDrawingNo());
                     bom.setMaterialNo(trackAssembly.getMaterialNo());
@@ -142,27 +150,27 @@ public class BaseProjectBom {
                     bom.setIsCheck(trackAssembly.getIsCheck());
                     bom.setNumber(trackAssembly.getNumber());
                     bom.setTrackType(trackAssembly.getTrackType());
-                    bom.setWeight(Float.parseFloat(trackAssembly.getWeight().toString()));
+                    bom.setWeight(Float.parseFloat(trackAssembly.getWeight() == null ? "0" : trackAssembly.getWeight().toString()));
                     bom.setUnit(trackAssembly.getUnit());
                     bom.setSourceType(trackAssembly.getSourceType());
                     bom.setState("1");
                     bom.setPublishState(1);
                     bom.setProjectName(trackAssembly.getProductName() == null ? trackAssembly.getDrawingNo() + "_" + trackAssembly.getWorkNo() : trackAssembly.getProductName());
                     bom.setIsResolution("0");
-
+                    bom.setBranchCode(trackAssembly.getBranchCode());
+                    if ("H".equals(trackAssembly.getGrade())) {
+                        bom.setDrawingNo(trackAssembly.getDrawingNo());
+                    } else {
+                        bom.setMainDrawingNo(mainProjectBomMap.get(trackAssembly.getTrackHeadId()));
+                    }
                     bomList.add(bom);
                 }
                 baseServiceClient.addBom(bomList);
                 //给新增的bom绑定trackHead
                 trackHeads = trackHeadMapper.selectByIds(noBomIds);
-                listMap = baseServiceClient.bindingBom(trackHeads);
-                bindingBomTrackHeads = listMap.get("trackHeadList");
-                trackHeadService.updateBatchById(bindingBomTrackHeads);
+                baseServiceClient.bindingBom(trackHeads);
             }
         }
-
-
-        System.out.println("更新完成");
     }
 
     public static List<List> splitList(List list, int len) {

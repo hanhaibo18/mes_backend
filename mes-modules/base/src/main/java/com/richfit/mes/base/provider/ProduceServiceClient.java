@@ -47,4 +47,7 @@ public interface ProduceServiceClient {
 
     @GetMapping("/api/produce/track_item/query/id")
     public TrackItem qyeryTrackItemById(@RequestParam("id") String id);
+
+    @PostMapping("/api/produce/track_head/updateBatch")
+    public boolean updateBatch(@RequestBody List<TrackHead> trackHeadList);
 }

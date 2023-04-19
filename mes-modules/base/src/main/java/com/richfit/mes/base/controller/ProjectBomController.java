@@ -196,7 +196,7 @@ public class ProjectBomController {
 
     @ApiOperation(value = "根据传入的trackHead图号工作号绑定已有bom(其他服务调用)")
     @PostMapping("/bindingBom")
-    public Map<String,List> bindingBom(@RequestBody List<TrackHead> trackHeads){
+    public Map<String,Object> bindingBom(@RequestBody List<TrackHead> trackHeads){
         return projectBomService.bindingBom(trackHeads);
     }
 
