@@ -111,4 +111,12 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @Date: 2022/8/23 10:59
      **/
     void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto);
+
+
+    /**
+     * 修改产品编号
+     * @param id
+     * @param productNo
+     */
+    Boolean changeProductNo(String id, String productNo,String branchCode,String drawNo);
 }

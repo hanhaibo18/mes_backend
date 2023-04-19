@@ -106,10 +106,13 @@ public class BaseProjectBom {
         //拆分一次查询100个
         List<List> splitList = splitList(trackHeadIdList, 100);
         for (List trackHeadIds : splitList) {
-            System.out.println(i++);
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------i=" + i++);
             //根据ids获取图号工作号信息
-            String trackHeadIdsStr = String.join(",", trackHeadIds);
-            List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIdsStr);
+            List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIds);
             Map<String, List> listMap = baseServiceClient.bindingBom(trackHeads);
             //获取已存在bom但是未绑定的trackHeadList
             // TODO: 2023/4/18
@@ -122,40 +125,40 @@ public class BaseProjectBom {
 
             //不存在bom的新生成bom
             List<ProjectBom> bomList = new ArrayList<>();
-            String StrIds = String.join(",", noBomIds);
-            List<TrackAssembly> assemblyList = trackHeadMapper.selectAssemblyByTrackHeadIds(StrIds);
-            for (TrackAssembly trackAssembly : assemblyList) {
-                ProjectBom bom = new ProjectBom();
-                bom.setPublishState(1);
-                bom.setWorkPlanNo(trackAssembly.getWorkNo() == null ? "no workNo" : trackAssembly.getWorkNo());
-                bom.setTenantId(trackAssembly.getTenantId());
-                bom.setDrawingNo(trackAssembly.getDrawingNo());
-                bom.setMaterialNo(trackAssembly.getMaterialNo());
-                bom.setGrade(trackAssembly.getGrade());
-                bom.setIsNumFrom(trackAssembly.getIsNumFrom());
-                bom.setIsKeyPart(trackAssembly.getIsKeyPart());
-                bom.setIsNeedPicking(trackAssembly.getIsNeedPicking());
-                bom.setIsEdgeStore(trackAssembly.getIsEdgeStore());
-                bom.setIsCheck(trackAssembly.getIsCheck());
-                bom.setNumber(trackAssembly.getNumber());
-                bom.setTrackType(trackAssembly.getTrackType());
-                bom.setWeight(Float.parseFloat(trackAssembly.getWeight().toString()));
-                bom.setUnit(trackAssembly.getUnit());
-                bom.setSourceType(trackAssembly.getSourceType());
-                bom.setState("1");
-                bom.setPublishState(1);
-                bom.setProjectName(trackAssembly.getProductName() == null ? trackAssembly.getDrawingNo() + "_" + trackAssembly.getWorkNo() : trackAssembly.getProductName());
-                bom.setIsResolution("0");
+            if (noBomIds != null) {
+                List<TrackAssembly> assemblyList = trackHeadMapper.selectAssemblyByTrackHeadIds(noBomIds);
+                for (TrackAssembly trackAssembly : assemblyList) {
+                    ProjectBom bom = new ProjectBom();
+                    bom.setPublishState(1);
+                    bom.setWorkPlanNo(trackAssembly.getWorkNo() == null ? "no workNo" : trackAssembly.getWorkNo());
+                    bom.setTenantId(trackAssembly.getTenantId());
+                    bom.setDrawingNo(trackAssembly.getDrawingNo());
+                    bom.setMaterialNo(trackAssembly.getMaterialNo());
+                    bom.setGrade(trackAssembly.getGrade());
+                    bom.setIsNumFrom(trackAssembly.getIsNumFrom());
+                    bom.setIsKeyPart(trackAssembly.getIsKeyPart());
+                    bom.setIsNeedPicking(trackAssembly.getIsNeedPicking());
+                    bom.setIsEdgeStore(trackAssembly.getIsEdgeStore());
+                    bom.setIsCheck(trackAssembly.getIsCheck());
+                    bom.setNumber(trackAssembly.getNumber());
+                    bom.setTrackType(trackAssembly.getTrackType());
+                    bom.setWeight(Float.parseFloat(trackAssembly.getWeight().toString()));
+                    bom.setUnit(trackAssembly.getUnit());
+                    bom.setSourceType(trackAssembly.getSourceType());
+                    bom.setState("1");
+                    bom.setPublishState(1);
+                    bom.setProjectName(trackAssembly.getProductName() == null ? trackAssembly.getDrawingNo() + "_" + trackAssembly.getWorkNo() : trackAssembly.getProductName());
+                    bom.setIsResolution("0");
 
-                bomList.add(bom);
+                    bomList.add(bom);
+                }
+                baseServiceClient.addBom(bomList);
+                //给新增的bom绑定trackHead
+                trackHeads = trackHeadMapper.selectByIds(noBomIds);
+                listMap = baseServiceClient.bindingBom(trackHeads);
+                bindingBomTrackHeads = listMap.get("trackHeadList");
+                trackHeadService.updateBatchById(bindingBomTrackHeads);
             }
-            baseServiceClient.addBom(bomList);
-            //给新增的bom绑定trackHead
-            String noBomIdsStr = String.join(",", noBomIds);
-            trackHeads = trackHeadMapper.selectByIds(noBomIdsStr);
-            listMap = baseServiceClient.bindingBom(trackHeads);
-            bindingBomTrackHeads = listMap.get("trackHeadList");
-            trackHeadService.updateBatchById(bindingBomTrackHeads);
         }
 
 
