@@ -521,7 +521,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             //校验产品编码是否重复
             QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("product_no", produceNoDesc);
-            queryWrapper.eq("branch_code", productNo);
+            queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
             if (trackFlowList.size() > 0) {
