@@ -290,13 +290,14 @@ public class ProductController extends BaseController {
     public CommonResult<List<Product>> selectByMaterialNoOrDrawingNo(String inputKey, String materialType, Boolean isEqualType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(inputKey)) {
+            String drawingNo = DrawingNoUtil.drawingNo(inputKey);
 /*
 
             inputKey = "%" + inputKey.replaceAll("-", "") + "%";
             queryWrapper.apply("(material_no like {0} or replace(drawing_no,'-','') like {0})", inputKey);
 */
 
-            queryWrapper.apply("(material_no like {0} or " + DrawingNoUtil.queryLikeSql("drawing_no", inputKey) + ")", inputKey);
+            queryWrapper.apply("(material_no like {0} or " + DrawingNoUtil.queryLikeSql("drawing_no", inputKey) + ")", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialType)) {
             if (isEqualType != null) {
