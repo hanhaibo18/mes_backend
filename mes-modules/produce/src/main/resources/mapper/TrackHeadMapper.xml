@@ -7,7 +7,7 @@
         WHERE id in (SELECT th.id
                      FROM mes_produce.produce_track_head th
                               left join produce_track_item ti on th.id = ti.track_head_id ${ew.customSqlSegment}
-        group by th.id)
+                     group by th.id)
     </select>
 
     <select id="selectTrackHeadCurrentRouter" resultType="com.richfit.mes.common.model.produce.TrackHead">
@@ -36,10 +36,33 @@
     </select>
 
     <select id="queryListByCertId" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT th.*, ti.opt_id, ti.opt_name, ti.id ti_id, ti.sequence_order_by,ti.product_no as item_product_no,ti.number as item_number
+        SELECT th.*,
+               ti.opt_id,
+               ti.opt_name,
+               ti.id            ti_id,
+               ti.sequence_order_by,
+               ti.product_no as item_product_no,
+               ti.number     as item_number
         FROM mes_produce.produce_track_certificate tc
                  left join mes_produce.produce_track_head th on tc.th_id = th.id
                  LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id and ti.id = tc.ti_id
         where tc.certificate_id = #{certId}
+    </select>
+    <select id="selectAssemblyByTrackHeadIds" resultType="com.richfit.mes.common.model.produce.TrackAssembly">
+        SELECT pta.*,pth.work_no work_no,pth.product_name product_name
+        FROM produce_track_head pth JOIN produce_track_assembly pta
+        ON pth.Id = pta.track_head_id and pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2
+        <if test="null != ids">
+            and pth.id in
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+                #{id,jdbcType=VARCHAR}
+            </foreach>
+        </if>
+    </select>
+    <select id="selectByIds" resultType="com.richfit.mes.common.model.produce.TrackHead">
+        SELECT * from produce_track_head where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id,jdbcType=VARCHAR}
+        </foreach>
     </select>
 </mapper>

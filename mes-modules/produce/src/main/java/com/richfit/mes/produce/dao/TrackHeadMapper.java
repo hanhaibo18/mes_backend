@@ -219,9 +219,7 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
     @Select("SELECT DISTINCT(pth.id) FROM produce_track_assembly pta JOIN produce_track_head pth ON pta.track_head_id = pth.id AND pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 WHERE pth.project_bom_id IS NULL")
     List<String> selectIdWithoutProjectBom();
 
-    @Select("SELECT * from produce_track_head where id in (${ids})")
-    List<TrackHead> selectByIds(@Param("ids") String ids);
+    List<TrackHead> selectByIds(@Param("ids") List<String> ids);
 
-    @Select("SELECT pta.*,pth.work_no work_no,pth.product_name product_name  FROM produce_track_head pth JOIN produce_track_assembly pta ON pth.Id = pta.track_head_id and pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 and pth.id in (${ids})")
-    List<TrackAssembly> selectAssemblyByTrackHeadIds(@Param("ids") String ids);
+    List<TrackAssembly> selectAssemblyByTrackHeadIds(@Param("ids") List<String> ids);
 }
