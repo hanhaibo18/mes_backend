@@ -117,7 +117,7 @@ public class OperationLogAspect {
                         //传入参数是TrackHead实体时，说明通过更改trackHead时更新了order
                         else if (TRACK_HEAD.equals(argType) && trackHead != null) {
                             //从跟单中获取订单号
-                            if (!trackHead.getProductionOrder().isEmpty()) {
+                            if (!StringUtils.isNullOrEmpty(trackHead.getProductionOrder())) {
                                 actionService.saveAction(ActionUtil.buildAction(trackHead.getBranchCode(), actionType, "0", "订单号：" + trackHead.getProductionOrder(), getIpAddress(request)));
                             }
                         }//传入参数是OrderId
