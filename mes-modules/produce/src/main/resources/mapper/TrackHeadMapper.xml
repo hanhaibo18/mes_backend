@@ -19,7 +19,6 @@
                ti.id         ti_id,
                ti.sequence_order_by,
                ti.opt_no,
-               ti.opt_name,
                ti.original_opt_sequence,
                ti.next_opt_sequence,
                ti.is_current
@@ -29,15 +28,18 @@
     </select>
 
     <select id="selectTrackHeadCurrentRouterNew" resultType="com.richfit.mes.common.model.produce.TrackHead">
-        SELECT th.*,
+        select   *   from (
+        SELECT
+                ROW_NUMBER() OVER (partition  BY ti.flow_id ORDER by ti.opt_sequence desc) AA,
+               th.*,
                ti.product_no item_product_no,
+               tf.product_no flow_product_no,
                ti.number     item_number,
                ti.opt_id,
                ti.opt_name,
                ti.id         ti_id,
                ti.sequence_order_by,
                ti.opt_no,
-               ti.opt_name,
                ti.original_opt_sequence,
                ti.next_opt_sequence,
                ti.is_current
@@ -48,6 +50,8 @@
             AND ti.flow_id = tf.id
             AND ti.is_final_complete = 1
             ${ew.customSqlSegment}
+        ) a
+        where   a.AA=1
     </select>
 
     <select id="selectTrackHeadAndFlow" resultType="com.richfit.mes.common.model.produce.TrackHead">

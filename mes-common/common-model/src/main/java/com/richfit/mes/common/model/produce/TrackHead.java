@@ -332,6 +332,10 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String itemProductNo;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "工序产品编码")
+    private String flowProductNo;
+
+    @TableField(exist = false)
     @ApiModelProperty(value = "工序产品数量")
     private String itemNumber;
 
