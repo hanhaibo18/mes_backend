@@ -17,20 +17,18 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
-import io.netty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -375,7 +373,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         Map<String, Object> result = new HashMap<>();
         List<TrackHead> trackHeadList = new ArrayList<>();
         List<String> noBomIds = new ArrayList<>();
-        Map<String,String> projectBomMap = new HashMap<>();
+        Map<String, String> projectBomMap = new HashMap<>();
         for (TrackHead trackHead : trackHeads) {
             ProjectBom bom = projectBomMapper.selectBomByDrawNoAndWorkNo(trackHead.getDrawingNo(), trackHead.getWorkNo(), trackHead.getTenantId(), trackHead.getBranchCode());
             if (bom != null) {
@@ -392,7 +390,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                     ProjectBom projectBom = projectBomEntity(productionBom);
                     projectBom.setTenantId(trackHead.getTenantId()).setBranchCode(trackHead.getBranchCode()).setProjectName(trackHead.getProductName() == null ? trackHead.getDrawingNo() + "_" + trackHead.getWorkNo() : trackHead.getProductName()).setWorkPlanNo(trackHead.getWorkNo()).setIsResolution("0");
                     this.save(projectBom);
-                    projectBomMap.put(trackHead.getId(),projectBom.getDrawingNo());
+                    projectBomMap.put(trackHead.getId(), projectBom.getDrawingNo());
 
                 }
                 noBomIds.add(trackHead.getId());
@@ -401,7 +399,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         //绑定已有bom的跟单
         produceServiceClient.updateBatch(trackHeadList);
         result.put("noBomIds", noBomIds);
-        result.put("projectBomMap",projectBomMap);
+        result.put("projectBomMap", projectBomMap);
         return result;
     }
 

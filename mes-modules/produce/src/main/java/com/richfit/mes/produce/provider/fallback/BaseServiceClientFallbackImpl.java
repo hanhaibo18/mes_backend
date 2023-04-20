@@ -208,5 +208,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     }
 
+    @Override
+    public List<ProjectBom> getBomListByMainBomId(String id) {
+        return null;
+    }
+
 
 }

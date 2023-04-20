@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.base.entity.DeleteBomDto;
 import com.richfit.mes.base.entity.DeleteProjectBomDto;
@@ -196,14 +197,26 @@ public class ProjectBomController {
 
     @ApiOperation(value = "根据传入的trackHead图号工作号绑定已有bom(其他服务调用)")
     @PostMapping("/bindingBom")
-    public Map<String,Object> bindingBom(@RequestBody List<TrackHead> trackHeads){
+    public Map<String, Object> bindingBom(@RequestBody List<TrackHead> trackHeads) {
         return projectBomService.bindingBom(trackHeads);
     }
 
     @ApiOperation(value = "新增bom(其他服务调用)")
     @PostMapping("/addBom")
-    public void addBom(@RequestBody List<ProjectBom> bomList){
+    public void addBom(@RequestBody List<ProjectBom> bomList) {
         projectBomService.saveBomList(bomList);
     }
 
+    @ApiOperation(value = "根据主项目bom获取项目bom列表(其他服务调用)")
+    @PostMapping ("/getBomListByMainBomId")
+    public List<ProjectBom> getBomListByMainBomId(@RequestParam String id) {
+        ProjectBom mainBom = projectBomService.getById(id);
+        QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("work_plan_no", mainBom.getWorkPlanNo())
+                .eq("tenant_id", mainBom.getTenantId())
+                .eq("branch_code", mainBom.getBranchCode());
+        List<ProjectBom> projectBomList = projectBomService.list(queryWrapper);
+        projectBomList.add(mainBom);
+        return projectBomList;
+    }
 }

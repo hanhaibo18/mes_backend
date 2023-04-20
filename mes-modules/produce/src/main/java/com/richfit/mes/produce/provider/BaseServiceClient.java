@@ -96,7 +96,7 @@ public interface BaseServiceClient {
     public ProjectBom queryBom(@RequestParam("workPlanNo") String workPlanNo, @RequestParam("branchCode") String branchCode);
 
     @GetMapping("/api/base/sequence/assign/get")
-    public CommonResult<OperationAssign> assignGet(@RequestParam("optName") String optName,@RequestParam("branchCode") String branchCode);
+    public CommonResult<OperationAssign> assignGet(@RequestParam("optName") String optName, @RequestParam("branchCode") String branchCode);
 
     @GetMapping("/api/base/sequence/querySequenceById")
     public CommonResult<Sequence> querySequenceById(@RequestParam("optName") String optName, @RequestParam("branchCode") String branchCode);
@@ -212,6 +212,7 @@ public interface BaseServiceClient {
 
     @GetMapping("/api/base/sequence/query_by_routerIds")
     public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds);
+
     /**
      * 功能描述:根据id查询工序字典列表
      *
@@ -222,8 +223,12 @@ public interface BaseServiceClient {
     List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds);
 
     @PostMapping("/api/base/project_bom/bindingBom")
-    public Map<String,Object> bindingBom(@RequestBody List<TrackHead> trackHeads);
+    public Map<String, Object> bindingBom(@RequestBody List<TrackHead> trackHeads);
 
     @PostMapping("/api/base/project_bom/addBom")
     public void addBom(@RequestBody List<ProjectBom> bomList);
+
+    @ApiOperation(value = "根据主项目bom获取项目bom列表")
+    @PostMapping("/api/base/project_bom/getBomListByMainBomId")
+    public List<ProjectBom> getBomListByMainBomId(@RequestParam String id);
 }

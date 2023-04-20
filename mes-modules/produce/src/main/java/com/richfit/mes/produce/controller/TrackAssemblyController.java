@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -159,6 +160,14 @@ public class TrackAssemblyController extends BaseController {
     @GetMapping("/changeProductNo")
     public CommonResult<Boolean> changeProductNo(String id, String productNo,String branchCode) {
         return CommonResult.success(trackAssemblyService.changeProductNo(id,productNo,branchCode));
+    }
+
+    @ApiOperation(value = "根据跟单id查询装配列表(其他服务调用)")
+    @GetMapping("/getAssemblyListByTrackHeadId")
+    public List<TrackAssembly> getAssemblyListByTrackHeadId(String trackHeadId,String tenantId,String branchCode){
+        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id",trackHeadId).eq("tenant_id",tenantId).eq("branch_code",branchCode);
+        return trackAssemblyService.list(queryWrapper);
     }
 
 }

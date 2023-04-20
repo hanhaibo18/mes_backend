@@ -8,6 +8,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.PlanService;
+import com.richfit.mes.produce.service.TrackAssemblyService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +20,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Api(value = "更新服务", tags = {"更新服务"})
@@ -41,6 +38,8 @@ public class BaseProjectBom {
     private TrackHeadMapper trackHeadMapper;
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Autowired
+    private TrackAssemblyService trackAssemblyService;
 
     static {
         String driver = "com.mysql.cj.jdbc.Driver";//mysql驱动
@@ -101,7 +100,6 @@ public class BaseProjectBom {
     }
 
     @GetMapping("/project_bom")
-    @Transactional(rollbackFor = Exception.class)
     public void updateProjectBom() {
         System.out.println("更新开始");
         //获取未绑定project_bom_id的track_head_id
@@ -116,6 +114,45 @@ public class BaseProjectBom {
 
         System.out.println("更新完成");
     }
+
+    @GetMapping("/assembly")
+    public void updateAssembly(){
+        //获取绑定装配且装配表的projectBomId为空的跟单号以及跟单号对应的主项目bomId
+        List<TrackHead> trackHeadList = trackHeadMapper.selectNoBomIdTrack();
+        int i=1;
+        List<List> splitList = splitList(trackHeadList, 100);
+        for (List<TrackHead> trackHeads : splitList) {
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------");
+            System.out.println("-------------------------------------i=" + i);
+            addProjectBomIdtoAssembly(trackHeads);
+            i++;
+        }
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addProjectBomIdtoAssembly(List<TrackHead> trackHeads) {
+        for (TrackHead trackHead : trackHeads) {
+            //用来保存需要变更的装配信息
+            List<TrackAssembly> updateAssemblyList = new ArrayList<>();
+            List<ProjectBom> bomList = baseServiceClient.getBomListByMainBomId(trackHead.getProjectBomId());
+            for (ProjectBom projectBom : bomList) {
+                QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("drawing_no",projectBom.getDrawingNo()).eq("material_no",projectBom.getMaterialNo()).eq("grade",projectBom.getGrade());
+                List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(queryWrapper);
+                //找到唯一的装配信息，添加projectBomId然后保存到updateList
+                if (trackAssemblyList != null && trackAssemblyList.size() == 1){
+                    trackAssemblyList.get(0).setProjectBomId(projectBom.getId());
+                    updateAssemblyList.add(trackAssemblyList.get(0));
+                }
+            }
+            trackAssemblyService.updateBatchById(updateAssemblyList);
+        }
+    }
+
 
     @Transactional(rollbackFor = Exception.class)
     public void projectBomUpdate(List trackHeadIds, int i) {
