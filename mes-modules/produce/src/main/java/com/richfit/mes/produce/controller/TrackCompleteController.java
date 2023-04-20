@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -131,9 +129,9 @@ public class TrackCompleteController extends BaseController {
             if (!StringUtils.isNullOrEmpty(endTime)) {
                 queryWrapper.le("a.complete_time", endTime);
             }
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("branch_code", branchCode);
-            }
+//            if (!StringUtils.isNullOrEmpty(branchCode)) {
+//                queryWrapper.eq("branch_code", branchCode);
+//            }
 
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
 

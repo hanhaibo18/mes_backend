@@ -31,7 +31,6 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
-import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +109,7 @@ public class TrackCheckController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", required = true, paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isCurrent, String isDoing, String isExistQualityCheck, String isExistScheduleCheck, String isQualityComplete, String isScheduleComplete, String assignableQty, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol) {
+    public CommonResult<IPage<TrackItem>> page(int page, int limit, String isExistQualityCheck, String isExistScheduleCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             //车间
@@ -179,7 +178,7 @@ public class TrackCheckController extends BaseController {
             queryWrapper.eq("is_operation_complete", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
-            //收集跟单分流表id
+            //收集跟单分流表id 调度审核用
             List<String> flowIdList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(assigns.getRecords())) {
                 flowIdList = assigns.getRecords().stream().map(x -> x.getFlowId()).collect(Collectors.toList());
@@ -207,16 +206,6 @@ public class TrackCheckController extends BaseController {
                 item.setBatchNo(trackHead.getBatchNo());
                 TrackFlow trackFlow = flowMap.get(item.getFlowId());
                 item.setProductSourceName(trackFlow == null ? "" : trackFlow.getProductSourceName());//产品来源名称（热工）
-                //查询理化委托单,查询委托单号最大的数据
-               /* List<PhysChemOrderInner> physChemOrderInners = materialInspectionServiceClient.getListByBatchNo(trackHead.getBatchNo());
-                if (physChemOrderInners.size() > 0) {
-                    //根据委托单号排序
-                    physChemOrderInners.sort((t1, t2) -> t1.getOrderNo().compareTo(t2.getOrderNo()));
-                    //委托单状态,根据最新的走
-                    item.setOrderStatus(physChemOrderInners.get(0).getStatus());
-                    //是否有报告 （执行同步操作之后才能有报告）
-                    item.setSyncStatus(physChemOrderInners.get(0).getSyncStatus());
-                }*/
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {
@@ -242,9 +231,9 @@ public class TrackCheckController extends BaseController {
     public CommonResult<IPage<TrackCheck>> pageCheck(int page, int limit, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackCheck> queryWrapper = new QueryWrapper<TrackCheck>();
-            if (!StringUtils.isNullOrEmpty(branchCode)) {
-                queryWrapper.eq("track.branch_code", branchCode);
-            }
+//            if (!StringUtils.isNullOrEmpty(branchCode)) {
+//                queryWrapper.eq("track.branch_code", branchCode);
+//            }
             if (!StringUtils.isNullOrEmpty(tenantId)) {
                 queryWrapper.eq("track.tenant_id", tenantId);
             }
@@ -269,7 +258,7 @@ public class TrackCheckController extends BaseController {
             }
             queryWrapper.and(wrapper -> wrapper.eq("track.is_show", "1").or().isNull("track.is_show"));
             //增加工序过滤
-            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+//            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackCheck> checks = trackCheckService.queryCheckPage(new Page<TrackCheck>(page, limit), queryWrapper);
             //收集跟单分流表id
@@ -936,4 +925,18 @@ public class TrackCheckController extends BaseController {
     public CommonResult<Boolean> countQueryRules(String rulesId) {
         return CommonResult.success(trackCheckService.countQueryRules(rulesId));
     }
+
+    @ApiOperation(value = "质检待审核查询(新)", notes = "质检待审核查询(新)")
+    @GetMapping("/query_quality_page")
+    public CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol) {
+        return trackCheckService.queryQualityPage(page, limit, isExistQualityCheck, isScheduleComplete, startTime, endTime, trackNo, productNo, tenantId, isRecheck, drawingNo, order, orderCol);
+    }
+
+
+    @ApiOperation(value = "调度待审核/已审核查询(新)", notes = "调度待审核/已审核查询(新)")
+    @GetMapping("/query_dispatch_page")
+    public CommonResult<IPage<TrackItem>> queryDispatchPage(int page, int limit, String isExistScheduleCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo, String order, String orderCol) {
+        return trackCheckService.queryDispatchPage(page, limit, isExistScheduleCheck, isScheduleComplete, startTime, endTime, trackNo, productNo, branchCode, tenantId, drawingNo, order, orderCol);
+    }
+
 }
