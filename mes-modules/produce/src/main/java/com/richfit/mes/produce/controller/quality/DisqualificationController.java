@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller.quality;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -8,7 +9,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.sys.ItemParam;
@@ -36,9 +39,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -207,8 +209,12 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "不合格导出", notes = "不合格导出")
     @PostMapping("/export")
-    public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<Disqualification> disqualificationList) {
+    public void exportDisqualification(HttpServletResponse rsp,@RequestBody QueryInspectorDto queryInspectorDto) {
         try {
+            QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+            List<Disqualification> disqualificationList = disqualificationService.list(queryWrapper);
             if (!CollectionUtils.isNotEmpty(disqualificationList)) {
                 return;
             }
@@ -332,6 +338,46 @@ public class DisqualificationController extends BaseController {
             e.printStackTrace();
         }
 
+    }
+
+    private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
+        //图号查询
+        if (StrUtil.isNotBlank(queryInspectorDto.getDrawingNo())) {
+            queryWrapper.like("drawing_no", queryInspectorDto.getDrawingNo());
+        }
+        //产品名称
+        if (StrUtil.isNotBlank(queryInspectorDto.getProductName())) {
+            queryWrapper.like("product_name", queryInspectorDto.getProductName());
+        }
+        //跟单号
+        if (StrUtil.isNotBlank(queryInspectorDto.getTrackNo())) {
+            queryInspectorDto.setTrackNo(queryInspectorDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryInspectorDto.getTrackNo() + "%'");
+        }
+        //申请单号
+        if (StrUtil.isNotBlank(queryInspectorDto.getProcessSheetNo())) {
+            queryWrapper.like("process_sheet_no", queryInspectorDto.getProcessSheetNo());
+        }
+        //申请单状态
+        if (StrUtil.isNotBlank(queryInspectorDto.getType())) {
+            queryWrapper.eq("type", queryInspectorDto.getType());
+        }
+        try {
+            //开始时间
+            if (StrUtil.isNotBlank(queryInspectorDto.getStartTime())) {
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + queryInspectorDto.getStartTime() + " 00:00:00')");
+            }
+            //结束时间
+            if (StrUtil.isNotBlank(queryInspectorDto.getEndTime())) {
+                Calendar calendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                calendar.setTime(sdf.parse(queryInspectorDto.getEndTime()));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+            }
+        } catch (Exception e) {
+            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
+        }
     }
 
     /**
