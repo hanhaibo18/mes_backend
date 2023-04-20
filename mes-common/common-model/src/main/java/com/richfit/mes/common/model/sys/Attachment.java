@@ -84,7 +84,7 @@ public class Attachment extends BaseEntity<Attachment> {
 
 
     /**
-     * 文件类型
+     * 文件类型 0、生成完工合格证  1、料单   2、工序质量资料
      */
     private String type;
 
