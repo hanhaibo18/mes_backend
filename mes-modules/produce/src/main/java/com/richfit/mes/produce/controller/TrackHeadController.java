@@ -704,13 +704,14 @@ public class TrackHeadController extends BaseController {
         }*/
         queryWrapper.eq("th.tenant_id", tenantId);
         queryWrapper.eq("th.branch_code", branchCode);
-        IPage<TrackHead> trackHeadIPage = trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper);
+        //IPage<TrackHead> trackHeadIPage = trackHeadService.selectTrackHeadCurrentRouter(new Page<TrackHead>(page, limit), queryWrapper);
+        IPage<TrackHead> trackHeadIPage = trackHeadService.selectTrackHeadCurrentRouterNew(new Page<TrackHead>(page, limit), queryWrapper);
         //当前工序
-        Map<String, TrackHead> current = trackHeadIPage.getRecords().stream().filter(x -> x.getIsCurrent() == 1).collect(Collectors.toMap(b -> b.getOriginalOptSequence(), c -> c, (value1, value2) -> value2));
-        List<TrackHead> records = trackHeadIPage.getRecords();
-        //工序为当前工序 或 者下一工序为当前工序的工序(上一工序)
-        List<TrackHead> collect = records.stream().filter(x -> x.getIsCurrent() == 1 || !ObjectUtil.isEmpty(current.get(x.getNextOptSequence()))).collect(Collectors.toList());
-        trackHeadIPage.setRecords(collect);
+//        Map<String, TrackHead> current = trackHeadIPage.getRecords().stream().filter(x -> x.getIsCurrent() == 1).collect(Collectors.toMap(b -> b.getOriginalOptSequence(), c -> c,(value1, value2) -> value2));
+//        List<TrackHead> records = trackHeadIPage.getRecords();
+//        //工序为当前工序 或 者下一工序为当前工序的工序(上一工序)
+//        List<TrackHead> collect = records.stream().filter(x -> x.getIsCurrent() == 1 || !ObjectUtil.isEmpty(current.get(x.getNextOptSequence()))).collect(Collectors.toList());
+//        trackHeadIPage.setRecords(collect);
         return CommonResult.success(trackHeadIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 

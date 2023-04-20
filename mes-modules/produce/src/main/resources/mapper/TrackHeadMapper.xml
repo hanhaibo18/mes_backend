@@ -19,13 +19,38 @@
                ti.id         ti_id,
                ti.sequence_order_by,
                ti.opt_no,
-               ti.opt_name,
                ti.original_opt_sequence,
                ti.next_opt_sequence,
                ti.is_current
         FROM mes_produce.produce_track_head th
                  LEFT JOIN mes_produce.produce_track_item ti ON th.id = ti.track_head_id
             ${ew.customSqlSegment}
+    </select>
+
+    <select id="selectTrackHeadCurrentRouterNew" resultType="com.richfit.mes.common.model.produce.TrackHead">
+        select   *   from (
+        SELECT
+                ROW_NUMBER() OVER (partition  BY ti.flow_id ORDER by ti.opt_sequence desc) AA,
+               th.*,
+               tf.product_no item_product_no,
+               ti.number     item_number,
+               ti.opt_id,
+               ti.opt_name,
+               ti.id         ti_id,
+               ti.sequence_order_by,
+               ti.opt_no,
+               ti.original_opt_sequence,
+               ti.next_opt_sequence,
+               ti.is_current
+        FROM produce_track_head th
+                 LEFT JOIN produce_track_head_flow tf ON tf.track_head_id = th.id
+            AND tf.`status` = 1
+                 LEFT JOIN produce_track_item ti ON th.id = ti.track_head_id
+            AND ti.flow_id = tf.id
+            AND ti.is_final_complete = 1
+            ${ew.customSqlSegment}
+        ) a
+        where   a.AA=1
     </select>
 
     <select id="selectTrackHeadAndFlow" resultType="com.richfit.mes.common.model.produce.TrackHead">

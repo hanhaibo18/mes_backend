@@ -3,17 +3,22 @@ package com.richfit.mes.produce.controller;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackCertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -43,6 +48,7 @@ public class CertificateController {
     public static String TRACK_NO_NULL_MESSAGE = "请选择跟单!";
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败！";
+    public static String FAILED_ON_COMPLETE = "工序未完成，不允许开具合格证";
 
     @Autowired
     private CertificateService certificateService;
@@ -52,6 +58,8 @@ public class CertificateController {
 
     @Autowired
     private TrackHeadService trackHeadService;
+    @Autowired
+    public TrackItemService trackItemService;
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
@@ -65,11 +73,28 @@ public class CertificateController {
         if (certificateService.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
             return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
         } else {
-
+            //检查当前工序之前有没有未完成的工序
+            this.checkBefore(certificate);
             certificateService.saveCertificate(certificate);
-
             return CommonResult.success(certificate);
         }
+    }
+
+    private CommonResult<Certificate> checkBefore(Certificate certificate) {
+        //判断当前工序之前有没有未完成的工序
+        List<String> ids = certificate.getTrackCertificates().stream().map(TrackCertificate::getThId).collect(Collectors.toList());
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        queryWrapper.in("track_head_id", ids);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        //去重操作(工序号+工序名 都一样认为重复)
+        ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
+        List<TrackItem> current = collect.stream().filter(x -> x.getIsCurrent() == 1).collect(Collectors.toList());
+        //当前工序的前工序 并且最终完成状态 is_final_complete 不为1 的
+        List<TrackItem> before = collect.stream().filter(x -> x.getOptSequence() < current.get(0).getOptSequence() & !"1".equals(x.getIsFinalComplete())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(before)) {
+            return CommonResult.failed(before.get(0).getOptName() + " " + FAILED_ON_COMPLETE);
+        }
+        return null;
     }
 
     @ApiOperation(value = "修改合格证", notes = "修改合格证信息")
