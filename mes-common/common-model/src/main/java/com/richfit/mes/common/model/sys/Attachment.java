@@ -72,7 +72,6 @@ public class Attachment extends BaseEntity<Attachment> {
      */
     private String relationType;
 
-
     /**
      * 分类
      */
@@ -82,5 +81,21 @@ public class Attachment extends BaseEntity<Attachment> {
      * 状态
      */
     private String status;
+
+
+    /**
+     * 文件类型 0、生成完工合格证  1、料单   2、跟单质量资料  3、工序质量资料
+     */
+    private String type;
+
+    /**
+     * 图号
+     */
+    private String drawingNo;
+
+    /**
+     * 产品编码（不带图号,多个产品编码使用逗号隔开）
+     */
+    private String productNo;
 
 }
