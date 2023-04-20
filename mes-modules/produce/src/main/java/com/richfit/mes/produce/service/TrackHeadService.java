@@ -150,6 +150,9 @@ public interface TrackHeadService extends IService<TrackHead> {
      **/
     boolean updateTrackHeadPlan(List<TrackHead> trackHeads);
 
+    IPage<TrackHead> selectTrackHeadCurrentRouterNew
+            (Page<TrackHead> page, QueryWrapper<TrackHead> query);
+
     /**
      * 功能描述: 根据计划Id 查询跟单
      *

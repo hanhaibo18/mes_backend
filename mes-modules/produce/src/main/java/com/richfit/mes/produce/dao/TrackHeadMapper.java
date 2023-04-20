@@ -27,6 +27,8 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
 
     IPage<TrackHead> selectTrackHeadCurrentRouter(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
 
+    IPage<TrackHead> selectTrackHeadCurrentRouterNew(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
+
     /**
      * 功能描述: 根据计划Id查询 所做物品数量
      *
