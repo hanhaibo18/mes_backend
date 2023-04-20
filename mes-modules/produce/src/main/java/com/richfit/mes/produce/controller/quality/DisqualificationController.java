@@ -208,7 +208,6 @@ public class DisqualificationController extends BaseController {
     @ApiOperation(value = "不合格导出", notes = "不合格导出")
     @PostMapping("/export")
     public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<Disqualification> disqualificationList) {
-        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         try {
             if (!CollectionUtils.isNotEmpty(disqualificationList)) {
                 return;
@@ -216,7 +215,6 @@ public class DisqualificationController extends BaseController {
             List<String> idList = disqualificationList.stream().map(e -> e.getId()).collect(Collectors.toList());
             QueryWrapper<DisqualificationFinalResult> objectQueryWrapper = new QueryWrapper<>();
             objectQueryWrapper.in("id", idList);
-            objectQueryWrapper.eq("tenant_id", tenantId);
             List<DisqualificationFinalResult> list = finalResultService.list(objectQueryWrapper);
             Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
             // 责任单位内
