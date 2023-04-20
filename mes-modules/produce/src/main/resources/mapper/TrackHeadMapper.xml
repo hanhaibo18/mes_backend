@@ -32,8 +32,7 @@
         SELECT
                 ROW_NUMBER() OVER (partition  BY ti.flow_id ORDER by ti.opt_sequence desc) AA,
                th.*,
-               ti.product_no item_product_no,
-               tf.product_no flow_product_no,
+               tf.product_no item_product_no,
                ti.number     item_number,
                ti.opt_id,
                ti.opt_name,
