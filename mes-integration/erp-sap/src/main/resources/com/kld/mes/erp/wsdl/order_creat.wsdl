@@ -1,0 +1,166 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<WL5G3N0:definitions targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/" xmlns:WL5G3N1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:WL5G3N2="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:WL5G3N3="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
+  <WL5G3N0:documentation>
+		
+	</WL5G3N0:documentation>
+  <wsp:UsingPolicy WL5G3N0:Required="true"/>
+  <wsp:Policy WL5G3N1:Id="BN_BN_ZC80_PPIF032">
+    <saptrnbnd:OptimizedXMLTransfer uri="http://xml.sap.com/2006/11/esi/esp/binxml" wsp:Optional="true" xmlns:saptrnbnd="http://www.sap.com/webas/710/soap/features/transportbinding/"/>
+    <wsoma:OptimizedMimeSerialization xmlns:wsoma="http://schemas.xmlsoap.org/ws/2004/09/policy/optimizedmimeserialization"/>
+    <wsp:ExactlyOne/>
+    <wsaw:UsingAddressing xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"/>
+  </wsp:Policy>
+  <WL5G3N0:types>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:rfc:functions" xmlns:WL5G3N1="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:WL5G3N2="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:WL5G3N4="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:WL5G3N5="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:n1="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:simpleType name="char1">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="1"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char12">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="12"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char18">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="18"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char20">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="20"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char200">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="200"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char220">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="220"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char25">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="25"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char4">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="4"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="date10">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="10"/>
+          <xsd:pattern value="\d\d\d\d-\d\d-\d\d"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="quantum13.3">
+        <xsd:restriction base="xsd:decimal">
+          <xsd:totalDigits value="13"/>
+          <xsd:fractionDigits value="3"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="time">
+        <xsd:restriction base="xsd:time">
+          <xsd:pattern value="[0-9]{2}:[0-9]{2}:[0-9]{2}"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="unit3">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="3"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:schema>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:WL5G3N1="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:WL5G3N2="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:WL5G3N4="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:WL5G3N5="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:n0="urn:sap-com:document:sap:rfc:functions" xmlns:n1="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:import namespace="urn:sap-com:document:sap:rfc:functions"/>
+      <xsd:complexType name="Zc80Ppif032SI">
+        <xsd:sequence>
+          <xsd:element name="DocId" type="n0:char20"/>
+          <xsd:element name="Material" type="n0:char18"/>
+          <xsd:element name="Plant" type="n0:char4"/>
+          <xsd:element name="OrderType" type="n0:char4"/>
+          <xsd:element name="BasicStartDate" type="n0:date10"/>
+          <xsd:element name="BasicStartTime" type="n0:time"/>
+          <xsd:element name="BasicEndDate" type="n0:date10"/>
+          <xsd:element name="BasicEndTime" type="n0:time"/>
+          <xsd:element name="Quantity" type="n0:quantum13.3"/>
+          <xsd:element name="QuantityUom" type="n0:unit3"/>
+          <xsd:element name="UnloadingPoint" type="n0:char25"/>
+          <xsd:element name="Zfield1" type="n0:char200"/>
+          <xsd:element name="Zfield2" type="n0:char200"/>
+          <xsd:element name="Zfield3" type="n0:char200"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="Zc80Ppif032SO">
+        <xsd:sequence>
+          <xsd:element name="Type" type="n0:char1"/>
+          <xsd:element name="OrderNumber" type="n0:char12"/>
+          <xsd:element name="DocId" type="n0:char12"/>
+          <xsd:element name="Release" type="n0:char1"/>
+          <xsd:element name="Message" type="n0:char220"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="Zc80Ppif032TI">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:Zc80Ppif032SI"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="Zc80Ppif032TO">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:Zc80Ppif032SO"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="Zc80Ppif032">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="TIn" type="tns:Zc80Ppif032TI"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Zc80Ppif032Response">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="TOut" type="tns:Zc80Ppif032TO"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </WL5G3N0:types>
+  <WL5G3N0:message name="Zc80Ppif032">
+    <WL5G3N0:part element="WL5G3N2:Zc80Ppif032" name="parameters"/>
+  </WL5G3N0:message>
+  <WL5G3N0:message name="Zc80Ppif032Response">
+    <WL5G3N0:part element="WL5G3N2:Zc80Ppif032Response" name="parameter"/>
+  </WL5G3N0:message>
+  <WL5G3N0:portType name="ZC80_PPIF032">
+    <WL5G3N0:operation name="Zc80Ppif032">
+      <WL5G3N0:input message="WL5G3N2:Zc80Ppif032"/>
+      <WL5G3N0:output message="WL5G3N2:Zc80Ppif032Response"/>
+    </WL5G3N0:operation>
+  </WL5G3N0:portType>
+  <WL5G3N0:binding name="ZC80_PPIF032" type="WL5G3N2:ZC80_PPIF032">
+    <wsp:Policy>
+      <wsp:PolicyReference URI="#BN_BN_ZC80_PPIF032"/>
+    </wsp:Policy>
+    <WL5G3N3:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <WL5G3N0:operation name="Zc80Ppif032">
+      <WL5G3N3:operation soapAction="urn:sap-com:document:sap:soap:functions:mc-style:ZC80_PPIF032:Zc80Ppif032Request" style="document"/>
+      <WL5G3N0:input>
+        <WL5G3N3:body use="literal"/>
+      </WL5G3N0:input>
+      <WL5G3N0:output>
+        <WL5G3N3:body use="literal"/>
+      </WL5G3N0:output>
+    </WL5G3N0:operation>
+  </WL5G3N0:binding>
+  <WL5G3N0:service name="ZC80_PPIF032">
+    <WL5G3N0:port binding="WL5G3N2:ZC80_PPIF032" name="ZC80_PPIF032">
+      <WL5G3N3:address location="http://10.30.47.134:8001/ZBZZ/HTXT/XS/ZC80_PPIF032/service/PS/PS_ZC80_PPIF032"/>
+    </WL5G3N0:port>
+  </WL5G3N0:service>
+</WL5G3N0:definitions>
