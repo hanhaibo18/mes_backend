@@ -74,29 +74,42 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId,String branchCode) {
         TrackAssemblyBinding assemblyBinding = this.getById(id);
-        //校验编号是否被其他跟单绑定过
-        QueryWrapper<TrackAssemblyBinding> trackAssemblyBindingQueryWrapper = new QueryWrapper<>();
-        trackAssemblyBindingQueryWrapper.eq("number",assemblyBinding.getNumber())
-                .eq("is_binding",1)
-                .ne("id",id);
-        List<TrackAssemblyBinding> repeats = this.list(trackAssemblyBindingQueryWrapper);
-        if(repeats.size()>0){
-            Set<String> assemblyIds = repeats.stream().map(item -> item.getAssemblyId()).collect(Collectors.toSet());
-            //校验是不是此车间下的数据  如果是提示错误信息（已被绑定）
-            QueryWrapper<TrackAssembly> trackAssemblyQueryWrapper = new QueryWrapper<>();
-            trackAssemblyQueryWrapper.in("id",assemblyIds)
-                    .eq("branch_code",branchCode);
-            List<TrackAssembly> trackAssemblies = trackAssemblyService.list(trackAssemblyQueryWrapper);
-            Set<String> trackNos = trackAssemblies.stream().map(item -> item.getTrackNo()).collect(Collectors.toSet());
-            String join = String.join(",",new ArrayList<>(trackNos));
-            if(StringUtils.isNotBlank(join)){
-                throw new GlobalException("编码:"+assemblyBinding.getNumber()+",已被跟单"+join+"绑定",ResultCode.FAILED);
+        TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
+        //绑定校验
+        if(isBinding == 1){
+            //校验编号是否被其他跟单绑定过
+            QueryWrapper<TrackAssemblyBinding> trackAssemblyBindingQueryWrapper = new QueryWrapper<>();
+            trackAssemblyBindingQueryWrapper.eq("number",assemblyBinding.getNumber())
+                    .eq("is_binding",1)
+                    .ne("id",id);
+            List<TrackAssemblyBinding> repeats = this.list(trackAssemblyBindingQueryWrapper);
+            if(repeats.size()>0){
+                Set<String> assemblyIds = repeats.stream().map(item -> item.getAssemblyId()).collect(Collectors.toSet());
+                //校验是不是此车间下的数据  如果是提示错误信息（已被绑定）
+                QueryWrapper<TrackAssembly> trackAssemblyQueryWrapper = new QueryWrapper<>();
+                trackAssemblyQueryWrapper.in("id",assemblyIds)
+                        .eq("branch_code",branchCode);
+                List<TrackAssembly> trackAssemblies = trackAssemblyService.list(trackAssemblyQueryWrapper);
+                Set<String> trackNos = trackAssemblies.stream().map(item -> item.getTrackNo()).collect(Collectors.toSet());
+                String join = String.join(",",new ArrayList<>(trackNos));
+                if(StringUtils.isNotBlank(join)){
+                    throw new GlobalException("编码:"+assemblyBinding.getNumber()+",已被跟单"+join+"绑定",ResultCode.FAILED);
+                }
+            }
+            //检验绑定的产品编号在装配车间是否有跟单 如果有需要校验当前跟单是否已完工，未完工不能绑定
+            QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
+            trackHeadQueryWrapper.eq("product_no",assemblyBinding.getNumber())
+                    .eq("branch_code",branchCode)
+                    .and(wrapper->wrapper.eq("status","1").or().eq("status","0"));
+                    //.ne("id",trackAssembly.getTrackHeadId());
+            List<TrackHead> list = trackHeadService.list(trackHeadQueryWrapper);
+            if(list.size()>0){
+                throw new GlobalException("车间存在产品编号为:"+assemblyBinding.getNumber()+",且未完工的跟单,绑定失败！",ResultCode.FAILED);
             }
         }
 
         assemblyBinding.setIsBinding(isBinding);
         assemblyBinding.setItemId(itemId);
-        TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
         TrackHead trackHead = trackHeadService.getById(trackAssembly.getTrackHeadId());
         QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackHead.getId());
