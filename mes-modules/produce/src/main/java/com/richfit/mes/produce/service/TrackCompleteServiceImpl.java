@@ -828,11 +828,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (next) {
                 trackItem.setIsFinalComplete("1");
                 trackItem.setFinalCompleteTime(new Date());
+            }
+            trackItemService.updateById(trackItem);
+            if (next) {
                 Map<String, String> map = new HashMap<String, String>(1);
                 map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
                 publicService.activationProcess(map);
             }
-            trackItemService.updateById(trackItem);
         }
         if (bool) {
             return CommonResult.success(bool, "操作成功！");
