@@ -163,11 +163,17 @@ public class TrackAssemblyController extends BaseController {
     }
 
     @ApiOperation(value = "根据跟单id查询装配列表(其他服务调用)")
-    @GetMapping("/getAssemblyListByTrackHeadId")
-    public List<TrackAssembly> getAssemblyListByTrackHeadId(String trackHeadId,String tenantId,String branchCode){
+    @GetMapping("/getAssemblyListByProjectBomId")
+    public List<TrackAssembly> getAssemblyListByProjectBomId(String projectBomId,String tenantId,String branchCode){
         QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("track_head_id",trackHeadId).eq("tenant_id",tenantId).eq("branch_code",branchCode);
+        queryWrapper.eq("project_bom_id",projectBomId).eq("tenant_id",tenantId).eq("branch_code",branchCode);
         return trackAssemblyService.list(queryWrapper);
+    }
+
+    @ApiOperation(value = "修改装配信息(其他服务调用)")
+    @PostMapping("/updateAssembly")
+    public boolean updateAssembly(@RequestBody List<TrackAssembly> trackAssemblyList){
+        return trackAssemblyService.updateBatchById(trackAssemblyList);
     }
 
 }

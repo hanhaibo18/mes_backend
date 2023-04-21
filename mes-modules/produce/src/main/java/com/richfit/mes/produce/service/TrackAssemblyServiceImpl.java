@@ -412,6 +412,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 trackAssembly.setUnit(pb.getUnit());
                 trackAssembly.setSourceType(pb.getSourceType());
                 trackAssembly.setIsNumFrom(pb.getIsNumFrom());
+                trackAssembly.setOptName(pb.getOptName());
                 if (!StringUtil.isNullOrEmpty(pb.getBomGrouping())) {
                     if (pb.getId().equals(group.get(pb.getBomGrouping()))) {
                         trackAssemblyList.add(trackAssembly);

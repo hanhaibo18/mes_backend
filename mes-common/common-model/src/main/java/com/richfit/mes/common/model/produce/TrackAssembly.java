@@ -18,8 +18,10 @@ public class TrackAssembly extends BaseEntity<TrackAssembly> {
 
     private static final long serialVersionUID = 7458828222863575388L;
 
-    @ApiModelProperty(value = "项目bomId",dataType = "String")
+    @ApiModelProperty(value = "项目bomId", dataType = "String")
     private String projectBomId;
+    @ApiModelProperty(value = "配料工序名", dataType = "String")
+    private String optName;
     /**
      * 零部件名称
      */

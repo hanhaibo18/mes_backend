@@ -3,6 +3,7 @@ package com.richfit.mes.base.provider.fallback;
 import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,16 @@ public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
 
     @Override
     public boolean updateBatch(List<TrackHead> trackHeadList) {
+        return false;
+    }
+
+    @Override
+    public List<TrackAssembly> getAssemblyListByProjectBomId(String projectBomId, String tenantId, String branchCode) {
+        return null;
+    }
+
+    @Override
+    public boolean updateAssembly(List<TrackAssembly> trackAssemblyList) {
         return false;
     }
 }

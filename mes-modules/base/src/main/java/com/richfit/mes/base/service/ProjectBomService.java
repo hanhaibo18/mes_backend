@@ -171,4 +171,6 @@ public interface ProjectBomService extends IService<ProjectBom> {
     Map<String,Object> bindingBom(List<TrackHead> trackHeads);
 
     boolean saveBomList(List<ProjectBom> bomList);
+
+    Boolean updateBomAndAssembly(ProjectBom projectBom);
 }

@@ -83,11 +83,11 @@ public class ProjectBomController {
     }
 
     @PutMapping("/updateBom")
-    @ApiOperation(value = "修改Bom")
+    @ApiOperation(value = "修改Bom(同时修改装配信息)")
     public CommonResult<Boolean> updateBom(@RequestBody ProjectBom projectBom) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         projectBom.setTenantId(tenantId);
-        return CommonResult.success(projectBomService.updateBom(projectBom));
+        return CommonResult.success(projectBomService.updateBomAndAssembly(projectBom));
     }
 
     @PostMapping("/publishBom")

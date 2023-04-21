@@ -116,10 +116,10 @@ public class BaseProjectBom {
     }
 
     @GetMapping("/assembly")
-    public void updateAssembly(){
+    public void updateAssembly() {
         //获取绑定装配且装配表的projectBomId为空的跟单号以及跟单号对应的主项目bomId
         List<TrackHead> trackHeadList = trackHeadMapper.selectNoBomIdTrack();
-        int i=1;
+        int i = 1;
         List<List> splitList = splitList(trackHeadList, 100);
         for (List<TrackHead> trackHeads : splitList) {
             System.out.println("-------------------------------------");
@@ -141,12 +141,18 @@ public class BaseProjectBom {
             List<ProjectBom> bomList = baseServiceClient.getBomListByMainBomId(trackHead.getProjectBomId());
             for (ProjectBom projectBom : bomList) {
                 QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("drawing_no",projectBom.getDrawingNo()).eq("material_no",projectBom.getMaterialNo()).eq("grade",projectBom.getGrade());
+                queryWrapper.eq("drawing_no", projectBom.getDrawingNo()).eq("material_no", projectBom.getMaterialNo()).eq("grade", projectBom.getGrade());
                 List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(queryWrapper);
                 //找到唯一的装配信息，添加projectBomId然后保存到updateList
-                if (trackAssemblyList != null && trackAssemblyList.size() == 1){
+                if (trackAssemblyList != null && trackAssemblyList.size() == 1) {
                     trackAssemblyList.get(0).setProjectBomId(projectBom.getId());
+                    trackAssemblyList.get(0).setOptName(projectBom.getOptName());
                     updateAssemblyList.add(trackAssemblyList.get(0));
+                } else if (trackAssemblyList != null && projectBom.getOptName() != null) {
+                    for (TrackAssembly trackAssembly : trackAssemblyList) {
+                        trackAssembly.setOptName(projectBom.getOptName());
+                    }
+                    updateAssemblyList.addAll(trackAssemblyList);
                 }
             }
             trackAssemblyService.updateBatchById(updateAssemblyList);

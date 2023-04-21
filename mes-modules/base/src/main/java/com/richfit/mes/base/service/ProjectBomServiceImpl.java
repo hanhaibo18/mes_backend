@@ -25,6 +25,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -43,18 +44,16 @@ import static com.richfit.mes.base.service.ProductionBomServiceImpl.projectBomEn
 public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, ProjectBom> implements ProjectBomService {
 
     @Resource
-    private ProduceServiceClient produceService;
+    private ProduceServiceClient produceServiceClient;
     @Autowired
     private ProjectBomMapper projectBomMapper;
     @Autowired
     private ProductionBomService productionBomService;
-    @Autowired
-    private ProduceServiceClient produceServiceClient;
 
     @Override
     public boolean deleteBom(String id, String workPlanNo, String tenantId, String branchCode, String drawingNo) {
         //处理逻辑 重写接口   zhiqiang.lu   2023.1.4
-        int count = produceService.queryCountByWorkNo(id);
+        int count = produceServiceClient.queryCountByWorkNo(id);
         if (count > 0) {
             throw new GlobalException("BOM已被使用", ResultCode.FAILED);
         }
@@ -406,6 +405,33 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     @Override
     public boolean saveBomList(List<ProjectBom> bomList) {
         return this.saveBatch(bomList);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateBomAndAssembly(ProjectBom projectBom) {
+        ProjectBom beforeBom = this.getById(projectBom.getId());
+        //根据projectBomId去装配表获取装配信息List
+        List<TrackAssembly> assemblyList = produceServiceClient.getAssemblyListByProjectBomId(beforeBom.getId(), beforeBom.getTenantId(), beforeBom.getBranchCode());
+        if (CollectionUtils.isNotEmpty(assemblyList)) {
+            for (TrackAssembly trackAssembly : assemblyList) {
+                trackAssembly.setDrawingNo(projectBom.getDrawingNo());
+                trackAssembly.setMaterialNo(projectBom.getMaterialNo());
+                trackAssembly.setName(projectBom.getProdDesc());
+                trackAssembly.setSourceType(projectBom.getSourceType());
+                trackAssembly.setNumber(projectBom.getNumber());
+                trackAssembly.setUnit(projectBom.getUnit());
+                trackAssembly.setWeight(projectBom.getWeight() == null ? 0.0 : Double.parseDouble(projectBom.getWeight().toString()));
+                trackAssembly.setIsKeyPart(projectBom.getIsKeyPart());
+                trackAssembly.setIsNeedPicking(projectBom.getIsNeedPicking());
+                trackAssembly.setIsEdgeStore(projectBom.getIsEdgeStore());
+                trackAssembly.setTrackType(projectBom.getTrackType());
+                trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
+                trackAssembly.setIsCheck(projectBom.getIsCheck());
+            }
+            return produceServiceClient.updateAssembly(assemblyList);
+        }
+        return this.updateById(projectBom);
     }
 
 }

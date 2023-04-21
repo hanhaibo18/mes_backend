@@ -3,8 +3,10 @@ package com.richfit.mes.base.provider;
 import com.richfit.mes.base.provider.fallback.ProduceServiceClientFallbackImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,4 +52,11 @@ public interface ProduceServiceClient {
 
     @PostMapping("/api/produce/track_head/updateBatch")
     public boolean updateBatch(@RequestBody List<TrackHead> trackHeadList);
+
+    @GetMapping("/api/produce/trackassembly/getAssemblyListByProjectBomId")
+    public List<TrackAssembly> getAssemblyListByProjectBomId(@RequestParam String projectBomId, @RequestParam String tenantId, @RequestParam String branchCode);
+
+    @ApiOperation(value = "修改装配信息(其他服务调用)")
+    @PostMapping("/api/produce/trackassembly/updateAssembly")
+    public boolean updateAssembly(@RequestBody List<TrackAssembly> trackAssemblyList);
 }
