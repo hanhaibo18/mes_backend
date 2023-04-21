@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -61,7 +62,7 @@ public class TrackAssemblyController extends BaseController {
     })
     @PutMapping("/updateBinding")
     public CommonResult<Boolean> updateBinding(@RequestBody BindingDto bindingDto) {
-        return assemblyBingService.updateBinding(bindingDto.getId(), bindingDto.getIsBinding(), bindingDto.getItemId());
+        return assemblyBingService.updateBinding(bindingDto.getId(), bindingDto.getIsBinding(), bindingDto.getItemId(),bindingDto.getBranchCode());
     }
 
     @ApiOperation(value = "删除(新)", notes = "删除(新)")
@@ -159,6 +160,20 @@ public class TrackAssemblyController extends BaseController {
     @GetMapping("/changeProductNo")
     public CommonResult<Boolean> changeProductNo(String id, String productNo,String branchCode) {
         return CommonResult.success(trackAssemblyService.changeProductNo(id,productNo,branchCode));
+    }
+
+    @ApiOperation(value = "根据跟单id查询装配列表(其他服务调用)")
+    @GetMapping("/getAssemblyListByProjectBomId")
+    public List<TrackAssembly> getAssemblyListByProjectBomId(String projectBomId,String tenantId,String branchCode){
+        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("project_bom_id",projectBomId).eq("tenant_id",tenantId).eq("branch_code",branchCode);
+        return trackAssemblyService.list(queryWrapper);
+    }
+
+    @ApiOperation(value = "修改装配信息(其他服务调用)")
+    @PostMapping("/updateAssembly")
+    public boolean updateAssembly(@RequestBody List<TrackAssembly> trackAssemblyList){
+        return trackAssemblyService.updateBatchById(trackAssemblyList);
     }
 
 }

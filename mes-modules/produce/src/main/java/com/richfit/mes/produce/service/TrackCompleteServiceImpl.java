@@ -828,11 +828,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (next) {
                 trackItem.setIsFinalComplete("1");
                 trackItem.setFinalCompleteTime(new Date());
+            }
+            trackItemService.updateById(trackItem);
+            if (next) {
                 Map<String, String> map = new HashMap<String, String>(1);
                 map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
                 publicService.activationProcess(map);
             }
-            trackItemService.updateById(trackItem);
         }
         if (bool) {
             return CommonResult.success(bool, "操作成功！");
@@ -1335,11 +1337,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!StringUtils.isNullOrEmpty(orderNo)) {
             queryWrapper.eq("production_order", orderNo);
         }
+        //泵业新版使用工序完工时间
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            queryWrapper.ge("complete_time", TimeUtil.startTime(startTime));
+            queryWrapper.ge("final_complete_time", TimeUtil.startTime(startTime));
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            queryWrapper.le("complete_time", TimeUtil.endTime(endTime));
+            queryWrapper.le("final_complete_time", TimeUtil.endTime(endTime));
         }
         queryWrapper.eq("is_final_complete", "1");
         //获取当前登录用户角色列表

@@ -238,7 +238,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         //增加工序过滤（新要求，屏蔽）
 //        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-        queryWrapper.eq("u.classes", classes);
+//        queryWrapper.eq("u.classes", classes);
 //        queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());

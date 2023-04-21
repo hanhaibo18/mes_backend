@@ -24,6 +24,6 @@ public class StoreAttachRel extends BaseEntity<StoreAttachRel> {
     @ApiModelProperty(value = "分公司编码")
     private String branchCode;
 
-    @ApiModelProperty(value = "上传的质量字量类型")
+    @ApiModelProperty(value = " 上传的质量资料类型  0 合格证, 1 材料代用通知单, 2 钢锭化学成分表")
     private String type;
 }

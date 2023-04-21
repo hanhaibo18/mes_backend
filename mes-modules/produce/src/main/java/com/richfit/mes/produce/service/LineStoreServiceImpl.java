@@ -92,7 +92,13 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Override
 
     public LineStore LineStoreById(String id) {
-        return lineStoreMapper.selectById(id);
+        LineStore lineStore = lineStoreMapper.selectById(id);
+        QueryWrapper<StoreAttachRel> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("line_store_id",lineStore.getId());
+        List<StoreAttachRel> list = storeAttachRelService.list(queryWrapper);
+        //资料文件列表
+        lineStore.setFileList(list);
+        return lineStore;
     }
 
     @Override
@@ -471,7 +477,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
             //保存料单-附件关系
             for (LineStore s : list) {
-                storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
+//                storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
+                storeAttachRelService.batchSaveStoreFileNew(s.getId(), branchCode, lineStore.getFileList());
             }
 
         } else {
@@ -480,7 +487,8 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             }
             bool = this.save(lineStore);
             //保存料单-附件关系
-            storeAttachRelService.batchSaveStoreFile(lineStore.getId(), branchCode, lineStore.getFileIds());
+//            storeAttachRelService.batchSaveStoreFile(lineStore.getId(), branchCode, lineStore.getFileIds());
+            storeAttachRelService.batchSaveStoreFileNew(lineStore.getId(), branchCode, lineStore.getFileList());
         }
 
 

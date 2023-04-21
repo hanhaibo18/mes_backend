@@ -34,7 +34,7 @@ public interface TrackAssemblyBindingService extends IService<TrackAssemblyBindi
      * @Date: 2022/7/26 10:52
      * @return: CommonResult<Boolean>
      **/
-    CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId);
+    CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId,String branchCode);
 
     /**
      * 功能描述: 删除记录

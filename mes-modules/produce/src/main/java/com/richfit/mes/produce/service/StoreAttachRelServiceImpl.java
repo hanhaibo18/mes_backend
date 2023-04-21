@@ -37,4 +37,20 @@ public class StoreAttachRelServiceImpl extends ServiceImpl<StoreAttachRelMapper,
 
         return true;
     }
+    //保存料单对应的附件记录(增加类型)
+    @Override
+    public boolean batchSaveStoreFileNew(String storeId, String branchCode, List<StoreAttachRel> fileList) {
+
+        for (StoreAttachRel file : fileList) {
+            StoreAttachRel rel = new StoreAttachRel();
+            rel.setLineStoreId(storeId);
+            rel.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            rel.setBranchCode(branchCode);
+            rel.setAttachmentId(file.getId());
+            rel.setType(file.getType());
+            this.save(rel);
+        }
+
+        return true;
+    }
 }

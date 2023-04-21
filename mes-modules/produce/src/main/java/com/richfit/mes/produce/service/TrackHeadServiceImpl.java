@@ -1442,7 +1442,11 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             (Page<TrackHead> page, QueryWrapper<TrackHead> query) {
         return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
     }
-
+    @Override
+    public IPage<TrackHead> selectTrackHeadCurrentRouterNew
+            (Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+        return trackHeadMapper.selectTrackHeadCurrentRouterNew(page, query);
+    }
     @Override
     public Integer queryTrackHeadList(String workPlanId) {
         return trackHeadMapper.selectTrackHeadNumber(workPlanId);

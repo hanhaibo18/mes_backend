@@ -15,10 +15,12 @@ import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
+import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
-import io.netty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.richfit.mes.base.service.ProductionBomServiceImpl.projectBomEntity;
+
 /**
  * @author 侯欣雨
  * @Description 项目BOM服务
@@ -41,14 +45,16 @@ import java.util.stream.Collectors;
 public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, ProjectBom> implements ProjectBomService {
 
     @Resource
-    private ProduceServiceClient produceService;
+    private ProduceServiceClient produceServiceClient;
     @Autowired
     private ProjectBomMapper projectBomMapper;
+    @Autowired
+    private ProductionBomService productionBomService;
 
     @Override
     public boolean deleteBom(String id, String workPlanNo, String tenantId, String branchCode, String drawingNo) {
         //处理逻辑 重写接口   zhiqiang.lu   2023.1.4
-        int count = produceService.queryCountByWorkNo(id);
+        int count = produceServiceClient.queryCountByWorkNo(id);
         if (count > 0) {
             throw new GlobalException("BOM已被使用", ResultCode.FAILED);
         }
@@ -363,11 +369,11 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Map<String, List> bindingBom(List<TrackHead> trackHeads) {
-        Map<String, List> result = new HashMap<>();
+    public Map<String, Object> bindingBom(List<TrackHead> trackHeads) {
+        Map<String, Object> result = new HashMap<>();
         List<TrackHead> trackHeadList = new ArrayList<>();
         List<String> noBomIds = new ArrayList<>();
+        Map<String, String> projectBomMap = new HashMap<>();
         for (TrackHead trackHead : trackHeads) {
             ProjectBom bom = projectBomMapper.selectBomByDrawNoAndWorkNo(trackHead.getDrawingNo(), trackHead.getWorkNo(), trackHead.getTenantId(), trackHead.getBranchCode());
             if (bom != null) {
@@ -376,17 +382,67 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 trackHead.setProjectBomName(bom.getProjectName());
                 trackHeadList.add(trackHead);
             } else {
+                //根据图号找到产品bom并用grade = "H"创建项目bom
+                QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("drawing_no", trackHead.getDrawingNo()).eq("tenant_id", trackHead.getTenantId()).eq("grade", "H");
+                ProductionBom productionBom = productionBomService.getOne(queryWrapper);
+                if (productionBom != null) {
+                    ProjectBom projectBom = projectBomEntity(productionBom);
+                    projectBom.setTenantId(trackHead.getTenantId()).setBranchCode(trackHead.getBranchCode()).setProjectName(trackHead.getProductName() == null ? trackHead.getDrawingNo() + "_" + trackHead.getWorkNo() : trackHead.getProductName()).setWorkPlanNo(trackHead.getWorkNo()).setIsResolution("0");
+                    this.save(projectBom);
+                    projectBomMap.put(trackHead.getId(), projectBom.getDrawingNo());
+
+                }
                 noBomIds.add(trackHead.getId());
             }
         }
+        //绑定已有bom的跟单
+        produceServiceClient.updateBatch(trackHeadList);
         result.put("noBomIds", noBomIds);
-        result.put("trackHeadList", trackHeadList);
+        result.put("projectBomMap", projectBomMap);
         return result;
     }
 
     @Override
     public boolean saveBomList(List<ProjectBom> bomList) {
         return this.saveBatch(bomList);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateBomAndAssembly(ProjectBom projectBom) {
+        ProjectBom beforeBom = this.getById(projectBom.getId());
+        //根据projectBomId去装配表获取装配信息List
+        List<TrackAssembly> assemblyList = produceServiceClient.getAssemblyListByProjectBomId(beforeBom.getId(), beforeBom.getTenantId(), beforeBom.getBranchCode());
+        List<TrackAssembly> updateList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(assemblyList)) {
+            for (TrackAssembly trackAssembly : assemblyList) {
+                //根据followId查询该跟单是否完工
+                if (trackAssembly.getFlowId() != null) {
+                    TrackFlow flowInfoById = produceServiceClient.getFlowInfoById(trackAssembly.getFlowId());
+                    //跟单不为完成状态则修改装配信息
+                    if (flowInfoById != null && !"2".equals(flowInfoById.getStatus())) {
+                        trackAssembly.setDrawingNo(projectBom.getDrawingNo());
+                        trackAssembly.setMaterialNo(projectBom.getMaterialNo());
+                        trackAssembly.setName(projectBom.getProdDesc());
+                        trackAssembly.setSourceType(projectBom.getSourceType());
+                        trackAssembly.setNumber(projectBom.getNumber());
+                        trackAssembly.setUnit(projectBom.getUnit());
+                        trackAssembly.setWeight(projectBom.getWeight() == null ? 0.0 : Double.parseDouble(projectBom.getWeight().toString()));
+                        trackAssembly.setIsKeyPart(projectBom.getIsKeyPart());
+                        trackAssembly.setIsNeedPicking(projectBom.getIsNeedPicking());
+                        trackAssembly.setIsEdgeStore(projectBom.getIsEdgeStore());
+                        trackAssembly.setTrackType(projectBom.getTrackType());
+                        trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
+                        trackAssembly.setIsCheck(projectBom.getIsCheck());
+
+                        updateList.add(trackAssembly);
+                    }
+                }
+            }
+            produceServiceClient.updateAssembly(updateList);
+        }
+        return this.updateById(projectBom);
     }
 
 }

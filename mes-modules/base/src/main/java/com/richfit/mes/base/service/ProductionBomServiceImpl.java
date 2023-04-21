@@ -416,7 +416,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         return this.removeById(id);
     }
 
-    private ProjectBom projectBomEntity(ProductionBom productionBom) {
+    public static ProjectBom projectBomEntity(ProductionBom productionBom) {
         ProjectBom projectBom = new ProjectBom();
         projectBom.setDrawingNo(productionBom.getDrawingNo())
                 .setMaterialNo(productionBom.getMaterialNo())

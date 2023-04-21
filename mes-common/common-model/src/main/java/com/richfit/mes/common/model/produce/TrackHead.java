@@ -331,6 +331,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "工序产品编码")
     private String itemProductNo;
 
+
     @TableField(exist = false)
     @ApiModelProperty(value = "工序产品数量")
     private String itemNumber;
@@ -363,6 +364,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "下工序")
     private String nextOptSequence;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序顺序")
+    private String optSequence;
     @TableField(exist = false)
     @ApiModelProperty(value = "是当前的")
     private int isCurrent;

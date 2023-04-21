@@ -4,12 +4,16 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BasePageDto;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.OrderSyncDto;
 import com.richfit.mes.produce.entity.OrdersSynchronizationDto;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.OrderSyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -24,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: OrderSyncController.java
@@ -42,6 +47,9 @@ public class OrderSyncController {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private SystemServiceClient systemServiceClient;
 
 
     @ApiOperation(value = "查询采购同步订单信息", notes = "根据查询条件返回订单信息")
@@ -70,6 +78,16 @@ public class OrderSyncController {
     @ApiOperation(value = "保存采购订单", notes = "保存采购订单")
     @PostMapping("/synchronization_save")
     public CommonResult<Boolean> saveOrderSynchronization(@RequestBody OrderSyncDto orderSyncDto) {
+        if(StringUtils.isNullOrEmpty(orderSyncDto.getController())){
+            return CommonResult.failed("控制者编码不能为空！");
+        }
+        List<ItemParam> itemParamList = systemServiceClient.findItemParamByCode("controllerCode", SecurityUtils.getCurrentUser().getTenantId()).getData();
+        List<ItemParam> itemParams = itemParamList.stream().filter(itemParam -> itemParam.getCode().equals(orderSyncDto.getController())).collect(Collectors.toList());
+        if(itemParams.size()>0){
+            orderSyncDto.setBranchCode(itemParams.get(0).getLabel());
+        }else{
+            return CommonResult.failed("控制者编码没有找到对应的branchCode！");
+        }
         return orderSyncService.saveOrderSync(orderSyncDto.getOrderList(), orderSyncDto.getTime(), orderSyncDto.getController(), orderSyncDto.getErpCode(), orderSyncDto.getBranchCode());
     }
 

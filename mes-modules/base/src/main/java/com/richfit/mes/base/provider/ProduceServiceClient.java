@@ -2,9 +2,8 @@ package com.richfit.mes.base.provider;
 
 import com.richfit.mes.base.provider.fallback.ProduceServiceClientFallbackImpl;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,4 +46,18 @@ public interface ProduceServiceClient {
 
     @GetMapping("/api/produce/track_item/query/id")
     public TrackItem qyeryTrackItemById(@RequestParam("id") String id);
+
+    @PostMapping("/api/produce/track_head/updateBatch")
+    public boolean updateBatch(@RequestBody List<TrackHead> trackHeadList);
+
+    @GetMapping("/api/produce/trackassembly/getAssemblyListByProjectBomId")
+    public List<TrackAssembly> getAssemblyListByProjectBomId(@RequestParam String projectBomId, @RequestParam String tenantId, @RequestParam String branchCode);
+
+    @ApiOperation(value = "修改装配信息(其他服务调用)")
+    @PostMapping("/api/produce/trackassembly/updateAssembly")
+    public boolean updateAssembly(@RequestBody List<TrackAssembly> trackAssemblyList);
+
+    @ApiOperation(value = "根据flowId获取follow信息(其他服务调用)")
+    @GetMapping("/api/produce/track_head/getFlowInfoById")
+    public TrackFlow getFlowInfoById(@RequestParam String id);
 }

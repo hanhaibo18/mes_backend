@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.data;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackAssembly;
@@ -8,6 +9,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.PlanService;
+import com.richfit.mes.produce.service.TrackAssemblyService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,8 @@ public class BaseProjectBom {
     private TrackHeadMapper trackHeadMapper;
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Autowired
+    private TrackAssemblyService trackAssemblyService;
 
     static {
         String driver = "com.mysql.cj.jdbc.Driver";//mysql驱动
@@ -97,7 +101,6 @@ public class BaseProjectBom {
     }
 
     @GetMapping("/project_bom")
-    @Transactional(rollbackFor = Exception.class)
     public void updateProjectBom() {
         System.out.println("更新开始");
         //获取未绑定project_bom_id的track_head_id
@@ -106,31 +109,87 @@ public class BaseProjectBom {
         //拆分一次查询100个
         List<List> splitList = splitList(trackHeadIdList, 100);
         for (List trackHeadIds : splitList) {
+            projectBomUpdate(trackHeadIds, i);
+            i++;
+        }
+
+        System.out.println("更新完成");
+    }
+
+    @GetMapping("/assembly")
+    public void updateAssembly() {
+        //获取绑定装配且装配表的projectBomId为空的跟单号以及跟单号对应的主项目bomId
+        List<TrackHead> trackHeadList = trackHeadMapper.selectNoBomIdTrack();
+        int i = 1;
+        List<List> splitList = splitList(trackHeadList, 100);
+        for (List<TrackHead> trackHeads : splitList) {
             System.out.println("-------------------------------------");
             System.out.println("-------------------------------------");
             System.out.println("-------------------------------------");
             System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------i=" + i++);
+            System.out.println("-------------------------------------i=" + i);
+            addProjectBomIdtoAssembly(trackHeads);
+            i++;
+        }
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addProjectBomIdtoAssembly(List<TrackHead> trackHeads) {
+        for (TrackHead trackHead : trackHeads) {
+            //用来保存需要变更的装配信息
+            List<TrackAssembly> updateAssemblyList = new ArrayList<>();
+            List<ProjectBom> bomList = baseServiceClient.getBomListByMainBomId(trackHead.getProjectBomId());
+            if (CollectionUtils.isEmpty(bomList)) {
+                break;
+            }
+            for (ProjectBom projectBom : bomList) {
+                QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("drawing_no", projectBom.getDrawingNo()).eq("material_no", projectBom.getMaterialNo())
+                        .eq("grade", projectBom.getGrade()).eq("tenant_id",projectBom.getTenantId())
+                        .eq("branch_code",projectBom.getBranchCode()).eq("track_head_id",trackHead.getId());
+                List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(queryWrapper);
+                //找到唯一的装配信息，添加projectBomId然后保存到updateList
+                if (trackAssemblyList != null && trackAssemblyList.size() == 1) {
+                    trackAssemblyList.get(0).setProjectBomId(projectBom.getId());
+                    trackAssemblyList.get(0).setOptName(projectBom.getOptName());
+                    updateAssemblyList.add(trackAssemblyList.get(0));
+                } else if (trackAssemblyList != null && projectBom.getOptName() != null) {
+                    for (TrackAssembly trackAssembly : trackAssemblyList) {
+                        trackAssembly.setOptName(projectBom.getOptName());
+                    }
+                    updateAssemblyList.addAll(trackAssemblyList);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(updateAssemblyList)) {
+                trackAssemblyService.updateBatchById(updateAssemblyList);
+            }
+        }
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    public void projectBomUpdate(List trackHeadIds, int i) {
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------i=" + i);
+        if (trackHeadIds != null) {
             //根据ids获取图号工作号信息
             List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIds);
-            Map<String, List> listMap = baseServiceClient.bindingBom(trackHeads);
-            //获取已存在bom但是未绑定的trackHeadList
-            // TODO: 2023/4/18
-            List<TrackHead> bindingBomTrackHeads = listMap.get("trackHeadList");
-            trackHeadService.updateBatchById(bindingBomTrackHeads);
-
+            Map<String, Object> objectMap = baseServiceClient.bindingBom(trackHeads);
             //获取不存在bom的trackHeadIds
-            // TODO: 2023/4/18
-            List<String> noBomIds = listMap.get("noBomIds");
-
+            List<String> noBomIds = (List<String>) objectMap.get("noBomIds");
             //不存在bom的新生成bom
             List<ProjectBom> bomList = new ArrayList<>();
             if (noBomIds != null) {
                 List<TrackAssembly> assemblyList = trackHeadMapper.selectAssemblyByTrackHeadIds(noBomIds);
+                Map<String, String> mainProjectBomMap = (Map<String, String>) objectMap.get("projectBomMap");
                 for (TrackAssembly trackAssembly : assemblyList) {
                     ProjectBom bom = new ProjectBom();
                     bom.setPublishState(1);
-                    bom.setWorkPlanNo(trackAssembly.getWorkNo() == null ? "no workNo" : trackAssembly.getWorkNo());
+                    bom.setWorkPlanNo(trackAssembly.getWorkNo());
                     bom.setTenantId(trackAssembly.getTenantId());
                     bom.setDrawingNo(trackAssembly.getDrawingNo());
                     bom.setMaterialNo(trackAssembly.getMaterialNo());
@@ -142,27 +201,27 @@ public class BaseProjectBom {
                     bom.setIsCheck(trackAssembly.getIsCheck());
                     bom.setNumber(trackAssembly.getNumber());
                     bom.setTrackType(trackAssembly.getTrackType());
-                    bom.setWeight(Float.parseFloat(trackAssembly.getWeight().toString()));
+                    bom.setWeight(Float.parseFloat(trackAssembly.getWeight() == null ? "0" : trackAssembly.getWeight().toString()));
                     bom.setUnit(trackAssembly.getUnit());
                     bom.setSourceType(trackAssembly.getSourceType());
                     bom.setState("1");
                     bom.setPublishState(1);
                     bom.setProjectName(trackAssembly.getProductName() == null ? trackAssembly.getDrawingNo() + "_" + trackAssembly.getWorkNo() : trackAssembly.getProductName());
                     bom.setIsResolution("0");
-
+                    bom.setBranchCode(trackAssembly.getBranchCode());
+                    if ("H".equals(trackAssembly.getGrade())) {
+                        bom.setDrawingNo(trackAssembly.getDrawingNo());
+                    } else {
+                        bom.setMainDrawingNo(mainProjectBomMap.get(trackAssembly.getTrackHeadId()));
+                    }
                     bomList.add(bom);
                 }
                 baseServiceClient.addBom(bomList);
                 //给新增的bom绑定trackHead
                 trackHeads = trackHeadMapper.selectByIds(noBomIds);
-                listMap = baseServiceClient.bindingBom(trackHeads);
-                bindingBomTrackHeads = listMap.get("trackHeadList");
-                trackHeadService.updateBatchById(bindingBomTrackHeads);
+                baseServiceClient.bindingBom(trackHeads);
             }
         }
-
-
-        System.out.println("更新完成");
     }
 
     public static List<List> splitList(List list, int len) {

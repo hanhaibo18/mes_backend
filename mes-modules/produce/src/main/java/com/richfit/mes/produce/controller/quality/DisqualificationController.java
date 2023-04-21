@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller.quality;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -8,7 +9,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.sys.ItemParam;
@@ -36,9 +39,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -207,16 +209,18 @@ public class DisqualificationController extends BaseController {
 
     @ApiOperation(value = "不合格导出", notes = "不合格导出")
     @PostMapping("/export")
-    public void exportDisqualification(HttpServletResponse rsp,@RequestBody List<Disqualification> disqualificationList) {
-        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+    public void exportDisqualification(HttpServletResponse rsp,@RequestBody QueryInspectorDto queryInspectorDto) {
         try {
+            QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+            List<Disqualification> disqualificationList = disqualificationService.list(queryWrapper);
             if (!CollectionUtils.isNotEmpty(disqualificationList)) {
                 return;
             }
             List<String> idList = disqualificationList.stream().map(e -> e.getId()).collect(Collectors.toList());
             QueryWrapper<DisqualificationFinalResult> objectQueryWrapper = new QueryWrapper<>();
             objectQueryWrapper.in("id", idList);
-            objectQueryWrapper.eq("tenant_id", tenantId);
             List<DisqualificationFinalResult> list = finalResultService.list(objectQueryWrapper);
             Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
             // 责任单位内
@@ -226,11 +230,14 @@ public class DisqualificationController extends BaseController {
             // 处理单位2
             List<String> unitTwoList = list.stream().map(DisqualificationFinalResult::getUnitTreatmentTwo).collect(Collectors.toList());
             // 发现车间
-            List<String> branchList = list.stream().map(DisqualificationFinalResult::getDiscoverBranch).collect(Collectors.toList());
+            List<String> branchList = list.stream().map(DisqualificationFinalResult::getDiscoverTenant).collect(Collectors.toList());
             // 责任单位(外)
             List<String> unitValueList = list.stream().map(DisqualificationFinalResult::getUnitResponsibilityOutside).collect(Collectors.toList());
             // 发现工序
             List<String> processValueList = list.stream().map(DisqualificationFinalResult::getDiscoverItem).collect(Collectors.toList());
+            // 质控工程师
+            List<String> checkByList = disqualificationList.stream().map(Disqualification::getQualityCheckBy).collect(Collectors.toList());
+
             Map<String, Tenant> tenantMap = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
             List<String> unitResponsibilityWithinList = convertInput(unitList, tenantMap);
             List<String> unitTreatmentOneList = convertInput(unitOneList, tenantMap);
@@ -242,6 +249,8 @@ public class DisqualificationController extends BaseController {
             Map<String, ItemParam> processMap = systemServiceClient.findItemParamByCode(PROCESS_CODE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
             List<String> discoverItemList = convertItemInput(processValueList, processMap);
 
+            Map<String, String> resultUsersAccount = systemServiceClient.usersAccount().getData();
+            List<String> qualityCheckByList = convertName(checkByList, resultUsersAccount);
             // 读文件
             ClassPathResource classPathResource = new ClassPathResource("excel/" + "disqualificationTemplate.xlsx");
             ExcelWriter writer = null;
@@ -250,30 +259,21 @@ public class DisqualificationController extends BaseController {
             writer.resetRow();
             writer.passRows(5);
             for (Disqualification disqualification: disqualificationList) {
-                if (Objects.isNull(resultMap.get(disqualification.getId()))) {
-                    continue;
-                } else {
-                    disqualification.setDisqualificationName(resultMap.get(disqualification.getId()).getDisqualificationName());
-                    disqualification.setDiscoverTenant(resultMap.get(disqualification.getId()).getDiscoverTenant());
-                    disqualification.setDiscoverBranch(resultMap.get(disqualification.getId()).getDiscoverBranch());
-                    disqualification.setUnitResponsibilityWithin(resultMap.get(disqualification.getId()).getUnitResponsibilityWithin());
-                    disqualification.setTotalWeight(resultMap.get(disqualification.getId()).getTotalWeight());
-                    disqualification.setQualityName(resultMap.get(disqualification.getId()).getQualityName());
-                    disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
-                    disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
-                    disqualification.setDiscardTime(resultMap.get(disqualification.getId()).getDiscardTime());
-                    disqualification.setReuseTime(resultMap.get(disqualification.getId()).getReuseTime());
-                    disqualification.setAcceptDeviation(resultMap.get(disqualification.getId()).getAcceptDeviation());
-                    disqualification.setRepairQualified(resultMap.get(disqualification.getId()).getRepairQualified());
-                    disqualification.setScrap(resultMap.get(disqualification.getId()).getScrap());
-                    disqualification.setSalesReturn(resultMap.get(disqualification.getId()).getSalesReturn());
-                    disqualification.setSalesReturnLoss(resultMap.get(disqualification.getId()).getSalesReturnLoss());
-                    disqualification.setTreatmentOneName(resultMap.get(disqualification.getId()).getTreatmentOneName());
-                    disqualification.setTreatmentTwoName(resultMap.get(disqualification.getId()).getTreatmentTwoName());
-                    disqualification.setResponsibilityName(resultMap.get(disqualification.getId()).getResponsibilityName());
-                    disqualification.setTechnologyName(resultMap.get(disqualification.getId()).getTechnologyName());
-                    disqualification.setDisqualificationCondition(resultMap.get(disqualification.getId()).getDisqualificationCondition());
-                }
+                disqualification.setDisqualificationName(resultMap.get(disqualification.getId()).getDisqualificationName());
+                disqualification.setTotalWeight(resultMap.get(disqualification.getId()).getTotalWeight());
+                disqualification.setQualityName(resultMap.get(disqualification.getId()).getQualityName());
+                disqualification.setDiscardTime(resultMap.get(disqualification.getId()).getDiscardTime());
+                disqualification.setReuseTime(resultMap.get(disqualification.getId()).getReuseTime());
+                disqualification.setAcceptDeviation(resultMap.get(disqualification.getId()).getAcceptDeviation());
+                disqualification.setRepairQualified(resultMap.get(disqualification.getId()).getRepairQualified());
+                disqualification.setScrap(resultMap.get(disqualification.getId()).getScrap());
+                disqualification.setSalesReturn(resultMap.get(disqualification.getId()).getSalesReturn());
+                disqualification.setSalesReturnLoss(resultMap.get(disqualification.getId()).getSalesReturnLoss());
+                disqualification.setTreatmentOneName(resultMap.get(disqualification.getId()).getTreatmentOneName());
+                disqualification.setTreatmentTwoName(resultMap.get(disqualification.getId()).getTreatmentTwoName());
+                disqualification.setResponsibilityName(resultMap.get(disqualification.getId()).getResponsibilityName());
+                disqualification.setTechnologyName(resultMap.get(disqualification.getId()).getTechnologyName());
+                disqualification.setDisqualificationCondition(resultMap.get(disqualification.getId()).getDisqualificationCondition());
             }
             int currentRow = writer.getCurrentRow();
             int number = 0;
@@ -283,22 +283,12 @@ public class DisqualificationController extends BaseController {
                 writer.writeCellValue(1, currentRow, disqualification.getCreateTime());
                 writer.writeCellValue(2, currentRow, disqualification.getBranchCode());
                 writer.writeCellValue(3, currentRow, disqualification.getProcessSheetNo());
-                if (StringUtils.isEmpty(disqualification.getDiscoverBranch())) {
-                    writer.writeCellValue(4, currentRow, null);
-                    writer.writeCellValue(5, currentRow, null);
-                    writer.writeCellValue(6, currentRow, null);
-                    writer.writeCellValue(17, currentRow, null);
-                    writer.writeCellValue(18, currentRow, null);
-                    writer.writeCellValue(19, currentRow, null);
-                    number --;
-                } else {
-                    writer.writeCellValue(4, currentRow, discoverBranchList.get(number));
-                    writer.writeCellValue(5, currentRow, unitResponsibilityWithinList.get(number));
-                    writer.writeCellValue(6, currentRow, unitResponsibilityOutsideList.get(number));
-                    writer.writeCellValue(17, currentRow, unitTreatmentOneList.get(number));
-                    writer.writeCellValue(18, currentRow, unitTreatmentTwoList.get(number));
-                    writer.writeCellValue(19, currentRow, discoverItemList.get(number));
-                }
+                writer.writeCellValue(4, currentRow, discoverBranchList.get(number));
+                writer.writeCellValue(5, currentRow, unitResponsibilityWithinList.get(number));
+                writer.writeCellValue(6, currentRow, unitResponsibilityOutsideList.get(number));
+                writer.writeCellValue(17, currentRow, unitTreatmentOneList.get(number));
+                writer.writeCellValue(18, currentRow, unitTreatmentTwoList.get(number));
+                writer.writeCellValue(19, currentRow, discoverItemList.get(number));
                 writer.writeCellValue(7, currentRow, disqualification.getWorkNo());
                 writer.writeCellValue(8, currentRow, disqualification.getProductName());
                 writer.writeCellValue(9, currentRow, disqualification.getPartName());
@@ -308,7 +298,7 @@ public class DisqualificationController extends BaseController {
                 writer.writeCellValue(13, currentRow, disqualification.getNumber());
                 writer.writeCellValue(14, currentRow, disqualification.getTotalWeight());
                 writer.writeCellValue(15, currentRow, disqualification.getDisqualificationCondition());
-                writer.writeCellValue(16, currentRow, disqualification.getQualityName());
+                writer.writeCellValue(16, currentRow, qualityCheckByList.get(number));
                 writer.writeCellValue(20, currentRow, disqualification.getDiscardTime());
                 writer.writeCellValue(21, currentRow, disqualification.getReuseTime());
                 writer.writeCellValue(22, currentRow, disqualification.getAcceptDeviation());
@@ -334,6 +324,71 @@ public class DisqualificationController extends BaseController {
             e.printStackTrace();
         }
 
+    }
+
+    private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
+        //图号查询
+        if (StrUtil.isNotBlank(queryInspectorDto.getDrawingNo())) {
+            queryWrapper.like("drawing_no", queryInspectorDto.getDrawingNo());
+        }
+        //产品名称
+        if (StrUtil.isNotBlank(queryInspectorDto.getProductName())) {
+            queryWrapper.like("product_name", queryInspectorDto.getProductName());
+        }
+        //跟单号
+        if (StrUtil.isNotBlank(queryInspectorDto.getTrackNo())) {
+            queryInspectorDto.setTrackNo(queryInspectorDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryInspectorDto.getTrackNo() + "%'");
+        }
+        //申请单号
+        if (StrUtil.isNotBlank(queryInspectorDto.getProcessSheetNo())) {
+            queryWrapper.like("process_sheet_no", queryInspectorDto.getProcessSheetNo());
+        }
+        //申请单状态
+        if (StrUtil.isNotBlank(queryInspectorDto.getType())) {
+            queryWrapper.eq("type", queryInspectorDto.getType());
+        }
+        try {
+            //开始时间
+            if (StrUtil.isNotBlank(queryInspectorDto.getStartTime())) {
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + queryInspectorDto.getStartTime() + " 00:00:00')");
+            }
+            //结束时间
+            if (StrUtil.isNotBlank(queryInspectorDto.getEndTime())) {
+                Calendar calendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                calendar.setTime(sdf.parse(queryInspectorDto.getEndTime()));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+            }
+        } catch (Exception e) {
+            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
+        }
+    }
+
+    /**
+     * 转换
+     * @param list
+     * @param map
+     * @return
+     */
+    private static List<String> convertName(List<String> list, Map<String, String> map) {
+        int init = 0;
+        for (String qualityCheckBy: list) {
+            String[] split = qualityCheckBy.split(",");
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String s : split) {
+                if (map.containsKey(s)) {
+                    stringBuilder.append(map.get(s)).append(",");
+                }
+            }
+            if (stringBuilder.length() > 0) {
+                stringBuilder.deleteCharAt(stringBuilder.length()-1);
+                list.set(init, stringBuilder.toString());
+            }
+            init ++;
+        }
+        return list;
     }
 
     /**

@@ -27,6 +27,8 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
 
     IPage<TrackHead> selectTrackHeadCurrentRouter(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
 
+    IPage<TrackHead> selectTrackHeadCurrentRouterNew(IPage<TrackHead> page, @Param(Constants.WRAPPER) Wrapper<TrackHead> query);
+
     /**
      * 功能描述: 根据计划Id查询 所做物品数量
      *
@@ -216,10 +218,13 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
     @Select("SELECT track_head_id from produce_track_item WHERE original_opt_sequence + 10 <> next_opt_sequence AND next_opt_sequence <> 0 AND tenant_id like '%002%' GROUP BY track_head_id")
     List<String> queryTrackId();
 
-    @Select("SELECT DISTINCT(pth.id) FROM produce_track_assembly pta JOIN produce_track_head pth ON pta.track_head_id = pth.id AND pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 WHERE pth.project_bom_id IS NULL")
+    @Select("SELECT DISTINCT(pth.id) FROM produce_track_assembly pta JOIN produce_track_head pth ON pta.track_head_id = pth.id AND pth.tenant_id = '12345678901234567890123456789002' AND pth.classes = 2 WHERE pth.project_bom_id IS NULL AND pth.work_no IS NOT NULL AND pth.drawing_no IS NOT NULL")
     List<String> selectIdWithoutProjectBom();
 
     List<TrackHead> selectByIds(@Param("ids") List<String> ids);
 
     List<TrackAssembly> selectAssemblyByTrackHeadIds(@Param("ids") List<String> ids);
+
+    @Select("SELECT id,project_bom_id FROM produce_track_head WHERE id IN(SELECT DISTINCT(pth.id) FROM produce_track_assembly pta join produce_track_head pth ON pta.tenant_id = pth.tenant_id AND pta.branch_code = pth.branch_code AND pta.track_head_id = pth.id AND pta.project_bom_id IS NULL AND pth.project_bom_id IS NOT NULL AND pta.opt_name IS NULL)")
+    List<TrackHead> selectNoBomIdTrack();
 }
