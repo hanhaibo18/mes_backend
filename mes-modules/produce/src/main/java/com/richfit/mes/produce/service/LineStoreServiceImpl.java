@@ -92,7 +92,13 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Override
 
     public LineStore LineStoreById(String id) {
-        return lineStoreMapper.selectById(id);
+        LineStore lineStore = lineStoreMapper.selectById(id);
+        QueryWrapper<StoreAttachRel> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("line_store_id",lineStore.getId());
+        List<StoreAttachRel> list = storeAttachRelService.list(queryWrapper);
+        //资料文件列表
+        lineStore.setFileList(list);
+        return lineStore;
     }
 
     @Override
