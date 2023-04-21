@@ -41,7 +41,8 @@
                ti.opt_no,
                ti.original_opt_sequence,
                ti.next_opt_sequence,
-               ti.is_current
+               ti.is_current,
+               ti.opt_sequence
         FROM produce_track_head th
                  LEFT JOIN produce_track_head_flow tf ON tf.track_head_id = th.id
             AND tf.`status` = 1
