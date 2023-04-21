@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.data;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackAssembly;
@@ -139,6 +140,9 @@ public class BaseProjectBom {
             //用来保存需要变更的装配信息
             List<TrackAssembly> updateAssemblyList = new ArrayList<>();
             List<ProjectBom> bomList = baseServiceClient.getBomListByMainBomId(trackHead.getProjectBomId());
+            if (CollectionUtils.isEmpty(bomList)) {
+                break;
+            }
             for (ProjectBom projectBom : bomList) {
                 QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("drawing_no", projectBom.getDrawingNo()).eq("material_no", projectBom.getMaterialNo()).eq("grade", projectBom.getGrade());
@@ -155,7 +159,9 @@ public class BaseProjectBom {
                     updateAssemblyList.addAll(trackAssemblyList);
                 }
             }
-            trackAssemblyService.updateBatchById(updateAssemblyList);
+            if (CollectionUtils.isNotEmpty(updateAssemblyList)) {
+                trackAssemblyService.updateBatchById(updateAssemblyList);
+            }
         }
     }
 

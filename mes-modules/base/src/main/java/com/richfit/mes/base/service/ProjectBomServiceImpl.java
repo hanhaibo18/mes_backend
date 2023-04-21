@@ -429,7 +429,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
                 trackAssembly.setIsCheck(projectBom.getIsCheck());
             }
-            return produceServiceClient.updateAssembly(assemblyList);
+            produceServiceClient.updateAssembly(assemblyList);
         }
         return this.updateById(projectBom);
     }

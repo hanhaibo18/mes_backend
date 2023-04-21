@@ -208,15 +208,18 @@ public class ProjectBomController {
     }
 
     @ApiOperation(value = "根据主项目bom获取项目bom列表(其他服务调用)")
-    @PostMapping ("/getBomListByMainBomId")
+    @PostMapping("/getBomListByMainBomId")
     public List<ProjectBom> getBomListByMainBomId(@RequestParam String id) {
         ProjectBom mainBom = projectBomService.getById(id);
-        QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("work_plan_no", mainBom.getWorkPlanNo())
-                .eq("tenant_id", mainBom.getTenantId())
-                .eq("branch_code", mainBom.getBranchCode());
-        List<ProjectBom> projectBomList = projectBomService.list(queryWrapper);
-        projectBomList.add(mainBom);
-        return projectBomList;
+        if (null != mainBom) {
+            QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("work_plan_no", mainBom.getWorkPlanNo())
+                    .eq("tenant_id", mainBom.getTenantId())
+                    .eq("branch_code", mainBom.getBranchCode());
+            List<ProjectBom> projectBomList = projectBomService.list(queryWrapper);
+            projectBomList.add(mainBom);
+            return projectBomList;
+        }
+        return null;
     }
 }
