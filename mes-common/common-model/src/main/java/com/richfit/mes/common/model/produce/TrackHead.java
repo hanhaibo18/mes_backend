@@ -365,6 +365,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String nextOptSequence;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "工序顺序")
+    private String optSequence;
+    @TableField(exist = false)
     @ApiModelProperty(value = "是当前的")
     private int isCurrent;
     /**
