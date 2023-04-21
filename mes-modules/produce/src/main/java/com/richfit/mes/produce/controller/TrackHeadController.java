@@ -1040,7 +1040,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据项目bomId查询跟单列表(其他服务调用)")
     @GetMapping("/getTrackHeadByProjectBomId")
-    public List<TrackHead> getTrackHeadByProjectBomId(String bomId, String tenantId, String branchCode) {
+    public List<TrackHead> getTrackHeadByProjectBomId(@RequestParam String bomId, @RequestParam String tenantId, @RequestParam String branchCode) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("project_bom_id", bomId).eq("tenant_id", tenantId).eq("branch_code", branchCode);
         return trackHeadService.list(queryWrapper);
@@ -1048,7 +1048,7 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据flowId获取follow信息(其他服务调用)")
     @GetMapping("/getFlowInfoById")
-    public TrackFlow getFlowInfoById(@RequestParam String id){
+    public TrackFlow getFlowInfoById(@RequestParam String id) {
         return trackFlowService.getById(id);
     }
 }

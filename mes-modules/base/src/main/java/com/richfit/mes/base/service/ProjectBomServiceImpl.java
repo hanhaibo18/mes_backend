@@ -213,16 +213,70 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
     }
 
     @Override
-    public boolean deletePart(String id) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deletePartAndAssembly(String id) {
+        ProjectBom projectBom = this.getById(id);
+        produceServiceClient.deleteAssemblyByBomId(id, projectBom.getTenantId(), projectBom.getBranchCode());
         return this.removeById(id);
     }
 
     @Override
-    public boolean saveBom(ProjectBom projectBom) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveBomAndAssembly(ProjectBom projectBom) {
         projectBom.setGrade("L");
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", projectBom.getWorkPlanNo());
         projectBom.setOrderNo(this.count(queryWrapper));
+        //先找到主项目bom信息
+        QueryWrapper<ProjectBom> mainBomWrapper = new QueryWrapper<>();
+        mainBomWrapper.eq("drawing_no", projectBom.getMainDrawingNo())
+                .eq("work_plan_no", projectBom.getWorkPlanNo())
+                .eq("grade", "H").eq("tenant_id", projectBom.getTenantId())
+                .eq("branch_code", projectBom.getBranchCode());
+        ProjectBom mainBom = this.getOne(queryWrapper);
+        if (mainBom != null) {
+            List<TrackAssembly> addList = new ArrayList<>();
+            //查找该bom绑定的跟单
+            List<TrackHead> trackHeadList = produceServiceClient.getTrackHeadByProjectBomId(mainBom.getId(), mainBom.getTenantId(), mainBom.getBranchCode());
+            if (CollectionUtils.isNotEmpty(trackHeadList)) {
+                for (TrackHead trackHead : trackHeadList) {
+                    //先根据trackHeadId获取装配信息列表
+                    List<TrackAssembly> trackAssemblyList = produceServiceClient.getAssemblyListByTrackHeadId(trackHead.getId(), mainBom.getTenantId(), mainBom.getBranchCode());
+                    Map<String, List<TrackAssembly>> map = trackAssemblyList.stream().collect(Collectors.groupingBy(TrackAssembly::getFlowId));
+                    map.forEach((key, value) -> {
+                        if (CollectionUtils.isNotEmpty(value)) {
+                            //新增零件的装配记录
+                            TrackAssembly trackAssembly = new TrackAssembly();
+                            trackAssembly.setGrade(projectBom.getGrade());
+                            trackAssembly.setName(projectBom.getProdDesc());
+                            trackAssembly.setDrawingNo(projectBom.getDrawingNo());
+                            trackAssembly.setMaterialNo(projectBom.getMaterialNo());
+                            trackAssembly.setTrackHeadId(trackHead.getId());
+                            trackAssembly.setNumber(trackHead.getNumber() == null || projectBom.getNumber() == null ? 0 : trackHead.getNumber() * projectBom.getNumber());
+                            trackAssembly.setIsKeyPart(projectBom.getIsKeyPart());
+                            trackAssembly.setTrackType(projectBom.getTrackType());
+                            if (projectBom.getWeight() != null) {
+                                trackAssembly.setWeight(Double.valueOf(projectBom.getWeight()));
+                            }
+                            trackAssembly.setIsCheck(projectBom.getIsCheck());
+                            trackAssembly.setIsEdgeStore(projectBom.getIsEdgeStore());
+                            trackAssembly.setIsNeedPicking(projectBom.getIsNeedPicking());
+                            trackAssembly.setUnit(projectBom.getUnit());
+                            trackAssembly.setSourceType(projectBom.getSourceType());
+                            trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
+                            trackAssembly.setOptName(projectBom.getOptName());
+                            trackAssembly.setFlowId(key);
+
+                            addList.add(trackAssembly);
+                        }
+                    });
+
+                }
+                if (CollectionUtils.isNotEmpty(addList)) {
+                    produceServiceClient.addAssemblyList(addList);
+                }
+            }
+        }
         return this.save(projectBom);
     }
 
