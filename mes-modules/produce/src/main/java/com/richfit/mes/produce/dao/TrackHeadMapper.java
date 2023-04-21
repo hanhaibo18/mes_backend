@@ -225,6 +225,6 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
 
     List<TrackAssembly> selectAssemblyByTrackHeadIds(@Param("ids") List<String> ids);
 
-    @Select("SELECT id,project_bom_id FROM produce_track_head WHERE id IN(SELECT DISTINCT(pth.id) FROM produce_track_assembly pta join produce_track_head pth ON pta.tenant_id = pth.tenant_id AND pta.branch_code = pth.branch_code AND pta.track_head_id = pth.id AND pta.project_bom_id IS NULL AND pth.project_bom_id IS NOT NULL AND pta.opt_name IS NULL)")
+    @Select("SELECT id,project_bom_id FROM produce_track_head WHERE id IN(SELECT DISTINCT(pth.id) FROM produce_track_assembly pta join produce_track_head pth ON pta.tenant_id = pth.tenant_id AND pta.branch_code = pth.branch_code AND pta.track_head_id = pth.id AND pta.project_bom_id IS NULL AND pth.project_bom_id IS NOT NULL)")
     List<TrackHead> selectNoBomIdTrack();
 }

@@ -123,13 +123,7 @@ public class BaseProjectBom {
         int i = 1;
         List<List> splitList = splitList(trackHeadList, 100);
         for (List<TrackHead> trackHeads : splitList) {
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------");
-            System.out.println("-------------------------------------i=" + i);
             addProjectBomIdtoAssembly(trackHeads);
-            i++;
         }
 
     }
@@ -139,6 +133,7 @@ public class BaseProjectBom {
         for (TrackHead trackHead : trackHeads) {
             //用来保存需要变更的装配信息
             List<TrackAssembly> updateAssemblyList = new ArrayList<>();
+            //获取当前跟单的所有bom信息
             List<ProjectBom> bomList = baseServiceClient.getBomListByMainBomId(trackHead.getProjectBomId());
             if (CollectionUtils.isEmpty(bomList)) {
                 break;
