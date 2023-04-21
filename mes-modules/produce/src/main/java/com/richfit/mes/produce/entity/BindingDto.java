@@ -12,4 +12,5 @@ public class BindingDto {
     private String id;
     private int isBinding;
     private String itemId;
+    private String branchCode;
 }

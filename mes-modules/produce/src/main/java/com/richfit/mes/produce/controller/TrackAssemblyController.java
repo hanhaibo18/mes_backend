@@ -62,7 +62,7 @@ public class TrackAssemblyController extends BaseController {
     })
     @PutMapping("/updateBinding")
     public CommonResult<Boolean> updateBinding(@RequestBody BindingDto bindingDto) {
-        return assemblyBingService.updateBinding(bindingDto.getId(), bindingDto.getIsBinding(), bindingDto.getItemId());
+        return assemblyBingService.updateBinding(bindingDto.getId(), bindingDto.getIsBinding(), bindingDto.getItemId(),bindingDto.getBranchCode());
     }
 
     @ApiOperation(value = "删除(新)", notes = "删除(新)")

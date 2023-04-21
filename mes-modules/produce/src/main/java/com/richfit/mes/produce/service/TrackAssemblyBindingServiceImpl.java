@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -20,6 +21,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: TrackAssemblyBindingService.java
@@ -69,8 +72,28 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId) {
+    public CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId,String branchCode) {
         TrackAssemblyBinding assemblyBinding = this.getById(id);
+        //校验编号是否被其他跟单绑定过
+        QueryWrapper<TrackAssemblyBinding> trackAssemblyBindingQueryWrapper = new QueryWrapper<>();
+        trackAssemblyBindingQueryWrapper.eq("number",assemblyBinding.getNumber())
+                .eq("is_binding",1)
+                .ne("id",id);
+        List<TrackAssemblyBinding> repeats = this.list(trackAssemblyBindingQueryWrapper);
+        if(repeats.size()>0){
+            Set<String> assemblyIds = repeats.stream().map(item -> item.getAssemblyId()).collect(Collectors.toSet());
+            //校验是不是此车间下的数据  如果是提示错误信息（已被绑定）
+            QueryWrapper<TrackAssembly> trackAssemblyQueryWrapper = new QueryWrapper<>();
+            trackAssemblyQueryWrapper.in("id",assemblyIds)
+                    .eq("branch_code",branchCode);
+            List<TrackAssembly> trackAssemblies = trackAssemblyService.list(trackAssemblyQueryWrapper);
+            Set<String> trackNos = trackAssemblies.stream().map(item -> item.getTrackNo()).collect(Collectors.toSet());
+            String join = String.join(",",new ArrayList<>(trackNos));
+            if(StringUtils.isNotBlank(join)){
+                throw new GlobalException("编码:"+assemblyBinding.getNumber()+",已被跟单"+join+"绑定",ResultCode.FAILED);
+            }
+        }
+
         assemblyBinding.setIsBinding(isBinding);
         assemblyBinding.setItemId(itemId);
         TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
