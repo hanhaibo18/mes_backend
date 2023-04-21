@@ -1045,4 +1045,10 @@ public class TrackHeadController extends BaseController {
         queryWrapper.eq("project_bom_id", bomId).eq("tenant_id", tenantId).eq("branch_code", branchCode);
         return trackHeadService.list(queryWrapper);
     }
+
+    @ApiOperation(value = "根据flowId获取follow信息(其他服务调用)")
+    @GetMapping("/getFlowInfoById")
+    public TrackFlow getFlowInfoById(@RequestParam String id){
+        return trackFlowService.getById(id);
+    }
 }

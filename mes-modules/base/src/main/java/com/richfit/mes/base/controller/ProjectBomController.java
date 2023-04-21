@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -218,8 +219,10 @@ public class ProjectBomController {
                     .eq("branch_code", mainBom.getBranchCode())
                     .eq("main_drawing_no",mainBom.getDrawingNo());
             List<ProjectBom> projectBomList = projectBomService.list(queryWrapper);
-            projectBomList.add(mainBom);
-            return projectBomList;
+            List<ProjectBom> updateList = new ArrayList<>();
+            updateList.add(mainBom);
+            updateList.addAll(projectBomList);
+            return updateList;
         }
         return null;
     }

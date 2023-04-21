@@ -18,6 +18,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -413,23 +414,33 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         ProjectBom beforeBom = this.getById(projectBom.getId());
         //根据projectBomId去装配表获取装配信息List
         List<TrackAssembly> assemblyList = produceServiceClient.getAssemblyListByProjectBomId(beforeBom.getId(), beforeBom.getTenantId(), beforeBom.getBranchCode());
+        List<TrackAssembly> updateList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(assemblyList)) {
             for (TrackAssembly trackAssembly : assemblyList) {
-                trackAssembly.setDrawingNo(projectBom.getDrawingNo());
-                trackAssembly.setMaterialNo(projectBom.getMaterialNo());
-                trackAssembly.setName(projectBom.getProdDesc());
-                trackAssembly.setSourceType(projectBom.getSourceType());
-                trackAssembly.setNumber(projectBom.getNumber());
-                trackAssembly.setUnit(projectBom.getUnit());
-                trackAssembly.setWeight(projectBom.getWeight() == null ? 0.0 : Double.parseDouble(projectBom.getWeight().toString()));
-                trackAssembly.setIsKeyPart(projectBom.getIsKeyPart());
-                trackAssembly.setIsNeedPicking(projectBom.getIsNeedPicking());
-                trackAssembly.setIsEdgeStore(projectBom.getIsEdgeStore());
-                trackAssembly.setTrackType(projectBom.getTrackType());
-                trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
-                trackAssembly.setIsCheck(projectBom.getIsCheck());
+                //根据followId查询该跟单是否完工
+                if (trackAssembly.getFlowId() != null) {
+                    TrackFlow flowInfoById = produceServiceClient.getFlowInfoById(trackAssembly.getFlowId());
+                    //跟单不为完成状态则修改装配信息
+                    if (flowInfoById != null && !"2".equals(flowInfoById.getStatus())) {
+                        trackAssembly.setDrawingNo(projectBom.getDrawingNo());
+                        trackAssembly.setMaterialNo(projectBom.getMaterialNo());
+                        trackAssembly.setName(projectBom.getProdDesc());
+                        trackAssembly.setSourceType(projectBom.getSourceType());
+                        trackAssembly.setNumber(projectBom.getNumber());
+                        trackAssembly.setUnit(projectBom.getUnit());
+                        trackAssembly.setWeight(projectBom.getWeight() == null ? 0.0 : Double.parseDouble(projectBom.getWeight().toString()));
+                        trackAssembly.setIsKeyPart(projectBom.getIsKeyPart());
+                        trackAssembly.setIsNeedPicking(projectBom.getIsNeedPicking());
+                        trackAssembly.setIsEdgeStore(projectBom.getIsEdgeStore());
+                        trackAssembly.setTrackType(projectBom.getTrackType());
+                        trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
+                        trackAssembly.setIsCheck(projectBom.getIsCheck());
+
+                        updateList.add(trackAssembly);
+                    }
+                }
             }
-            produceServiceClient.updateAssembly(assemblyList);
+            produceServiceClient.updateAssembly(updateList);
         }
         return this.updateById(projectBom);
     }
