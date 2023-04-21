@@ -730,6 +730,11 @@ public class TrackCheckController extends BaseController {
                 //调用报废流程
                 trackHeadService.trackHeadUseless(item.getTrackHeadId());
             }
+            //判断是否还有调度,没有提前赋值最终完成状态
+            if (item.getIsExistScheduleCheck() == 0) {
+                item.setIsFinalComplete("1");
+                item.setFinalCompleteTime(new Date());
+            }
             trackItemService.updateById(item);
             trackCheck.setFlowId(item.getFlowId());
             //调用TrackHeadService 获取图号
