@@ -145,7 +145,9 @@ public class BaseProjectBom {
             }
             for (ProjectBom projectBom : bomList) {
                 QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("drawing_no", projectBom.getDrawingNo()).eq("material_no", projectBom.getMaterialNo()).eq("grade", projectBom.getGrade());
+                queryWrapper.eq("drawing_no", projectBom.getDrawingNo()).eq("material_no", projectBom.getMaterialNo())
+                        .eq("grade", projectBom.getGrade()).eq("tenant_id",projectBom.getTenantId())
+                        .eq("branch_code",projectBom.getBranchCode()).eq("track_head_id",trackHead.getId());
                 List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(queryWrapper);
                 //找到唯一的装配信息，添加projectBomId然后保存到updateList
                 if (trackAssemblyList != null && trackAssemblyList.size() == 1) {
