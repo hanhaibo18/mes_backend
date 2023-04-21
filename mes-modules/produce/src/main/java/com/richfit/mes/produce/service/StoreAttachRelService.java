@@ -12,5 +12,6 @@ import java.util.List;
 public interface StoreAttachRelService extends IService<StoreAttachRel> {
 
     public boolean batchSaveStoreFile(String storeId, String branchCode, List<String> fileIds);
+    public boolean batchSaveStoreFileNew(String storeId, String branchCode, List<StoreAttachRel> fileList);
 
 }
