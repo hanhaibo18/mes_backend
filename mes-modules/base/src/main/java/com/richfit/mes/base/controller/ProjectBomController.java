@@ -215,7 +215,8 @@ public class ProjectBomController {
             QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("work_plan_no", mainBom.getWorkPlanNo())
                     .eq("tenant_id", mainBom.getTenantId())
-                    .eq("branch_code", mainBom.getBranchCode());
+                    .eq("branch_code", mainBom.getBranchCode())
+                    .eq("main_drawing_no",mainBom.getDrawingNo());
             List<ProjectBom> projectBomList = projectBomService.list(queryWrapper);
             projectBomList.add(mainBom);
             return projectBomList;
