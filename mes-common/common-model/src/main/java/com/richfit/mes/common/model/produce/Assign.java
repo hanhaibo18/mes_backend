@@ -283,6 +283,10 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "派工班组list")
     private List<String> siteList;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "质检人")
+    private String qualityCheckBy;
+
     public String getUserId() {
         return userId;
     }

@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,6 +19,7 @@ import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
@@ -67,6 +69,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     private TrackAssignPersonService trackAssignPersonService;
     @Autowired
     private TrackCompleteService trackCompleteService;
+    @Autowired
+    private TrackCompleteMapper trackCompleteMapper;
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
     @Autowired
@@ -561,9 +565,14 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         queryWrapper.orderByAsc("modify_time");
         List<Assign> result = trackAssignService.list(queryWrapper);
+        result.forEach(e -> {
+            LambdaQueryWrapper<TrackComplete> trackCompleteQueryWrapper = new LambdaQueryWrapper<>();
+            trackCompleteQueryWrapper.eq(TrackComplete::getAssignId, e.getId());
+            TrackComplete trackComplete = trackCompleteMapper.selectOne(trackCompleteQueryWrapper);
+            e.setQualityCheckBy(trackComplete.getQualityCheckBy());
+        });
         return result;
     }
-
 
     @Override
     public boolean deleteAssign(String[] ids) {
