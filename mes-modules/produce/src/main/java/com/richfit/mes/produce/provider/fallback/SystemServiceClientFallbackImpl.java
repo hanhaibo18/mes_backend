@@ -140,6 +140,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public CommonResult<List<Tenant>> queryTenantAllList() {
+        return null;
+    }
+
+    @Override
     public CommonResult<Map<String, String>> usersAccount() {
         return null;
     }
