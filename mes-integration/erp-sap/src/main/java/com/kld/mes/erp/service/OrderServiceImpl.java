@@ -4,17 +4,26 @@ import com.kld.mes.erp.entity.order.WERKS;
 import com.kld.mes.erp.entity.order.ZC80PPIF009;
 import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
 import com.kld.mes.erp.entity.order.ZPPS0008;
+import com.kld.mes.erp.entity.order.creat.*;
 import com.kld.mes.erp.utils.WsTemplateFactory;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,5 +96,19 @@ public class OrderServiceImpl implements OrderService {
         zc80PPIF009.setZWERKS(werks);
         zc80PPIF009.setZDATUM(selectDate);
         return zc80PPIF009;
+    }
+
+
+    public List<Zc80Ppif032SO> creat(List<Zc80Ppif032SI> zc80Ppif032SOList) throws Exception {
+        //获取调用服务接口类实例
+        WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate("com.kld.mes.erp.entity.order.creat");
+        List<Zc80Ppif032SO> list = new ArrayList<>();
+        try {
+            Zc80Ppif032Response o = (Zc80Ppif032Response) webServiceTemplate.marshalSendAndReceive(URL, zc80Ppif032SOList);
+            list = o.getTOut().getItem();
+        } catch (Exception e) {
+            throw new GlobalException("ERP接口异常：" + URL, ResultCode.FAILED);
+        }
+        return list;
     }
 }
