@@ -88,7 +88,8 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         //设置链接超时时间
         builder.setConnectTimeout(Duration.ofMinutes(1));
         builder.setReadTimeout(Duration.ofMinutes(1));
-        RestTemplate restTemplate = builder.basicAuthentication("zbzz_esb", "ZBZZOSBinterface1").build();
+//        RestTemplate restTemplate = builder.basicAuthentication("zbzz_esb", "ZBZZOSBinterface1").build();
+        RestTemplate restTemplate = builder.basicAuthentication("OSB_USER", "welcome1").build();
         //返回结果
         String resultStr = restTemplate.postForObject(url, formEntity, String.class);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移

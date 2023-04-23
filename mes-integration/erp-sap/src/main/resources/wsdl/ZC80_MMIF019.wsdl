@@ -1,0 +1,26 @@
+<WL5G3N0:definitions xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/"
+                     xmlns:WL5G3N1="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_CDF_225/ZC80_MMIF019"
+                     xmlns:WL5G3N2="http://schemas.xmlsoap.org/wsdl/soap/" name="ZC80_MMIF019-concrete"
+                     targetNamespace="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_CDF_225/ZC80_MMIF019">
+    <WL5G3N0:import
+            location="http://10.30.47.134:8000/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2?WSDL%2FZBZZ%2FHTXT%2FGetPurchaseInfoByTime2%2FAdapter%2FZC80_MMIF019_invoke"
+            namespace="http://xmlns.oracle.com/pcbpel/iWay/wsdl/MySAP/ZBZZ_CDF_225/ZC80_MMIF019"/>
+    <WL5G3N0:binding name="ZC80_MMIF019PortType-binding" type="WL5G3N1:ZC80_MMIF019PortType">
+        <WL5G3N2:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <WL5G3N0:operation name="ZC80_MMIF019">
+            <WL5G3N2:operation soapAction="ZC80_MMIF019"/>
+            <WL5G3N0:input>
+                <WL5G3N2:body use="literal"/>
+            </WL5G3N0:input>
+            <WL5G3N0:output>
+                <WL5G3N2:body use="literal"/>
+            </WL5G3N0:output>
+        </WL5G3N0:operation>
+    </WL5G3N0:binding>
+    <WL5G3N0:service name="ZC80_MMIF019-service">
+        <WL5G3N0:port binding="WL5G3N1:ZC80_MMIF019PortType-binding" name="ZC80_MMIF019-port">
+            <WL5G3N2:address
+                    location="http://10.30.47.134:8000/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2"/>
+        </WL5G3N0:port>
+    </WL5G3N0:service>
+</WL5G3N0:definitions>

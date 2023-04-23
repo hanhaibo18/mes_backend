@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <WL5G3N0:definitions targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style"
+                     xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/"
                      xmlns:WL5G3N1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-                     xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+                     xmlns:WL5G3N2="urn:sap-com:document:sap:soap:functions:mc-style"
                      xmlns:WL5G3N3="http://schemas.xmlsoap.org/wsdl/soap/"
-                     xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/">
+                     xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
     <WL5G3N0:documentation>
 
     </WL5G3N0:documentation>
@@ -17,13 +18,19 @@
         <wsaw:UsingAddressing xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"/>
     </wsp:Policy>
     <WL5G3N0:types>
-        <xsd:schema xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+        <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:rfc:functions"
                     xmlns:WL5G3N1="http://schemas.xmlsoap.org/ws/2004/09/policy"
-                    xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style"
-                    xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style"
-                    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
                     xmlns:WL5G3N2="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-                    attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:rfc:functions"
+                    xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style"
+                    xmlns:WL5G3N4="http://schemas.xmlsoap.org/wsdl/soap/"
+                    xmlns:WL5G3N5="http://schemas.xmlsoap.org/wsdl/soap12/"
+                    xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                    xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:n1="urn:sap-com:document:sap:rfc:functions"
+                    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                    xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style"
+                    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                    xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
                     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
             <xsd:simpleType name="char1">
                 <xsd:restriction base="xsd:string">
@@ -88,13 +95,19 @@
                 </xsd:restriction>
             </xsd:simpleType>
         </xsd:schema>
-        <xsd:schema xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+        <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style"
                     xmlns:WL5G3N1="http://schemas.xmlsoap.org/ws/2004/09/policy"
-                    xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style"
-                    xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style"
-                    xmlns:n0="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
                     xmlns:WL5G3N2="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-                    attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style"
+                    xmlns:WL5G3N3="urn:sap-com:document:sap:soap:functions:mc-style"
+                    xmlns:WL5G3N4="http://schemas.xmlsoap.org/wsdl/soap/"
+                    xmlns:WL5G3N5="http://schemas.xmlsoap.org/wsdl/soap12/"
+                    xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                    xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:n0="urn:sap-com:document:sap:rfc:functions"
+                    xmlns:n1="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                    xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style"
+                    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                    xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
                     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
             <xsd:import namespace="urn:sap-com:document:sap:rfc:functions"/>
             <xsd:complexType name="Zc80Ppif032SI">
