@@ -416,9 +416,11 @@ public class DisqualificationController extends BaseController {
      */
     private static List<String> convertItemInput(List<String> list, Map<String, ItemParam> itemMap) {
         int init = 0;
-        for (String tenantId: list) {
-            if (itemMap.containsKey(tenantId)) {
-                list.set(init, itemMap.get(tenantId).getLabel());
+        for (String key: list) {
+            if (itemMap.containsKey(key)) {
+                if (StringUtils.isNotEmpty(itemMap.get(key).getLabel())) {
+                    list.set(init, itemMap.get(key).getLabel());
+                }
             }
             init ++;
         }
