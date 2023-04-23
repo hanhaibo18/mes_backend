@@ -75,8 +75,8 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
     public CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId,String branchCode) {
         TrackAssemblyBinding assemblyBinding = this.getById(id);
         TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
-        //绑定校验
-        if(isBinding == 1){
+        //绑定校验(只校验单件的)
+        if(isBinding == 1 && "0".equals(trackAssembly.getTrackType())){
             //校验编号是否被其他跟单绑定过
             QueryWrapper<TrackAssemblyBinding> trackAssemblyBindingQueryWrapper = new QueryWrapper<>();
             trackAssemblyBindingQueryWrapper.eq("number",assemblyBinding.getNumber())

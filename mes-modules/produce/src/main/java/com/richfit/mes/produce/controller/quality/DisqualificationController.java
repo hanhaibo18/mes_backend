@@ -238,7 +238,7 @@ public class DisqualificationController extends BaseController {
             // 质控工程师
             List<String> checkByList = disqualificationList.stream().map(Disqualification::getQualityCheckBy).collect(Collectors.toList());
 
-            Map<String, Tenant> tenantMap = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
+            Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
             List<String> unitResponsibilityWithinList = convertInput(unitList, tenantMap);
             List<String> unitTreatmentOneList = convertInput(unitOneList, tenantMap);
             List<String> unitTreatmentTwoList = convertInput(unitTwoList, tenantMap);
@@ -416,9 +416,11 @@ public class DisqualificationController extends BaseController {
      */
     private static List<String> convertItemInput(List<String> list, Map<String, ItemParam> itemMap) {
         int init = 0;
-        for (String tenantId: list) {
-            if (itemMap.containsKey(tenantId)) {
-                list.set(init, itemMap.get(tenantId).getLabel());
+        for (String key: list) {
+            if (itemMap.containsKey(key)) {
+                if (StringUtils.isNotEmpty(itemMap.get(key).getLabel())) {
+                    list.set(init, itemMap.get(key).getLabel());
+                }
             }
             init ++;
         }

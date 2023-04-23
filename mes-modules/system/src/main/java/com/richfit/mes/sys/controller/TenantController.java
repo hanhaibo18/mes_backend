@@ -258,4 +258,12 @@ public class TenantController extends BaseController {
         List<Tenant> tenantList = tenantService.list(queryWrapper);
         return CommonResult.success(tenantList);
     }
+
+    @ApiOperation(value = "查询所有的租户列表信息(包括内置)", notes = "查询所有启用的租户列表信息(包括内置)")
+    @GetMapping("/query/tenant/list/inner_all")
+    public CommonResult<List<Tenant>> queryTenantAllList() throws GlobalException {
+        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
+        List<Tenant> tenantList = tenantService.list(queryWrapper);
+        return CommonResult.success(tenantList);
+    }
 }

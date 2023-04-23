@@ -242,35 +242,36 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 for (TrackHead trackHead : trackHeadList) {
                     //先根据trackHeadId获取装配信息列表
                     List<TrackAssembly> trackAssemblyList = produceServiceClient.getAssemblyListByTrackHeadId(trackHead.getId(), mainBom.getTenantId(), mainBom.getBranchCode());
-                    Map<String, List<TrackAssembly>> map = trackAssemblyList.stream().collect(Collectors.groupingBy(TrackAssembly::getFlowId));
-                    map.forEach((key, value) -> {
-                        if (CollectionUtils.isNotEmpty(value)) {
-                            //新增零件的装配记录
-                            TrackAssembly trackAssembly = new TrackAssembly();
-                            trackAssembly.setGrade(projectBom.getGrade());
-                            trackAssembly.setName(projectBom.getProdDesc());
-                            trackAssembly.setDrawingNo(projectBom.getDrawingNo());
-                            trackAssembly.setMaterialNo(projectBom.getMaterialNo());
-                            trackAssembly.setTrackHeadId(trackHead.getId());
-                            trackAssembly.setNumber(trackHead.getNumber() == null || projectBom.getNumber() == null ? 0 : trackHead.getNumber() * projectBom.getNumber());
-                            trackAssembly.setIsKeyPart(projectBom.getIsKeyPart());
-                            trackAssembly.setTrackType(projectBom.getTrackType());
-                            if (projectBom.getWeight() != null) {
-                                trackAssembly.setWeight(Double.valueOf(projectBom.getWeight()));
+                    if (CollectionUtils.isNotEmpty(trackAssemblyList)) {
+                        Map<String, List<TrackAssembly>> map = trackAssemblyList.stream().collect(Collectors.groupingBy(TrackAssembly::getFlowId));
+                        map.forEach((key, value) -> {
+                            if (CollectionUtils.isNotEmpty(value)) {
+                                //新增零件的装配记录
+                                TrackAssembly trackAssembly = new TrackAssembly();
+                                trackAssembly.setGrade(projectBom.getGrade());
+                                trackAssembly.setName(projectBom.getProdDesc());
+                                trackAssembly.setDrawingNo(projectBom.getDrawingNo());
+                                trackAssembly.setMaterialNo(projectBom.getMaterialNo());
+                                trackAssembly.setTrackHeadId(trackHead.getId());
+                                trackAssembly.setNumber(trackHead.getNumber() == null || projectBom.getNumber() == null ? 0 : trackHead.getNumber() * projectBom.getNumber());
+                                trackAssembly.setIsKeyPart(projectBom.getIsKeyPart());
+                                trackAssembly.setTrackType(projectBom.getTrackType());
+                                if (projectBom.getWeight() != null) {
+                                    trackAssembly.setWeight(Double.valueOf(projectBom.getWeight()));
+                                }
+                                trackAssembly.setIsCheck(projectBom.getIsCheck());
+                                trackAssembly.setIsEdgeStore(projectBom.getIsEdgeStore());
+                                trackAssembly.setIsNeedPicking(projectBom.getIsNeedPicking());
+                                trackAssembly.setUnit(projectBom.getUnit());
+                                trackAssembly.setSourceType(projectBom.getSourceType());
+                                trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
+                                trackAssembly.setOptName(projectBom.getOptName());
+                                trackAssembly.setFlowId(key);
+
+                                addList.add(trackAssembly);
                             }
-                            trackAssembly.setIsCheck(projectBom.getIsCheck());
-                            trackAssembly.setIsEdgeStore(projectBom.getIsEdgeStore());
-                            trackAssembly.setIsNeedPicking(projectBom.getIsNeedPicking());
-                            trackAssembly.setUnit(projectBom.getUnit());
-                            trackAssembly.setSourceType(projectBom.getSourceType());
-                            trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
-                            trackAssembly.setOptName(projectBom.getOptName());
-                            trackAssembly.setFlowId(key);
-
-                            addList.add(trackAssembly);
-                        }
-                    });
-
+                        });
+                    }
                 }
                 if (CollectionUtils.isNotEmpty(addList)) {
                     produceServiceClient.addAssemblyList(addList);
