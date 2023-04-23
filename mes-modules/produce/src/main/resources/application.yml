@@ -45,7 +45,9 @@ security:
 interface:
   erp:
     #采购订单
-    purchase-order-synchronization: http://emaip.erp.cnpc:80/ZBZZ/HTXT/GetPurchaseInfoByTime/service/PS/GetPurchaseInfoService
+    purchase-order-synchronization: http://10.30.47.134:8000/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2
+  #    purchase-order-synchronization: http://emaip.erp.cnpc:80/ZBZZ/HTXT/GetPurchaseInfoByTime/service/PS/GetPurchaseInfoService
+
   wms:
     #物料库存
     material-remaining-number: http://10.134.100.21:908/getapi.php?page=1&token=66da1b74a0f22adadc4a865e00435e72
