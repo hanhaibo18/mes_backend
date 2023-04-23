@@ -104,6 +104,9 @@
             <if test="param.notEnd != null and param.notEnd != ''">
                 and o.status != '2'
             </if>
+            <if test="param.notEnd != null and param.notEnd != ''">
+                and o.order_num-o.store_num > 0
+            </if>
         </trim>
         <if test="param.orderCol != null and param.orderCol != ''">
             order by ${param.orderCol} ${param.order}

@@ -62,4 +62,24 @@ public class ProduceServiceClientFallbackImpl implements ProduceServiceClient {
     public TrackFlow getFlowInfoById(String id) {
         return null;
     }
+
+    @Override
+    public List<TrackHead> getTrackHeadByProjectBomId(String bomId, String tenantId, String branchCode) {
+        return null;
+    }
+
+    @Override
+    public List<TrackAssembly> getAssemblyListByTrackHeadId(String trackHeadId, String tenantId, String branchCode) {
+        return null;
+    }
+
+    @Override
+    public boolean addAssemblyList(List<TrackAssembly> trackAssemblyList) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteAssemblyByBomId(String bomId, String tenantId, String branchCode) {
+        return false;
+    }
 }

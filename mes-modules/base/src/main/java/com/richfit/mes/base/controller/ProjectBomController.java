@@ -147,7 +147,7 @@ public class ProjectBomController {
     })
     @DeleteMapping("/deletePart")
     public CommonResult<Boolean> deletePart(String id) {
-        return CommonResult.success(projectBomService.deletePart(id));
+        return CommonResult.success(projectBomService.deletePartAndAssembly(id));
     }
 
     @ApiOperation(value = "新增零件", notes = "项目BOM新增零件")
@@ -155,7 +155,7 @@ public class ProjectBomController {
     public CommonResult<Boolean> saveBom(@RequestBody ProjectBom projectBom) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         projectBom.setTenantId(tenantId);
-        return CommonResult.success(projectBomService.saveBom(projectBom));
+        return CommonResult.success(projectBomService.saveBomAndAssembly(projectBom));
     }
 
     @ApiOperation(value = "关联零件分解项", notes = "关联是否分解零件")
@@ -217,7 +217,7 @@ public class ProjectBomController {
             queryWrapper.eq("work_plan_no", mainBom.getWorkPlanNo())
                     .eq("tenant_id", mainBom.getTenantId())
                     .eq("branch_code", mainBom.getBranchCode())
-                    .eq("main_drawing_no",mainBom.getDrawingNo());
+                    .eq("main_drawing_no", mainBom.getDrawingNo());
             List<ProjectBom> projectBomList = projectBomService.list(queryWrapper);
             List<ProjectBom> updateList = new ArrayList<>();
             updateList.add(mainBom);

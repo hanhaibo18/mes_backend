@@ -158,22 +158,44 @@ public class TrackAssemblyController extends BaseController {
 
     @ApiOperation(value = "修改产品编码", notes = "修改产品编码")
     @GetMapping("/changeProductNo")
-    public CommonResult<Boolean> changeProductNo(String id, String productNo,String branchCode) {
-        return CommonResult.success(trackAssemblyService.changeProductNo(id,productNo,branchCode));
+    public CommonResult<Boolean> changeProductNo(String id, String productNo, String branchCode) {
+        return CommonResult.success(trackAssemblyService.changeProductNo(id, productNo, branchCode));
     }
 
-    @ApiOperation(value = "根据跟单id查询装配列表(其他服务调用)")
+    @ApiOperation(value = "根据项目bomId查询装配列表(其他服务调用)")
     @GetMapping("/getAssemblyListByProjectBomId")
-    public List<TrackAssembly> getAssemblyListByProjectBomId(String projectBomId,String tenantId,String branchCode){
+    public List<TrackAssembly> getAssemblyListByProjectBomId(String projectBomId, String tenantId, String branchCode) {
         QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("project_bom_id",projectBomId).eq("tenant_id",tenantId).eq("branch_code",branchCode);
+        queryWrapper.eq("project_bom_id", projectBomId).eq("tenant_id", tenantId).eq("branch_code", branchCode);
         return trackAssemblyService.list(queryWrapper);
     }
 
     @ApiOperation(value = "修改装配信息(其他服务调用)")
     @PostMapping("/updateAssembly")
-    public boolean updateAssembly(@RequestBody List<TrackAssembly> trackAssemblyList){
+    public boolean updateAssembly(@RequestBody List<TrackAssembly> trackAssemblyList) {
         return trackAssemblyService.updateBatchById(trackAssemblyList);
+    }
+
+    @ApiOperation(value = "根据跟单Id查询装配列表(其他服务调用)")
+    @GetMapping("/getAssemblyListByTrackHeadId")
+    public List<TrackAssembly> getAssemblyListByTrackHeadId(String trackHeadId, String tenantId, String branchCode) {
+        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId).eq("tenant_id", tenantId).eq("branch_code", branchCode);
+        return trackAssemblyService.list(queryWrapper);
+    }
+
+    @ApiOperation(value = "批量新增装配列表(其他服务调用)")
+    @PostMapping("/addAssemblyList")
+    public boolean addAssemblyList(@RequestBody List<TrackAssembly> trackAssemblyList) {
+        return trackAssemblyService.saveBatch(trackAssemblyList);
+    }
+
+    @ApiOperation(value = "根据projectBomId删除装配信息(其他服务调用)")
+    @GetMapping("/deleteByBomId")
+    public boolean deleteByBomId(@RequestParam String bomId, @RequestParam String tenantId, @RequestParam String branchCode) {
+        QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("project_bom_id", bomId).eq("tenant_id", tenantId).eq("branch_code", branchCode);
+        return trackAssemblyService.remove(queryWrapper);
     }
 
 }

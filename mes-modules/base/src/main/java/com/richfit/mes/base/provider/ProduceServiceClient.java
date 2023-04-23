@@ -60,4 +60,20 @@ public interface ProduceServiceClient {
     @ApiOperation(value = "根据flowId获取follow信息(其他服务调用)")
     @GetMapping("/api/produce/track_head/getFlowInfoById")
     public TrackFlow getFlowInfoById(@RequestParam String id);
+
+    @ApiOperation(value = "根据项目bomId查询跟单列表(其他服务调用)")
+    @GetMapping("/api/produce/track_head/getTrackHeadByProjectBomId")
+    public List<TrackHead> getTrackHeadByProjectBomId(@RequestParam String bomId, @RequestParam String tenantId, @RequestParam String branchCode);
+
+    @ApiOperation(value = "根据跟单Id查询装配列表(其他服务调用)")
+    @GetMapping("/api/produce/track_head/getAssemblyListByTrackHeadId")
+    public List<TrackAssembly> getAssemblyListByTrackHeadId(@RequestParam String trackHeadId, @RequestParam String tenantId, @RequestParam String branchCode);
+
+    @ApiOperation(value = "批量新增装配列表(其他服务调用)")
+    @PostMapping("/api/produce/trackassembly/addAssemblyList")
+    public boolean addAssemblyList(@RequestBody List<TrackAssembly> trackAssemblyList);
+
+    @ApiOperation(value = "根据projectBomId删除装配信息(其他服务调用)")
+    @GetMapping("/api/produce/trackassembly/deleteByBomId")
+    public boolean deleteAssemblyByBomId(@RequestParam String bomId, @RequestParam String tenantId, @RequestParam String branchCode);
 }

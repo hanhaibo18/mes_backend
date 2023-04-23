@@ -112,7 +112,7 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @Author: xinYu.hou
      * @return: boolean
      **/
-    boolean deletePart(String id);
+    boolean deletePartAndAssembly(String id);
 
     /**
      * 功能描述: 新增零件BOM
@@ -121,7 +121,7 @@ public interface ProjectBomService extends IService<ProjectBom> {
      * @Author: xinYu.hou
      * @return: boolean
      **/
-    boolean saveBom(ProjectBom projectBom);
+    boolean saveBomAndAssembly(ProjectBom projectBom);
 
     /**
      * 功能描述:

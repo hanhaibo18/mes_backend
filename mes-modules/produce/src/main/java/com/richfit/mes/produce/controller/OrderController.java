@@ -132,7 +132,6 @@ public class OrderController extends BaseController {
         if (null == orderDto) {
             orderDto = new OrderDto();
         }
-
 //        orderDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         if (StringUtils.hasText(orderDto.getOrderCol())) {
             orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
