@@ -81,6 +81,10 @@ public class PrechargeFurnace {
     private String currStep;
     @ApiModelProperty(value = "次数", dataType = "String")
     private String number;
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String texture;
+    @ApiModelProperty(value = "记录状态", dataType = "String")
+    private String recordStatus;
     @TableField(exist = false)
     @ApiModelProperty(value = "是否回滚标志", dataType = "int")
     private int isRollBack;
