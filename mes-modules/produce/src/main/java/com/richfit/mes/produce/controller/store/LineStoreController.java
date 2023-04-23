@@ -185,9 +185,12 @@ public class LineStoreController extends BaseController {
             }
             //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
             // 则会将0给省略掉，所以换成用String，将0截取出来然后在拼接到开始编号前面
-            startNoOld = Integer.valueOf(startNo);
-            endNoOld = Integer.valueOf(endNo);
-
+            if(startNo != null){
+                startNoOld = Integer.valueOf(startNo);
+            }
+            if(startNo != null){
+                endNoOld = Integer.valueOf(endNo);
+            }
 //            String[] split = startNo.split("");
 //            List<String> strings = Arrays.asList(split);
             //判断第一位是不是0，如果不是直接跳出
