@@ -84,23 +84,13 @@ public class Utils {
     public static Map<String, List<String>> grouping(String[] arr) {
         Map<String, List<String>> map = new HashMap<>();
         for (String a : arr) {
-            if (a.contains("(")) {
-                String targetStr = a.substring(a.indexOf("(") + 1, a.indexOf(")"));
-                if (CollectionUtils.isEmpty(map.get(targetStr))) {
-                    List<String> list = new ArrayList<>();
-                    list.add(a);
-                    map.put(targetStr, list);
-                } else {
-                    map.get(targetStr).add(a);
-                }
+            Map<String, String> productNoMap = endingNonNumeric(a);
+            if (CollectionUtils.isEmpty(map.get(productNoMap.get("ending")))) {
+                List<String> list = new ArrayList<>();
+                list.add(productNoMap.get("productNo"));
+                map.put(productNoMap.get("ending"), list);
             } else {
-                if (CollectionUtils.isEmpty(map.get("0"))) {
-                    List<String> list = new ArrayList<>();
-                    list.add(a);
-                    map.put("0", list);
-                } else {
-                    map.get("0").add(a);
-                }
+                map.get(productNoMap.get("ending")).add(productNoMap.get("productNo"));
             }
         }
         return map;
@@ -119,13 +109,10 @@ public class Utils {
     public static String concatenation(List<String> list, String content) {
         if ("0".equals(content)) {
             content = "";
-        } else {
-            content = "(" + content + ")";
         }
         String productsNoTemp = "0";
         String productsNoStr = "";
         for (String a : list) {
-            a = removeParenthesis(a);
             String pn = a;
             String pnOld = Utils.stringNumberAdd(productsNoTemp, 1);
             if (pn.equals(pnOld)) {
@@ -147,9 +134,37 @@ public class Utils {
      * @Author: zhiqiang.lu
      * @Date: 2023/4/24 10:25
      */
-    public static String removeParenthesis(String str) {
-        String[] arr = str.split("[(]");
-        return arr[0];
+    public static Map<String, String> endingNonNumeric(String str) {
+        Map<String, String> map = new HashMap<>();
+        String productNo = str;
+        String ending = "";
+
+        String[] strings = str.split("[(]");
+        if (strings.length > 1) {
+            map.put("productNo", strings[0]);
+            map.put("ending", "(" + strings[1]);
+            return map;
+        }
+
+        char[] arr = str.toCharArray();
+        if (String.valueOf(arr[arr.length - 1]).matches("\\d+")) {
+            map.put("productNo", str);
+            map.put("ending", "0");
+            return map;
+        }
+        for (int i = arr.length; i > 0; i--) {
+            String s = String.valueOf(arr[i - 1]);
+            boolean b = s.matches("\\d+");
+            if (!b) {
+                ending += s;
+                productNo = productNo.substring(0, i - 1);
+            } else {
+                break;
+            }
+        }
+        map.put("productNo", productNo);
+        map.put("ending", ending);
+        return map;
     }
 
     /**
