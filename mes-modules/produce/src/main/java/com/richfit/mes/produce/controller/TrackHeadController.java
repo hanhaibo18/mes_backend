@@ -289,7 +289,8 @@ public class TrackHeadController extends BaseController {
                                                                   @ApiParam(value = "页码") @RequestParam(required = false) int page,
                                                                   @ApiParam(value = "条数") @RequestParam(required = false) int limit,
                                                                   @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
-                                                                  @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter) {
+                                                                  @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter,
+                                                                  @ApiParam(value = "是否绑定合格证") @RequestParam(required = false) boolean noCertNo) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(classes)) {
             queryWrapper.ge("classes", classes);
@@ -343,6 +344,9 @@ public class TrackHeadController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
+        if (noCertNo) {
+            queryWrapper.isNull("certificate_no");
+        }
         queryWrapper.ge(!StringUtils.isNullOrEmpty(startDate), "modify_time", startDate);
         queryWrapper.le(!StringUtils.isNullOrEmpty(endDate), "modify_time", endDate);
         //热工是否绑定工艺
@@ -393,7 +397,7 @@ public class TrackHeadController extends BaseController {
                                 HttpServletResponse rsp) {
         try {
             List<TrackHeadPublicVo> records = this.selectTrackHead(startTime, endTime, startDate, endDate, id, trackNo, drawingNo, productionOrder, workPlanId, workPlanNo, productNo, materialNo, status,
-                    trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter).getData().getRecords();
+                    trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter, false).getData().getRecords();
 
 
             for (TrackHeadPublicVo record : records) {
