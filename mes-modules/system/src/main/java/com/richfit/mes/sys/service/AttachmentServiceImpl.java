@@ -110,7 +110,7 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
             if (StringUtils.isEmpty(attachment.getAttachName())) {
                 fileNames.add(attachment.getId() + "." + attachment.getAttachType());
             } else {
-                fileNames.add(attachment.getAttachName());
+                fileNames.add(attachment.getAttachName() + "." + attachment.getAttachType());
             }
         }
 
@@ -139,15 +139,15 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
     }
 
     @Override
-    public Object getImageStr(String id){
-        if(!org.springframework.util.StringUtils.isEmpty(id)){
+    public Object getImageStr(String id) {
+        if (!org.springframework.util.StringUtils.isEmpty(id)) {
             id = id.split(",")[0];
             Attachment attachment = new Attachment();
             attachment.setId(id);
             attachment = attachmentMapper.selectById(id);
             //判断是不是图片格式
-            if(!ObjectUtil.isEmpty(attachment)){
-                if(!StringUtils.isEmpty(attachment.getAttachName())){
+            if (!ObjectUtil.isEmpty(attachment)) {
+                if (!StringUtils.isEmpty(attachment.getAttachName())) {
                     byte[] data = this.downloadbyte(attachment);
                     BASE64Encoder encoder = new BASE64Encoder();
                     return encoder.encode(data);
