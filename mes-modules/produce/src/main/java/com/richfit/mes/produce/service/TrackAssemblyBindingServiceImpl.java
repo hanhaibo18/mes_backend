@@ -54,7 +54,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
     @Override
     public CommonResult<Boolean> saveAssemblyBinding(TrackAssemblyBinding assembly) {
         assembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
+        /*QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("number", assembly.getNumber());
         DrawingNoUtil.queryEq(queryWrapper, "part_drawing_no", assembly.getPartDrawingNo());
         queryWrapper.eq("branch_code", assembly.getBranchCode());
@@ -62,7 +62,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
         List<TrackAssemblyBinding> bindingList = this.list(queryWrapper);
         if (CollectionUtils.isNotEmpty(bindingList)) {
             throw new GlobalException("新增失败,编号以使用", ResultCode.FAILED);
-        }
+        }*/
         TrackAssembly trackAssembly = trackAssemblyService.getById(assembly.getAssemblyId());
         if (trackAssembly.getNumber() == trackAssembly.getNumberInstall()) {
             throw new GlobalException("新增失败,零件已全部绑定", ResultCode.FAILED);
