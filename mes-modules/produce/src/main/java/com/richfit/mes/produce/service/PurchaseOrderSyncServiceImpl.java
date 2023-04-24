@@ -62,7 +62,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         String soapRequestData = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">" +
                 "<soapenv:Header/>" +
                 "<soapenv:Body>" +
-                "<urn:Z_MMFM0003>" +
+                "<urn:ZC80_MMIF019>" +
                 //拼接查询开始时间
                 "<urn:I_DATE_CHANGE>" +
                 purchaseOrderSynchronizationDto.getStartTime() +
@@ -76,9 +76,11 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                 //固定时间参数
                 "<urn:I_TIME_CHANGE>00:00:00</urn:I_TIME_CHANGE>" +
                 "<urn:I_TIME_UNTIL>23:59:59</urn:I_TIME_UNTIL>" +
-                "</urn:Z_MMFM0003>" +
+                "</urn:ZC80_MMIF019>" +
                 "</soapenv:Body>" +
                 "</soapenv:Envelope>";
+        System.out.println("------------");
+        System.out.println(soapRequestData);
         //构造http请求头
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
