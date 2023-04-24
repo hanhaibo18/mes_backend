@@ -1786,11 +1786,14 @@ public class ProduceInspectionRecordService {
         if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getStatus())) {
             queryWrapper.in("status", inspectionPowerVo.getStatus().split(","));
         }
-        if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
-            queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
+        if(!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getTenantId())){
+            queryWrapper.eq("tenant_id", inspectionPowerVo.getTenantId());
+            if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getBranchCode())) {
+                queryWrapper.eq("branch_code", inspectionPowerVo.getBranchCode());
+            }
+        }else{
+            queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         }
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("consignor", SecurityUtils.getCurrentUser().getUserId());
         if (!org.apache.commons.lang.StringUtils.isEmpty(inspectionPowerVo.getOrderCol())) {
             OrderUtil.query(queryWrapper, inspectionPowerVo.getOrderCol(), inspectionPowerVo.getOrder());
         } else {
@@ -1816,15 +1819,51 @@ public class ProduceInspectionRecordService {
             }
             inspectionPower.setConsignor(data.getEmplName());
             inspectionPower.setComeFromDepart(data.getBelongOrgId());
+            if ("0".equals(inspectionPower.getIsDoing())) {
+                inspectionPower.setIsDoing("未开工");
+            }
+            if ("1".equals(inspectionPower.getIsDoing())) {
+                inspectionPower.setIsDoing("已开工");
+            }
+            if ("2".equals(inspectionPower.getIsDoing())) {
+                inspectionPower.setIsDoing("已完工");
+            }
+            if ("0".equals(inspectionPower.getFlawDetection())) {
+                inspectionPower.setFlawDetection("不合格");
+            }
+            if ("1".equals(inspectionPower.getFlawDetection())) {
+                inspectionPower.setFlawDetection("合格");
+            }
+            if (0==inspectionPower.getAuditStatus()) {
+                inspectionPower.setAuditStatusExport("未审核");
+            }
+            if (1==inspectionPower.getAuditStatus())  {
+                inspectionPower.setAuditStatusExport("审核通过");
+            }
+            if (2==inspectionPower.getAuditStatus())  {
+                inspectionPower.setAuditStatusExport("审核拒绝");
+            }
+
+            String itemId = inspectionPower.getItemId();
+            String headId = inspectionPower.getHeadId();
+            if (!StringUtils.isEmpty(itemId)) {
+                TrackItem trackItem = trackItemService.getById(itemId);
+                TrackHead trackHead = trackHeadService.getById(headId);
+                inspectionPower.setTrackNo(trackHead.getTrackNo());
+                inspectionPower.setOptNo(trackItem.getOptNo());
+                inspectionPower.setOptName(trackItem.getOptName());
+                inspectionPower.setProductNo(trackItem.getProductNo());
+                inspectionPower.setTrackType(trackHead.getTrackType());
+            }
         }
 
         try {
 
             String fileName = "委托单导出_" + DateUtil.format(DateUtil.date(), "YYYY-MM-dd") + ".xlsx";
 
-            String[] columnHeaders = {"委托单号", "状态", "钻机号", "样品名称", "图号", "检测类型", "产品类型", "数量", "探伤站", "探伤类型", "单重", "长度", "处数", "创建人", "创建单位", "创建时间"};
+            String[] columnHeaders = {"委托单号", "状态","任务状态","审核状态", "检验结果","钻机号", "样品名称", "图号", "检测类型", "产品类型", "数量", "探伤站", "探伤类型","跟单号","工序号","工序名","产品编号","跟踪类型", "单重", "长度", "处数", "创建人","退回意见", "创建单位", "创建时间"};
 
-            String[] fieldNames = {"orderNo", "statusShow", "drilNo", "sampleName", "drawNo", "tempType", "productType", "num", "inspectionDepart", "checkType", "single", "length", "reviseNum", "consignor", "comeFromDepart", "createTime"};
+            String[] fieldNames = {"orderNo", "statusShow","isDoing","auditStatusExport","flawDetection", "drilNo", "sampleName", "drawNo", "tempType","productType", "num", "inspectionDepart", "checkType","trackNo","optNo","optName","productNo","trackType","single", "length", "reviseNum", "consignor", "backRemark","comeFromDepart", "createTime"};
 
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
