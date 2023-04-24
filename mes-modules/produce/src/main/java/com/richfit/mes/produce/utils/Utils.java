@@ -85,6 +85,8 @@ public class Utils {
         Map<String, List<String>> map = new HashMap<>();
         for (String a : arr) {
             Map<String, String> productNoMap = endingNonNumeric(a);
+            System.out.println("---------------");
+            System.out.println(JSON.toJSONString(productNoMap));
             if (CollectionUtils.isEmpty(map.get(productNoMap.get("ending")))) {
                 List<String> list = new ArrayList<>();
                 list.add(productNoMap.get("productNo"));

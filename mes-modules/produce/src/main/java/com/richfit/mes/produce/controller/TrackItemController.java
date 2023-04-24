@@ -176,7 +176,7 @@ public class TrackItemController extends BaseController {
         if (!StringUtils.isNullOrEmpty(optVer)) {
             queryWrapper.like("opt_ver", optVer);
         }
-        queryWrapper.orderByAsc("opt_sequence");
+        queryWrapper.orderByDesc("opt_sequence");
         List<TrackItem> list = trackItemService.list(queryWrapper);
         //去重操作(工序号+工序名 都一样认为重复)
         ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
