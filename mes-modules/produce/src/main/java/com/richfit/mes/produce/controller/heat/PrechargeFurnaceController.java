@@ -86,6 +86,18 @@ public class PrechargeFurnaceController extends BaseController {
             //大于等于
             queryWrapper.ge("temp_work", tempWorkQ);
         }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
+            queryWrapper.ge("create_time",dispatchingDto.getStartTime());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
+            queryWrapper.le("create_time",dispatchingDto.getEndTime());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTexture())) {
+            queryWrapper.eq("texture",dispatchingDto.getTexture());
+        }
+        if (dispatchingDto.getId()!=null) {
+            queryWrapper.eq("id",dispatchingDto.getId());
+        }
         queryWrapper.eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId());
         queryWrapper.in("status", new java.lang.String[]{"0", "1"});
         queryWrapper.orderByAsc("modify_time");
@@ -137,6 +149,13 @@ public class PrechargeFurnaceController extends BaseController {
     @PostMapping("/add/track/item")
     public CommonResult addTrackItem(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
         return CommonResult.success(prechargeFurnaceService.addTrackItem(assignList), "更新成功");
+    }
+
+    @ApiOperation(value = "装炉跟单工序添加(热工)", tags = "装炉跟单工序添加(热工)")
+    @PostMapping("/add/track/item_hot")
+    public CommonResult addTrackItemHot(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList,
+                                        @ApiParam(value = "装炉类型  1 去氢装炉    2 正火装炉", required = true) @RequestParam String type) {
+        return CommonResult.success(prechargeFurnaceService.addTrackItemHot(assignList,type), "更新成功");
     }
 
     @ApiOperation(value = "装炉跟单工序删除", tags = "装炉跟单工序删除")

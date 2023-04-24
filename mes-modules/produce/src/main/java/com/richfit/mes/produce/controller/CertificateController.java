@@ -5,20 +5,25 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackCertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.utils.Utils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -75,6 +80,8 @@ public class CertificateController {
         } else {
             //检查当前工序之前有没有未完成的工序
             this.checkBefore(certificate);
+            //重写拼接产品编号
+            certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
             certificateService.saveCertificate(certificate);
             return CommonResult.success(certificate);
         }
@@ -189,6 +196,53 @@ public class CertificateController {
         );
         certificateIPage.setRecords(collect);
         return CommonResult.success(certificateIPage, SUCCESS_MESSAGE);
+    }
+
+
+    @ApiOperation(value = "分页查询合格证信息", notes = "根据图号、合格证号、产品编号分页合格证信息")
+    @GetMapping("/page")
+    public CommonResult<PageInfo<Certificate>> page(@ApiParam(value = "创建时间(起)") @RequestParam(required = false) String startDate,
+                                                    @ApiParam(value = "创建时间(止)") @RequestParam(required = false) String endDate,
+                                                    @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                    @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
+                                                    @ApiParam(value = "产品编号") @RequestParam(required = false) String productNo,
+                                                    @ApiParam(value = "类型") @RequestParam(required = false) String type,
+                                                    @ApiParam(value = "来源") @RequestParam(required = false) String origin,
+                                                    @ApiParam(value = "排序") @RequestParam(required = false) String order,
+                                                    @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
+                                                    @ApiParam(value = "分公司") String branchCode,
+                                                    @ApiParam(value = "页码") int page,
+                                                    @ApiParam(value = "每页条数") int limit) {
+        QueryWrapper<Certificate> queryWrapper = new QueryWrapper<Certificate>();
+
+        if (!StringUtils.isNullOrEmpty(startDate)) {
+            queryWrapper.ge("create_time", startDate);
+        }
+        if (!StringUtils.isNullOrEmpty(endDate)) {
+            queryWrapper.le("create_time", endDate);
+        }
+        if (!StringUtils.isNullOrEmpty(type)) {
+            queryWrapper.eq("type", type);
+        }
+        if (!StringUtils.isNullOrEmpty(origin)) {
+            queryWrapper.eq("pc.cert_origin", origin);
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
+        }
+        if (!StringUtils.isNullOrEmpty(certificateNo)) {
+            queryWrapper.like("pc.certificate_no", certificateNo);
+        }
+        if (!StringUtils.isNullOrEmpty(productNo)) {
+            queryWrapper.like("product_no", productNo);
+        }
+        OrderUtil.query(queryWrapper, orderCol, order);
+        queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("pc.branch_code", branchCode);
+        PageHelper.startPage(page, limit);
+        List<Certificate> certificateList = certificateService.list(queryWrapper);
+        PageInfo<Certificate> trackFlowPage = new PageInfo(certificateList);
+        return CommonResult.success(trackFlowPage, SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询需要本单位接收的合格证", notes = "根据图号、合格证号查询分页合格证信息")
