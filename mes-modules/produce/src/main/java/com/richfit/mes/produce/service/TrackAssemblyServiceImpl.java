@@ -521,18 +521,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         try {
             Assign assign = trackAssignService.getById(id);
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //新的产品编号
-            String produceNoDesc =  trackItem.getDrawingNo() + " " + productNo;
-            //校验产品编码是否重复
-            QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("product_no", produceNoDesc);
-            queryWrapper.eq("branch_code", branchCode);
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            queryWrapper.ne("id", trackItem.getFlowId());
-            List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
-            if (trackFlowList.size() > 0) {
-                throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
-            }
+            String produceNoDesc =  productNo;
             //校验单个生产流程的可以更改
             QueryWrapper<TrackFlow> queryWrapperFlow = new QueryWrapper<>();
             queryWrapperFlow.eq("track_head_id", trackItem.getTrackHeadId());
@@ -542,6 +533,17 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             } catch (Exception e) {
                 log.error(e.getMessage());
                 throw new GlobalException("异常提示跟单数据异常出现多个生产流程", ResultCode.FAILED);
+            }
+            //校验产品编码是否重复
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("product_no", produceNoDesc);
+            queryWrapper.eq("drawing_no",trackHead.getDrawingNo());
+            queryWrapper.eq("branch_code", branchCode);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.ne("id", trackItem.getTrackHeadId());
+            List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
+            if (trackHeadList.size() > 0) {
+                throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
             }
             //修改跟单、flow、item、探伤记录信息
             //旧的产品编号
