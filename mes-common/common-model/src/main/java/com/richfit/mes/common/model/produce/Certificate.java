@@ -46,6 +46,9 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "产品编号")
     private String productNo;
 
+    @ApiModelProperty(value = "产品编号")
+    private String productNoContinuous;
+
     @ApiModelProperty(value = "产品全部编号")
     private String productNoDesc;
 
