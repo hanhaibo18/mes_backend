@@ -86,6 +86,18 @@ public class PrechargeFurnaceController extends BaseController {
             //大于等于
             queryWrapper.ge("temp_work", tempWorkQ);
         }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
+            queryWrapper.ge("create_time",dispatchingDto.getStartTime());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
+            queryWrapper.le("create_time",dispatchingDto.getEndTime());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTexture())) {
+            queryWrapper.eq("texture",dispatchingDto.getTexture());
+        }
+        if (dispatchingDto.getId()!=null) {
+            queryWrapper.eq("id",dispatchingDto.getId());
+        }
         queryWrapper.eq("site_id", SecurityUtils.getCurrentUser().getBelongOrgId());
         queryWrapper.in("status", new java.lang.String[]{"0", "1"});
         queryWrapper.orderByAsc("modify_time");

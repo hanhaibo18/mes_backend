@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -50,7 +51,25 @@ public class StoreAttachRelServiceImpl extends ServiceImpl<StoreAttachRelMapper,
             rel.setType(file.getType());
             this.save(rel);
         }
+        return true;
+    }
 
+    //更新料单资料文件
+    @Override
+    public boolean updateStoreFile(String storeId, String branchCode, List<StoreAttachRel> fileList) {
+
+        QueryWrapper<StoreAttachRel> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("line_store_id",storeId);
+        this.remove(queryWrapper);
+        for (StoreAttachRel file : fileList) {
+            StoreAttachRel rel = new StoreAttachRel();
+            rel.setLineStoreId(storeId);
+            rel.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            rel.setBranchCode(branchCode);
+            rel.setAttachmentId(file.getId());
+            rel.setType(file.getType());
+            this.save(rel);
+        }
         return true;
     }
 }
