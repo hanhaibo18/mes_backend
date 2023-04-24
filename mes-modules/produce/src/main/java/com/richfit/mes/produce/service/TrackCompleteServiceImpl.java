@@ -578,15 +578,24 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             assign.setAssignPersons(assignPeople);
         } else {
             List<AssignPerson> assignPersons = trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId()));
+            List<AssignPerson> assignPeople = new ArrayList<>();
             if (assignPersons.size() > 0) {
                 List<String> userAccounts = assignPersons.stream().map(item -> item.getUserId()).collect(Collectors.toList());
-                Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(userAccounts);
-                for (AssignPerson assignPerson : assignPersons) {
-                    TenantUserVo tenantUserVo = userInfoMap.get(assignPerson.getUserId());
-                    assignPerson.setRatioHours(tenantUserVo.getRatioHours());
+                List<String> strings = new ArrayList<>();
+                for (String userAccount : userAccounts) {
+                    strings.addAll(Arrays.asList(userAccount.split(",")));
+                }
+                Map<String, TenantUserVo> userInfoMap = systemServiceClient.queryByUserAccountList(strings);
+                for (TenantUserVo value : userInfoMap.values()) {
+                    AssignPerson assignPerson = new AssignPerson();
+                    assignPerson.setAssignId(assignId);
+                    assignPerson.setUserId(value.getUserAccount());
+                    assignPerson.setUserName(value.getEmplName());
+                    assignPerson.setRatioHours(value.getRatioHours());
+                    assignPeople.add(assignPerson);
                 }
             }
-            assign.setAssignPersons(assignPersons);
+            assign.setAssignPersons(assignPeople);
         }
     }
 
