@@ -2021,7 +2021,7 @@
                                     <w:szCs w:val="18"/>
                                     <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                 </w:rPr>
-                                <w:t>${sensitivityMust!""}</w:t>
+                                <w:t>Φ${sensitivityMust!""}</w:t>
                             </w:r>
                         </w:r>
                     </w:p>
@@ -2058,7 +2058,7 @@
                                     <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                     <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                 </w:rPr>
-                                <m:t>201g</m:t>
+                                <m:t>20lg</m:t>
                             </m:r>
                             <m:f>
                                 <m:fPr>
@@ -2218,7 +2218,7 @@
                                     <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                     <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                 </w:rPr>
-                                <m:t>201g</m:t>
+                                <m:t>20lg</m:t>
                             </m:r>
                             <m:f>
                                 <m:fPr>
@@ -2332,7 +2332,7 @@
                                     <w:rFonts w:hint="default" w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
                                     <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                                 </w:rPr>
-                                <m:t>=${sensitivity!""}db</m:t>
+                                <m:t>=${sensitivity!""}dB</m:t>
                             </m:r>
                         </m:oMath>
                         <#else>

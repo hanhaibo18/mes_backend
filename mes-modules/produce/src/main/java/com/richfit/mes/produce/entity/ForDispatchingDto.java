@@ -3,6 +3,8 @@ package com.richfit.mes.produce.entity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @ClassName: ForDispatchingDto.java
  * @Author: Hou XinYu
@@ -46,4 +48,9 @@ public class ForDispatchingDto extends QueryPageDto {
     private String optName;
     @ApiModelProperty(value = "产品名称", dataType = "String")
     private String productName;
+    @ApiModelProperty(value = "装炉编号", dataType = "String")
+    private Long id;
+    @ApiModelProperty(value = "材质", dataType = "String")
+    private String texture;
+
 }

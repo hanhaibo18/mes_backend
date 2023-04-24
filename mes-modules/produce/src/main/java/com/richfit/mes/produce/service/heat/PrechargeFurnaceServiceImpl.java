@@ -56,6 +56,38 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }
     }
 
+    /**
+     *
+     * @param assignList
+     * @param tempWork
+     * @param texture   材质
+     * @param type  1 去氢装炉    2 正火装炉
+     */
+    @Override
+    public void furnaceChargingHot(List<Assign> assignList, String tempWork,String texture,String type) {
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要有装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = new PrechargeFurnace();
+        prechargeFurnace.setTempWork(tempWork);
+        prechargeFurnace.setOptName(optNames(assignList));
+        prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
+        prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
+        prechargeFurnace.setTexture(texture);
+        prechargeFurnace.setRecordStatus("1");
+        this.save(prechargeFurnace);
+        for (Assign assign : assignList) {
+            //跟单工序添加装炉id
+            TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            if(type.equals("1")){
+                trackItem.setNormalizingFurnaceId(prechargeFurnace.getId());
+            }else if(type.equals("2")){
+                trackItem.setDehydroFurnaceId(prechargeFurnace.getId());
+            }
+            trackItemService.updateById(trackItem);
+        }
+    }
+
     @Override
     public List<Assign> queryTrackItem(Long id) {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
@@ -85,6 +117,39 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         return prechargeFurnace;
     }
 
+    /**
+     *
+     * @param assignList
+     * @param type 1 去氢装炉    2 正火装炉
+     * @return
+     */
+    @Override
+    public PrechargeFurnace addTrackItemHot(List<Assign> assignList,String type) {
+        //预装炉未开工状态
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
+        if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("只能添加未开工的预装炉的工序", ResultCode.FAILED);
+        }
+        for (Assign assign : assignList) {
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id", assign.getTiId());
+            //跟单工序添加装炉id
+            TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            if(type.equals("1")){
+                trackItem.setNormalizingFurnaceId(prechargeFurnace.getId());
+            }else if(type.equals("2")){
+                trackItem.setDehydroFurnaceId(prechargeFurnace.getId());
+            }
+            trackItemService.update(updateWrapper);
+        }
+        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+
+        this.updateById(prechargeFurnace);
+        return prechargeFurnace;
+    }
     @Override
     public PrechargeFurnace deleteTrackItem(List<Assign> assignList) {
         //预装炉未开工状态

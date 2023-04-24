@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -28,6 +29,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.LineStoreService;
+import com.richfit.mes.produce.service.StoreAttachRelService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -85,6 +87,8 @@ public class LineStoreController extends BaseController {
 
     @Autowired
     private ActionService actionService;
+    @Autowired
+    private StoreAttachRelService storeAttachRelService;
 
     @ApiOperation(value = "获取订单数量和剩余数量", notes = "获取订单数量和剩余数量")
     @PostMapping("/get_order_surplusNum")
@@ -185,9 +189,12 @@ public class LineStoreController extends BaseController {
             }
             //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
             // 则会将0给省略掉，所以换成用String，将0截取出来然后在拼接到开始编号前面
-            startNoOld = Integer.valueOf(startNo);
-            endNoOld = Integer.valueOf(endNo);
-
+            if(startNo != null){
+                startNoOld = Integer.valueOf(startNo);
+            }
+            if(startNo != null){
+                endNoOld = Integer.valueOf(endNo);
+            }
 //            String[] split = startNo.split("");
 //            List<String> strings = Arrays.asList(split);
             //判断第一位是不是0，如果不是直接跳出
@@ -242,7 +249,8 @@ public class LineStoreController extends BaseController {
     @ApiOperation(value = "修改入库信息", notes = "修改入库信息")
     @OperationLog(actionType = "1", actionItem = "3", argType = LINE_STORE)
     @PutMapping("/line_store")
-    public CommonResult<LineStore> updateLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore) {
+    public CommonResult<LineStore> updateLineStore(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore,
+                                                   @ApiParam(value = "所选分公司") @RequestParam String branchCode) {
         if (StringUtils.isNullOrEmpty(lineStore.getWorkblankNo())) {
             return CommonResult.failed(WORKBLANK_NULL_MESSAGE);
         } else if (StringUtils.isNullOrEmpty(lineStore.getDrawingNo())) {
@@ -257,7 +265,9 @@ public class LineStoreController extends BaseController {
             boolean bool = false;
 
             bool = lineStoreService.updateById(lineStore);
-
+            if(CollectionUtils.isNotEmpty(lineStore.getFileList())){
+                storeAttachRelService.updateStoreFile(lineStore.getId(), branchCode, lineStore.getFileList());
+            }
             if (bool) {
                 return CommonResult.success(lineStore, SUCCESS_MESSAGE);
             } else {

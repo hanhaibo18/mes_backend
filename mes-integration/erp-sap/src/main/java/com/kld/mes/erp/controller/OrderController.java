@@ -1,5 +1,7 @@
 package com.kld.mes.erp.controller;
 
+import com.kld.mes.erp.entity.order.creat.Zc80Ppif032SI;
+import com.kld.mes.erp.entity.order.creat.Zc80Ppif032SO;
 import com.kld.mes.erp.service.OrderService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Order;
@@ -9,10 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -50,5 +49,12 @@ public class OrderController {
                                                       @ApiParam(value = "控制者") @RequestParam(required = false) String controller) throws Exception {
 
         return CommonResult.success(orderService.getErpCode(erpCode, selectDate, controller, orderNo));
+    }
+
+
+    @ApiOperation(value = "创建订单", notes = "创建订单")
+    @PostMapping("/creat")
+    public CommonResult<List<Zc80Ppif032SO>> creat(@ApiParam(value = "订单信息") @RequestBody List<Zc80Ppif032SI> zc80Ppif032SIList) throws Exception {
+        return CommonResult.success(orderService.creat(zc80Ppif032SIList));
     }
 }

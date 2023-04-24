@@ -268,10 +268,10 @@ public class Assign extends BaseEntity<Assign> {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "正火装炉id", dataType = "String")
-    private String normalizingFurnaceId;
+    private Long normalizingFurnaceId;
     @TableField(exist = false)
     @ApiModelProperty(value = "去氢装炉id", dataType = "String")
-    private String dehydroFurnaceId;
+    private Long dehydroFurnaceId;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺信息")
@@ -282,6 +282,10 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "派工班组list")
     private List<String> siteList;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "质检人")
+    private String qualityCheckBy;
 
     public String getUserId() {
         return userId;

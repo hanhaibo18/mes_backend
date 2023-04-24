@@ -16,6 +16,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
@@ -521,18 +522,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         try {
             Assign assign = trackAssignService.getById(id);
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //新的产品编号
-            String produceNoDesc =  trackItem.getDrawingNo() + " " + productNo;
-            //校验产品编码是否重复
-            QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("product_no", produceNoDesc);
-            queryWrapper.eq("branch_code", branchCode);
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            queryWrapper.ne("id", trackItem.getFlowId());
-            List<TrackFlow> trackFlowList = trackHeadFlowService.list(queryWrapper);
-            if (trackFlowList.size() > 0) {
-                throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
-            }
+            String produceNoDesc =  productNo.replace(trackHead.getDrawingNo(), "").trim();
             //校验单个生产流程的可以更改
             QueryWrapper<TrackFlow> queryWrapperFlow = new QueryWrapper<>();
             queryWrapperFlow.eq("track_head_id", trackItem.getTrackHeadId());
@@ -543,6 +535,17 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
                 log.error(e.getMessage());
                 throw new GlobalException("异常提示跟单数据异常出现多个生产流程", ResultCode.FAILED);
             }
+            //校验产品编码是否重复
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("product_no", produceNoDesc);
+            queryWrapper.eq("branch_code", branchCode);
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.ne("id", trackItem.getTrackHeadId());
+            DrawingNoUtil.queryEq(queryWrapper,"drawing_no",trackHead.getDrawingNo());
+            List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
+            if (trackHeadList.size() > 0) {
+                throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
+            }
             //修改跟单、flow、item、探伤记录信息
             //旧的产品编号
             String produceNoDescOld =  trackFlow.getProductNo();
@@ -551,7 +554,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             trackHeadFlowService.updateById(trackFlow);
             //修改跟单数据
             UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
-            trackHeadUpdateWrapper.set("product_no",productNo)
+            trackHeadUpdateWrapper.set("product_no",produceNoDesc)
                     .set("product_no_desc",produceNoDesc)
                     .eq("id",trackItem.getTrackHeadId());
             trackHeadService.update(trackHeadUpdateWrapper);
