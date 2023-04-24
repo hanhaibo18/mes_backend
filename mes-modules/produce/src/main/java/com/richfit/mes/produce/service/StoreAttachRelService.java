@@ -14,4 +14,6 @@ public interface StoreAttachRelService extends IService<StoreAttachRel> {
     public boolean batchSaveStoreFile(String storeId, String branchCode, List<String> fileIds);
     public boolean batchSaveStoreFileNew(String storeId, String branchCode, List<StoreAttachRel> fileList);
 
+    //更新料单资料文件
+    boolean updateStoreFile(String storeId, String branchCode, List<StoreAttachRel> fileList);
 }
