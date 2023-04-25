@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.utils;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import org.apache.commons.lang3.StringUtils;
@@ -63,6 +64,9 @@ public class Utils {
      */
     public static String productNoContinuous(String productNo) {
         String productNoContinuous = "";
+        if (StrUtil.isBlank(productNo)) {
+            return null;
+        }
         String[] arr = productNo.split(",");
         Arrays.sort(arr);
         Map<String, List<String>> grouping = grouping(arr);
