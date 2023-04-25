@@ -230,7 +230,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         List<String> tenantIdList = productList.stream().map(Product::getTenantId).collect(Collectors.toList());
         // 查询所有的租户信息
-        Map<String, Tenant> tenantMap = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER).getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
+        Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
         List<String> erpCodeList = convertInput(tenantIdList, tenantMap);
         Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product, (value1, value2) -> value2));
         if (CollectionUtils.isNotEmpty(erpCodeList)) {

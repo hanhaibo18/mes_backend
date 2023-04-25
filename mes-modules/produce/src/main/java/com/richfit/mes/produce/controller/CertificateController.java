@@ -80,8 +80,6 @@ public class CertificateController {
         } else {
             //检查当前工序之前有没有未完成的工序
             this.checkBefore(certificate);
-            //重写拼接产品编号
-            certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
             certificateService.saveCertificate(certificate);
             return CommonResult.success(certificate);
         }

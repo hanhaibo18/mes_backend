@@ -2297,7 +2297,7 @@
                                     <w:sz w:val="18" />
                                     <w:szCs w:val="18" />
                                 </w:rPr>
-                                <w:t>${acceptanceCriteria!""}</w:t>
+                                <w:t><#if acceptanceCriteria??>${acceptanceCriteria?html}</#if></w:t>
                             </w:r>
                         </w:p>
                     </w:tc>

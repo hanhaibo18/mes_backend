@@ -1986,7 +1986,7 @@
                                 <w:szCs w:val="18"/>
                                 <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
                             </w:rPr>
-                            <w:t>${acceptanceCriteria!""}</w:t>
+                            <w:t><#if acceptanceCriteria??>${acceptanceCriteria?html}</#if></w:t>
                         </w:r>
                     </w:p>
                 </w:tc>

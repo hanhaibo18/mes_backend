@@ -83,4 +83,9 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     public CommonResult<List<Tenant>> queryTenantList(String header) {
         return null;
     }
+
+    @Override
+    public CommonResult<List<Tenant>> queryTenantAllList() {
+        return null;
+    }
 }
