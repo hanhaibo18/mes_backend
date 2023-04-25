@@ -526,6 +526,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (0 == state) {
             completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
             forgControlRecordList = forgControlRecordService.queryForgControlRecordCacheByItemId(tiId);
+            List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("2")).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(barForgeInfo)){
+                queryWorkingTimeVo.setBarForge(barForgeInfo.get(0).getBarForge());
+            }
+            List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(remarkInfo)){
+                queryWorkingTimeVo.setBarForge(remarkInfo.get(0).getRemark());
+            }
+            forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
             layingOff = layingOffService.queryLayingOffCacheByItemId(tiId);
         } else {
             completeList = this.list(queryWrapper);
