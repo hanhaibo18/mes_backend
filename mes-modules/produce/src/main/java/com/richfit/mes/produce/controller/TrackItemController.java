@@ -26,10 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -176,10 +173,17 @@ public class TrackItemController extends BaseController {
         if (!StringUtils.isNullOrEmpty(optVer)) {
             queryWrapper.like("opt_ver", optVer);
         }
-        queryWrapper.orderByAsc("sequence_order_by");
+        queryWrapper.orderByDesc("opt_sequence");
         List<TrackItem> list = trackItemService.list(queryWrapper);
         //去重操作(工序号+工序名 都一样认为重复)
         ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
+        //添加工序列表排序
+        Collections.sort(collect, new Comparator<TrackItem>() {
+            @Override
+            public int compare(TrackItem o1, TrackItem o2) {
+                return o1.getOptSequence() - o2.getOptSequence();
+            }
+        });
         return CommonResult.success(collect, SUCCESS_MESSAGE);
     }
 

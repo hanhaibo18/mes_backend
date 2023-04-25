@@ -257,6 +257,7 @@ public class TrackCheckController extends BaseController {
 
             }
             queryWrapper.and(wrapper -> wrapper.eq("track.is_show", "1").or().isNull("track.is_show"));
+            queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
             //增加工序过滤
 //            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             OrderUtil.query(queryWrapper, orderCol, order);
@@ -740,6 +741,7 @@ public class TrackCheckController extends BaseController {
             //调用TrackHeadService 获取图号
             TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
             trackCheck.setDrawingNo(trackHead.getDrawingNo());
+            trackCheck.setRuleName(rules.getData().getStateName());
             if (!StringUtils.isNullOrEmpty(trackCheck.getId())) {
                 trackCheck.setModifyTime(new Date());
                 trackCheckService.updateById(trackCheck);

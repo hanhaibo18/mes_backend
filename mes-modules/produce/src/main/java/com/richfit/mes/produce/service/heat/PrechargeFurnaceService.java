@@ -43,6 +43,8 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      **/
     public PrechargeFurnace addTrackItem(List<Assign> assignList);
 
+    PrechargeFurnace addTrackItemHot(List<Assign> assignList, String type);
+
     /**
      * 功能描述:装炉跟单工序删除
      *

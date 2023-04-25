@@ -151,6 +151,13 @@ public class PrechargeFurnaceController extends BaseController {
         return CommonResult.success(prechargeFurnaceService.addTrackItem(assignList), "更新成功");
     }
 
+    @ApiOperation(value = "装炉跟单工序添加(热工)", tags = "装炉跟单工序添加(热工)")
+    @PostMapping("/add/track/item_hot")
+    public CommonResult addTrackItemHot(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList,
+                                        @ApiParam(value = "装炉类型  1 去氢装炉    2 正火装炉", required = true) @RequestParam String type) {
+        return CommonResult.success(prechargeFurnaceService.addTrackItemHot(assignList,type), "更新成功");
+    }
+
     @ApiOperation(value = "装炉跟单工序删除", tags = "装炉跟单工序删除")
     @PostMapping("/delete/track/item")
     public CommonResult deleteTrackItem(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {

@@ -114,6 +114,10 @@ public class InspectionPower extends BaseEntity<InspectionPower> {
     private String backRemark;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "探伤审核状态（导出中文显示）")
+    private String auditStatusExport;
+
+    @TableField(exist = false)
     @ApiModelProperty(value = "委托单状态导出展示", dataType = "String")
     private String statusShow;
     @TableField(exist = false)

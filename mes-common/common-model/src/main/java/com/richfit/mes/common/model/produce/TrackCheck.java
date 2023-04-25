@@ -101,8 +101,11 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     /**
      * 处理意见
      */
-    @ApiModelProperty(value = "处理意见", dataType = "String")
+    @ApiModelProperty(value = "质检结果ID", dataType = "String")
     private String remark;
+
+    @ApiModelProperty(value = "质检结果")
+    private String ruleName;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "质检人", dataType = "String")

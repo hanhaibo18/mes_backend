@@ -21,6 +21,7 @@ import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
+import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -558,6 +559,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         assignPerson.setUserName(startDoingUser.getEmplName());
         assignPerson.setRatioHours(startDoingUser.getRatioHours());
         assignPeople.add(assignPerson);
+        assign.setAssignPersons(assignPeople);
     }
 
     //热工查询初始报工人员列表
@@ -792,7 +794,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //产品对应工序
         for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
             List<TrackItem> collect = list.stream().filter(trackItem ->
-                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && trackItem.getOptName().equals(outsourceDto.getOptName()) && trackItem.getIsCurrent() == 1
+                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && OptNameUtil.optName(trackItem.getOptName()).equals(OptNameUtil.optName(outsourceDto.getOptName())) && trackItem.getIsCurrent() == 1
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
