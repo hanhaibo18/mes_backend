@@ -26,6 +26,7 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -401,6 +402,24 @@ public class ProductController extends BaseController {
     @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料(订单同步校验用)")
     @GetMapping("/selectOrderProduct")
     public List<Product> selectOrderProduct(String materialNo, String drawingNo) {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
+        if (!StringUtils.isNullOrEmpty(materialNo)) {
+            queryWrapper.eq("material_no", materialNo);
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawingNo);
+        }
+        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        }
+        queryWrapper.eq("material_type", "3");
+        return productService.list(queryWrapper);
+    }
+
+    @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料(订单同步校验用)")
+    @GetMapping("/selectOrderProduct/inner")
+    @Inner
+    public List<Product> selectOrderProductInner(String materialNo, String drawingNo) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.eq("material_no", materialNo);

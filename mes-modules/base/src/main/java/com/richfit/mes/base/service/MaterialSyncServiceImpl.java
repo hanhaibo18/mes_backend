@@ -111,7 +111,7 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
      * @return: CommonResult<Boolean>
      **/
     @Override
-    @Scheduled(cron = "${time.material}")
+    @Scheduled(cron = "0 0/10 * * * ? ")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingProductSync() {
         if (execute) {
