@@ -19,6 +19,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.entity.ForgControlRecordDto;
 import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -1026,11 +1027,19 @@ public class TrackCompleteController extends BaseController {
     @ApiOperation(value = "锻造工序控制查询", notes = "锻造工序控制查询")
     @ApiImplicitParam(name = "itemId", value = "工序ID", required = true, dataType = "String", paramType = "query")
     @GetMapping("/page_forg_control_record")
-    public CommonResult<IPage<ForgControlRecord>> pageForgControlRecord(String itemId, String orderCol, String order, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
+    public CommonResult<ForgControlRecordDto> pageForgControlRecord(String itemId, String orderCol, String order, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
         QueryWrapper<ForgControlRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id", itemId);
+        queryWrapper.eq("item_id", itemId).eq("type", 1);
         OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(forgControlRecordService.page(new Page<>(page, limit), queryWrapper));
+        ForgControlRecordDto forgControlRecordDto = new ForgControlRecordDto();
+        forgControlRecordDto.setIPage(forgControlRecordService.page(new Page<>(page, limit), queryWrapper));
+        QueryWrapper<ForgControlRecord> barForgeQueryWrapper = new QueryWrapper<>();
+        barForgeQueryWrapper.eq("item_id", itemId).eq("type", 2);
+        forgControlRecordDto.setBarForge(forgControlRecordService.getOne(barForgeQueryWrapper) == null ? null : forgControlRecordService.getOne(barForgeQueryWrapper).getBarForge());
+        QueryWrapper<ForgControlRecord> remarkQueryWrapper = new QueryWrapper<>();
+        remarkQueryWrapper.eq("item_id", itemId).eq("type", 3);
+        forgControlRecordDto.setRemark(forgControlRecordService.getOne(remarkQueryWrapper) == null ? null : forgControlRecordService.getOne(remarkQueryWrapper).getRemark());
+        return CommonResult.success(forgControlRecordDto);
     }
 
     @ApiOperation(value = "锻造工序控制修改", notes = "锻造工序控制修改")

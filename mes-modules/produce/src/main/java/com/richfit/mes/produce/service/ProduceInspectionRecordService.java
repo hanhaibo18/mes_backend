@@ -1806,8 +1806,9 @@ public class ProduceInspectionRecordService {
             queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
         }
         List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
-        TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+
         for (InspectionPower inspectionPower : list) {
+            TenantUserVo data = systemServiceClient.getUserById(inspectionPower.getConsignor()).getData();
             if (inspectionPower.getStatus() == 0) {
                 inspectionPower.setStatusShow("待委托");
             }
@@ -1818,7 +1819,6 @@ public class ProduceInspectionRecordService {
                 inspectionPower.setStatusShow("驳回");
             }
             inspectionPower.setConsignor(data.getEmplName());
-            inspectionPower.setComeFromDepart(data.getBelongOrgId());
             if ("0".equals(inspectionPower.getIsDoing())) {
                 inspectionPower.setIsDoing("未开工");
             }
@@ -1840,10 +1840,6 @@ public class ProduceInspectionRecordService {
             if (1==inspectionPower.getAuditStatus())  {
                 inspectionPower.setAuditStatusExport("审核通过");
             }
-            if (2==inspectionPower.getAuditStatus())  {
-                inspectionPower.setAuditStatusExport("审核拒绝");
-            }
-
             String itemId = inspectionPower.getItemId();
             String headId = inspectionPower.getHeadId();
             if (!StringUtils.isEmpty(itemId)) {
@@ -1853,7 +1849,31 @@ public class ProduceInspectionRecordService {
                 inspectionPower.setOptNo(trackItem.getOptNo());
                 inspectionPower.setOptName(trackItem.getOptName());
                 inspectionPower.setProductNo(trackItem.getProductNo());
-                inspectionPower.setTrackType(trackHead.getTrackType());
+                if ("0".equals(trackHead.getTrackType()))  {
+                    inspectionPower.setTrackType("单件");
+                }
+                if ("1".equals(trackHead.getTrackType()))  {
+                    inspectionPower.setTrackType("批次");
+                }
+            }
+            if(StringUtils.isEmpty(itemId) && !StringUtils.isEmpty(inspectionPower.getInspectRecordNo())){
+                QueryWrapper<ProduceItemInspectInfo> queryWrapper2 = new QueryWrapper<>();
+                queryWrapper2.eq("power_id", inspectionPower.getId())
+                        .eq("is_new", "1");
+                List<ProduceItemInspectInfo> list2 = produceItemInspectInfoService.list(queryWrapper2);
+                if(list2.size()>0){
+                    if (InspectionRecordTypeEnum.MT.getType().equals(inspectionPower.getInspTempType())) {
+                        inspectionPower.setProductNo(produceInspectionRecordMtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                    } else if (InspectionRecordTypeEnum.PT.getType().equals(inspectionPower.getInspTempType())) {
+                        inspectionPower.setProductNo(produceInspectionRecordPtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                    } else if (InspectionRecordTypeEnum.RT.getType().equals(inspectionPower.getInspTempType())) {
+                        inspectionPower.setProductNo(produceInspectionRecordRtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                    } else if (InspectionRecordTypeEnum.UT.getType().equals(inspectionPower.getInspTempType())) {
+                        inspectionPower.setProductNo(produceInspectionRecordUtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                    } else {
+                        throw new GlobalException(ResultCode.INVALID_ARGUMENTS.getMessage(), ResultCode.INVALID_ARGUMENTS);
+                    }
+                }
             }
         }
 
@@ -1861,9 +1881,9 @@ public class ProduceInspectionRecordService {
 
             String fileName = "委托单导出_" + DateUtil.format(DateUtil.date(), "YYYY-MM-dd") + ".xlsx";
 
-            String[] columnHeaders = {"委托单号", "状态","任务状态","审核状态", "检验结果","钻机号", "样品名称", "图号", "检测类型", "产品类型", "数量", "探伤站", "探伤类型","跟单号","工序号","工序名","产品编号","跟踪类型", "单重", "长度", "处数", "创建人","退回意见", "创建单位", "创建时间"};
+            String[] columnHeaders = {"委托单号","报告号","探伤记录号", "状态","任务状态","审核状态", "检验结果","钻机号", "样品名称", "图号", "检测类型", "产品类型", "数量", "探伤站", "探伤类型","跟单号","工序号","工序名","产品编号","跟踪类型", "单重", "长度", "处数", "创建人","退回意见", "创建单位", "创建时间"};
 
-            String[] fieldNames = {"orderNo", "statusShow","isDoing","auditStatusExport","flawDetection", "drilNo", "sampleName", "drawNo", "tempType","productType", "num", "inspectionDepart", "checkType","trackNo","optNo","optName","productNo","trackType","single", "length", "reviseNum", "consignor", "backRemark","comeFromDepart", "createTime"};
+            String[] fieldNames = {"orderNo","reportNo","inspectRecordNo", "statusShow","isDoing","auditStatusExport","flawDetection", "drilNo", "sampleName", "drawNo", "tempType","productType", "num", "inspectionDepart", "checkType","trackNo","optNo","optName","productNo","trackType","single", "length", "reviseNum", "consignor", "backRemark","branchCode", "createTime"};
 
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);

@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -35,10 +36,13 @@ public class TrackHeadUtil {
                 //单件装配批量根据数量拆分跟单数量
                 int number = trackHeadPublicDto.getNumber();
                 for (int i = 0; i < number; i++) {
+                    //避免引用类型
+                    TrackHeadPublicDto tpd = new TrackHeadPublicDto();
+                    tpd = JSON.parseObject(JSON.toJSONString(trackHeadPublicDto), TrackHeadPublicDto.class);
                     //流水号获取
-                    trackNo(trackHeadPublicDto, codeRuleService);
+                    trackNo(tpd, codeRuleService);
                     trackHeadPublicDto.setNumber(1);
-                    trackHeadList.add(trackHeadPublicDto);
+                    trackHeadList.add(tpd);
                 }
             } else {
                 //单件机加批量跟单会带入生成编码的物料数据列表，产品编码等信息

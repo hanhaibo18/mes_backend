@@ -465,7 +465,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             QueryWrapper<ForgControlRecord> queryWrapperForgControlRecord = new QueryWrapper<>();
             queryWrapperForgControlRecord.eq("item_id", completeDto.getTiId());
             forgControlRecordService.remove(queryWrapperForgControlRecord);
-
+            ForgControlRecord forgControlRecordBarInfo = new ForgControlRecord();
+            forgControlRecordBarInfo.setType("2");
+            forgControlRecordBarInfo.setBarForge(completeDto.getBarForge());
+            ForgControlRecord forgControlRecordRemark = new ForgControlRecord();
+            forgControlRecordRemark.setType("3");
+            forgControlRecordRemark.setRemark(completeDto.getForgeRemark());
+            completeDto.getForgControlRecordList().add(forgControlRecordRemark);
+            completeDto.getForgControlRecordList().add(forgControlRecordBarInfo);
             forgControlRecordService.saveOrUpdateBatch(completeDto.getForgControlRecordList());
         }
     }
@@ -526,6 +533,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (0 == state) {
             completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
             forgControlRecordList = forgControlRecordService.queryForgControlRecordCacheByItemId(tiId);
+            List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("2")).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(barForgeInfo)) {
+                queryWorkingTimeVo.setBarForge(barForgeInfo.get(0).getBarForge());
+            }
+            List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(remarkInfo)) {
+                queryWorkingTimeVo.setBarForge(remarkInfo.get(0).getRemark());
+            }
+            forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
             layingOff = layingOffService.queryLayingOffCacheByItemId(tiId);
         } else {
             completeList = this.list(queryWrapper);
@@ -559,6 +575,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         assignPerson.setUserName(startDoingUser.getEmplName());
         assignPerson.setRatioHours(startDoingUser.getRatioHours());
         assignPeople.add(assignPerson);
+        assign.setAssignPersons(assignPeople);
     }
 
     //热工查询初始报工人员列表

@@ -39,4 +39,8 @@ public class CompleteDto {
     private LayingOff layingOff;
     @ApiModelProperty(value = "锻造信息", dataType = "ForgControlRecord")
     private List<ForgControlRecord> forgControlRecordList;
+    @ApiModelProperty(value = "锻造试棒信息")
+    private String barForge;
+    @ApiModelProperty(value = "锻造备注信息")
+    private String ForgeRemark;
 }
