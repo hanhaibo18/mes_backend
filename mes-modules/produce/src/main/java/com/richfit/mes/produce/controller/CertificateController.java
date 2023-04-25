@@ -80,8 +80,6 @@ public class CertificateController {
         } else {
             //检查当前工序之前有没有未完成的工序
             this.checkBefore(certificate);
-            //重写拼接产品编号
-            certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
             certificateService.saveCertificate(certificate);
             return CommonResult.success(certificate);
         }
@@ -225,20 +223,20 @@ public class CertificateController {
             queryWrapper.eq("type", type);
         }
         if (!StringUtils.isNullOrEmpty(origin)) {
-            queryWrapper.eq("pc.cert_origin", origin);
+            queryWrapper.eq("cert_origin", origin);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
-            queryWrapper.like("pc.certificate_no", certificateNo);
+            queryWrapper.like("certificate_no", certificateNo);
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", productNo);
         }
         OrderUtil.query(queryWrapper, orderCol, order);
-        queryWrapper.eq("pc.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        queryWrapper.eq("pc.branch_code", branchCode);
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.eq("branch_code", branchCode);
         PageHelper.startPage(page, limit);
         List<Certificate> certificateList = certificateService.list(queryWrapper);
         PageInfo<Certificate> trackFlowPage = new PageInfo(certificateList);
