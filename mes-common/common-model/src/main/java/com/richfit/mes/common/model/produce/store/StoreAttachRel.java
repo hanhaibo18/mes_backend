@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce.store;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,6 +25,10 @@ public class StoreAttachRel extends BaseEntity<StoreAttachRel> {
     @ApiModelProperty(value = "分公司编码")
     private String branchCode;
 
-    @ApiModelProperty(value = " 上传的质量资料类型  0 合格证, 1 材料代用通知单, 2 钢锭化学成分表")
+    @ApiModelProperty(value = " 上传的质量资料类型 ")
     private String type;
+
+    @ApiModelProperty(value = " 文件名")
+    @TableField(exist = false)
+    private String fileName;
 }

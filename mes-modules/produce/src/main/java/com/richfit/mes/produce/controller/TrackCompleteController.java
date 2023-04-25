@@ -25,7 +25,6 @@ import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
-import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,7 +148,7 @@ public class TrackCompleteController extends BaseController {
                 //queryWrapper.apply("(complete_by ='" + user.getUserId() + "' || complete_by is null || complete_by ='' || user_id ='" + user.getUserId() + "' || user_id is null || user_id ='' )");
             }
             //增加工序过滤
-            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+//            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
                     if (order.equals("desc")) {

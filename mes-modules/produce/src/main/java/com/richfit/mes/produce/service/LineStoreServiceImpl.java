@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author: 王瑞
@@ -95,7 +96,24 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         LineStore lineStore = lineStoreMapper.selectById(id);
         QueryWrapper<StoreAttachRel> queryWrapper=new QueryWrapper<>();
         queryWrapper.eq("line_store_id",lineStore.getId());
+        //查询文件关联关系记录
         List<StoreAttachRel> list = storeAttachRelService.list(queryWrapper);
+        if(CollectionUtils.isNotEmpty(list)){
+            List<String> ids = list.stream().map(x -> x.getAttachmentId()).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(ids)){
+                //获取文件信息
+                List<Attachment> attachments = systemServiceClient.selectAttachmentsList(ids);
+                if (CollectionUtils.isNotEmpty(attachments)){
+                    //文件map
+                    Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+                    for (StoreAttachRel storeAttachRel : list) {
+                        storeAttachRel.setFileName(attachmentMap.get(storeAttachRel.getAttachmentId())==null?"":attachmentMap.get(storeAttachRel.getAttachmentId()).getAttachName());
+                    }
+                }
+            }
+        }
+
+
         //资料文件列表
         lineStore.setFileList(list);
         return lineStore;

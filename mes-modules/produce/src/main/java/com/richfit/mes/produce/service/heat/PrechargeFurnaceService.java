@@ -21,7 +21,7 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      **/
     public void furnaceCharging(List<Assign> assignList, String tempWork);
 
-    void furnaceChargingHot(List<Assign> assignList, String tempWork, String texture, String type);
+    void furnaceChargingHot(List<Assign> assignList, String texture, String type);
 
     /**
      * 功能描述:查询装炉跟单列表

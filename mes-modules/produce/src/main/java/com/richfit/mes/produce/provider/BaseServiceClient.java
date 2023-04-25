@@ -3,14 +3,12 @@ package com.richfit.mes.produce.provider;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -201,6 +199,9 @@ public interface BaseServiceClient {
      **/
     @GetMapping("/api/base/product/selectOrderProduct")
     List<Product> selectOrderProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo);
+
+    @GetMapping("/api/base/product/selectOrderProduct/inner")
+    List<Product> selectOrderProductInner(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping("/api/base/opt/queryOptByOptNames")
     List<Operatipon> queryOptByOptNames(@ApiParam(value = "工序字典名称") @RequestBody List<String> optNams,

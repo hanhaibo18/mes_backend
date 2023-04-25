@@ -175,6 +175,12 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public List<Product> selectOrderProductInner(String materialNo, String drawingNo, String header) {
+        return null;
+    }
+
+
     @GetMapping("/api/base/opt/queryOptByOptNames")
     @Override
     public List<Operatipon> queryOptByOptNames(List<String> optNams, String branchCode) {
