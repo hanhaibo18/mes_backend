@@ -117,7 +117,7 @@ public class ProductionBomController extends BaseController {
         QueryWrapper<ProductionBom> query = new QueryWrapper<>();
         DrawingNoUtil.queryEq(query, "drawing_no", productionBom.getDrawingNo());
         List<ProductionBom> result = productionBomService.list(query);
-        if (result != null && result.size() > 0) {
+        if (result != null && result.size() > 1) {
             return CommonResult.failed("相同版本的零部件图号已存在！");
         }
         productionBom.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
