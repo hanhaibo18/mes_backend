@@ -107,6 +107,14 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
                 queryWrapper.eq("item_id", completeDto.getTiId());
                 forgControlRecordCacheService.remove(queryWrapper);
 
+                ForgControlRecord forgControlRecordBarInfo = new ForgControlRecord();
+                forgControlRecordBarInfo.setType("2");
+                forgControlRecordBarInfo.setBarForge(completeDto.getBarForge());
+                ForgControlRecord forgControlRecordRemark = new ForgControlRecord();
+                forgControlRecordRemark.setType("3");
+                forgControlRecordRemark.setRemark(completeDto.getForgeRemark());
+                completeDto.getForgControlRecordList().add(forgControlRecordRemark);
+                completeDto.getForgControlRecordList().add(forgControlRecordBarInfo);
                 String jsonString = JSONObject.toJSONString(completeDto.getForgControlRecordList());
                 List<ForgControlRecordCache> forgControlRecordList = JSONArray.parseArray(jsonString, ForgControlRecordCache.class);
                 forgControlRecordCacheService.saveBatch(forgControlRecordList);
