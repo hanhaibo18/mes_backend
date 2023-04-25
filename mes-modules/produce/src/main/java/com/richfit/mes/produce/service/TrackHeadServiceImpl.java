@@ -36,6 +36,7 @@ import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardServic
 import com.richfit.mes.produce.utils.FilesUtil;
 import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
 import com.richfit.mes.produce.utils.TrackHeadUtil;
+import com.richfit.mes.produce.utils.Utils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -843,6 +844,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //添加跟单
             TrackHead newTrackHead = trackHeadData(trackHeadPublicDto, trackFlowList);
+            //重写拼接产品编号
+            newTrackHead.setProductNoContinuous(Utils.productNoContinuous(newTrackHead.getProductNo()));
             trackHeadMapper.insert(newTrackHead);
             trackHeadPublicDto.setId(newTrackHead.getId());
             //跟单创建模型
@@ -1442,11 +1445,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             (Page<TrackHead> page, QueryWrapper<TrackHead> query) {
         return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
     }
+
     @Override
     public IPage<TrackHead> selectTrackHeadCurrentRouterNew
             (Page<TrackHead> page, QueryWrapper<TrackHead> query) {
         return trackHeadMapper.selectTrackHeadCurrentRouterNew(page, query);
     }
+
     @Override
     public Integer queryTrackHeadList(String workPlanId) {
         return trackHeadMapper.selectTrackHeadNumber(workPlanId);
@@ -1627,6 +1632,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
         //更新原跟单
         TrackHead updateTrackHead = trackHeadData(trackHeadPublicDto, trackFlow);
+        //重写拼接产品编号
+        updateTrackHead.setProductNoContinuous(Utils.productNoContinuous(updateTrackHead.getProductNo()));
         trackHeadMapper.updateById(updateTrackHead);
         //添加新的跟单
         TrackHead trackHeadNew = trackHeadData(trackHeadPublicDto, trackFlowNew);
@@ -1636,6 +1643,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //更改为新值
         trackHeadNew.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         trackHeadNew.setTrackNo(trackNoNew);
+        //重写拼接产品编号
+        trackHeadNew.setProductNoContinuous(Utils.productNoContinuous(trackHeadNew.getProductNo()));
         trackHeadMapper.insert(trackHeadNew);
         //生产线迁移新跟单
         trackFlowMigrations(trackHeadNew.getId(), trackFlowNew);

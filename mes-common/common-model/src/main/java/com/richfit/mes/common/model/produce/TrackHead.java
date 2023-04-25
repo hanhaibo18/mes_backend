@@ -117,6 +117,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "产品编号")
     private String productNo;
 
+    @ApiModelProperty(value = "产品编号 连续的")
+    private String productNoContinuous;
+
     @ApiModelProperty(value = "产品编号描述")
     private String productNoDesc;
 
