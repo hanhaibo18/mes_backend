@@ -17,10 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -84,5 +81,11 @@ public class ProduceRequestNoteController extends BaseController {
     @Inner
     public List<RequestNoteDetail> queryRequestNoteDetailDetails(String materialNo, String requestNoteNo) {
         return requestNoteDetailService.queryRequestNoteDetailDetails(materialNo, requestNoteNo);
+    }
+
+    @ApiOperation(value = "根据勾选申请单上传到wms", notes = "根据勾选申请单上传到wms")
+    @PostMapping("/upload_request_note")
+    public CommonResult<Boolean> uploadRequestNote(@RequestBody List<String> ids) {
+        return requestNoteService.uploadRequestNote(ids);
     }
 }
