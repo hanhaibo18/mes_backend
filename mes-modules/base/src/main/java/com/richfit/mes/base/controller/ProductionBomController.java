@@ -113,6 +113,13 @@ public class ProductionBomController extends BaseController {
     @ApiImplicitParam(name = "productionBom", value = "产品Bom", required = true, dataType = "ProductionBom", paramType = "path")
     @PutMapping("/update_production_bom")
     public CommonResult<ProductionBom> updateProductBom(@RequestBody ProductionBom productionBom) {
+        //产品BOM修改，保证图号唯一
+        QueryWrapper<ProductionBom> query = new QueryWrapper<>();
+        DrawingNoUtil.queryEq(query, "drawing_no", productionBom.getDrawingNo());
+        List<ProductionBom> result = productionBomService.list(query);
+        if (result != null && result.size() > 1) {
+            return CommonResult.failed("相同版本的零部件图号已存在！");
+        }
         productionBom.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         boolean bool = productionBomService.updateById(productionBom);
         if (bool) {

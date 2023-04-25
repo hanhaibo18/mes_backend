@@ -2,15 +2,24 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.wms.ApplyLineList;
+import com.richfit.mes.common.model.wms.ApplyListUpload;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RequestNoteMapper;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -22,6 +31,12 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
 
     @Resource
     private RequestNoteDetailService requestNoteDetailService;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
+
+    @Resource
+    private RequestNoteMapper requestNoteMapper;
 
     @Resource
     private TrackHeadService trackHeadService;
@@ -73,5 +88,89 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
         } else {
             return false;
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> uploadRequestNote(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return CommonResult.failed("未勾选中数据");
+        }
+        List<RequestNote> requestNoteList = requestNoteMapper.selectBatchIds(ids);
+        List<String> idList = requestNoteList.stream().map(RequestNote::getId).collect(Collectors.toList());
+        List<String> trackHeadIdList = requestNoteList.stream().map(RequestNote::getTrackHeadId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(requestNoteList)) {
+            QueryWrapper<RequestNoteDetail> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("note_id", idList);
+            List<RequestNoteDetail> requestNoteDetailList = requestNoteDetailService.list(queryWrapper);
+            if (!CollectionUtils.isEmpty(requestNoteDetailList)) {
+                QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
+                trackHeadQueryWrapper.in("id", trackHeadIdList);
+                List<TrackHead> trackHeadList = trackHeadService.list(trackHeadQueryWrapper);
+                List<String> workNoList = trackHeadList.stream().map(TrackHead::getWorkNo).collect(Collectors.toList());
+                List<String> productionOrderList = trackHeadList.stream().map(TrackHead::getProductionOrder).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(trackHeadList)) {
+                    List<String> tenantIdList = requestNoteList.stream().map(RequestNote::getTenantId).collect(Collectors.toList());
+                    // 查询所有的租户信息
+                    Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
+                    List<String> erpCodeList = convertInput(tenantIdList, tenantMap);
+                    if(!CollectionUtils.isEmpty(tenantMap)) {
+                        int init = 0;
+                        List<ApplyListUpload> uploadList = new ArrayList<>();
+                        ApplyListUpload applyListUpload = new ApplyListUpload();
+                        for (RequestNote requestNote : requestNoteList) {
+                            applyListUpload.setId(requestNote.getId());
+                            applyListUpload.setApplyNum(requestNote.getRequestNoteNumber());
+                            applyListUpload.setWorkCode(erpCodeList.get(init));
+                            applyListUpload.setWorkshop(requestNote.getBranchCode());
+                            applyListUpload.setJobNo(workNoList.get(init));
+                            applyListUpload.setProdNum(productionOrderList.get(init));
+                            applyListUpload.setCreateBy(requestNote.getCreateBy());
+                            applyListUpload.setCreateTime(requestNote.getCreateTime());
+                            int num = 0;
+                            List<ApplyLineList> applyLineList = new ArrayList<>();
+                            ApplyLineList applyLine = new ApplyLineList();
+                            for (RequestNoteDetail requestNoteDetail : requestNoteDetailList) {
+                                if (requestNote.getNoteId().equals(requestNoteDetail.getId())) {
+                                    applyLine.setApplyId(requestNoteDetail.getNoteId());
+                                    applyLine.setId(requestNoteDetail.getRequestNoteNumber());
+                                    applyLine.setLineNum(num + 1);
+                                    applyLine.setMaterialNum(requestNoteDetail.getMaterialNo());
+                                    applyLine.setMaterialDesc(requestNoteDetail.getMaterialName());
+                                    applyLine.setUnit(requestNoteDetail.getUnit());
+                                    applyLine.setQuantity(requestNoteDetail.getNumber());
+                                    applyLine.setCrucialFlag(requestNoteDetail.getIsKeyPart());
+                                    applyLineList.add(applyLine);
+                                    num ++;
+                                }
+                            }
+                            applyListUpload.setLineList(applyLineList);
+                            uploadList.add(applyListUpload);
+                            init ++;
+                        }
+                        return CommonResult.success(null,"申请单上传wms成功");
+                    }
+                }
+            }
+        }
+        return CommonResult.failed("申请单上传失败，请稍后再试");
+    }
+
+
+    /**
+     * 转换
+     * @param list
+     * @param tenantMap
+     * @return
+     */
+    private static List<String> convertInput(List<String> list, Map<String, Tenant> tenantMap) {
+        int init = 0;
+        for (String tenantId: list) {
+            if (tenantMap.containsKey(tenantId)) {
+                list.set(init, tenantMap.get(tenantId).getTenantErpCode());
+            }
+            init ++;
+        }
+        return list;
     }
 }
