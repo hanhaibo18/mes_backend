@@ -68,7 +68,7 @@ public class CertificateController {
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
-    public CommonResult<Certificate> addCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate) throws Exception {
+    public CommonResult<Certificate> autoCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate) throws Exception {
         if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
             return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
         }
@@ -82,6 +82,25 @@ public class CertificateController {
             this.checkBefore(certificate);
             //重写拼接产品编号
             certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
+            certificateService.saveCertificate(certificate);
+            return CommonResult.success(certificate);
+        }
+    }
+
+    @ApiOperation(value = "生成合格证", notes = "生成合格证")
+    @PostMapping("/certificate")
+    public CommonResult<Certificate> addCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate) throws Exception {
+        if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
+            return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
+        }
+        if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
+            return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
+        }
+        if (certificateService.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
+            return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
+        } else {
+            //检查当前工序之前有没有未完成的工序
+            this.checkBefore(certificate);
             certificateService.saveCertificate(certificate);
             return CommonResult.success(certificate);
         }

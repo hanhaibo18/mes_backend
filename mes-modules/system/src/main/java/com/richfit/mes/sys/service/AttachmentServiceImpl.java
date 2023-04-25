@@ -105,15 +105,14 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
 
         String group = attachments.get(0).getGroupName();
 
-        for (Attachment attachment : attachments) {
-            filePaths.add(attachment.getFastFileId());
-            if (StringUtils.isEmpty(attachment.getAttachName())) {
-                fileNames.add(attachment.getId() + "." + attachment.getAttachType());
+        for (int i = 0; i < attachments.size(); i++) {
+            filePaths.add(attachments.get(i).getFastFileId());
+            if (StringUtils.isEmpty(attachments.get(i).getAttachName())) {
+                fileNames.add((i + 1) + "、" + attachments.get(i).getId() + "." + attachments.get(i).getAttachType());
             } else {
-                fileNames.add(attachment.getAttachName() + "." + attachment.getAttachType());
+                fileNames.add((i + 1) + "、" + attachments.get(i).getAttachName() + "." + attachments.get(i).getAttachType());
             }
         }
-
         return fastDfsService.download(filePaths, fileNames, zipName, group);
     }
 

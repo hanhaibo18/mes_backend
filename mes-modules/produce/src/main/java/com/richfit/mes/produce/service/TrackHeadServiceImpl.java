@@ -825,7 +825,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             queryWrapper.eq("tenant_id", trackHeadPublicDto.getTenantId());
             List<TrackHead> trackHeads = trackHeadMapper.selectList(queryWrapper);
             if (!trackHeads.isEmpty()) {
-                throw new GlobalException("跟单号码已存在！请联系管理员处理流程码问题！", ResultCode.FAILED);
+                throw new GlobalException(trackHeadPublicDto.getTrackNo() + "跟单号码已存在！请联系管理员处理流程码问题！", ResultCode.FAILED);
             }
 
             //封装跟单信息数据
