@@ -11,21 +11,22 @@ import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
 import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
+import com.richfit.mes.produce.utils.Code;
+import com.richfit.mes.produce.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -70,7 +71,65 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
+    public boolean autoCertificate(TrackHead trackHead) throws Exception {
+        //装配车间
+        if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
+            return true;
+        }
+        TenantUserDetails user = SecurityUtils.getCurrentUser();
+        Certificate certificate = new Certificate();
+        certificate.setBranchCode(trackHead.getBranchCode());
+        certificate.setCertOrigin("0");
+        certificate.setCertificateNo(Code.valueOnUpdate("hege_no", trackHead.getTenantId(), trackHead.getBranchCode(), codeRuleService));
+        certificate.setCheckName(user.getUserId());
+        certificate.setCheckTime(new Date());
+        certificate.setDrawingNo(trackHead.getDrawingNo());
+        certificate.setMaterialNo(trackHead.getMaterialNo());
+        certificate.setNextOpt("/");
+        //裝配开具并生产入库
+        certificate.setNextOptWork("BOMCO_SC");
+        certificate.setNumber(trackHead.getNumber());
+
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        queryWrapper.eq("track_head_id", trackHead.getId());
+        queryWrapper.orderByDesc("opt_sequence");
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        //去重操作(工序号+工序名 都一样认为重复)
+        ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
+        //添加工序列表排序
+        Collections.sort(collect, new Comparator<TrackItem>() {
+            @Override
+            public int compare(TrackItem o1, TrackItem o2) {
+                return o1.getOptSequence() - o2.getOptSequence();
+            }
+        });
+        TrackItem trackItem = collect.get(collect.size() - 1);
+        certificate.setOptName(trackItem.getOptNo() + " " + trackItem.getOptName());
+        certificate.setProductName(trackHead.getProductName());
+        certificate.setProductNo(trackHead.getProductNo());
+        certificate.setProductNoContinuous(trackHead.getProductNoContinuous());
+        certificate.setProductNoDesc(trackHead.getProductNoDesc());
+        certificate.setProductionOrder(trackHead.getProductionOrder());
+        certificate.setReplaceMaterial(trackHead.getReplaceMaterial());
+        certificate.setTenantId(trackHead.getTenantId());
+        certificate.setTestBarNumber(trackHead.getTestBarNumber());
+        certificate.setTestBarType(trackHead.getTestBarType());
+        certificate.setTexture(trackHead.getTexture());
+        List<TrackCertificate> trackCertificates = new ArrayList<>();
+        TrackCertificate trackCertificate = new TrackCertificate();
+        trackCertificate.setThId(trackHead.getId());
+        trackCertificates.add(trackCertificate);
+        certificate.setTrackCertificates(trackCertificates);
+        certificate.setType("1");
+        certificate.setWeight(trackHead.getWeight());
+        certificate.setWorkNo(trackHead.getWorkNo());
+        return saveCertificate(certificate);
+    }
+
+    @Override
     public boolean saveCertificate(Certificate certificate) {
+        //重写拼接产品编号
+        certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
         certificate.setIsPush("0");
         //1 保存合格证
@@ -82,9 +141,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
         //2 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
         additionalBsns(certificate);
-
         if (bool) {
-
             //3 更新跟单或工序对应的合格证编号
             certificate.getTrackCertificates().stream().forEach(track -> {
                 //工序合格证
@@ -158,8 +215,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                 track.setCertificateId(certificate.getId());
                 boolean isNotHave = true;
                 for (TrackCertificate trackCertificate : result) {
-                    if (trackCertificate.getTiId().equals(track.getTiId())
-                            && trackCertificate.getThId().equals(track.getThId())) {
+                    if (trackCertificate.getTiId().equals(track.getTiId()) && trackCertificate.getThId().equals(track.getThId())) {
                         isNotHave = false;
                         break;
                     }
@@ -182,8 +238,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             List<String> delete = result.stream().filter(track -> {
                 boolean isHave = false;
                 for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
-                    if (trackCertificate.getTiId().equals(track.getTiId())
-                            && trackCertificate.getThId().equals(track.getThId())) {
+                    if (trackCertificate.getTiId().equals(track.getTiId()) && trackCertificate.getThId().equals(track.getThId())) {
                         isHave = true;
                         break;
                     }
