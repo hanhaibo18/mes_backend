@@ -992,8 +992,9 @@ public class TrackHeadController extends BaseController {
     @PostMapping("/data_processing")
     public CommonResult dataProcessing(@ApiParam(value = "跟单信息列表", required = true) @RequestBody List<TrackHead> trackHeads) {
         for (TrackHead trackHead : trackHeads) {
-            planService.planData(trackHead.getWorkPlanId());
-            orderService.orderDataTrackHead(trackHead);
+//            planService.planData(trackHead.getWorkPlanId());
+//            orderService.orderDataTrackHead(trackHead);
+            trackHeadService.trackHeadData(trackHead.getId());
         }
         return CommonResult.success("操作成功", TRACK_HEAD_SUCCESS_MESSAGE);
     }
