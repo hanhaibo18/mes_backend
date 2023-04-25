@@ -1806,8 +1806,9 @@ public class ProduceInspectionRecordService {
             queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
         }
         List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
-        TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+
         for (InspectionPower inspectionPower : list) {
+            TenantUserVo data = systemServiceClient.getUserById(inspectionPower.getConsignor()).getData();
             if (inspectionPower.getStatus() == 0) {
                 inspectionPower.setStatusShow("待委托");
             }
@@ -1818,7 +1819,6 @@ public class ProduceInspectionRecordService {
                 inspectionPower.setStatusShow("驳回");
             }
             inspectionPower.setConsignor(data.getEmplName());
-            inspectionPower.setComeFromDepart(data.getBelongOrgId());
             if ("0".equals(inspectionPower.getIsDoing())) {
                 inspectionPower.setIsDoing("未开工");
             }
@@ -1883,7 +1883,7 @@ public class ProduceInspectionRecordService {
 
             String[] columnHeaders = {"委托单号","报告号","探伤记录号", "状态","任务状态","审核状态", "检验结果","钻机号", "样品名称", "图号", "检测类型", "产品类型", "数量", "探伤站", "探伤类型","跟单号","工序号","工序名","产品编号","跟踪类型", "单重", "长度", "处数", "创建人","退回意见", "创建单位", "创建时间"};
 
-            String[] fieldNames = {"orderNo","reportNo","inspectRecordNo", "statusShow","isDoing","auditStatusExport","flawDetection", "drilNo", "sampleName", "drawNo", "tempType","productType", "num", "inspectionDepart", "checkType","trackNo","optNo","optName","productNo","trackType","single", "length", "reviseNum", "consignor", "backRemark","comeFromDepart", "createTime"};
+            String[] fieldNames = {"orderNo","reportNo","inspectRecordNo", "statusShow","isDoing","auditStatusExport","flawDetection", "drilNo", "sampleName", "drawNo", "tempType","productType", "num", "inspectionDepart", "checkType","trackNo","optNo","optName","productNo","trackType","single", "length", "reviseNum", "consignor", "backRemark","branchCode", "createTime"};
 
             //export
             ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, rsp);
