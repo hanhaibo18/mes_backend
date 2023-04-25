@@ -109,7 +109,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
      * @return: CommonResult<Boolean>
      **/
     @Override
-    @Scheduled(cron = "${time.order}")
+    @Scheduled(cron = "0 0/10 * * * ? ")
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingOrderSync() {
         if (execute) {
@@ -202,7 +202,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         log.setController(controller);
         log.setBranchCode(order.getBranchCode());
         log.setTenantId(order.getTenantId());
-        List<Product> list = baseServiceClient.selectOrderProduct(order.getMaterialCode(), null);
+        List<Product> list = baseServiceClient.selectOrderProductInner(order.getMaterialCode(), "", SecurityConstants.FROM_INNER);
         if (CollectionUtils.isEmpty(list)) {
             log.setOpinion("未查询到成品物料信息,请补全成品物料");
             orderLogService.save(log);
