@@ -233,7 +233,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 .eq("work_plan_no", projectBom.getWorkPlanNo())
                 .eq("grade", "H").eq("tenant_id", projectBom.getTenantId())
                 .eq("branch_code", projectBom.getBranchCode());
-        ProjectBom mainBom = this.getOne(queryWrapper);
+        ProjectBom mainBom = this.getOne(mainBomWrapper);
         if (mainBom != null) {
             List<TrackAssembly> addList = new ArrayList<>();
             //查找该bom绑定的跟单
