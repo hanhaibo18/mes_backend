@@ -1840,13 +1840,6 @@ public class ProduceInspectionRecordService {
             if (1==inspectionPower.getAuditStatus())  {
                 inspectionPower.setAuditStatusExport("审核通过");
             }
-            if ("0".equals(inspectionPower.getTrackType()))  {
-                inspectionPower.setTrackType("单件");
-            }
-            if ("1".equals(inspectionPower.getTrackType()))  {
-                inspectionPower.setTrackType("批次");
-            }
-
             String itemId = inspectionPower.getItemId();
             String headId = inspectionPower.getHeadId();
             if (!StringUtils.isEmpty(itemId)) {
@@ -1856,7 +1849,12 @@ public class ProduceInspectionRecordService {
                 inspectionPower.setOptNo(trackItem.getOptNo());
                 inspectionPower.setOptName(trackItem.getOptName());
                 inspectionPower.setProductNo(trackItem.getProductNo());
-                inspectionPower.setTrackType(trackHead.getTrackType());
+                if ("0".equals(trackHead.getTrackType()))  {
+                    inspectionPower.setTrackType("单件");
+                }
+                if ("1".equals(trackHead.getTrackType()))  {
+                    inspectionPower.setTrackType("批次");
+                }
             }
             if(StringUtils.isEmpty(itemId) && !StringUtils.isEmpty(inspectionPower.getInspectRecordNo())){
                 QueryWrapper<ProduceItemInspectInfo> queryWrapper2 = new QueryWrapper<>();
