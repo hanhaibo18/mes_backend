@@ -565,12 +565,6 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         queryWrapper.orderByAsc("modify_time");
         List<Assign> result = trackAssignService.list(queryWrapper);
-        result.forEach(e -> {
-            LambdaQueryWrapper<TrackComplete> trackCompleteQueryWrapper = new LambdaQueryWrapper<>();
-            trackCompleteQueryWrapper.eq(TrackComplete::getAssignId, e.getId());
-            TrackComplete trackComplete = trackCompleteMapper.selectOne(trackCompleteQueryWrapper);
-            e.setQualityCheckBy(trackComplete.getQualityCheckBy());
-        });
         return result;
     }
 
