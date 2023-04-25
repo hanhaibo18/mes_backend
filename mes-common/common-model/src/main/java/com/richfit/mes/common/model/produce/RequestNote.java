@@ -2,8 +2,11 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.wms.ApplyLineList;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * produce_request_note
@@ -60,4 +63,55 @@ public class RequestNote extends BaseEntity<RequestNote> {
     @ApiModelProperty(value = "配送数量")
     @TableField(exist = false)
     private Double numberDelivery = 0.00;
+
+    /**
+     * 申请单Id
+     */
+    @ApiModelProperty(value = "申请单Id")
+    @TableField(exist = false)
+    private String noteId;
+
+    /**
+     * 物料号
+     */
+    @ApiModelProperty(value = "物料号")
+    @TableField(exist = false)
+    private String materialNo;
+
+    /**
+     * 物料名称
+     */
+    @ApiModelProperty(value = "物料名称")
+    @TableField(exist = false)
+    private String materialName;
+
+    /**
+     * 单位
+     */
+    @ApiModelProperty(value = "单位")
+    @TableField(exist = false)
+    private String unit;
+
+    /**
+     * 是否是关键件
+     */
+    @ApiModelProperty(value = "是否是关键件")
+    @TableField(exist = false)
+    private String isKeyPart;
+
+    @ApiModelProperty(value = "工作号")
+    @TableField(exist = false)
+    private String workNo;
+
+    @ApiModelProperty(value = "生产订单编号")
+    @TableField(exist = false)
+    private String productionOrder;
+
+    /**
+     * 行数据
+     */
+    @ApiModelProperty(value = "生产订单编号")
+    @TableField(exist = false)
+    private List<ApplyLineList> lineList;
+
 }
