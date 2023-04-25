@@ -64,12 +64,12 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
      * @param type  1 去氢装炉    2 正火装炉
      */
     @Override
-    public void furnaceChargingHot(List<Assign> assignList, String tempWork,String texture,String type) {
+    public void furnaceChargingHot(List<Assign> assignList,String texture,String type) {
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要有装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = new PrechargeFurnace();
-        prechargeFurnace.setTempWork(tempWork);
+//        prechargeFurnace.setTempWork(tempWork);
         prechargeFurnace.setOptName(optNames(assignList));
         prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
