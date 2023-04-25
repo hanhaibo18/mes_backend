@@ -39,9 +39,9 @@ public class TrackHeadUtil {
                     //避免引用类型
                     TrackHeadPublicDto tpd = new TrackHeadPublicDto();
                     tpd = JSON.parseObject(JSON.toJSONString(trackHeadPublicDto), TrackHeadPublicDto.class);
+                    tpd.setNumber(1);
                     //流水号获取
                     trackNo(tpd, codeRuleService);
-                    trackHeadPublicDto.setNumber(1);
                     trackHeadList.add(tpd);
                 }
             } else {

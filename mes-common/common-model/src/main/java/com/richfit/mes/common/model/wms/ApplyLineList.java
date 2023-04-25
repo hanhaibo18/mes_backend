@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 
@@ -25,7 +24,7 @@ public class ApplyLineList implements Serializable {
     /**
      * MES申请单行项目
      */
-    private String lineNum;
+    private Integer lineNum;
 
     /**
      * 物料编码
@@ -48,10 +47,9 @@ public class ApplyLineList implements Serializable {
     private Double quantity;
 
     /**
-     * 行数据
+     * 关键件
      */
-    @TableField(exist = false)
-    private List<ApplyLineInfoList> lineList;
+    private String crucialFlag;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
