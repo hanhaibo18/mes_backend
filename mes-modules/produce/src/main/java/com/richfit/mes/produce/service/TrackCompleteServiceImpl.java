@@ -559,6 +559,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         assignPerson.setUserName(startDoingUser.getEmplName());
         assignPerson.setRatioHours(startDoingUser.getRatioHours());
         assignPeople.add(assignPerson);
+        assign.setAssignPersons(assignPeople);
     }
 
     //热工查询初始报工人员列表
