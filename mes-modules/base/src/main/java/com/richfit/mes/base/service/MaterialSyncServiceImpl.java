@@ -23,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -115,61 +117,50 @@ public class MaterialSyncServiceImpl extends ServiceImpl<ProductMapper, Product>
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> saveTimingProductSync() {
         if (execute) {
-            //日期集合（前八天的日期YYYY-MM-dd）
-            List<String> dates = new ArrayList<>();
-            for (int i = 0; i <= 7; i++) {
-                dates.add(DateUtil.format(DateUtil.offsetDay(new Date(), -i), "yyyy-MM-dd"));
-            }
-            //根据日期升序排列（保证同步跟新的数据为最新数据）
-            dates.sort((t1, t2) -> t1.compareTo(t2));
-
             //获取所有工厂信息
             MaterialSyncDto materialSyncDto = new MaterialSyncDto();
             CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
-
+            //获取当天的时间
+            String date = DateUtil.today();
             for (ItemParam itemParam : listCommonResult.getData()) {
                 materialSyncDto.setCode(itemParam.getCode());
                 log.debug("工厂代码：" + itemParam.getCode() + "开始同步");
                 //同步前七天（包括今天）
-                for (String date : dates) {
-                    materialSyncDto.setDate(date);
-                    List<Product> productList = materialSyncService.queryProductSync(materialSyncDto);
-                    //获取到所有物料号
-                    List<String> materialNoList = productList.stream().map(Product::getMaterialNo).collect(Collectors.toList());
-                    QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.in("material_no", materialNoList);
-                    queryWrapper.eq("tenant_id", itemParam.getTenantId());
-                    List<Product> list = materialSyncService.list(queryWrapper);
-                    //删除物料信息
-                    materialSyncService.remove(queryWrapper);
-                    //转化成MAP 方便获取id
-                    Map<String, Product> productMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, product -> product, (value1, value2) -> value2));
-                    log.debug("日期：" + date + ",同步" + productList.size() + "条数据");
-                    for (Product product : productList) {
-                        product.setCreateBy("System");
-                        product.setModifyBy("System");
-                        product.setCreateTime(DateUtil.date());
-                        product.setModifyTime(DateUtil.date());
-                        product.setBranchCode(itemParam.getLabel());
-                        product.setTenantId(itemParam.getTenantId());
-                        if (ObjectUtil.isEmpty(product.getAutosyns()) || product.getAutosyns().equals("null") || product.getAutosyns().equals("y")) {
-                            //根据物料号查询到物料实体
-                            if (null != productMap.get(product.getMaterialNo())) {
-                                //存入该物料号以前的id
-                                product.setId(productMap.get(product.getMaterialNo()).getId());
-                            } else {
-                                //没有重新生成uuid
-                                product.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                            }
-                            materialSyncService.save(product);
+                materialSyncDto.setDate(date);
+                List<Product> productList = materialSyncService.queryProductSync(materialSyncDto);
+                //获取到所有物料号
+                List<String> materialNoList = productList.stream().map(Product::getMaterialNo).collect(Collectors.toList());
+                QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+                queryWrapper.in("material_no", materialNoList);
+                queryWrapper.eq("tenant_id", itemParam.getTenantId());
+                List<Product> list = materialSyncService.list(queryWrapper);
+                //删除物料信息
+                materialSyncService.remove(queryWrapper);
+                //转化成MAP 方便获取id
+                Map<String, Product> productMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, product -> product, (value1, value2) -> value2));
+                log.debug("日期：" + date + ",同步" + productList.size() + "条数据");
+                for (Product product : productList) {
+                    product.setCreateBy("System");
+                    product.setModifyBy("System");
+                    product.setCreateTime(DateUtil.date());
+                    product.setModifyTime(DateUtil.date());
+                    product.setBranchCode(itemParam.getLabel());
+                    product.setTenantId(itemParam.getTenantId());
+                    if (ObjectUtil.isEmpty(product.getAutosyns()) || product.getAutosyns().equals("null") || product.getAutosyns().equals("y")) {
+                        //根据物料号查询到物料实体
+                        if (null != productMap.get(product.getMaterialNo())) {
+                            //存入该物料号以前的id
+                            product.setId(productMap.get(product.getMaterialNo()).getId());
+                        } else {
+                            //没有重新生成uuid
+                            product.setId(UUID.randomUUID().toString().replaceAll("-", ""));
                         }
+                        materialSyncService.save(product);
                     }
                 }
                 log.debug("工厂代码：" + itemParam.getCode() + "同步结束");
-
             }
         }
-
         return CommonResult.success(true);
     }
 }
