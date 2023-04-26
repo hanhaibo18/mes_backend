@@ -2,10 +2,14 @@ package com.richfit.mes.produce.data;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.TimeUtil;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.PlanService;
@@ -62,7 +66,7 @@ public class BaseProjectBom {
         String sql = "select id,drawing_no,work_plan_no,project_name from base_project_bom WHERE tenant_id = '12345678901234567890123456789002' AND branch_code = 'BOMCO_BF_BY' AND grade = 'H'";
         List<Map<String, Object>> maps = jdbcTemplateBase.queryForList(sql);
         QueryWrapper<Plan> planQueryWrapper = new QueryWrapper<>();
-        planQueryWrapper.eq("tenant_id", "12345678901234567890123456789002").eq("branch_code", "BOMCO_BF_BY");
+        planQueryWrapper.eq("tenant_id", "12345678901234567890123456789002").eq("branch_code", "BOMCO_BF_BY").isNull("project_bom");
         List<Plan> plans = planService.list(planQueryWrapper);
         for (Plan plan : plans) {
             for (Map<String, Object> map : maps) {
@@ -70,6 +74,7 @@ public class BaseProjectBom {
                     plan.setProjectBom(map.get("id").toString());
                     plan.setProjectBomWork(map.get("work_plan_no").toString());
                     plan.setProjectBomName(map.get("project_name").toString());
+                    plan.setProjectBomGroup("{}");
                     break;
                 }
             }
@@ -141,8 +146,8 @@ public class BaseProjectBom {
             for (ProjectBom projectBom : bomList) {
                 QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("drawing_no", projectBom.getDrawingNo()).eq("material_no", projectBom.getMaterialNo())
-                        .eq("grade", projectBom.getGrade()).eq("tenant_id",projectBom.getTenantId())
-                        .eq("branch_code",projectBom.getBranchCode()).eq("track_head_id",trackHead.getId());
+                        .eq("grade", projectBom.getGrade()).eq("tenant_id", projectBom.getTenantId())
+                        .eq("branch_code", projectBom.getBranchCode()).eq("track_head_id", trackHead.getId());
                 List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(queryWrapper);
                 //找到唯一的装配信息，添加projectBomId然后保存到updateList
                 if (trackAssemblyList != null && trackAssemblyList.size() == 1) {
@@ -217,6 +222,20 @@ public class BaseProjectBom {
                 baseServiceClient.bindingBom(trackHeads);
             }
         }
+    }
+
+    @GetMapping("/insert_project_bom")
+    public void insertTrackAssemblyProjectBom() {
+        System.out.println("更新开始");
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
+        queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
+        queryWrapper.eq("branch_code", "BOMCO_BF_BY");
+        queryWrapper.isNull("project_bom_id");
+        List<TrackHead> trackHeads = trackHeadService.list(queryWrapper);
+        for (TrackHead trackHead : trackHeads) {
+            String planId = trackHead.getWorkPlanId();
+        }
+        System.out.println("更新完成");
     }
 
     public static List<List> splitList(List list, int len) {

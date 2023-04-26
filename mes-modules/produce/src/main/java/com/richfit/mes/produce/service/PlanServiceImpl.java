@@ -16,6 +16,7 @@ import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.bom.ProduceProjectBom;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
@@ -26,9 +27,11 @@ import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.PlanSplitDto;
 import com.richfit.mes.produce.entity.PlanTrackItemViewDto;
+import com.richfit.mes.produce.entity.TrackHeadPublicDto;
 import com.richfit.mes.produce.entity.extend.ProjectBomComplete;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.service.bom.ProjectBomService;
 import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
@@ -92,10 +95,18 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Autowired
     private TrackAssemblyService trackAssemblyService;
+
     @Autowired
     private PlanExtendMapper planExtendMapper;
+
     @Autowired
     private HotDemandService hotDemandService;
+
+    @Autowired
+    private ProjectBomService projectBomService;
+
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
 
     /**
      * 功能描述: 物料齐套性检查
@@ -385,6 +396,43 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     }
                 }
                 planMapper.updateById(plan);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void autoProjectBom(Plan plan) {
+        if (StrUtil.isBlank(plan.getProjectBom())) {
+            List<ProduceProjectBom> projectBoms = projectBomService.getProjectBomList(plan.getWorkNo(), plan.getDrawNo(), plan.getTenantId(), plan.getBranchCode());
+            if (!CollectionUtils.isEmpty(projectBoms)) {
+                ProduceProjectBom projectBom = projectBoms.get(0);
+                plan.setProjectBom(projectBom.getId());
+                plan.setProjectBomWork(projectBom.getWorkPlanNo());
+                plan.setProjectBomGroup("{}");
+                plan.setProjectBomName(projectBom.getProjectName());
+                List<TrackHead> trackHeads = trackHeadService.queryTrackHeadListByPlanId(plan.getId());
+                for (TrackHead trackHead : trackHeads) {
+                    if (StrUtil.isBlank(trackHead.getProjectBomId())) {
+                        if (TrackHead.STATUS_0.equals(trackHead.getStatus()) || TrackHead.STATUS_1.equals(trackHead.getStatus())) {
+                            trackHead.setProjectBomId(projectBom.getId());
+                            trackHead.setProjectBomWork(projectBom.getWorkPlanNo());
+                            trackHead.setProjectBomGroup("{}");
+                            trackHead.setProjectBomName(projectBom.getProjectName());
+                            List<TrackFlow> trackFlows = trackHeadFlowService.queryTrackFlowListByTrackHeadId(trackHead.getId());
+                            for (TrackFlow trackFlow : trackFlows) {
+                                if (TrackHead.STATUS_0.equals(trackFlow.getStatus()) || TrackHead.STATUS_1.equals(trackFlow.getStatus())) {
+                                    TrackHeadPublicDto trackHeadPublicDto = new TrackHeadPublicDto();
+                                    BeanUtils.copyProperties(trackHead, trackHeadPublicDto); //a，b为对象
+                                    trackHeadPublicDto.setFlowId(trackFlow.getId());
+                                    trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto);
+                                }
+                            }
+                            trackHeadService.updateById(trackHead);
+                        }
+                    }
+                }
+                this.updateById(plan);
             }
         }
     }

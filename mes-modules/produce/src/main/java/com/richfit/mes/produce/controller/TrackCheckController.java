@@ -257,7 +257,7 @@ public class TrackCheckController extends BaseController {
 
             }
             queryWrapper.and(wrapper -> wrapper.eq("track.is_show", "1").or().isNull("track.is_show"));
-            queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
+            queryWrapper.eq("item.quality_check_by", SecurityUtils.getCurrentUser().getUsername());
             //增加工序过滤
 //            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             OrderUtil.query(queryWrapper, orderCol, order);
