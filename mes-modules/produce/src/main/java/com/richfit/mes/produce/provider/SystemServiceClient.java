@@ -24,6 +24,8 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/user/find_one")
     public CommonResult<TenantUserVo> getUserById(@RequestParam("id") String id);
+    @PostMapping(value = "/api/sys/user/find_by_ids")
+    public CommonResult<List<TenantUser>> getUserByIds(@RequestBody List<String> ids);
 
     @PostMapping("/api/sys/attachment/selectAttachmentsList")
     public List<Attachment> selectAttachmentsList(@RequestBody List<String> idList);

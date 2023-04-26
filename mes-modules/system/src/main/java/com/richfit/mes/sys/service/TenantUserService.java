@@ -36,6 +36,8 @@ public interface TenantUserService {
 
     TenantUserVo findById(String id);
 
+    List<TenantUser> findByIds(List<String> ids);
+
     /**
      * 新增用户
      *
