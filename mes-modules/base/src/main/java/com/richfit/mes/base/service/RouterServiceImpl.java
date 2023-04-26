@@ -94,7 +94,7 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
         if (CollectionUtils.isEmpty(list)) {
             queryIsHistory.setIsHistory(false);
         }
-        if (!list.get(0).getId().equals(routerList.get(0).getId())) {
+        if (!CollectionUtils.isEmpty(list) && !list.get(0).getId().equals(routerList.get(0).getId())) {
             queryIsHistory.setNewVersions(list.get(0).getVersion());
             queryIsHistory.setIsHistory(true);
         }
