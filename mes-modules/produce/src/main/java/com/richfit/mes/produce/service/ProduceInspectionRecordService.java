@@ -18,6 +18,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -1806,9 +1807,61 @@ public class ProduceInspectionRecordService {
             queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
         }
         List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
+        //有源的委托单
+        List<InspectionPower> haveHeadPowers = list.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
+        Set<String> itemIds = haveHeadPowers.stream().map(InspectionPower::getItemId).collect(Collectors.toSet());
+        Set<String> headIds = haveHeadPowers.stream().map(InspectionPower::getHeadId).collect(Collectors.toSet());
+        //优化取值
+        Map<String, TrackItem> itemMap = trackItemService.listByIds(itemIds).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+        Map<String, TrackHead> headMap = trackHeadService.listByIds(headIds).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+        //委托人查询
+        Set<String> consignorIds = list.stream().map(InspectionPower::getConsignor).collect(Collectors.toSet());
+        Map<String, TenantUser> userMap = systemServiceClient.getUserByIds(new ArrayList<>(consignorIds)).getData().stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+        //无源的 有记录的委托
+        Map<String, ProduceItemInspectInfo> itemInspectInfoMap = new HashMap<>();
+        Map<String, String> recordMtMap = new HashMap<>();
+        Map<String, String> recordUtMap = new HashMap<>();
+        Map<String, String> recordRtMap = new HashMap<>();
+        Map<String, String> recordPtMap = new HashMap<>();
+        List<InspectionPower> noPowers = list.stream().filter(item -> StringUtils.isEmpty(item.getItemId()) && !StringUtils.isEmpty(item.getInspectRecordNo())).collect(Collectors.toList());
+        if(!CollectionUtil.isEmpty(noPowers)){
+            List<String> noPowerIds = noPowers.stream().map(item -> item.getId()).collect(Collectors.toList());
+            QueryWrapper<ProduceItemInspectInfo> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.in("power_id", noPowerIds)
+                    .eq("is_new", "1");
+            List<ProduceItemInspectInfo> itemInspectInfos = produceItemInspectInfoService.list(queryWrapper2);
+            itemInspectInfoMap = itemInspectInfos.stream().collect(Collectors.toMap(item -> item.getPowerId(), Function.identity()));
+            Map<String, List<ProduceItemInspectInfo>> temp_record_group = itemInspectInfos.stream().collect(Collectors.groupingBy(item -> item.getTempType()));
+            List<ProduceInspectionRecordMt> mts = new ArrayList<>();
+            List<ProduceInspectionRecordUt> uts = new ArrayList<>();
+            List<ProduceInspectionRecordRt> rts = new ArrayList<>();
+            List<ProduceInspectionRecordPt> pts = new ArrayList<>();
+            for (Map.Entry<String, List<ProduceItemInspectInfo>> temp_record : temp_record_group.entrySet()) {
+                List<String> recordIds = temp_record.getValue().stream().map(item -> item.getInspectRecordId()).collect(Collectors.toList());
+                if (InspectionRecordTypeEnum.MT.getType().equals(temp_record.getKey())) {
+                    mts.addAll(produceInspectionRecordMtService.listByIds(recordIds));
+                } else if (InspectionRecordTypeEnum.PT.getType().equals(temp_record.getKey())) {
+                    pts.addAll(produceInspectionRecordPtService.listByIds(recordIds));
+                } else if (InspectionRecordTypeEnum.RT.getType().equals(temp_record.getKey())) {
+                    rts.addAll(produceInspectionRecordRtService.listByIds(recordIds));
+                } else if (InspectionRecordTypeEnum.UT.getType().equals(temp_record.getKey())) {
+                    uts.addAll(produceInspectionRecordUtService.listByIds(recordIds));
+                } else {
+                    throw new GlobalException(ResultCode.INVALID_ARGUMENTS.getMessage(), ResultCode.INVALID_ARGUMENTS);
+                }
+            }
+            recordMtMap = mts.stream()
+                    .collect(HashMap::new, (m,v)->m.put(v.getId(), v.getProductNo()), HashMap::putAll);
+            recordPtMap = pts.stream()
+                    .collect(HashMap::new, (m,v)->m.put(v.getId(), v.getProductNo()), HashMap::putAll);
+            recordRtMap = rts.stream()
+                    .collect(HashMap::new, (m,v)->m.put(v.getId(), v.getProductNo()), HashMap::putAll);
+            recordUtMap = uts.stream()
+                    .collect(HashMap::new, (m,v)->m.put(v.getId(), v.getProductNo()), HashMap::putAll);
+        }
 
         for (InspectionPower inspectionPower : list) {
-            TenantUserVo data = systemServiceClient.getUserById(inspectionPower.getConsignor()).getData();
+            TenantUser tenantUser = userMap.get(inspectionPower.getConsignor());
             if (inspectionPower.getStatus() == 0) {
                 inspectionPower.setStatusShow("待委托");
             }
@@ -1818,7 +1871,9 @@ public class ProduceInspectionRecordService {
             if (inspectionPower.getStatus() == 2) {
                 inspectionPower.setStatusShow("驳回");
             }
-            inspectionPower.setConsignor(data.getEmplName());
+            if(!ObjectUtil.isEmpty(tenantUser)){
+                inspectionPower.setConsignor(tenantUser.getEmplName());
+            }
             if ("0".equals(inspectionPower.getIsDoing())) {
                 inspectionPower.setIsDoing("未开工");
             }
@@ -1843,8 +1898,8 @@ public class ProduceInspectionRecordService {
             String itemId = inspectionPower.getItemId();
             String headId = inspectionPower.getHeadId();
             if (!StringUtils.isEmpty(itemId)) {
-                TrackItem trackItem = trackItemService.getById(itemId);
-                TrackHead trackHead = trackHeadService.getById(headId);
+                TrackItem trackItem = itemMap.get(itemId);
+                TrackHead trackHead = headMap.get(headId);
                 inspectionPower.setTrackNo(trackHead.getTrackNo());
                 inspectionPower.setOptNo(trackItem.getOptNo());
                 inspectionPower.setOptName(trackItem.getOptName());
@@ -1857,19 +1912,16 @@ public class ProduceInspectionRecordService {
                 }
             }
             if(StringUtils.isEmpty(itemId) && !StringUtils.isEmpty(inspectionPower.getInspectRecordNo())){
-                QueryWrapper<ProduceItemInspectInfo> queryWrapper2 = new QueryWrapper<>();
-                queryWrapper2.eq("power_id", inspectionPower.getId())
-                        .eq("is_new", "1");
-                List<ProduceItemInspectInfo> list2 = produceItemInspectInfoService.list(queryWrapper2);
-                if(list2.size()>0){
+                ProduceItemInspectInfo produceItemInspectInfo = itemInspectInfoMap.get(inspectionPower.getId());
+                if(!ObjectUtil.isEmpty(produceItemInspectInfo)){
                     if (InspectionRecordTypeEnum.MT.getType().equals(inspectionPower.getInspTempType())) {
-                        inspectionPower.setProductNo(produceInspectionRecordMtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                        inspectionPower.setProductNo(recordMtMap.get(produceItemInspectInfo.getInspectRecordId()));
                     } else if (InspectionRecordTypeEnum.PT.getType().equals(inspectionPower.getInspTempType())) {
-                        inspectionPower.setProductNo(produceInspectionRecordPtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                        inspectionPower.setProductNo(recordPtMap.get(produceItemInspectInfo.getInspectRecordId()));
                     } else if (InspectionRecordTypeEnum.RT.getType().equals(inspectionPower.getInspTempType())) {
-                        inspectionPower.setProductNo(produceInspectionRecordRtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                        inspectionPower.setProductNo(recordRtMap.get(produceItemInspectInfo.getInspectRecordId()));
                     } else if (InspectionRecordTypeEnum.UT.getType().equals(inspectionPower.getInspTempType())) {
-                        inspectionPower.setProductNo(produceInspectionRecordUtService.getById(list2.get(0).getInspectRecordId()).getProductNo());
+                        inspectionPower.setProductNo(recordUtMap.get(produceItemInspectInfo.getInspectRecordId()));
                     } else {
                         throw new GlobalException(ResultCode.INVALID_ARGUMENTS.getMessage(), ResultCode.INVALID_ARGUMENTS);
                     }
