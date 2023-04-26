@@ -187,12 +187,12 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq(StrUtil.isNotBlank(dispatchingDto.getClasses()), "u.classes", dispatchingDto.getClasses());
         if (IsProduce) {
-            queryWrapper.isNotNull("u.normalizing_furnace_id");
+            queryWrapper.isNotNull("u.precharge_furnace_id");
         } else {
-            queryWrapper.isNull("u.normalizing_furnace_id");
+            queryWrapper.isNull("u.precharge_furnace_id");
         }
 
-	//`t2`.`dehydro_furnace_id` AS `dehydro_furnace_id`,
+
         queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',u.site_id)");
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
