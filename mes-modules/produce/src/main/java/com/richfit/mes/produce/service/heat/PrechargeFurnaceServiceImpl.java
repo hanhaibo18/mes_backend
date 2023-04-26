@@ -61,15 +61,14 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
      * @param assignList
      * @param tempWork
      * @param texture   材质
-     * @param type  1 去氢装炉    2 正火装炉
+
      */
     @Override
-    public void furnaceChargingHot(List<Assign> assignList,String texture,String type) {
+    public void furnaceChargingHot(List<Assign> assignList,String texture) {
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要有装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = new PrechargeFurnace();
-//        prechargeFurnace.setTempWork(tempWork);
         prechargeFurnace.setOptName(optNames(assignList));
         prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
@@ -78,12 +77,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id
+            //跟单工序添加装炉id
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
-            if(type.equals("1")){
-                trackItem.setNormalizingFurnaceId(prechargeFurnace.getId());
-            }else if(type.equals("2")){
-                trackItem.setDehydroFurnaceId(prechargeFurnace.getId());
-            }
+            trackItem.setPrechargeFurnaceId(prechargeFurnace.getId());
             trackItemService.updateById(trackItem);
         }
     }
@@ -120,11 +116,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     /**
      *
      * @param assignList
-     * @param type 1 去氢装炉    2 正火装炉
      * @return
      */
     @Override
-    public PrechargeFurnace addTrackItemHot(List<Assign> assignList,String type) {
+    public PrechargeFurnace addTrackItemHot(List<Assign> assignList) {
         //预装炉未开工状态
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
@@ -136,13 +131,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         for (Assign assign : assignList) {
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
-            //跟单工序添加装炉id
-            TrackItem trackItem = trackItemService.getById(assign.getTiId());
-            if(type.equals("1")){
-                trackItem.setNormalizingFurnaceId(prechargeFurnace.getId());
-            }else if(type.equals("2")){
-                trackItem.setDehydroFurnaceId(prechargeFurnace.getId());
-            }
+            updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
+            trackItemService.update(updateWrapper);
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));

@@ -77,7 +77,7 @@ public class ProductToWmsThreeService {
 
     // MES申请单上传WMS（已上线）
     public ApplicationResult applyListUploadInterface(List<ApplyListUpload> applyListUpload) {
-        Map<String, Object> params = convertArrayInput(applyListUpload);
+        Map<String, Object> params = convertToInput(applyListUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
@@ -175,6 +175,23 @@ public class ProductToWmsThreeService {
     private Map<String, Object> convertArrayInput(Object o) {
         //转换json串
         String jsonStr = JSONArray.parseArray(JSON.toJSONString(o)).toString();
+        //加密后的16进制字符串
+        String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
+        //传参
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("i_data", encryptString);
+        return params;
+    }
+
+
+    /**
+     * 加密json数组
+     * @param list
+     * @return
+     */
+    private Map<String, Object> convertToInput(List<ApplyListUpload> list) {
+        //转换json串
+        String jsonStr = JSONArray.parseArray(JSON.toJSONString(list)).toString();
         //加密后的16进制字符串
         String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
         //传参
