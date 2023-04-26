@@ -376,4 +376,15 @@ public interface TrackHeadService extends IService<TrackHead> {
     IPage<TrackHeadPublicVo> queryPage(IPage<TrackHead> page, QueryWrapper<TrackHead> queryWrapper);
 
     void exportHeatReport(String trackHeadId, HttpServletResponse rsp);
+
+
+    /**
+     * 功能描述: 根据计划Id 查询跟单列表
+     *
+     * @param planId 计划Id
+     * @Author: zhiqiang.lu
+     * @Date: 2023/4/26 11:42
+     * @return: 数量
+     **/
+    List<TrackHead> queryTrackHeadListByPlanId(String planId);
 }
