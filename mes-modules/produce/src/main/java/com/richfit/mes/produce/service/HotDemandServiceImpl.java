@@ -94,7 +94,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             //丰富基础数据
             HotDemand hotDemand = new HotDemand();
             //属性拷贝
-            BeanUtils.copyProperties(hotDemand,hemandExcel);
+            BeanUtils.copyProperties(hemandExcel,hotDemand);
             hotDemand.setTenantId(currentUser.getTenantId());
             hotDemand.setCreateBy(currentUser.getUsername());
             hotDemand.setSubmitOrderTime(new Date());
