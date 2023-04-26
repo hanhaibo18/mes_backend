@@ -21,7 +21,7 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      **/
     public void furnaceCharging(List<Assign> assignList, String tempWork);
 
-    void furnaceChargingHot(List<Assign> assignList, String texture, String type);
+    void furnaceChargingHot(List<Assign> assignList, String texture);
 
     /**
      * 功能描述:查询装炉跟单列表
@@ -43,7 +43,7 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      **/
     public PrechargeFurnace addTrackItem(List<Assign> assignList);
 
-    PrechargeFurnace addTrackItemHot(List<Assign> assignList, String type);
+    PrechargeFurnace addTrackItemHot(List<Assign> assignList);
 
     /**
      * 功能描述:装炉跟单工序删除

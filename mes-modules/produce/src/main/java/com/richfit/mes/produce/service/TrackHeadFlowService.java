@@ -31,4 +31,15 @@ public interface TrackHeadFlowService extends IService<TrackFlow> {
      * @date 2022.8.25
      */
     void examineCard(String flowId, String approved);
+
+
+    /**
+     * 功能描述: 根据跟单Id 查询生产线列表
+     *
+     * @param trackHeadId 计划Id
+     * @Author: zhiqiang.lu
+     * @Date: 2023/4/26 11:42
+     * @return: 数量
+     **/
+    List<TrackFlow> queryTrackFlowListByTrackHeadId(String trackHeadId);
 }

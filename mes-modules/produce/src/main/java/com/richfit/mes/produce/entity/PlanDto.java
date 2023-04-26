@@ -87,4 +87,6 @@ public class PlanDto extends BasePageDto<PlanDto> {
     private String startPlanMonth;
 
     private String endPlanMonth;
+
+    private String isProjectBom;
 }

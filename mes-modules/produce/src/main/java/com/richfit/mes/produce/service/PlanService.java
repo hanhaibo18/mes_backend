@@ -60,6 +60,15 @@ public interface PlanService extends IService<Plan> {
     void planData(String planId);
 
     /**
+     * 功能描述: 计划自动添加项目BOM
+     *
+     * @param plan 计划信息
+     * @Author: zhiqiang.lu
+     * @Date: 2022/7/8 11:37
+     **/
+    void autoProjectBom(Plan plan);
+
+    /**
      * 拆分计划
      *
      * @param planSplitDto

@@ -32,6 +32,8 @@ public class OrderSyncLogServiceImpl extends ServiceImpl<OrderSyncLogMapper, Ord
         queryWrapper.eq(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getDrawingNo()), "drawing_no", queryOrderSyncLogPageDto.getDrawingNo());
         //状态
         queryWrapper.eq(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getSyncState()), "sync_state", queryOrderSyncLogPageDto.getSyncState());
+        //产品名称
+        queryWrapper.eq(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getProductName()), "product_name", queryOrderSyncLogPageDto.getProductName());
         //开始时间
         queryWrapper.ge(StrUtil.isNotBlank(queryOrderSyncLogPageDto.getStartTime()), "modify_time", queryOrderSyncLogPageDto.getStartTime() + " 00:00:00");
         //结束时间

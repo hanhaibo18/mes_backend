@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -174,7 +175,13 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(planDto.getEndPlanMonth())) {
             queryWrapper.le("plan_month", planDto.getEndPlanMonth());
         }
-
+        if ("1".equals(planDto.getIsProjectBom())) {
+            queryWrapper.isNotNull("project_bom");
+            queryWrapper.ne("project_bom", "");
+        }
+        if ("0".equals(planDto.getIsProjectBom())) {
+            queryWrapper.apply("(project_bom is null or project_bom = '')");
+        }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, planDto.getOrderCol(), planDto.getOrder());
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
@@ -391,6 +398,16 @@ public class PlanController extends BaseController {
     public CommonResult<Object> data(@RequestBody List<Plan> planList) throws GlobalException {
         for (Plan plan : planList) {
             planService.planData(plan.getId());
+        }
+        return CommonResult.success(null);
+    }
+
+    @ApiOperation(value = "计划自动添加项目BOM", notes = "计划自动添加项目BOM")
+    @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
+    @PostMapping("/auto/project_bom")
+    public CommonResult autoProjectBom(@RequestBody List<Plan> planList) throws GlobalException {
+        for (Plan plan : planList) {
+            planService.autoProjectBom(plan);
         }
         return CommonResult.success(null);
     }

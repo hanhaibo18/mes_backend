@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -39,5 +40,12 @@ public class TrackHeadFlowServiceImpl extends ServiceImpl<TrackFlowMapper, Track
             trackFlow.setIsCardData(TrackFlow.CARD_DATA_NO);
         }
         this.updateById(trackFlow);
+    }
+
+    @Override
+    public List<TrackFlow> queryTrackFlowListByTrackHeadId(String trackHeadId) {
+        QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        return this.list(queryWrapper);
     }
 }

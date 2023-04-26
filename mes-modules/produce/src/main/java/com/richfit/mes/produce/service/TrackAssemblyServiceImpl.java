@@ -367,14 +367,10 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     public void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto) {
         List<TrackAssembly> trackAssemblyList = pojectBomList(trackHeadPublicDto);
         for (TrackAssembly trackAssembly : trackAssemblyList) {
+            trackAssembly.setFlowId(trackHeadPublicDto.getFlowId());
             trackAssembly.setTrackHeadId(trackHeadPublicDto.getId());
             trackAssembly.setTrackNo(trackHeadPublicDto.getTrackNo());
             trackAssembly.setBranchCode(trackHeadPublicDto.getBranchCode());
-            trackAssembly.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-            trackAssembly.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-            trackAssembly.setCreateTime(new Date());
-            trackAssembly.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-            trackAssembly.setModifyTime(new Date());
             trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             this.save(trackAssembly);
         }
@@ -396,6 +392,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             }
             for (ProjectBom pb : projectBomList) {
                 TrackAssembly trackAssembly = new TrackAssembly();
+                trackAssembly.setProjectBomId(trackHeadPublicDto.getProjectBomId());
                 trackAssembly.setGrade(pb.getGrade());
                 trackAssembly.setName(pb.getProdDesc());
                 trackAssembly.setDrawingNo(pb.getDrawingNo());
@@ -513,18 +510,19 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     /**
      * 根据装配清单信息修改产品编号
-     * @param id   装配清单id
-     * @param productNo   不带图号的产品编码
+     *
+     * @param id        装配清单id
+     * @param productNo 不带图号的产品编码
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean changeProductNo(String id, String productNo,String branchCode) {
+    public Boolean changeProductNo(String id, String productNo, String branchCode) {
         try {
             Assign assign = trackAssignService.getById(id);
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //新的产品编号
-            String produceNoDesc =  productNo.replace(trackHead.getDrawingNo(), "").trim();
+            String produceNoDesc = productNo.replace(trackHead.getDrawingNo(), "").trim();
             //校验单个生产流程的可以更改
             QueryWrapper<TrackFlow> queryWrapperFlow = new QueryWrapper<>();
             queryWrapperFlow.eq("track_head_id", trackItem.getTrackHeadId());
@@ -541,22 +539,22 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.ne("id", trackItem.getTrackHeadId());
-            DrawingNoUtil.queryEq(queryWrapper,"drawing_no",trackHead.getDrawingNo());
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", trackHead.getDrawingNo());
             List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
             if (trackHeadList.size() > 0) {
                 throw new GlobalException("产品编码已存在，不可以重复！", ResultCode.FAILED);
             }
             //修改跟单、flow、item、探伤记录信息
             //旧的产品编号
-            String produceNoDescOld =  trackFlow.getProductNo();
+            String produceNoDescOld = trackFlow.getProductNo();
             //修改跟单分流数据
             trackFlow.setProductNo(produceNoDesc);
             trackHeadFlowService.updateById(trackFlow);
             //修改跟单数据
             UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
-            trackHeadUpdateWrapper.set("product_no",produceNoDesc)
-                    .set("product_no_desc",produceNoDesc)
-                    .eq("id",trackItem.getTrackHeadId());
+            trackHeadUpdateWrapper.set("product_no", produceNoDesc)
+                    .set("product_no_desc", produceNoDesc)
+                    .eq("id", trackItem.getTrackHeadId());
             trackHeadService.update(trackHeadUpdateWrapper);
             //修改跟单工序item数据
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
@@ -585,45 +583,46 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
     /**
      * 修改探伤记录信息
+     *
      * @param produceNoDesc
      * @param trackHeadId
      * @param produceNoDescOld
      */
     private void updateProducrNoInspectRecordInfo(String produceNoDesc, String trackHeadId, String produceNoDescOld) {
         QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
-        inspectionPowerQueryWrapper.eq("head_id",trackHeadId);
+        inspectionPowerQueryWrapper.eq("head_id", trackHeadId);
         List<InspectionPower> powers = inspectionPowerService.list(inspectionPowerQueryWrapper);
         List<String> powerIds = powers.stream().map(InspectionPower::getId).collect(Collectors.toList());
-        if(powerIds.size()>0){
+        if (powerIds.size() > 0) {
             QueryWrapper<ProduceItemInspectInfo> inspectInfoQueryWrapper = new QueryWrapper<>();
-            inspectInfoQueryWrapper.in("power_id",powerIds);
+            inspectInfoQueryWrapper.in("power_id", powerIds);
             List<ProduceItemInspectInfo> inspects = produceItemInspectInfoService.list(inspectInfoQueryWrapper);
 
             for (ProduceItemInspectInfo inspect : inspects) {
                 if (InspectionRecordTypeEnum.MT.getType().equals(inspect.getTempType())) {
                     ProduceInspectionRecordMt mt = produceInspectionRecordMtService.getById(inspect.getInspectRecordId());
-                    if(!StringUtils.isNullOrEmpty(mt.getProductNo())){
+                    if (!StringUtils.isNullOrEmpty(mt.getProductNo())) {
                         String replace = mt.getProductNo().replace(produceNoDescOld, produceNoDesc);
                         mt.setProductNo(replace);
                         produceInspectionRecordMtService.updateById(mt);
                     }
                 } else if (InspectionRecordTypeEnum.PT.getType().equals(inspect.getTempType())) {
                     ProduceInspectionRecordPt pt = produceInspectionRecordPtService.getById(inspect.getInspectRecordId());
-                    if(!StringUtils.isNullOrEmpty(pt.getProductNo())){
+                    if (!StringUtils.isNullOrEmpty(pt.getProductNo())) {
                         String replace = pt.getProductNo().replace(produceNoDescOld, produceNoDesc);
                         pt.setProductNo(replace);
                         produceInspectionRecordPtService.updateById(pt);
                     }
                 } else if (InspectionRecordTypeEnum.RT.getType().equals(inspect.getTempType())) {
                     ProduceInspectionRecordRt rt = produceInspectionRecordRtService.getById(inspect.getInspectRecordId());
-                    if(!StringUtils.isNullOrEmpty(rt.getProductNo())){
+                    if (!StringUtils.isNullOrEmpty(rt.getProductNo())) {
                         String replace = rt.getProductNo().replace(produceNoDescOld, produceNoDesc);
                         rt.setProductNo(replace);
                         produceInspectionRecordRtService.updateById(rt);
                     }
                 } else if (InspectionRecordTypeEnum.UT.getType().equals(inspect.getTempType())) {
                     ProduceInspectionRecordUt ut = produceInspectionRecordUtService.getById(inspect.getInspectRecordId());
-                    if(!StringUtils.isNullOrEmpty(ut.getProductNo())){
+                    if (!StringUtils.isNullOrEmpty(ut.getProductNo())) {
                         String replace = ut.getProductNo().replace(produceNoDescOld, produceNoDesc);
                         ut.setProductNo(replace);
                         produceInspectionRecordUtService.updateById(ut);
