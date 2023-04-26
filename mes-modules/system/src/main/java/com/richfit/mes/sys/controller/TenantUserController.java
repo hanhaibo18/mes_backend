@@ -103,6 +103,12 @@ public class TenantUserController extends BaseController {
         return CommonResult.success(tenantUserService.findById(id));
     }
 
+    @ApiOperation(value = "获取用户信息", notes = "根据用户ids获取用户详细信息")
+    @PostMapping("/find_by_ids")
+    public CommonResult<List<TenantUser>> findByIds(@RequestBody List<String> ids) throws GlobalException {
+        return CommonResult.success(tenantUserService.findByIds(ids));
+    }
+
     /**
      * 更新用户
      */

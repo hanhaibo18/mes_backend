@@ -539,7 +539,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(remarkInfo)) {
-                queryWorkingTimeVo.setBarForge(remarkInfo.get(0).getRemark());
+                queryWorkingTimeVo.setForgeRemark(remarkInfo.get(0).getRemark());
             }
             forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
             layingOff = layingOffService.queryLayingOffCacheByItemId(tiId);

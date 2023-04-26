@@ -119,6 +119,11 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     }
 
     @Override
+    public List<TenantUser> findByIds(List<String> ids) {
+        return this.listByIds(ids);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean add(TenantUser tenantUser) {
         if (StringUtils.isNotBlank(tenantUser.getPasswd())) {

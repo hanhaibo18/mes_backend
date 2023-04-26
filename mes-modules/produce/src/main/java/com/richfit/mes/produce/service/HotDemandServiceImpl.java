@@ -94,7 +94,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             //丰富基础数据
             HotDemand hotDemand = new HotDemand();
             //属性拷贝
-            BeanUtils.copyProperties(hotDemand,hemandExcel);
+            BeanUtils.copyProperties(hemandExcel,hotDemand);
             hotDemand.setTenantId(currentUser.getTenantId());
             hotDemand.setCreateBy(currentUser.getUsername());
             hotDemand.setSubmitOrderTime(new Date());
@@ -106,19 +106,22 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
             //0锻件,1铸件,2钢锭
-            switch (hotDemand.getWorkblankType()){
-                case "锻件":  hotDemand.setWorkblankType("0");//锻造车间
-                    break;
-                case "铸件":  hotDemand.setWorkblankType("1");//铸造
-                    break;
-                case "钢锭":  hotDemand.setWorkblankType("2");//冶炼
-                    break;
-                default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
+            if(StringUtils.isNotEmpty(hotDemand.getWorkblankType())){
+                switch (hotDemand.getWorkblankType()){
+                    case "锻件":  hotDemand.setWorkblankType("0");//锻造车间
+                        break;
+                    case "铸件":  hotDemand.setWorkblankType("1");//铸造
+                        break;
+                    case "钢锭":  hotDemand.setWorkblankType("2");//冶炼
+                        break;
+                    default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
+                }
             }
-            demandList.add(hotDemand);
+            this.save(hotDemand);
+            //demandList.add(hotDemand);
         }
 
-        this.saveBatch(demandList);
+        //this.saveBatch(demandList);
         return CommonResult.success("");
     }
 
