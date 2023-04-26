@@ -261,17 +261,6 @@ public class AssignHot {
     @ApiModelProperty(value = "预装炉id", dataType = "String")
     private Long prechargeFurnaceId;
 
-    /**
-     * 正火装炉id
-     */
-    @ApiModelProperty(value = "正火装炉id", dataType = "String")
-    private Long normalizingFurnaceId;
-
-    /**
-     * 去氢装炉id
-     */
-    @ApiModelProperty(value = "去氢装炉id", dataType = "String")
-    private Long dehydroFurnaceId;
 
     /**
      * 工序号

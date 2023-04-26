@@ -221,8 +221,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
             List<String> optNameCollect = trackItemList.stream().map(e -> e.getOptName()).collect(Collectors.toList());
             trackHeadPublicVo.setOptNameList(optNameCollect);
-            List<String> deviceIdCollect = trackItemList.stream().map(e -> e.getDeviceId())
-                    .collect(Collectors.toList());
+            List<String> deviceIdCollect = trackItemList.stream().map(e -> e.getDeviceId()).collect(Collectors.toList());
             if (!deviceIdCollect.isEmpty()) {
                 for (String deviceId : deviceIdCollect) {
                     if (StringUtils.isNullOrEmpty(deviceId) && ("/").equals(deviceId)) {
@@ -796,8 +795,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
             String time = "heatTreatmentReport" + LocalDateTime.now();
             try {
-                response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
-                        "ISO-8859-1") + ".xlsx");
+                response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"), "ISO-8859-1") + ".xlsx");
             } catch (UnsupportedEncodingException e) {
                 log.error(e.getMessage());
                 e.printStackTrace();
@@ -807,6 +805,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
+    @Override
+    public List<TrackHead> queryTrackHeadListByPlanId(String planId) {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("work_plan_id", planId);
+        return this.list(queryWrapper);
+    }
+
 
     /**
      * 描述: 跟单添加方法
@@ -814,8 +819,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    public boolean trackHeadAdd(TrackHeadPublicDto trackHeadPublicDto, List<TrackItem> trackItems, String productsNo,
-                                int number) {
+    public boolean trackHeadAdd(TrackHeadPublicDto trackHeadPublicDto, List<TrackItem> trackItems, String productsNo, int number) {
         try {
             this.beforeSaveItemDeal(trackItems);
             //查询跟单号码是否存在
@@ -1441,14 +1445,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public IPage<TrackHead> selectTrackHeadCurrentRouter
-            (Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+    public IPage<TrackHead> selectTrackHeadCurrentRouter(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
         return trackHeadMapper.selectTrackHeadCurrentRouter(page, query);
     }
 
     @Override
-    public IPage<TrackHead> selectTrackHeadCurrentRouterNew
-            (Page<TrackHead> page, QueryWrapper<TrackHead> query) {
+    public IPage<TrackHead> selectTrackHeadCurrentRouterNew(Page<TrackHead> page, QueryWrapper<TrackHead> query) {
         return trackHeadMapper.selectTrackHeadCurrentRouterNew(page, query);
     }
 
@@ -1458,8 +1460,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public IPage<IncomingMaterialVO> queryMaterialList(Integer page, Integer size, String certificateNo, String
-            drawingNo, String branchCode, String tenantId) {
+    public IPage<IncomingMaterialVO> queryMaterialList(Integer page, Integer size, String certificateNo, String drawingNo, String branchCode, String tenantId) {
         QueryWrapper<IncomingMaterialVO> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(certificateNo)) {
             queryWrapper.eq("head.material_certificate_no", certificateNo);
@@ -1628,8 +1629,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public void trackHeadSplit(TrackHeadPublicDto trackHeadPublicDto, String
-            trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
+    public void trackHeadSplit(TrackHeadPublicDto trackHeadPublicDto, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
         //更新原跟单
         TrackHead updateTrackHead = trackHeadData(trackHeadPublicDto, trackFlow);
         //重写拼接产品编号
@@ -1653,8 +1653,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     @Override
-    public void trackHeadBatchSplit(TrackHeadPublicDto trackHeadPublicDto, String
-            trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
+    public void trackHeadBatchSplit(TrackHeadPublicDto trackHeadPublicDto, String trackNoNew, List<TrackFlow> trackFlow, List<TrackFlow> trackFlowNew) {
         if (trackFlow.size() != 1) {
             throw new GlobalException("批次跟单只能有一个生产线", ResultCode.FAILED);
         }

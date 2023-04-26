@@ -51,7 +51,7 @@ public class UpdateProjectBom {
     @GetMapping("/projectBom")
     public void updateProjectBom() {
         System.out.println("更新开始");
-        String sql = "select draw_no,work_no,ANY_VALUE(draw_no_name) as draw_no_name from produce_plan where tenant_id = '12345678901234567890123456789002' AND branch_code = 'BOMCO_BF_BY' GROUP BY draw_no,work_no ORDER BY draw_no;";//student 数据库表明
+        String sql = "select draw_no,work_no,ANY_VALUE(draw_no_name) as draw_no_name from produce_plan where tenant_id = '12345678901234567890123456789002' AND branch_code = 'BOMCO_BF_BY' and project_bom is null and work_no <> '---' GROUP BY draw_no,work_no ORDER BY draw_no;";//student 数据库表明
         List<Map<String, Object>> maps = jdbcTemplateProduce.queryForList(sql);
         Set<Object> draw_nos = maps.stream().map(x -> x.get("draw_no")).collect(Collectors.toSet());
         QueryWrapper<ProductionBom> productionBomQueryWrapper = new QueryWrapper<>();
