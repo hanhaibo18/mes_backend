@@ -392,6 +392,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             }
             for (ProjectBom pb : projectBomList) {
                 TrackAssembly trackAssembly = new TrackAssembly();
+                trackAssembly.setProjectBomId(trackHeadPublicDto.getProjectBomId());
                 trackAssembly.setGrade(pb.getGrade());
                 trackAssembly.setName(pb.getProdDesc());
                 trackAssembly.setDrawingNo(pb.getDrawingNo());
