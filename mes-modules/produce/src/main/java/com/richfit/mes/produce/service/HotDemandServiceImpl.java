@@ -117,10 +117,11 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
                 }
             }
-            demandList.add(hotDemand);
+            this.save(hotDemand);
+            //demandList.add(hotDemand);
         }
 
-        this.saveBatch(demandList);
+        //this.saveBatch(demandList);
         return CommonResult.success("");
     }
 
