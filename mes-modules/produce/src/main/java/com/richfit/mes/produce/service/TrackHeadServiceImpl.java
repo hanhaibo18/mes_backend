@@ -1089,57 +1089,61 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //工序批量修改（单件跟单多生产线、普通跟单判断）
             if ("N".equals(trackHeadPublicDto.getIsBatch()) && trackHeadPublicDto.getFlowNumber().compareTo(1) > 0) {
                 //多生产线工序修改
-                //工序顺序降序查询以派工的工序
-//                QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
-//                queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
-//                queryWrapperTrackItem.eq("is_schedule", 1);
-//                queryWrapperTrackItem.orderByDesc("opt_sequence");
-//                List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
                 //查询最大当前工序
                 QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<>();
                 queryWrapperTrackItem.eq("track_head_id", trackHeadPublicDto.getId());
                 queryWrapperTrackItem.eq("is_current", 1);
                 queryWrapperTrackItem.orderByDesc("opt_sequence");
                 List<TrackItem> trackItemList = trackItemService.list(queryWrapperTrackItem);
-                //查询已派工最大工序顺序下所有工序
-//                List<TrackItem> trackItemList = trackItemMapper.getTrackItems(trackHead.getId());
-                //取出最大的顺序数
-                int optSequence = 0;
-                if (!trackItemList.isEmpty()) {
-                    optSequence = trackItemList.get(0).getOriginalOptSequence();
+                if (CollectionUtils.isEmpty(trackItemList)) {
+                    throw new GlobalException("该跟单没有当前工序", ResultCode.FAILED);
                 }
+                //取出顺序 默认赋值最小当前工序顺序
+                int optSequence = trackItemList.get(trackItemList.size() - 1).getOptSequence();
+                //控制是否删除当前工序
                 boolean eqBoolean = false;
-                QueryWrapper<TrackItem> queryWrapperTrackItem2 = new QueryWrapper<>();
-                queryWrapperTrackItem2.eq("track_head_id", trackHeadPublicDto.getId());
-                //根据最大工序数去查询 验证其他flow是否进行到当前工序顺序
+                //从大到小循环工序,
                 for (TrackItem trackItem : trackItemList) {
-                    if (trackItem.getOriginalOptSequence() == optSequence) {
-                        //判断当前工序有已经开工的
+                    //最先判断当前工序是否是外协工序
+                    if (trackItem.getOptType().equals("3")) {
+                        //判断是否报工,报工终止循环 写入报工工序顺序
+                        if (trackItem.getIsOperationComplete() == 1) {
+                            eqBoolean = true;
+                            optSequence = trackItem.getOptSequence();
+                            break;
+                        }
+                    } else {
+                        //判断当前工序有已经开工的,有开工的当前工序就不修改
                         if (trackItem.getIsDoing() != 0) {
                             eqBoolean = true;
+                            optSequence = trackItem.getOptSequence();
                             break;
                         }
                     }
                 }
-                if (eqBoolean) {
-                    queryWrapperTrackItem2.gt("original_opt_sequence", optSequence);
-                } else {
-                    queryWrapperTrackItem2.ge("original_opt_sequence", optSequence);
-                }
-                //删除大于最大顺序数的工序信息
-                trackItemService.remove(queryWrapperTrackItem2);
-                //过滤掉小于或等于最大顺序数的工序
+                List<TrackItem> itemList = new ArrayList<>();
+                QueryWrapper<TrackItem> deleteTrackItem = new QueryWrapper<>();
+                deleteTrackItem.eq("track_head_id", trackHeadPublicDto.getId());
                 int finalOptSequence = optSequence;
-                List<TrackItem> itemList = trackItems.stream().filter(item -> (finalOptSequence < item.getOptSequence())).collect(Collectors.toList());
+                if (eqBoolean) {
+                    //有开工的删除当前工序后面的工序
+                    deleteTrackItem.gt("opt_sequence", optSequence);
+                    //不保留当前工序
+                    itemList.addAll(trackItems.stream().filter(item -> (finalOptSequence < item.getOptSequence())).collect(Collectors.toList()));
+                } else {
+                    //没有开工的从当前工序开始删除
+                    deleteTrackItem.ge("opt_sequence", optSequence);
+                    //保留当前工序
+                    itemList.addAll(trackItems.stream().filter(item -> (finalOptSequence <= item.getOptSequence())).collect(Collectors.toList()));
+                }
+                //删除工序信息
+                trackItemService.remove(deleteTrackItem);
+                //根据分流ID分组
                 Map<String, TrackItem> map = trackItemList.stream().collect(Collectors.groupingBy(TrackItem::getFlowId, Collectors.collectingAndThen(Collectors.toList(), value -> value.get(0))));
                 //循环根据那个分流ID创建工序
                 for (TrackItem item : map.values()) {
                     TrackFlow trackFlow = trackHeadFlowService.getById(item.getFlowId());
                     for (TrackItem trackItem : itemList) {
-                        //分流Id不一样 往后所有的当前工序全部为否
-                        if (!item.getFlowId().equals(trackItem.getFlowId())) {
-                            trackItem.setIsCurrent(0);
-                        }
                         trackItem.setId(UUID.randomUUID().toString().replace("-", ""));
                         trackItem.setFlowId(trackFlow.getId());
                         trackItem.setTrackHeadId(trackHeadPublicDto.getId());
@@ -1153,29 +1157,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         trackItemService.saveOrUpdate(trackItem);
                     }
                 }
-
-
-                //跟单工序添加
-//                if (!trackItems.isEmpty()) {
-//                    for (TrackItem item : itemList) {
-//                        //批量添加未派工的工序
-//                        QueryWrapper<TrackFlow> queryWrapperTrackFlow = new QueryWrapper<>();
-//                        queryWrapperTrackFlow.eq("track_head_id", trackHead.getId());
-//                        List<TrackFlow> trackFlows = trackHeadFlowService.list(queryWrapperTrackFlow);
-//                        for (TrackFlow trackFlow : trackFlows) {
-//                            item.setId(UUID.randomUUID().toString().replace("-", ""));
-//                            item.setFlowId(trackFlow.getId());
-//                            item.setTrackHeadId(trackHead.getId());
-//                            item.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-//                            item.setModifyTime(new Date());
-//                            item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-//                            //可分配数量
-//                            item.setAssignableQty(trackFlow.getNumber());
-//                            item.setNumber(trackFlow.getNumber());
-//                            trackItemService.saveOrUpdate(item);
-//                        }
-//                    }
-//                }
             } else {
                 //普通跟单工序添加与修改
                 if (trackItems != null && trackItems.size() > 0) {
