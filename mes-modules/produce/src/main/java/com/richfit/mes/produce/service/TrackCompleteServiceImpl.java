@@ -402,36 +402,59 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
             }
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
-            //跟新工序完成数量
-            trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
-            double intervalNumber = assign.getQty() + 0.0;
-            if (numDouble > assign.getQty()) {
-                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
-            }
-            if (numDouble < intervalNumber - 0.01) {
-                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.01));
-            }
-            if (assign.getQty() >= numDouble && intervalNumber - 0.01 <= numDouble) {
-                //最后一次报工进行下工序激活
-                if (queryIsComplete(assign)) {
-                    //更改状态 标识当前工序完成
-                    trackItem.setIsDoing(2);
-                    trackItem.setIsOperationComplete(1);
-                    trackItemService.updateById(trackItem);
-                    trackCompleteCacheService.remove(queryWrapper);
-                    //调用工序激活方法
-                    Map<String, String> map = new HashMap<>(3);
-                    map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
-                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
-                    map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
-                    publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            //机加、装配需要判断报工数量，才去进行下工序处理
+            if("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())){
+                //跟新工序完成数量
+                trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
+                double intervalNumber = assign.getQty() + 0.0;
+                if (numDouble > assign.getQty()) {
+                    return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
                 }
+                if (numDouble < intervalNumber - 0.01) {
+                    return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.01));
+                }
+                if (assign.getQty() >= numDouble && intervalNumber - 0.01 <= numDouble) {
+                    //最后一次报工进行下工序激活
+                    if (queryIsComplete(assign)) {
+                        //更改状态 标识当前工序完成
+                        trackItem.setIsDoing(2);
+                        trackItem.setIsOperationComplete(1);
+                        trackItemService.updateById(trackItem);
+                        trackCompleteCacheService.remove(queryWrapper);
+                        //调用工序激活方法
+                        Map<String, String> map = new HashMap<>(3);
+                        map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                        map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                        publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                    }
+                    //派工状态设置为完成
+                    assign.setState(2);
+                    trackAssignService.updateById(assign);
+                }
+            }else{
+                //跟新工序完成数量
+                trackItem.setCompleteQty(Double.parseDouble(String.valueOf(ObjectUtil.isEmpty(trackItem.getAssignableQty())?"0":trackItem.getAssignableQty())));
+                //更改状态 标识当前工序完成
+                trackItem.setIsDoing(2);
+                trackItem.setIsOperationComplete(1);
+                trackItemService.updateById(trackItem);
+                trackCompleteCacheService.remove(queryWrapper);
+                //调用工序激活方法
+                Map<String, String> map = new HashMap<>(3);
+                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
                 //派工状态设置为完成
                 assign.setState(2);
                 trackAssignService.updateById(assign);
             }
             log.error(completeDto.getTrackCompleteList().toString());
+
             this.saveBatch(completeDto.getTrackCompleteList());
             //锻造车间 填写的额外报工信息
             if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
@@ -539,7 +562,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(remarkInfo)) {
-                queryWorkingTimeVo.setBarForge(remarkInfo.get(0).getRemark());
+                queryWorkingTimeVo.setForgeRemark(remarkInfo.get(0).getRemark());
             }
             forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
             layingOff = layingOffService.queryLayingOffCacheByItemId(tiId);

@@ -413,7 +413,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setProjectBomName(projectBom.getProjectName());
                 List<TrackHead> trackHeads = trackHeadService.queryTrackHeadListByPlanId(plan.getId());
                 for (TrackHead trackHead : trackHeads) {
-                    if (StrUtil.isBlank(trackHead.getProjectBomId())) {
+                    QueryWrapper<TrackAssembly> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("track_head_id", trackHead.getId());
+                    List<TrackAssembly> trackAssemblies = trackAssemblyService.list(queryWrapper);
+                    if (StrUtil.isBlank(trackHead.getProjectBomId()) && CollectionUtils.isEmpty(trackAssemblies)) {
                         if (TrackHead.STATUS_0.equals(trackHead.getStatus()) || TrackHead.STATUS_1.equals(trackHead.getStatus())) {
                             trackHead.setProjectBomId(projectBom.getId());
                             trackHead.setProjectBomWork(projectBom.getWorkPlanNo());

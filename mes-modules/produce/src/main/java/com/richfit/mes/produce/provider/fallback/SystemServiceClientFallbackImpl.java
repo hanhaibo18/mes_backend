@@ -24,6 +24,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public CommonResult<List<TenantUser>> getUserByIds(List<String> ids) {
+        return null;
+    }
+
+    @Override
     public List<Attachment> selectAttachmentsList(List<String> idList) {
         return null;
     }

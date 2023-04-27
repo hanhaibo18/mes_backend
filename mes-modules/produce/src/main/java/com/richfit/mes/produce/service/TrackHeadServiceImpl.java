@@ -551,10 +551,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     public void updateItem() {
-        List<String> trackIdList = trackHeadMapper.queryTrackId();
-        for (String trackId : trackIdList) {
+//        List<String> trackIdList = trackHeadMapper.queryTrackId();
+        QueryWrapper<TrackFlow> queryFlow = new QueryWrapper<>();
+        queryFlow.eq("tenant_id", "12345678901234567890123456789002");
+        List<TrackFlow> trackFlows = trackHeadFlowService.list(queryFlow);
+        for (TrackFlow track : trackFlows) {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("track_head_id", trackId);
+            queryWrapper.eq("flow_id", track.getId());
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
             trackItemList.forEach(trackItem -> {
                 System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
@@ -1103,12 +1106,27 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 //取出最大的顺序数
                 int optSequence = 0;
                 if (!trackItemList.isEmpty()) {
-                    optSequence = trackItemList.get(0).getOptSequence();
+                    optSequence = trackItemList.get(0).getOriginalOptSequence();
                 }
-                //删除大于最大顺序数的工序信息
+                boolean eqBoolean = false;
                 QueryWrapper<TrackItem> queryWrapperTrackItem2 = new QueryWrapper<>();
                 queryWrapperTrackItem2.eq("track_head_id", trackHeadPublicDto.getId());
-                queryWrapperTrackItem2.gt("opt_sequence", optSequence);
+                //根据最大工序数去查询 验证其他flow是否进行到当前工序顺序
+                for (TrackItem trackItem : trackItemList) {
+                    if (trackItem.getOriginalOptSequence() == optSequence) {
+                        //判断当前工序有已经开工的
+                        if (trackItem.getIsDoing() != 0) {
+                            eqBoolean = true;
+                            break;
+                        }
+                    }
+                }
+                if (eqBoolean) {
+                    queryWrapperTrackItem2.gt("original_opt_sequence", optSequence);
+                } else {
+                    queryWrapperTrackItem2.ge("original_opt_sequence", optSequence);
+                }
+                //删除大于最大顺序数的工序信息
                 trackItemService.remove(queryWrapperTrackItem2);
                 //过滤掉小于或等于最大顺序数的工序
                 int finalOptSequence = optSequence;

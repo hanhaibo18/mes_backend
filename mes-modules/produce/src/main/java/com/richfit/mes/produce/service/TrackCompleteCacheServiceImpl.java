@@ -98,6 +98,7 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
 
                 LayingOffCache layingOffCache = new LayingOffCache();
                 BeanUtils.copyProperties(completeDto.getLayingOff(), layingOffCache);
+                layingOffCache.setItemId(completeDto.getTiId());
                 layingOffCacheService.save(layingOffCache);
             }
             //保存锻造信息
@@ -108,11 +109,17 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
                 forgControlRecordCacheService.remove(queryWrapper);
 
                 ForgControlRecord forgControlRecordBarInfo = new ForgControlRecord();
+                forgControlRecordBarInfo.setItemId(completeDto.getTiId());
                 forgControlRecordBarInfo.setType("2");
                 forgControlRecordBarInfo.setBarForge(completeDto.getBarForge());
                 ForgControlRecord forgControlRecordRemark = new ForgControlRecord();
+                forgControlRecordRemark.setItemId(completeDto.getTiId());
                 forgControlRecordRemark.setType("3");
                 forgControlRecordRemark.setRemark(completeDto.getForgeRemark());
+                for (ForgControlRecord forgControlRecord : completeDto.getForgControlRecordList()) {
+                    forgControlRecord.setType("1");
+                    forgControlRecord.setItemId(completeDto.getTiId());
+                }
                 completeDto.getForgControlRecordList().add(forgControlRecordRemark);
                 completeDto.getForgControlRecordList().add(forgControlRecordBarInfo);
                 String jsonString = JSONObject.toJSONString(completeDto.getForgControlRecordList());
