@@ -403,7 +403,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-            //热工
+            //机加、装配需要判断报工数量，才去进行下工序处理
             if("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())){
                 //跟新工序完成数量
                 trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
