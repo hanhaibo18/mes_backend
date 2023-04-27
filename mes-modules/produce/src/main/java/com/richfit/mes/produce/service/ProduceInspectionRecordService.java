@@ -1807,24 +1807,34 @@ public class ProduceInspectionRecordService {
             queryWrapper.isNull("1".equals(inspectionPowerVo.getIsExistHeadInfo()), "item_id");
         }
         List<InspectionPower> list = inspectionPowerService.list(queryWrapper);
+        Map<String, TrackItem> itemMap = new HashMap<>();
+        Map<String, TrackHead> headMap = new HashMap<>();
+        Map<String, TenantUser> userMap = new HashMap<>();
         //有源的委托单
         List<InspectionPower> haveHeadPowers = list.stream().filter(item -> !StringUtils.isEmpty(item.getItemId())).collect(Collectors.toList());
         Set<String> itemIds = haveHeadPowers.stream().map(InspectionPower::getItemId).collect(Collectors.toSet());
         Set<String> headIds = haveHeadPowers.stream().map(InspectionPower::getHeadId).collect(Collectors.toSet());
         //优化取值
-        Map<String, TrackItem> itemMap = trackItemService.listByIds(itemIds).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
-        Map<String, TrackHead> headMap = trackHeadService.listByIds(headIds).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+        if(itemIds.size()>0 && headIds.size()>0){
+            itemMap = trackItemService.listByIds(itemIds).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+            headMap = trackHeadService.listByIds(headIds).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+        }
+
         //委托人查询
         Set<String> consignorIds = list.stream().map(InspectionPower::getConsignor).collect(Collectors.toSet());
-        Map<String, TenantUser> userMap = systemServiceClient.getUserByIds(new ArrayList<>(consignorIds)).getData().stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
-        //无源的 有记录的委托
+        if(consignorIds.size()>0){
+            userMap = systemServiceClient.getUserByIds(new ArrayList<>(consignorIds)).getData().stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+        }
+        //无源的 有记录的委托(key->recordId value->produceNo)
         Map<String, ProduceItemInspectInfo> itemInspectInfoMap = new HashMap<>();
         Map<String, String> recordMtMap = new HashMap<>();
         Map<String, String> recordUtMap = new HashMap<>();
         Map<String, String> recordRtMap = new HashMap<>();
         Map<String, String> recordPtMap = new HashMap<>();
+        //无源的委托单
         List<InspectionPower> noPowers = list.stream().filter(item -> StringUtils.isEmpty(item.getItemId()) && !StringUtils.isEmpty(item.getInspectRecordNo())).collect(Collectors.toList());
         if(!CollectionUtil.isEmpty(noPowers)){
+            //无源的委托单ids
             List<String> noPowerIds = noPowers.stream().map(item -> item.getId()).collect(Collectors.toList());
             QueryWrapper<ProduceItemInspectInfo> queryWrapper2 = new QueryWrapper<>();
             queryWrapper2.in("power_id", noPowerIds)
@@ -1897,6 +1907,7 @@ public class ProduceInspectionRecordService {
             }
             String itemId = inspectionPower.getItemId();
             String headId = inspectionPower.getHeadId();
+            //跟单和工序属性赋值
             if (!StringUtils.isEmpty(itemId)) {
                 TrackItem trackItem = itemMap.get(itemId);
                 TrackHead trackHead = headMap.get(headId);
@@ -1911,6 +1922,7 @@ public class ProduceInspectionRecordService {
                     inspectionPower.setTrackType("批次");
                 }
             }
+            //无源的产品编号赋值
             if(StringUtils.isEmpty(itemId) && !StringUtils.isEmpty(inspectionPower.getInspectRecordNo())){
                 ProduceItemInspectInfo produceItemInspectInfo = itemInspectInfoMap.get(inspectionPower.getId());
                 if(!ObjectUtil.isEmpty(produceItemInspectInfo)){
