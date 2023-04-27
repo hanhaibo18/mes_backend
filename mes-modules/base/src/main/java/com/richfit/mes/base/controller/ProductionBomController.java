@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -14,10 +15,7 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -26,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -37,6 +36,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -341,6 +341,42 @@ public class ProductionBomController extends BaseController {
     public CommonResult<Boolean> issueBom(String id, String workPlanNo, String projectName, String branchCode) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         return productionBomService.issueBom(id, workPlanNo, projectName, tenantId, branchCode);
+    }
+
+    @PostMapping("/auto/issue_bom")
+    @ApiOperation(value = "自动发布BOM")
+    public CommonResult autoIssueBom(@ApiParam(value = "项目bom发布条件", required = true) @RequestBody List<Map<String, String>> list) {
+        String errmessage = "";
+        for (Map<String, String> map : list) {
+            String drawingNo = map.get("drawingNo");
+            String projectName = map.get("projectName");
+            String branchCode = map.get("branchCode");
+            String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+            String workNo = map.get("projectBomWork");
+            if (StrUtil.isBlank(workNo)) {
+                workNo = map.get("workNo");
+            }
+            if (StrUtil.isBlank(workNo)) {
+                errmessage += "drawingNo：" + drawingNo + "workNo:工作号不能为空；";
+                break;
+            }
+            QueryWrapper<ProductionBom> query = new QueryWrapper<>();
+            DrawingNoUtil.queryLike(query, "drawing_no", drawingNo);
+            query.eq("branch_code", branchCode);
+            query.eq("grade", "H");
+            query.eq("tenant_id", tenantId);
+            List<ProductionBom> productionBoms = productionBomService.list(query);
+            if (CollectionUtils.isEmpty(productionBoms)) {
+                errmessage += "drawingNo：" + drawingNo + "workNo:" + workNo + ",没有找到产品bom；";
+                break;
+            }
+            ProductionBom productionBom = productionBoms.get(0);
+            CommonResult commonResult = productionBomService.issueBom(productionBom.getId(), workNo, projectName, tenantId, branchCode);
+            if (commonResult.getStatus() == 500) {
+                errmessage += "drawingNo：" + drawingNo + "workNo:" + workNo + "," + commonResult.getMessage() + "；";
+            }
+        }
+        return CommonResult.success(errmessage);
     }
 
 

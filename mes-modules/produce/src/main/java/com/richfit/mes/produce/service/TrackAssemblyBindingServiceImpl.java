@@ -121,11 +121,16 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             throw new GlobalException("异常提示跟单数据异常出现多个生产流程", ResultCode.FAILED);
         }
         if (1 == isBinding) {
+            if(trackAssembly.getNumberInstall() == trackAssembly.getNumber()
+                    || trackAssembly.getNumberInstall() + assemblyBinding.getQuantity()>trackAssembly.getNumber()
+            ){
+                throw new GlobalException("待装量不足！！",ResultCode.FAILED);
+            }
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() + assemblyBinding.getQuantity());
             //判断是否是编号来源
             if ("1".equals(trackAssembly.getIsNumFrom())) {
                 //生成产品编
-                String produceNo = trackAssembly.getDrawingNo() + " " + assemblyBinding.getNumber();
+                String produceNo = trackHead.getDrawingNo() + " " + assemblyBinding.getNumber();
                 trackHead.setProductNo(assemblyBinding.getNumber());
                 trackHead.setProductNoDesc(produceNo);
                 trackFlow.setProductNo(produceNo);
