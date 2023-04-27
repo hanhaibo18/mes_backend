@@ -804,10 +804,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWrapper.in("track_head_id", outsource.getTrackHeadId());
         queryWrapper.in("product_no", outsource.getProdNoList());
         queryWrapper.eq("branch_code", outsource.getBranchCode());
+        //产品对应的全部工序
         List<TrackItem> list = trackItemService.list(queryWrapper);
         List<TrackItem> result = new ArrayList<>();
         //获取正确的工序
-        //产品对应工序
+        //此次报工对应的产品工序
         for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
             List<TrackItem> collect = list.stream().filter(trackItem ->
                     trackItem.getOptNo().equals(outsourceDto.getOptNo()) && OptNameUtil.optName(trackItem.getOptName()).equals(OptNameUtil.optName(outsourceDto.getOptName())) && trackItem.getIsCurrent() == 1
