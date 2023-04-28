@@ -2,6 +2,7 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
@@ -232,4 +233,8 @@ public interface BaseServiceClient {
     @ApiOperation(value = "根据主项目bom获取项目bom列表")
     @PostMapping("/api/base/project_bom/getBomListByMainBomId")
     public List<ProjectBom> getBomListByMainBomId(@RequestParam String id);
+
+    @ApiOperation(value = "通过条件查询物料信息")
+    @PostMapping("/api/base/product/select_condition_product")
+    public CommonResult<List<Product>> selectConditionProduct(@RequestBody ProductTypeDto productTypeDto);
 }

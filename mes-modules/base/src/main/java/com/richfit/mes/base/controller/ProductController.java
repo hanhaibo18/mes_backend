@@ -22,6 +22,7 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
@@ -717,6 +718,12 @@ public class ProductController extends BaseController {
     @GetMapping("/select_material")
     public CommonResult<Page<InventoryReturn>> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
         return CommonResult.success(productService.selectMaterial(branchCode, limit, page, materialNo, materialName, invType, texture));
+    }
+
+    @ApiOperation(value = "通过条件查询物料信息")
+    @PostMapping("/select_condition_product")
+    public CommonResult<List<Product>> selectConditionProduct(@RequestBody ProductTypeDto productTypeDto) {
+        return CommonResult.success(productService.selectConditionProduct(productTypeDto));
     }
 
 
