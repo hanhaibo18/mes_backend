@@ -104,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate("com.kld.mes.erp.entity.order.creat");
         List<Zc80Ppif032SO> list = new ArrayList<>();
         try {
-            Zc80Ppif032Response o = (Zc80Ppif032Response) webServiceTemplate.marshalSendAndReceive(URL, zc80Ppif032SOList);
+            Zc80Ppif032Response o = (Zc80Ppif032Response) webServiceTemplate.marshalSendAndReceive(URL,zc80Ppif032);
             list = o.getTOut().getItem();
         } catch (Exception e) {
             e.printStackTrace();
