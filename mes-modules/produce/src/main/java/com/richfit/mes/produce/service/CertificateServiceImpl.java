@@ -202,6 +202,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
      */
     @Override
     public void updateCertificate(Certificate certificate, boolean changeTrack) {
+        certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
         //1、保存合格证
         this.updateById(certificate);
 
