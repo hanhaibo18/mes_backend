@@ -132,7 +132,9 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
             requestNoteDetail.setMaterialNo(assembly.getMaterialNo());
             //根据物料号查询物料
             List<Product> list = baseServiceClient.listByMaterialNo(assembly.getMaterialNo());
-            requestNoteDetail.setMaterialName(list.get(0).getProductName());
+            if (!CollectionUtils.isEmpty(list)) {
+                requestNoteDetail.setMaterialName(list.get(0).getProductName());
+            }
             requestNoteDetail.setDrawingNo(assembly.getDrawingNo());
             requestNoteDetail.setUnit(assembly.getUnit());
             requestNoteDetail.setNumber(Double.valueOf(assembly.getNumber()));

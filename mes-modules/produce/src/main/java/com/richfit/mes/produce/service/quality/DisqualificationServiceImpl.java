@@ -499,6 +499,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         UpdateWrapper<Disqualification> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id);
         updateWrapper.set("type", 9);
+        updateWrapper.set("close_time", new Date());
         return this.update(updateWrapper);
     }
 

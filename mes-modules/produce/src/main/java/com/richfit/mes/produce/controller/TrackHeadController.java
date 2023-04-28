@@ -1,6 +1,5 @@
 package com.richfit.mes.produce.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -16,7 +15,6 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
-import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
@@ -31,7 +29,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -49,10 +46,8 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD_ID;
-import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD_PUBLIC_DTO;
 
 /**
  * @author 王瑞
@@ -160,7 +155,7 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "新增跟单", notes = "新增跟单")
-    @OperationLog(actionType = "0", actionItem = "2", argType = TRACK_HEAD_PUBLIC_DTO)
+//    @OperationLog(actionType = "0", actionItem = "2", argType = TRACK_HEAD_PUBLIC_DTO)
     @PostMapping("/track_head")
     public CommonResult<Boolean> addTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHead) {
 
@@ -193,7 +188,7 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "修改跟单", notes = "修改跟单")
-    @OperationLog(actionType = "1", actionItem = "2", argType = TRACK_HEAD_PUBLIC_DTO)
+//    @OperationLog(actionType = "1", actionItem = "2", argType = TRACK_HEAD_PUBLIC_DTO)
     @PutMapping("/track_head")
     public CommonResult<Boolean> updateTrackHead(@ApiParam(value = "跟单信息", required = true) @RequestBody TrackHeadPublicDto trackHeadPublicDto) {
         if (StringUtils.isNullOrEmpty(trackHeadPublicDto.getTrackNo())) {

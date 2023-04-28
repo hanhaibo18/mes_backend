@@ -185,4 +185,7 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " </if> " +
             "</script>")
     List<TrackHeadPublicVo> selectTrackFlowInfoList(Map<String, String> map);
+
+    @Select("SELECT i.flow_id FROM produce_track_item i WHERE i.next_opt_sequence NOT IN ( SELECT original_opt_sequence FROM produce_track_item m WHERE m.flow_id = i.flow_id ) AND i.tenant_id = '12345678901234567890123456789002' AND i.next_opt_sequence <> 0 GROUP BY flow_id limit 100")
+    List<String> queryBugItemFlow();
 }
