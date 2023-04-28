@@ -184,7 +184,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
             queryWrapper.in("u.state", 2);
         }
         //增加工序过滤
-        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+       // ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq(StrUtil.isNotBlank(dispatchingDto.getClasses()), "u.classes", dispatchingDto.getClasses());
         if (IsProduce) {
             queryWrapper.isNotNull("u.precharge_furnace_id");

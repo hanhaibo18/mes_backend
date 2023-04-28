@@ -133,6 +133,10 @@ public class PrechargeFurnaceController extends BaseController {
         } else {
             OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
         }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getOptName())) {
+            queryWrapper.eq("opt_name",dispatchingDto.getOptName());
+        }
+
 
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));
     }

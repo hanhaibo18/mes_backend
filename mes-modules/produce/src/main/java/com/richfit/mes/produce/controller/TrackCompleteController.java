@@ -124,10 +124,10 @@ public class TrackCompleteController extends BaseController {
                 queryWrapper.apply("assign_id in (select id from produce_assign where site_id='" + siteId + "')");
             }
             if (!StringUtils.isNullOrEmpty(startTime)) {
-                queryWrapper.ge("a.complete_time", startTime);
+                queryWrapper.ge("date_format(a.complete_time, '%Y-%m-%d')", startTime);
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                queryWrapper.le("a.complete_time", endTime);
+                queryWrapper.le("date_format(a.complete_time, '%Y-%m-%d')", endTime);
             }
 //            if (!StringUtils.isNullOrEmpty(branchCode)) {
 //                queryWrapper.eq("branch_code", branchCode);

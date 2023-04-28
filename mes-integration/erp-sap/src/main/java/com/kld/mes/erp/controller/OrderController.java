@@ -1,5 +1,6 @@
 package com.kld.mes.erp.controller;
 
+import com.kld.mes.erp.entity.order.creat.Zc80Ppif032;
 import com.kld.mes.erp.entity.order.creat.Zc80Ppif032SI;
 import com.kld.mes.erp.entity.order.creat.Zc80Ppif032SO;
 import com.kld.mes.erp.service.OrderService;
@@ -54,7 +55,7 @@ public class OrderController {
 
     @ApiOperation(value = "创建订单", notes = "创建订单")
     @PostMapping("/creat")
-    public CommonResult<List<Zc80Ppif032SO>> creat(@ApiParam(value = "订单信息") @RequestBody List<Zc80Ppif032SI> zc80Ppif032SIList) throws Exception {
-        return CommonResult.success(orderService.creat(zc80Ppif032SIList));
+    public CommonResult<List<Zc80Ppif032SO>> creat(@ApiParam(value = "订单信息") @RequestBody Zc80Ppif032 zc80Ppif032) throws Exception {
+        return CommonResult.success(orderService.creat(zc80Ppif032));
     }
 }

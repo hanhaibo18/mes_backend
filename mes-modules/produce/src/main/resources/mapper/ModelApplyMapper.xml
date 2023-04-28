@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.richfit.mes.produce.dao.ModelApplyMapper">
+
+    <select id="getModelApplyList" resultType="com.richfit.mes.common.model.produce.entity.ModelApply">
+        select tenant_id,branch_code,model_drawing_no,model_version,model_type,sum(apply_num) as apply_num
+        ,max(apply_time)as apply_time,max(delivery_time) as delivery_time,apply_status
+        from produce_model_apply
+        where tenant_id = #{tenantId} and apply_status = #{sign}
+        <if test='branchCode != "BOMCO_RG_MX"'>
+            and branch_code = #{branchCode}
+        </if>
+        <if test="null != drawingNo">
+            and model_drawing_no = #{drawingNo}
+        </if>
+        <if test="null != startTime">
+            and apply_time >= #{startTime}
+        </if>
+        <if test="null != endTime">
+            and apply_time <![CDATA[ <= ]]> #{endTime}
+        </if>
+        group by tenant_id,branch_code,model_drawing_no,model_version,model_type
+    </select>
+</mapper>

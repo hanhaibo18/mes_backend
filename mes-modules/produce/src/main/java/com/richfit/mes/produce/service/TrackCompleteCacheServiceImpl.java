@@ -98,6 +98,7 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
 
                 LayingOffCache layingOffCache = new LayingOffCache();
                 BeanUtils.copyProperties(completeDto.getLayingOff(), layingOffCache);
+                layingOffCache.setItemId(completeDto.getTiId());
                 layingOffCacheService.save(layingOffCache);
             }
             //保存锻造信息

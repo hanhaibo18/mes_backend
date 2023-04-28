@@ -43,4 +43,6 @@ public class CompleteDto {
     private String barForge;
     @ApiModelProperty(value = "锻造备注信息")
     private String ForgeRemark;
+    @ApiModelProperty(value = "1、机加 2、装配 ")
+    private String classes;
 }
