@@ -47,6 +47,16 @@ public class ApplyLineList implements Serializable {
     private Double quantity;
 
     /**
+     *  物料类型
+     */
+    private String materialType;
+
+    /**
+     *  跟踪方式
+     */
+    private String trackingMode;
+
+    /**
      * 关键件
      */
     private String crucialFlag;

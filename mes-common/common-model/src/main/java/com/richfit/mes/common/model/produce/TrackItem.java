@@ -34,6 +34,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "产品编号", dataType = "String")
     private String productNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "产品编号", dataType = "String")
+    private String productNoFlow;
     /**
      * 设备ID
      */

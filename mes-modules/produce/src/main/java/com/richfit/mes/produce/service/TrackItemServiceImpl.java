@@ -112,6 +112,11 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     private DisqualificationService disqualificationService;
 
     @Override
+    public List<TrackItem> selectFinalTrackItems(String trackHeadId) {
+        return trackItemMapper.getFinalTrackItems(trackHeadId);
+    }
+
+    @Override
     public List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query) {
         return trackItemMapper.selectTrackItem(query);
     }

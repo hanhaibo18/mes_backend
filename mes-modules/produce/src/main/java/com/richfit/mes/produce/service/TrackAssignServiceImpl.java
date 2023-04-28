@@ -2,7 +2,6 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -32,6 +31,7 @@ import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -77,6 +77,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     private InspectionPowerService inspectionPowerService;
     @Autowired
     private TrackAssignService trackAssignService;
+
+    @Resource
+    private TrackHeadFlowService trackFlowService;
 
     @Override
     public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
@@ -376,18 +379,34 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         return list;
     }
 
+    /**
+     * 功能描述: 开工修改相应状态
+     * 派工表状态变更开工
+     * 工序表状态变更开工
+     * 跟单表状态变更开工
+     * 跟单flow表状态变更开工
+     **/
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> startWorking(List<String> assignIdList) {
         try {
             for (String assignId : assignIdList) {
                 Assign assign = this.getById(assignId);
                 assign.setState(1);
+                this.updateById(assign);
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 trackItem.setIsDoing(1);
                 trackItem.setStartDoingTime(new Date());
                 trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
                 trackItemService.updateById(trackItem);
-                this.updateById(assign);
+                UpdateWrapper<TrackHead> updateHeda = new UpdateWrapper<>();
+                updateHeda.eq("id", trackItem.getTrackHeadId());
+                updateHeda.set("status", 1);
+                trackHeadService.update(updateHeda);
+                UpdateWrapper<TrackFlow> updateFlow = new UpdateWrapper<>();
+                updateFlow.eq("id", trackItem.getFlowId());
+                updateFlow.set("status", 1);
+                trackFlowService.update(updateFlow);
             }
         } catch (Exception e) {
             throw new GlobalException("开工失败,请重试", ResultCode.FAILED);

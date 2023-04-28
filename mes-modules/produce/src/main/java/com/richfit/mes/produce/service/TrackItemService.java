@@ -21,6 +21,9 @@ import java.util.List;
  * @Description 跟单工序
  */
 public interface TrackItemService extends IService<TrackItem> {
+    //查询跟单最大完工的工序
+    List<TrackItem> selectFinalTrackItems(String trackHeadId);
+
     List<TrackItem> selectTrackItem(QueryWrapper<TrackItem> query);
 
     List<TrackItem> selectTrackItemAssign(QueryWrapper<TrackItem> query);

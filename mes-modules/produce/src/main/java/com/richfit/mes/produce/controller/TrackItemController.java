@@ -53,6 +53,12 @@ public class TrackItemController extends BaseController {
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败，请重试！";
 
+    @ApiOperation(value = "查询跟单最大完工的工序", notes = "查询跟单最大完工的工序")
+    @GetMapping("/select_final_track_item")
+    public CommonResult<List<TrackItem>> selectFinalTrackItems(@RequestParam String trackHeadId) {
+        return CommonResult.success(trackItemService.selectFinalTrackItems(trackHeadId), SUCCESS_MESSAGE);
+    }
+
     @ApiOperation(value = "操作工序id查询", notes = "操作工序id查询(服务间调用接口)")
     @GetMapping("/query/id")
     public TrackItem qyeryById(@RequestParam String id) {
@@ -139,7 +145,7 @@ public class TrackItemController extends BaseController {
 
     @ApiOperation(value = "查询跟单工序", notes = "根据跟单ID查询跟单工序")
     @GetMapping("/track_item")
-    public CommonResult<List<TrackItem>> selectTrackHead(String id, String trackId, String optVer, String productNo) {
+    public CommonResult<List<TrackItem>> selectTrackHead(String id, String trackId, String optVer, String productNo, String isCurrent) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -152,6 +158,9 @@ public class TrackItemController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(optVer)) {
             queryWrapper.like("opt_ver", optVer);
+        }
+        if (!StringUtils.isNullOrEmpty(isCurrent)) {
+            queryWrapper.like("is_current", isCurrent);
         }
         queryWrapper.orderByAsc("sequence_order_by");
         return CommonResult.success(trackItemService.list(queryWrapper), SUCCESS_MESSAGE);
@@ -265,7 +274,7 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "激活工序", notes = "激活工序")
     @GetMapping("/active_trackitem")
     public CommonResult<List<TrackItem>> activeTrackItem(String trackHeadId, Boolean isGoNextOpt) {
-        List<TrackItem> items = this.selectTrackHead(null, trackHeadId, null, null).getData();
+        List<TrackItem> items = this.selectTrackHead(null, trackHeadId, null, null, null).getData();
 
         List<TrackItem> activeItems = new ArrayList();
         // 跟单初始化，激活第1个工序
@@ -286,7 +295,6 @@ public class TrackItemController extends BaseController {
                     trackItemService.updateById(items.get(i));
                 }
             }
-
         } else {
             //跟单工序跳转，获取当前激活工序，并激活下个工序
             int curOrder = -1;
@@ -304,7 +312,6 @@ public class TrackItemController extends BaseController {
                     } else {
                         curOrderEnable = false;
                     }
-
                 }
             }
             //下道激活工序

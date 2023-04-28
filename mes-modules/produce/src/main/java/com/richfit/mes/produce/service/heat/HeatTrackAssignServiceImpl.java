@@ -184,7 +184,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
             queryWrapper.in("u.state", 2);
         }
         //增加工序过滤
-        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+       // ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq(StrUtil.isNotBlank(dispatchingDto.getClasses()), "u.classes", dispatchingDto.getClasses());
         if (IsProduce) {
             queryWrapper.isNotNull("u.precharge_furnace_id");
@@ -216,8 +216,8 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
 //                assign.setDispatchingNumber(trackItem.getAssignableQty());
 //                assign.setWorkPlanNo(trackHead.getWorkPlanNo());
                 //库存数量
-                Integer count = wmsServiceClient.queryMaterialCount(assign.getErpProductCode()).getData();
-                assign.setStoreNumber(count);
+//                Integer count = wmsServiceClient.queryMaterialCount(assign.getErpProductCode()).getData();
+//                assign.setStoreNumber(count);
                 Router router = baseServiceClient.getByRouterId(assign.getRouterId(), dispatchingDto.getBranchCode()).getData();
 
                 if (!ObjectUtil.isEmpty(router)){
