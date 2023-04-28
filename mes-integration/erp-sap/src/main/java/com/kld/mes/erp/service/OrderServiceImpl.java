@@ -99,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    public List<Zc80Ppif032SO> creat(List<Zc80Ppif032SI> zc80Ppif032SOList) throws Exception {
+    public List<Zc80Ppif032SO> creat(Zc80Ppif032 zc80Ppif032) throws Exception {
         //获取调用服务接口类实例
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate("com.kld.mes.erp.entity.order.creat");
         List<Zc80Ppif032SO> list = new ArrayList<>();
@@ -107,6 +107,7 @@ public class OrderServiceImpl implements OrderService {
             Zc80Ppif032Response o = (Zc80Ppif032Response) webServiceTemplate.marshalSendAndReceive(URL, zc80Ppif032SOList);
             list = o.getTOut().getItem();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new GlobalException("ERP接口异常：" + URL, ResultCode.FAILED);
         }
         return list;

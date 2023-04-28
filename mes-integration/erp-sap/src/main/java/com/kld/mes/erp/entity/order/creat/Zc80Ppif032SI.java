@@ -346,11 +346,11 @@ public class Zc80Ppif032SI {
 
     /**
      * 设置unloadingPoint属性的值。
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link String }
-     *     
+     *
      */
     public void setUnloadingPoint(String value) {
         this.unloadingPoint = value;
@@ -358,11 +358,11 @@ public class Zc80Ppif032SI {
 
     /**
      * 获取zfield1属性的值。
-     * 
+     *
      * @return
      *     possible object is
      *     {@link String }
-     *     
+     *
      */
     public String getZfield1() {
         return zfield1;
@@ -370,11 +370,11 @@ public class Zc80Ppif032SI {
 
     /**
      * 设置zfield1属性的值。
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link String }
-     *     
+     *
      */
     public void setZfield1(String value) {
         this.zfield1 = value;
@@ -382,11 +382,11 @@ public class Zc80Ppif032SI {
 
     /**
      * 获取zfield2属性的值。
-     * 
+     *
      * @return
      *     possible object is
      *     {@link String }
-     *     
+     *
      */
     public String getZfield2() {
         return zfield2;
@@ -394,11 +394,11 @@ public class Zc80Ppif032SI {
 
     /**
      * 设置zfield2属性的值。
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link String }
-     *     
+     *
      */
     public void setZfield2(String value) {
         this.zfield2 = value;
@@ -406,11 +406,11 @@ public class Zc80Ppif032SI {
 
     /**
      * 获取zfield3属性的值。
-     * 
+     *
      * @return
      *     possible object is
      *     {@link String }
-     *     
+     *
      */
     public String getZfield3() {
         return zfield3;
@@ -418,11 +418,11 @@ public class Zc80Ppif032SI {
 
     /**
      * 设置zfield3属性的值。
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link String }
-     *     
+     *
      */
     public void setZfield3(String value) {
         this.zfield3 = value;
