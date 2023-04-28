@@ -216,8 +216,8 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
 //                assign.setDispatchingNumber(trackItem.getAssignableQty());
 //                assign.setWorkPlanNo(trackHead.getWorkPlanNo());
                 //库存数量
-                Integer count = wmsServiceClient.queryMaterialCount(assign.getErpProductCode()).getData();
-                assign.setStoreNumber(count);
+//                Integer count = wmsServiceClient.queryMaterialCount(assign.getErpProductCode()).getData();
+//                assign.setStoreNumber(count);
                 Router router = baseServiceClient.getByRouterId(assign.getRouterId(), dispatchingDto.getBranchCode()).getData();
 
                 if (!ObjectUtil.isEmpty(router)){
