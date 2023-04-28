@@ -78,6 +78,8 @@ public class CertificateController {
         if (certificateService.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
             return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
         } else {
+            //合格证来源 0：开出合格证 1：接收合格证
+            certificate.setCertOrigin("0");
             //检查当前工序之前有没有未完成的工序
             this.checkBefore(certificate);
             certificateService.saveCertificate(certificate);

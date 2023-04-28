@@ -812,7 +812,7 @@ public class TrackCompleteController extends BaseController {
         String msg = "";
         TrackItemController c = new TrackItemController();
         c.trackItemService = this.trackItemService;
-        List<TrackItem> items = c.selectTrackHead(null, curItem.getTrackHeadId(), null, null).getData();
+        List<TrackItem> items = c.selectTrackHead(null, curItem.getTrackHeadId(), null, null, null).getData();
         List<TrackItem> activeItems = new ArrayList();
 
         //跟单工序跳转，获取当前激活工序，并激活下个工序
