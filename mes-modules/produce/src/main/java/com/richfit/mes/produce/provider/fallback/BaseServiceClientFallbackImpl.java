@@ -2,6 +2,7 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
+import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
@@ -216,6 +217,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @Override
     public List<ProjectBom> getBomListByMainBomId(String id) {
+        return null;
+    }
+
+    @Override
+    public CommonResult<List<Product>> selectConditionProduct(ProductTypeDto productTypeDto) {
         return null;
     }
 
