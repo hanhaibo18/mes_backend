@@ -4,6 +4,7 @@ import com.richfit.mes.common.model.produce.ForgControlRecord;
 import com.richfit.mes.common.model.produce.LayingOff;
 import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.common.model.produce.TrackCompleteExtra;
+import com.richfit.mes.common.model.produce.RawMaterialRecord;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -45,4 +46,6 @@ public class CompleteDto {
     private String ForgeRemark;
     @ApiModelProperty(value = "1、机加 2、装配 ")
     private String classes;
+    @ApiModelProperty(value = "原材料消耗信息", dataType = "RawMaterialRecord")
+    private List<RawMaterialRecord> rawMaterialRecordList;
 }

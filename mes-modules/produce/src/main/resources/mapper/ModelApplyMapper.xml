@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.richfit.mes.produce.dao.ModelApplyMapper">
 
-    <select id="getModelApplyList" resultType="com.richfit.mes.common.model.produce.entity.ModelApply">
+    <select id="getModelApplyList" resultType="com.richfit.mes.common.model.produce.ModelApply">
         select tenant_id,branch_code,model_drawing_no,model_version,model_type,sum(apply_num) as apply_num
         ,max(apply_time)as apply_time,max(delivery_time) as delivery_time,apply_status
         from produce_model_apply

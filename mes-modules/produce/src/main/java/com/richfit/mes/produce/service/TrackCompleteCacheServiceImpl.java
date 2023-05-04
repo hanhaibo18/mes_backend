@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.RawMaterialRecord;
+import com.richfit.mes.common.model.produce.RawMaterialRecordCache;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteCacheMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
@@ -36,6 +38,8 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
     private LayingOffCacheService layingOffCacheService;
     @Autowired
     private ForgControlRecordCacheService forgControlRecordCacheService;
+    @Autowired
+    private RawMaterialRecordCacheService rawMaterialRecordCacheService;
 
 
     @Override
@@ -125,6 +129,17 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
                 String jsonString = JSONObject.toJSONString(completeDto.getForgControlRecordList());
                 List<ForgControlRecordCache> forgControlRecordList = JSONArray.parseArray(jsonString, ForgControlRecordCache.class);
                 forgControlRecordCacheService.saveBatch(forgControlRecordList);
+            }
+            //保存原材料消耗信息
+            if (completeDto.getRawMaterialRecordList() != null) {
+                //现根据item_id删除原有记录
+                QueryWrapper<RawMaterialRecordCache> queryWrapperRawMaterialRecord = new QueryWrapper<>();
+                queryWrapperRawMaterialRecord.eq("item_id", completeDto.getTiId());
+                rawMaterialRecordCacheService.remove(queryWrapperRawMaterialRecord);
+                for (RawMaterialRecord rawMaterialRecord : completeDto.getRawMaterialRecordList()) {
+                    rawMaterialRecord.setItemId(completeDto.getTiId());
+                }
+                rawMaterialRecordCacheService.saveBatch(JSONArray.parseArray(JSONObject.toJSONString(completeDto.getRawMaterialRecordList()), RawMaterialRecordCache.class));
             }
         }
         return CommonResult.success(true);

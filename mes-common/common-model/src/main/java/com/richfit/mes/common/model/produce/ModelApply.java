@@ -1,4 +1,4 @@
-package com.richfit.mes.common.model.produce.entity;
+package com.richfit.mes.common.model.produce;
 
 import java.util.Date;
 

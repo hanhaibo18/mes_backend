@@ -1,7 +1,7 @@
 package com.richfit.mes.produce.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.richfit.mes.common.model.produce.entity.ModelApply;
+import com.richfit.mes.common.model.produce.ModelApply;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
