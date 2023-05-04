@@ -146,6 +146,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         //先处理H级别的数据
         ProjectBom projectBom = projectBomEntity(productionBom);
         projectBom.setTenantId(tenantId).setBranchCode(branchCode).setProjectName(projectName).setWorkPlanNo(workPlanNo).setIsResolution("1");
+        projectBom.setState("1");
         projectBomService.save(projectBom);
         //在处理L级别零件数据
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
