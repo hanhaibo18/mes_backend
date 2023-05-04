@@ -230,6 +230,11 @@ public class TrackCompleteController extends BaseController {
         return CommonResult.success(trackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
     }
 
+    @GetMapping("/pageOptimizeByBranch")
+    public CommonResult<Map<String, Object>> pageOptimizeByBranch(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
+        return CommonResult.success(trackCompleteService.queryTrackCompleteListByBranch(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
+    }
+
     @ApiOperation(value = "工时统计by订单", notes = "工时统计by订单")
     @GetMapping("/pageOptimizeByOrder")
     public CommonResult<Map<String, Object>> pageOptimizeByOrder(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,

@@ -304,4 +304,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
 
     @ApiModelProperty(value = "报工人数", dataType = "int")
     private int completePersonQty;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "所在结构Id", dataType = "String")
+    private String belongOrgId;
 }

@@ -128,4 +128,6 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @return
      */
     Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
+
+    Map<String, Object> queryTrackCompleteListByBranch(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
 }
