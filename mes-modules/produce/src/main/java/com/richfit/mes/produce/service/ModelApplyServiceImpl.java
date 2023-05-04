@@ -9,7 +9,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.HotModelStore;
 import com.richfit.mes.common.model.produce.TrackItem;
-import com.richfit.mes.common.model.produce.entity.ModelApply;
+import com.richfit.mes.common.model.produce.ModelApply;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.ModelApplyMapper;
 import org.springframework.beans.factory.annotation.Autowired;

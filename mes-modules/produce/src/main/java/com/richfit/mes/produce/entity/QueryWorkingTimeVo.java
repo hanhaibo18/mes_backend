@@ -1,9 +1,6 @@
 package com.richfit.mes.produce.entity;
 
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.ForgControlRecord;
-import com.richfit.mes.common.model.produce.LayingOff;
-import com.richfit.mes.common.model.produce.TrackComplete;
+import com.richfit.mes.common.model.produce.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -32,4 +29,6 @@ public class QueryWorkingTimeVo {
     private String barForge;
     @ApiModelProperty(value = "锻造备注信息")
     private String ForgeRemark;
+    @ApiModelProperty(value = "原材料信息", dataType = "List<RawMaterialRecord>")
+    private List<RawMaterialRecord> rawMaterialRecordList;
 }

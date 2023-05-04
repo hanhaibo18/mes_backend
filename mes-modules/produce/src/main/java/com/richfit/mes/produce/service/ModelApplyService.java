@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.HotModelStore;
 import com.richfit.mes.common.model.produce.TrackItem;
-import com.richfit.mes.common.model.produce.entity.ModelApply;
+import com.richfit.mes.common.model.produce.ModelApply;
 
 import java.util.List;
 

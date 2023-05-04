@@ -552,12 +552,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     public void updateItem() {
 //        List<String> trackIdList = trackHeadMapper.queryTrackId();
-        QueryWrapper<TrackFlow> queryFlow = new QueryWrapper<>();
-        queryFlow.eq("tenant_id", "12345678901234567890123456789002");
-        List<TrackFlow> trackFlows = trackHeadFlowService.list(queryFlow);
-        for (TrackFlow track : trackFlows) {
+        List<String> trackFlows = trackFlowMapper.queryBugItemFlow();
+        for (String track : trackFlows) {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("flow_id", track.getId());
+            queryWrapper.eq("flow_id", track);
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
             trackItemList.forEach(trackItem -> {
                 System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());

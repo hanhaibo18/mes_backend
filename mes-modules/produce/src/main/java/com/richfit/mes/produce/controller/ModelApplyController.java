@@ -2,12 +2,11 @@ package com.richfit.mes.produce.controller;
 
 
 import com.baomidou.mybatisplus.extension.api.ApiController;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.HotModelStore;
 import com.richfit.mes.common.model.produce.TrackItem;
-import com.richfit.mes.common.model.produce.entity.ModelApply;
+import com.richfit.mes.common.model.produce.ModelApply;
 import com.richfit.mes.produce.service.ModelApplyService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -56,25 +55,6 @@ public class ModelApplyController extends ApiController {
                                                         @ApiParam(value = "请求日期结束") @RequestParam(required = false) String endTime,
                                                         @ApiParam(value = "页数") @RequestParam(defaultValue = "1") int page,
                                                         @ApiParam(value = "每页数量") @RequestParam(defaultValue = "10") int limit) {
-//        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-//        QueryWrapper<ModelApply> queryWrapper = new QueryWrapper<>();
-//        queryWrapper.eq("tenant_id", tenantId).eq("apply_status", sign);
-//        if (null != drawingNo) {
-//            DrawingNoUtil.queryEq(queryWrapper, "model_drawing_no", drawingNo);
-//        }
-//        if (null != startTime) {
-//            startTime = startTime + " 00:00:00";
-//            queryWrapper.apply("UNIX_TIMESTAMP(apply_time) >= UNIX_TIMESTAMP('" + startTime + "')");
-//        }
-//        if (null != endTime) {
-//            endTime = endTime + " 23:59:59";
-//            queryWrapper.apply("UNIX_TIMESTAMP(apply_time) >= UNIX_TIMESTAMP('" + endTime + "')");
-//        }
-//        //模型车间看到所有车间申请，不是模型车间看到自己车间的申请
-//        if (!"BOMCO_RG_MX".equals(branchCode)) {
-//            queryWrapper.eq("branch_code", branchCode);
-//        }
-//        return CommonResult.success(modelApplyService.page(new Page<ModelApply>(page, limit), queryWrapper));
         return modelApplyService.getPageInfo(sign,branchCode,drawingNo,startTime,endTime,page,limit);
     }
 
