@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 
@@ -60,6 +61,12 @@ public class ApplyLineList implements Serializable {
      * 关键件
      */
     private String crucialFlag;
+
+    /**
+     * 行数据
+     */
+    @TableField(exist = false)
+    private List<ApplyLineProductList> lineList;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

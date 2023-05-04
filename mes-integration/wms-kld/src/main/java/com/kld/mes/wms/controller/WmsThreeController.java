@@ -1,6 +1,5 @@
 package com.kld.mes.wms.controller;
 
-import com.alibaba.fastjson.JSONArray;
 import com.kld.mes.wms.service.ProductToWmsThreeService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
@@ -8,7 +7,6 @@ import com.richfit.mes.common.model.wms.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
