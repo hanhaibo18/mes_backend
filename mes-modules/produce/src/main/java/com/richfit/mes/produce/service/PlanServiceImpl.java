@@ -635,7 +635,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //替换计划id
                 UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
                 trackHeadUpdateWrapper.in("id", newPlan.getTrackHeadIds())
-                        .set("work_plan_id", plan.getId());
+                        .set("work_plan_id", plan.getId())
+                        .set("work_plan_no",plan.getProjCode())
+                        .set("work_plan_end_time",plan.getEndTime());
                 trackHeadService.update(trackHeadUpdateWrapper);
             }
 
@@ -674,7 +676,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             if (workPlanIds.size() > 0) {
                 UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
                 trackHeadUpdateWrapper.in("id", workPlanIds)
-                        .set("work_plan_id", plan.getId());
+                        .set("work_plan_id", plan.getId())
+                        .set("work_plan_no",plan.getProjCode())
+                        .set("work_plan_end_time",plan.getEndTime());
                 trackHeadService.update(trackHeadUpdateWrapper);
             }
 
