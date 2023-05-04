@@ -16,6 +16,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.produce.RawMaterialRecord;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.Tenant;
@@ -92,6 +93,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private LayingOffService layingOffService;
     @Autowired
     private ForgControlRecordService forgControlRecordService;
+    @Autowired
+    private RawMaterialRecordService rawMaterialRecordService;
 
 
     @Override
@@ -404,7 +407,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //机加、装配需要判断报工数量，才去进行下工序处理
-            if("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())){
+            if ("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())) {
                 //跟新工序完成数量
                 trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
                 double intervalNumber = assign.getQty() + 0.0;
@@ -434,9 +437,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     assign.setState(2);
                     trackAssignService.updateById(assign);
                 }
-            }else{
+            } else {
                 //跟新工序完成数量
-                trackItem.setCompleteQty(Double.parseDouble(String.valueOf(ObjectUtil.isEmpty(trackItem.getAssignableQty())?"0":trackItem.getAssignableQty())));
+                trackItem.setCompleteQty(Double.parseDouble(String.valueOf(ObjectUtil.isEmpty(trackItem.getAssignableQty()) ? "0" : trackItem.getAssignableQty())));
                 //更改状态 标识当前工序完成
                 trackItem.setIsDoing(2);
                 trackItem.setIsOperationComplete(1);
@@ -463,6 +466,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
             //保存下料信息和锻造信息
             saveLayingOffAndForgControlRecord(completeDto);
+            //保存原材料消耗信息
+            saveRawMaterialRecord(completeDto);
 
             //记录报工操作
             actionService.saveAction(ActionUtil.buildAction(
@@ -470,6 +475,19 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(true);
+    }
+
+    private void saveRawMaterialRecord(CompleteDto completeDto) {
+        if (!CollectionUtils.isEmpty(completeDto.getRawMaterialRecordList())) {
+            //现根据item_id删除原有记录
+            QueryWrapper<RawMaterialRecord> queryWrapperRawMaterialRecord = new QueryWrapper<>();
+            queryWrapperRawMaterialRecord.eq("item_id", completeDto.getTiId());
+            rawMaterialRecordService.remove(queryWrapperRawMaterialRecord);
+            for (RawMaterialRecord rawMaterialRecord : completeDto.getRawMaterialRecordList()) {
+                rawMaterialRecord.setItemId(completeDto.getTiId());
+            }
+            rawMaterialRecordService.saveBatch(completeDto.getRawMaterialRecordList());
+        }
     }
 
     private void saveLayingOffAndForgControlRecord(CompleteDto completeDto) {
@@ -491,9 +509,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             ForgControlRecord forgControlRecordBarInfo = new ForgControlRecord();
             forgControlRecordBarInfo.setType("2");
             forgControlRecordBarInfo.setBarForge(completeDto.getBarForge());
+            forgControlRecordBarInfo.setItemId(completeDto.getTiId());
             ForgControlRecord forgControlRecordRemark = new ForgControlRecord();
             forgControlRecordRemark.setType("3");
             forgControlRecordRemark.setRemark(completeDto.getForgeRemark());
+            forgControlRecordRemark.setItemId(completeDto.getTiId());
+            for (ForgControlRecord forgControlRecord : completeDto.getForgControlRecordList()) {
+                forgControlRecord.setType("1");
+                forgControlRecord.setItemId(completeDto.getTiId());
+            }
             completeDto.getForgControlRecordList().add(forgControlRecordRemark);
             completeDto.getForgControlRecordList().add(forgControlRecordBarInfo);
             forgControlRecordService.saveOrUpdateBatch(completeDto.getForgControlRecordList());
@@ -552,28 +576,28 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
         List<TrackComplete> completeList = new ArrayList<>();
         List<ForgControlRecord> forgControlRecordList = new ArrayList<>();
+        List<RawMaterialRecord> rawMaterialRecordList = new ArrayList<>();
         LayingOff layingOff = new LayingOff();
+        //state=0时从缓存取数据显示
         if (0 == state) {
             completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
             forgControlRecordList = forgControlRecordService.queryForgControlRecordCacheByItemId(tiId);
-            List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("2")).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(barForgeInfo)) {
-                queryWorkingTimeVo.setBarForge(barForgeInfo.get(0).getBarForge());
-            }
-            List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(remarkInfo)) {
-                queryWorkingTimeVo.setForgeRemark(remarkInfo.get(0).getRemark());
-            }
-            forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
+            forgControlRecordList = buildForgControlRecords(queryWorkingTimeVo, forgControlRecordList);
             layingOff = layingOffService.queryLayingOffCacheByItemId(tiId);
+            rawMaterialRecordList = rawMaterialRecordService.queryrawMaterialRecordCacheByItemId(tiId);
+
         } else {
             completeList = this.list(queryWrapper);
             QueryWrapper<ForgControlRecord> forgControlRecordQueryWrapper = new QueryWrapper<>();
             forgControlRecordQueryWrapper.eq("item_id", tiId);
             forgControlRecordList = forgControlRecordService.list(forgControlRecordQueryWrapper);
+            forgControlRecordList = buildForgControlRecords(queryWorkingTimeVo, forgControlRecordList);
             QueryWrapper<LayingOff> layingOffQueryWrapper = new QueryWrapper<>();
             layingOffQueryWrapper.eq("item_id", tiId);
             layingOff = layingOffService.getOne(layingOffQueryWrapper);
+            QueryWrapper<RawMaterialRecord> rawMaterialRecordQueryWrapper = new QueryWrapper<>();
+            rawMaterialRecordQueryWrapper.eq("item_id", tiId);
+            rawMaterialRecordList = rawMaterialRecordService.list(rawMaterialRecordQueryWrapper);
         }
 
         TrackItem trackItem = trackItemService.getById(tiId);
@@ -583,7 +607,21 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setQualityCheckBranch(trackItem.getQualityCheckBranch());
         queryWorkingTimeVo.setLayingOff(layingOff);
         queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
+        queryWorkingTimeVo.setRawMaterialRecordList(rawMaterialRecordList);
         return CommonResult.success(queryWorkingTimeVo);
+    }
+
+    private List<ForgControlRecord> buildForgControlRecords(QueryWorkingTimeVo queryWorkingTimeVo, List<ForgControlRecord> forgControlRecordList) {
+        List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("2")).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(barForgeInfo)) {
+            queryWorkingTimeVo.setBarForge(barForgeInfo.get(0).getBarForge());
+        }
+        List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(remarkInfo)) {
+            queryWorkingTimeVo.setForgeRemark(remarkInfo.get(0).getRemark());
+        }
+        forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
+        return forgControlRecordList;
     }
 
 
