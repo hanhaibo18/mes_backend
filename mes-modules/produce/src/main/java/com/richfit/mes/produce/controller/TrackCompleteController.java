@@ -98,7 +98,7 @@ public class TrackCompleteController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String productNo, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String productNo, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol,String classes) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -149,6 +149,11 @@ public class TrackCompleteController extends BaseController {
             }
             //增加工序过滤
 //            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+            //锻造车间、铸钢车间、冶炼车间的工序名称过滤（锻车间人员报工不涉及正火和去氢）
+            if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
+                queryWrapper.and(wrapper1->wrapper1.ne("opt_name","正火").ne("opt_name","去氢"));
+            }
+
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
                     if (order.equals("desc")) {
@@ -223,6 +228,11 @@ public class TrackCompleteController extends BaseController {
     @GetMapping("/pageOptimize")
     public CommonResult<Map<String, Object>> pageOptimize(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
         return CommonResult.success(trackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
+    }
+
+    @GetMapping("/pageOptimizeByBranch")
+    public CommonResult<Map<String, Object>> pageOptimizeByBranch(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
+        return CommonResult.success(trackCompleteService.queryTrackCompleteListByBranch(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
     }
 
     @ApiOperation(value = "工时统计by订单", notes = "工时统计by订单")

@@ -313,7 +313,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
                 queryWrapper.eq("work_plan_id", planId);
                 queryWrapper.eq("branch_code", plan.getBranchCode());
-                queryWrapper.eq("work_no", plan.getWorkNo());
+                queryWrapper.eq(StrUtil.isNotBlank(plan.getWorkNo()), "work_no", plan.getWorkNo());
                 List<TrackHead> trackHeadList = trackHeadMapper.selectList(queryWrapper);
                 //库存数量
                 int storeNum = 0;
@@ -332,6 +332,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                     List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                     optNumber += trackItemList.size();
+                    System.out.println("---");
+                    System.out.println(trackHead.getStatus());
                     switch (trackHead.getStatus()) {
                         case "0":
                         case "1":
@@ -361,6 +363,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                             break;
                         case "8":
                         case "9":
+                            System.out.println("------------------");
+                            System.out.println("已交");
                             //已交
                             //生成完工资料
                             trackHeadFinish++;
@@ -635,7 +639,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //替换计划id
                 UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
                 trackHeadUpdateWrapper.in("id", newPlan.getTrackHeadIds())
-                        .set("work_plan_id", plan.getId());
+                        .set("work_plan_id", plan.getId())
+                        .set("work_plan_no", plan.getProjCode())
+                        .set("work_plan_end_time", plan.getEndTime());
                 trackHeadService.update(trackHeadUpdateWrapper);
             }
 
@@ -674,7 +680,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             if (workPlanIds.size() > 0) {
                 UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
                 trackHeadUpdateWrapper.in("id", workPlanIds)
-                        .set("work_plan_id", plan.getId());
+                        .set("work_plan_id", plan.getId())
+                        .set("work_plan_no", plan.getProjCode())
+                        .set("work_plan_end_time", plan.getEndTime());
                 trackHeadService.update(trackHeadUpdateWrapper);
             }
 

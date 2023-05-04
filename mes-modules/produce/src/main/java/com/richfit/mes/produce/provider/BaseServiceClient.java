@@ -237,4 +237,8 @@ public interface BaseServiceClient {
     @ApiOperation(value = "通过条件查询物料信息")
     @PostMapping("/api/base/product/select_condition_product")
     public CommonResult<List<Product>> selectConditionProduct(@RequestBody ProductTypeDto productTypeDto);
+
+    @ApiOperation(value = "根据branchCode获取机构信息")
+    @GetMapping("/api/base/branch/getBranchInfoByBranchCode")
+    public Branch getBranchInfoByBranchCode(@RequestParam String branchCode);
 }

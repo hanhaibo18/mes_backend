@@ -37,23 +37,23 @@ public class HeatTrackAssignController extends BaseController {
     @Autowired
     public TrackHeadService trackHeadService;
 
-    @ApiOperation(value = "未装炉生产查询")
+    @ApiOperation(value = "未装炉生产查询-（热处理）")
     @PostMapping("/query_not_produce")
     public CommonResult<IPage<Assign>> queryNotProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryWhetherProduce(dispatchingDto, false));
     }
-    @ApiOperation(value = "未装炉生产查询--热工")
+    @ApiOperation(value = "未装炉生产查询-(铸造、铸钢、冶炼)")
     @PostMapping("/query_not_produce_hot")
     public CommonResult<IPage<AssignHot>> queryNotProduceHot(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryWhetherProduceHot(dispatchingDto, false));
     }
-    @ApiOperation(value = "装炉生产查询")
+    @ApiOperation(value = "装炉生产查询-（热处理）")
     @PostMapping("/query_produce")
     public CommonResult<IPage<Assign>> queryProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryWhetherProduce(dispatchingDto, true));
     }
 
-    @ApiOperation(value = "装炉生产查询--热工")
+    @ApiOperation(value = "装炉生产查询-（铸造、铸钢、冶炼)")
     @PostMapping("/query_produce_hot")
     public CommonResult<IPage<AssignHot>> queryProduceHot(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryWhetherProduceHot(dispatchingDto, true));

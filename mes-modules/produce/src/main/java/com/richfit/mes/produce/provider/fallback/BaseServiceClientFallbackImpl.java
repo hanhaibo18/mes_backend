@@ -225,5 +225,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public Branch getBranchInfoByBranchCode(String branchCode) {
+        return null;
+    }
+
 
 }

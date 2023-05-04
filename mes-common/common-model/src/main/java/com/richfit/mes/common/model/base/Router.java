@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -179,6 +180,10 @@ public class Router extends BaseEntity<Router> {
      */
     private String pieceWeight;
 
+    /**
+     * erp同步时间
+     */
+    private Date erpSyncTime;
 
 
     @ApiModelProperty(value = "该工艺历史版本")

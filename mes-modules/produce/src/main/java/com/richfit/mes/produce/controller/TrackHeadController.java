@@ -310,7 +310,7 @@ public class TrackHeadController extends BaseController {
             queryWrapper.like("production_order", productionOrder);
         }
         if (!StringUtils.isNullOrEmpty(workPlanId)) {
-            queryWrapper.like("work_plan_id", workPlanId);
+            queryWrapper.eq("work_plan_id", workPlanId);
         }
         if (!StringUtils.isNullOrEmpty(workPlanNo)) {
             queryWrapper.like("work_plan_No", workPlanNo);

@@ -23,6 +23,10 @@ public interface ErpServiceClient {
     @PostMapping("/api/integration/erp/router/push")
     public CommonResult<Boolean> pushRouter(@RequestBody List<Router> routers, @RequestHeader(value = SecurityConstants.FROM) String header);
 
+
+    @PostMapping("/api/integration/erp/router/push")
+    public CommonResult erpSync(@RequestBody List<Router> routers);
+
     @GetMapping("/api/integration/erp/material/getMaterial")
     public CommonResult<List<Product>> getMaterial(@ApiParam(value = "日期") @RequestParam String date,
                                                    @ApiParam(value = "erp代号") @RequestParam String erpCode,

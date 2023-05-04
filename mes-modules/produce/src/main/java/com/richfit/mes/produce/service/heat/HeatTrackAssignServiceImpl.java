@@ -192,6 +192,9 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
             queryWrapper.isNull("u.precharge_furnace_id");
         }
 
+        //锻造车间、铸钢车间、冶炼车间的工序名称过滤（这些车间预装炉子只涉及正火和去氢）
+        queryWrapper.and(wrapper1->wrapper1.eq("u.opt_name","正火").or().eq("u.opt_name","去氢"));
+
 
         queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',u.site_id)");
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
