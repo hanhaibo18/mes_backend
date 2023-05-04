@@ -21,6 +21,7 @@ import com.richfit.mes.common.model.produce.TrackAssembly;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -227,6 +228,10 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
         QueryWrapper<ProjectBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("work_plan_no", projectBom.getWorkPlanNo());
         projectBom.setOrderNo(this.count(queryWrapper));
+        boolean result = this.save(projectBom);
+        if (!result) {
+            throw new GlobalException("保存失败！", ResultCode.FAILED);
+        }
         //先找到主项目bom信息
         QueryWrapper<ProjectBom> mainBomWrapper = new QueryWrapper<>();
         mainBomWrapper.eq("drawing_no", projectBom.getMainDrawingNo())
@@ -267,7 +272,12 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                                 trackAssembly.setIsNumFrom(projectBom.getIsNumFrom());
                                 trackAssembly.setOptName(projectBom.getOptName());
                                 trackAssembly.setFlowId(key);
-
+                                trackAssembly.setBranchCode(projectBom.getBranchCode());
+                                trackAssembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                                trackAssembly.setSourceType(mainBom.getSourceType());
+                                trackAssembly.setProjectBomId(projectBom.getId());
+                                trackAssembly.setOptName(projectBom.getOptName());
+                                trackAssembly.setTrackNo(trackHead.getTrackNo());
                                 addList.add(trackAssembly);
                             }
                         });
@@ -278,7 +288,7 @@ public class ProjectBomServiceImpl extends ServiceImpl<ProjectBomMapper, Project
                 }
             }
         }
-        return this.save(projectBom);
+        return true;
     }
 
     @Override

@@ -66,7 +66,7 @@ public interface ProduceServiceClient {
     public List<TrackHead> getTrackHeadByProjectBomId(@RequestParam String bomId, @RequestParam String tenantId, @RequestParam String branchCode);
 
     @ApiOperation(value = "根据跟单Id查询装配列表(其他服务调用)")
-    @GetMapping("/api/produce/track_head/getAssemblyListByTrackHeadId")
+    @GetMapping("/api/produce/trackassembly/getAssemblyListByTrackHeadId")
     public List<TrackAssembly> getAssemblyListByTrackHeadId(@RequestParam String trackHeadId, @RequestParam String tenantId, @RequestParam String branchCode);
 
     @ApiOperation(value = "批量新增装配列表(其他服务调用)")
