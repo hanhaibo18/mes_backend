@@ -33,11 +33,10 @@ public class RouterController {
 
     @ApiOperation(value = "工艺推送接口", notes = "根据工艺向ERP推送")
     @PostMapping("/push")
-    public CommonResult<Zc80Ppif026Response> routerPush(@ApiParam(value = "工艺列表") @RequestBody List<Router> routers) throws Exception {
+    public CommonResult routerPush(@ApiParam(value = "工艺列表") @RequestBody List<Router> routers) throws Exception {
         Zc80Ppif026Response zc80Ppif026Response = routerService.push(routers);
-        System.out.println(JSON.toJSONString(zc80Ppif026Response));
         if ("S".equals(zc80Ppif026Response.getEType())) {
-            return CommonResult.success(zc80Ppif026Response, zc80Ppif026Response.getEMes());
+            return CommonResult.success(zc80Ppif026Response.getEMes());
         } else {
             return CommonResult.failed(zc80Ppif026Response.getEMes());
         }

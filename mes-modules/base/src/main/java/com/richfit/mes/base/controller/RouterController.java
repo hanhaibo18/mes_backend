@@ -11,6 +11,7 @@ import com.richfit.mes.base.enmus.OptTypeEnum;
 import com.richfit.mes.base.enmus.RouterStatusEnum;
 import com.richfit.mes.base.entity.QueryIsHistory;
 import com.richfit.mes.base.entity.QueryProcessRecordsVo;
+import com.richfit.mes.base.provider.ErpServiceClient;
 import com.richfit.mes.base.service.OperationAssignService;
 import com.richfit.mes.base.service.RouterOptAssignService;
 import com.richfit.mes.base.service.RouterService;
@@ -25,11 +26,9 @@ import com.richfit.mes.common.model.base.RouterOptAssign;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.AssignPerson;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +50,9 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/base/router")
 public class RouterController extends BaseController {
+
+    @Autowired
+    public ErpServiceClient erpServiceClient;
 
     @Autowired
     public RouterService routerService;
@@ -638,7 +640,7 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "根据图号和工序name查询工艺工序派工", notes = "根据图号和工序name查询工艺工序派工")
     @GetMapping("/router/opt/assign/get")
-    public CommonResult<RouterOptAssign> assignGet(String routerNo,String optName, String branchCode) {
+    public CommonResult<RouterOptAssign> assignGet(String routerNo, String optName, String branchCode) {
         QueryWrapper<RouterOptAssign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("opt_name", optName);
         queryWrapper.eq("branch_code", branchCode);
@@ -648,15 +650,15 @@ public class RouterController extends BaseController {
         }
         RouterOptAssign one = routerOptAssignService.getOne(queryWrapper);
         //没有自动派工信息返回工序定义中的自动派工信息
-        if(ObjectUtil.isEmpty(one)){
+        if (ObjectUtil.isEmpty(one)) {
             OperationAssign operatinoAssign = operationAssignService.getOperatinoByParam(optName, branchCode);
             //将工序定义的自动派工数据插入到工艺工序的自动派工配置里
             RouterOptAssign routerOptAssign = new RouterOptAssign();
-            BeanUtil.copyProperties(operatinoAssign,routerOptAssign,new String[]{"id","createTime","modifyTime","modifyBy"});
+            BeanUtil.copyProperties(operatinoAssign, routerOptAssign, new String[]{"id", "createTime", "modifyTime", "modifyBy"});
             routerOptAssign.setRouterNo(routerNo);
             routerOptAssignService.save(routerOptAssign);
             return CommonResult.success(routerOptAssign, "操作成功！");
-        }else{
+        } else {
             ArrayList<AssignPerson> assignPeoples = new ArrayList<>();
             if (!ObjectUtil.isEmpty(one) && !StringUtils.isNullOrEmpty(one.getUserId())) {
                 List<String> list = Arrays.asList(one.getUserId().split(","));
@@ -696,8 +698,7 @@ public class RouterController extends BaseController {
     }
 
     @ApiOperation(value = "修改工艺工序派工", notes = "修改工艺工序派工")
-    @ApiImplicitParam(name = "assign", value = "工艺工序派工", required = true, dataType = "RouterOptAssign", paramType = "body")
-    @PutMapping("router/opt/update")
+    @PostMapping("router/opt/update")
     public CommonResult<Boolean> assignUpdate(@RequestBody RouterOptAssign assign) {
         StringBuilder userId = new StringBuilder();
         StringBuilder userName = new StringBuilder();
@@ -715,4 +716,18 @@ public class RouterController extends BaseController {
         return CommonResult.success(routerOptAssignService.updateById(assign), "操作成功！");
     }
 
+
+    @ApiOperation(value = "erp同步", notes = "erp同步")
+    @PostMapping("/erp/sync")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult erpSync(@ApiParam(value = "跟单号", required = true) @RequestBody List<Router> routers) {
+        CommonResult result = erpServiceClient.erpSync(routers);
+        if (result.getStatus() == 200) {
+            for (Router router : routers) {
+                router.setErpSyncTime(new Date());
+                routerService.updateById(router);
+            }
+        }
+        return result;
+    }
 }

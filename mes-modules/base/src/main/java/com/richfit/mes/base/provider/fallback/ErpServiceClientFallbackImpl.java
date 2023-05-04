@@ -18,7 +18,12 @@ public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> getMaterial(String date, String erpCode,String header) {
+    public CommonResult erpSync(List<Router> routers) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<List<Product>> getMaterial(String date, String erpCode, String header) {
         return null;
     }
 }
