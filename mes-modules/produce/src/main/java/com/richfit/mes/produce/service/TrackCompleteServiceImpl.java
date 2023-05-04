@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -404,7 +405,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //机加、装配需要判断报工数量，才去进行下工序处理
-            if("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())){
+            if ("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())) {
                 //跟新工序完成数量
                 trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
                 double intervalNumber = assign.getQty() + 0.0;
@@ -434,9 +435,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     assign.setState(2);
                     trackAssignService.updateById(assign);
                 }
-            }else{
+            } else {
                 //跟新工序完成数量
-                trackItem.setCompleteQty(Double.parseDouble(String.valueOf(ObjectUtil.isEmpty(trackItem.getAssignableQty())?"0":trackItem.getAssignableQty())));
+                trackItem.setCompleteQty(Double.parseDouble(String.valueOf(ObjectUtil.isEmpty(trackItem.getAssignableQty()) ? "0" : trackItem.getAssignableQty())));
                 //更改状态 标识当前工序完成
                 trackItem.setIsDoing(2);
                 trackItem.setIsOperationComplete(1);
@@ -834,7 +835,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //此次报工对应的产品工序
         for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
             List<TrackItem> collect = list.stream().filter(trackItem ->
-                    trackItem.getOptNo().equals(outsourceDto.getOptNo()) && OptNameUtil.optName(trackItem.getOptName()).equals(OptNameUtil.optName(outsourceDto.getOptName())) && trackItem.getIsCurrent() == 1
+                    StrUtil.isNotBlank(trackItem.getOptNo()) && StrUtil.isNotBlank(trackItem.getOptName()) && trackItem.getOptNo().equals(outsourceDto.getOptNo()) && OptNameUtil.optName(trackItem.getOptName()).equals(OptNameUtil.optName(outsourceDto.getOptName())) && trackItem.getIsCurrent() == 1
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
