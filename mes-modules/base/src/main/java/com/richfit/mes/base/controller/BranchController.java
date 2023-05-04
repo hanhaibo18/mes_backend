@@ -324,4 +324,14 @@ public class BranchController extends BaseController {
         return CommonResult.success(branchService.list(queryWrapper));
     }
 
+    @ApiOperation(value = "根据branchCode获取机构信息(其他服务调用)")
+    @GetMapping("/getBranchInfoByBranchCode")
+    public Branch getBranchInfoByBranchCode(@RequestParam String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        return branchService.getOne(queryWrapper);
+    }
+
 }

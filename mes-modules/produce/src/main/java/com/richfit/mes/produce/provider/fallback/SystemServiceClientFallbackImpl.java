@@ -7,6 +7,7 @@ import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
         return null;
     }
 
+    @PostMapping("/api/sys/user/queryByUserAccountListInner")
     @Override
     public Map<String, TenantUserVo> queryByUserAccountListInner(List<String> userAccountList, String header) {
         return null;
