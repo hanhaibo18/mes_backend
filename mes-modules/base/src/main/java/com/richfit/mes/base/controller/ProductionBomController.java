@@ -361,7 +361,7 @@ public class ProductionBomController extends BaseController {
                 break;
             }
             QueryWrapper<ProductionBom> query = new QueryWrapper<>();
-            DrawingNoUtil.queryLike(query, "drawing_no", drawingNo);
+            DrawingNoUtil.queryEq(query, "drawing_no", drawingNo);
             query.eq("branch_code", branchCode);
             query.eq("grade", "H");
             query.eq("tenant_id", tenantId);
