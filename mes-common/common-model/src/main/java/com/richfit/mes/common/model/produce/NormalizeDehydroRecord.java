@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -14,18 +15,26 @@ import lombok.Data;
 @TableName("produce_normalize_dehydro_record")
 public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
 
-    //跟单工序id
+    @ApiModelProperty(value = "跟单工序id", dataType = "String")
     private String itemId;
-    //产品名称
+    @ApiModelProperty(value = "产品名称", dataType = "String")
     private String productName;
-    //图    号
+    @ApiModelProperty(value = "图    号", dataType = "String")
     private String drawNo;
-    //编号
+    @ApiModelProperty(value = "记录编号", dataType = "String")
     private String serialNo;
-    //数量
+    @ApiModelProperty(value = "数量", dataType = "Integer")
     private Integer number;
-    //(0、正火     1、去氢)
-    private String type;
+    @ApiModelProperty(value = "0 正火  1 去氢", dataType = "Integer")
+    private Integer type;
 
+    @ApiModelProperty(value = "设备编号", dataType = "String")
+    private String equipmentNo;
+    @ApiModelProperty(value = "审核状态 0 未通过  1 通过", dataType = "Integer")
+    private Integer auditStatus;
+    @ApiModelProperty(value = "记录人", dataType = "String")
+    private String recordBy;
+    @ApiModelProperty(value = "班次", dataType = "String")
+    private String workTime;
 }
 

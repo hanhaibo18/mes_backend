@@ -59,7 +59,6 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     /**
      *
      * @param assignList
-     * @param tempWork
      * @param texture   材质
 
      */
