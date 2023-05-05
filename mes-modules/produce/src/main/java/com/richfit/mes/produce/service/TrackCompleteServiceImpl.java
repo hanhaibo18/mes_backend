@@ -31,6 +31,7 @@ import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
+import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.CompleteDto;
@@ -96,7 +97,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private ForgControlRecordService forgControlRecordService;
     @Autowired
     private RawMaterialRecordService rawMaterialRecordService;
-
+    @Autowired
+    private TrackItemMapper trackItemMapper;
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
@@ -606,6 +608,77 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
         queryWorkingTimeVo.setRawMaterialRecordList(rawMaterialRecordList);
         return CommonResult.success(queryWorkingTimeVo);
+    }
+
+    /**
+     * @param state
+     * @return
+     */
+    @Override
+    public CommonResult<List<QueryWorkingTimeVo>> queryDetailsHot(Integer state, String furnaceId) {
+        //查出炉内所有工序
+        QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+        itemQueryWrapper.eq("precharge_furnace_id", furnaceId);
+        //查出装炉内的跟单工序
+        List<TrackItem> trackItems = trackItemMapper.selectList(itemQueryWrapper);
+        if (!CollectionUtils.isEmpty(trackItems)) {
+            List<String> itemsIds = trackItems.stream().map(x -> x.getId()).collect(Collectors.toList());
+            //根据跟单工序id查出对应的派工数据
+            QueryWrapper<Assign> assignQueryWrapper=new QueryWrapper<>();
+            assignQueryWrapper.in("ti_id",itemsIds);
+            List<Assign> assigns = trackAssignMapper.query(assignQueryWrapper);
+            Map<String, Assign> assignMap = assigns.stream().collect(Collectors.toMap(x -> x.getTiId(), x -> x));
+            List<QueryWorkingTimeVo> list = new ArrayList<>();
+            for (TrackItem trackItem : trackItems) {
+
+                QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
+                Assign assign = assignMap.get(trackItem.getId());
+                //给assignPersion赋值
+                rgSetAssignPersion(assign.getId(), assign);
+
+
+                QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("ti_id", trackItem.getId());
+
+                List<TrackComplete> completeList = new ArrayList<>();
+                List<ForgControlRecord> forgControlRecordList = new ArrayList<>();
+                List<RawMaterialRecord> rawMaterialRecordList = new ArrayList<>();
+                LayingOff layingOff = new LayingOff();
+                //state=0时从缓存取数据显示
+                if (0 == state) {
+                    completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
+                    forgControlRecordList = forgControlRecordService.queryForgControlRecordCacheByItemId(trackItem.getId());
+                    forgControlRecordList = buildForgControlRecords(queryWorkingTimeVo, forgControlRecordList);
+                    layingOff = layingOffService.queryLayingOffCacheByItemId(trackItem.getId());
+                    rawMaterialRecordList = rawMaterialRecordService.queryrawMaterialRecordCacheByItemId(trackItem.getId());
+
+                } else {
+                    completeList = this.list(queryWrapper);
+                    QueryWrapper<ForgControlRecord> forgControlRecordQueryWrapper = new QueryWrapper<>();
+                    forgControlRecordQueryWrapper.eq("item_id", trackItem.getId());
+                    forgControlRecordList = forgControlRecordService.list(forgControlRecordQueryWrapper);
+                    forgControlRecordList = buildForgControlRecords(queryWorkingTimeVo, forgControlRecordList);
+                    QueryWrapper<LayingOff> layingOffQueryWrapper = new QueryWrapper<>();
+                    layingOffQueryWrapper.eq("item_id", trackItem.getId());
+                    layingOff = layingOffService.getOne(layingOffQueryWrapper);
+                    QueryWrapper<RawMaterialRecord> rawMaterialRecordQueryWrapper = new QueryWrapper<>();
+                    rawMaterialRecordQueryWrapper.eq("item_id", trackItem.getId());
+                    rawMaterialRecordList = rawMaterialRecordService.list(rawMaterialRecordQueryWrapper);
+                }
+
+                queryWorkingTimeVo.setTrackCompleteList(completeList);
+                queryWorkingTimeVo.setAssign(assign);
+                queryWorkingTimeVo.setQcPersonId(trackItem.getQualityCheckBy());
+                queryWorkingTimeVo.setQualityCheckBranch(trackItem.getQualityCheckBranch());
+                queryWorkingTimeVo.setLayingOff(layingOff);
+                queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
+                queryWorkingTimeVo.setRawMaterialRecordList(rawMaterialRecordList);
+                list.add(queryWorkingTimeVo);
+            }
+            return CommonResult.success(list);
+        } else {
+            return CommonResult.failed("装炉内没有工序");
+        }
     }
 
     private List<ForgControlRecord> buildForgControlRecords(QueryWorkingTimeVo queryWorkingTimeVo, List<ForgControlRecord> forgControlRecordList) {
