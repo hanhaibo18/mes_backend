@@ -40,6 +40,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -78,27 +79,22 @@ public class OrderController extends BaseController {
     })
     @GetMapping("/query/page")
     public CommonResult queryByCondition(BasePageDto<String> queryDto) throws GlobalException {
-
         OrderDto orderDto = null;
         try {
             orderDto = objectMapper.readValue(queryDto.getParam(), OrderDto.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
         if (null == orderDto) {
             orderDto = new OrderDto();
         }
-
-//        orderDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        orderDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         if (StringUtils.hasText(orderDto.getOrderCol())) {
             orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
         } else {
             orderDto.setOrderCol("modify_time");
             orderDto.setOrder("desc");
         }
-
-
         IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
         List<String> materialCodes = orderList.getRecords().stream().map(x -> x.getMaterialCode()).collect(Collectors.toList());
         //根据物料号查询物料信息
@@ -119,9 +115,15 @@ public class OrderController extends BaseController {
         return CommonResult.success(orderList);
     }
 
-    @GetMapping("/query/pageEqMaterialCode")
-    public CommonResult pageEqMaterialCode(BasePageDto<String> queryDto) throws GlobalException {
-
+    /**
+     * 分页查询plan
+     */
+    @ApiOperation(value = "查询订单信息", notes = "根据查询条件返回订单信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "queryDto", value = "订单属性", paramType = "BasePageDto")
+    })
+    @GetMapping("/query/use")
+    public CommonResult queryByUse(BasePageDto<String> queryDto) throws GlobalException {
         OrderDto orderDto = null;
         try {
             orderDto = objectMapper.readValue(queryDto.getParam(), OrderDto.class);
@@ -132,17 +134,56 @@ public class OrderController extends BaseController {
         if (null == orderDto) {
             orderDto = new OrderDto();
         }
-//        orderDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         if (StringUtils.hasText(orderDto.getOrderCol())) {
             orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
         } else {
             orderDto.setOrderCol("modify_time");
             orderDto.setOrder("desc");
         }
+        IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
+        List<Order> orderListNew = new ArrayList<>();
+        for (Order order : orderList.getRecords()) {
+            if (order.getOrderNum() > order.getProjNum()) {
+                orderListNew.add(order);
+            }
+        }
 
+        List<String> materialCodes = orderListNew.stream().map(x -> x.getMaterialCode()).collect(Collectors.toList());
+        //根据物料号查询物料信息
+        List<Product> productList = baseServiceClient.listByMaterialNoList(materialCodes);
+        if (!CollectionUtils.isEmpty(productList)) {
+            Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x));
+            //把物料名称和图号拼接后存入订单描述字段内
+            for (Order record : orderListNew) {
+                Product product = productMap.get(record.getMaterialCode());
+                //物料不为空
+                if (!ObjectUtils.isEmpty(product)) {
+                    record.setProductName(product.getProductName());//产品名称
+                    record.setDrawingNo(product.getDrawingNo());//图号
+                }
+            }
+        }
+        return CommonResult.success(orderListNew);
+    }
 
+    @GetMapping("/query/pageEqMaterialCode")
+    public CommonResult pageEqMaterialCode(BasePageDto<String> queryDto) throws GlobalException {
+        OrderDto orderDto = null;
+        try {
+            orderDto = objectMapper.readValue(queryDto.getParam(), OrderDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        if (null == orderDto) {
+            orderDto = new OrderDto();
+        }
+        if (StringUtils.hasText(orderDto.getOrderCol())) {
+            orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
+        } else {
+            orderDto.setOrderCol("modify_time");
+            orderDto.setOrder("desc");
+        }
         List<Order> orderList = orderService.queryPageEqMaterialCode(orderDto);
-
         return CommonResult.success(orderList);
 
     }
@@ -291,10 +332,10 @@ public class OrderController extends BaseController {
         return CommonResult.success(orderList);
     }
 
-    @ApiOperation(value = "根据计划逆向生成订单并且关联",notes = "根据计划逆向生成订单")
+    @ApiOperation(value = "根据计划逆向生成订单并且关联", notes = "根据计划逆向生成订单")
     @ApiImplicitParam(name = "PlanList", value = "计划列表", paramType = "Plan")
     @PostMapping("/save_by_plan")
-    public CommonResult<Boolean> saveOrderByPlan(@RequestBody List<Plan> plans){
+    public CommonResult<Boolean> saveOrderByPlan(@RequestBody List<Plan> plans) {
         return CommonResult.success(orderService.saveByPlan(plans));
     }
 
