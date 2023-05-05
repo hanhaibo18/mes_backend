@@ -50,6 +50,8 @@ public class CertificateController {
 
     public static String CERTIFICATE_NO_NULL_MESSAGE = "合格证编号不能为空!";
     public static String CERTIFICATE_NO_EXIST_MESSAGE = "合格证编号已存在,不能重复!";
+
+    public static String CERTIFICATE_HAS_BEEN_ISSUED = "合格证已开具,不能重复开具!";
     public static String TRACK_NO_NULL_MESSAGE = "请选择跟单!";
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败！";
@@ -75,18 +77,28 @@ public class CertificateController {
         if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
             return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
         }
-        if (certificateService.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
-            return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
-        } else {
-            //合格证来源 0：开出合格证 1：接收合格证
-            certificate.setCertOrigin("0");
-            //检查当前工序之前有没有未完成的工序
-            if ("0".equals(certificate.getType())) {
-                this.checkBefore(certificate);
+        //合格证来源 0：开出合格证 1：接收合格证
+        certificate.setCertOrigin("0");
+        //检查当前工序之前有没有未完成的工序
+        List<TrackCertificate> trackCertificates = certificate.getTrackCertificates();
+        if ("0".equals(certificate.getType())) {
+            this.checkBefore(certificate);
+            for (TrackCertificate trackCertificate : trackCertificates) {
+                TrackItem trackItem = trackItemService.getById(trackCertificate.getTiId());
+                if (StrUtil.isNotBlank(trackItem.getCertificateNo())) {
+                    return CommonResult.failed(CERTIFICATE_HAS_BEEN_ISSUED);
+                }
             }
-            certificateService.saveCertificate(certificate);
-            return CommonResult.success(certificate);
+        } else {
+            for (TrackCertificate trackCertificate : trackCertificates) {
+                TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
+                if (StrUtil.isNotBlank(trackHead.getCertificateNo())) {
+                    return CommonResult.failed(CERTIFICATE_HAS_BEEN_ISSUED);
+                }
+            }
         }
+        certificateService.saveCertificate(certificate);
+        return CommonResult.success(certificate);
     }
 
     private CommonResult<Certificate> checkBefore(Certificate certificate) {

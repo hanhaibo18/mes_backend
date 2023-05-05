@@ -766,11 +766,11 @@ public class TrackCompleteController extends BaseController {
                     }
                     //判断后置工序是否已派工，否则不可回滚
                     QueryWrapper<Assign> queryWrapper = new QueryWrapper<Assign>();
-                    queryWrapper.eq("ti_id", trackItem.getId());
+                    queryWrapper.eq("track_id", trackItem.getTrackHeadId());
                     List<Assign> assigns = trackAssignService.list(queryWrapper);
                     for (int j = 0; j < assigns.size(); j++) {
                         TrackItem cstrackItem = trackItemService.getById(assigns.get(j).getTiId());
-                        if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                        if (cstrackItem.getFlowId().equals(trackItem.getFlowId()) && cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
                             return CommonResult.failed("无法取消报工，已有后序工序【" + cstrackItem.getOptName() + "】已派工，需要先取消后序工序");
                         }
                     }
@@ -778,7 +778,7 @@ public class TrackCompleteController extends BaseController {
 
                     //将后置工序IS_CURRENT设置为否，状态为1
 
-                    List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("track_head_id", trackItem.getTrackHeadId()).orderByAsc("opt_sequence"));
+                    List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("flow_id", trackItem.getFlowId()).orderByAsc("opt_sequence"));
                     for (int j = 0; j < items.size(); j++) {
                         if (items.get(j).getOptSequence() > trackItem.getOptSequence() && items.get(j).getIsCurrent() == 1) {
                             items.get(j).setIsCurrent(0);

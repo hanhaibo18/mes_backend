@@ -3,6 +3,7 @@ package com.richfit.mes.produce.entity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.richfit.mes.common.core.base.BasePageDto;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 
 import java.util.Date;
@@ -41,7 +42,7 @@ public class PlanDto extends BasePageDto<PlanDto> {
     /**
      * 状态
      */
-    private int status;
+    private Integer status;
     /**
      * 预警状态
      */

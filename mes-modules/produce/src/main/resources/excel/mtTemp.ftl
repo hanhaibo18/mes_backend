@@ -987,7 +987,7 @@
                                                         <w:vertAlign w:val="baseline" />
                                                         <w:lang w:val="en-US" w:eastAsia="zh-CN" />
                                                     </w:rPr>
-                                                    <w:t>A</w:t>
+                                                    <w:t>kA</w:t>
                                                 </w:r>
                                             </w:p>
                                         </w:tc>

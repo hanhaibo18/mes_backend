@@ -154,7 +154,7 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(planDto.getEndTime())) {
             queryWrapper.le("end_time", planDto.getEndTime() + " 23:59:59");
         }
-        if (planDto.getStatus() != -1) {
+        if (planDto.getStatus() != null && planDto.getStatus() != -1) {
             queryWrapper.eq("status", planDto.getStatus());
         }
         if (planDto.isFiterClose()) {
