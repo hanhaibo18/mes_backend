@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -22,17 +23,17 @@ public class InspectionDocUpload implements Serializable {
      * 综合判定 外购
      * 合格/不合格/部分合格/退货
      */
-    private Integer finalResult;
+    private String finalResult;
 
     /**
      * 合格数量 外购/外协
      */
-    private Integer qualifiedQuantity;
+    private BigDecimal qualifiedQuantity;
 
     /**
      * 不合格数量 外购/外协
      */
-    private Integer unqualifiedQuantity;
+    private BigDecimal unqualifiedQuantity;
 
     /**
      * 资料是否齐全 外购
@@ -92,7 +93,7 @@ public class InspectionDocUpload implements Serializable {
     /**
      * 抽检样品数量 外协
      */
-    private String samplingQuantity;
+    private BigDecimal samplingQuantity;
 
     /**
      * 质检员

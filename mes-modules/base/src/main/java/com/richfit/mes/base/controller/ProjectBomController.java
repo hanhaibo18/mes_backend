@@ -6,6 +6,8 @@ import com.richfit.mes.base.entity.DeleteBomDto;
 import com.richfit.mes.base.entity.DeleteProjectBomDto;
 import com.richfit.mes.base.service.ProjectBomService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -14,6 +16,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -54,6 +57,9 @@ public class ProjectBomController {
     @DeleteMapping("/deleteBomList")
     @ApiOperation(value = "删除多条BOM")
     public CommonResult<Boolean> deleteBom(@RequestBody DeleteProjectBomDto deleteProjectBomDto) {
+        if (deleteProjectBomDto == null || CollectionUtils.isEmpty(deleteProjectBomDto.getBomList())){
+            throw new GlobalException("请勾选要删除的bom!", ResultCode.FAILED);
+        }
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         boolean deleteBom = false;
         for (DeleteBomDto deleteBomDto : deleteProjectBomDto.getBomList()) {

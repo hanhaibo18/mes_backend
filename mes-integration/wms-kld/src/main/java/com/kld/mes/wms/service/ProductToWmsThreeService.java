@@ -57,20 +57,20 @@ public class ProductToWmsThreeService {
         return applicationResult;
     }
 
-    // MES报检单驳回WMS(待接口)
+    // MES报检单驳回WMS
     public ApplicationResult rejectInspectionDocInterface(RejectInspectionDoc rejectInspectionDoc) {
         Map<String, Object> params = convertInput(rejectInspectionDoc);
         //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl + "/returnIns").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
 
-    // MES报检单质检结果上传WMS(待接口)
+    // MES报检单质检结果上传WMS
     public ApplicationResult inspectionDocUploadInterface(InspectionDocUpload inspectionDocUpload) {
         Map<String, Object> params = convertInput(inspectionDocUpload);
         //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl + "/uploadInsResult").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -107,7 +107,7 @@ public class ProductToWmsThreeService {
     public ApplicationResult materialRequisitionUploadInterface(MaterialRequisitionUpload materialRequisitionUpload) {
         Map<String, Object> params = convertInput(materialRequisitionUpload);
         //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl + "/uploadOutApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -125,7 +125,7 @@ public class ProductToWmsThreeService {
     public ApplicationResult materialRequisitionRecallInterface(MaterialRequisitionRecall materialRequisitionRecall) {
         Map<String, Object> params = convertInput(materialRequisitionRecall);
         //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        String s = HttpRequest.post(mesToWmsUrl + "/returnOutApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
