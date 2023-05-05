@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -58,6 +59,11 @@ public class ReverseInspectionDocUpload implements Serializable {
     private String supplierCode;
 
     /**
+     * 供应商编码
+     */
+    private String supplierName;
+
+    /**
      * 到货日期 
      */
     private String arrivalDate;
@@ -80,7 +86,7 @@ public class ReverseInspectionDocUpload implements Serializable {
     /**
      * 报检数量 
      */
-    private String inspectionQuantity;
+    private BigDecimal inspectionQuantity;
 
     /**
      * 产品编号 
