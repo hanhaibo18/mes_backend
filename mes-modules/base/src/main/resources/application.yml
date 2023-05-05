@@ -61,7 +61,7 @@ secure:
       - /api/base/sequence/getByRouterNo
       - /api/base/sequence/push
       - /api/base/product/product/listByNo
-      - /api/base/product/selectOrderProduct/inner
+      - /api/base/product/selectOrderProduct
 
 swagger:
   basic:
