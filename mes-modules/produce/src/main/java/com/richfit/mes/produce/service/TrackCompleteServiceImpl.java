@@ -460,10 +460,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             log.error(completeDto.getTrackCompleteList().toString());
 
             this.saveBatch(completeDto.getTrackCompleteList());
-            //锻造车间 填写的额外报工信息
-            if (!ObjectUtil.isEmpty(completeDto.getTrackCompleteExtraList()) && completeDto.getTrackCompleteExtraList().size() > 0) {
-                trackCompleteExtraService.saveBatch(completeDto.getTrackCompleteExtraList());
-            }
 
             //保存下料信息和锻造信息
             saveLayingOffAndForgControlRecord(completeDto);
@@ -717,18 +713,29 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setProdNo(completeDto.getProdNo());
             trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             trackComplete.setCompleteTime(new Date());
-            numDouble += trackComplete.getCompletedQty();
+            numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
         }
-        //报工数量判断
-        if (numDouble > assign.getQty()) {
-            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得大于" + assign.getQty());
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        //机加、装配需要判断报工数量
+        if ("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())) {
+            //报工数量判断
+            if (numDouble > assign.getQty()) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得大于" + assign.getQty());
+            }
+            if (numDouble < intervalNumber - 0.01) {
+                return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得少于" + +(intervalNumber - 0.01));
+            }
+            //跟新工序完成数量
+            trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
+            trackItemService.updateById(trackItem);
         }
-        if (numDouble < intervalNumber - 0.01) {
-            return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + ",完工数量不得少于" + +(intervalNumber - 0.01));
-        }
-        //跟新工序完成数量
-        trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
-        trackItemService.updateById(trackItem);
+        log.error(completeDto.getTrackCompleteList().toString());
+
+        //保存下料信息和锻造信息
+        saveLayingOffAndForgControlRecord(completeDto);
+        //保存原材料消耗信息
+        saveRawMaterialRecord(completeDto);
+
         return CommonResult.success(this.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
     }
 

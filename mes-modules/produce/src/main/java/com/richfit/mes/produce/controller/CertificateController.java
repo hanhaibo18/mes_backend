@@ -81,7 +81,9 @@ public class CertificateController {
             //合格证来源 0：开出合格证 1：接收合格证
             certificate.setCertOrigin("0");
             //检查当前工序之前有没有未完成的工序
-            this.checkBefore(certificate);
+            if ("0".equals(certificate.getType())) {
+                this.checkBefore(certificate);
+            }
             certificateService.saveCertificate(certificate);
             return CommonResult.success(certificate);
         }

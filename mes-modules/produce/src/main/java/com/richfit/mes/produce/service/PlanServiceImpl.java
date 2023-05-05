@@ -432,7 +432,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                                     TrackHeadPublicDto trackHeadPublicDto = new TrackHeadPublicDto();
                                     BeanUtils.copyProperties(trackHead, trackHeadPublicDto); //a，b为对象
                                     trackHeadPublicDto.setFlowId(trackFlow.getId());
-                                    trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto);
+                                    List<TrackFlow> trackFlowList = new ArrayList<>();
+                                    trackFlowList.add(trackFlow);
+                                    trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto,trackFlowList);
                                 }
                             }
                             trackHeadService.updateById(trackHead);

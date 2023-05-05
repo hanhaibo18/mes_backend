@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.produce.entity.AdditionalMaterialDto;
 import com.richfit.mes.produce.entity.AssembleKittingVo;
 import com.richfit.mes.produce.entity.TrackHeadPublicDto;
@@ -110,13 +111,14 @@ public interface TrackAssemblyService extends IService<TrackAssembly> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/23 10:59
      **/
-    void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto);
+    void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto, List<TrackFlow> trackFlowList);
 
 
     /**
      * 修改产品编号
+     *
      * @param id
      * @param productNo
      */
-    Boolean changeProductNo(String id, String productNo,String branchCode);
+    Boolean changeProductNo(String id, String productNo, String branchCode);
 }

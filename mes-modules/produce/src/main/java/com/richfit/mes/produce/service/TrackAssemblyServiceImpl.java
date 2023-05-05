@@ -364,10 +364,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     }
 
     @Override
-    public void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto) {
-        List<TrackAssembly> trackAssemblyList = pojectBomList(trackHeadPublicDto);
+    public void addTrackAssemblyByTrackHead(TrackHeadPublicDto trackHeadPublicDto, List<TrackFlow> trackFlowList) {
+        List<TrackAssembly> trackAssemblyList = pojectBomList(trackHeadPublicDto, trackFlowList);
         for (TrackAssembly trackAssembly : trackAssemblyList) {
-            trackAssembly.setFlowId(trackHeadPublicDto.getFlowId());
             trackAssembly.setTrackHeadId(trackHeadPublicDto.getId());
             trackAssembly.setTrackNo(trackHeadPublicDto.getTrackNo());
             trackAssembly.setBranchCode(trackHeadPublicDto.getBranchCode());
@@ -382,45 +381,49 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
      * @Author: zhiqiang.lu
      * @Date: 2022/8/23 10:59
      **/
-    List<TrackAssembly> pojectBomList(TrackHeadPublicDto trackHeadPublicDto) {
+    List<TrackAssembly> pojectBomList(TrackHeadPublicDto trackHeadPublicDto, List<TrackFlow> trackFlowList) {
         List<TrackAssembly> trackAssemblyList = new ArrayList<>();
-        if (!StringUtil.isNullOrEmpty(trackHeadPublicDto.getProjectBomId())) {
-            List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHeadPublicDto.getProjectBomId());
-            Map<String, String> group = new HashMap<>();
-            if (!StringUtil.isNullOrEmpty(trackHeadPublicDto.getProjectBomGroup())) {
-                group = JSON.parseObject(trackHeadPublicDto.getProjectBomGroup(), Map.class);
-            }
-            for (ProjectBom pb : projectBomList) {
-                TrackAssembly trackAssembly = new TrackAssembly();
-                trackAssembly.setProjectBomId(pb.getId());
-                trackAssembly.setGrade(pb.getGrade());
-                trackAssembly.setName(pb.getProdDesc());
-                trackAssembly.setDrawingNo(pb.getDrawingNo());
-                trackAssembly.setMaterialNo(pb.getMaterialNo());
-                trackAssembly.setTrackHeadId(trackHeadPublicDto.getId());
-                trackAssembly.setNumber(trackHeadPublicDto.getNumber() * pb.getNumber());
-                trackAssembly.setIsKeyPart(pb.getIsKeyPart());
-                trackAssembly.setTrackType(pb.getTrackType());
-                if (pb.getWeight() != null) {
-                    trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
+        for (TrackFlow trackFlow : trackFlowList) {
+            if (!StringUtil.isNullOrEmpty(trackHeadPublicDto.getProjectBomId())) {
+                List<ProjectBom> projectBomList = baseServiceClient.getProjectBomPartByIdList(trackHeadPublicDto.getProjectBomId());
+                Map<String, String> group = new HashMap<>();
+                if (!StringUtil.isNullOrEmpty(trackHeadPublicDto.getProjectBomGroup())) {
+                    group = JSON.parseObject(trackHeadPublicDto.getProjectBomGroup(), Map.class);
                 }
-                trackAssembly.setIsCheck(pb.getIsCheck());
-                trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
-                trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
-                trackAssembly.setUnit(pb.getUnit());
-                trackAssembly.setSourceType(pb.getSourceType());
-                trackAssembly.setIsNumFrom(pb.getIsNumFrom());
-                trackAssembly.setOptName(pb.getOptName());
-                if (!StringUtil.isNullOrEmpty(pb.getBomGrouping())) {
-                    if (pb.getId().equals(group.get(pb.getBomGrouping()))) {
+                for (ProjectBom pb : projectBomList) {
+                    TrackAssembly trackAssembly = new TrackAssembly();
+                    trackAssembly.setProjectBomId(pb.getId());
+                    trackAssembly.setFlowId(trackFlow.getId());
+                    trackAssembly.setGrade(pb.getGrade());
+                    trackAssembly.setName(pb.getProdDesc());
+                    trackAssembly.setDrawingNo(pb.getDrawingNo());
+                    trackAssembly.setMaterialNo(pb.getMaterialNo());
+                    trackAssembly.setTrackHeadId(trackHeadPublicDto.getId());
+                    trackAssembly.setNumber(trackHeadPublicDto.getNumber() * pb.getNumber());
+                    trackAssembly.setIsKeyPart(pb.getIsKeyPart());
+                    trackAssembly.setTrackType(pb.getTrackType());
+                    if (pb.getWeight() != null) {
+                        trackAssembly.setWeight(Double.valueOf(pb.getWeight()));
+                    }
+                    trackAssembly.setIsCheck(pb.getIsCheck());
+                    trackAssembly.setIsEdgeStore(pb.getIsEdgeStore());
+                    trackAssembly.setIsNeedPicking(pb.getIsNeedPicking());
+                    trackAssembly.setUnit(pb.getUnit());
+                    trackAssembly.setSourceType(pb.getSourceType());
+                    trackAssembly.setIsNumFrom(pb.getIsNumFrom());
+                    trackAssembly.setOptName(pb.getOptName());
+                    if (!StringUtil.isNullOrEmpty(pb.getBomGrouping())) {
+                        if (pb.getId().equals(group.get(pb.getBomGrouping()))) {
+                            trackAssemblyList.add(trackAssembly);
+                        }
+                    } else {
                         trackAssemblyList.add(trackAssembly);
                     }
-                } else {
-                    trackAssemblyList.add(trackAssembly);
-                }
 
+                }
             }
         }
+
         return trackAssemblyList;
     }
 
