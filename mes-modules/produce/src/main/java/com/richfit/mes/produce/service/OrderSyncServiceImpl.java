@@ -202,7 +202,13 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         log.setController(controller);
         log.setBranchCode(order.getBranchCode());
         log.setTenantId(order.getTenantId());
-        List<Product> list = baseServiceClient.selectOrderProductInner(order.getMaterialCode(), "", SecurityConstants.FROM_INNER);
+        List<Product> list = new ArrayList<>();
+        //判断当前是否存在登录人信息
+        if (null == SecurityUtils.getCurrentUser()) {
+            list.addAll(baseServiceClient.selectOrderProductInner(order.getMaterialCode(), "", SecurityConstants.FROM_INNER));
+        } else {
+            list.addAll(baseServiceClient.selectOrderProduct(order.getMaterialCode(), ""));
+        }
         if (CollectionUtils.isEmpty(list)) {
             log.setOpinion("未查询到成品物料信息,请补全成品物料");
             orderLogService.save(log);
