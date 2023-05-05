@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 
@@ -24,12 +25,12 @@ public class ProductNoList implements Serializable {
     /**
      * 合格数量
      */
-    private String qualifiedQuantity;
+    private BigDecimal qualifiedQuantity;
 
     /**
      * 不合格数量
      */
-    private String unqualifiedQuantity;
+    private BigDecimal unqualifiedQuantity;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
