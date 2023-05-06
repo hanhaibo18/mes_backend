@@ -78,7 +78,7 @@ task-date:
 
 
 ## 控制装配第一道工序发送申请单 true=发送 false=不发送
-switch: true
+switch: false
 
 feign.client.config:
   default:
