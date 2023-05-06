@@ -18,6 +18,7 @@ import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
@@ -207,6 +208,10 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
     }
 
 
+    @Resource
+    private TrackAssignPersonMapper trackAssignPersonMapper;
+
+
     @Override
     public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
@@ -283,6 +288,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 assign.setTotalQuantity(trackItem.getNumber());
                 assign.setDispatchingNumber(trackItem.getAssignableQty());
                 assign.setWorkPlanNo(trackHead.getWorkPlanNo());
+                assign.setPartsName(trackHead.getMaterialName());
+                assign.setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId())));
+
             }
         }
         return queryPage;
