@@ -32,9 +32,9 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     private String equipmentNo;
     @ApiModelProperty(value = "审核状态 0 未通过  1 通过", dataType = "Integer")
     private Integer auditStatus;
-    @ApiModelProperty(value = "记录人", dataType = "String")
-    private String recordBy;
-    @ApiModelProperty(value = "班次", dataType = "String")
-    private String workTime;
+    @ApiModelProperty(value = "附件记录id", dataType = "String")
+    private String attachmentId;
+    @ApiModelProperty(value = "预装炉id", dataType = "String")
+    private String furnaceId;
 }
 
