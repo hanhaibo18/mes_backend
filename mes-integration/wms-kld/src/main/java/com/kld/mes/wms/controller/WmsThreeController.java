@@ -31,12 +31,6 @@ public class WmsThreeController {
         return new CommonResult(productToWmsThreeService.materialBasisInterface(materialBasisList));
     }
 
-    @ApiOperation(value = "WMS报检单上传MES", notes = "将WMS系统生成状态待报检的报检单上传MES，上传成功，WMS系统报检单状态更新已报检，上传不成功仍为待报检")
-    @PostMapping("/reverse_inspection_doc_upload")
-    public CommonResult<ApplicationResult> reverseInspectionDocUpload(@RequestBody ReverseInspectionDocUpload reverseInspectionDocUpload) {
-        return new CommonResult(productToWmsThreeService.reverseInspectionDocUploadInterface(reverseInspectionDocUpload));
-    }
-
     @ApiOperation(value = "MES报检单驳回WMS", notes = "MES系统支持对未入库的WMS报检单驳回，驳回成功上传WMS，上传成功，WMS系统报检单状态更新已退回，可查看驳回原因、驳回操作人和驳回日期，该报检单允许修改后重新提交")
     @PostMapping("/reject_inspection_doc")
     public CommonResult<ApplicationResult> rejectInspectionDoc(@RequestBody RejectInspectionDoc rejectInspectionDoc) {
@@ -55,17 +49,6 @@ public class WmsThreeController {
         return new CommonResult(productToWmsThreeService.applyListUploadInterface(applyListUpload));
     }
 
-    @ApiOperation(value = "WMS入库信息上传MES", notes = "WMS系统参考MES申请单、外协产品、外购产品入库操作成功，将入库信息上传MES")
-    @PostMapping("/reverse_input_database_upload")
-    public CommonResult<ApplicationResult> reverseInputDatabaseUpload(@RequestBody ReverseInputDatabaseUpload reverseInputDatabaseUpload) {
-        return new CommonResult(productToWmsThreeService.reverseInputDatabaseUploadInterface(reverseInputDatabaseUpload));
-    }
-
-    @ApiOperation(value = "WMS入库信息冲销上传MES", notes = "WMS系统将业务类型为MES申请单、外协产品、外购产品的入库记录冲销成功，将冲销信息上传MES后删除")
-    @PostMapping("/reverse_input_database_cover_upload")
-    public CommonResult<ApplicationResult> reverseInputDatabaseCoverUpload(@RequestBody ReverseInputDatabaseCoverUpload reverseInputDatabaseCoverUpload) {
-        return new CommonResult(productToWmsThreeService.reverseInputDatabaseCoverUploadInterface(reverseInputDatabaseCoverUpload));
-    }
 
     @ApiOperation(value = "MES领料单上传WMS", notes = "将MES系统领料单上传WMS，若单据类型为自动出库时，WMS系统要检查各行项目物料的在该工厂下的库存数量能否满足领料数量，需全部行项目物料库存都满足时，WMS系统自动生成出库单，物资库存减少，调用WMS领料单出库信息上传MES接口")
     @PostMapping("/material_requisition_upload")
@@ -73,11 +56,6 @@ public class WmsThreeController {
         return new CommonResult(productToWmsThreeService.materialRequisitionUploadInterface(materialRequisitionUpload));
     }
 
-    @ApiOperation(value = "WMS领料单关闭上传MES", notes = "WMS系统将领料单关闭后上传MES，支持整单关闭或部分行项目关闭")
-    @PostMapping("/reverse_material_requisition_close_upload")
-    public CommonResult<ApplicationResult> reverseMaterialRequisitionCloseUpload(@RequestBody ReverseMaterialRequisitionCloseUpload reverseMaterialRequisitionCloseUpload) {
-        return new CommonResult(productToWmsThreeService.reverseMaterialRequisitionCloseUploadInterface(reverseMaterialRequisitionCloseUpload));
-    }
 
     @ApiOperation(value = "MES领料单撤回上传WMS", notes = "MES系统将未出库的领料单撤回上传WMS，上传成功，WMS系统撤回的领料单或部分行项目删除")
     @PostMapping("/material_requisition_recall")
@@ -85,17 +63,6 @@ public class WmsThreeController {
         return new CommonResult(productToWmsThreeService.materialRequisitionRecallInterface(materialRequisitionRecall));
     }
 
-    @ApiOperation(value = "WMS出库信息上传MES", notes = "WMS系统参考MES领料单出库操作成功，将出库信息上传MES")
-    @PostMapping("/reverse_output_database_upload")
-    public CommonResult<ApplicationResult> reverseOutputDatabaseUpload(@RequestBody ReverseOutputDatabaseUpload reverseOutputDatabaseUpload) {
-        return new CommonResult(productToWmsThreeService.reverseOutputDatabaseUploadInterface(reverseOutputDatabaseUpload));
-    }
-
-    @ApiOperation(value = "WMS出库信息冲销上传MES", notes = "WMS系统将MES领料单的出库记录冲销操作成功，将出库冲销信息上传MES")
-    @PostMapping("/reverse_output_database_cover_upload")
-    public CommonResult<ApplicationResult> reverseOutputDatabaseCoverUpload(@RequestBody ReverseOutputDatabaseCoverUpload reverseOutputDatabaseCoverUpload) {
-        return new CommonResult(productToWmsThreeService.reverseOutputDatabaseCoverUploadInterface(reverseOutputDatabaseCoverUpload));
-    }
 
     @ApiOperation(value = "MES计划清单锁定/解锁物资库存上传WMS", notes = "MES系统将锁定、释放的工厂锁定库存上传WMS")
     @PostMapping("/system_upload")

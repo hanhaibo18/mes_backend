@@ -48,15 +48,6 @@ public class ProductToWmsThreeService {
         return applicationResult;
     }
 
-    // WMS报检单上传MES(待接口)
-    public ApplicationResult reverseInspectionDocUploadInterface(ReverseInspectionDocUpload reverseInspectionDocUpload) {
-        Map<String, Object> params = convertInput(reverseInspectionDocUpload);
-        //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
-    }
-
     // MES报检单驳回WMS
     public ApplicationResult rejectInspectionDocInterface(RejectInspectionDoc rejectInspectionDoc) {
         Map<String, Object> params = convertInput(rejectInspectionDoc);
@@ -84,24 +75,6 @@ public class ProductToWmsThreeService {
         return applicationResult;
     }
 
-    // WMS入库信息上传MES(待接口)
-    public ApplicationResult reverseInputDatabaseUploadInterface(ReverseInputDatabaseUpload reverseInputDatabaseUpload) {
-        Map<String, Object> params = convertInput(reverseInputDatabaseUpload);
-        //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
-    }
-
-    // WMS入库信息冲销上传MES(待接口)
-    public ApplicationResult reverseInputDatabaseCoverUploadInterface(ReverseInputDatabaseCoverUpload reverseInputDatabaseCoverUpload) {
-        Map<String, Object> params = convertInput(reverseInputDatabaseCoverUpload);
-        //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
-
-    }
 
     // MES领料单上传WMS(待接口)
     public ApplicationResult materialRequisitionUploadInterface(MaterialRequisitionUpload materialRequisitionUpload) {
@@ -112,38 +85,11 @@ public class ProductToWmsThreeService {
         return applicationResult;
     }
 
-    // WMS领料单关闭上传MES(待接口)
-    public ApplicationResult reverseMaterialRequisitionCloseUploadInterface(ReverseMaterialRequisitionCloseUpload reverseMaterialRequisitionCloseUpload) {
-        Map<String, Object> params = convertInput(reverseMaterialRequisitionCloseUpload);
-        //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
-    }
-
     // MES领料单撤回上传WMS(待接口)
     public ApplicationResult materialRequisitionRecallInterface(MaterialRequisitionRecall materialRequisitionRecall) {
         Map<String, Object> params = convertInput(materialRequisitionRecall);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/returnOutApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
-    }
-
-    // WMS出库信息上传MES(待接口)
-    public ApplicationResult reverseOutputDatabaseUploadInterface(ReverseOutputDatabaseUpload reverseOutputDatabaseUpload) {
-        Map<String, Object> params = convertInput(reverseOutputDatabaseUpload);
-        //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
-        return applicationResult;
-    }
-
-    // WMS出库信息冲销上传MES(待接口)
-    public ApplicationResult reverseOutputDatabaseCoverUploadInterface(ReverseOutputDatabaseCoverUpload reverseOutputDatabaseCoverUpload) {
-        Map<String, Object> params = convertInput(reverseOutputDatabaseCoverUpload);
-        //调用上传接口
-        String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
