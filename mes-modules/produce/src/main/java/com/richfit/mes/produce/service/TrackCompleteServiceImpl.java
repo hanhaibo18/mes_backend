@@ -615,7 +615,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
      * @return
      */
     @Override
-    public CommonResult<List<QueryWorkingTimeVo>> queryDetailsHot(Integer state, String furnaceId) {
+    public CommonResult<QueryWorkingTimeVo>  queryDetailsHot(Integer state, String furnaceId) {
         //查出炉内所有工序
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
         itemQueryWrapper.eq("precharge_furnace_id", furnaceId);
@@ -629,53 +629,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             List<Assign> assigns = trackAssignMapper.query(assignQueryWrapper);
             Map<String, Assign> assignMap = assigns.stream().collect(Collectors.toMap(x -> x.getTiId(), x -> x));
             List<QueryWorkingTimeVo> list = new ArrayList<>();
-            for (TrackItem trackItem : trackItems) {
-
-                QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
-                Assign assign = assignMap.get(trackItem.getId());
-                //给assignPersion赋值
-                rgSetAssignPersion(assign.getId(), assign);
-
-
-                QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("ti_id", trackItem.getId());
-
-                List<TrackComplete> completeList = new ArrayList<>();
-                List<ForgControlRecord> forgControlRecordList = new ArrayList<>();
-                List<RawMaterialRecord> rawMaterialRecordList = new ArrayList<>();
-                LayingOff layingOff = new LayingOff();
-                //state=0时从缓存取数据显示
-                if (0 == state) {
-                    completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
-                    forgControlRecordList = forgControlRecordService.queryForgControlRecordCacheByItemId(trackItem.getId());
-                    forgControlRecordList = buildForgControlRecords(queryWorkingTimeVo, forgControlRecordList);
-                    layingOff = layingOffService.queryLayingOffCacheByItemId(trackItem.getId());
-                    rawMaterialRecordList = rawMaterialRecordService.queryrawMaterialRecordCacheByItemId(trackItem.getId());
-
-                } else {
-                    completeList = this.list(queryWrapper);
-                    QueryWrapper<ForgControlRecord> forgControlRecordQueryWrapper = new QueryWrapper<>();
-                    forgControlRecordQueryWrapper.eq("item_id", trackItem.getId());
-                    forgControlRecordList = forgControlRecordService.list(forgControlRecordQueryWrapper);
-                    forgControlRecordList = buildForgControlRecords(queryWorkingTimeVo, forgControlRecordList);
-                    QueryWrapper<LayingOff> layingOffQueryWrapper = new QueryWrapper<>();
-                    layingOffQueryWrapper.eq("item_id", trackItem.getId());
-                    layingOff = layingOffService.getOne(layingOffQueryWrapper);
-                    QueryWrapper<RawMaterialRecord> rawMaterialRecordQueryWrapper = new QueryWrapper<>();
-                    rawMaterialRecordQueryWrapper.eq("item_id", trackItem.getId());
-                    rawMaterialRecordList = rawMaterialRecordService.list(rawMaterialRecordQueryWrapper);
-                }
-
-                queryWorkingTimeVo.setTrackCompleteList(completeList);
-                queryWorkingTimeVo.setAssign(assign);
-                queryWorkingTimeVo.setQcPersonId(trackItem.getQualityCheckBy());
-                queryWorkingTimeVo.setQualityCheckBranch(trackItem.getQualityCheckBranch());
-                queryWorkingTimeVo.setLayingOff(layingOff);
-                queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
-                queryWorkingTimeVo.setRawMaterialRecordList(rawMaterialRecordList);
-                list.add(queryWorkingTimeVo);
-            }
-            return CommonResult.success(list);
+            //取出其中一条的派工id和工序id查询报工详情信息
+            return this.queryDetails(assignMap.get(itemsIds.get(0)).getId(), itemsIds.get(0), state, "0");
         } else {
             return CommonResult.failed("装炉内没有工序");
         }

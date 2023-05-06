@@ -62,7 +62,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      **/
     CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state,String classes);
 
-    CommonResult<List<QueryWorkingTimeVo>> queryDetailsHot(Integer state, String furnaceId);
+    CommonResult<QueryWorkingTimeVo> queryDetailsHot(Integer state, String furnaceId);
 
     /**
      * 功能描述: 修改
