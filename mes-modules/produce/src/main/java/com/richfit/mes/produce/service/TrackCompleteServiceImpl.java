@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -40,6 +41,7 @@ import com.richfit.mes.produce.entity.OutsourceDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.ConcurrentUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +101,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private RawMaterialRecordService rawMaterialRecordService;
     @Autowired
     private TrackItemMapper trackItemMapper;
+
+    public static final String END_START_WORK = "2";
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
@@ -363,7 +367,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Autowired
-    private TrackCompleteExtraService trackCompleteExtraService;
+    private PrechargeFurnaceService prechargeFurnaceService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -458,6 +463,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 //派工状态设置为完成
                 assign.setState(2);
                 trackAssignService.updateById(assign);
+                //修改预装炉状态为完工
+                if(!StringUtils.isNullOrEmpty(assign.getPrechargeFurnaceId())){
+                    UpdateWrapper<PrechargeFurnace> prechargeFurnaceUpdateWrapper = new UpdateWrapper<>();
+                    prechargeFurnaceUpdateWrapper.eq("id",assign.getPrechargeFurnaceId())
+                            .set("status",END_START_WORK)
+                            .set("step_status",END_START_WORK);
+                    prechargeFurnaceService.update(prechargeFurnaceUpdateWrapper);
+                }
+
             }
             log.error(completeDto.getTrackCompleteList().toString());
 
@@ -615,7 +629,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
      * @return
      */
     @Override
-    public CommonResult<QueryWorkingTimeVo>  queryDetailsHot(Integer state, String furnaceId) {
+    public CommonResult<QueryWorkingTimeVo>  queryDetailsHot(Integer state, String furnaceId,String classes) {
         //查出炉内所有工序
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
         itemQueryWrapper.eq("precharge_furnace_id", furnaceId);
@@ -630,7 +644,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Map<String, Assign> assignMap = assigns.stream().collect(Collectors.toMap(x -> x.getTiId(), x -> x));
             List<QueryWorkingTimeVo> list = new ArrayList<>();
             //取出其中一条的派工id和工序id查询报工详情信息
-            return this.queryDetails(assignMap.get(itemsIds.get(0)).getId(), itemsIds.get(0), state, "0");
+            return this.queryDetails(assignMap.get(itemsIds.get(0)).getId(), itemsIds.get(0), state, classes);
         } else {
             return CommonResult.failed("装炉内没有工序");
         }

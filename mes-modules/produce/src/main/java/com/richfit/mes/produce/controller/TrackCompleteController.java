@@ -965,8 +965,8 @@ public class TrackCompleteController extends BaseController {
             @ApiImplicitParam(name = "furnaceId", value = "装炉id", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/queryDetails_hot")
-    public CommonResult<QueryWorkingTimeVo> queryDetails( Integer state,  String furnaceId) {
-        return trackCompleteService.queryDetailsHot(state, furnaceId);
+    public CommonResult<QueryWorkingTimeVo> queryDetails( Integer state, String furnaceId,String classes) {
+        return trackCompleteService.queryDetailsHot(state, furnaceId,classes);
     }
 
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
