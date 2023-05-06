@@ -959,6 +959,16 @@ public class TrackCompleteController extends BaseController {
         return trackCompleteService.queryDetails(assignId, tiId, state, classes);
     }
 
+    @ApiOperation(value = "报工查询详情(热工)", notes = "报工查询详情(热工)")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "state", value = "页面状态", required = true, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "furnaceId", value = "装炉id", required = true, dataType = "String", paramType = "query")
+    })
+    @GetMapping("/queryDetails_hot")
+    public CommonResult<QueryWorkingTimeVo> queryDetails( Integer state, String furnaceId,String classes) {
+        return trackCompleteService.queryDetailsHot(state, furnaceId,classes);
+    }
+
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
     @PostMapping("/saveComplete")
     public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto, HttpServletRequest request) {

@@ -136,6 +136,9 @@ public class PrechargeFurnaceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getOptName())) {
             queryWrapper.eq("opt_name",dispatchingDto.getOptName());
         }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTexture())) {
+            queryWrapper.eq("texture",dispatchingDto.getTexture());
+        }
 
 
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));

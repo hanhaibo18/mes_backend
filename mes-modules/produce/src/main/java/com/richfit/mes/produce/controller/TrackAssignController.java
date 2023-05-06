@@ -196,22 +196,7 @@ public class TrackAssignController extends BaseController {
     public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes, String order, String orderCol) {
         try {
             IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes, order, orderCol);
-            for (int i = 0; i < assigns.getRecords().size(); i++) {
-                assigns.getRecords().get(i).setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assigns.getRecords().get(i).getId())));
-            }
-            if (null != assigns.getRecords()) {
-                for (Assign assign : assigns.getRecords()) {
-                    TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
-                    TrackItem trackItem = trackItemService.getById(assign.getTiId());
-                    assign.setWeight(trackHead.getWeight());
-                    assign.setWorkNo(trackHead.getWorkNo());
-                    assign.setProductName(trackHead.getProductName());
-                    assign.setPartsName(trackHead.getMaterialName());
-                    assign.setTotalQuantity(trackItem.getNumber());
-                    assign.setDispatchingNumber(trackItem.getAssignableQty());
-                    assign.setWorkPlanNo(trackHead.getWorkPlanNo());
-                }
-            }
+
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());

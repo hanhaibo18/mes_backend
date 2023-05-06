@@ -272,7 +272,8 @@ public class TrackHeadController extends BaseController {
                                                                   @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
                                                                   @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
                                                                   @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
-
+                                                                  @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
+                                                                  @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                                                   @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
                                                                   @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
                                                                   @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
@@ -323,6 +324,12 @@ public class TrackHeadController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(status)) {
             queryWrapper.eq("status", status);
+        }
+        if (!StringUtils.isNullOrEmpty(batchNo)) {
+            queryWrapper.eq("batch_no", batchNo);
+        }
+        if (!StringUtils.isNullOrEmpty(workNo)) {
+            queryWrapper.eq("work_no", workNo);
         }
         if (!StringUtils.isNullOrEmpty(trackType)) {
             queryWrapper.eq("track_type", trackType);
@@ -377,6 +384,8 @@ public class TrackHeadController extends BaseController {
                                 @ApiParam(value = "生产编码") @RequestParam(required = false) String productNo,
                                 @ApiParam(value = "物料号码") @RequestParam(required = false) String materialNo,
                                 @ApiParam(value = "跟单状态") @RequestParam(required = false) String status,
+                                @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
+                                @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                 @ApiParam(value = "跟单类型") @RequestParam(required = false) String trackType,
                                 @ApiParam(value = "审批状态") @RequestParam(required = false) String approvalStatus,
                                 @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
@@ -391,7 +400,8 @@ public class TrackHeadController extends BaseController {
                                 @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter,
                                 HttpServletResponse rsp) {
         try {
-            List<TrackHeadPublicVo> records = this.selectTrackHead(startTime, endTime, startDate, endDate, id, trackNo, drawingNo, productionOrder, workPlanId, workPlanNo, productNo, materialNo, status,
+            List<TrackHeadPublicVo> records = this.selectTrackHead(startTime, endTime, startDate, endDate, id, trackNo, drawingNo, productionOrder, workPlanId, workPlanNo, productNo, materialNo, status, batchNo,
+                    workNo,
                     trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter, false).getData().getRecords();
 
 
