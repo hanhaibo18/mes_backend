@@ -50,7 +50,7 @@ public class Utils {
 //    }
 
     public static void main(String[] args) {
-        String productNo = "afdasf00001(1),afdasf00004,123123123123,afdasf00002(1),afdasf00003(1)";
+        String productNo = "QA23069, QA23068, QA23066, QA23067";
         System.out.println(productNoContinuous(productNo));
     }
 
@@ -67,6 +67,7 @@ public class Utils {
         if (StrUtil.isBlank(productNo)) {
             return null;
         }
+        productNo = productNo.replaceAll("\\s*", "");
         String[] arr = productNo.split(",");
         Arrays.sort(arr);
         Map<String, List<String>> grouping = grouping(arr);
