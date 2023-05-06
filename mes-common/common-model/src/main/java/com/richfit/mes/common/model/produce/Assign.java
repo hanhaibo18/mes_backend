@@ -280,6 +280,13 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "质检人")
     private String qualityCheckBy;
 
+    /**
+     * 下料规格
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "下料规格", dataType = "String")
+    private String blankSpecifi;
+
     public String getUserId() {
         return userId;
     }

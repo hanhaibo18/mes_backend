@@ -1,16 +1,19 @@
 package com.richfit.mes.produce.service.heat;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
     @Autowired
     public TrackAssignMapper trackAssignMapper;
+
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public void furnaceCharging(List<Assign> assignList, String tempWork) {
@@ -83,11 +89,21 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }
     }
 
+
     @Override
     public List<Assign> queryTrackItem(Long id) {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("u.precharge_furnace_id", id);
-        return trackAssignMapper.queryListAssignTrackStore(queryWrapper);
+        List<Assign> assigns = trackAssignMapper.queryListAssignTrackStore(queryWrapper);
+        //下料规格赋值
+        for (Assign assign : assigns) {
+            Router router = baseServiceClient.getByRouterId(assign.getRouterId(), assign.getBranchCode()).getData();
+            if (!ObjectUtil.isEmpty(router)){
+                //下料规格
+                assign.setBlankSpecifi(router.getBlankSpecifi());
+            }
+        }
+        return assigns;
     }
 
     @Override

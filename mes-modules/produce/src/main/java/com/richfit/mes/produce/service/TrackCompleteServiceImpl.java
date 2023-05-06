@@ -615,7 +615,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
      * @return
      */
     @Override
-    public CommonResult<QueryWorkingTimeVo>  queryDetailsHot(Integer state, String furnaceId) {
+    public CommonResult<QueryWorkingTimeVo>  queryDetailsHot(Integer state, String furnaceId,String classes) {
         //查出炉内所有工序
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
         itemQueryWrapper.eq("precharge_furnace_id", furnaceId);
@@ -630,7 +630,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Map<String, Assign> assignMap = assigns.stream().collect(Collectors.toMap(x -> x.getTiId(), x -> x));
             List<QueryWorkingTimeVo> list = new ArrayList<>();
             //取出其中一条的派工id和工序id查询报工详情信息
-            return this.queryDetails(assignMap.get(itemsIds.get(0)).getId(), itemsIds.get(0), state, "0");
+            return this.queryDetails(assignMap.get(itemsIds.get(0)).getId(), itemsIds.get(0), state, classes);
         } else {
             return CommonResult.failed("装炉内没有工序");
         }
