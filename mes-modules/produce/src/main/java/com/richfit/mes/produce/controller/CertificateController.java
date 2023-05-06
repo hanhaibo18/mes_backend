@@ -19,10 +19,8 @@ import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CertQueryDto;
-import com.richfit.mes.produce.service.CertificateService;
-import com.richfit.mes.produce.service.TrackCertificateService;
-import com.richfit.mes.produce.service.TrackHeadService;
-import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.Utils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -67,6 +65,8 @@ public class CertificateController {
     private TrackHeadService trackHeadService;
     @Autowired
     public TrackItemService trackItemService;
+    @Autowired
+    public CodeRuleService codeRuleService;
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
@@ -76,6 +76,12 @@ public class CertificateController {
         }
         if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
             return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
+        }
+        //合格证号码重复校验
+        String certificateNo = Code.valueOnUpdate("hege_no", certificate.getTenantId(), certificate.getBranchCode(), codeRuleService);
+        certificate.setCertificateNo(certificateNo);
+        if (certificateService.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
+            return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
         }
         //合格证来源 0：开出合格证 1：接收合格证
         certificate.setCertOrigin("0");
