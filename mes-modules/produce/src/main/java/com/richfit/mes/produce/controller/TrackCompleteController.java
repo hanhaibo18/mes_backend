@@ -965,7 +965,7 @@ public class TrackCompleteController extends BaseController {
             @ApiImplicitParam(name = "furnaceId", value = "装炉id", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/queryDetails_hot")
-    public CommonResult<List<QueryWorkingTimeVo>> queryDetails( Integer state,  String furnaceId) {
+    public CommonResult<QueryWorkingTimeVo> queryDetails( Integer state,  String furnaceId) {
         return trackCompleteService.queryDetailsHot(state, furnaceId);
     }
 
