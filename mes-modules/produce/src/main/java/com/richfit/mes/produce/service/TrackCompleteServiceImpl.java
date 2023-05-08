@@ -848,11 +848,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             //将当前工序设置为激活
             if (msg.equals("")) {
-                trackItem.setIsDoing(0);
-                trackItem.setIsCurrent(1);
-                trackItem.setIsFinalComplete("0");
-                trackItem.setIsOperationComplete(0);
-                trackItemService.updateById(trackItem);
+                UpdateWrapper<TrackItem> itemUpdateWrapper = new UpdateWrapper<>();
+                itemUpdateWrapper.eq("id",trackItem.getId())
+                        .set("is_doing",0)
+                        .set("is_current",1)
+                        .set("is_final_complete","0")
+                        .set("is_operation_complete","0")
+                        .set("precharge_furnace_id",null)
+                        .set("final_complete_time",null);
+                trackItemService.update(itemUpdateWrapper);
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 trackHead.setStatus("1");
                 trackHeadService.updateById(trackHead);

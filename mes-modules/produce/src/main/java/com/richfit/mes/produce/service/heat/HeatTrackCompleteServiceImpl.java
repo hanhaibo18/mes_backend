@@ -365,6 +365,9 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         if(prechargeFurnace.getStatus().equals(PrechargeFurnace.END_START_WORK)){
             throw new GlobalException("工序已完工无法再开工",ResultCode.FAILED);
         }
+        if(prechargeFurnace.getStatus().equals(PrechargeFurnace.YES_START_WORK)){
+            throw new GlobalException("工序已开工无法再开工",ResultCode.FAILED);
+        }
         prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
         prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
         prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUserId());
@@ -391,7 +394,13 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 .eq("state","0")
                 .in("ti_id", itemIds);
         trackAssignService.update(assignUpdate);
-
+        UpdateWrapper<TrackItem>  trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("is_doing", 1)
+                .set("start_doing_time",new Date())
+                .set("start_doing_user",SecurityUtils.getCurrentUser().getUsername())
+                .eq("is_doing",0)
+                .in("id", itemIds);
+        trackItemService.update(trackItemUpdateWrapper);
         return prechargeFurnaceService.updateById(prechargeFurnace);
     }
 
