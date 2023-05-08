@@ -161,6 +161,7 @@ public class HeatTrackCompleteController extends BaseController {
                 prechargeFurnaceQueryWrapper.ge("temp_work", tempWorkQ);
             }
             prechargeFurnaceQueryWrapper.in("id", fuIds);
+            prechargeFurnaceQueryWrapper.eq(!StringUtils.isNullOrEmpty(dispatchingDto.getTexture()),"texture",dispatchingDto.getTexture());
             if (StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())) {
                 prechargeFurnaceQueryWrapper.orderByAsc("modify_time");
             } else {
