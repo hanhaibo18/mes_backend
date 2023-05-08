@@ -287,6 +287,10 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "下料规格", dataType = "String")
     private String blankSpecifi;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否更新", dataType = "Integer")
+    private Integer isUpdate;
+
     public String getUserId() {
         return userId;
     }
