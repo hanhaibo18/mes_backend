@@ -60,6 +60,7 @@ import static com.richfit.mes.produce.aop.LogConstant.PLAN_ID;
  */
 @Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements PlanService {
 
     final int PLAN_NEW = 0;
@@ -399,6 +400,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                         plan.setStatus(0);
                     }
                 }
+                if (plan.getMissingNum() < 0) {
+                    throw new GlobalException("请重新核对计划，当前计划已出现缺件数量小于0", ResultCode.FAILED);
+                }
                 planMapper.updateById(plan);
             }
         }
@@ -434,7 +438,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                                     trackHeadPublicDto.setFlowId(trackFlow.getId());
                                     List<TrackFlow> trackFlowList = new ArrayList<>();
                                     trackFlowList.add(trackFlow);
-                                    trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto,trackFlowList);
+                                    trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto, trackFlowList);
                                 }
                             }
                             trackHeadService.updateById(trackHead);

@@ -11,6 +11,7 @@ import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OptNameUtil;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -101,6 +102,30 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             if (!ObjectUtil.isEmpty(router)){
                 //下料规格
                 assign.setBlankSpecifi(router.getBlankSpecifi());
+            }
+            TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            //条件一 需要质检 并且已质检
+            if (1 == trackItem.getIsExistQualityCheck() && 1 == trackItem.getIsQualityComplete()) {
+                assign.setIsUpdate(1);
+                continue;
+            }
+            //条件二 需要调度 并且以调度
+            if (1 == trackItem.getIsExistScheduleCheck() && 1 == trackItem.getIsScheduleComplete()) {
+                assign.setIsUpdate(1);
+                continue;
+            }
+            //条件三 不质检 不调度
+            if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
+                assign.setIsUpdate(1);
+                continue;
+            }
+            //条件四 当前操作人不是开工人
+            if (!SecurityUtils.getCurrentUser().getUsername().equals(trackItem.getStartDoingUser())) {
+                assign.setIsUpdate(1);
+                continue;
+            }
+            if (null == assign.getIsUpdate()) {
+                assign.setIsUpdate(0);
             }
         }
         return assigns;
