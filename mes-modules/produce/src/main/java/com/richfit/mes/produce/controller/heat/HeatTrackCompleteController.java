@@ -132,6 +132,47 @@ public class HeatTrackCompleteController extends BaseController {
     }
 
 
+    @ApiOperation(value = "（热工已报工）分页查询已报工信息")
+    @PostMapping("/alreadyRgCompletePage")
+    public CommonResult alreadyRgCompletePage(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) {
+        TenantUserVo data = systemServiceClient.getUserById(SecurityUtils.getCurrentUser().getUserId()).getData();
+        if (ObjectUtil.isEmpty(data)) {
+            throw new GlobalException("用户不存在", ResultCode.FAILED);
+        }
+        //当前用户开过工的预装炉
+        QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("start_work_by", data.getUserAccount())
+                .eq("status","2")
+                .le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()), "modify_time", dispatchingDto.getEndTime())
+                .ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()), "modify_time", dispatchingDto.getStartTime());
+        List<PrechargeFurnace> prechargeFurnaceList = prechargeFurnaceService.list(queryWrapper);
+
+        //预装炉id集合
+        List<Long> fuIds = new ArrayList<>(prechargeFurnaceList.stream().map(PrechargeFurnace::getId).collect(Collectors.toSet()));
+
+        if (fuIds.size() > 0) {
+            QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
+            if (!StringUtils.isNullOrEmpty(dispatchingDto.getTempWork())) {
+                int tempWorkZ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) + Integer.parseInt(dispatchingDto.getTempWork1());
+                int tempWorkQ = Integer.parseInt(StringUtils.isNullOrEmpty(dispatchingDto.getTempWork()) ? "0" : dispatchingDto.getTempWork()) - Integer.parseInt(dispatchingDto.getTempWork1());
+                //小于等于
+                prechargeFurnaceQueryWrapper.le("temp_work", tempWorkZ);
+                //大于等于
+                prechargeFurnaceQueryWrapper.ge("temp_work", tempWorkQ);
+            }
+            prechargeFurnaceQueryWrapper.in("id", fuIds);
+            if (StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())) {
+                prechargeFurnaceQueryWrapper.orderByAsc("modify_time");
+            } else {
+                OrderUtil.query(prechargeFurnaceQueryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
+            }
+            Page<PrechargeFurnace> prechargeFurnacePage = prechargeFurnaceService.page(new Page<PrechargeFurnace>(dispatchingDto.getPage(), dispatchingDto.getLimit()), prechargeFurnaceQueryWrapper);
+            return CommonResult.success(prechargeFurnacePage);
+        }
+        return CommonResult.success(new Page<PrechargeFurnace>());
+    }
+
+
     @ApiOperation(value = "（已报工）已报工根据预装炉id查询当前用户报工的步骤及用户")
     @GetMapping("/queryStepListByFuId")
     public CommonResult<Map> queryStepListByFuId(@ApiParam(value = "预装炉id", required = true) @RequestParam String id) {
