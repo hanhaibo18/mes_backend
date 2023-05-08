@@ -917,6 +917,7 @@ public class ProduceInspectionRecordService {
         boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
         if (next) {
             trackItem.setIsFinalComplete(String.valueOf(1));
+            trackItem.setFinalCompleteTime(new Date());
         }
         trackItemService.updateById(trackItem);
 
