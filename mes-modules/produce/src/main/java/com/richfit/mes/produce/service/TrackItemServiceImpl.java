@@ -18,6 +18,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
+import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -196,6 +197,27 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         trackItem.setId(tiId);
         trackItem.setCertificateNo(certNo);
         return this.updateById(trackItem);
+    }
+
+    @Override
+    public Boolean linkToCertNew(String thId, Certificate certificate) {
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("track_head_id", thId);
+        updateWrapper.eq("opt_no", certificate.getOptNo());
+        updateWrapper.eq("branch_code", certificate.getBranchCode());
+        updateWrapper.set("certificate_no", certificate.getCertificateNo());
+        return this.update(updateWrapper);
+    }
+
+    @Override
+    public Boolean checkIsCertRepeat(Certificate certificate) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", certificate.getBranchCode());
+        queryWrapper.eq("certificate_no", certificate.getCertificateNo());
+        if (!CollectionUtils.isEmpty(this.list(queryWrapper))) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -671,6 +693,13 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
             return trackItemList;
         }
+    }
+
+    @Override
+    public List<TrackItem> queryItemByThId(String trackHeadId) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        return this.list(queryWrapper);
     }
 
     @Override
