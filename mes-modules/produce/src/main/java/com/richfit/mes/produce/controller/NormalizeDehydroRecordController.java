@@ -91,7 +91,7 @@ public class NormalizeDehydroRecordController extends BaseController {
     @ApiOperation(value = "根据预装炉id查询正火去氢工序控制记录", notes = "根据预装炉id查询正火去氢工序控制记录")
     @ApiImplicitParam(name = "furnaceId", value = "预装炉ID", required = true, dataType = "String", paramType = "query")
     @GetMapping("/getRecordByFurnaceId")
-    public CommonResult<List<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(String furnaceId) {
+    public CommonResult<List<NormalizeDehydroRecord>> normalizeDehydroRecord(String furnaceId) {
         QueryWrapper<NormalizeDehydroRecord> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("furnace_id", furnaceId);
         return CommonResult.success(normalizeDehydroRecordService.list(queryWrapper));
@@ -106,9 +106,6 @@ public class NormalizeDehydroRecordController extends BaseController {
     }
 
     @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")
-    @ApiImplicitParams(
-            {@ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")}
-    )
     @PostMapping("/deleteNormalizeDehydroRecord")
     public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
         return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
