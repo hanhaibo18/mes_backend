@@ -2,14 +2,12 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackAssemblyBindingMapper;
 import com.richfit.mes.produce.dao.TrackFlowMapper;
@@ -72,39 +70,39 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId,String branchCode) {
+    public CommonResult<Boolean> updateBinding(String id, int isBinding, String itemId, String branchCode) {
         TrackAssemblyBinding assemblyBinding = this.getById(id);
         TrackAssembly trackAssembly = trackAssemblyService.getById(assemblyBinding.getAssemblyId());
         //绑定校验(只校验单件的)
-        if(isBinding == 1 && "0".equals(trackAssembly.getTrackType())){
+        if (isBinding == 1 && "0".equals(trackAssembly.getTrackType())) {
             //校验编号是否被其他跟单绑定过
             QueryWrapper<TrackAssemblyBinding> trackAssemblyBindingQueryWrapper = new QueryWrapper<>();
-            trackAssemblyBindingQueryWrapper.eq("number",assemblyBinding.getNumber())
-                    .eq("is_binding",1)
-                    .ne("id",id);
+            trackAssemblyBindingQueryWrapper.eq("number", assemblyBinding.getNumber())
+                    .eq("is_binding", 1)
+                    .ne("id", id);
             List<TrackAssemblyBinding> repeats = this.list(trackAssemblyBindingQueryWrapper);
-            if(repeats.size()>0){
+            if (repeats.size() > 0) {
                 Set<String> assemblyIds = repeats.stream().map(item -> item.getAssemblyId()).collect(Collectors.toSet());
                 //校验是不是此车间下的数据  如果是提示错误信息（已被绑定）
                 QueryWrapper<TrackAssembly> trackAssemblyQueryWrapper = new QueryWrapper<>();
-                trackAssemblyQueryWrapper.in("id",assemblyIds)
-                        .eq("branch_code",branchCode);
+                trackAssemblyQueryWrapper.in("id", assemblyIds)
+                        .eq("branch_code", branchCode);
                 List<TrackAssembly> trackAssemblies = trackAssemblyService.list(trackAssemblyQueryWrapper);
                 Set<String> trackNos = trackAssemblies.stream().map(item -> item.getTrackNo()).collect(Collectors.toSet());
-                String join = String.join(",",new ArrayList<>(trackNos));
-                if(StringUtils.isNotBlank(join)){
-                    throw new GlobalException("编码:"+assemblyBinding.getNumber()+",已被跟单"+join+"绑定",ResultCode.FAILED);
+                String join = String.join(",", new ArrayList<>(trackNos));
+                if (StringUtils.isNotBlank(join)) {
+                    throw new GlobalException("编码:" + assemblyBinding.getNumber() + ",已被跟单" + join + "绑定", ResultCode.FAILED);
                 }
             }
             //检验绑定的产品编号在装配车间是否有跟单 如果有需要校验当前跟单是否已完工，未完工不能绑定
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
-            trackHeadQueryWrapper.eq("product_no",assemblyBinding.getNumber())
-                    .eq("branch_code",branchCode)
-                    .and(wrapper->wrapper.eq("status","1").or().eq("status","0"));
-                    //.ne("id",trackAssembly.getTrackHeadId());
+            trackHeadQueryWrapper.eq("product_no", assemblyBinding.getNumber())
+                    .eq("branch_code", branchCode)
+                    .and(wrapper -> wrapper.eq("status", "1").or().eq("status", "0"));
+            //.ne("id",trackAssembly.getTrackHeadId());
             List<TrackHead> list = trackHeadService.list(trackHeadQueryWrapper);
-            if(list.size()>0){
-                throw new GlobalException("车间存在产品编号为:"+assemblyBinding.getNumber()+",且未完工的跟单,绑定失败！",ResultCode.FAILED);
+            if (list.size() > 0) {
+                throw new GlobalException("车间存在产品编号为:" + assemblyBinding.getNumber() + ",且未完工的跟单,绑定失败！", ResultCode.FAILED);
             }
         }
 
@@ -121,10 +119,10 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             throw new GlobalException("异常提示跟单数据异常出现多个生产流程", ResultCode.FAILED);
         }
         if (1 == isBinding) {
-            if(trackAssembly.getNumberInstall() == trackAssembly.getNumber()
-                    || trackAssembly.getNumberInstall() + assemblyBinding.getQuantity()>trackAssembly.getNumber()
-            ){
-                throw new GlobalException("待装量不足！！",ResultCode.FAILED);
+            if (trackAssembly.getNumberInstall() == trackAssembly.getNumber()
+                    || trackAssembly.getNumberInstall() + assemblyBinding.getQuantity() > trackAssembly.getNumber()
+            ) {
+                throw new GlobalException("待装量不足！！", ResultCode.FAILED);
             }
             trackAssembly.setNumberInstall(trackAssembly.getNumberInstall() + assemblyBinding.getQuantity());
             //判断是否是编号来源
@@ -167,7 +165,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
             trackFlow.setProductNo("");
 //            lineStoreService.unbundling(assemblyBinding.getLineStoreId());
             trackAssembly.setLineStoreId("");
-            lineStoreService.removeById(trackAssembly.getLineStoreId());
+//            lineStoreService.removeById(trackAssembly.getLineStoreId());
         }
         try {
             this.updateById(assemblyBinding);

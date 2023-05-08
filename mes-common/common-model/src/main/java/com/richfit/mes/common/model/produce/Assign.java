@@ -154,7 +154,7 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     private Integer optSequence;
     @TableField(exist = false)
-    private Integer technologySequence;
+    private String technologySequence;
     @TableField(exist = false)
     private Integer optParallelType;
     @TableField(exist = false)
@@ -297,9 +297,9 @@ public class Assign extends BaseEntity<Assign> {
 
     public String getSiteId() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(!ObjectUtil.isEmpty(this.siteList)){
+        if (!ObjectUtil.isEmpty(this.siteList)) {
             for (String siteId : this.siteList) {
-                if(!StringUtils.isEmpty(String.valueOf(stringBuilder))){
+                if (!StringUtils.isEmpty(String.valueOf(stringBuilder))) {
                     stringBuilder.append(",");
                 }
                 stringBuilder.append(siteId);
@@ -310,7 +310,7 @@ public class Assign extends BaseEntity<Assign> {
     }
 
     public List<String> getSiteList() {
-        if(!StringUtils.isEmpty(siteId) && (ObjectUtil.isEmpty(siteList) || siteList.size()==0)){
+        if (!StringUtils.isEmpty(siteId) && (ObjectUtil.isEmpty(siteList) || siteList.size() == 0)) {
             return Arrays.asList(siteId.split(","));
         }
         return siteList;

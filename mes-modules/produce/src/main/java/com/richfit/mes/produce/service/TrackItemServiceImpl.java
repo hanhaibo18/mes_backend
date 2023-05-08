@@ -222,10 +222,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Override
     public Boolean unLinkFromCert(String tiId) {
-        TrackItem trackItem = new TrackItem();
-        trackItem.setId(tiId);
-        trackItem.setCertificateNo(null);
-        return this.updateById(trackItem);
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", tiId);
+        updateWrapper.set("certificate_no", null);
+        return this.update(updateWrapper);
     }
 
     @Override
