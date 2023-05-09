@@ -63,8 +63,6 @@ public class TrackCompleteController extends BaseController {
     private ForgControlRecordService forgControlRecordService;
     @Autowired
     private LayingOffService layingOffService;
-    @Autowired
-    private NormalizeDehydroRecordService normalizeDehydroRecordService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
 
@@ -1075,40 +1073,6 @@ public class TrackCompleteController extends BaseController {
     @DeleteMapping("/delete_forg_control_record")
     public CommonResult<Boolean> deleteForgControlRecord(@RequestBody List<ForgControlRecord> forgControlRecordlist) {
         return CommonResult.success(forgControlRecordService.removeByIds(forgControlRecordlist));
-    }
-
-    @ApiOperation(value = "正火去氢工序控制记录", notes = "正火去氢工序控制记录")
-    @ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")
-    @PostMapping("/saveNormalizeDehydroRecord")
-    public CommonResult<Boolean> saveNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
-        return CommonResult.success(normalizeDehydroRecordService.saveBatch(normalizeDehydroRecordList));
-    }
-
-    @ApiOperation(value = "正火去氢工序控制查询", notes = "正火去氢工序控制查询")
-    @ApiImplicitParam(name = "itemId", value = "工序ID", required = true, dataType = "String", paramType = "query")
-    @GetMapping("/pageNormalizeDehydroRecord")
-    public CommonResult<IPage<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(String itemId, String orderCol, String order, int page, int limit) {
-        QueryWrapper<NormalizeDehydroRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id", itemId);
-        OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(page, limit), queryWrapper));
-    }
-
-    @ApiOperation(value = "正火去氢工序控制修改", notes = "正火去氢工序控制修改")
-    @ApiImplicitParams({@ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")
-            , @ApiImplicitParam(name = "itemId", value = "工序ItemId", required = true, dataType = "String", paramType = "query")})
-    @PutMapping("/updateNormalizeDehydroRecord/{itemId}")
-    public CommonResult<Boolean> updateNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList, @PathVariable String itemId) {
-        return CommonResult.success(normalizeDehydroRecordService.updateBatch(normalizeDehydroRecordList, itemId));
-    }
-
-    @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")
-    @ApiImplicitParams(
-            {@ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")}
-    )
-    @DeleteMapping("/deleteNormalizeDehydroRecord")
-    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
-        return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
     }
 
 }

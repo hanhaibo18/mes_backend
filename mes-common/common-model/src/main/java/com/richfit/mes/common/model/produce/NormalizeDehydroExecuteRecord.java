@@ -14,7 +14,8 @@ import lombok.Data;
 @Data
 @TableName("produce_normalize_dehydro_execute_record")
 public class NormalizeDehydroExecuteRecord extends BaseEntity<NormalizeDehydroExecuteRecord> {
-
+    @ApiModelProperty(value = "正火去氢工序控制记录表id", dataType = "String")
+    private String recordId;
     @ApiModelProperty(value = "记录人", dataType = "String")
     private String recordBy;
     @ApiModelProperty(value = "班次", dataType = "String")

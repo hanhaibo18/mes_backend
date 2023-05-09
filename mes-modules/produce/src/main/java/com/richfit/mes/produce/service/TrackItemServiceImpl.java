@@ -222,10 +222,10 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Override
     public Boolean unLinkFromCert(String tiId) {
-        TrackItem trackItem = new TrackItem();
-        trackItem.setId(tiId);
-        trackItem.setCertificateNo(null);
-        return this.updateById(trackItem);
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", tiId);
+        updateWrapper.set("certificate_no", null);
+        return this.update(updateWrapper);
     }
 
     @Override
@@ -699,6 +699,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     public List<TrackItem> queryItemByThId(String trackHeadId) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackHeadId);
+        queryWrapper.orderByAsc("opt_sequence");
         return this.list(queryWrapper);
     }
 
